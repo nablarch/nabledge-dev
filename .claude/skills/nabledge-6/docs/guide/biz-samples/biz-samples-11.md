@@ -129,6 +129,14 @@ mvn clean dependency:copy-dependencies -DoutputDirectory=target/build/lib packag
 
 実行モジュールに含まれる以下のbatファイルを実行することでシミュレータが起動する。
 
+http-incoming-startup.bat
+
+http-outgoing-startup.bat
+
+mom-incoming-startup.bat
+
+mom-outgoing-startup.bat
+
 ## 拡張例
 
 ## メッセージ送信時にリクエスト送信回数を指定する

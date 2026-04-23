@@ -26,7 +26,7 @@
 | 組み込まれているアダプタ | * Jersey用アダプタ(詳細は、 Jakarta RESTful Web Servicesアダプタ を参照) * ルーティングアダプタ(詳細は、 ルーティングアダプタ を参照) |
 | 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。  * NablarchのRESTfulウェブサービス用の基本的な設定 * 疎通確認用RESTfulウェブサービス * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
 
-他のプロジェクトとの関係、及びディレクトリ構成は、 ../MavenModuleStructures/index を参照。
+他のプロジェクトとの関係、及びディレクトリ構成は、 index を参照。
 
 ## ブランクプロジェクト作成
 
@@ -107,4 +107,4 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 ## 補足
 
-H2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、 ../firstStep_appendix/firststep_complement を参照すること。
+H2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、 firststep_complement を参照すること。

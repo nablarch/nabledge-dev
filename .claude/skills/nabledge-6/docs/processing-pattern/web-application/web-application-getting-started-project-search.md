@@ -80,7 +80,7 @@ public class ProjectSearchForm extends SearchFormBase implements Serializable {
 
 この実装のポイント
 * リクエストをGETで送信する場合は、 formタグ の method 属性にGETを指定する。
-  さらに、GETの場合、ボタンやリンクにカスタムタグを使用できないので、HTMLでボタンやリンクを作成する。詳細は tag-using_get を参照。
+  さらに、GETの場合、ボタンやリンクにカスタムタグを使用できないので、HTMLでボタンやリンクを作成する。詳細は GETリクエストを使用する を参照。
 
 検索条件Beanの作成
 検索条件を設定し ユニバーサルDAO へ引き渡すBeanを作成する。
@@ -261,7 +261,7 @@ public HttpResponse list(HttpRequest request, ExecutionContext context) {
   </routes>
   ```
 * 値を出力するために、 writeタグ を用いる。
-  値を「日付」や「金額」等の形式でフォーマットして出力したい場合は、 valueFormat 属性で形式を指定する。詳細は tag-format_value を参照。
+  値を「日付」や「金額」等の形式でフォーマットして出力したい場合は、 valueFormat 属性で形式を指定する。詳細は フォーマットして値を出力する を参照。
 * <app:listSearchResult> の使用方法については 検索結果の一覧表示 を参照。
 
 検索機能の解説は以上。

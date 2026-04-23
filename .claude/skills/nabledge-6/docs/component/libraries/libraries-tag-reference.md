@@ -1,7 +1,7 @@
 # タグリファレンス
 
 このリファレンスには、Nablarchが提供するタグとその属性について記述されている。
-各タグの使用方法や使用例などの詳細については tag を参照すること。
+各タグの使用方法や使用例などの詳細については Jakarta Server Pagesカスタムタグ を参照すること。
 
 フォーム
 formタグ (フォーム)
@@ -166,7 +166,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | placeholder | HTML5のplaceholder属性。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## searchタグ
 
@@ -183,7 +183,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## telタグ
 
@@ -200,7 +200,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## urlタグ
 
@@ -217,7 +217,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## emailタグ
 
@@ -234,7 +234,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## dateタグ
 
@@ -251,7 +251,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## monthタグ
 
@@ -268,7 +268,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## weekタグ
 
@@ -285,7 +285,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## timeタグ
 
@@ -302,7 +302,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## datetimeLocalタグ
 
@@ -319,7 +319,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## numberタグ
 
@@ -336,7 +336,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## rangeタグ
 
@@ -353,7 +353,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## colorタグ
 
@@ -370,7 +370,7 @@ forConfirmationPageタグ (確認画面のみボディを出力)
 | autofocus | HTML5のautofocus属性 (論理属性) 。 |
 | errorCss | エラーレベルのメッセージに使用するCSSクラス名。 デフォルトは `nablarch_error` 。 |
 | nameAlias | name属性のエイリアスを設定する。 複数指定する場合はカンマ区切り。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## textareaタグ
 
@@ -520,7 +520,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 
 > **Important:**
 > ウィンドウスコープは非推奨である。
-> 詳細は、 tag-window_scope を参照。
+> 詳細は、 入力データを画面間で持ち回る(ウィンドウスコープ) を参照。
 
 | 属性 | 説明 |
 |---|---|
@@ -627,7 +627,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | フォーカスを取得可能なHTMLタグ |  |
 | name | XHTMLのname属性。 |
 | type `必須` | XHTMLのtype属性。 |
-| uri `必須` | URI。 tag-specify_uri を参照。 |
+| uri `必須` | URI。 URIの指定方法 を参照。 |
 | disabled | XHTMLのdisabled属性 (論理属性) 。 |
 | value | XHTMLのvalue属性。 |
 | src | XHTMLのsrc属性。 |
@@ -649,7 +649,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | 全てのHTMLタグ |  |
 | フォーカスを取得可能なHTMLタグ |  |
 | name | XHTMLのname属性。 |
-| uri `必須` | URI。 tag-specify_uri を参照。 |
+| uri `必須` | URI。 URIの指定方法 を参照。 |
 | value | XHTMLのvalue属性。 |
 | type | XHTMLのtype属性。 |
 | disabled | XHTMLのdisabled属性 (論理属性) 。 |
@@ -668,7 +668,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | 全てのHTMLタグ |  |
 | フォーカスを取得可能なHTMLタグ |  |
 | name | XHTMLのname属性。 |
-| uri `必須` | URI。 tag-specify_uri を参照。 |
+| uri `必須` | URI。 URIの指定方法 を参照。 |
 | shape | XHTMLのshape属性。 |
 | coords | XHTMLのcoords属性。 |
 | allowDoubleSubmission | 二重サブミットを許可するか否か。 許可する場合は `true` 、許可しない場合は `false` 。 デフォルトは `true` 。 |
@@ -686,7 +686,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | フォーカスを取得可能なHTMLタグ |  |
 | name | XHTMLのname属性。 |
 | type `必須` | XHTMLのtype属性。 |
-| uri `必須` | URI。 tag-specify_uri を参照。 |
+| uri `必須` | URI。 URIの指定方法 を参照。 |
 | disabled | XHTMLのdisabled属性 (論理属性) 。 |
 | value | XHTMLのvalue属性。 |
 | src | XHTMLのsrc属性。 |
@@ -709,7 +709,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | 全てのHTMLタグ |  |
 | フォーカスを取得可能なHTMLタグ |  |
 | name | XHTMLのname属性。 |
-| uri `必須` | URI。 tag-specify_uri を参照。 |
+| uri `必須` | URI。 URIの指定方法 を参照。 |
 | value | XHTMLのvalue属性。 |
 | type | XHTMLのtype属性。 |
 | disabled | XHTMLのdisabled属性 (論理属性) 。 |
@@ -729,7 +729,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | 全てのHTMLタグ |  |
 | フォーカスを取得可能なHTMLタグ |  |
 | name | XHTMLのname属性。 |
-| uri `必須` | URI。 tag-specify_uri を参照。 |
+| uri `必須` | URI。 URIの指定方法 を参照。 |
 | shape | XHTMLのshape属性。 |
 | coords | XHTMLのcoords属性。 |
 | secure | URIをhttpsにするか否か。 httpsにする場合は `true` 、しない場合は `false` 。 |
@@ -748,7 +748,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | フォーカスを取得可能なHTMLタグ |  |
 | name | XHTMLのname属性。 |
 | type `必須` | XHTMLのtype属性。 |
-| uri `必須` | URI。 tag-specify_uri を参照。 |
+| uri `必須` | URI。 URIの指定方法 を参照。 |
 | disabled | XHTMLのdisabled属性 (論理属性) 。 |
 | value | XHTMLのvalue属性。 |
 | src | XHTMLのsrc属性。 |
@@ -770,7 +770,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | 全てのHTMLタグ |  |
 | フォーカスを取得可能なHTMLタグ |  |
 | name | XHTMLのname属性。 |
-| uri `必須` | URI。 tag-specify_uri を参照。 |
+| uri `必須` | URI。 URIの指定方法 を参照。 |
 | value | XHTMLのvalue属性。 |
 | type | XHTMLのtype属性。 |
 | disabled | XHTMLのdisabled属性 (論理属性) 。 |
@@ -789,7 +789,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | 全てのHTMLタグ |  |
 | フォーカスを取得可能なHTMLタグ |  |
 | name | XHTMLのname属性。 |
-| uri `必須` | URI。 tag-specify_uri を参照。 |
+| uri `必須` | URI。 URIの指定方法 を参照。 |
 | shape | XHTMLのshape属性。 |
 | coords | XHTMLのcoords属性。 |
 | allowDoubleSubmission | 二重サブミットを許可するか否か。 許可する場合は `true` 、許可しない場合は `false` 。 デフォルトは `true` 。 |
@@ -827,7 +827,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | charset | XHTMLのcharset属性。 |
 | type | XHTMLのtype属性。 |
 | name | XHTMLのname属性。 |
-| href | XHTMLのhref属性。 tag-specify_uri を参照。 |
+| href | XHTMLのhref属性。 URIの指定方法 を参照。 |
 | hreflang | XHTMLのhreflang属性。 |
 | rel | XHTMLのrel属性。 |
 | rev | XHTMLのrev属性。 |
@@ -843,7 +843,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | 属性 | 説明 |
 |---|---|
 | 全てのHTMLタグ |  |
-| src `必須` | XHTMLのcharsrc属性。 tag-specify_uri を参照。 |
+| src `必須` | XHTMLのcharsrc属性。 URIの指定方法 を参照。 |
 | alt `必須` | XHTMLのalt属性。 |
 | name | XHTMLのname属性。 |
 | longdesc | XHTMLのlongdesc属性。 |
@@ -865,7 +865,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 |---|---|
 | 全てのHTMLタグ |  |
 | charset | XHTMLのcharset属性。 |
-| href | XHTMLのhref属性。 tag-specify_uri を参照。 |
+| href | XHTMLのhref属性。 URIの指定方法 を参照。 |
 | hreflang | XHTMLのhreflang属性。 |
 | type | XHTMLのtype属性。 |
 | rel | XHTMLのrel属性。 |
@@ -884,7 +884,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | id | XHTMLのid属性。 |
 | charset | XHTMLのcharset属性。 |
 | language | XHTMLのlanguage属性。 |
-| src | XHTMLのsrc属性。 tag-specify_uri を参照。 |
+| src | XHTMLのsrc属性。 URIの指定方法 を参照。 |
 | defer | XHTMLのdefer属性。 |
 | xmlSpace | XHTMLのxml:space属性。 |
 | secure | URIをhttpsにするか否か。 httpsにする場合は `true` 、しない場合は `false` 。 |
@@ -1048,7 +1048,7 @@ HTMLタグを出力せず、ウィンドウスコープに値を出力する。
 | name | 表示対象の値を変数スコープから取得する際に使用する名前。value属性と同時に指定できない。 |
 | value | 表示対象の値。直接値を指定する場合に使用する。name属性と同時に指定できない。 |
 | withHtmlFormat | HTMLフォーマット(改行と半角スペースの変換)をするか否か。 HTMLフォーマットはHTMLエスケープをする場合のみ有効となる。 デフォルトは `true` 。 |
-| valueFormat | 出力時のフォーマット。 指定内容は、 tag-format_value を参照。 |
+| valueFormat | 出力時のフォーマット。 指定内容は、 フォーマットして値を出力する を参照。 |
 
 ## prettyPrintタグ
 

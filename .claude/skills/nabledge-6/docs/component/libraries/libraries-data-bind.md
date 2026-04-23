@@ -635,9 +635,9 @@ try (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStre
 
 ## 出力するデータの表示形式をフォーマットする
 
-データを出力する際に、 format を使用することで日付や数値などのデータの表示形式をフォーマットできる。
+データを出力する際に、 フォーマッタ を使用することで日付や数値などのデータの表示形式をフォーマットできる。
 
-詳細は format を参照すること。
+詳細は フォーマッタ を参照すること。
 
 ## 拡張例
 

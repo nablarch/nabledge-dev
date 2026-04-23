@@ -39,11 +39,11 @@ public HttpResponse create(HttpRequest request, ExecutionContext context) {
 ```
 この実装のポイント
 * OnDoubleSubmission を付与して、
-  業務アクションメソッドが二重に実行された場合にエラーページへ遷移させる。詳細は tag-double_submission を参照。
+  業務アクションメソッドが二重に実行された場合にエラーページへ遷移させる。詳細は 二重サブミットを防ぐ を参照。
 
 > **Tip:**
 > Exampleアプリケーションでは、二重サブミット時のデフォルトの遷移先画面を設定している。
-> デフォルトの遷移先の指定方法は、 tag-double_submission を参照。
+> デフォルトの遷移先の指定方法は、 二重サブミットを防ぐ を参照。
 
 /src/main/webapp/WEB-INF/view/client/create.jsp
 ```jsp

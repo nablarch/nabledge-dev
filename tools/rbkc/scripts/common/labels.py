@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 
 
-_RST_LABEL_DEF_RE = re.compile(r'^\.\.\s+_([a-zA-Z0-9_-]+):')
+_RST_LABEL_DEF_RE = re.compile(r'^\.\.\s+_(?:`([^`]+)`|([a-zA-Z0-9_-]+)):')
 _RST_HEADING_CHARS = set('=-~^"\'`#*+<>')
 
 
@@ -40,7 +40,7 @@ def build_label_map(source_dir) -> dict[str, str]:
         for i, line in enumerate(lines):
             m = _RST_LABEL_DEF_RE.match(line.strip())
             if m:
-                pending_labels.append(m.group(1))
+                pending_labels.append(m.group(1) or m.group(2))
                 continue
             if pending_labels:
                 stripped = line.strip()

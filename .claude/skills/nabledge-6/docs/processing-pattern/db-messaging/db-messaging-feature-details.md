@@ -39,7 +39,7 @@ UniversalDaoを推奨する理由 に記載がある通り、
 * 排他制御
 * ユニバーサルDAO
 
-  * universal_dao_jpa_pessimistic_lock
+  * 悲観的ロックを行う
 
 ## 実行制御
 

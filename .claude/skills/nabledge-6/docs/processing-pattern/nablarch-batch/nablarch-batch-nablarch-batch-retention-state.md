@@ -34,3 +34,7 @@ public class BatchActionSample extends BatchAction<Object> {
 > このため、 ExecutionContext を使用するのではなく、上記実装例のようにバッチアクション側で状態を保持することを推奨する。
 
 > なお、 ExecutionContext を使用した場合、スコープの考え方は以下のようになる。
+
+> スレッドごとに状態を保持する領域
+
+> バッチ全体の状態を保持する領域

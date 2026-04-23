@@ -324,6 +324,7 @@ sql-executor.bat
 `sql-executor.bat` を編集する。設定項目は以下の通り。
 
 設定項目
+
 | db.url | データベースURL |
 |---|---|
 | db.user | 接続ユーザ |

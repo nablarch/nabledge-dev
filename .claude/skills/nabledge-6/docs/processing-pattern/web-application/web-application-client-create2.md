@@ -34,10 +34,10 @@ public class ClientForm implements Serializable {
 
 * textタグ の name 属性に、顧客名を受け付けるフォームのプロパティ名を追加する。
 * selectタグ の name 属性に、業種コードを受け付けるフォームのプロパティ名を追加する。
-* 各タグの name 属性の指定方法は、 tag-access_rule を参照。
+* 各タグの name 属性の指定方法は、 入力/出力データへのアクセスルール を参照。
 * textタグ 、 selectタグ に入力エラー発生時のCSSクラスを追加する。
 * 登録ボタン( buttonタグ )の uri 属性に、登録確認画面へ遷移するURIを追加する。
-  uri 属性の指定方法は、 tag-specify_uri を参照。
+  uri 属性の指定方法は、 URIの指定方法 を参照。
 * 入力エラー発生時のエラーメッセージ表示領域を追加する。
 
 /src/main/webapp/WEB-INF/view/client/create.jsp
@@ -126,7 +126,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
   (登録画面を再表示するためには、業種リストを設定する必要があるため)。
 * バリデーションエラーが発生しなかった場合は、リクエストスコープからバリデーション済みオブジェクトが取得出来る。
 登録確認画面の表示処理を実装する
-後続の登録処理に使用する顧客情報を session_store に保存し、登録確認画面を表示する。
+後続の登録処理に使用する顧客情報を セッションストア に保存し、登録確認画面を表示する。
 
 ClientAction.java
 ```java
@@ -149,7 +149,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 * セッションストア への保存は、SessionUtil を使用する。
 * セッションストアにフォームは格納しない ため、
   BeanUtil を使用してフォームをエンティティに変換した上で セッションストア に登録する。
-* セッションストア を使用する際の詳しい実装例は create_example を参照。
+* セッションストア を使用する際の詳しい実装例は 登録機能での実装例 を参照。
 
 登録確認画面のJSPを作成する
 登録確認画面のJSPを新規作成する。
@@ -163,7 +163,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 <n:confirmationPage path="./create.jsp" ></n:confirmationPage>
 ```
 この実装のポイント
-* confirmationPageタグ を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は tag-make_common を参照。
+* confirmationPageタグ を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は 入力画面と確認画面を共通化する を参照。
 登録画面を修正する
 登録画面のJSPを修正し、登録画面のみで表示する項目、確認画面でのみ表示する項目を出し分けられるようにする。
 

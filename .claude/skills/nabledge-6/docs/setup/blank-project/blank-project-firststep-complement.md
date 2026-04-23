@@ -46,7 +46,7 @@
 
 | ツール | ツールが実行されるMavenのPhase | 補足 |
 |---|---|---|
-| /development_tools/toolbox/JspStaticAnalysis/index | verify |  |
+| index | verify |  |
 | カバレッジ取得 | test | jacoco.execが生成されるところまで設定済み。  jacoco.execは、SonarQube及びJenkinsのプラグインで使用出来る。 |
 | [gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) | － | 起動は、「mvn -P gsp gsp-dba:<ゴール名>」で行う。  例えば、「mvn -P gsp gsp-dba:generate-ddl」でgenerate-ddlを実行できる。  また、「mvn -P gsp generate-resources」と実行することで、「generate-ddl」「execute-ddl」「generate-entity」「load-data」「export-schema」を順に実行できる。 |
 

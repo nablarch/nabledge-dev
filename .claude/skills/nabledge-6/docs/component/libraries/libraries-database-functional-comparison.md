@@ -6,10 +6,11 @@
 * <a href="https://jakarta.ee/specifications/persistence/" target="_blank">Jakarta Persistence(外部サイト、英語)</a>
 
 > **Important:**
-> ユニバーサルDAOでは、JPAで定義されているアノテーションのうち、 universal_dao_jpa_annotations に記載のあるものだけをサポートしている。
+> ユニバーサルDAOでは、JPAで定義されているアノテーションのうち、 Entityに使用できるJakarta Persistenceアノテーション に記載のあるものだけをサポートしている。
 > ここに記載のないアノテーションに関連する機能については、使用できない。
 
 機能比較（○：提供あり　△：一部提供あり　×：提供なし　－:対象外）
+
 | 機能 | ユニバーサルDAO | Jakarta Persistence |
 |---|---|---|
 | リレーションシップに対応できる | × [1] | ○ |

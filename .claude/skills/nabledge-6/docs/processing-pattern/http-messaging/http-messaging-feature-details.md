@@ -28,8 +28,8 @@
 
 * ユニバーサルDAO
 
-  * universal_dao_jpa_optimistic_lock
-  * universal_dao_jpa_pessimistic_lock
+  * 楽観的ロックを行う
+  * 悲観的ロックを行う
 
 > **Important:**
 > 排他制御 機能は、クライアント(taglib)との連動が前提であるため、
@@ -58,7 +58,7 @@
 
 ## 認可チェック
 
-* permission_check
+* ハンドラによる認可チェック
 
 ## エラー時に返却するレスポンス
 

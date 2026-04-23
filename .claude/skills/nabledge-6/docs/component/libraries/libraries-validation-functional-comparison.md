@@ -3,6 +3,7 @@
 ここでは、Nablarchの提供するバリデーション機能と <a href="https://jakarta.ee/specifications/bean-validation/" target="_blank">Jakarta Bean Validation(外部サイト、英語)</a> の機能比較を示す。
 
 機能比較（○：提供あり　△：一部提供あり　×：提供なし　－:対象外）
+
 | 機能 | Bean   Validation | Nablarch   Validation | Jakarta   Bean Validation |
 |---|---|---|---|
 | バリデーション対象の項目を指定できる | ○ [1] | ○   解説書へ | ○ |

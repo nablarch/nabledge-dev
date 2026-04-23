@@ -1,7 +1,7 @@
 {
   "id": "handlers-ServiceAvailabilityCheckHandler",
   "title": "サービス提供可否チェックハンドラ",
-  "content": "**目次**\n\n* ハンドラクラス名\n* モジュール一覧\n* 制約\n* リクエストに対するサービス提供可否チェック\n\n本ハンドラでは、 リクエストに対するサービス提供可否チェック を行う。\n\nサービス提供可否チェックは、ライブラリの service_availability を使用して行う。\nそのため、本ハンドラを使用するには、\nServiceAvailability を実装したクラスを本ハンドラに設定する必要がある。\n\n本ハンドラでは、以下の処理を行う。\n\n* サービス提供可否チェック\n\n処理の流れは以下のとおり。\n\n![](../images/ServiceAvailabilityCheckHandler/ServiceAvailabilityCheckHandler_flow.png)",
+  "content": "**目次**\n\n* ハンドラクラス名\n* モジュール一覧\n* 制約\n* リクエストに対するサービス提供可否チェック\n\n本ハンドラでは、 リクエストに対するサービス提供可否チェック を行う。\n\nサービス提供可否チェックは、ライブラリの サービス提供可否チェック を使用して行う。\nそのため、本ハンドラを使用するには、\nServiceAvailability を実装したクラスを本ハンドラに設定する必要がある。\n\n本ハンドラでは、以下の処理を行う。\n\n* サービス提供可否チェック\n\n処理の流れは以下のとおり。\n\n![](../images/ServiceAvailabilityCheckHandler/ServiceAvailabilityCheckHandler_flow.png)",
   "no_knowledge_content": false,
   "sections": [
     {
@@ -22,7 +22,7 @@
     {
       "id": "s4",
       "title": "リクエストに対するサービス提供可否チェック",
-      "content": "ThreadContext からリクエストIDを取得し、サービス提供可否をチェックする。\nチェックの詳細は、 service_availability を参照。\n\nOK(サービス提供可)の場合\n後続ハンドラを呼び出す。\nNG(サービス提供不可)の場合\nServiceUnavailable (503) を送出する。\n\nチェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、\nServiceAvailabilityCheckHandler.setUsesInternalRequestId\nでtrueを指定する。デフォルトはfalseである。"
+      "content": "ThreadContext からリクエストIDを取得し、サービス提供可否をチェックする。\nチェックの詳細は、 サービス提供可否チェック を参照。\n\nOK(サービス提供可)の場合\n後続ハンドラを呼び出す。\nNG(サービス提供不可)の場合\nServiceUnavailable (503) を送出する。\n\nチェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、\nServiceAvailabilityCheckHandler.setUsesInternalRequestId\nでtrueを指定する。デフォルトはfalseである。"
     }
   ]
 }

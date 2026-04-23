@@ -7,7 +7,7 @@
     {
       "id": "s1",
       "title": "データを導出する",
-      "content": "既存データから新たにデータを導出するバッチの実装方法を以下の順に説明する。\n\n1. getting_started_chunk-read\n2. getting_started_chunk-business_logic\n3. getting_started_chunk-persistence\n4. getting_started_chunk-job\n\n処理フローについては、 Chunkステップのバッチの処理フロー を参照。\n責務配置については Chunkステップの責務配置 を参照。\n\nバッチ処理は、 <a href=\"https://jakarta.ee/specifications/batch/\" target=\"_blank\">Jakarta Batch(外部サイト、英語)</a> で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。\nリスナーの詳細は バッチアプリケーションで使用するリスナー 及び リスナーの指定方法 を参照。"
+      "content": "既存データから新たにデータを導出するバッチの実装方法を以下の順に説明する。\n\n1. 入力データソースからデータを読み込む\n2. 業務ロジックを実行する\n3. 永続化処理を行う\n4. JOB設定ファイルを作成する\n\n処理フローについては、 Chunkステップのバッチの処理フロー を参照。\n責務配置については Chunkステップの責務配置 を参照。\n\nバッチ処理は、 <a href=\"https://jakarta.ee/specifications/batch/\" target=\"_blank\">Jakarta Batch(外部サイト、英語)</a> で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。\nリスナーの詳細は バッチアプリケーションで使用するリスナー 及び リスナーの指定方法 を参照。"
     },
     {
       "id": "s2",
@@ -17,7 +17,7 @@
     {
       "id": "s3",
       "title": "業務ロジックを実行する",
-      "content": "賞与の計算等の業務ロジックを実装する。\n\nItemProcessorの作成\nItemProcessor を実装し、\n業務ロジックを行う(永続化処理は ItemWriter の責務であるため実施しない)。\n\n> | > インタフェース名 | > 責務 |\n> |---|---|\n> | > ItemProcessor | > 一行分のデータに対する業務処理を行う。  > * >   ItemProcessor#processItem |\n\nBonusCalculateProcessor.java\n```java\n@Dependent\n@Named\npublic class BonusCalculateProcessor implements ItemProcessor {\n\n    @Override\n    public Object processItem(Object item) {\n\n        EmployeeForm form = (EmployeeForm) item;\n        Bonus bonus = new Bonus();\n        bonus.setEmployeeId(form.getEmployeeId());\n        bonus.setPayments(calculateBonus(form));\n\n        return bonus;\n    }\n\n    /**\n     * 社員情報をもとに賞与計算を行う。\n     *\n     * @param form 社員情報Form\n     * @return 賞与\n     */\n    private static Long calculateBonus(EmployeeForm form) {\n        if (form.getFixedBonus() == null) {\n            return form.getBasicSalary() * form.getBonusMagnification() / 100;\n        } else {\n            return form.getFixedBonus();\n        }\n    }\n}\n```\nこの実装のポイント\n* processItem メソッドで一定数( getting_started_chunk-job にて設定方法を解説)のエンティティを返却した時点で、\n  後続する ItemWriter の writeItems メソッドが実行される。"
+      "content": "賞与の計算等の業務ロジックを実装する。\n\nItemProcessorの作成\nItemProcessor を実装し、\n業務ロジックを行う(永続化処理は ItemWriter の責務であるため実施しない)。\n\n> | > インタフェース名 | > 責務 |\n> |---|---|\n> | > ItemProcessor | > 一行分のデータに対する業務処理を行う。  > * >   ItemProcessor#processItem |\n\nBonusCalculateProcessor.java\n```java\n@Dependent\n@Named\npublic class BonusCalculateProcessor implements ItemProcessor {\n\n    @Override\n    public Object processItem(Object item) {\n\n        EmployeeForm form = (EmployeeForm) item;\n        Bonus bonus = new Bonus();\n        bonus.setEmployeeId(form.getEmployeeId());\n        bonus.setPayments(calculateBonus(form));\n\n        return bonus;\n    }\n\n    /**\n     * 社員情報をもとに賞与計算を行う。\n     *\n     * @param form 社員情報Form\n     * @return 賞与\n     */\n    private static Long calculateBonus(EmployeeForm form) {\n        if (form.getFixedBonus() == null) {\n            return form.getBasicSalary() * form.getBonusMagnification() / 100;\n        } else {\n            return form.getFixedBonus();\n        }\n    }\n}\n```\nこの実装のポイント\n* processItem メソッドで一定数( JOB設定ファイルを作成する にて設定方法を解説)のエンティティを返却した時点で、\n  後続する ItemWriter の writeItems メソッドが実行される。"
     },
     {
       "id": "s4",

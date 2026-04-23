@@ -6,7 +6,7 @@
 
 Nablarchが提供する下記の機能で [Redis(外部サイト、英語)](https://redis.io/) を使用できるようにするアダプタを提供する。
 
-* session_store
+* セッションストア
 * ヘルスチェックエンドポイントハンドラ
 
 本アダプタでは、Redisのクライアントライブラリとして [Lettuce(外部サイト、英語)](https://redis.github.io/lettuce/) を使用している。

@@ -19,6 +19,6 @@ database/universal_dao
 > このため、 JDBCのラッパー機能 を使うための設定などは必要になる。
 
 > **Tip:**
-> ユニバーサルDAO とJakarta Persistenceとの機能比較は、 database-functional_comparison を参照。
+> ユニバーサルDAO とJakarta Persistenceとの機能比較は、 ユニバーサルDAOとJakarta Persistenceとの機能比較 を参照。
 
 database/functional_comparison

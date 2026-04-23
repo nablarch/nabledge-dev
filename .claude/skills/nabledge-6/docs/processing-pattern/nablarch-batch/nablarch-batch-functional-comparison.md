@@ -2,10 +2,11 @@
 
 この章では、以下の機能の比較を示す。
 
-* jsr352/index
-* nablarch_batch/index
+* index
+* index
 
 機能比較（◎：Jakarta Batchの仕様で定義されている　○：提供あり　△：一部提供あり　×：提供なし　－：対象外）
+
 | 機能 | Jakarta Batchに準拠 [1] | Nablarchバッチ |
 |---|---|---|
 | 起動時に任意のパラメータを設定できる | ◎ | ○   解説書へ |

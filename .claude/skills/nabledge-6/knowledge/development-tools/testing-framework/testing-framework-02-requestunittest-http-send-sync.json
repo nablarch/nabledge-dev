@@ -1,7 +1,7 @@
 {
   "id": "testing-framework-02-requestunittest-http-send-sync",
   "title": "リクエスト単体テストの実施方法(HTTP同期応答メッセージ送信処理)",
-  "content": "リクエスト単体テスト実施方法は、\u0000 message_sendSyncMessage_test\u0000 を参照すること。\n\nただし、「送信キュー」「受信キュー」を「通信先」と読み替えること。\n\n本項では、\u0000 message_sendSyncMessage_test\u0000 と異なる箇所を解説する。",
+  "content": "リクエスト単体テスト実施方法は、\u0000 リクエスト単体テストの実施方法(同期応答メッセージ送信処理)\u0000 を参照すること。\n\nただし、「送信キュー」「受信キュー」を「通信先」と読み替えること。\n\n本項では、\u0000 リクエスト単体テストの実施方法(同期応答メッセージ送信処理)\u0000 と異なる箇所を解説する。",
   "no_knowledge_content": false,
   "sections": [
     {
@@ -22,17 +22,17 @@
     {
       "id": "s4",
       "title": "障害系のテスト",
-      "content": "応答電文の表に「errorMode:」から始まる特定の値を設定することで、障害系のテストを行うことができる\u0000 [1]\u0000 。\n\n以下に、設定値と、障害系のテストの対応を示す。\n\n> | > 最初のフィールドに設定する値 | > 障害内容 | > 自動テストフレームワークの動作 |\n> |---|---|---|\n> | > `errorMode:timeout` | > メッセージ送信中にタイムアウトエラーが発生する場合のテスト | > **HttpMessagingTimeoutException** > (**MessagingException** のサブクラス)を送出する。 \u0000 [2]\u0000 |\n> | > `errorMode:msgException` | > メッセージ送受信エラーが発生する場合のテスト | > **MessagingException** をスローする。 |\n\nこの値は、応答電文の表の\u0000 **ヘッダおよび本文両方の、「no」を除く最初のフィールド**\u0000 に記載すること。\n\n業務アクション内で、明示的に **MessagingException** を制御していないのであれば、\n個別のリクエスト単体テストにおいて障害系のテストを行う必要は無い。\n\n\u0000 message_sendSyncMessage_test\u0000 と異なるクラスを送出する。"
+      "content": "応答電文の表に「errorMode:」から始まる特定の値を設定することで、障害系のテストを行うことができる\u0000 [1]\u0000 。\n\n以下に、設定値と、障害系のテストの対応を示す。\n\n> | > 最初のフィールドに設定する値 | > 障害内容 | > 自動テストフレームワークの動作 |\n> |---|---|---|\n> | > `errorMode:timeout` | > メッセージ送信中にタイムアウトエラーが発生する場合のテスト | > **HttpMessagingTimeoutException** > (**MessagingException** のサブクラス)を送出する。 \u0000 [2]\u0000 |\n> | > `errorMode:msgException` | > メッセージ送受信エラーが発生する場合のテスト | > **MessagingException** をスローする。 |\n\nこの値は、応答電文の表の\u0000 **ヘッダおよび本文両方の、「no」を除く最初のフィールド**\u0000 に記載すること。\n\n業務アクション内で、明示的に **MessagingException** を制御していないのであれば、\n個別のリクエスト単体テストにおいて障害系のテストを行う必要は無い。\n\n\u0000 リクエスト単体テストの実施方法(同期応答メッセージ送信処理)\u0000 と異なるクラスを送出する。"
     },
     {
       "id": "s5",
       "title": "モックアップを使用するための記述",
-      "content": "testShotsに `expectedMessageByClient` および `responseMessageByClient` にグループIDを設定する。モックアップ自体については、\u0000 同期応答メッセージ送信処理を伴う取引単体テストの実施方法\u0000 を参照。\n\nグループIDの関連については\u0000 message_sendSyncMessage_test\u0000 における `expectedMessage` および `responseMessage` の場合と同様であるため割愛する。\n\n![](./_image/http_send_sync_shot.png)\n\n同一アクション内でMOMによる同期応答メッセージ送信処理とHTTP同期応答メッセージ送信処理が同時に行われる場合、\n\"expectedMessage\"、\"responseMessage\"にMOMによる同期応答メッセージ送信処理で使用するグループIDを、\n\"expectedMessageByClient\"、\"responseMessageByClient\"にHTTP同期応答メッセージ送信処理で使用するグループIDを\nそれぞれ個別に指定する。\n\n![](./_image/http_mom_send_sync_shot.png)\n\n> **Tip:**\n> グループIDはMOMによる同期応答メッセージ送信処理とHTTP同期応答メッセージ送信処理でそれぞれ別の値を設定する必要がある。\n> 同一のグループIDを指定した場合、正しく結果検証が行われないため、注意すること。"
+      "content": "testShotsに `expectedMessageByClient` および `responseMessageByClient` にグループIDを設定する。モックアップ自体については、\u0000 同期応答メッセージ送信処理を伴う取引単体テストの実施方法\u0000 を参照。\n\nグループIDの関連については\u0000 リクエスト単体テストの実施方法(同期応答メッセージ送信処理)\u0000 における `expectedMessage` および `responseMessage` の場合と同様であるため割愛する。\n\n![](./_image/http_send_sync_shot.png)\n\n同一アクション内でMOMによる同期応答メッセージ送信処理とHTTP同期応答メッセージ送信処理が同時に行われる場合、\n\"expectedMessage\"、\"responseMessage\"にMOMによる同期応答メッセージ送信処理で使用するグループIDを、\n\"expectedMessageByClient\"、\"responseMessageByClient\"にHTTP同期応答メッセージ送信処理で使用するグループIDを\nそれぞれ個別に指定する。\n\n![](./_image/http_mom_send_sync_shot.png)\n\n> **Tip:**\n> グループIDはMOMによる同期応答メッセージ送信処理とHTTP同期応答メッセージ送信処理でそれぞれ別の値を設定する必要がある。\n> 同一のグループIDを指定した場合、正しく結果検証が行われないため、注意すること。"
     },
     {
       "id": "s6",
       "title": "要求電文のアサート",
-      "content": "テストデータのディレクティブ行に設定されたfile-typeの値により、要求電文のアサート方法が変化する。\n\n設定方法やアサート内容についての詳細は real_request_test のレスポンスメッセージの項を参照すること。"
+      "content": "テストデータのディレクティブ行に設定されたfile-typeの値により、要求電文のアサート方法が変化する。\n\n設定方法やアサート内容についての詳細は リクエスト単体テストの実施方法(同期応答メッセージ受信処理) のレスポンスメッセージの項を参照すること。"
     },
     {
       "id": "s7",

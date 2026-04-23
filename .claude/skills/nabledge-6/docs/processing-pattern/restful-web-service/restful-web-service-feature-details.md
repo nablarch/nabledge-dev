@@ -34,8 +34,8 @@
 
 * ユニバーサルDAO
 
-  * universal_dao_jpa_optimistic_lock
-  * universal_dao_jpa_pessimistic_lock
+  * 楽観的ロックを行う
+  * 悲観的ロックを行う
 
 > **Important:**
 > RESTfulウェブサービスでは ETag や If-Match を使用した楽観的ロックには対応していない。
@@ -84,7 +84,7 @@ feature_details/resource_signature
 
 ## Webアプリケーションのスケールアウト設計
 
-* stateless_web_app
+* Webアプリケーションをステートレスにする
 
 ## CSRF対策
 

@@ -19,6 +19,42 @@ from . import rst_admonition, rst_ast
 
 
 # ---------------------------------------------------------------------------
+# Zero-exception errors (§3-1b of rbkc-converter-design.md)
+# ---------------------------------------------------------------------------
+
+
+class VisitorError(Exception):
+    """Base class for Visitor-raised structural errors."""
+
+
+class UnknownNodeError(VisitorError):
+    """A docutils node kind is not listed in the node → MD mapping."""
+
+
+class UnknownRoleError(VisitorError):
+    """An `:xxx:` role is not in the Sphinx role shim whitelist."""
+
+
+class UnresolvedReferenceError(VisitorError):
+    """A reference or substitution could not be resolved (even via label_map)."""
+
+
+class UnknownSyntaxError(VisitorError):
+    """docutils emitted a parse error (level >= 3)."""
+
+
+# Roles registered in rst_ast._SPHINX_INLINE_ROLES; kept here to allow the
+# Visitor to reject any role not in this set (zero-exception).
+_KNOWN_ROLES: set[str] = {
+    "ref", "doc", "download", "file", "guilabel", "menuselection",
+    "kbd", "command", "samp", "envvar", "abbr", "term", "numref",
+    "javadoc_url", "strong",
+    "java:extdoc", "java:ref", "java:type", "java:method", "java:field",
+    "c:func",
+}
+
+
+# ---------------------------------------------------------------------------
 # Output containers
 # ---------------------------------------------------------------------------
 
@@ -111,11 +147,8 @@ class _MDVisitor:
             return handler(node)
         if isinstance(node, nodes.Text):
             return str(node)
-        # Fallback: container-like generic node — recurse
-        if isinstance(node, nodes.Element):
-            self.warnings.append(f"unmapped node: {name}")
-            return self.render_children(node)
-        return None
+        # Zero-exception (§3-1b): unknown node kinds must FAIL.
+        raise UnknownNodeError(f"unmapped node: {name}")
 
     # ------------------------------------------------------------------
     # Structure
@@ -176,7 +209,33 @@ class _MDVisitor:
         return self.render_children(node)
 
     def visit_docinfo(self, node: nodes.docinfo) -> str:
-        return self.render_children(node)
+        # Bibliographic fields at document top (author/date/version/...).
+        # docutils children are `field` / specialised classes (`author`,
+        # `date`, `organization`, etc). We render field_body text (label drop).
+        out: list[str] = []
+        for child in node.children:
+            if isinstance(child, nodes.field):
+                body_text = ""
+                for sub in child.children:
+                    if isinstance(sub, nodes.field_body):
+                        body_text = self.render_children(sub).strip()
+                if body_text:
+                    out.append(body_text)
+            else:
+                # specialised bibliographic node (nodes.author / date / ...):
+                # children are inline; take astext
+                text = child.astext().strip()
+                if text:
+                    out.append(text)
+        return "\n\n".join(out)
+
+    def visit_field(self, node: nodes.field) -> str:
+        # Reached only via docinfo fallback; field_body value only.
+        body = ""
+        for sub in node.children:
+            if isinstance(sub, nodes.field_body):
+                body = self.render_children(sub).strip()
+        return body
 
     # ------------------------------------------------------------------
     # Lists
@@ -236,8 +295,24 @@ class _MDVisitor:
         return "\n".join(out)
 
     def visit_field_list(self, node: nodes.field_list) -> str | None:
-        # §3-1: field_list is dropped (bibliographic and standalone alike)
-        return None
+        # §3-1a: field_list context-aware.
+        # - Directive option block (directive head 直後) は docutils が `field_list`
+        #   child を directive node の配下に置く。ここに到達する field_list は
+        #   document body 内の standalone 扱い。field_name を drop し field_body
+        #   を再帰 Visit して value を保持する。
+        out: list[str] = []
+        for child in node.children:
+            if not isinstance(child, nodes.field):
+                continue
+            body_text = ""
+            for sub in child.children:
+                if isinstance(sub, nodes.field_body):
+                    body_text = self.render_children(sub)
+            if body_text.strip():
+                out.append(body_text)
+        if not out:
+            return None
+        return "\n\n".join(out)
 
     def visit_option_list(self, node: nodes.option_list) -> str:
         return self.render_children(node)
@@ -314,7 +389,7 @@ class _MDVisitor:
         title_text = ""
         for ch in node.children:
             if isinstance(ch, nodes.title):
-                title_text = self.render_inline(ch)
+                title_text = self.render_inline(ch).strip()
             elif isinstance(ch, nodes.tgroup):
                 for grp in ch.children:
                     if isinstance(grp, nodes.thead):
@@ -342,7 +417,10 @@ class _MDVisitor:
         md_table = "\n".join(out)
         indented = _indent_block(md_table, self._prefix)
         if title_text:
-            return self._apply_prefix(title_text) + "\n" + indented
+            # Emit the table title as its own paragraph before the MD table
+            # (so it is captured by verify's sequential-delete). Blank line
+            # separator keeps MD paragraphs distinct.
+            return self._apply_prefix(title_text) + "\n\n" + indented
         return indented
 
     def _row_entries(self, row: nodes.row) -> list[dict[str, Any]]:
@@ -371,24 +449,26 @@ class _MDVisitor:
 
     def visit_figure(self, node: nodes.figure) -> str:
         parts: list[str] = []
-        caption_text = ""
-        legend_text = ""
-        img_md = ""
         for ch in node.children:
             if isinstance(ch, nodes.image):
                 result = self.visit_image(ch)
                 if result:
-                    img_md = result
+                    parts.append(result)
             elif isinstance(ch, nodes.caption):
-                caption_text = self.render_inline(ch)
+                text = self.render_inline(ch)
+                if text:
+                    parts.append(self._apply_prefix(text))
             elif isinstance(ch, nodes.legend):
-                legend_text = self.render_children(ch)
-        if img_md:
-            parts.append(img_md)
-        if caption_text:
-            parts.append(self._apply_prefix(caption_text))
-        if legend_text:
-            parts.append(legend_text)
+                text = self.render_children(ch)
+                if text:
+                    parts.append(text)
+            else:
+                # Any other child (paragraph / block_quote / system_message) —
+                # render via the generic dispatch so Visitor coverage stays
+                # complete (zero-exception).
+                chunk = self.render(ch)
+                if chunk:
+                    parts.append(chunk)
         return "\n\n".join(parts)
 
     def visit_caption(self, node: nodes.caption) -> str:
@@ -424,17 +504,19 @@ class _MDVisitor:
     def visit_error(self, node): return self._visit_admonition(node, "Error")
 
     def visit_admonition(self, node: nodes.admonition) -> str:
+        # `.. admonition:: <custom title>` の custom title を保持する。
+        # docutils は title を admonition の最初の child として置く。
         label = "Note"
         for ch in node.children:
             if isinstance(ch, nodes.title):
                 label = ch.astext()
                 break
-        # Skip title when rendering body
         body_children = [c for c in node.children if not isinstance(c, nodes.title)]
         old_prefix = self._prefix
         self._prefix = old_prefix + "> "
         try:
-            body = _join_blocks([self.render(c) for c in body_children if self.render(c) is not None]).strip()
+            rendered = [self.render(c) for c in body_children]
+            body = _join_blocks([r for r in rendered if r is not None]).strip()
         finally:
             self._prefix = old_prefix
         header = self._apply_prefix(f"> **{label}:**")
@@ -479,10 +561,8 @@ class _MDVisitor:
         handler = getattr(self, f"inline_{name}", None)
         if handler is not None:
             return handler(node)
-        # unknown inline: recurse over children as text
-        if isinstance(node, nodes.Element):
-            return "".join(self._inline(c) for c in node.children)
-        return ""
+        # Zero-exception (§3-1b): every inline node kind must be handled.
+        raise UnknownNodeError(f"unmapped inline node: {name}")
 
     def inline_strong(self, node: nodes.strong) -> str:
         return f"**{self.render_inline(node)}**"
@@ -498,18 +578,45 @@ class _MDVisitor:
 
     def inline_inline(self, node: nodes.inline) -> str:
         # Sphinx role shims (ref / doc / download / java:extdoc / ...) are
-        # registered as `inline` with class `role-<name>` by rst_ast. For
-        # `ref` / `doc` we resolve the label via label_map; for others we
-        # handle the `text <target>` form and fall back to the raw text.
+        # registered as `inline` with class `role-<name>` by rst_ast. The
+        # role name must be in _KNOWN_ROLES (shim whitelist); anything else
+        # is a zero-exception FAIL.
         cls = node.get("classes", []) or []
         role = next((c[5:] for c in cls if c.startswith("role-")), None)
+        if role is None:
+            # Plain <inline> from docutils (no role class) — treat as inline span
+            return self.render_inline(node)
+        if role not in _KNOWN_ROLES:
+            raise UnknownRoleError(f"unknown role: {role}")
         raw = node.astext()
-        if role in {"ref", "doc", "numref"}:
-            # `text <label>` form → use text; bare label → resolve via label_map
+        if role == "ref":
+            # `:ref:` は label を必ず解決する (未解決は FAIL)。
+            # `text <label>` → text (表示名) を使う。bare label は label_map で解決。
             if "<" in raw and raw.rstrip().endswith(">"):
                 text, _, target = raw.rpartition("<")
-                return text.strip() or self._label_map.get(target.rstrip(">").strip(), target.rstrip(">").strip())
-            return self._label_map.get(raw.strip(), raw.strip())
+                text = text.strip()
+                target = target.rstrip(">").strip()
+                if text:
+                    return text
+                resolved = self._label_map.get(target)
+                if resolved is None:
+                    raise UnresolvedReferenceError(f"unresolved :ref: {target}")
+                return resolved
+            resolved = self._label_map.get(raw.strip())
+            if resolved is None:
+                raise UnresolvedReferenceError(f"unresolved :ref: {raw.strip()}")
+            return resolved
+        if role in {"doc", "numref"}:
+            # `:doc:` / `:numref:` は document path を参照する。
+            # `text <path>` があれば表示名を優先、無ければ path の basename を残す。
+            # path のタイトル解決は本 Visitor のスコープ外 (cross-doc resolver 不在)。
+            if "<" in raw and raw.rstrip().endswith(">"):
+                text, _, target = raw.rpartition("<")
+                text = text.strip()
+                if text:
+                    return text
+                return target.rstrip(">").strip().split("/")[-1]
+            return raw.strip().split("/")[-1]
         if role == "download":
             return raw
         if role in {"java:extdoc", "javadoc_url"}:
@@ -520,9 +627,9 @@ class _MDVisitor:
             return raw
         if role == "strong":
             return f"**{raw}**"
-        # For other roles (file, guilabel, menuselection, kbd, command, samp,
-        # envvar, abbr, term, c:func, java:ref / :type / :method / :field)
-        # emit the raw text.
+        # Remaining whitelisted roles (file / guilabel / menuselection / kbd /
+        # command / samp / envvar / abbr / term / c:func / java:ref / :type /
+        # :method / :field) emit raw text.
         return raw
 
     def inline_reference(self, node: nodes.reference) -> str:
@@ -535,22 +642,21 @@ class _MDVisitor:
         if refid:
             return text
         if refname:
-            # docutils could not resolve this ref within the current doctree.
-            # Fall back to the cross-document label_map.
+            # docutils could not resolve the ref within this doctree. Use the
+            # cross-document label_map; fail if still unresolved.
             resolved = self._label_map.get(refname)
             if resolved:
                 return resolved
-            self.warnings.append(f"unresolved-reference: {refname}")
-            return text
+            raise UnresolvedReferenceError(f"unresolved reference: {refname}")
         return text
 
     def inline_target(self, node: nodes.target) -> str:
         return self.render_inline(node)
 
     def inline_substitution_reference(self, node: nodes.substitution_reference) -> str:
-        # Should have been replaced by Substitutions transform.
-        self.warnings.append(f"unresolved-substitution: {node.astext()}")
-        return node.astext()
+        # Should have been replaced by the Substitutions transform. If we see
+        # one here it means the definition is missing from the source.
+        raise UnresolvedReferenceError(f"unresolved substitution: {node.astext()}")
 
     def inline_footnote_reference(self, node: nodes.footnote_reference) -> str:
         label = node.astext()

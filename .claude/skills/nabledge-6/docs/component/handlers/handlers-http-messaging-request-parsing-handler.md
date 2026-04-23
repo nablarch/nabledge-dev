@@ -113,8 +113,26 @@ StructuredFwHeaderDefinition
 以下に示していない例外については捕捉しない。
 
 nablarch.fw.results.RequestEntityTooLarge
+INFO
+
+413
+
+リクエストボディのサイズ上限を超過したため、証跡ログとして記録する。
+そして、サイズ超過を表すため、HTTPステータスコードが *413*  のレスポンスを生成する。
 nablarch.fw.messaging.MessagingException
+INFO
+
+400
+
+リクエストボディが不正なため、証跡ログとして記録する。
+そして、クライアントエラーを表すため、HTTPステータスコードが *400*  のレスポンスを生成する。
 nablarch.core.dataformat.InvalidDataFormatException
+INFO
+
+400
+
+リクエストボディのフォーマットが不正なため、証跡ログとして記録する。
+そして、クライアントエラーを表すため、HTTPステータスコードが *400*  のレスポンスを生成する。
 
 ## 巨大なサイズのリクエストを防ぐ
 

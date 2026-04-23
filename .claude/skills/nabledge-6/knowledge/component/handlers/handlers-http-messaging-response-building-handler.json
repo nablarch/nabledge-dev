@@ -22,7 +22,7 @@
     {
       "id": "s4",
       "title": "レスポンスヘッダに設定される値",
-      "content": "後続のハンドラで作成された応答電文オブジェクトを元に以下のレスポンスヘッダを設定する。\n\n> **Important:**\n> このハンドラでは、上記に記載のないレスポンスヘッダを設定できない。\n\n> 上記外のレスポンスヘッダを使用したい場合は、プロジェクトでハンドラを作成し対応すること。"
+      "content": "後続のハンドラで作成された応答電文オブジェクトを元に以下のレスポンスヘッダを設定する。\n\n応答電文オブジェクトのステータスコードを設定する。\n\n応答電文オブジェクトの持つフォーマッタ(InterSystemMessage.getFormatter())から以下の値を取得し設定する。\n\n* MIME(DataRecordFormatterSupport#getMimeType()\n* cherset(DataRecordFormatterSupport#getDefaultEncoding()\n\nMIMEが `application/json` でcharsetが `utf-8` の場合、Content-Typeは以下の値となる。\n\n**application/json;charset=utf-8**\n\nレスポンスヘッダの `X-Correlation-Id` に、応答電文オブジェクトのヘッダに設定された `CorrelationId` の値を設定する。\n\n> **Important:**\n> このハンドラでは、上記に記載のないレスポンスヘッダを設定できない。\n\n> 上記外のレスポンスヘッダを使用したい場合は、プロジェクトでハンドラを作成し対応すること。"
     },
     {
       "id": "s5",

@@ -108,6 +108,7 @@ log/jaxrs_access_log
 log/messaging_log
 
 ログの種類
+
 | ログの種類 | 説明 |
 |---|---|
 | 障害通知ログ | 障害発生時に1次切り分け担当者を特定するのに必要な情報を出力する。 |
@@ -729,6 +730,7 @@ JsonLogFormatter では、
 なお、デフォルトでは全ての項目が出力される。
 
 targetsプロパティで指定できる出力項目
+
 | 出力項目 | 説明 |
 |---|---|
 | date | このログ出力を要求した時点の日時。 |
@@ -768,6 +770,7 @@ LOGGER.logInfo("hello");
 オブジェクトの変換ルールは下記の通り。
 
 出力可能なオブジェクト
+
 | 出力可能なJavaのクラス | JSONによる出力 |
 |---|---|
 | String | JSONの文字列として出力する。 |
@@ -811,6 +814,7 @@ LOGGER.logInfo("addition fields", structuredArgs);
 > 各フォーマッタの具体的な設定方法については、下記表のそれぞれのリンク先を参照のこと。
 
 > 各種ログのJSON版フォーマッタ
+
 > | > ログの種類 | > 対応するフォーマッタ |
 > |---|---|
 > | > 障害ログ | > FailureJsonLogFormatter |
@@ -847,10 +851,16 @@ applicationSettingLogFormatter.appSettingTargets
 アプリケーション設定ログで出力する項目（業務日付なし）。カンマ区切りで指定する。
 
 指定可能な出力項目およびデフォルトの出力項目
+systemSettings `デフォルト`
+
+businessDate
 applicationSettingLogFormatter.appSettingWithDateTargets
 アプリケーション設定ログで出力する項目（業務日付あり）。カンマ区切りで指定する。
 
 指定可能な出力項目
+systemSettings
+
+businessDate
 
 デフォルトは全ての出力項目が対象となる。
 applicationSettingLogFormatter.systemSettingItems
@@ -886,12 +896,22 @@ launcherLogFormatter.startTargets
 バッチの開始ログに出力する項目。カンマ区切りで指定する。
 
 指定可能な出力項目
+label
+
+commandLineOptions
+
+commandLineArguments
 
 デフォルトは全ての出力項目が対象となる。
 launcherLogFormatter.endTargets
 バッチの終了ログに出力する項目。カンマ区切りで指定する。
 
 指定可能な出力項目
+label
+
+exitCode
+
+executeTime
 
 デフォルトは全ての出力項目が対象となる。
 launcherLogFormatter.startLogMsgLabel
@@ -965,9 +985,37 @@ SynchronousFileLogWriter
 障害コードを設定するプロパティ名を以下に示す。
 
 failureCodeCreateLockFile
+ロックファイルが生成できない
+
+FATAL
+
+ロックファイルの生成に失敗しました。おそらくロックファイルのパスが間違っています。ロックファイルパス=[{0}]。
+
+failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}].
 failureCodeReleaseLockFile
+生成したロックファイルを解放(削除)できない
+
+FATAL
+
+ロックファイルの削除に失敗しました。ロックファイルパス=[{0}]。
+
+failed to delete lock file. lock file path=[{0}].
 failureCodeForceDeleteLockFile
+解放されないロックファイルを強制削除できない
+
+FATAL
+
+ロックファイルの強制削除に失敗しました。ロックファイルが不正に開かれています。ロックファイルパス=[{0}]。
+
+failed to delete lock file forcedly. lock file was opened illegally. lock file path=[{0}].
 failureCodeInterruptLockWait
+ロック取得待ちでスレッドをスリープしている際に、割り込みが発生
+
+FATAL
+
+ロック取得中に割り込みが発生しました。
+
+interrupted while waiting for lock retry.
 
 > **Important:**
 > 障害コードを設定した場合、障害通知ログのフォーマットで同一のログファイルにログが出力されるが、
@@ -1077,6 +1125,7 @@ LogPublisher.addListener(listener);
 本機能では、以下のログレベルを使用する。
 
 ログレベルの定義
+
 | ログレベル | 説明 |
 |---|---|
 | FATAL | アプリケーションの継続が不可能になる深刻な問題が発生したことを示す。 監視が必須で即通報および即対応が必要となる。 |
@@ -1103,6 +1152,7 @@ LogPublisher.addListener(listener);
 本フレームワークでは、下記の出力方針に基づきログ出力を行う。
 
 フレームワークのログ出力方針
+
 | ログレベル | 出力方針 |
 |---|---|
 | FATAL/ERROR | 障害ログの出力時にFATAL/ERRORレベルで出力する。  障害ログは、障害監視の対象であり、障害発生時の1次切り分けの起点ともなる為、 原則として1件の障害に対して、1件の障害ログを出力する方針としている。  このため、実行制御基盤では単一のハンドラ(例外を処理するハンドラ)により、 障害通知ログを出力する方針としている。 |
@@ -1116,6 +1166,7 @@ LogPublisher.addListener(listener);
 ここでは、本機能と [log4j(外部サイト、英語)](https://logging.apache.org/log4j/1.x/) との機能比較を示す。
 
 機能比較（○：提供あり　△：一部提供あり　×：提供なし　－:対象外）
+
 | 機能 | Nablarch | log4j |
 |---|---|---|
 | ログの出力有無をログレベルで制御できる | ○  解説書へ | ○ |

@@ -22,7 +22,7 @@
     {
       "id": "s4",
       "title": "サービス閉塞中の待機時間を設定する",
-      "content": "後続のハンドラからサービス閉塞中を示す例外(ServiceUnavailable)が発生した場合の待機時間を設定することが出来る。\nこの時間を設定することで、サービスが開局されたかどうかのチェックタイミングを調整することが出来る。\n\n待機時間を長くし過ぎると、サービスが開局中に変更されても、即処理が開始されない問題があるので、要件にあわせて値を設定すること。\nなお、設定を省略した場合は、1秒待機後に後続ハンドラを再実行する。\n\n以下に設定例を示す。\n\n```xml\n<component class=\"nablarch.fw.handler.RequestThreadLoopHandler\">\n  <!-- 待機時間に5秒を設定 -->\n  <property name=\"serviceUnavailabilityRetryInterval\" value=\"5000\" />\n</component>\n```\n\n> **Tip:**\n> 後続ハンドラに ServiceAvailabilityCheckHandler を設定しない場合には、本設定値は設定する必要が無い。\n> (設定したとしても、この値が使われることはない。)"
+      "content": "後続のハンドラからサービス閉塞中を示す例外(ServiceUnavailable)が発生した場合の待機時間を設定することが出来る。\nこの時間を設定することで、サービスが開局されたかどうかのチェックタイミングを調整することが出来る。\n\n待機時間を長くし過ぎると、サービスが開局中に変更されても、即処理が開始されない問題があるので、要件にあわせて値を設定すること。\nなお、設定を省略した場合は、1秒待機後に後続ハンドラを再実行する。\n\n以下に設定例を示す。\n\n```xml\n<component class=\"nablarch.fw.handler.RequestThreadLoopHandler\">\n  <!-- 待機時間に5秒を設定 -->\n  <property name=\"serviceUnavailabilityRetryInterval\" value=\"5000\" />\n</component>\n```\n\n> **Tip:**\n> 後続ハンドラに サービス提供可否チェックハンドラ を設定しない場合には、本設定値は設定する必要が無い。\n> (設定したとしても、この値が使われることはない。)"
     },
     {
       "id": "s5",

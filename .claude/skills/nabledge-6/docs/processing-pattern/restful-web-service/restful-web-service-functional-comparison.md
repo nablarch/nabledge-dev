@@ -10,6 +10,7 @@
 > NablarchのJakarta RESTful Web ServicesサポートとHTTPメッセージングのみ、表内のマークをクリックすると、解説書の説明ページに遷移する。
 
 機能比較（○：提供あり　△：一部提供あり　×：提供なし　－:対象外）
+
 | 機能 | Jakarta RESTful   Web Services   サポート | HTTP   メッセージング | Jakarta RESTful   Web Services |
 |---|---|---|---|
 | リクエストとリソースメソッドのマッピング | △ | ○ | ○ |

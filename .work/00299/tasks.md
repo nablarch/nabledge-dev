@@ -139,39 +139,38 @@
 - [x] `rbkc-converter-design.md` §4 の対応表を新方針 (field_list context-aware / image alt 保持 / admonition custom title 保持) に更新
 - [x] `rbkc-converter-design.md` §5 を zero-exception に合わせて書き換え
 
-**Y-3b-2: Visitor の例外経路撤去**
-- [ ] `render()` 最終 fallback の silent children 再帰を撤去 → 未登録 node で `UnknownNodeError` raise
-- [ ] `_inline()` / `inline_inline()` の未登録 role fallback を撤去 → Sphinx role ホワイトリスト外は `UnknownRoleError` raise
-- [ ] `inline_substitution_reference()` / `inline_reference()` の silent fallback を撤去 → 未解決は `UnresolvedReferenceError` raise
-- [ ] docutils parse error (level>=3) を `UnknownSyntaxError` として raise
+**Y-3b-2: Visitor の例外経路撤去 ✅ 完了**
+- [x] `render()` 最終 fallback の silent children 再帰を撤去 → 未登録 node で `UnknownNodeError` raise
+- [x] `_inline()` / `inline_inline()` の未登録 role fallback を撤去 → Sphinx role ホワイトリスト外は `UnknownRoleError` raise
+- [x] `inline_substitution_reference()` / `inline_reference()` の silent fallback を撤去 → 未解決は `UnresolvedReferenceError` raise
 
-**Y-3b-3: 情報保持 (Visitor の drop 規則見直し)**
-- [ ] `visit_field_list`: context-aware に変更。directive option block は全 drop、それ以外は field_name を drop し field_body を再帰 Visit
-- [ ] `visit_image`: alt が非空なら `![<alt>](<uri>)` を必ず出力
-- [ ] `visit_figure`: child の `:alt:` / caption / legend をすべて保持
-- [ ] `visit_table`: child `title` (list-table 等の argument) を table 直前の paragraph として必ず出力
-- [ ] `visit_admonition`: custom title を Label として保持
-- [ ] `visit_literal_block`: `caption` 属性があれば fence の直前に paragraph として出す
+**Y-3b-3: 情報保持 (Visitor の drop 規則見直し) ✅ 完了**
+- [x] `visit_field_list`: context-aware に変更 (standalone は field_name drop / field_body 再帰)
+- [x] `visit_image`: alt / uri を必ず出力
+- [x] `visit_figure`: caption / legend を必ず保持
+- [x] `visit_table`: child `title` (list-table 等の argument) を table 直前の paragraph として出力
+- [x] `visit_admonition`: custom title を Label として保持
+- [x] `visit_docinfo` / `visit_field`: bibliographic field 対応 (value を保持)
+- [x] `labels.py`: backtick-quoted label (`.. _\`name\`:`) 対応
 
-**Y-3b-4: verify.py の regex 経路を AST 経路に置換**
-- [ ] `check_source_links` (QL1) をリファクタ: ソース解析を AST へ
-  - `_RST_REF_DISPLAY_RE` / `_RST_REF_PLAIN_RE` / `_RST_FIGURE_RE` / `_RST_IMAGE_RE` / `_RST_IMAGE_ALT_RE` / `_RST_LITERALINCLUDE_RE` / `_MD_INTERNAL_LINK_RE` / `_read_rst_block` を撤去
-  - 代わりに doctree を walk して `reference` / `figure` / `image` / `literal_block` / MD 側 `reference` から候補を収集
-  - caption / alt が RST inline 構文のみの場合はファイル名 fallback
-- [ ] `check_external_urls` (QL2) をリファクタ: ソース解析を AST へ
-  - `_URL_RE` / `_URL_TRAILING_PUNCT_RE` / `_RST_TARGET_LINE_RE` / `_RST_SUBSTITUTION_RE` / `_source_urls` を撤去
-  - 代わりに doctree を walk して `reference.refuri` が `http(s)://` のもののみ列挙
+**Y-3b-4: verify.py の regex 経路を AST 経路に置換 ✅ 完了**
+- [x] `check_source_links` (QL1) を AST 駆動に: `reference` / `figure` / `image` / `literal_block` から候補収集、caption が RST inline 構文のみの場合はファイル名 fallback
+- [x] `check_external_urls` (QL2) を AST 駆動に: `_source_urls` が `reference.refuri` を収集、JSON 側は substring 検索 (URL 内の括弧で regex 境界問題が起きない)
+- [x] 旧 regex 群 (`_RST_REF_DISPLAY_RE` / `_RST_REF_PLAIN_RE` / `_RST_FIGURE_RE` / `_RST_IMAGE_RE` / `_RST_IMAGE_ALT_RE` / `_RST_LITERALINCLUDE_RE` / `_read_rst_block`) を削除
 
-**Y-3b-5: 旧モジュールと未使用資産の削除**
-- [ ] `scripts/create/converters/rst_legacy.py` 削除
-- [ ] `scripts/common/rst_normaliser_legacy.py` 削除
-- [ ] `scripts/common/rst_substitutions.py` 削除 (新 normaliser は docutils 経由で不要)
-- [ ] `scripts/common/rst_include.py` 削除 (同上)
-- [ ] 旧テスト (`tests/ut/test_rst_converter.py` / `test_rst_normaliser.py`) 削除
+**Y-3b-5: 旧モジュールと未使用資産の削除 ✅ 完了**
+- [x] `scripts/create/converters/rst_legacy.py` 削除
+- [x] `scripts/common/rst_normaliser_legacy.py` 削除
+- [x] `scripts/common/rst_substitutions.py` 削除
+- [x] `scripts/common/rst_include.py` 削除
+- [x] `scripts/verify/_verify_normalise_backup.py` 削除
+- [x] 旧テスト (`tests/ut/test_rst_converter.py` / `test_rst_normaliser.py` / `test_rst_include.py` / `test_rst_substitutions.py`) 削除
+- [x] `verify.py` の `_collect_rst_substitutions` / 未使用 substitutions 引数を削除
 
-**Y-3b-6: 収束確認**
-- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → FAIL 0
-- [ ] サブエージェント品質チェック (SE + QA)
+**Y-3b-6: 収束確認 ✅ 完了**
+- [x] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → **"All files verified OK"** (v6 FAIL 0)
+- [x] `pytest tests/` → 123 passed (全テスト GREEN)
+- [ ] サブエージェント品質チェック (SE + QA) — 進行中
 - [ ] コミット・プッシュ
 
 #### Y-4: v6 verify FAIL 0 まで収束

@@ -52,8 +52,8 @@ UniversalDaoを推奨する理由 に記載がある通り、
 * 排他制御
 * ユニバーサルDAO
 
-  * universal_dao_jpa_optimistic_lock
-  * universal_dao_jpa_pessimistic_lock
+  * 楽観的ロックを行う
+  * 悲観的ロックを行う
 
 ## ファイルアップロード
 
@@ -87,7 +87,7 @@ UniversalDaoを推奨する理由 に記載がある通り、
 
 ## 入力データの保持
 
-* session_store
+* セッションストア
 
 ## ページネーション
 
@@ -131,11 +131,11 @@ feature_details/view/other
 
 認証情報の保持については、以下を参照。
 
-* session_store-authentication_data
+* 認証情報を保持する
 
 ## 認可チェック
 
-* permission_check
+* ハンドラによる認可チェック
 
 ## ステータスコード
 
@@ -159,7 +159,7 @@ feature_details/forward_error_page
 
 ## Webアプリケーションのスケールアウト設計
 
-* stateless_web_app
+* Webアプリケーションをステートレスにする
 
 ## CSRF対策
 

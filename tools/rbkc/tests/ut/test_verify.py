@@ -471,10 +471,12 @@ class TestCheckContentCompleteness:
 
     def test_pass_rst_syntax_in_residual_allowed(self):
         # Converter renders `.. note::` as `> **Note:** ...` so JSON content
-        # includes the MD admonition header.
+        # includes the MD admonition header. New Visitor renders note body
+        # as nested paragraph inside the blockquote, so the JSON content
+        # should match the visitor's output.
         src = "概要\n====\n\n本文。\n\n.. note::\n\n   注記内容。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "本文。\n\n> **Note:** 注記内容。"}
+            {"id": "s1", "title": "概要", "content": "本文。\n\n> **Note:**\n> 注記内容。"}
         ])
         issues = self._check(src, data)
         assert all("QC1" not in i for i in issues)
@@ -532,14 +534,14 @@ class TestCheckContentCompleteness:
         assert self._check(src, data) == []
 
     def test_pass_rst_ref_label_resolved_text(self):
-        """RST :ref:`label` is resolved to display text — must not trigger QC2."""
+        """RST :ref:`label` is resolved to the target section title via label_map
+        (§3-1b zero-exception: unresolved would FAIL; here we supply it)."""
         src = "詳細は :ref:`doma_dependency` を参照。\n\ndoma_dependency\n===============\n\nDoma 設定。\n"
-        # converter resolves :ref:`doma_dependency` to label and also captures the section content
         data = self._data(
             content="詳細は doma_dependency を参照。",
             sections=[{"id": "s1", "title": "doma_dependency", "content": "Doma 設定。"}]
         )
-        assert self._check(src, data) == []
+        assert self._check(src, data, label_map={"doma_dependency": "doma_dependency"}) == []
 
     def test_pass_rst_external_link_text(self):
         """RST `text <url>`_ is converted to MD [text](url) — must not trigger QC2."""
@@ -584,22 +586,23 @@ class TestCheckContentCompleteness:
         assert self._check(src, data) == []
 
     def test_pass_rst_field_list_with_inline_value(self):
-        """RST field list ``:name: value`` — converter preserves as MD; both sides align."""
+        """RST field list ``:name: value`` — per §3-1a, standalone field_list
+        drops the name and preserves the value (recursively visited)."""
         src = "概要\n====\n\n:エスケープ対象文字: ``%`` 、 ``_``\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": ":エスケープ対象文字: `%` 、 `_`"}
+            {"id": "s1", "title": "概要", "content": "`%` 、 `_`"}
         ])
         assert self._check(src, data) == []
 
     def test_pass_rst_field_list_with_separate_value(self):
-        """RST field list ``:name:\\n  value`` — value on indented next line."""
+        """RST field list ``:name:\\n  value`` — value-only retained."""
         src = (
             "概要\n====\n\n"
             ":Status-Code:\n"
             "  応答電文のステータスコード。\n"
         )
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": ":Status-Code:\n応答電文のステータスコード。"}
+            {"id": "s1", "title": "概要", "content": "応答電文のステータスコード。"}
         ])
         assert self._check(src, data) == []
 

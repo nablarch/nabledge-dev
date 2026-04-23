@@ -1,7 +1,7 @@
 {
   "id": "handlers-permission-check-handler",
   "title": "認可チェックハンドラ",
-  "content": "**目次**\n\n* ハンドラクラス名\n* モジュール一覧\n* 制約\n* リクエストに対する認可チェック\n* 権限がない場合に表示するエラーページを指定する\n* 特定のリクエストを認可チェックから除外する\n\n本ハンドラでは、 リクエストに対する認可チェック を行う。\n\n認可チェックは、ライブラリの permission_check を使用して行う。\nそのため、本ハンドラを使用するには、\nPermissionFactory を実装したクラスを本ハンドラに設定する必要がある。\n\n本ハンドラでは、以下の処理を行う。\n\n* 認可チェック\n\n処理の流れは以下のとおり。\n\n![](../images/PermissionCheckHandler/flow.png)",
+  "content": "**目次**\n\n* ハンドラクラス名\n* モジュール一覧\n* 制約\n* リクエストに対する認可チェック\n* 権限がない場合に表示するエラーページを指定する\n* 特定のリクエストを認可チェックから除外する\n\n本ハンドラでは、 リクエストに対する認可チェック を行う。\n\n認可チェックは、ライブラリの ハンドラによる認可チェック を使用して行う。\nそのため、本ハンドラを使用するには、\nPermissionFactory を実装したクラスを本ハンドラに設定する必要がある。\n\n本ハンドラでは、以下の処理を行う。\n\n* 認可チェック\n\n処理の流れは以下のとおり。\n\n![](../images/PermissionCheckHandler/flow.png)",
   "no_knowledge_content": false,
   "sections": [
     {
@@ -22,7 +22,7 @@
     {
       "id": "s4",
       "title": "リクエストに対する認可チェック",
-      "content": "ログイン中のユーザが、現在のリクエスト(リクエストID)に対して権限を持っているかをチェックする。\nチェックの詳細は、 permission_check を参照。\n\n権限がある場合\n業務ロジック や\n画面表示の制御 で参照できるように、\n認可チェックに使用した Permission をスレッドローカルに設定する。\nそして、後続ハンドラを呼び出す。\n権限がない場合\nForbidden(403) を送出する。\n\nチェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、\nPermissionCheckHandler.setUsesInternalRequestId\nでtrueを指定する。デフォルトはfalseである。"
+      "content": "ログイン中のユーザが、現在のリクエスト(リクエストID)に対して権限を持っているかをチェックする。\nチェックの詳細は、 ハンドラによる認可チェック を参照。\n\n権限がある場合\n業務ロジック や\n画面表示の制御 で参照できるように、\n認可チェックに使用した Permission をスレッドローカルに設定する。\nそして、後続ハンドラを呼び出す。\n権限がない場合\nForbidden(403) を送出する。\n\nチェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、\nPermissionCheckHandler.setUsesInternalRequestId\nでtrueを指定する。デフォルトはfalseである。"
     },
     {
       "id": "s5",

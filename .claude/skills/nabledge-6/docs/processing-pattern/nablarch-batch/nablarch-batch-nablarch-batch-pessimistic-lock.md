@@ -6,7 +6,7 @@
 ポイント
 * データリーダでは処理対象レコードの主キーのみ取得する。
 * handle メソッド内で悲観的ロックを行う。
-  ユニバーサルDAO を使用した悲観的ロックについては universal_dao_jpa_pessimistic_lock を参照。
+  ユニバーサルDAO を使用した悲観的ロックについては 悲観的ロックを行う を参照。
 
 ```java
 public class SampleAction extends BatchAction<SqlRow> {

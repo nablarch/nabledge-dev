@@ -143,7 +143,7 @@ public HttpResponse create(final HttpRequest request, final ExecutionContext con
 
 > **Tip:**
 > Doma 2.44.0よりDaoアノテーションのconfig属性が非推奨になったため、Doma 2.44.0以前に案内していた内容から実装方法を変更している。
-> 詳しくは、 migration_doma2.44.0 を参照すること。
+> 詳しくは、 Doma 2.44.0までの実装方法から移行する を参照すること。
 
 ## 別トランザクションで実行する
 
@@ -264,7 +264,7 @@ public class ProjectReader extends AbstractItemReader {
 
 > **Tip:**
 > Doma 2.44.0よりDaoアノテーションのconfig属性が非推奨になったため、Doma 2.44.0以前に案内していた内容から実装方法を変更している。
-> 詳しくは、 migration_doma2.44.0 を参照すること。
+> 詳しくは、 Doma 2.44.0までの実装方法から移行する を参照すること。
 
 ## 複数のデータベースにアクセスする
 
@@ -325,7 +325,7 @@ public HttpResponse create(final HttpRequest request, final ExecutionContext con
 
 > **Tip:**
 > Doma 2.44.0より作成するConfigへのSingletonConfigアノテーションの付与およびDaoアノテーションのconfig属性が非推奨になったため、Doma 2.44.0以前に案内していた内容から実装方法を変更している。
-> 詳しくは、 migration_doma2.44.0 を参照すること。
+> 詳しくは、 Doma 2.44.0までの実装方法から移行する を参照すること。
 
 ## DomaとNablarchのデータベースアクセスを併用する
 

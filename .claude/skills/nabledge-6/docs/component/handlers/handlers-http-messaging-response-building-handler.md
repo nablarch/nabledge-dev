@@ -42,6 +42,19 @@ HTTPレスポンスハンドラ がクライアントに返却するため。
 
 後続のハンドラで作成された応答電文オブジェクトを元に以下のレスポンスヘッダを設定する。
 
+応答電文オブジェクトのステータスコードを設定する。
+
+応答電文オブジェクトの持つフォーマッタ(InterSystemMessage.getFormatter())から以下の値を取得し設定する。
+
+* MIME(DataRecordFormatterSupport#getMimeType()
+* cherset(DataRecordFormatterSupport#getDefaultEncoding()
+
+MIMEが `application/json` でcharsetが `utf-8` の場合、Content-Typeは以下の値となる。
+
+**application/json;charset=utf-8**
+
+レスポンスヘッダの `X-Correlation-Id` に、応答電文オブジェクトのヘッダに設定された `CorrelationId` の値を設定する。
+
 > **Important:**
 > このハンドラでは、上記に記載のないレスポンスヘッダを設定できない。
 

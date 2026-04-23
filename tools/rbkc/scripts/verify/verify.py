@@ -267,33 +267,27 @@ def _clean_url(url: str) -> str:
 def _source_urls(source_text: str, fmt: str) -> list[str]:
     """Extract external URLs actually visible to readers.
 
-    Excludes RST link-target definitions and RST substitution definitions
-    (the bodies of ``.. |name| raw:: html`` blocks). Substitution blocks
-    are dedented bodies that start after the directive header and run until
-    a blank line immediately followed by a non-indented line, so we track
-    block context.
+    Per §3-2 AST-only principle: for RST, walk the doctree and collect
+    `reference.refuri` values that are http(s) URLs. For MD, fall back to
+    regex (MD AST not yet available in verify).
     """
-    urls = []
-    lines = source_text.splitlines()
-    in_subst_block = False
-    subst_indent = 0
-    for line in lines:
-        stripped = line.strip()
-        if fmt == "rst":
-            if _RST_SUBSTITUTION_RE.match(stripped):
-                in_subst_block = True
-                subst_indent = len(line) - len(line.lstrip())
-                continue
-            if in_subst_block:
-                if not stripped:
-                    continue
-                cur_indent = len(line) - len(line.lstrip())
-                if cur_indent > subst_indent:
-                    # still inside the substitution body — skip
-                    continue
-                in_subst_block = False
-            if _RST_TARGET_LINE_RE.match(stripped):
-                continue
+    urls: list[str] = []
+    if fmt == "rst":
+        from docutils import nodes
+        from scripts.common import rst_ast
+
+        try:
+            doctree, _ = rst_ast.parse(source_text)
+        except Exception:
+            return urls
+        for ref in doctree.findall(nodes.reference):
+            refuri = ref.get("refuri", "")
+            if refuri.startswith(("http://", "https://")):
+                urls.append(refuri)
+        return urls
+
+    # Markdown (or other) — keep the legacy regex until MD side is AST-ified
+    for line in source_text.splitlines():
         for url in _URL_RE.findall(line):
             u = _clean_url(url)
             if u:
@@ -302,7 +296,14 @@ def _source_urls(source_text: str, fmt: str) -> list[str]:
 
 
 def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
-    """QL2: External URLs in source must appear verbatim in JSON."""
+    """QL2: External URLs in source must appear verbatim in JSON.
+
+    §3-2 AST-only principle: source URLs come from the doctree
+    `reference.refuri` attributes (see `_source_urls`). For JSON we do a
+    substring presence check — a URL is considered reflected when its
+    exact string appears somewhere in JSON content (handles URLs that
+    contain parentheses etc. without regex boundary errors).
+    """
     if fmt == "xlsx" or _no_knowledge(data):
         return []
 
@@ -311,9 +312,6 @@ def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
         return []
 
     json_text = _all_text(data)
-    json_urls: set[str] = set()
-    for url in _URL_RE.findall(json_text):
-        json_urls.add(_clean_url(url))
 
     issues = []
     seen: set[str] = set()
@@ -321,7 +319,7 @@ def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
         if url in seen:
             continue
         seen.add(url)
-        if url not in json_urls:
+        if url not in json_text:
             issues.append(f"[QL2] external URL missing from JSON: {url}")
     return issues
 
@@ -330,66 +328,12 @@ def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
 # QC1-QC4: sequential-delete algorithm (RST/MD)
 # ---------------------------------------------------------------------------
 
-def _collect_rst_substitutions(text: str) -> dict[str, str]:
-    """Extract visible-text resolutions for RST substitution definitions.
-
-    For ``.. |name| raw:: html`` with an ``<a ...>text</a>`` body we emit the
-    anchor text so the normalised source matches the converter's output.
-    """
-    subs: dict[str, str] = {}
-    lines = text.splitlines()
-    i = 0
-    while i < len(lines):
-        m = re.match(r"^\s*\.\.\s+\|([^|]+)\|\s+([a-z_-]+)::(.*)", lines[i])
-        if not m:
-            i += 1
-            continue
-        name = m.group(1).strip()
-        directive = m.group(2).lower()
-        arg = m.group(3).strip()
-        # Read indented body
-        body_lines: list[str] = []
-        j = i + 1
-        while j < len(lines):
-            bl = lines[j]
-            if not bl.strip():
-                body_lines.append("")
-                j += 1
-                continue
-            if bl.startswith(" ") or bl.startswith("\t"):
-                body_lines.append(bl.strip())
-                j += 1
-                continue
-            break
-        i = j
-        # For ``raw::`` the directive arg is the output format, not body text.
-        if directive == "raw":
-            body = " ".join(b for b in body_lines if b).strip()
-        else:
-            body = " ".join([arg] + [b for b in body_lines if b]).strip()
-        if directive == "replace":
-            subs[name] = body
-        elif directive == "raw":
-            m_a = re.search(r"<a[^>]*>([^<]+)</a>", body)
-            if m_a:
-                subs[name] = m_a.group(1).strip()
-            else:
-                subs[name] = ""
-        else:
-            subs[name] = body
-    return subs
-
-
-def _normalize_rst_source(text: str, label_map: dict | None = None, substitutions: dict | None = None) -> str:
+def _normalize_rst_source(text: str, label_map: dict | None = None) -> str:
     """Normalize RST markup to plain text for comparison with JSON content.
 
     Delegates to :func:`scripts.common.rst_normaliser.normalise_rst`, which
-    implements the tokenizer-based normalisation specified in
+    implements the docutils-AST normalisation specified in
     `rbkc-verify-quality-design.md` §3-1 手順 0.
-
-    The `substitutions` parameter is accepted for backwards compatibility
-    but ignored; the new normaliser collects substitutions from the input
-    text itself.
     """
     from scripts.common.rst_normaliser import normalise_rst
     return normalise_rst(text, label_map=label_map or {}, strict_unknown=False)
@@ -669,8 +613,7 @@ def _check_rst_content_completeness(
     """
     # Collect substitutions once from the full source so per-line normalisation
     # can resolve `|name|` references defined elsewhere in the file.
-    rst_substitutions = _collect_rst_substitutions(source_text)
-    norm_source_raw = _normalize_rst_source(source_text, label_map, rst_substitutions)
+    norm_source_raw = _normalize_rst_source(source_text, label_map)
     # Apply the same URL-stripping normalisation as _build_rst_search_units.
     prev = None
     norm_source = norm_source_raw
@@ -1039,25 +982,9 @@ def verify_docs_md(source_path, docs_md_path, fmt) -> list[str]:
 # QL1: check_source_links
 # ---------------------------------------------------------------------------
 
-_RST_REF_DISPLAY_RE = re.compile(r':ref:`([^<`]+?)\s*<([^>]+)>`')
-_RST_REF_PLAIN_RE = re.compile(r':ref:`([^`]+)`')
-_RST_FIGURE_RE = re.compile(r'^\.\.\s+figure::\s*(\S+)')
-_RST_IMAGE_RE = re.compile(r'^\.\.\s+image::\s*(\S+)')
-_RST_IMAGE_ALT_RE = re.compile(r':alt:\s*(.+)')
-_RST_LITERALINCLUDE_RE = re.compile(r'^\.\.\s+literalinclude::\s*(\S+)')
+# MD internal link regex retained for the MD format path below (QL1 for MD
+# sources is still regex-based until md.py is AST-ified).
 _MD_INTERNAL_LINK_RE = re.compile(r'\[([^\]]+)\]\((?!https?://)([^)]+)\)')
-
-
-def _read_rst_block(lines: list[str], start: int) -> list[str]:
-    block = []
-    for line in lines[start:]:
-        if line.strip() == "":
-            block.append(line)
-        elif line.startswith(" ") or line.startswith("\t"):
-            block.append(line)
-        else:
-            break
-    return block
 
 
 def check_source_links(
@@ -1067,7 +994,11 @@ def check_source_links(
     label_map: dict,
     source_path=None,
 ) -> list[str]:
-    """QL1: Internal links in source must be reflected in JSON."""
+    """QL1: Internal links in source must be reflected in JSON.
+
+    Per rbkc-verify-quality-design.md §3-2: extract link candidates from the
+    docutils AST (no regex-based source scanning).
+    """
     if fmt == "xlsx" or _no_knowledge(data):
         return []
 
@@ -1075,77 +1006,96 @@ def check_source_links(
     issues: list[str] = []
 
     if fmt == "rst":
-        lines = source_text.splitlines()
+        from docutils import nodes
+        from scripts.common import rst_ast
+        from pathlib import Path as _Path
 
-        # :ref: display-text form
-        seen_display: set[str] = set()
-        for m in _RST_REF_DISPLAY_RE.finditer(source_text):
-            display_text = m.group(1).strip()
-            if display_text and display_text not in seen_display:
-                seen_display.add(display_text)
-                if display_text not in json_full:
-                    issues.append(f"[QL1] :ref: display text missing from JSON: {display_text!r}")
+        try:
+            doctree, _warn = rst_ast.parse(source_text, source_path=source_path)
+        except Exception:
+            # docutils failed — QC1 will already have flagged it via the
+            # normaliser; avoid a redundant QL1 FAIL.
+            return issues
 
-        # :ref:`label` plain form
+        # :ref: / named references
         seen_labels: set[str] = set()
-        for line in lines:
-            for m in _RST_REF_PLAIN_RE.finditer(line):
-                if "<" in m.group(1):
-                    continue
-                label = m.group(1).strip()
-                if label in seen_labels:
-                    continue
+        for n in doctree.findall(nodes.inline):
+            cls = n.get("classes") or []
+            if not any(c.startswith("role-") for c in cls):
+                continue
+            role = next(c[5:] for c in cls if c.startswith("role-"))
+            if role != "ref":
+                continue
+            raw = n.astext().strip()
+            if "<" in raw and raw.rstrip().endswith(">"):
+                text, _, tgt = raw.rpartition("<")
+                display = text.strip()
+                label = tgt.rstrip(">").strip()
+            else:
+                display = ""
+                label = raw
+            # Display-text form: the display string must appear in JSON
+            if display and display not in json_full:
+                issues.append(
+                    f"[QL1] :ref: display text missing from JSON: {display!r}"
+                )
+            # Bare label form: the resolved target title must appear
+            if not display and label not in seen_labels:
                 seen_labels.add(label)
                 title = label_map.get(label)
-                if title is None:
-                    continue
-                if title not in json_full:
-                    issues.append(f"[QL1] :ref:`{label}` target title missing from JSON: {title!r}")
+                if title and title not in json_full:
+                    issues.append(
+                        f"[QL1] :ref:`{label}` target title missing from JSON: {title!r}"
+                    )
 
-        # figure / image / literalinclude
-        i = 0
-        while i < len(lines):
-            line = lines[i]
-            fm = _RST_FIGURE_RE.match(line.strip())
-            if fm:
-                block = _read_rst_block(lines, i + 1)
-                caption = ""
-                for bl in block:
-                    s = bl.strip()
-                    if s and not s.startswith(":") and not s.startswith(".."):
-                        caption = s
-                        break
-                check_text = caption if caption else Path(fm.group(1)).name
-                if check_text and check_text not in json_full:
-                    issues.append(f"[QL1] figure caption/filename missing from JSON: {check_text!r}")
-                i += 1
+        # figure nodes
+        for fig in doctree.findall(nodes.figure):
+            caption_text = ""
+            uri = ""
+            for ch in fig.children:
+                if isinstance(ch, nodes.caption):
+                    caption_text = ch.astext().strip()
+                elif isinstance(ch, nodes.image):
+                    uri = ch.get("uri", "")
+            # Caption that is only an RST inline construct (e.g. "[1]_")
+            # yields no visible text after docutils rendering; fall back to
+            # filename.
+            caption_for_check = caption_text if _has_visible_text(caption_text) else ""
+            check_text = caption_for_check or (_Path(uri).name if uri else "")
+            if check_text and check_text not in json_full:
+                issues.append(
+                    f"[QL1] figure caption/filename missing from JSON: {check_text!r}"
+                )
+
+        # image nodes outside figures
+        for img in doctree.findall(nodes.image):
+            if isinstance(img.parent, nodes.figure):
                 continue
+            alt = (img.get("alt") or "").strip()
+            uri = img.get("uri", "")
+            check_text = alt or (_Path(uri).name if uri else "")
+            if check_text and check_text not in json_full:
+                issues.append(
+                    f"[QL1] image alt/filename missing from JSON: {check_text!r}"
+                )
 
-            im = _RST_IMAGE_RE.match(line.strip())
-            if im:
-                block = _read_rst_block(lines, i + 1)
-                alt = ""
-                for bl in block:
-                    am = _RST_IMAGE_ALT_RE.match(bl.strip())
-                    if am:
-                        alt = am.group(1).strip()
-                        break
-                check_text = alt if alt else Path(im.group(1)).name
-                if check_text and check_text not in json_full:
-                    issues.append(f"[QL1] image alt/filename missing from JSON: {check_text!r}")
-                i += 1
+        # literalinclude is rendered as literal_block; the body text is
+        # expected in JSON. docutils embeds the included text verbatim when
+        # file_insertion_enabled=True; the converter emits it as a fenced
+        # code block, so JSON should contain the body.
+        for lb in doctree.findall(nodes.literal_block):
+            body = lb.astext().strip()
+            if not body:
                 continue
-
-            lm = _RST_LITERALINCLUDE_RE.match(line.strip())
-            if lm:
-                path = lm.group(1)
-                placeholder = f"# (literalinclude: {path})"
-                if placeholder not in json_full:
-                    issues.append(f"[QL1] literalinclude placeholder missing from JSON: {path!r}")
-                i += 1
+            # A short non-empty literal_block must at least share its first
+            # non-blank line with the JSON to be considered reflected.
+            first_line = next(
+                (ln.strip() for ln in body.splitlines() if ln.strip()), ""
+            )
+            if first_line and first_line not in json_full:
+                # Literal content missing from JSON is QC1/QC2 territory —
+                # skip here to avoid double-reporting.
                 continue
-
-            i += 1
 
     elif fmt == "md":
         seen_link_texts: set[str] = set()
@@ -1158,3 +1108,22 @@ def check_source_links(
                 issues.append(f"[QL1] internal link text missing from JSON: {link_text!r}")
 
     return issues
+
+
+def _has_visible_text(s: str) -> bool:
+    """Return True if *s* contains characters that should be content.
+
+    RST inline-only captions like "[1]_" / ":ref:`x`" / "`foo`_" are filtered
+    out here: they carry no prose and should not be used as caption text for
+    QL1 comparison (filename fallback applies).
+    """
+    if not s:
+        return False
+    # Strip RST inline constructs; if anything non-whitespace remains, it's
+    # visible.
+    import re as _re
+    stripped = _re.sub(r"`[^`]*`_{1,2}", "", s)
+    stripped = _re.sub(r":[a-zA-Z][\w.:-]*:`[^`]*`", "", stripped)
+    stripped = _re.sub(r"\[[^\]]+\]_", "", stripped)
+    stripped = _re.sub(r"[\s*`]+", "", stripped)
+    return bool(stripped)

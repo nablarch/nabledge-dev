@@ -36,7 +36,7 @@ feature_details/run_batch_application
 feature_details/database_reader
 
 * データベースアクセス
-* feature_details/database_reader
+* database_reader
 
 ## ファイル入出力
 
@@ -69,6 +69,6 @@ feature_details/operation_policy
 feature_details/progress_log
 feature_details/operator_notice_log
 
-* feature_details/operation_policy
-* feature_details/progress_log
-* feature_details/operator_notice_log
+* operation_policy
+* progress_log
+* operator_notice_log

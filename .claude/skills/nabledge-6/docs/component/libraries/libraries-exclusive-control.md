@@ -24,7 +24,7 @@
 > 排他制御には、 ユニバーサルDAO を使用すること。
 
 > * >   ユニバーサルDAO の排他制御は、本機能より簡単に使用できる。
->   universal_dao_jpa_optimistic_lock 、 universal_dao_jpa_pessimistic_lock を参照。
+>   楽観的ロックを行う 、 悲観的ロックを行う を参照。
 > * >   主キーを非文字列型で定義した場合、データベースによってはこの機能を使用することができない。
 >   この機能は、主キーの値を全て文字列型( java.lang.String )で保持している。
 >   主キーのカラム定義が非文字列型(charやvarchar以外)の場合に、
@@ -338,7 +338,7 @@ public class UsersExclusiveControl extends ExclusiveControlContext {
 > **Tip:**
 > 複合主キーに対応したカスタムタグと
 > CompositeKey を使うと、
-> 複合主キーをもっと簡単に扱える。詳細は、 tag-composite_key を参照。
+> 複合主キーをもっと簡単に扱える。詳細は、 複合キーのラジオボタンやチェックボックスを作る を参照。
 
 ```java
 // (排他制御:チェック)
