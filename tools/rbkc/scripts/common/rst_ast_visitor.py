@@ -619,7 +619,7 @@ class _MDVisitor:
             from scripts.common.labels import UNRESOLVED
             def _resolve_or_fail(target: str) -> str:
                 r = self._label_map.get(target)
-                if r is None or r == UNRESOLVED:
+                if r is None or r is UNRESOLVED:
                     raise UnresolvedReferenceError(f"unresolved :ref: {target}")
                 return r if isinstance(r, str) else getattr(r, "title", str(r))
             if "<" in raw and raw.rstrip().endswith(">"):
@@ -673,7 +673,7 @@ class _MDVisitor:
             # string value otherwise leaked into knowledge output.
             from scripts.common.labels import UNRESOLVED
             resolved = self._label_map.get(refname)
-            if resolved and resolved != UNRESOLVED:
+            if resolved is not None and resolved is not UNRESOLVED:
                 return resolved if isinstance(resolved, str) else getattr(resolved, "title", str(resolved))
             raise UnresolvedReferenceError(f"unresolved reference: {refname}")
         return text

@@ -1514,7 +1514,7 @@ def _resolve_title_inline(title_node, label_map: dict) -> str:
         bleed through as visible text (it otherwise appeared as
         ``"__RBKC_UNRESOLVED_LABEL__"`` in the rendered title).
         """
-        if target is None or target == UNRESOLVED:
+        if target is None or target is UNRESOLVED:
             return fallback
         if isinstance(target, str):
             return target
@@ -1540,7 +1540,7 @@ def _resolve_title_inline(title_node, label_map: dict) -> str:
         if isinstance(child, nodes.reference):
             refid = (child.get("refid", "") or "").strip()
             target = label_map.get(refid) if refid else None
-            if target and target != UNRESOLVED:
+            if target is not None and target is not UNRESOLVED:
                 parts.append(_resolved_text(target, child.astext()))
             else:
                 parts.append(child.astext())
@@ -1649,7 +1649,7 @@ def check_source_links(
                 seen_labels.add(label)
                 target = label_map.get(label)
                 from scripts.common.labels import UNRESOLVED
-                if target is None or target == UNRESOLVED:
+                if target is None or target is UNRESOLVED:
                     issues.append(
                         f"[QL1] :ref:`{label}` unresolved (label not in label_map or orphan label): dangling reference"
                     )

@@ -3384,9 +3384,9 @@ class TestLabelMapStrict:
             encoding="utf-8",
         )
         label_map = build_label_map(tmp_path)
-        assert label_map.get("resolved-a") == "見出し"
-        assert label_map.get("resolved-b") == "見出し"
-        assert label_map.get("orphan-after") == UNRESOLVED, label_map
+        assert label_map.get("resolved-a").title == "見出し"
+        assert label_map.get("resolved-b").title == "見出し"
+        assert label_map.get("orphan-after") is UNRESOLVED, label_map
 
     def test_orphan_sentinel_does_not_leak_into_rst_inline_reference(self):
         """Horizontal-class regression: rst_ast_visitor.inline_reference must
@@ -3434,7 +3434,10 @@ class TestLabelMapStrict:
         title.append(inline)
         from scripts.verify.verify import _resolve_title_inline
         rendered = _resolve_title_inline(title, {"orphan": UNRESOLVED})
-        assert UNRESOLVED not in rendered, rendered
+        # Sentinel must not leak into the rendered title — post-22-B-16b the
+        # sentinel is a LabelTarget with empty fields, so a direct
+        # substring check via ``title`` catches the regression.
+        assert UNRESOLVED.title not in rendered or rendered == "orphan", rendered
         # Should fall back to the raw label text, not leak the sentinel.
         assert "orphan" in rendered
 
