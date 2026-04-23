@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 60 — 22-B-16b-prep 完了 `c99d9992b` (file_id derivation を common へ集約、v6 output bit-identical)。22-B-16b-main step 1 完了 `46bd4578c` (labels.py に LabelTarget + UNRESOLVED singleton + build_label_doc_map、v6 bit-identical)。step 2 以降を継続予定。)
+**Updated**: 2026-04-23 (session 60 — 22-B-16b-prep 完了 `c99d9992b`、step 1 完了 `46bd4578c` (LabelTarget + UNRESOLVED singleton)、step 2a 完了 `5f0695d95` (enclosing-section 解決 + visitor plumbing)。step 2b は v6 真性 dangling `:ref:` 発見で relink emission 方針待ち。)
 
 ---
 
@@ -125,8 +125,9 @@
   - [x] **22-B-16b-prep**: file_id 算出を `scripts/common/file_id.py` に集約 (refactor のみ) — `c99d9992b`。v6 create output md5 `5c652df3...` 不変、verify FAIL 0、326 unit tests GREEN。SE 1 Finding (tautological test) 同コミットで修正済
   - [ ] **22-B-16b-main**: labels.py 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化 (4 steps、SE design review `review-22-b-16b-main-se-design.md` 合意済)
     1. [x] **step 1** (`46bd4578c`): labels.py に `LabelTarget` dataclass + `UNRESOLVED` singleton + `build_label_doc_map(version, repo_root) -> (label_map, doc_map)`。`build_label_map` の返り値は `dict[str, str]` → `dict[str, LabelTarget]` に変わるが `.title` 経由で後方互換。v6 bit-identical、verify FAIL 0、333 tests GREEN
-    2. [ ] **step 2**: `rst_ast_visitor` を `LabelTarget` 経由で `[text](../{category}/{file_id}.md#{github_slug(section_title)})` / `:doc:` を `[title](../{category}/{file_id}.md)` / `:numref:` 同様に変換。`source_path` を visitor `__init__` に追加。run.py に `build_label_doc_map` 呼び出しと `source_path` 引き渡しを追加
-       - **session 60 未解決**: v6 実データに「orphan label」が存在 (例: `big_picture.rst:20` の `.. _runtime_platform:` は block_quote 内で heading 不在)。spec §3-2-2 の "未解決 `:ref:` label → QC1 FAIL" を strict 適用すると v6 create が FAIL する。これは verify 設計書の解釈 (または labels.py の enclosing-section 解決ロジック) の見直しが必要。ユーザー相談中
+    2. [ ] **step 2**: `rst_ast_visitor` を `LabelTarget` 経由で MD リンク変換
+       - [x] **step 2a** (`5f0695d95`): labels scanner に enclosing-section 解決ロジックを追加 (Sphinx anchor 挙動に合わせる)。spec §3-2-2 の解釈を明文化。visitor plumbing (`doc_map` / `source_path` / helper メソッド) を追加。v6 bit-identical、337 tests GREEN
+       - [ ] **step 2b blocker**: v6 `:ref:`format_datetime`` が upstream で真に dangling (`libraries/format.rst:79,84`, `libraries/tag.rst:2028` から参照されるが定義なし)。§3-2-2 strict 適用で QC1 FAIL するが upstream 修正不能。link emission 方針をユーザー相談中
     3. [ ] **step 3**: `md_ast_visitor` の `link_open` 相対 href を `doc_map` 経由で `[text](../{category}/{file_id}.md)` に変換。visitor に `source_path` 追加
     4. [ ] **step 4**: verify `check_source_links_two_sided` (JSON side + docs MD side) 新規。各 link kind × pass/fail の TDD。target `.md` 実在 + anchor slug 一致検証 (`github_slug` 独立再計算で circular 回避)
     - 各 step 終了時に `v6 verify FAIL 0` + SE + QA expert review → Findings 全件対応
