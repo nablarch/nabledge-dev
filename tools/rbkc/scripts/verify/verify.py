@@ -44,8 +44,25 @@ def _all_text(data: dict) -> str:
 # ---------------------------------------------------------------------------
 
 _H1_RE = re.compile(r'^#\s+(.+)$', re.MULTILINE)
-# Per spec §3-3 QO1: section titles are rendered at `##` or `###`.
-_H2_RE = re.compile(r'^#{2,3}\s+(.+)$', re.MULTILINE)
+# Per spec §3-3 QO1: a JSON section title may appear at `##` or `###`.
+# However, docs.py only emits sections at `##`; a `###` in docs MD is a
+# subheading inside a section's content (valid CommonMark). The "extra
+# direction" check must therefore use `##` only to avoid false-positives.
+# The "missing direction" check accepts either level.
+_H2_ONLY_RE = re.compile(r'^##\s+(.+)$', re.MULTILINE)
+_H2_OR_H3_RE = re.compile(r'^#{2,3}\s+(.+)$', re.MULTILINE)
+# Back-compat name (kept for the top-content region-bounding in QO2 which
+# already uses `##` first to locate the region boundary).
+_H2_RE = _H2_OR_H3_RE
+
+# Per CommonMark §4.2, an ATX heading accepts an optional trailing `#`
+# sequence. Strip that closing sequence from the captured title so
+# '# Title #' compares equal to 'Title'.
+_ATX_CLOSE_RE = re.compile(r'\s+#+\s*$')
+
+
+def _strip_atx_close(title: str) -> str:
+    return _ATX_CLOSE_RE.sub('', title).strip()
 # Fenced code blocks (CommonMark: triple-backtick OR triple-tilde). Headings
 # inside a fence are content, not section markers — must be stripped before
 # scanning H1/H2.
@@ -127,22 +144,32 @@ def check_json_docs_md_consistency(
     # `#` heading. Both sides must exist and match; an empty JSON title is
     # only valid when no_knowledge_content is set (handled earlier).
     m = _H1_RE.search(docs_scan)
-    docs_title = m.group(1).strip() if m else ""
+    docs_title = _strip_atx_close(m.group(1).strip()) if m else ""
     if docs_title != json_title:
         issues.append(f"[QO1] {file_id}: title mismatch: JSON={json_title!r} docs={docs_title!r}")
 
-    # QO1: section title order and presence
-    docs_h2_titles = [m.group(1).strip() for m in _H2_RE.finditer(docs_scan)]
+    # QO1: section title order and presence.
+    # Per spec §3-3 QO1: the `##` level in docs MD is reserved for section
+    # titles; `###` is used only for subheadings *inside* a section's
+    # content. The "extra" check therefore uses `##` only (a stray `###`
+    # in content is valid). The "missing" check accepts either level so
+    # that a converter promoting a section to `###` still reconciles.
+    docs_h2_only_titles = [
+        _strip_atx_close(m.group(1).strip())
+        for m in _H2_ONLY_RE.finditer(docs_scan)
+    ]
+    docs_h2_or_h3_titles = [
+        _strip_atx_close(m.group(1).strip())
+        for m in _H2_OR_H3_RE.finditer(docs_scan)
+    ]
     json_sec_titles = [s.get("title", "") for s in sections if s.get("title")]
 
-    if not sections and docs_h2_titles:
+    if not sections and docs_h2_only_titles:
         issues.append(f"[QO1] {file_id}: docs MD has section headings but JSON has no sections")
     else:
-        # Spec §3-3 QO1: section title list in docs MD must match the JSON
-        # list exactly — same entries, same order, no extras, no omissions.
-        if docs_h2_titles != json_sec_titles:
-            missing = [t for t in json_sec_titles if t not in docs_h2_titles]
-            extra = [t for t in docs_h2_titles if t not in json_sec_titles]
+        if docs_h2_only_titles != json_sec_titles:
+            missing = [t for t in json_sec_titles if t not in docs_h2_or_h3_titles]
+            extra = [t for t in docs_h2_only_titles if t not in json_sec_titles]
             if missing:
                 for t in missing:
                     issues.append(f"[QO1] {file_id}: section title missing in docs MD: {t!r}")
@@ -152,7 +179,7 @@ def check_json_docs_md_consistency(
             if not missing and not extra:
                 # Same entries, different order
                 issues.append(
-                    f"[QO1] {file_id}: section title order differs: JSON={json_sec_titles!r} docs={docs_h2_titles!r}"
+                    f"[QO1] {file_id}: section title order differs: JSON={json_sec_titles!r} docs={docs_h2_only_titles!r}"
                 )
 
     # QO2: top-level content must appear verbatim *between the `#` heading
@@ -170,7 +197,12 @@ def check_json_docs_md_consistency(
             return "".join("\n" if ch == "\n" else " " for ch in block)
         masked = _FENCE_BLOCK_RE.sub(_mask, docs_md_text)
         h1_match = _H1_RE.search(masked)
-        h2_match = _H2_RE.search(masked)
+        # The top-content region ends at the first section title. docs.py
+        # emits sections at `##` only; a `###` is a subheading that belongs
+        # to the top content (or to a section's body). Bounding at `##` is
+        # required — otherwise a top-content `### subheading` truncates the
+        # region and the top content appears to be missing.
+        h2_match = _H2_ONLY_RE.search(masked)
         start = h1_match.end() if h1_match else 0
         end = h2_match.start() if h2_match else len(docs_md_text)
         top_region = docs_md_text[start:end] if start <= end else ""

@@ -183,6 +183,35 @@ class TestCheckJsonDocsMdConsistency_QO1:
         )
         assert self._check(data, docs) == []
 
+    # --- Z-1 r7 Findings: QO1 regex refinement ---------------------------
+
+    def test_pass_section_with_h3_subheading_in_content(self):
+        """Z-1 r7 QO1 F1: `###` inside a section's content is a valid
+        CommonMark subheading, not a section title. The 'extra direction'
+        check must use `##` only so content-level `###` does not produce
+        a spurious QO1 FAIL."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "セクション A",
+             "content": "本文。\n\n### 小見出し\n\n詳細。"},
+        ]}
+        docs = "# T\n\n## セクション A\n\n本文。\n\n### 小見出し\n\n詳細。\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_sections_empty_with_h3_in_top_content(self):
+        """Z-1 r7 QO1 F2: sections=[] + top content containing `### foo`.
+        The empty-section guard must not fire on content-level subheadings."""
+        data = {"id": "f", "title": "T",
+                "content": "前文。\n\n### 注記\n\n注記本文。", "sections": []}
+        docs = "# T\n\n前文。\n\n### 注記\n\n注記本文。\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_atx_closed_heading_title(self):
+        """Z-1 r7 QO1 F4: CommonMark §4.2 allows optional trailing `#`
+        sequence on ATX headings. '# Title #' means title 'Title'."""
+        data = {"id": "f", "title": "Title", "content": "", "sections": []}
+        docs = "# Title #\n\n"
+        assert self._check(data, docs) == []
+
 
 # ---------------------------------------------------------------------------
 # QO2: docs MD 本文整合性
