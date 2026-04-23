@@ -244,18 +244,35 @@ def check_docs_coverage(knowledge_dir, docs_dir) -> list[str]:
     ddir = Path(docs_dir)
 
     readme = ddir / "README.md"
-    if not readme.exists():
+    readme_missing = not readme.exists()
+    if readme_missing:
         issues.append(f"[QO3] README.md missing: {readme}")
-        return issues
 
-    # Per-file existence check (the authoritative QO3 check)
+    # Per-file existence check — JSON → MD direction.
+    json_rel_paths: set[Path] = set()
     for json_path in sorted(kdir.rglob("*.json")):
         rel = json_path.relative_to(kdir).with_suffix(".md")
+        json_rel_paths.add(rel)
         docs_md_path = ddir / rel
         if not docs_md_path.exists():
             issues.append(
                 f"[QO3] docs MD missing for JSON: expected {rel} (from {json_path.relative_to(kdir)})"
             )
+
+    # MD → JSON direction (Z-1 r7 QO3 F1): spec §3-3 requires bidirectional
+    # "JSON↔MD 1:1 存在確認". A docs MD without a backing JSON is a dangling
+    # artefact (user clicks into it from a search result, no source data).
+    for md_path in sorted(ddir.rglob("*.md")):
+        if md_path.name == "README.md":
+            continue
+        rel = md_path.relative_to(ddir)
+        if rel not in json_rel_paths:
+            issues.append(
+                f"[QO3] dangling docs MD without matching JSON: {rel}"
+            )
+
+    if readme_missing:
+        return issues
 
     # README page-count coherence check (spec §3-3 QO3 下位チェック).
     actual = len([p for p in ddir.rglob("*.md") if p.name != "README.md"])

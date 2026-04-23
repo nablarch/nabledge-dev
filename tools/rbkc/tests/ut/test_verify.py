@@ -589,6 +589,22 @@ class TestCheckDocsCoverage:
 
     # --- QO3 Z-1 gap fill -------------------------------------------------
 
+    def test_fail_dangling_docs_md_without_matching_json(self, tmp_path):
+        """Z-1 r7 QO3 F1/F2: spec §3-3 requires bidirectional
+        'JSON↔MD 1:1 存在確認'. A docs MD that has no corresponding JSON
+        is dangling (search hits but the source data is gone) and must
+        FAIL QO3. Symmetric with QO4's 'dangling entry' clause."""
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        # JSON at a/b.json exists and has matching MD
+        self._write_json(kdir, "a/b.json")
+        self._write_md(ddir, "a/b.md")
+        # Dangling MD — no a/orphan.json exists
+        self._write_md(ddir, "a/orphan.md")
+        (ddir / "README.md").write_text("2ページ\n")
+        issues = self._check(kdir, ddir)
+        assert any("QO3" in i and "dangling" in i and "orphan" in i for i in issues), issues
+
     def test_fail_docs_md_at_wrong_nested_path(self, tmp_path):
         """JSON at knowledge/a/b/c.json requires docs MD at docs/a/b/c.md.
         A docs MD at a different path (e.g. top level) must still FAIL."""
