@@ -2979,3 +2979,195 @@ class TestVerifyP1FabricatedColonLine:
         # 偽列 / 偽値 must surface as QC2 or QP (unexpected column).
         assert issues, "fabricated colon pair must FAIL"
         assert any("偽" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# QA review round 2 — Findings F1 / F2 / F3 for commit 023d53248
+# ---------------------------------------------------------------------------
+
+
+class TestCheckJsonDocsMdConsistency_P1_TitleStillChecked:
+    """QA F1: QO1 P1 exception skips only the `##` section-title loop;
+    the `#` title match MUST still fire for P1."""
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_fail_p1_title_mismatch_still_fails_qo1(self):
+        """Converter bug: docs MD # heading does not match JSON title for
+        a P1 sheet.  QO1 must still detect this — only the section-title
+        loop is skipped, not the title check itself."""
+        data = {
+            "id": "p1",
+            "title": "正しいタイトル",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A", "content": "No.: 1\nタイトル: 値A"},
+            ],
+        }
+        docs = "# 間違ったタイトル\n\n| No. | タイトル |\n| --- | --- |\n| 1 | 値A |\n"
+        issues = self._check(data, docs)
+        assert any("[QO1]" in i and "title mismatch" in i for i in issues), issues
+
+
+class TestVerifyFileExcelP1FlattenEdgeCases:
+    """QA F2: Cell values with embedded \\n, \\t, double spaces, leading
+    or trailing whitespace must flatten equivalently on converter and
+    verify sides so sequential-delete finds them in JSON."""
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def _sheet(self, tmp_path, cell_val):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "説明"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["C2"] = cell_val            # the edge-case value
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "説明B"
+        xlsx_path = tmp_path / "p1.xlsx"
+        wb.save(xlsx_path)
+        return xlsx_path
+
+    def _json(self, flat_val):
+        return {
+            "id": "p1",
+            "title": "Sheet1",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": f"No.: 1\nタイトル: 値A\n説明: {flat_val}"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n説明: 説明B"},
+            ],
+        }
+
+    def test_pass_embedded_newline_flattened(self, tmp_path):
+        """Cell '説明1\\n行2' flattens to '説明1 行2' in JSON."""
+        xlsx = self._sheet(tmp_path, "説明1\n行2")
+        data = self._json("説明1 行2")
+        assert self._check(str(xlsx), data, "Sheet1") == []
+
+    def test_pass_embedded_tab_flattened(self, tmp_path):
+        xlsx = self._sheet(tmp_path, "col1\tcol2")
+        data = self._json("col1 col2")
+        assert self._check(str(xlsx), data, "Sheet1") == []
+
+    def test_pass_double_spaces_flattened(self, tmp_path):
+        xlsx = self._sheet(tmp_path, "A  B  C")
+        data = self._json("A B C")
+        assert self._check(str(xlsx), data, "Sheet1") == []
+
+    def test_pass_leading_trailing_whitespace_trimmed(self, tmp_path):
+        # openpyxl returns the value as-is; verify's flatten trims via
+        # str.split() which drops surrounding whitespace.
+        xlsx = self._sheet(tmp_path, "   値X   ")
+        data = self._json("値X")
+        assert self._check(str(xlsx), data, "Sheet1") == []
+
+    def test_fail_json_not_flattened(self, tmp_path):
+        """If JSON retains embedded `\\n`, verify's line-split breaks the
+        pair — QC1 must fire for the missing value."""
+        xlsx = self._sheet(tmp_path, "説明1\n行2")
+        data = self._json("説明1\n行2")  # JSON kept raw newline — wrong
+        issues = self._check(str(xlsx), data, "Sheet1")
+        assert issues, "JSON with embedded newline must FAIL verify"
+
+
+class TestVerifyFileExcelP1TitleRowPresent:
+    """QA F3: sheet_name fallback MUST NOT fire when the sheet has a
+    genuine `■...` title row.  Missing coverage would let a regression
+    inverting the `startswith("■")` guard slip through."""
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def _sheet_with_title(self, tmp_path):
+        """P1 sheet whose row 1 has a ■... title cell (no sheet-name
+        fallback should apply)."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "■本物のタイトル"
+        ws["A2"] = ""
+        ws["A3"] = "No."
+        ws["B3"] = "タイトル"
+        ws["C3"] = "説明"
+        ws["A4"] = "1"
+        ws["B4"] = "値A"
+        ws["C4"] = "説明A"
+        ws["A5"] = "2"
+        ws["B5"] = "値B"
+        ws["C5"] = "説明B"
+        xlsx_path = tmp_path / "with_title.xlsx"
+        wb.save(xlsx_path)
+        return xlsx_path
+
+    def test_pass_title_from_header_row(self, tmp_path):
+        """Title matches the ■... row; sheet_name fallback must NOT fire."""
+        xlsx = self._sheet_with_title(tmp_path)
+        data = {
+            "id": "p1",
+            "title": "■本物のタイトル",  # from the row-1 cell
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n説明: 説明A"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n説明: 説明B"},
+            ],
+        }
+        assert self._check(str(xlsx), data, "Sheet1") == []
+
+    def test_fail_fabricated_sheet_name_title_when_row_1_has_header(self, tmp_path):
+        """Regression guard: if JSON uses the sheet name as title but the
+        source sheet actually has a ■... row, fallback must NOT inject
+        the sheet name as a synthetic token — so the mismatched JSON
+        title surfaces as QC2 (fabrication) / QC1 (missing)."""
+        xlsx = self._sheet_with_title(tmp_path)
+        data = {
+            "id": "p1",
+            "title": "Sheet1",  # fabricated — sheet actually has '■本物のタイトル'
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n説明: 説明A"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n説明: 説明B"},
+            ],
+        }
+        issues = self._check(str(xlsx), data, "Sheet1")
+        # The real ■ title is missing from JSON → QC1.
+        # 'Sheet1' is fabricated (not a source cell, fallback must not fire)
+        #   → QC2.
+        assert any("■本物のタイトル" in i for i in issues), issues
+        assert any("Sheet1" in i and "QC2" in i for i in issues), issues

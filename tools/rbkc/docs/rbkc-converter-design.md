@@ -317,8 +317,10 @@ JSON に `sheet_type: "P1" | "P2"` メタ情報を出力する。自動判定ミ
 - `content`: 空、またはタイトル直下の前書き段落
 - `sections`: 1 データ行 = 1 section
 - `section.title`: 「タイトル」列の値 (なければ先頭非 `No.` 列の値)
-- `section.content`: 全列を `{列名}: {値}\n` の **縦列挙形式** で出力 (MD table 記法 `|---|` / `**` は使わない)
+- `section.content`: 全列を `{列名}: {値}\n` の **縦列挙形式** で出力 (MD table 記法 `|---|` / `**` は使わない)。値の埋め込み改行・タブは単一スペースに正規化 (§8-4 の line-based format 制約)
 - `sheet_type: "P1"`
+- `columns`: 検出した P1 header 行のマージ後列名リスト (§8-3 のマージ規則)。docs MD (§8-5) の table reconstruction で使用
+- `data_rows`: データ行のセル値 2 次元配列 (行 × 列; 空セルは空文字)。docs MD (§8-5) の table reconstruction で使用
 
 **P2**:
 - `title`: row 1 の `■...` (なければシート名)
