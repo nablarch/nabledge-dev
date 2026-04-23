@@ -163,7 +163,7 @@ docutils transform が解決できなかった `substitution_reference` / `refer
 
 | Node | 出力 | 備考 |
 |---|---|---|
-| `table` | `title` child があれば table の直前に paragraph として**必ず出力**、続けて MD table として `thead` / `tbody` を順に出力 | create/verify とも `fill_merged_cells` 共有ヘルパー (§3-6) を経由。`list-table` / `table` / `csv-table` directive の argument も docutils がこの `title` child に反映する |
+| `table` | `title` child があれば table の直前に paragraph として**必ず出力**、続けて MD table として `thead` / `tbody` を順に出力。`thead` が無い場合は `tbody` の 1 行目を header 行として合成する (MD は header なし table を表現できないため) | create/verify とも `fill_merged_cells` 共有ヘルパー (§3-6) を経由。`list-table` / `table` / `csv-table` directive の argument も docutils がこの `title` child に反映する |
 | `tgroup` | 子 node を Visit (`colspec` / `thead` / `tbody`) | |
 | `colspec` | 出力なし (MD は column width 非対応) | |
 | `thead` | ヘッダ行 + セパレータ `\| --- \| --- \|` | |

@@ -1079,23 +1079,8 @@ def check_source_links(
                     f"[QL1] image alt/filename missing from JSON: {check_text!r}"
                 )
 
-        # literalinclude is rendered as literal_block; the body text is
-        # expected in JSON. docutils embeds the included text verbatim when
-        # file_insertion_enabled=True; the converter emits it as a fenced
-        # code block, so JSON should contain the body.
-        for lb in doctree.findall(nodes.literal_block):
-            body = lb.astext().strip()
-            if not body:
-                continue
-            # A short non-empty literal_block must at least share its first
-            # non-blank line with the JSON to be considered reflected.
-            first_line = next(
-                (ln.strip() for ln in body.splitlines() if ln.strip()), ""
-            )
-            if first_line and first_line not in json_full:
-                # Literal content missing from JSON is QC1/QC2 territory —
-                # skip here to avoid double-reporting.
-                continue
+        # NOTE: literal_block content is covered by QC1/QC2 (sequential-delete
+        # across the full JSON content), so we don't re-check it here.
 
     elif fmt == "md":
         seen_link_texts: set[str] = set()

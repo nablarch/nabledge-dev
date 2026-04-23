@@ -9,9 +9,9 @@ Admonition rendering is a RST-spec convention, not a converter implementation
 detail. Putting it in scripts/common/ keeps verify's independence from RBKC
 implementation intact (the tokenizer imports common/, not create/).
 
-Closed set: the 14 admonition directive names per docutils spec + Sphinx
-extensions observed in the Nablarch corpus (rbkc-verify-quality-design.md
-§3-1 group B).
+Closed set: the 10 admonition directive names per docutils spec (no Sphinx-
+specific `seealso` / `deprecated` / `versionadded` / `versionchanged` — those
+never appear in the Nablarch corpus per Y-1 AST probe).
 """
 from __future__ import annotations
 
@@ -27,10 +27,6 @@ ADMONITION_LABELS: dict[str, str] = {
     "caution": "Caution",
     "danger": "Danger",
     "error": "Error",
-    "seealso": "See Also",
-    "deprecated": "Deprecated",
-    "versionadded": "Version Added",
-    "versionchanged": "Version Changed",
 }
 
 

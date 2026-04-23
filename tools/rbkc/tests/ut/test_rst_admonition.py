@@ -24,21 +24,13 @@ class TestAdmonitionLabels:
     def test_warning_label(self):
         assert _mod().ADMONITION_LABELS["warning"] == "Warning"
 
-    def test_see_also_label(self):
-        assert _mod().ADMONITION_LABELS["seealso"] == "See Also"
-
-    def test_version_added(self):
-        assert _mod().ADMONITION_LABELS["versionadded"] == "Version Added"
-
-    def test_version_changed(self):
-        assert _mod().ADMONITION_LABELS["versionchanged"] == "Version Changed"
-
-    def test_all_14_directive_names_mapped(self):
-        # Closed set per design doc §3-1 group B.
+    def test_all_10_directive_names_mapped(self):
+        # Closed set after Phase 21-Y: only the 10 docutils-native admonitions
+        # appear in the Nablarch corpus. Sphinx-only `seealso`, `deprecated`,
+        # `versionadded`, `versionchanged` are excluded (Y-1 probe 0 hits).
         expected = {
             "note", "tip", "warning", "important", "attention", "hint",
-            "admonition", "caution", "danger", "error", "seealso",
-            "deprecated", "versionadded", "versionchanged",
+            "admonition", "caution", "danger", "error",
         }
         assert set(_mod().ADMONITION_LABELS) == expected
 

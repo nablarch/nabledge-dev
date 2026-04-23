@@ -443,8 +443,9 @@ class _MDVisitor:
     def visit_image(self, node: nodes.image) -> str:
         uri = node.get("uri", "")
         alt = node.get("alt", "")
-        if not uri:
-            return ""
+        if not uri and not alt:
+            # Zero-exception: an image with neither uri nor alt is malformed
+            raise UnknownNodeError("image node without uri or alt")
         return self._apply_prefix(f"![{alt}]({uri})")
 
     def visit_figure(self, node: nodes.figure) -> str:
@@ -493,15 +494,9 @@ class _MDVisitor:
             return f"{header}\n{body}"
         return header
 
-    def visit_note(self, node): return self._visit_admonition(node, "Note")
-    def visit_tip(self, node): return self._visit_admonition(node, "Tip")
-    def visit_warning(self, node): return self._visit_admonition(node, "Warning")
-    def visit_important(self, node): return self._visit_admonition(node, "Important")
-    def visit_attention(self, node): return self._visit_admonition(node, "Attention")
-    def visit_hint(self, node): return self._visit_admonition(node, "Hint")
-    def visit_caution(self, node): return self._visit_admonition(node, "Caution")
-    def visit_danger(self, node): return self._visit_admonition(node, "Danger")
-    def visit_error(self, node): return self._visit_admonition(node, "Error")
+    # visit_note / visit_tip / ... are installed at class-definition time
+    # from rst_admonition.ADMONITION_LABELS to keep the admonition set in a
+    # single place. See the loop below `_MDVisitor` for the installation.
 
     def visit_admonition(self, node: nodes.admonition) -> str:
         # `.. admonition:: <custom title>` の custom title を保持する。
@@ -680,9 +675,6 @@ class _MDVisitor:
         alt = node.get("alt", "")
         return f"![{alt}]({uri})" if uri else ""
 
-    def inline_target_(self, node):  # noqa — keep naming consistent
-        return ""
-
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
@@ -691,6 +683,20 @@ class _MDVisitor:
         if not self._prefix:
             return text
         return "\n".join(self._prefix + line for line in text.splitlines())
+
+
+# Install visit_* methods for each named admonition (note / tip / warning /
+# etc.) based on rst_admonition.ADMONITION_LABELS. `admonition` itself is
+# custom-titled and handled by visit_admonition above.
+for _name, _label in rst_admonition.ADMONITION_LABELS.items():
+    if _name == "admonition":
+        continue
+    def _make(label):
+        def _visit(self, node):
+            return self._visit_admonition(node, label)
+        return _visit
+    setattr(_MDVisitor, f"visit_{_name}", _make(_label))
+del _name, _label
 
 
 def _indent_block(text: str, prefix: str) -> str:
