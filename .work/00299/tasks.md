@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 61 — 22-B-13 nabledge-test v6 baseline 取得完了 `20260424-080424`。overall 94.5% (QA 85.0% / CA 98.1%)。ca-002/ca-003 100%、ca-003 benchmark +2.7pp 有意改善 (CI 非重複)。QA 検出率低下の欠落キーワード全件 (qa-002 pageNumber/listSearchResult、qa-004 n:form/n:submit/useToken/allowDoubleSubmission、ca-001 Overview UniversalDao/SessionUtil) は v6 知識ファイルに実在確認済。原因は skill 側 `full-text-search.sh` のバグ + エージェントの参照ファイル選択差で RBKC 知識品質の問題ではない。コスト: Opus 4.7 で 1 run あたり約 $10.8 (入力 416K + 出力 61K tok)。詳細 `.claude/skills/nabledge-test/baseline/v6/20260424-080424/comparison-report.md`。次は 22-B-12 (他バージョン create/verify)。)
+**Updated**: 2026-04-24 (session 61 — 22-B-13 v6 baseline 取得 `20260424-080424` したが **計測としては無効**。nabledge-6 skill に RBKC V4 (commit 68c11a9d7) 時の schema 追従漏れが複数残存: (1) `full-text-search.sh` が dict 前提 jq 式 → list JSON で 0 hits silent failure、(2) `get-hints.sh` / `_section-search.md` / `_section-judgement.md` Step 0 が消失済の `.index`/`.hints` を参照、(3) SKILL.md の「index.toon with search hints」記述残存。他バージョン (5, 1.x) は JSON 旧形式で整合しているため影響なし。比較レポートの数値はエージェントの退化経路 (route 1 常時失敗 + route 2 でも section 絞り込み不機能) を前提にしており、RBKC 改善効果の正確な評価には使えない。**次タスクは 22-B-14 (skill schema 追従修正) → 22-B-13b (v6 baseline 再取得)**。)
 
 ---
 
@@ -10,9 +10,9 @@
 
 - v6 verify: **FAIL 0**。362 unit tests GREEN
 - 22-B-16b/c (cross-doc MD link emission + asset + QL1 two-sided) 完了。256/353 JSON files に cross-doc MD links、`:download:` xlsx/csv assets もリンク化
-- **22-B-13 完了**: v6 baseline `20260424-080424` — overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 97.3%→100% 有意改善、ca-002/ca-003 100%到達。QA 低下の原因は全て知識ファイル側ではなく参照経路 (`full-text-search.sh` バグ + エージェント探索差) であることを知識ファイルとの突合で確認済
-- 次のタスク: **Phase 22-B-12** (他バージョン create/verify)
-- その後: Phase 19 (他バージョン baseline) → Phase 21-Z Z-4/Z-3 (setup ゴミ / CHANGELOG / README)
+- **22-B-13 は計測としては無効**: v6 baseline `20260424-080424` は nabledge-6 skill の RBKC V4 schema 追従漏れ (`full-text-search` / `get-hints` / `_section-search` / `_section-judgement` / SKILL.md) の状態で取得されたため、RBKC 改善効果の比較としては使えない。原因分析資料としてのみ保持
+- 次のタスク: **Phase 22-B-14** (nabledge-6 skill の schema 追従修正) → **22-B-13b** (v6 baseline 再取得)
+- その後: Phase 22-B-12 (他バージョン create/verify) → Phase 19 (他バージョン baseline) → Phase 21-Z Z-4/Z-3
 
 ---
 
@@ -132,8 +132,17 @@
   - [x] **22-B-16c** (`86549073d`): image/figure asset URI rewrite + `:download:` link + QL1 asset-exists
   - [x] **F1-F4 fix** (`cb620f73d`): common/ 階層遵守 + AST-based link extraction + nested-block warning 伝播 + `scripts/common/linkfmt.py` 単一ソース
   - [x] **v6 regen** (`3bd1fe3c4`): 353 files, 256 contain cross-doc MD links, verify FAIL 0
-- [x] 22-B-13: nabledge-test v6 baseline 再取得 — `20260424-080424` 取得完了。overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 97.3% → 100% (+2.7pp、CI 非重複で有意改善)。比較レポート: `.claude/skills/nabledge-test/baseline/v6/20260424-080424/comparison-report.md`
-- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 (次のタスク)
+- [~] 22-B-13: nabledge-test v6 baseline 再取得 — `20260424-080424` 取得したが **無効扱い**。nabledge-6 skill 側に RBKC V4 (commit 68c11a9d7) 時の schema 追従漏れが複数あり、exploration path が壊れた状態で計測していたため比較不能。比較レポートは原因分析資料として保持。**再取得の前に skill 修正 (下記 22-B-14) が必要**。
+- [ ] **22-B-14**: nabledge-6 skill の schema 追従漏れ修正 (新タスク)
+  - [ ] `scripts/full-text-search.sh` の jq 式を list 形式 `.sections[]` に対応
+  - [ ] `scripts/get-hints.sh` を削除または hints 無効化対応 (現在常に空文字を返し、_section-judgement Step 0 が意味をなしていない)
+  - [ ] `workflows/_knowledge-search/_section-search.md` の `.index[].hints` 参照を削除または新ロジックに置換 (現行 JSON に `.index` も `.hints` も存在しない)
+  - [ ] `workflows/_knowledge-search/_section-judgement.md` Step 0 (hints-based pre-filter) を削除 or 無効化
+  - [ ] SKILL.md 72 行目「all entries with search hints」の記述訂正
+  - [ ] 手動 smoke test で route 1/2 が期待通り動くことを確認
+  - [ ] nabledge-5 / 1.x skill は JSON schema が旧形式で整合しているため修正不要 (追従漏れは v6 のみ)
+- [ ] 22-B-13b: 22-B-14 完了後に v6 baseline を再取得
+- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
 
 **備考**:
 - Phase 21-C (旧番 — リリースノート行粒度) は 22-B に統合済。xlsx converter 書き直しで包括する
