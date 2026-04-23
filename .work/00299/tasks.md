@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 51 — Phase 21-Z の Z-2 (MECE 化) と Z-6 (未使用コード削除) 完了: MD を markdown-it-py AST 経由に統一、許容残存リスト削除、QO3 を JSON↔MD 1:1 存在確認に修正、dead code 掃除。v6 verify FAIL 0・138 unit test GREEN。次は Z-1 品質マトリクス更新 → Z-5 nabledge-test v6 ベースライン → Phase 19 他バージョン展開。)
+**Updated**: 2026-04-23 (session 52 — Phase 21-Z の Z-1 完了: QA エキスパート 11 並列レビューで gap を洗い出し、設計ドリフト 3 件解消 (RST strict_unknown=True / MD image QL1 / QO4 双方向チェック) + gap test 追加で 11 観点すべてが ✅ 化 (実装 + テスト + v6 FAIL 0 の三条件)。190 unit test GREEN / v6 FAIL 0。次は Z-5 nabledge-test v6 ベースライン → Phase 19 他バージョン展開。)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -53,7 +53,7 @@
 
 ## In Progress
 
-_(none — session 51 で Phase 21-Z の Z-2 / Z-6 完了。次は Z-1 から。)_
+_(none — session 52 で Phase 21-Z の Z-1 完了。次は Z-5 から。)_
 
 ---
 
@@ -548,10 +548,18 @@ Phase 21-Y 完了直後 (`bf6b2d355`) の状態を起点に、土台を整えて
 - [x] `rst_admonition.py` の `render_header` / `is_admonition` / `ADMONITION_DIRECTIVES` 削除 (Visitor 以外で未使用)
 - [x] `tests/ut/_test_verify_OLD.py.bak` 削除
 
-#### Z-1: 設計書 §4 品質マトリクスの ❌ → ✅ 更新 (v6 品質の記述固定)
+#### Z-1: 設計書 §4 品質マトリクスの ❌ → ✅ 更新 ✅ 完了 (session 52)
 
-- [ ] `rbkc-verify-quality-design.md` §4 マトリクスの QC1–QC5 / QL1–QL2 を ✅ に (v6 実測で確認済)
-- [ ] ❌ のまま残る項目があれば未検証の理由を明記 (例: MD / Excel の QC は v6 RST のみ確認済の点の整理)
+- [x] QA エキスパート 11 並列レビューで 3 条件 (実装 / テスト / v6 FAIL 0) を点検 — `.work/00299/review-z1/SUMMARY.md` + 個別レポート
+- [x] 設計ドリフト 3 件解消 (commit `2ca93d7d9`)
+  - QC1 RST normaliser を `strict_unknown=True` に、parse error を QC1 FAIL 化
+  - QL1 MD inline image を `check_source_links` で検査対象化
+  - QO4 設計書 §3-3 に index 不在時と dangling entry の扱いを明文化、実装を双方向チェックに
+- [x] QC1-QC5 gap test 追加 (commit `24c88b934`)
+- [x] QL1/QL2 gap test 追加 (commit `1b46de370`)
+- [x] QO1-QO4 gap test 追加 (commit `223d5f8fe`)
+- [x] §4 マトリクス 11 観点すべて ✅ 化 + ✅ の三条件を明文化 (commit `e3a68e37a`)
+- [x] 190 unit test GREEN / v6 verify FAIL 0 を最終確認
 
 #### Z-5: nabledge-test v6 ベースライン (v6 品質の数値固定)
 
