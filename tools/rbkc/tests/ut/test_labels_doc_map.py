@@ -180,34 +180,81 @@ class TestBuildLabelDocMap:
         assert lt.section_title == ""
 
 
-class TestSphinxAnchorParity:
-    """Sphinx uses the label name itself as the HTML anchor
-    (`.. _my-label:` → `<p id="my-label">`).  LabelTarget.anchor must
-    hold the label-name slug, not the enclosing heading's slug.
+class TestWarningsPropagation:
+    """F1 regression guard (spec §3-2-2): visitor warnings about dangling
+    links must reach the caller — silent-skip is forbidden.
     """
 
-    def test_anchor_is_label_name_slug_for_heading_label(self, tmp_path):
+    def test_normalise_rst_emits_warnings_for_dangling_ref(self):
+        from scripts.common.rst_normaliser import normalise_rst
+
+        # Dangling `:ref:` (label not in label_map) must log a WARNING.
+        text = "See :ref:`nonexistent`.\n"
+        warnings: list = []
+        normalise_rst(
+            text,
+            label_map={},
+            doc_map={},
+            strict_unknown=True,
+            warnings_out=warnings,
+        )
+        assert any("nonexistent" in w for w in warnings), warnings
+
+    def test_normalise_rst_warnings_out_none_does_not_crash(self):
+        """Backward compat: callers that don't care about warnings pass
+        ``warnings_out=None`` (or omit it) — normalisation must still run.
+        """
+        from scripts.common.rst_normaliser import normalise_rst
+
+        text = "See :ref:`nonexistent`.\n"
+        # No assertion beyond "doesn't raise" — warnings just get dropped.
+        normalise_rst(text, label_map={}, strict_unknown=True)
+
+
+class TestSphinxAnchorParity:
+    """LabelTarget.anchor must equal the HTML `id=` Sphinx emits for
+    `.. _label:` (verified empirically with `sphinx-build` 9.1.0 on
+    `/tmp/sphinx-test`).  These assertions are pinned to Sphinx's
+    observable output, not to RBKC's own ``_anchor_for_label`` logic —
+    if the two diverge, the fixture values win and `_anchor_for_label`
+    must be fixed.
+    """
+
+    # Fixture: (label_name, sphinx_emitted_id).  Collected from
+    # /tmp/sphinx-test/_build/index.html on 2026-04-23 with the RST:
+    #   .. _my_usage_label:    Usage  -----
+    #   .. _UPPER_Case_Label:  Upper  -----
+    #   .. _has-hyphen:        Hyphen ------
+    SPHINX_ANCHOR_FIXTURE = [
+        ("my_usage_label", "my-usage-label"),
+        ("UPPER_Case_Label", "upper-case-label"),
+        ("has-hyphen", "has-hyphen"),
+    ]
+
+    def test_anchor_matches_sphinx_html_id(self, tmp_path):
+        """For every (label, sphinx_id) in the fixture, labels.py must
+        return the same anchor as Sphinx's HTML `id=`."""
         from scripts.common.labels import build_label_map
 
+        # Build one RST file containing all fixture labels.
+        body_parts = ["Test\n====\n\n"]
+        for i, (lbl, _) in enumerate(self.SPHINX_ANCHOR_FIXTURE):
+            body_parts.append(f".. _{lbl}:\n\nSection{i}\n---------\n\nBody{i}.\n\n")
         rst = tmp_path / "x.rst"
-        rst.write_text(
-            ".. _my_usage_label:\n\n"
-            "Usage\n"
-            "=====\n\n"
-            "Body.\n",
-            encoding="utf-8",
-        )
+        rst.write_text("".join(body_parts), encoding="utf-8")
 
         m = build_label_map(tmp_path)
-        lt = m.get("my_usage_label")
-        assert lt is not None
-        # anchor is the label slug ("my-usage-label"), not the heading slug
-        # ("usage").  Sphinx parity: HTML id is set on the label, not the
-        # heading.
-        assert lt.anchor == "my-usage-label"
+        for lbl, expected_id in self.SPHINX_ANCHOR_FIXTURE:
+            lt = m.get(lbl)
+            assert lt is not None, lbl
+            assert lt.anchor == expected_id, (
+                f"label {lbl!r}: got {lt.anchor!r}, expected {expected_id!r} "
+                f"(Sphinx empirical output)"
+            )
 
     def test_anchor_for_block_quote_nested_label(self, tmp_path):
-        """v6 big_picture.rst:20 pattern — label inside block_quote."""
+        """v6 big_picture.rst:20 pattern — label inside block_quote.
+        Sphinx emits `id="runtime-platform"` on the containing element."""
         from scripts.common.labels import build_label_map
 
         rst = tmp_path / "big_picture.rst"
@@ -224,8 +271,7 @@ class TestSphinxAnchorParity:
         m = build_label_map(tmp_path)
         lt = m.get("runtime_platform")
         assert lt is not None
-        # label name is already lower-case + underscore; Sphinx turns
-        # underscores into hyphens in HTML id (verified empirically).
+        # Sphinx empirical output on this exact construct.
         assert lt.anchor == "runtime-platform"
 
 

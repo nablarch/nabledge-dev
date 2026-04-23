@@ -616,13 +616,24 @@ def _normalize_rst_source(
     `rbkc-verify-quality-design.md` §3-1 手順 0.
     """
     from scripts.common.rst_normaliser import normalise_rst
-    return normalise_rst(
+    warnings: list[str] = []
+    out = normalise_rst(
         text,
         label_map=label_map or {},
         doc_map=doc_map,
         source_path=source_path,
         strict_unknown=True,
+        warnings_out=warnings,
     )
+    # Phase 22-B-16b step 2b F1: emit dangling-link WARNINGs to stderr.
+    # Spec §3-2-2 "WARNING ログ + display text fallback" is silent-skip
+    # only if the WARNING is ever dropped.
+    if warnings:
+        import sys
+        tag = f"{source_path}: " if source_path else ""
+        for w in warnings:
+            print(f"WARN {tag}{w}", file=sys.stderr)
+    return out
 
 
 def _build_rst_search_units(

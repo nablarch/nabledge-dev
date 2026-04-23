@@ -34,6 +34,10 @@ class RSTResult:
     # the restored column/row matrix used by docs.py to render an MD table).
     # None for non-xlsx formats.
     meta: dict | None = None
+    # Phase 22-B-16b step 2b F1 fix: visitor-level warnings (dangling
+    # link display-text fallbacks, etc.).  Surfaced so callers can emit
+    # them and avoid the "silent skip" banned by spec §3-2-2.
+    warnings: list[str] = field(default_factory=list)
 
 
 def _detect_no_knowledge_content(parts: rst_ast_visitor.DocumentParts) -> bool:
@@ -85,4 +89,5 @@ def convert(
         no_knowledge_content=no_kc,
         content=content,
         sections=sections,
+        warnings=list(parts.warnings),
     )

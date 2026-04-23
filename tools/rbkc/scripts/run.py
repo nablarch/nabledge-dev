@@ -144,6 +144,11 @@ def _convert_and_write(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    # Phase 22-B-16b step 2b F1: surface dangling-link WARNINGs so spec
+    # §3-2-2 "silent skip 禁止" is honoured across both create and verify.
+    for w in getattr(result, "warnings", []) or []:
+        print(f"WARN {fi.source_path}: {w}", file=sys.stderr)
+
 
 # ---------------------------------------------------------------------------
 # Snapshot path helper

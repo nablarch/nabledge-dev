@@ -36,6 +36,7 @@ def normalise_rst(
     doc_map: dict | None = None,
     source_path: Path | str | None = None,
     strict_unknown: bool = True,
+    warnings_out: list | None = None,
 ) -> str:
     """Normalise RST *text* to an MD-equivalent string via docutils AST.
 
@@ -72,6 +73,14 @@ def normalise_rst(
         if strict_unknown:
             raise UnknownSyntaxError(str(exc)) from exc
         return ""
+
+    # Phase 22-B-16b step 2b F1 fix: propagate visitor warnings so
+    # callers can surface dangling-link events.  Spec §3-2-2 requires
+    # "WARNING ログ + display text fallback" — without this plumbing the
+    # display-text fallback happens silently, which violates "silent
+    # skip 禁止は維持".
+    if warnings_out is not None:
+        warnings_out.extend(parts.warnings)
 
     return parts.to_flat_md()
 
