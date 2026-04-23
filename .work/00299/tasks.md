@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 57 — tasks.md を実態に合わせて整理。In Progress は Phase 22-B-5 残タスクのみ。verify 層 TDD (`bd678e4aa`) 完了済。)
+**Updated**: 2026-04-23 (session 58 — 22-B-5b 着手。converter 実装中に §8-4 ↔ §3-1 Excel の矛盾を検知 (P1 header 展開問題)。ユーザー承認 + SE レビューを経て最終方針確定: (1) §3-1 に header 展開仕様を追記、(2) §3-4 を新設し QP (P1 列-値ペアリング検査) を追加、(3) §4 マトリクス更新。Phase 22-B-5 内で設計書・verify TDD・converter 実装まで一気通貫で閉じる。)
 
 ---
 
@@ -87,7 +87,15 @@
 - [x] 22-B-3: `rbkc-verify-quality-design.md` §3-3 QO2 Excel 例外 + §3-1 sheet-level 分割 を仕様化 (`f5aa6a0e3`)
 - [x] 22-B-4: `rbkc-converter-design.md` §8 Excel 対応表新設 (`5a7cacf03`)
 - [x] 22-B-5a: **verify 層 TDD** (`bd678e4aa`) — `_xlsx_source_tokens(sheet_name=...)` / `sheet_type == "P1"` 一方向 containment / P2 strict verbatim fallthrough。edge cases (URL 内 `:` / blank 値 / no-sheet_type regression guard) 含む 7 + 3 tests。SE + QA expert review 済 (QA 2 Findings を同コミットで修正)
-- [ ] 22-B-5b: **xlsx converter 書き直し** — `scripts/create/converters/xlsx_releasenote.py` / `xlsx_security.py` を新仕様で書き直し:
+- [ ] 22-B-5a-r2: **設計書更新** (session 58 承認) — `rbkc-verify-quality-design.md` を次の通り更新:
+  - §3-1 Excel 節: P1 header 展開仕様を追記 (対象 `sheet_type=="P1"`、データ行数ぶん header token を複製、verify は §8-2 header 検出規則に**のみ**依拠し converter 参照禁止、データ行数は §8-4 の P1 規約から算出し converter の section 数参照禁止)
+  - §3-4 **新設**: QP (P1 列-値ペアリング検査) — JSON 各 section の `{列名}: {値}` が Excel の同一行・同一列のセル値と一致することを検証
+  - §4 マトリクス: QP 行を追加 (RST —, MD —, Excel ⚠️)
+- [ ] 22-B-5a-r3: **verify TDD** — 次の順序で実装:
+  - (r3a) P1 header 展開の unit test → RED → 実装 → GREEN
+  - (r3b) QP (`check_xlsx_p1_pairing`) の unit test → RED → 実装 → GREEN
+  - 実装後 SE + QA expert review
+- [ ] 22-B-5b: **xlsx converter 書き直し** (既に暫定実装済、r2/r3 完了後に verify PASS するよう微調整) — `scripts/create/converters/xlsx_releasenote.py` / `xlsx_security.py`:
   - 1 sheet = 1 RSTResult (scan/classify/run で sheet-level に分割、下記 22-B-5c を参照)
   - P1/P2 自動判定 (ヘッダ検出 + 列数 ≤ 2 の特例)
   - P1: 1 行 = 1 section、content は `列名: 値` 縦列挙
