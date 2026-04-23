@@ -126,6 +126,7 @@
   - [ ] **22-B-16b-main**: labels.py 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化 (4 steps、SE design review `review-22-b-16b-main-se-design.md` 合意済)
     1. [x] **step 1** (`46bd4578c`): labels.py に `LabelTarget` dataclass + `UNRESOLVED` singleton + `build_label_doc_map(version, repo_root) -> (label_map, doc_map)`。`build_label_map` の返り値は `dict[str, str]` → `dict[str, LabelTarget]` に変わるが `.title` 経由で後方互換。v6 bit-identical、verify FAIL 0、333 tests GREEN
     2. [ ] **step 2**: `rst_ast_visitor` を `LabelTarget` 経由で `[text](../{category}/{file_id}.md#{github_slug(section_title)})` / `:doc:` を `[title](../{category}/{file_id}.md)` / `:numref:` 同様に変換。`source_path` を visitor `__init__` に追加。run.py に `build_label_doc_map` 呼び出しと `source_path` 引き渡しを追加
+       - **session 60 未解決**: v6 実データに「orphan label」が存在 (例: `big_picture.rst:20` の `.. _runtime_platform:` は block_quote 内で heading 不在)。spec §3-2-2 の "未解決 `:ref:` label → QC1 FAIL" を strict 適用すると v6 create が FAIL する。これは verify 設計書の解釈 (または labels.py の enclosing-section 解決ロジック) の見直しが必要。ユーザー相談中
     3. [ ] **step 3**: `md_ast_visitor` の `link_open` 相対 href を `doc_map` 経由で `[text](../{category}/{file_id}.md)` に変換。visitor に `source_path` 追加
     4. [ ] **step 4**: verify `check_source_links_two_sided` (JSON side + docs MD side) 新規。各 link kind × pass/fail の TDD。target `.md` 実在 + anchor slug 一致検証 (`github_slug` 独立再計算で circular 回避)
     - 各 step 終了時に `v6 verify FAIL 0` + SE + QA expert review → Findings 全件対応
