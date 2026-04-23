@@ -140,43 +140,39 @@ def check_json_docs_md_consistency(
     if docs_title != json_title:
         issues.append(f"[QO1] {file_id}: title mismatch: JSON={json_title!r} docs={docs_title!r}")
 
-    # QO1: section title order and presence.
-    # Per spec §3-3 QO1: the `##` level in docs MD is reserved for section
-    # titles; `###` is used only for subheadings *inside* a section's
-    # content. The "extra" check therefore uses `##` only (a stray `###`
-    # in content is valid). The "missing" check accepts either level so
-    # that a converter promoting a section to `###` still reconciles.
-    docs_h2_only_titles = [m.group(1).strip() for m in _H2_ONLY_RE.finditer(docs_scan)]
-    docs_h2_or_h3_titles = [m.group(1).strip() for m in _H2_OR_H3_RE.finditer(docs_scan)]
-    json_sec_titles = [s.get("title", "") for s in sections if s.get("title")]
+    # QO1 Excel P1 例外 (spec §3-3): P1 docs MD is a restored MD table
+    # (§8-5) — row-level sections are table rows, not `##` headings.
+    # Section-title ordering for P1 is verified by §3-4 QP instead.
+    # Skip the ##-based section-title loop for P1 only; `#` title above
+    # is already checked.
+    if data.get("sheet_type") != "P1":
+        # QO1: section title order and presence.
+        # Per spec §3-3 QO1: the `##` level in docs MD is reserved for
+        # section titles; `###` is used only for subheadings *inside* a
+        # section's content. The "extra" check therefore uses `##` only
+        # (a stray `###` in content is valid). The "missing" check
+        # accepts either level so that a converter promoting a section to
+        # `###` still reconciles.
+        docs_h2_only_titles = [m.group(1).strip() for m in _H2_ONLY_RE.finditer(docs_scan)]
+        docs_h2_or_h3_titles = [m.group(1).strip() for m in _H2_OR_H3_RE.finditer(docs_scan)]
+        json_sec_titles = [s.get("title", "") for s in sections if s.get("title")]
 
-    if not sections and docs_h2_only_titles:
-        issues.append(f"[QO1] {file_id}: docs MD has section headings but JSON has no sections")
-    else:
-        # Spec §3-3 QO1 permits JSON section titles to appear at `##` or
-        # `###`. The ordering oracle must use the ##/### merged list
-        # filtered to entries that match a JSON title; otherwise a
-        # section legitimately rendered at `###` is absent from the
-        # ##-only list and produces a spurious "order differs". (Z-1 r8
-        # QO1 F1.)
-        #
-        # - missing: titles in JSON with no presence at either level
-        # - extra:   `##` entries (section-title level) with no JSON match
-        # - ordered comparison: H2∪H3 list filtered to JSON titles,
-        #   compared against the JSON order
-        missing = [t for t in json_sec_titles if t not in docs_h2_or_h3_titles]
-        extra = [t for t in docs_h2_only_titles if t not in json_sec_titles]
-        filtered = [t for t in docs_h2_or_h3_titles if t in json_sec_titles]
-        if missing:
-            for t in missing:
-                issues.append(f"[QO1] {file_id}: section title missing in docs MD: {t!r}")
-        if extra:
-            for t in extra:
-                issues.append(f"[QO1] {file_id}: docs MD has extra section title not in JSON: {t!r}")
-        if not missing and not extra and filtered != json_sec_titles:
-            issues.append(
-                f"[QO1] {file_id}: section title order differs: JSON={json_sec_titles!r} docs={filtered!r}"
-            )
+        if not sections and docs_h2_only_titles:
+            issues.append(f"[QO1] {file_id}: docs MD has section headings but JSON has no sections")
+        else:
+            missing = [t for t in json_sec_titles if t not in docs_h2_or_h3_titles]
+            extra = [t for t in docs_h2_only_titles if t not in json_sec_titles]
+            filtered = [t for t in docs_h2_or_h3_titles if t in json_sec_titles]
+            if missing:
+                for t in missing:
+                    issues.append(f"[QO1] {file_id}: section title missing in docs MD: {t!r}")
+            if extra:
+                for t in extra:
+                    issues.append(f"[QO1] {file_id}: docs MD has extra section title not in JSON: {t!r}")
+            if not missing and not extra and filtered != json_sec_titles:
+                issues.append(
+                    f"[QO1] {file_id}: section title order differs: JSON={json_sec_titles!r} docs={filtered!r}"
+                )
 
     # QO2 Excel P1 例外 (spec §3-3): per-sheet Excel JSON whose
     # sheet_type == "P1" cannot be checked verbatim because docs MD renders
@@ -1091,6 +1087,18 @@ def _xlsx_source_tokens(
     """
     sheets_rows = _read_sheet_matrix(source_path, sheet_name)
 
+    # Spec §8-4 sheet-name fallback for title: when no ``■...`` row is
+    # present in row 1, both P1 and P2 converters use ``sheet.name`` as
+    # the JSON title.  Sheet name is not a cell value, so verify injects
+    # it as a synthetic source token to satisfy QC1/QC2.  Injected only
+    # when the sheet actually lacks a ``■...`` row (otherwise it would
+    # let unrelated fabrications slip).
+    sheet_name_fallback = None
+    if sheet_name is not None and sheets_rows and sheets_rows[0]:
+        first = next((v for v in sheets_rows[0][0] if v), "")
+        if not first.startswith("■"):
+            sheet_name_fallback = sheet_name
+
     if sheet_type == "P1" and sheet_name is not None and sheets_rows:
         rows = sheets_rows[0]
         detected = _detect_header_row(rows)
@@ -1099,11 +1107,17 @@ def _xlsx_source_tokens(
             width = len(columns)
             data_rows = _data_rows(rows, data_start, width)
             tokens: list[str] = []
-            # Pre-header rows (title, preamble, blank rows): 1:1 as usual.
+            # §8-4 sheet-name title fallback: the JSON title comes first
+            # in the concatenated JSON text, so emit it first to match
+            # the forward-scan order.
+            if sheet_name_fallback:
+                tokens.append(sheet_name_fallback)
+            # Pre-header rows (title, preamble, blank rows): emit as
+            # flattened 1-line form (§8-4).
             for r in rows[:header_start]:
                 for v in r:
                     if v:
-                        tokens.append(v)
+                        tokens.append(" ".join(v.split()))
             # Emit tokens in JSON appearance order (spec §8-4) so the
             # existing forward-scan sequential-delete stays tight (QC3
             # still catches reordering).  Per §8-4:
@@ -1123,7 +1137,10 @@ def _xlsx_source_tokens(
                     # §8-4 section-title fallback)
                     title_val = next((c for c in row if c), "")
                 if title_val:
-                    tokens.append(title_val)
+                    # §8-4 line-based format forbids embedded newlines in
+                    # values (see ``check_xlsx_p1_pairing``).  Flatten
+                    # whitespace so tokens match the JSON form.
+                    tokens.append(" ".join(title_val.split()))
                 for cx, col in enumerate(columns):
                     if cx >= len(row):
                         continue
@@ -1131,7 +1148,7 @@ def _xlsx_source_tokens(
                     if not col or not cell:
                         continue
                     tokens.append(col)
-                    tokens.append(cell)
+                    tokens.append(" ".join(cell.split()))
             # Trailing rows after data_rows (usually none; guard anyway).
             trailing_end = data_start + _trailing_extra_rows(rows, data_start)
             for r in rows[trailing_end:]:
@@ -1142,6 +1159,10 @@ def _xlsx_source_tokens(
 
     # Raw 1:1 (non-P1 or all-sheet legacy caller).
     tokens: list[str] = []
+    if sheet_name_fallback:
+        # JSON title (= sheet name fallback) appears first in JSON text;
+        # emit it first so forward-scan finds it.
+        tokens.append(sheet_name_fallback)
     for rows in sheets_rows:
         for r in rows:
             for v in r:
@@ -1246,7 +1267,11 @@ def check_xlsx_p1_pairing(source_path, data: dict, sheet_name: str) -> list[str]
                 # Ambiguous column already reported at header level; do
                 # not re-flag per row.
                 continue
-            expected[col] = cell
+            # §8-4 line-based `{列名}: {値}` format cannot preserve
+            # embedded newlines/tabs.  Flatten whitespace on both sides
+            # for comparison (verify-side derivation from §8-4, not
+            # converter mirroring).
+            expected[col] = " ".join(cell.split())
         actual = dict(_parse_section_pairs(sec.get("content", "")))
         # pair_missing: expected column absent or value mismatched.
         for col, val in expected.items():

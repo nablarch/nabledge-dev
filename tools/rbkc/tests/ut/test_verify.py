@@ -2303,10 +2303,12 @@ class TestVerifyFileExcelP1HeaderExpansion:
 
     def _p1_json(self):
         """JSON that correctly mirrors the P1 sheet: 2 sections, each
-        containing the full {列名}: {値} line-listing."""
+        containing the full {列名}: {値} line-listing.  Title defaults
+        to the sheet name (spec §8-4 fallback) since the sheet has no
+        ``■...`` row — verify injects this as a synthetic source token."""
         return {
             "id": "p1",
-            "title": "",
+            "title": "Sheet1",
             "content": "",
             "sheet_type": "P1",
             "sections": [
@@ -2452,7 +2454,8 @@ class TestVerifyFileExcelP1HeaderExpansion:
         wb.save(xlsx_path)
         data = {
             "id": "mh",
-            "title": "",
+            # Title = sheet name per spec §8-4 fallback.
+            "title": "Sheet1",
             "content": "",
             "sheet_type": "P1",
             "sections": [
@@ -2909,7 +2912,7 @@ class TestVerifyP1ValueContainsColonPass:
         xlsx_path = tmp_path / "colon.xlsx"
         wb.save(xlsx_path)
         data = {
-            "id": "x", "title": "", "content": "",
+            "id": "x", "title": "Sheet1", "content": "",
             "sheet_type": "P1",
             "sections": [
                 {"id": "s1", "title": "https://example.com/a",
