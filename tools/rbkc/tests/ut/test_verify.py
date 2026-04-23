@@ -149,6 +149,40 @@ class TestCheckJsonDocsMdConsistency_QO1:
         # First `#` matches the JSON title — this is the spec's happy path.
         assert self._check(data, docs) == []
 
+    def test_pass_tilde_fenced_code_block_with_heading_inside(self):
+        """CommonMark tilde-fenced code blocks (~~~) must also be stripped
+        before scanning section titles — `##` inside a ~~~ fence is
+        content, not a section marker."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "A", "content": "a"},
+        ]}
+        docs = (
+            "# T\n\n"
+            "## A\n\n"
+            "a\n\n"
+            "~~~md\n"
+            "## fake heading inside tilde fence\n"
+            "~~~\n"
+        )
+        # `## fake ...` sits inside a ~~~ fenced block so it is content;
+        # QO1 must not report an extra section.
+        assert self._check(data, docs) == []
+
+    def test_pass_backtick_fenced_code_block_with_heading_inside(self):
+        """Same invariant for triple-backtick fences (regression guard)."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "A", "content": "a"},
+        ]}
+        docs = (
+            "# T\n\n"
+            "## A\n\n"
+            "a\n\n"
+            "```md\n"
+            "## fake heading inside backtick fence\n"
+            "```\n"
+        )
+        assert self._check(data, docs) == []
+
 
 # ---------------------------------------------------------------------------
 # QO2: docs MD 本文整合性
@@ -1215,10 +1249,7 @@ class TestVerifyFileExcel:
 
     def test_pass_real_xlsx(self, tmp_path):
         """A real .xlsx with one cell 'Hello' whose value appears in JSON title."""
-        try:
-            import openpyxl
-        except ImportError:
-            pytest.skip("openpyxl not available")
+        import openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
         ws["A1"] = "Hello"
@@ -1228,10 +1259,7 @@ class TestVerifyFileExcel:
         assert self._check(str(xlsx_path), data) == []
 
     def test_fail_cell_missing_from_json(self, tmp_path):
-        try:
-            import openpyxl
-        except ImportError:
-            pytest.skip("openpyxl not available")
+        import openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
         ws["A1"] = "必須セル値"
@@ -1242,10 +1270,7 @@ class TestVerifyFileExcel:
         assert any("QC1" in i for i in issues)
 
     def test_pass_no_knowledge_content_skipped(self, tmp_path):
-        try:
-            import openpyxl
-        except ImportError:
-            pytest.skip("openpyxl not available")
+        import openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
         ws["A1"] = "値"
@@ -1256,10 +1281,7 @@ class TestVerifyFileExcel:
 
     def test_fail_qc2_fabricated_content_in_json(self, tmp_path):
         """Excel QC2: JSON text contains a string not present in any cell."""
-        try:
-            import openpyxl
-        except ImportError:
-            pytest.skip("openpyxl not available")
+        import openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
         ws["A1"] = "セル値A"
@@ -1275,10 +1297,7 @@ class TestVerifyFileExcel:
     def test_fail_qc2_one_char_fabrication_detected(self, tmp_path):
         """Spec §3-1 Excel 節 手順 3: 空白・空行以外の残存は QC2.
         1-char residue used to be silently dropped — must FAIL now."""
-        try:
-            import openpyxl
-        except ImportError:
-            pytest.skip("openpyxl not available")
+        import openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
         ws["A1"] = "ABC"
@@ -1291,12 +1310,8 @@ class TestVerifyFileExcel:
 
     def test_pass_xls_cell_in_json(self, tmp_path):
         """Spec §3-1 Excel 節: `.xls` (xlrd) path must behave identically
-        to `.xlsx` (openpyxl). Source cell → JSON text PASS case."""
-        try:
-            import xlwt
-            import xlrd  # noqa: F401
-        except ImportError:
-            pytest.skip("xlwt/xlrd not available")
+        to `.xlsx` (openpyxl). xlwt/xlrd are hard dev deps (setup.sh)."""
+        import xlwt
         wb = xlwt.Workbook()
         ws = wb.add_sheet("Sheet1")
         ws.write(0, 0, "Hello")
@@ -1306,10 +1321,7 @@ class TestVerifyFileExcel:
         assert self._check(str(xls_path), data) == []
 
     def test_fail_xls_cell_missing_from_json(self, tmp_path):
-        try:
-            import xlwt, xlrd  # noqa: F401
-        except ImportError:
-            pytest.skip("xlwt/xlrd not available")
+        import xlwt
         wb = xlwt.Workbook()
         ws = wb.add_sheet("Sheet1")
         ws.write(0, 0, "必須セル値")
@@ -1322,10 +1334,7 @@ class TestVerifyFileExcel:
     def test_fail_xls_qc2_fabrication(self, tmp_path):
         """`.xls` path must raise QC2 when JSON contains a string with no
         source cell — mirroring the `.xlsx` QC2 behaviour."""
-        try:
-            import xlwt, xlrd  # noqa: F401
-        except ImportError:
-            pytest.skip("xlwt/xlrd not available")
+        import xlwt
         wb = xlwt.Workbook()
         ws = wb.add_sheet("Sheet1")
         ws.write(0, 0, "ABC")
@@ -1339,10 +1348,7 @@ class TestVerifyFileExcel:
         """xlrd numeric cells must be tokenised and compared. If the cell
         is absent from JSON entirely, QC1 must FAIL regardless of
         float/int representation."""
-        try:
-            import xlwt, xlrd  # noqa: F401
-        except ImportError:
-            pytest.skip("xlwt/xlrd not available")
+        import xlwt
         wb = xlwt.Workbook()
         ws = wb.add_sheet("Sheet1")
         ws.write(0, 0, 12345)
@@ -1356,10 +1362,7 @@ class TestVerifyFileExcel:
         """Excel QC3: two source cells with the same value but JSON only
         contains that value once → second match falls into the consumed
         region → QC3 duplicate."""
-        try:
-            import openpyxl
-        except ImportError:
-            pytest.skip("openpyxl not available")
+        import openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
         ws["A1"] = "同じ"

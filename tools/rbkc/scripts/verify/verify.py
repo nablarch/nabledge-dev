@@ -46,9 +46,10 @@ def _all_text(data: dict) -> str:
 _H1_RE = re.compile(r'^#\s+(.+)$', re.MULTILINE)
 # Per spec §3-3 QO1: section titles are rendered at `##` or `###`.
 _H2_RE = re.compile(r'^#{2,3}\s+(.+)$', re.MULTILINE)
-# Fenced code blocks (triple-backtick). Headings inside a fence are content,
-# not section markers — must be stripped before scanning H1/H2.
-_FENCE_BLOCK_RE = re.compile(r'^```.*?^```', re.MULTILINE | re.DOTALL)
+# Fenced code blocks (CommonMark: triple-backtick OR triple-tilde). Headings
+# inside a fence are content, not section markers — must be stripped before
+# scanning H1/H2.
+_FENCE_BLOCK_RE = re.compile(r'^(```|~~~).*?^\1', re.MULTILINE | re.DOTALL)
 
 
 def _strip_fenced_code(md_text: str) -> str:
