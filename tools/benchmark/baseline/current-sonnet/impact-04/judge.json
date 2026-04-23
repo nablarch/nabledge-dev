@@ -1,62 +1,43 @@
 {
   "verdict": {
-    "level": 2,
-    "required_facts": [
+    "level": 3,
+    "a_facts": [
       {
-        "fact": "NablarchにはRetryHandler（リトライハンドラ）が標準で用意されている",
+        "fact": "Nablarch には `RetryHandler` が標準で用意されている",
         "status": "COVERED"
       },
       {
-        "fact": "retryContextFactoryプロパティにCountingRetryContextFactory（回数ベース）または経過時間ベースのファクトリを設定して上限を決める",
+        "fact": "リトライ上限の設定が必須で、回数ベースまたは経過時間ベースのファクトリを `retryContextFactory` に指定する",
         "status": "COVERED"
       },
       {
-        "fact": "リトライ対象例外を送出するハンドラはRetryHandlerより後に配置する必要がある（一般ルール、s3）",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "リトライ上限の設定は必須。上限に達しても成功しない場合は異常終了させる",
-        "status": "COVERED"
-      },
-      {
-        "fact": "上限設定は2種類：リトライ回数による上限設定 / 経過時間による上限設定",
-        "status": "COVERED"
-      },
-      {
-        "fact": "設定例（回数ベース）：CountingRetryContextFactory、retryCount=3、retryIntervals=5000",
-        "status": "COVERED"
-      },
-      {
-        "fact": "上限値は想定する最大復旧時間プラスアルファに設定する（例：DB切り替えに最大5分かかるなら7分）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "複数の例外に対するリトライを実現する場合は、最も復旧に時間を要するものをベースに上限を設定する",
+        "fact": "リトライ対象の例外を送出するハンドラは `RetryHandler` より後に配置する必要がある",
         "status": "COVERED"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "RetryHandlerはバッチ・MOMメッセージング・DBメッセージングのみで使え、Webアプリ（サーブレット）では標準構成に含まれていない",
-        "type": "OVER-REACH",
-        "why": "参照ソース（s3/s4）に記載なし。Web app向け標準ハンドラ構成外の話を加えることで、Webアプリ開発者に「使えない」と誤解させる可能性がある"
+        "claim": "`RetryHandler` は `Retryable` インタフェースを実装した実行時例外のみをリトライ可能とみなす（標準外の例外はそのままでは反応しない）"
       },
       {
-        "claim": "リトライ対象にするには例外がRetryableインタフェースを実装している必要があり、標準JDBCのSQLExceptionは対象外でラップが必要",
-        "type": "OVER-REACH",
-        "why": "参照ソース（s3/s4）に記載なし（s1由来）。有益な情報だが証拠境界外の追加要件"
+        "claim": "常駐バッチ・MOMメッセージング・DBメッセージングのハンドラ構成には `retry_handler` が標準で組み込まれているが、Webアプリケーションの最小ハンドラ構成には含まれていない"
       },
       {
-        "claim": "常駐バッチではretry_handlerはprocess_resident_handlerより前（外側）に置く必要があり、process_resident_handlerがRetryableExceptionでラップして委譲する",
-        "type": "OVER-REACH",
-        "why": "参照ソース（s3/s4）に記載なし（process_resident_handler.json:s4由来）。バッチ固有の実装詳細で証拠境界外"
+        "claim": "`process_resident_handler` が実行時例外を `RetryableException` でラップして再送出し、リトライ制御を `retry_handler` に委譲する"
+      },
+      {
+        "claim": "`retryIntervals` プロパティでリトライ実行までの待機時間（ミリ秒）を設定できる"
+      },
+      {
+        "claim": "複数例外をリトライする場合は最も復旧に時間のかかるものをベースに上限値を設定すること"
       }
     ],
-    "reasoning": "必須ファクト8件はすべてCOVEREDまたはPARTIAL（CONTRADICTEDなし）。PARTIALは「リトライ対象例外を送出するハンドラはRetryHandlerより後に配置」という一般ルール（s3）で、生成回答では常駐バッチ固有のprocess_resident_handler配置として部分的にしか言及されていない。OVER-REACHは3件あり、いずれも実在するNablarchソース由来だが参照ソース（s3/s4）の証拠境界外。Webアプリ制限の主張は文脈によっては読者を誤解させるリスクがあるが、「標準構成に含まれていない」という記述に留まり「使用不可」とは断言していない。RetryableインタフェースやprocessResidentHandler詳細は有益な補足情報であり、リトライ実装の核心（RetryHandler使用・設定方法・上限設定の必須性）を損なわない。level 1の「substantive OVER-REACH that would mislead」には達していないため、level 2が適切。"
+    "c_claims": [],
+    "reasoning": "3つのA-factはすべてCOVERED。①RetryHandlerの存在は冒頭で明示、②retryContextFactoryへの上限設定（必須・回数/経過時間の2種）はXML例と注意点で網羅、③リトライ対象例外を送出するハンドラをRetryHandlerより後に置く制約は常駐バッチの説明で言及されている。加えて、KBに裏付けられたBクレーム（Retryableインタフェース要件、Webアプリ非標準、process_resident_handlerのラップ動作、待機時間設定）が複数あり、Cクレームはない。Level 3。"
   },
   "ref_sources_loaded": 2,
   "ref_sources_total": 2,
-  "cost_usd": 0.24730580000000002,
-  "duration_s": 121.61871862411499,
+  "cost_usd": 0.2439994,
+  "duration_s": 57.200297117233276,
   "error": null
 }

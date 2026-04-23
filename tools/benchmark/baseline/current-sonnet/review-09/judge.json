@@ -1,40 +1,36 @@
 {
   "verdict": {
-    "level": 2,
-    "required_facts": [
+    "level": 3,
+    "a_facts": [
       {
-        "fact": "UniversalDaoにbatchInsert / batchUpdate / batchDeleteの3メソッドが提供されている",
+        "fact": "UniversalDao の batchInsert/batchUpdate/batchDelete でバッチ実行できる",
         "status": "COVERED"
       },
       {
-        "fact": "大量データの一括処理でAPサーバ〜DBサーバ間のラウンドトリップ回数を削減しパフォーマンス向上が期待できる",
-        "status": "COVERED"
-      },
-      {
-        "fact": "batchUpdateは排他制御を行わない",
-        "status": "COVERED"
-      },
-      {
-        "fact": "更新対象EntityとDBのバージョンが不一致でも、そのレコードの更新は行われずに正常終了する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "排他制御が必要な更新処理では一括更新ではなく1レコード毎の更新処理を使用すること",
+        "fact": "batchUpdate は排他制御を行わないため、排他が必要な処理では1レコード毎の更新を使う",
         "status": "COVERED"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "楽観的ロックエラー（OptimisticLockException）のハンドリングが必要な場合は@OnErrorアノテーションで遷移先を設定する（s12引用）",
-        "type": "HALLUCINATION",
-        "why": "s12は参照ソース（エビデンス境界）に含まれない。@OnErrorによる例外ハンドリングは本質問のスコープ外のサブトピックであり、参照回答も言及していない。"
+        "claim": "batchInsert/batchUpdate/batchDelete を使うとAPサーバ〜DBサーバ間のラウンドトリップ回数を削減しパフォーマンス向上が期待できる（s11より）"
+      },
+      {
+        "claim": "batchUpdate では更新対象EntityとDBのバージョンが不一致でも正常終了し、更新漏れがサイレントに発生する（s11より）"
+      },
+      {
+        "claim": "楽観的ロックエラー（OptimisticLockException）のハンドリングには @OnError アノテーションで遷移先を設定できる（s12より）"
+      },
+      {
+        "claim": "一括更新サンプル（s1）では排他制御が必要なため batchUpdate でなく UniversalDao#update を採用している"
       }
     ],
-    "reasoning": "必須ファクト5件すべてCOVERED。batchInsert/batchUpdate/batchDeleteの提供、ラウンドトリップ削減によるパフォーマンス向上、batchUpdateの排他制御なし、バージョン不一致時の正常終了（サイレント更新漏れ）、排他制御が必要な場合は1件ずつ更新すべき点、いずれも正確に伝えられている。矛盾・誤りはない。唯一の問題は、エビデンス境界外のs12を根拠に@OnErrorアノテーションによるOptimisticLockExceptionハンドリングに言及している点。これは実在するNablarch機能だが参照ソースに含まれず、本質問（一括更新）のスコープ外のサブトピック。ただし軽微なHALLUCINATIONであり読者を誤解させる度合いは低い。「全ファクトCOVERED、軽微なHALLUCINATION1件以内」の条件を満たすためlevel 2。"
+    "c_claims": [],
+    "reasoning": "A-fact1（batchInsert/batchUpdate/batchDeleteの3メソッド）はすべて明示されており COVERED。A-fact2（batchUpdateは排他制御なし、排他が必要なら1件ずつ）も「排他制御（楽観的ロック）は行われない」「排他制御が必要な場合は UniversalDao.update を1件ずつ」と明確に記述されており COVERED。C-claimはなし（s12の@OnError言及、s1のサンプル言及もすべて検索済みセクションに裏付けあり）。B-claimが複数存在するためレベル3。"
   },
   "ref_sources_loaded": 1,
   "ref_sources_total": 1,
-  "cost_usd": 0.16302514999999998,
-  "duration_s": 55.169240951538086,
+  "cost_usd": 0.16580324999999999,
+  "duration_s": 22.221039533615112,
   "error": null
 }

@@ -1,64 +1,46 @@
 {
   "verdict": {
     "level": 1,
-    "required_facts": [
+    "a_facts": [
       {
-        "fact": "NablarchはビルトインでUniversalDaoによる排他制御を提供している",
+        "fact": "Nablarch は排他制御をビルトインで提供する(推奨は `UniversalDao`)",
         "status": "COVERED"
       },
       {
-        "fact": "排他制御の推奨方式はUniversalDao",
-        "status": "COVERED"
-      },
-      {
-        "fact": "楽観排他と悲観排他の両方をサポートする",
+        "fact": "`UniversalDao` は楽観排他と悲観排他の両方をサポートする",
         "status": "MISSING"
       },
       {
-        "fact": "@Versionアノテーションを数値型プロパティに付与することで楽観的ロックが自動的に有効になる",
-        "status": "COVERED"
-      },
-      {
-        "fact": "排他エラー発生時はjakarta.persistence.OptimisticLockExceptionを送出する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "排他エラー時の画面遷移は@OnErrorを使用する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "@Versionは数値型プロパティのみに指定可能。文字列型では正しく動作しない",
-        "status": "COVERED"
-      },
-      {
-        "fact": "一括更新処理（batchUpdate）では楽観的ロックは使用できない",
-        "status": "COVERED"
-      },
-      {
-        "fact": "バージョンカラムをどのテーブルに定義するかは業務的な観点で決める",
-        "status": "COVERED"
-      },
-      {
-        "fact": "バージョン番号を持つテーブルは排他制御の単位ごとに定義し、競合が許容される最大の単位で定義する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "exclusive_controlライブラリは非推奨。UniversalDaoを使用すること",
+        "fact": "楽観排他は `@Version` アノテーションで有効化する",
         "status": "COVERED"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "二重サブミット防止には@OnDoubleSubmissionを併用します",
-        "type": "OVER-REACH",
-        "why": "質問は複数人同時編集による後勝ち問題（排他制御）に関するもの。@OnDoubleSubmissionは同一ユーザーの二重送信防止であり、別の問題を扱う機能。参照ソースにも含まれておらず、本来の問いの解答として誤解を招く"
+        "claim": "排他エラー発生時は `jakarta.persistence.OptimisticLockException` がスローされる"
+      },
+      {
+        "claim": "排他エラー時の画面遷移は `@OnError` アノテーションで設定できる"
+      },
+      {
+        "claim": "`@Version` は数値型のプロパティのみに指定可能で、文字列型では正しく動作しない"
+      },
+      {
+        "claim": "`batchUpdate`（一括更新）では楽観的ロックは使用できない"
+      },
+      {
+        "claim": "バージョンカラムをどのテーブルに定義するかは業務的観点で決め、競合が許容される最大の単位で定義する"
+      },
+      {
+        "claim": "旧来の排他制御ライブラリ（`BasicExclusiveControlManager` 等）は非推奨で Universal DAO を使用すること"
       }
     ],
-    "reasoning": "生成回答は楽観的ロックの実装詳細（@Version、OptimisticLockException、@OnError、数値型制約、batchUpdate制限、バージョンカラム設計指針）を網羅的かつ正確に説明している。しかし参照回答が明示する「楽観排他と悲観排他の両方をサポートする」という事実が完全に欠落しており、悲観排他（pessimistic lock）についての言及が一切ない。これはNablarchの排他制御機能の全体像を伝える上で必須の情報。さらに@OnDoubleSubmissionへの言及はOVER-REACHであり（二重サブミット防止は別問題）、MISSING事実と合わせてLevel 1と判定する。"
+    "c_claims": [],
+    "reasoning": "A-fact「`UniversalDao` は楽観排他と悲観排他の両方をサポートする」がMISSING。生成回答は楽観的ロック（`@Version`）のみを説明しており、悲観的ロックについて一切言及していない。KBエビデンス（s4）には「楽観排他 / 悲観排他をサポート」と明記されているため、これは内容上の欠落である。他の2つのA-factは明確にカバーされており、C-claimもない。A-factが全てCOVEREDでないためLevel 2以上にはなれず、C-claimがないためLevel 0にもならない。結果としてLevel 1。"
   },
   "ref_sources_loaded": 4,
   "ref_sources_total": 4,
-  "cost_usd": 0.17811214999999997,
-  "duration_s": 53.57416319847107,
+  "cost_usd": 0.1958831,
+  "duration_s": 36.39852833747864,
   "error": null
 }

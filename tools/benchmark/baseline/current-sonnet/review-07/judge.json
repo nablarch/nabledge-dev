@@ -1,60 +1,50 @@
 {
   "verdict": {
-    "level": 2,
-    "required_facts": [
+    "level": 3,
+    "a_facts": [
       {
-        "fact": "SecureHandler + ContentSecurityPolicyHeader + JSPカスタムタグCSP対応の3要素を組み合わせてCSPを有効にする",
+        "fact": "SecureHandler の generateCspNonce プロパティを true にして nonce 生成を有効化する",
         "status": "COVERED"
       },
       {
-        "fact": "SecureHandlerのgenerateCspNonceプロパティをtrueに設定する",
+        "fact": "secureResponseHeaderList に ContentSecurityPolicyHeader を追加しポリシーを設定する",
         "status": "COVERED"
       },
       {
-        "fact": "secureResponseHeaderListにContentSecurityPolicyHeaderを追加する",
+        "fact": "ContentSecurityPolicyHeader の policy にプレースホルダー $cspNonceSource$ を含める",
         "status": "COVERED"
       },
       {
-        "fact": "ContentSecurityPolicyHeaderのpolicyに$cspNonceSource$プレースホルダーを含める",
+        "fact": "Nablarch カスタムタグは nonce 生成が有効な場合に自動的に nonce 属性を埋め込む",
         "status": "COVERED"
-      },
-      {
-        "fact": "$cspNonceSource$はnonce-[ハンドラで生成されたnonce]に置換される",
-        "status": "COVERED"
-      },
-      {
-        "fact": "tag-form_tagが生成するJavaScript（onclick属性の関数呼び出し含む）はscript要素にまとめられnonce属性が設定される",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "tag-script_tagが生成するscript要素のnonce属性にハンドラ生成nonceが設定される",
-        "status": "COVERED"
-      },
-      {
-        "fact": "tag-csp_nonce_tagにより任意の要素へnonce値を出力可能",
-        "status": "COVERED"
-      },
-      {
-        "fact": "nonceはHTMLに埋め込まれるためJSP生成HTMLはリクエスト都度変化する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "nonceはリクエスト都度生成されリクエストスコープに格納される",
-        "status": "PARTIAL"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "固定ポリシー（nonceなし）の「最小構成」を標準アプローチの前に提示（参照外のs7を引用）",
-        "type": "OVER-REACH",
-        "why": "参照ソースにないs7からの引用。Nablarchカスタムタグ使用前提の質問に対し、参照回答はnonce方式のみを標準として定義しており、非nonce構成を先に提示することは誤解を招く"
+        "claim": "固定ポリシー（nonce なし）の最小構成として secureResponseHeaderList に ContentSecurityPolicyHeader を追加して policy を設定するだけでも CSP を有効にできる"
+      },
+      {
+        "claim": "$cspNonceSource$ はリクエストごとに生成された nonce 値（例: nonce-DhcnhD3khTMePgXwdayK9BsMqXjhguVV）に自動置換される"
+      },
+      {
+        "claim": "nonce はリクエストごとに変わるため JSP から生成される HTML は毎回異なる内容になる"
+      },
+      {
+        "claim": "reportOnly を true に設定すると Content-Security-Policy-Report-Only ヘッダが送られ、本番適用前に違反を検出だけできる"
+      },
+      {
+        "claim": "<n:cspNonce /> カスタムタグを使用してインラインスタイル等の任意の要素に nonce 属性を手動設定できる"
+      },
+      {
+        "claim": "Content-Security-Policy をレスポンスヘッダで設定できない環境では meta 要素で代替可能で、その場合 sourceFormat 属性を true にすると nonce-xxxxx フォーマットで出力される"
       }
     ],
-    "reasoning": "生成回答はgenerateCspNonce=true設定、ContentSecurityPolicyHeader追加、$cspNonceSource$プレースホルダー、カスタムタグのnonce自動付与、HTMLのリクエスト都度変化など、必須事実をほぼ網羅している。ただし「tag-form_tagのonclickJS内容がscript要素にまとめられる」という具体的動作はPARTIAL（一般的なscript要素へのnonce付与として言及するのみ）、「nonceのリクエストスコープ格納」もPARTIAL（リクエスト都度変化には言及するが格納先については触れず）。また参照ソースに含まれないs7を引用した固定ポリシー（nonceなし）の最小構成を最初に提示しており、Nablarchカスタムタグ使用前提の「標準のやり方」という質問に対して参照回答が定義しない選択肢を先出しするOVER-REACHがある。report-onlyやmeta要素の補足は参照外だがon-topicな付加情報であり減点対象ではない。2つのPARTIALと1つのOVER-REACHがありlevel 2が妥当。"
+    "c_claims": [],
+    "reasoning": "4つのA-factすべてがCOVERED。③の設定手順でgenerateCspNonceをtrueにすること、secureResponseHeaderListへのContentSecurityPolicyHeader追加、$cspNonceSource$プレースホルダー、カスタムタグへの自動nonce埋め込みをすべて正確に説明している。加えてKB証拠に裏付けられたB-claim（固定ポリシー構成、report-onlyモード、cspNonceタグ、nonce置換例、HTML変化の注意点、meta要素代替）が複数あり、C-claimなし。Level 3。"
   },
   "ref_sources_loaded": 4,
   "ref_sources_total": 4,
-  "cost_usd": 0.24503135000000004,
-  "duration_s": 119.75290489196777,
+  "cost_usd": 0.19262460000000003,
+  "duration_s": 35.12238049507141,
   "error": null
 }

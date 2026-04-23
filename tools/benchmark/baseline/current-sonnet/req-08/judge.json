@@ -1,60 +1,47 @@
 {
   "verdict": {
-    "level": 2,
-    "required_facts": [
+    "level": 3,
+    "a_facts": [
       {
-        "fact": "MultipartHandlerにアップロードサイズ上限を設ける仕組みが存在する",
+        "fact": "Nablarch は `MultipartHandler` でアップロードサイズ上限を設ける仕組みを提供している",
         "status": "COVERED"
       },
       {
-        "fact": "サイズ上限はcontentLengthLimitプロパティで設定する（単位: バイト）",
+        "fact": "`contentLengthLimit` プロパティでサイズ上限を設定し、超過時は 413 を返す",
         "status": "COVERED"
       },
       {
-        "fact": "上限超過時はHTTP 413 (Payload Too Large)を返す",
+        "fact": "デフォルトは無制限であり、DoS 対策のため常に設定することが推奨される",
         "status": "COVERED"
       },
       {
-        "fact": "contentLengthLimit設定省略時は無制限になる",
-        "status": "COVERED"
-      },
-      {
-        "fact": "DoS攻撃防止のため常に設定することが推奨されている",
-        "status": "COVERED"
-      },
-      {
-        "fact": "上限はファイル単位ではなく1リクエスト全体のContent-Lengthに対するチェック",
-        "status": "COVERED"
-      },
-      {
-        "fact": "ファイル単位のサイズチェックが必要な場合はアクション側で実装する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "maxFileCountプロパティでアップロードファイル数の上限も設定できる",
-        "status": "COVERED"
-      },
-      {
-        "fact": "maxFileCount超過時はHTTP 400 (Bad Request)を返す",
-        "status": "COVERED"
-      },
-      {
-        "fact": "maxFileCountのデフォルトは-1（無制限）",
+        "fact": "`maxFileCount` でアップロードファイル数の上限も設定できる",
         "status": "COVERED"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "RESTful Webサービスではrest-component-configuration.xmlをインポートしてcommon.propertiesにnablarch.uploadSettings.contentLengthLimitを設定する必要がある",
-        "type": "HALLUCINATION",
-        "why": "releases/releases/releases-nablarch6u3-releasenote.json:s3に基づく記述だが、参照ソース（s6, s7）に含まれていない。質問はサイズ上限の仕組みの有無であり、REST固有の設定手順は異なる関心事"
+        "claim": "サイズチェックはファイル単位ではなく1リクエスト全体のContent-Lengthに対して行われる（複数ファイル時はサイズ合計値で判定）"
+      },
+      {
+        "claim": "maxFileCount 超過時は HTTP 400 (Bad Request) が返却される"
+      },
+      {
+        "claim": "MultipartHandler は Content-Type が multipart/form-data の場合のみリクエストボディを解析し、それ以外は後続ハンドラに委譲する"
+      },
+      {
+        "claim": "RESTful Web サービスで使用する場合は rest-component-configuration.xml にファイルパス設定とアップロード機能設定をインポートし、ハンドラキューに multipartHandler を追加する必要がある"
+      },
+      {
+        "claim": "ファイル単位のサイズチェックが必要な場合はアクション側（業務ロジック）で実装が必要"
       }
     ],
-    "reasoning": "必須事実10件すべてがCOVERED。contentLengthLimitの説明、413レスポンス、無制限デフォルト、DoS防止推奨、リクエスト全体チェックの補足、アクション側実装の言及、maxFileCountの詳細（400レスポンス、デフォルト-1）いずれも正確に回答されている。参照ソース外からのHALLUCINATIONが1件（RESTful Web サービスへの適用方法）あるが、コア回答（MultipartHandlerによるサイズ上限機構の存在と設定方法）を誤解させるものではなく軽微。CONTRADICTEDなし。Level 2が妥当。"
+    "c_claims": [],
+    "reasoning": "4つのA-factすべてがCOVERED：MultipartHandlerによるサイズ上限機能、contentLengthLimitプロパティと413レスポンス、デフォルト無制限とDoS対策のための常時設定推奨、maxFileCountによるファイル数上限設定。C-claimはなく、すべての追加主張はKB証拠（s4, s6, s7, s3）に裏付けられている。Level 3。"
   },
   "ref_sources_loaded": 2,
   "ref_sources_total": 2,
-  "cost_usd": 0.16354829999999998,
-  "duration_s": 50.44378209114075,
+  "cost_usd": 0.17143545,
+  "duration_s": 21.638360023498535,
   "error": null
 }

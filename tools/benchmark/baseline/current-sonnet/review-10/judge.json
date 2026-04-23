@@ -1,74 +1,52 @@
 {
   "verdict": {
-    "level": 2,
-    "required_facts": [
+    "level": 3,
+    "a_facts": [
       {
-        "fact": "@Publishedアノテーションで公開APIと非公開APIを区別している",
+        "fact": "Nablarch は公開 API と非公開 API を `@Published` アノテーションで区別しており、`@Published` が付いていないものは非公開 API",
         "status": "COVERED"
       },
       {
-        "fact": "@Publishedが付いていないクラス・メソッドは非公開API（将来変わる可能性がある）",
+        "fact": "自分のコードが非公開 API を使っていないか静的解析ツールでチェックできる",
         "status": "COVERED"
       },
       {
-        "fact": "@Published(tag=\"architect\")はアーキテクト向け公開API",
-        "status": "COVERED"
-      },
-      {
-        "fact": "公開APIかどうかはJavadoc上の@Publishedで判断する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "DaoContextはクラスに@Published(tag=\"architect\")があるためアーキテクト向け公開API（例）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "BasicDaoContext#findAllは@Publishedなしのため非公開API（例）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "Nablarch 6からは非公開APIも含めたJavadocを提供している（Nablarch 5までは公開APIのみ）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "JavaバージョンアップによりJavadoc生成の拡張仕組みが変わり、公開APIだけに絞ったJavadoc生成ができなくなったことが理由",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "非公開API使用チェックに2種類のツールが提供されている",
-        "status": "COVERED"
-      },
-      {
-        "fact": "nablarch-intellij-plugin: IntelliJ IDEA用プラグイン、非公開API使用時に警告、ブラックリストJava API使用時にも警告",
-        "status": "COVERED"
-      },
-      {
-        "fact": "使用不許可APIチェックツール（SpotBugsプラグイン）: IntelliJ IDEA非依存、ブランクプロジェクトにMaven実行設定があらかじめ組み込まれている",
+        "fact": "チェックツールは nablarch-intellij-plugin と SpotBugs ベースの2種類が提供されている",
         "status": "COVERED"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "@DeprecatedAPIは「不具合・セキュリティ上の問題があるクラス・メソッド」であり、新たな不具合が見つかっても対応されないため代替APIへ移行が必要",
-        "type": "HALLUCINATION",
-        "why": "policy.json:s12から引用されているが、参照ソース（2セクション）に含まれない。質問が問うのは@Published非公開APIのチェック方法であり、@Deprecatedは別の関心事"
+        "claim": "後方互換ポリシーの対象は `Published` アノテーション付きの公開APIのみであり、非公開APIを使用するとバージョンアップ時に思わぬ不具合が発生する可能性がある"
       },
       {
-        "claim": "後方互換ポリシーの対象は@Published APIのみ（versionup_policy.json:s4）",
-        "type": "HALLUCINATION",
-        "why": "参照ソースに含まれないversionup_policy.json:s4から引用。on-topicではあるが証拠境界外"
+        "claim": "アダプタは後方互換ポリシーの対象外であり、アダプタの `Published` なしAPIも非公開APIと同様に使用しないこと"
       },
       {
-        "claim": "アダプタは後方互換ポリシーの対象外（外部ライブラリの破壊的変更に伴い後方互換維持できない場合あり）",
-        "type": "HALLUCINATION",
-        "why": "参照ソースに含まれないversionup_policy.json:s4から引用。証拠境界外"
+        "claim": "Nablarch 6 からは非公開APIも含む形でAPIドキュメントが提供されている（Nablarch 5 まではアーキテクト・アプリプログラマ向け公開APIのみ）"
+      },
+      {
+        "claim": "`BasicDaoContext#findAll` はクラスにもメソッドにも `@Published` がないため非公開APIの例として挙げられる"
+      },
+      {
+        "claim": "ログのレベル・文言変更や JDK バージョンアップ起因の対応など一部ケースでは公開APIでも後方互換が維持されない場合があり、リリースノートに移行方法が記載される"
+      },
+      {
+        "claim": "`@Deprecated` API は不具合・セキュリティ上の問題があるクラス・メソッドであり、新たな不具合が見つかっても対応は行われないため代替APIへ移行が必要"
+      },
+      {
+        "claim": "nablarch-intellij-plugin はブラックリストに登録した Java API 使用時にも警告する機能を持つ"
+      },
+      {
+        "claim": "使用不許可APIチェックツール（SpotBugsプラグイン）のブランクプロジェクトには Maven で実行するための設定があらかじめ含まれており、すぐにチェックを実施できる"
       }
     ],
-    "reasoning": "必須ファクトはほぼすべてCOVEREDされており、Nablarch 6変更の具体的な理由（Javadoc生成仕組みの変更）のみPARTIAL（補足情報として扱える程度）。ツールの詳細（nablarch-intellij-pluginの両機能、SpotBugsプラグインのMaven設定組み込み）も正確に記述されている。一方、参照ソース外のversionup_policy.jsonやpolicy.jsonから@Deprecated情報・バージョンアップポリシー詳細・アダプタ除外など複数のHALLUCINATIONが含まれる。これらは誤解を招く内容ではなくon-topicな補足だが、参照ソースの証拠境界を超えている。必須ファクト全COVERED・CONTRADICTEDなし・複数のminor HALLUCINATIONという構成でLevel 2が妥当。"
+    "c_claims": [],
+    "reasoning": "3つのA-factすべてが COVERED。①`@Published` による公開/非公開APIの区別、②静的解析ツールでのチェック可能性、③nablarch-intellij-plugin と SpotBugs ベースの2種類のツール、いずれも生成回答に明確に記述されている。さらに、KB証拠（versionup_policy.json:s4/s5/s6、policy.json:s10/s12）に裏付けられたB-claimが多数存在する（後方互換ポリシーの詳細、アダプタの注意、@Deprecated API、Nablarch 6のJavadoc変更経緯など）。C-claimは存在しない。よってレベル3。"
   },
   "ref_sources_loaded": 2,
   "ref_sources_total": 2,
-  "cost_usd": 0.22283630000000001,
-  "duration_s": 99.1883864402771,
+  "cost_usd": 0.18754740000000003,
+  "duration_s": 29.3098783493042,
   "error": null
 }

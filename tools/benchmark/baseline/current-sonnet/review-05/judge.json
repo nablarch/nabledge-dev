@@ -1,53 +1,40 @@
 {
   "verdict": {
-    "level": 1,
-    "required_facts": [
+    "level": 3,
+    "a_facts": [
       {
-        "fact": "Bean Validation を推奨する",
+        "fact": "Bean Validation を推奨し、リソースメソッド引数に `@Valid` を付けて有効化する",
         "status": "COVERED"
       },
       {
-        "fact": "@Valid をリソースメソッドの**引数**に設定して有効化する（例: `@Valid SampleForm form`）",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "エラー応答は JaxRsResponseHandler が生成する",
+        "fact": "エラー応答は `JaxRsResponseHandler` が `errorResponseBuilder` 経由で生成する",
         "status": "COVERED"
       },
       {
-        "fact": "バリデーションエラー時にボディへメッセージを含めるには ErrorResponseBuilder を継承したクラスを作成する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "デフォルト実装では HttpErrorResponse がスローされた場合 HttpErrorResponse#getResponse() のレスポンスをそのまま返す",
-        "status": "MISSING"
-      },
-      {
-        "fact": "特定の例外に個別ステータスコード・ボディを返す場合も ErrorResponseBuilder を継承し例外型で分岐する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "errorResponseBuilder プロパティにカスタム ErrorResponseBuilder を設定する",
+        "fact": "バリデーションエラー時にボディへメッセージを入れるには `ErrorResponseBuilder` を継承したクラスを作成する",
         "status": "COVERED"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "JaxRsBeanValidationHandler がバリデーションを担うハンドラとして主要機構として紹介されている",
-        "type": "HALLUCINATION",
-        "why": "参照ソースに handlers-jaxrs_bean_validation_handler.json は含まれておらず、リファレンス回答も @Valid アノテーションのみで説明しており、このハンドラは証拠境界外"
+        "claim": "`JaxRsBeanValidationHandler`（クラス名: `nablarch.fw.jaxrs.JaxRsBeanValidationHandler`）がバリデーションを実行し、エラー時は `ApplicationException` を送出する"
       },
       {
-        "claim": "@Valid をメソッドレベルのアノテーションとして記述したコード例（`@Valid` が引数ではなくメソッド上に付与）",
-        "type": "OVER-REACH",
-        "why": "リファレンスは `@Valid SampleForm form` のように引数に付ける形を示しており、メソッドへの付与は誤った使い方を示唆し読者を誤解させる可能性がある"
+        "claim": "`jaxrs_bean_validation_handler` は `body_convert_handler` より後ろに設定する必要がある"
+      },
+      {
+        "claim": "`jaxrs_adaptor` を使用した場合、`body_convert_handler` と `jaxrs_bean_validation_handler` は自動追加される"
+      },
+      {
+        "claim": "`ErrorResponseBuilder` 実装内で例外が発生した場合、フレームワークはWARNログ出力後にステータスコード500を返す"
       }
     ],
-    "reasoning": "主要な必須ファクト（Bean Validation 推奨、JaxRsResponseHandler によるエラー応答生成、ErrorResponseBuilder 継承によるメッセージ返却）はほぼ網羅されている。しかし以下の問題がある。①コード例で @Valid をメソッドの引数ではなくメソッド自体のアノテーションとして示しており、リファレンスの `@Valid SampleForm form` という形式と矛盾する（PARTIAL/CONTRADICTED）。②JaxRsBeanValidationHandler の詳細説明を参照ソース外から追加しており、これは参照ソースに存在しない情報（HALLUCINATION）。③デフォルト ErrorResponseBuilder が HttpErrorResponse 時に getResponse() をそのまま返す動作が未言及（MISSING）。@Valid の配置誤りとソース外 HALLUCINATION の組み合わせにより Level 1 が妥当。"
+    "c_claims": [],
+    "reasoning": "3つのA-factすべてがCOVERED。①Bean Validation + @Valid の推奨は結論部および②で明示。②JaxRsResponseHandlerがerrorResponseBuilder経由でエラー応答を生成する旨は③で明確に説明。③ErrorResponseBuilderを継承したクラスの作成はコード例付きで説明。B-claimとして、JaxRsBeanValidationHandlerの動作詳細、ハンドラ設定順序の制約、jaxrs_adaptor使用時の自動追加、例外時の500返却などがKBに裏付けられた追加情報として提供されている。C-claimなし。"
   },
   "ref_sources_loaded": 6,
   "ref_sources_total": 6,
-  "cost_usd": 0.19669355,
-  "duration_s": 71.81397986412048,
+  "cost_usd": 0.18782180000000004,
+  "duration_s": 29.87641406059265,
   "error": null
 }

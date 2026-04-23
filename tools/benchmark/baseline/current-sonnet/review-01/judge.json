@@ -1,85 +1,57 @@
 {
   "verdict": {
     "level": 1,
-    "required_facts": [
+    "a_facts": [
       {
-        "fact": "夜間バッチ（日次・月次など定期起動）には都度起動バッチを選択する",
+        "fact": "都度起動バッチを採用する（常駐バッチは新規開発では非推奨）",
         "status": "COVERED"
       },
       {
-        "fact": "常駐バッチはマルチスレッド実行時に遅延問題があり、新規開発ではdb_messagingが推奨される",
+        "fact": "BatchAction を継承したアクションクラスを実装する",
         "status": "PARTIAL"
       },
       {
-        "fact": "BatchAction継承のアクションクラス・フォームクラス・エンティティクラスの3層構成",
+        "fact": "Form / Entity / Action の3層構成で組む",
         "status": "COVERED"
       },
       {
-        "fact": "フォームクラスのプロパティは全てString型で定義する（Bean Validationの都合）",
-        "status": "MISSING"
-      },
-      {
-        "fact": "外部ファイルなど安全でない入力には@Required/@Domainなどのバリデーションアノテーションを付与する",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "DB接続ありの最小ハンドラキュー: StatusCodeConvertHandler, GlobalErrorHandler, DBConnectionMgmt×2, TransactionMgmt, RequestPathJavaPackageMapping, MultiThreadExecution, LoopHandler, DataReadHandler",
+        "fact": "DB 接続ありの標準ハンドラキュー構成を使い、LoopHandler→DataReadHandler はサブスレッドに配置する",
         "status": "COVERED"
       },
       {
-        "fact": "サブスレッド側にLoopHandler→DataReadHandlerを置き1レコードずつ業務アクションに渡す",
-        "status": "COVERED"
-      },
-      {
-        "fact": "handleメソッドでBeanUtil.createAndCopyによりフォーム→エンティティ変換後、UniversalDao.insertでDB登録し、new Result.Success()を返す",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "createReaderメソッドでデータリーダのインスタンスを返す",
-        "status": "COVERED"
-      },
-      {
-        "fact": "CSVのデータリーダはFilePathSetting.getInstance()でパス解決、ObjectMapperFactory.createでObjectMapper生成、ObjectMapperIteratorでラップして実装",
-        "status": "COVERED"
-      },
-      {
-        "fact": "フォームクラスに@Csv(type=CsvType.CUSTOM)と@CsvFormat(quoteMode=QuoteMode.NORMAL)を付与、行番号ゲッタに@LineNumberを付与",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "-requestPath引数でアクションクラスとリクエストIDを指定する",
-        "status": "MISSING"
-      },
-      {
-        "fact": "data_bindを使う場合はFileBatchActionを使わずBatchActionを使う",
-        "status": "COVERED"
-      },
-      {
-        "fact": "@ValidateDataインターセプタを使うとhandleに常にバリデーション済みデータが渡り、バッチ間で共通化できる",
-        "status": "MISSING"
-      },
-      {
-        "fact": "標準提供のデータリーダ: FileDataReader、ValidatableFileDataReader、ResumeDataReaderの利用も検討できる",
+        "fact": "DataReader を実装してレコードを1件ずつ供給する",
         "status": "COVERED"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "ファイルのレイアウトと1対1対応するカラムを持つテンポラリテーブルにINSERT、マッチングはSQL JOIN、コントロールブレイクはGROUP BYで代替",
-        "type": "HALLUCINATION",
-        "why": "guide/nablarch-patterns/...:s2を引用しているがreference sourcesに含まれないソースからの情報"
+        "claim": "FILE to DB パターンではファイルレイアウトと1対1のテンポラリテーブルにINSERTし、業務処理はできるだけ加えない"
       },
       {
-        "claim": "ファイルの移動・コピーを取り込みバッチと別ジョブにすることで手動オペレーションが不要になる",
-        "type": "HALLUCINATION",
-        "why": "guide/nablarch-patterns/...:s3を引用しているがreference sourcesに含まれないソースからの情報"
+        "claim": "ファイルの移動・コピーは取り込みバッチとは別ジョブにすることで再実行が容易になる"
+      },
+      {
+        "claim": "FileDataReader / ValidatableFileDataReader は data_format 専用のため data_bind と混在不可"
+      },
+      {
+        "claim": "data_bind でCSVを扱う場合は ObjectMapperIterator ラッパーを使ったカスタム DataReader を自前実装する"
+      },
+      {
+        "claim": "ResumeDataReader により障害発生ポイントからの再実行が可能（ファイル入力限定）"
       }
     ],
-    "reasoning": "生成回答は都度起動バッチの選択、DB接続ありのハンドラキュー構成（主要ハンドラ名すべて列挙）、3層クラス設計、CSVデータリーダの実装（FilePathSetting/ObjectMapperIterator）、FileBatchAction禁止など主要ファクトを多くカバーしている。しかし①フォームクラスのプロパティを全てString型とする設計制約（Bean Validationの都合）が完全に未言及（MISSING）、②-requestPath引数によるアクションクラス/リクエストID指定の仕組みが未言及（MISSING）、③@ValidateDataインターセプタによるバリデーション共通化が未言及（MISSING）という3つの必須ファクトが欠落している。加えて、reference sourcesに存在しないガイド文書（nablarch-patterns）からテンポラリテーブル戦略やファイル分離アドバイスを引用しており、これらはHALLUCINATION扱い。MISSINGファクトが複数あるためスコアは1。"
+    "c_claims": [
+      {
+        "claim": "LoopHandler でコミット間隔を設定することで大量データのメモリ問題を回避できる",
+        "reason": "UNSUPPORTED",
+        "why": "KB は LoopHandler がコミット間隔ごとにトランザクションをコミットすると述べているが、メモリ問題の回避については一切言及していない。"
+      }
+    ],
+    "reasoning": "A-fact「BatchAction を継承したアクションクラスを実装する」が PARTIAL。生成回答はアクションクラスが DataReader を生成して Result を返すという特徴を述べ、FileBatchAction が data_format 専用であることを注意点として挙げているが、BatchAction クラスを継承すること自体は一度も明示されていない。他の4つの A-fact はすべてカバーされており、FILE to DB パターン・テンポラリテーブル設計・ファイル移動分離などの B-claim も KB に裏付けられた有益な情報として含まれている。ただし LoopHandler によるメモリ問題回避という KB 未記載の主張（C-claim）も存在するため、Level は 1 となる。"
   },
   "ref_sources_loaded": 7,
   "ref_sources_total": 7,
-  "cost_usd": 0.35766679999999995,
-  "duration_s": 176.28838753700256,
+  "cost_usd": 0.2582592,
+  "duration_s": 60.01523685455322,
   "error": null
 }

@@ -1,81 +1,55 @@
 {
   "verdict": {
-    "level": 2,
-    "required_facts": [
+    "level": 3,
+    "a_facts": [
       {
-        "fact": "NablarchはCSRF対策として`CsrfTokenVerificationHandler`を標準提供している",
+        "fact": "Nablarch は `CsrfTokenVerificationHandler` を標準提供する",
         "status": "COVERED"
       },
       {
-        "fact": "CSRFトークンをセッションストアに格納する",
+        "fact": "ハンドラキューに追加し、セッションストアハンドラや Nablarch カスタムタグハンドラより後ろに配置する",
         "status": "COVERED"
       },
       {
-        "fact": "POST/PUTなど更新系リクエストを検証対象とする",
-        "status": "COVERED"
-      },
-      {
-        "fact": "`session_store_handler`より後ろに配置する制約がある",
-        "status": "COVERED"
-      },
-      {
-        "fact": "Nablarchカスタムタグを使う場合は`nablarch_tag_handler`より後ろに配置する（`tag-hidden_encryption`でトークンを出力するため）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "`multipart_handler`の前に配置するとファイル保存前にCSRFトークンを検証できる（その場合は`session_store_handler`も前に）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "デフォルトセッションストア格納名: `nablarch_csrf-token`",
-        "status": "COVERED"
-      },
-      {
-        "fact": "トークン生成: `UUIDv4CsrfTokenGenerator`（UUID v4）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "GET/HEAD/TRACE/OPTIONSは検証対象外（`HttpMethodVerificationTargetMatcher`）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "リクエストでのトークン取得名: HTTPヘッダ`X-CSRF-TOKEN`、HTTPパラメータ`csrf-token`",
-        "status": "COVERED"
-      },
-      {
-        "fact": "検証失敗時: `BadRequestVerificationFailureHandler`が400を返す",
-        "status": "COVERED"
-      },
-      {
-        "fact": "XML設定例（sessionStoreHandler → nablarchTagHandler → csrfTokenVerificationHandler の順）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "カスタマイズ可能なハンドラプロパティ: `csrfTokenGenerator`、`verificationTargetMatcher`、`verificationFailureHandler`",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "RESTfulウェブサービスでは`CsrfTokenUtil`でトークンを取得し、クライアントに渡す仕組みをプロジェクト側で実装する",
+        "fact": "POST/PUT など更新系を検証し、失敗時はデフォルトで 400 を返す",
         "status": "COVERED"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "ログイン時にCSRFトークンを再生成しないとトークン固定攻撃のリスクがある。セッションIDのみ再生成する実装では`CsrfTokenUtil.regenerateCsrfToken`が必要",
-        "type": "HALLUCINATION",
-        "why": "参照ソース（s3/s4）には含まれないs5の内容。参照ソースの証拠境界外の情報"
+        "claim": "トークン生成に UUID v4（UUIDv4CsrfTokenGenerator）を使用する"
       },
       {
-        "claim": "HttpSessionを使った二重サブミット防止はCSRF対策として機能するが実装漏れが発生しやすい。データベースを使った二重サブミット防止はCSRF対策に対応していないため`CsrfTokenVerificationHandler`の併用が必要",
-        "type": "HALLUCINATION",
-        "why": "参照ソース（s3/s4）には含まれないsecurity-check.json:s1の内容。証拠境界外の情報であり、質問の主旨（基本設定方法）とも異なる関心事"
+        "claim": "セッションストア格納名はデフォルト `nablarch_csrf-token`"
+      },
+      {
+        "claim": "トークンの受け取りは HTTPヘッダ `X-CSRF-TOKEN` または HTTPパラメータ `csrf-token`"
+      },
+      {
+        "claim": "multipart_handler より前に配置することでファイル保存前にCSRFトークン検証が可能"
+      },
+      {
+        "claim": "ログイン時にセッションIDのみ再生成する実装では `CsrfTokenUtil.regenerateCsrfToken` を呼び出してトークンも再生成すること"
+      },
+      {
+        "claim": "WebConfig で csrfTokenHeaderName / csrfTokenParameterName / csrfTokenSessionStoredVarName をカスタマイズ可能"
+      },
+      {
+        "claim": "リクエスト単体テスト時は `NopHandler` に差し替えてCSRF検証を無効化すること"
+      },
+      {
+        "claim": "RESTfulウェブサービスでは `CsrfTokenUtil` でトークンを取得しクライアントに渡す仕組みをプロジェクトで実装する必要がある"
+      },
+      {
+        "claim": "データベースを使った二重サブミット防止機能はCSRF対策に対応していないため、その場合は `CsrfTokenVerificationHandler` を必ず併用すること"
       }
     ],
-    "reasoning": "生成回答は必須ファクトをほぼ網羅している。ハンドラ配置順序・デフォルト動作・XML設定例・RESTful利用の注意点など参照回答の主要項目はすべてCOVERED。唯一のPARTIALは「カスタマイズ可能なコンポーネント」で、参照回答が挙げるハンドラプロパティ（csrfTokenGenerator/verificationTargetMatcher/verificationFailureHandler）の差し替えが未記載だが、WebConfigプロパティによるカスタマイズは網羅しており部分的にカバーされている。証拠境界外の情報（ログイン時のトークン再生成・二重サブミット防止との関係）はHALLUCINATIONと判定したが、いずれも読者を誤解させる内容ではなく、コアな必須ファクトに矛盾しない。全必須ファクトがCOVERED/PARTIAL、重大なOVER-REACHなし、矛盾なし — level 2が妥当。"
+    "c_claims": [],
+    "reasoning": "A-factは3つ全て COVERED。①標準提供の `CsrfTokenVerificationHandler` は冒頭で明示。②ハンドラ配置順序（session_store_handler・nablarch_tag_handler より後ろ）は③に明確に記載。③POST/PUT等の検証対象と失敗時400レスポンスも②に記載。B-claimsはKB証拠（s3〜s5, security-check s1）で裏付けられた付加情報。C-claimはなし。→ Level 3。"
   },
   "ref_sources_loaded": 3,
   "ref_sources_total": 3,
-  "cost_usd": 0.22669355000000002,
-  "duration_s": 97.57598161697388,
+  "cost_usd": 0.2061427,
+  "duration_s": 27.424083948135376,
   "error": null
 }

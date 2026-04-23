@@ -1,69 +1,59 @@
 {
   "verdict": {
-    "level": 2,
-    "required_facts": [
+    "level": 3,
+    "a_facts": [
       {
-        "fact": "Bean Validationの使用を推奨（Nablarch独自バリデーションより）",
+        "fact": "Nablarch は Bean Validation の使用を推奨する",
         "status": "COVERED"
       },
       {
-        "fact": "推奨理由①: Jakarta EEで仕様が定められており情報が豊富",
-        "status": "MISSING"
-      },
-      {
-        "fact": "推奨理由②: Nablarch独自バリデーションの使い方を覚える必要がない",
-        "status": "MISSING"
-      },
-      {
-        "fact": "ウェブアプリケーションではBeanValidationStrategyをコンポーネント名validationStrategyとして登録する",
+        "fact": "Web アプリでは `BeanValidationStrategy` を登録して有効化する",
         "status": "COVERED"
       },
       {
-        "fact": "フォームクラスのプロパティは全てString型で定義する（変換失敗による予期せぬ例外を避けるため）",
+        "fact": "フォームクラスにアノテーションを付けて検証する",
         "status": "COVERED"
       },
       {
-        "fact": "アノテーションはFieldまたはgetter（Property）に設定する（setterは無効）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "個別アノテーションよりドメインバリデーションを推奨",
-        "status": "COVERED"
-      },
-      {
-        "fact": "@Required, @Length, @SystemCharなどのアノテーションをフォームに設定するコード例",
-        "status": "COVERED"
-      },
-      {
-        "fact": "相関バリデーションには@AssertTrueを使う",
-        "status": "COVERED"
-      },
-      {
-        "fact": "Bean Validationはバリデーション実行順序が保証されないため、相関バリデーションが単体チェック前に呼ばれる可能性がある",
-        "status": "COVERED"
-      },
-      {
-        "fact": "任意項目で未入力時は相関バリデーションをスキップしてtrueを返す",
+        "fact": "個別アノテーションより `@Domain` によるドメインバリデーションが推奨される",
         "status": "COVERED"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "RESTful Web サービスの場合はアクションメソッドの引数に @Valid を付けてバリデーションを実行します",
-        "type": "OVER-REACH",
-        "why": "質問は「画面項目のチェック」（Webフォーム）を対象としており、REST APIのバリデーション方法は別の関心事。参照ソースにも含まれていない"
+        "claim": "フォームクラスのプロパティは全て String 型で宣言し、バリデーション通過後に型変換する"
       },
       {
-        "claim": "エラーメッセージのカスタマイズ（@Length.max.message プロパティ設定例）",
-        "type": "OVER-REACH",
-        "why": "質問はチェックの書き方についてであり、エラーメッセージのカスタマイズは別の関心事。参照ソース(s4)は参照リストに含まれていない"
+        "claim": "ドメインBeanのフィールド名がドメイン名となり、各Formから @Domain(\"フィールド名\") で参照する"
+      },
+      {
+        "claim": "DomainManager 実装クラスを作成し、コンポーネント名 domainManager で登録する"
+      },
+      {
+        "claim": "@Required はドメインBeanではなく各Formクラス側に設定する"
+      },
+      {
+        "claim": "相関バリデーションには @AssertTrue アノテーションを付けたゲッタで実装する"
+      },
+      {
+        "claim": "Bean Validation ではバリデーション実行順序が保証されないため、相関バリデーションで対象フィールドが null/空の場合は true を返す"
+      },
+      {
+        "claim": "setter へのアノテーション指定は無効（Field または getter に設定すること）"
+      },
+      {
+        "claim": "エラーメッセージはプレースホルダにアノテーション属性名を使って定義できる"
+      },
+      {
+        "claim": "RESTful Web サービスの場合はアクションメソッドの引数に @Valid を付けてバリデーションを実行する"
       }
     ],
-    "reasoning": "生成回答はBean Validationの推奨・BeanValidationStrategyの登録・String型プロパティ・アノテーション設定場所・ドメインバリデーション推奨・相関バリデーション実装など、参照回答の核心的なファクトをほぼ網羅している。不足しているのはBean Validationを推奨する2つの明示的な理由（「Jakarta EE仕様で情報が豊富」「Nablarch独自の使い方を覚えなくてよい」）であり、これらはMISSINGだが実用的な回答の正確性には影響しない。一方、REST APIへの言及とエラーメッセージカスタマイズの説明が参照ソース外・質問外の関心事に踏み込んでいる（OVER-REACH×2）。ただしいずれも軽微で読者を誤った方向に誘導するレベルではない。コアファクトの欠落なし、CONTRADICTEDなし、OVERREACHは2件だが軽微であることからスコア2と判定。"
+    "c_claims": [],
+    "reasoning": "全4件のA-factがCOVERED。Bean Validationの推奨・BeanValidationStrategyの登録・フォームへのアノテーション付与・@Domainドメインバリデーションの推奨がいずれも明示されている。B-claimsはすべてKBの取得済みセクションに根拠があり、on-topicな追加情報。C-claimなし。"
   },
   "ref_sources_loaded": 5,
   "ref_sources_total": 5,
-  "cost_usd": 0.20252179999999997,
-  "duration_s": 75.62100005149841,
+  "cost_usd": 0.18943925,
+  "duration_s": 31.891276836395264,
   "error": null
 }

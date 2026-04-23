@@ -1,54 +1,51 @@
 {
   "verdict": {
     "level": 1,
-    "required_facts": [
+    "a_facts": [
       {
-        "fact": "Servlet API を前提とした構成であること",
+        "fact": "Servlet API ベース(`NablarchServletContextListener` + `WebFrontController`)で組む",
         "status": "COVERED"
       },
       {
-        "fact": "NablarchServletContextListener がシステムリポジトリとログの初期化を行うサーブレットコンテキストリスナーであること",
+        "fact": "`WebFrontController` がリクエストを受け、ハンドラキューに委譲する構成",
         "status": "COVERED"
       },
       {
-        "fact": "WebFrontController が jakarta.servlet.Filter の実装クラスであること",
-        "status": "COVERED"
-      },
-      {
-        "fact": "WebFrontController がリクエストをハンドラキューに委譲するエントリポイントであること",
-        "status": "COVERED"
-      },
-      {
-        "fact": "DispatchHandler が URI を元にアクションクラスを特定し、ハンドラキューの末尾に追加すること",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "アクションクラスがフォームクラス・エンティティクラスを使って業務ロジックを実行すること",
+        "fact": "`DispatchHandler` が URI からアクションクラスを特定して呼び出す",
         "status": "MISSING"
       },
       {
-        "fact": "アクションクラスが HttpResponse を返却し、HttpResponseHandler がそれをクライアントへのレスポンスに変換すること",
-        "status": "COVERED"
+        "fact": "アクションは `HttpResponse` を返し、`HttpResponseHandler` がレスポンスに変換する",
+        "status": "PARTIAL"
       },
       {
-        "fact": "ハンドラキューはプロジェクト要件に応じて構築すること",
-        "status": "COVERED"
-      },
-      {
-        "fact": "最小ハンドラ構成として 13 本のハンドラを推奨順序で並べること",
-        "status": "COVERED"
-      },
-      {
-        "fact": "ハンドラのカテゴリがリクエスト・レスポンス変換、フィルタリング、DB関連、リクエスト検証、エラー処理に分類されること",
+        "fact": "プロジェクト要件に応じてハンドラキューを構築する(最小構成をベースに追加する)",
         "status": "COVERED"
       }
     ],
-    "over_reach": [],
-    "reasoning": "生成回答はコンポーネント構成（NablarchServletContextListener・WebFrontController）と最小ハンドラ構成13本（正しい順序）をほぼ完全にカバーしており、web.xml 設定例や Maven アーキタイプ生成コマンドなど参照ソース外の有用な補足情報も含む。ただし処理の流れ（s2 に該当）の記述が欠落しており、特に「アクションクラスがフォームクラス・エンティティクラスを使って業務ロジックを実行する」という必須事実が完全に MISSING である。DispatchHandler の説明も RouterAdaptor の記述に留まり PARTIAL。スコア基準上、必須事実が 1 件でも MISSING の場合はレベル 2 に達せず、レベル 1 が上限となる。追加情報（web.xml 設定、Maven アーキタイプ、JBoss/WildFly 制約）はいずれも on-topic で誤誘導はなく、OVER-REACH・HALLUCINATION には該当しない。"
+    "b_claims": [
+      {
+        "claim": "`RepositoryBasedWebFrontController` をサーブレットフィルタとして web.xml に登録し、`NablarchServletContextListener` をリスナーとして設定する具体的な web.xml 設定例"
+      },
+      {
+        "claim": "`NablarchServletContextListener` が起動時にシステムリポジトリとログを初期化し、これを web.xml に忘れると起動失敗する"
+      },
+      {
+        "claim": "ウェブアプリと RESTful ウェブサービスを併用する場合は `WebFrontController` を複数定義し `controllerName` で使い分ける"
+      },
+      {
+        "claim": "ルーティングには RouterAdaptor（XML 定義）または `@Path` アノテーション（`PathOptionsProviderRoutesMapping`）が選択でき、JBoss/Wildfly の VFS 環境では `@Path` 方式は使用不可"
+      },
+      {
+        "claim": "Nablarch 提供の Maven アーキタイプ（`nablarch-web-archetype`）からブランクプロジェクトを生成すると基本設定・ルーティングアダプタ・疎通確認用アプリが含まれた状態で始められる"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-fact「`DispatchHandler` が URI からアクションクラスを特定して呼び出す」が MISSING。生成回答は最小ハンドラ構成の No.13 に RouterAdaptor を挙げてディスパッチを説明しているが、`DispatchHandler` には一切言及していない（取得セクションに s2 が含まれなかった影響）。また A-fact「アクションは `HttpResponse` を返し、`HttpResponseHandler` がレスポンスに変換する」は PARTIAL：`HttpResponseHandler` の役割はハンドラ表に記載されているが、アクションが `HttpResponse` を返してそれを変換するという処理の流れは説明されていない。A-facts が全 COVERED ではないため Level 1。C-claim は検出されなかった。"
   },
   "ref_sources_loaded": 3,
   "ref_sources_total": 3,
-  "cost_usd": 0.23341485,
-  "duration_s": 101.52449917793274,
+  "cost_usd": 0.21088400000000002,
+  "duration_s": 41.37449550628662,
   "error": null
 }

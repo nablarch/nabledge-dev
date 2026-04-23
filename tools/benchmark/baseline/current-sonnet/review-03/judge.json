@@ -1,64 +1,59 @@
 {
   "verdict": {
-    "level": 2,
-    "required_facts": [
+    "level": 1,
+    "a_facts": [
       {
-        "fact": "NablarchのRESTfulウェブサービスはウェブアプリケーションをベースにJakarta RESTful Web Servicesサポートを組み合わせた構成",
+        "fact": "Web アプリをベースに JAX-RS サポート (Jakarta RESTful Web Services) を組み合わせた構成を使う",
         "status": "COVERED"
       },
       {
-        "fact": "WebFrontController → DispatchHandler の基本フローでアクションクラスをJAX-RSアノテーションで定義する",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "JaxRsResponseHandler が HttpResponse をクライアントに返す",
+        "fact": "リソースクラス(アクションクラス)に JAX-RS アノテーションを付与する",
         "status": "COVERED"
       },
       {
-        "fact": "使用可能アノテーション: @Produces（レスポンスのメディアタイプ）、@Consumes（リクエストのメディアタイプ）、@Valid（Bean Validation）",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "@Context によるServletリソースインジェクションおよびJakarta CDIは使用不可",
+        "fact": "レスポンスは `JaxRsResponseHandler` が返す（フォームクラス返却時は `BodyConvertHandler` が変換する）",
         "status": "COVERED"
       },
       {
-        "fact": "クライアントサイドの機能は提供しない。必要な場合はJersey/RESTEasyを使う",
-        "status": "COVERED"
-      },
-      {
-        "fact": "処理フロー: WebFrontController受信 → ハンドラキュー委譲 → DispatchHandlerがURIでアクション特定 → アクションが業務ロジック実行 → フォームクラスまたはHttpResponseを返す → JaxRsResponseHandlerがクライアントへ返す",
-        "status": "PARTIAL"
-      },
-      {
-        "fact": "最小ハンドラ構成7つの順序: GlobalErrorHandler → JaxRsResponseHandler → DBConnectionManagementHandler → TransactionManagementHandler → router_adaptor → BodyConvertHandler → JaxRsBeanValidationHandler",
-        "status": "COVERED"
-      },
-      {
-        "fact": "router_adaptor より後ろのハンドラはハンドラキューに直接設定せず、router_adaptorに対して設定する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "jaxrs_adaptor使用時はBodyConvertHandlerとJaxRsBeanValidationHandlerが自動追加される",
-        "status": "COVERED"
-      },
-      {
-        "fact": "メディアタイプ拡張が必要な場合はRoutesMapping の methodBinderFactory に JaxRsMethodBinderFactory を設定し handlerList に BodyConvertHandler/JaxRsBeanValidationHandler を含める",
+        "fact": "`router_adaptor` より後のハンドラは `router_adaptor` に設定する",
         "status": "COVERED"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "推奨パターンは Jersey（または RESTEasy）アダプタ + @Path/HTTPメソッドアノテーションによるルーティング",
-        "type": "OVER-REACH",
-        "why": "参照ソースではJersey/RESTEasyはクライアントサイド用途として言及されており、サーバー側の「推奨パターン」として位置付けてはいない。WebFrontController/DispatchHandlerが基本フローとして示されている"
+        "claim": "jaxrs_adaptor（JerseyまたはRESTEasy）を使うと BodyConvertHandler と JaxRsBeanValidationHandler が自動追加される"
+      },
+      {
+        "claim": "@Path アノテーションによるルーティングには PathOptionsProviderRoutesMapping をディスパッチハンドラとして使用する"
+      },
+      {
+        "claim": "JBoss/WildFly など vfs でクラスを管理する AP サーバでは @Path アノテーションによるクラス検索が動作しないため XML ルーティングを使う"
+      },
+      {
+        "claim": "JerseyJaxRsHandlerListFactory を使うと JSON(Jackson2)・XML(JAXB)・フォーム・マルチパートの4形式が自動サポートされる"
+      },
+      {
+        "claim": "PathOptionsProviderRoutesMapping コンポーネントは BasicApplicationInitializer の initializeList への追加が必須"
+      },
+      {
+        "claim": "@Context による Servlet リソースインジェクションおよび Jakarta CDI は使用不可"
+      },
+      {
+        "claim": "フィルタが必要な場合はハンドラを自作、インターセプタが必要な場合は BodyConverter 実装を自作する"
       }
     ],
-    "reasoning": "必須ファクトはすべてCOVEREDまたはPARTIALであり、MISSINGやCONTRADICTEDはない。PARTIALの箇所は①WebFrontController/DispatchHandlerの明示的なフロー記述が薄い点（ハンドラ表で補完されているが、WebFrontControllerのリクエスト受信やDispatchHandlerの役割が明示されていない）、②@Consumes/@Validが使用可能アノテーションとして明示されていない点（@Producesのみコード例に登場）。コア内容（ハンドラ構成順序・router_adaptor以降の設定位置・jaxrs_adaptor自動追加）は正確に伝えられている。OVER-REACHは結論部「推奨パターンはJersey/RESTEasyアダプタ」の表現のみで、参照ソースが示すWebFrontController/DispatchHandlerの汎用パターンをJerseyアダプタ推奨として特定化している点が軽微な誘導リスクとなる。ハルシネーションはなく（追加情報はすべてNablarch知識ベース内の実在コンポーネント）、スコア2が妥当。"
+    "c_claims": [
+      {
+        "claim": "インターフェースに @Path を置き実装クラスでメソッドを提供するパターンは OpenAPI generator との組み合わせで有効",
+        "reason": "UNSUPPORTED",
+        "why": "KB証拠（参照ソース・取得セクション）のいずれにも OpenAPI generator への言及は存在しない。インターフェース @Path パターン自体は supported だが、OpenAPI generator との組み合わせという主張は KB に根拠がない。"
+      }
+    ],
+    "reasoning": "A-factは4件すべて COVERED。①ウェブアプリベース＋Jakarta RESTful Web Servicesサポートの構成、②リソースクラスへの JAX-RS アノテーション付与、③JaxRsResponseHandler のレスポンス返却・BodyConvertHandler のフォームクラス変換、④router_adaptor 以降のハンドラは router_adaptor に設定、いずれも生成回答で明示または実質的に述べられている。一方、「インターフェースに @Path を置くパターンは OpenAPI generator との組み合わせで有効」という主張は KB 証拠に一切根拠がなく UNSUPPORTED の C-claim となる。C-claim が存在するため、A-fact が全 COVERED であっても Level は強制的に 1。"
   },
   "ref_sources_loaded": 3,
   "ref_sources_total": 3,
-  "cost_usd": 0.21441430000000003,
-  "duration_s": 79.93629097938538,
+  "cost_usd": 0.20818475000000003,
+  "duration_s": 40.95723915100098,
   "error": null
 }

@@ -1,74 +1,46 @@
 {
   "verdict": {
     "level": 1,
-    "required_facts": [
+    "a_facts": [
       {
-        "fact": "Nablarch はビルトインで認可チェック機能を提供している",
+        "fact": "Nablarch は認可チェック機能をビルトインで提供している",
         "status": "COVERED"
       },
       {
-        "fact": "2種類の認可機能がある: permission_check と role_check",
+        "fact": "リクエストレベルの認可は `PermissionCheckHandler` が担い、権限があれば `Permission` をスレッドローカルに設定、なければ 403 を返す",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "認可ライブラリは `permission_check`(条件変更可)と `role_check`(条件固定)の2種類がある",
         "status": "COVERED"
-      },
-      {
-        "fact": "permission_check は権限管理の条件が変わり得るシステム向け（導入コスト高）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "role_check は権限管理の条件が基本的に変わらないシステム向け（ハードコーディング、導入コスト低）",
-        "status": "COVERED"
-      },
-      {
-        "fact": "PermissionCheckHandler がリクエストレベルの認可を担う",
-        "status": "COVERED"
-      },
-      {
-        "fact": "権限がある場合: Permission をスレッドローカルに設定し後続ハンドラを呼び出す",
-        "status": "MISSING"
-      },
-      {
-        "fact": "権限がない場合: Forbidden(403) を送出する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "setUsesInternalRequestId を true にすると内部フォワード先リクエストIDで認可チェックが行われる（デフォルト false）",
-        "status": "MISSING"
-      },
-      {
-        "fact": "ThreadContextHandler より後に配置すること",
-        "status": "COVERED"
-      },
-      {
-        "fact": "ForwardingHandler より後に配置すること（内部フォワード先IDで認可する場合）",
-        "status": "MISSING"
-      },
-      {
-        "fact": "HttpErrorHandler より後に配置すること（認可エラー時のエラーページ指定のため）",
-        "status": "MISSING"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "@CheckRole アノテーション・SessionStoreUserRoleUtil・BasicRoleEvaluator・SessionStoreUserRoleResolver などの role_check 実装詳細",
-        "type": "HALLUCINATION",
-        "why": "libraries-role_check.json は参照ソースに含まれておらず、エビデンス境界外のコンテンツ"
+        "claim": "`role_check` は `@CheckRole` アノテーションでアクションメソッドにロールを割り当てる方式である"
       },
       {
-        "claim": "Nablarch は認証機能（ログイン処理自体）を提供していない",
-        "type": "HALLUCINATION",
-        "why": "security-check.json は参照ソースに含まれておらず、エビデンス境界外のコンテンツ"
+        "claim": "ログイン時に `SessionStoreUserRoleUtil.save` でユーザのロールをセッションストアに保存する"
       },
       {
-        "claim": "JSP 用の認可チェックカスタムタグは提供されていない（CheckRoleUtil でサーバ側判定）",
-        "type": "HALLUCINATION",
-        "why": "この詳細は参照ソースに含まれない role_check.json:s3 由来"
+        "claim": "@CheckRole で複数ロールの AND 条件・OR 条件（anyOf = true）が指定できる"
+      },
+      {
+        "claim": "JSP 用の認可チェックカスタムタグは提供されておらず、`CheckRoleUtil` でサーバ側判定しセッション経由で EL 式/JSTL に渡す"
+      },
+      {
+        "claim": "`PermissionCheckHandler` は `ThreadContextHandler` より後ろに配置する必要がある"
+      },
+      {
+        "claim": "Nablarch は認証機能（ログイン処理自体）を提供しておらず、Nablarch Example を参考にプロジェクトで実装する"
       }
     ],
-    "reasoning": "2種類の認可機能の概要（permission_check と role_check）とその使い分け、PermissionCheckHandler の基本動作（403送出、ThreadContextHandler配置）は正しくカバーされている。しかし、必須ファクトが複数欠落している：①権限がある場合に Permission をスレッドローカルに設定するという重要な動作、②setUsesInternalRequestId の説明、③ForwardingHandler および HttpErrorHandler の配置制約。加えて、参照ソースに含まれない role_check.json からの大量の実装詳細（@CheckRole、SessionStoreUserRoleUtil、コンポーネント設定等）が含まれており、これらはエビデンス境界外のコンテンツ（HALLUCINATION）として評価される。role_check の実装詳細が質問への回答として mislead するわけではないが、4つの必須ファクト欠落と複数の HALLUCINATION によりレベル1が適切。"
+    "c_claims": [],
+    "reasoning": "A-fact 2 が PARTIAL。生成回答は `PermissionCheckHandler` による 403 送出（権限なし時）は記述しているが、権限がある場合に `Permission` をスレッドローカルに設定するという成功パスの動作が欠落している。この情報は KB（handlers-permission_check_handler.json:s4）に明示されており、A-fact の核心部分であるため PARTIAL とした。A-facts 1・3 は COVERED、C-claim なし。全 A-fact が COVERED でないため Level 1。"
   },
   "ref_sources_loaded": 4,
   "ref_sources_total": 4,
-  "cost_usd": 0.21012375,
-  "duration_s": 84.13143587112427,
+  "cost_usd": 0.2178075,
+  "duration_s": 32.23168992996216,
   "error": null
 }

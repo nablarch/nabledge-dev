@@ -1,44 +1,34 @@
 {
   "verdict": {
     "level": 1,
-    "required_facts": [
+    "a_facts": [
       {
-        "fact": "Bean ValidationでDBアクセスを行うのはセキュリティ上問題がある",
+        "fact": "Bean Validation で DB アクセスを行うのはセキュリティ上の問題がある(未バリデーションの不正値で SQL 問合せするため SQL インジェクションにつながる可能性がある)",
         "status": "COVERED"
       },
       {
-        "fact": "まだバリデーションされていない不正な値をSQL問い合わせに使うため、SQLインジェクション脆弱性につながる可能性がある",
+        "fact": "DB との相関バリデーション(重複チェックなど)は Bean Validation 通過後のビジネスアクション側で実施する",
         "status": "COVERED"
       },
       {
-        "fact": "データベースとの相関バリデーションはBean Validationでは行わない",
-        "status": "COVERED"
-      },
-      {
-        "fact": "DBとの相関チェック（重複チェックなど）はBean Validation通過後のビジネスアクション内で実施する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "フィールド同士の相関チェック（例：メール入力と確認入力の一致）は @AssertTrue でBean Validation内に書いてよい",
-        "status": "MISSING"
-      },
-      {
-        "fact": "@AssertTrue 使用時はJakarta Bean Validationが実行順序を保証しないため、対象フィールドがnull/空の場合はtrueを返してスキップする",
+        "fact": "フィールド同士の相関チェック(DB 不要)は `@AssertTrue` で Bean Validation 内に書いてよい",
         "status": "MISSING"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "check/security-check/security-check.json:s1 を引用してSQLインジェクション対策（プレースホルダ使用など）を説明",
-        "type": "HALLUCINATION",
-        "why": "このソースはreference sourcesに含まれておらず、evidence boundary外の引用。内容自体は一般的に妥当だが、この質問のエビデンスとして認められない"
+        "claim": "Jakarta Bean Validation はバリデーションの実行順序を保証しないため、他のバリデーションが先に終わっていると仮定することも危険"
+      },
+      {
+        "claim": "ビジネスアクションで DB 重複チェックを行う際も、UniversalDAO や JDBCラッパーを使い入力値を直接文字列連結しないことが推奨される"
       }
     ],
-    "reasoning": "生成回答はコア部分（Bean ValidationでのDBアクセスがセキュリティ上問題であること、SQLインジェクションリスク、ビジネスアクション内での実装が正しい）を正確にカバーしており、その説明は詳細で正確。しかし、参照回答の③として明示されている「フィールド同士の相関バリデーション（@AssertTrueパターン）はBean Validation内で行ってよい」という重要な情報が完全に欠落している。この情報は「入力チェック段階で何ができるか」という質問の文脈で有益な補足情報であり、参照回答が明示的に含める必要ありと判断したfactである。また、null/空フィールド時にtrueを返してスキップするパターンも未言及。バリデーション実行順序の非保証についてはDB禁止の文脈で言及されているが、@AssertTrue利用時のnull/空スキップという文脈（参照回答の意図）ではカバーされていない。さらにevidence boundary外のcheck/security-check.json引用というHALLUCINATIONもある。以上より、必須factにMISSINGがあるためスコアは最大1。"
+    "c_claims": [],
+    "reasoning": "A-fact 1（SQLインジェクションリスク）とA-fact 2（ビジネスアクションでの実施）はいずれも明確にカバーされている。しかし A-fact 3（フィールド同士の相関チェックは @AssertTrue で Bean Validation 内に書いてよい）は生成回答に一切言及がなく MISSING。これにより「A all COVERED」の条件を満たせないため Level 1 となる。C-claim は見当たらない。"
   },
   "ref_sources_loaded": 2,
   "ref_sources_total": 2,
-  "cost_usd": 0.1949151,
-  "duration_s": 76.15611839294434,
+  "cost_usd": 0.21013284999999998,
+  "duration_s": 42.03376770019531,
   "error": null
 }

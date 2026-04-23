@@ -1,34 +1,49 @@
 {
   "verdict": {
     "level": 3,
-    "required_facts": [
+    "a_facts": [
       {
-        "fact": "Nablarch は CORS をビルトインで提供している",
+        "fact": "Nablarch は RESTful ウェブサービス向けに CORS 対応をビルトインで提供している",
         "status": "COVERED"
       },
       {
-        "fact": "CorsPreflightRequestHandler がプリフライトリクエストを処理する",
+        "fact": "プリフライトリクエストは `CorsPreflightRequestHandler` が処理する",
         "status": "COVERED"
       },
       {
-        "fact": "CorsResponseFinisher が実際のリクエストに対する CORS ヘッダ付与を処理する",
-        "status": "COVERED"
-      },
-      {
-        "fact": "クラス名は nablarch.fw.jaxrs.CorsPreflightRequestHandler",
-        "status": "COVERED"
-      },
-      {
-        "fact": "CORS は RESTful ウェブサービス機能の一部として位置づけられている",
+        "fact": "実リクエストへの CORS ヘッダ付与は `CorsResponseFinisher` が行う",
         "status": "COVERED"
       }
     ],
-    "over_reach": [],
-    "reasoning": "必須ファクトはすべて COVERED。生成回答はリファレンスが引用した s1/s14 に加え、同一ナレッジファイルの s2〜s4 も参照し、BasicCors の設定方法・デフォルト動作・モジュール依存・ハンドラ配置順序という追加詳細を提供しているが、これらはすべて質問の主題（CORSの対応方法）に直結する on-topic な補足情報であり、OVER-REACH には該当しない。矛盾・CONTRADICTED・HALLUCINATIONも見当たらない。"
+    "b_claims": [
+      {
+        "claim": "CORSの処理は `Cors` インタフェースが行い、フレームワークの基本実装として `BasicCors` クラスが提供されている"
+      },
+      {
+        "claim": "`BasicCors` の `allowOrigins` プロパティに許可する Origin を列挙する設定が必須"
+      },
+      {
+        "claim": "プリフライト判定条件: HTTPメソッドが OPTIONS、かつ `Origin` ヘッダと `Access-Control-Request-Method` ヘッダが存在する場合"
+      },
+      {
+        "claim": "プリフライトレスポンスはステータス204、Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE,PATCH、Access-Control-Allow-Headers: Content-Type,X-CSRF-TOKEN"
+      },
+      {
+        "claim": "実際のリクエストには Access-Control-Allow-Origin、Vary: Origin（許可Origin時のみ）、Access-Control-Allow-Credentials: true を付与"
+      },
+      {
+        "claim": "`CorsPreflightRequestHandler` は `JaxRsResponseHandler` より後ろのハンドラキューに配置する必要がある"
+      },
+      {
+        "claim": "モジュールとして `com.nablarch.framework:nablarch-fw-jaxrs` への依存追加が必要"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "3つのA-factすべてがCOVERED。生成回答は「Nablarch には CORS 対応の標準機能がある」と明示し、`CorsPreflightRequestHandler` によるプリフライト処理と `CorsResponseFinisher` による実リクエストへのヘッダ付与を正確に記述している。さらに取得セクション（s2〜s4）から `BasicCors` の設定方法、デフォルト動作、モジュール依存、ハンドラ配置制約などの有用なB-claimsを追加しており、C-claimは存在しない。Level 3。"
   },
   "ref_sources_loaded": 2,
   "ref_sources_total": 2,
-  "cost_usd": 0.15067534999999999,
-  "duration_s": 43.93406629562378,
+  "cost_usd": 0.16329605000000003,
+  "duration_s": 26.2027587890625,
   "error": null
 }

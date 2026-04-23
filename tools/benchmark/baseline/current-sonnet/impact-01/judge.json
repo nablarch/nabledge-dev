@@ -1,67 +1,40 @@
 {
   "verdict": {
     "level": 0,
-    "required_facts": [
+    "a_facts": [
       {
-        "fact": "トランザクション境界は `TransactionManagementHandler`（トランザクション制御ハンドラ）が決定する",
-        "status": "CONTRADICTED"
-      },
-      {
-        "fact": "往路でトランザクションを開始し、復路でコミット、例外時にロールバックする",
+        "fact": "トランザクション境界は `TransactionManagementHandler` が決定する",
         "status": "MISSING"
       },
       {
-        "fact": "`transactionFactory` プロパティに `TransactionFactory` 実装を設定し、制御対象をスレッド上で管理する",
-        "status": "MISSING"
+        "fact": "往路でトランザクション開始、復路でコミット、例外時にロールバックする",
+        "status": "PARTIAL"
       },
       {
         "fact": "`DatabaseConnectionManagementHandler` より後ろに配置する必要がある",
         "status": "MISSING"
-      },
-      {
-        "fact": "`transactionName` プロパティのデフォルト値は `transaction`",
-        "status": "MISSING"
-      },
-      {
-        "fact": "複数トランザクション使用時は `transactionName` 設定が必須",
-        "status": "MISSING"
-      },
-      {
-        "fact": "`DbConnectionManagementHandler#connectionName` と同じ値を `transactionName` に指定する（`connectionName` 未設定時は省略可）",
-        "status": "MISSING"
-      },
-      {
-        "fact": "`DatabaseConnectionManagementHandler` は `connectionFactory` に `ConnectionFactory` 実装を設定してDB接続を取得・解放する",
-        "status": "MISSING"
       }
     ],
-    "over_reach": [
+    "b_claims": [
       {
-        "claim": "Nablarchバッチのトランザクション境界は `LoopHandler` が `commitInterval` 件数ごとにコミットする形で決まる",
-        "type": "OVER-REACH",
-        "why": "参照ソースは `TransactionManagementHandler` を境界の主体として定義しており、`LoopHandler` はこの質問の参照ソースに登場しない"
+        "claim": "`LoopHandler` がコミット間隔（commitInterval）件数ごとにトランザクションをコミットする"
       },
       {
-        "claim": "Jakarta EEバッチでは `ItemWriteTransactionManagementListener` が `ItemWriter#writeItems` 実行後にコミットする",
-        "type": "HALLUCINATION",
-        "why": "参照ソース（`handlers-transaction_management_handler.json`）には Jakarta EE バッチやリスナー構造の記述は一切ない"
+        "claim": "Jakarta EEバッチでは `ItemWriteTransactionManagementListener` が `ItemWriter#writeItems` 実行後にコミットする"
       },
       {
-        "claim": "`StepTransactionManagementListener` がステップ開始前/終了後にトランザクション開始/終了を担当する",
-        "type": "HALLUCINATION",
-        "why": "参照ソース外の情報であり、この質問の根拠境界に含まれない"
+        "claim": "`StepTransactionManagementListener` がステップ開始前にトランザクション開始・終了後にコミットまたはロールバックする"
       },
       {
-        "claim": "`item-count` で chunk サイズを指定してコミット単位を制御する",
-        "type": "HALLUCINATION",
-        "why": "参照ソース外の情報であり、この質問の根拠境界に含まれない"
+        "claim": "Chunkサイズはジョブ定義XMLの `item-count` で指定する"
       }
     ],
-    "reasoning": "生成回答の中心的主張は「Nablarchバッチのトランザクション境界は `LoopHandler`（commitInterval）と Jakarta EE リスナーが決定する」というものだが、参照回答が定める正解は「`TransactionManagementHandler` が決定する」である。これは中心的事実の直接的な矛盾であり、必須ファクトの大多数（8件中7件以上）が MISSING または CONTRADICTED となっている。さらに `LoopHandler` や JSR352 リスナーに関する記述は参照ソースに一切登場しない HALLUCINATION / OVER-REACH であり、読者を誤った機構へ誘導する。スコア 0 の条件（「中心的主張が参照と矛盾する」「必須ファクトの大多数が欠落」）を両方満たすため、レベル 0 と判定する。"
+    "c_claims": [],
+    "reasoning": "A-factの3つのうち2つがMISSING。生成された回答は `TransactionManagementHandler` を一切言及せず、スタンドアロンバッチのトランザクション制御主体として `LoopHandler` を挙げている。`LoopHandler` の記述はKBエビデンス（retrieved sections）に支持されており、C-claimではないが、質問に対する正答である `TransactionManagementHandler` の役割・往路/復路の動作・配置制約がすべて欠落している。MISSING 2/3 は多数派であるため Level 0。"
   },
   "ref_sources_loaded": 3,
   "ref_sources_total": 3,
-  "cost_usd": 0.18015265,
-  "duration_s": 55.85931134223938,
+  "cost_usd": 0.20621224999999999,
+  "duration_s": 37.260769844055176,
   "error": null
 }
