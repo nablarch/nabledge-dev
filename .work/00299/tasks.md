@@ -91,10 +91,15 @@
   - §3-1 Excel 節: P1 header 展開仕様を追記 (対象 `sheet_type=="P1"`、データ行数ぶん header token を複製、verify は §8-2 header 検出規則に**のみ**依拠し converter 参照禁止、データ行数は §8-4 の P1 規約から算出し converter の section 数参照禁止)
   - §3-4 **新設**: QP (P1 列-値ペアリング検査) — JSON 各 section の `{列名}: {値}` が Excel の同一行・同一列のセル値と一致することを検証
   - §4 マトリクス: QP 行を追加 (RST —, MD —, Excel ⚠️)
-- [ ] 22-B-5a-r3: **verify TDD** — 次の順序で実装:
-  - (r3a) P1 header 展開の unit test → RED → 実装 → GREEN
-  - (r3b) QP (`check_xlsx_p1_pairing`) の unit test → RED → 実装 → GREEN
-  - 実装後 SE + QA expert review
+- [x] 22-B-5a-r3 (初回): **verify TDD** — RED (`a491488bb`) → GREEN (`eb0c47a77`)
+- [ ] 22-B-5a-r3-QAfix: QA expert review で 7 Findings → 全件対応
+  - F1: P2 boundary (run-length=2, useful_width=2) テスト追加
+  - F2: 無効 sub-header (parent より広い) テスト追加
+  - F3: 列名を substring として含む cell 値でのスワップ検出テスト
+  - F4: 重複列名 header 時の QP 挙動 lock (現在 silent accept → FAIL に変更)
+  - F5: 空 header cell (spacer 列) の挙動 lock
+  - F6: `:` 含む値の **PASS** 側テスト追加 (現在 FAIL 側しかない)
+  - F7: fabricated `列: 値` fragment の QC2 検出テスト
 - [ ] 22-B-5b: **xlsx converter 書き直し** (既に暫定実装済、r2/r3 完了後に verify PASS するよう微調整) — `scripts/create/converters/xlsx_releasenote.py` / `xlsx_security.py`:
   - 1 sheet = 1 RSTResult (scan/classify/run で sheet-level に分割、下記 22-B-5c を参照)
   - P1/P2 自動判定 (ヘッダ検出 + 列数 ≤ 2 の特例)
