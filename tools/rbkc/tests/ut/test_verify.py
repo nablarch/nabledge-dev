@@ -1032,6 +1032,24 @@ class TestCheckContentCompleteness:
             md_ast_mod.parse = orig
         assert any("[QC1]" in i and "markdown parse/visitor error" in i for i in issues)
 
+    def test_fail_qc1_rst_unresolved_substitution_surfaces(self):
+        """Spec §3-1b: unresolved substitution (`|missing|` with no
+        `.. |missing| replace::` definition) → QC1 FAIL. The Visitor
+        raises UnresolvedReferenceError which verify reports as QC1."""
+        src = "概要\n====\n\n利用バージョン: |undefined_version|\n"
+        data = self._data(sections=[{"id": "s1", "title": "概要", "content": "x"}])
+        issues = self._check(src, data)
+        assert any("[QC1]" in i and "RST parse/visitor error" in i for i in issues)
+
+    def test_fail_qc1_rst_parse_error_level_3(self):
+        """Spec §3-1b 原則 4: docutils parse error (level >= 3) → QC1 FAIL.
+        An unknown directive triggers `(ERROR/3)` in docutils' warning
+        stream; the normaliser scans for that and raises UnknownSyntaxError."""
+        src = "概要\n====\n\n.. unknown-directive-xyz::\n\n   body text\n"
+        data = self._data(sections=[{"id": "s1", "title": "概要", "content": "x"}])
+        issues = self._check(src, data)
+        assert any("[QC1]" in i and "RST parse/visitor error" in i for i in issues)
+
     def test_fail_qc1_rst_unknown_role_surfaces(self):
         """Unknown RST role (not in Sphinx shim list) → UnknownSyntaxError → QC1 FAIL."""
         # `:unknownshim:` is not in _SPHINX_INLINE_ROLES and not a docutils native role
@@ -1271,6 +1289,69 @@ class TestVerifyFileExcel:
         issues = self._check(str(xlsx_path), data)
         assert any("QC2" in i and "X" in i for i in issues)
 
+    def test_pass_xls_cell_in_json(self, tmp_path):
+        """Spec §3-1 Excel 節: `.xls` (xlrd) path must behave identically
+        to `.xlsx` (openpyxl). Source cell → JSON text PASS case."""
+        try:
+            import xlwt
+            import xlrd  # noqa: F401
+        except ImportError:
+            pytest.skip("xlwt/xlrd not available")
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet("Sheet1")
+        ws.write(0, 0, "Hello")
+        xls_path = tmp_path / "test.xls"
+        wb.save(str(xls_path))
+        data = {"id": "f", "title": "Hello", "content": "", "sections": []}
+        assert self._check(str(xls_path), data) == []
+
+    def test_fail_xls_cell_missing_from_json(self, tmp_path):
+        try:
+            import xlwt, xlrd  # noqa: F401
+        except ImportError:
+            pytest.skip("xlwt/xlrd not available")
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet("Sheet1")
+        ws.write(0, 0, "必須セル値")
+        xls_path = tmp_path / "test.xls"
+        wb.save(str(xls_path))
+        data = {"id": "f", "title": "別の内容", "content": "", "sections": []}
+        issues = self._check(str(xls_path), data)
+        assert any("QC1" in i for i in issues)
+
+    def test_fail_xls_qc2_fabrication(self, tmp_path):
+        """`.xls` path must raise QC2 when JSON contains a string with no
+        source cell — mirroring the `.xlsx` QC2 behaviour."""
+        try:
+            import xlwt, xlrd  # noqa: F401
+        except ImportError:
+            pytest.skip("xlwt/xlrd not available")
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet("Sheet1")
+        ws.write(0, 0, "ABC")
+        xls_path = tmp_path / "test.xls"
+        wb.save(str(xls_path))
+        data = {"id": "f", "title": "ABC 捏造", "content": "", "sections": []}
+        issues = self._check(str(xls_path), data)
+        assert any("QC2" in i and "捏造" in i for i in issues)
+
+    def test_fail_xls_numeric_cell_missing_from_json(self, tmp_path):
+        """xlrd numeric cells must be tokenised and compared. If the cell
+        is absent from JSON entirely, QC1 must FAIL regardless of
+        float/int representation."""
+        try:
+            import xlwt, xlrd  # noqa: F401
+        except ImportError:
+            pytest.skip("xlwt/xlrd not available")
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet("Sheet1")
+        ws.write(0, 0, 12345)
+        xls_path = tmp_path / "test.xls"
+        wb.save(str(xls_path))
+        data = {"id": "f", "title": "無関係", "content": "", "sections": []}
+        issues = self._check(str(xls_path), data)
+        assert any("QC1" in i for i in issues)
+
     def test_fail_qc3_duplicate_cell_in_json(self, tmp_path):
         """Excel QC3: two source cells with the same value but JSON only
         contains that value once → second match falls into the consumed
@@ -1437,25 +1518,33 @@ class TestCheckSourceLinks:
     # --- QL1 RST native named reference (r2 critical fix 3) ---------------
 
     def test_fail_rst_named_reference_target_title_missing(self):
-        """A cross-document named reference (`refname` set, no local target)
-        must resolve via label_map; the resolved target title must appear
-        in JSON (spec §3-2 row 1). We synthesise the AST shape docutils
-        produces for this case and call the public QL1 API."""
-        from docutils import nodes
-        doctree = nodes.document(None, None)
-        ref = nodes.reference("", "Usage Section", refname="usage-section")
-        doctree.append(ref)
-        # Drive check_source_links through its AST-walking branch directly.
-        # (The fmt="rst" path starts with rst_ast.parse on source_text.)
-        import scripts.common.rst_ast as rst_ast_mod
-        orig = rst_ast_mod.parse
-        rst_ast_mod.parse = lambda s, source_path=None: (doctree, "")
-        try:
-            data = self._data(content="全然違う内容。")
-            issues = self._check("dummy", "rst", data, {"usage-section": "利用ガイド"})
-        finally:
-            rst_ast_mod.parse = orig
-        assert any("QL1" in i and "利用ガイド" in i for i in issues)
+        """Real RST: `\\`Target\\`_` references a `.. _label:` defined in
+        the same doc. docutils resolves it to a reference node with refid
+        pointing at the target section; the resolved title must appear
+        in JSON (spec §3-2 row 1)."""
+        src = (
+            "See `Detailed Usage`_ for more.\n\n"
+            ".. _Detailed Usage:\n\n"
+            "Detailed Usage\n"
+            "==============\n\n"
+            "Section body text.\n"
+        )
+        data = self._data(content="Totally unrelated content.")
+        issues = self._check(src, "rst", data, {})
+        assert any("QL1" in i and "Detailed Usage" in i for i in issues)
+
+    def test_pass_rst_named_reference_target_title_in_json(self):
+        """Same fixture but JSON contains the resolved title — no FAIL."""
+        src = (
+            "See `Detailed Usage`_ for more.\n\n"
+            ".. _Detailed Usage:\n\n"
+            "Detailed Usage\n"
+            "==============\n\n"
+            "Body.\n"
+        )
+        data = self._data(content="Detailed Usage and body appear here.")
+        issues = self._check(src, "rst", data, {})
+        assert not any("QL1" in i and "Detailed Usage" in i for i in issues)
 
     def test_pass_md_mailto_link_not_internal(self):
         """`mailto:` hrefs are not document-to-document internal links —
@@ -1485,19 +1574,21 @@ class TestCheckSourceLinks:
         issues = self._check(src, "md", data)
         assert any("QL1" in i and "会社ロゴ" in i for i in issues)
 
-    def test_pass_rst_named_reference_unknown_label_skipped(self):
-        """refname not in label_map — skipped (same policy as :ref:`foo`
-        bare-label form). No FAIL emitted."""
-        from docutils import nodes
-        doctree = nodes.document(None, None)
-        ref = nodes.reference("", "Unknown", refname="unknown-label")
-        doctree.append(ref)
-        import scripts.common.rst_ast as rst_ast_mod
-        orig = rst_ast_mod.parse
-        rst_ast_mod.parse = lambda s, source_path=None: (doctree, "")
-        try:
-            data = self._data(content="別の内容。")
-            issues = self._check("dummy", "rst", data, {})
-        finally:
-            rst_ast_mod.parse = orig
-        assert not any("QL1" in i and "named reference" in i for i in issues)
+    def test_pass_rst_plain_sections_without_named_references(self):
+        """Vanilla sections (no user-defined label, no named reference)
+        must not emit spurious QL1 — docutils gives each section an
+        auto-id like `section-N`, which QL1 must ignore."""
+        src = "Alpha\n=====\n\nA body\n\nBeta\n====\n\nB body\n"
+        data = self._data(content="Alpha Beta A body B body")
+        assert self._check(src, "rst", data, {}) == []
+
+    def test_pass_rst_named_reference_scheme_mailto_untouched(self):
+        """A bare `.. _Contact: mailto:ops@example.com` is not a named
+        section reference; QL1 must not raise on it. (Sanity check that
+        refuri-bearing references stay in QL2's lane.)"""
+        src = (
+            "Contact_ us.\n\n"
+            ".. _Contact: mailto:ops@example.com\n"
+        )
+        data = self._data(content="us.")
+        assert self._check(src, "rst", data, {}) == []

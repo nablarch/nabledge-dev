@@ -871,6 +871,47 @@ def verify_docs_md(source_path, docs_md_path, fmt) -> list[str]:
 # QL1: check_source_links
 # ---------------------------------------------------------------------------
 
+def _resolve_title_inline(title_node, label_map: dict) -> str:
+    r"""Render an RST section title to plain text, resolving any embedded
+    ``:ref:`label``` / `` `Label`_ `` references via label_map.
+
+    docutils stores unresolved inline references inside the title as
+    ``inline`` (class role-ref) or ``reference`` nodes. ``astext()``
+    returns their raw text form (the bare label name), which does not
+    match what the create-side converter emits (the label's target
+    title). Walking the title children and swapping those nodes for
+    their resolved form makes the verify string match the JSON string.
+    """
+    from docutils import nodes
+    parts: list[str] = []
+    for child in title_node.children:
+        if isinstance(child, nodes.inline):
+            cls = child.get("classes") or []
+            if any(c.startswith("role-") for c in cls):
+                role = next((c[5:] for c in cls if c.startswith("role-")), "")
+                raw = child.astext().strip()
+                if role == "ref":
+                    if "<" in raw and raw.rstrip().endswith(">"):
+                        disp, _, _ = raw.rpartition("<")
+                        parts.append(disp.strip())
+                    else:
+                        parts.append(label_map.get(raw, raw))
+                    continue
+                # Other roles: render the raw text (converter does the same).
+                parts.append(raw)
+                continue
+        if isinstance(child, nodes.reference):
+            refid = (child.get("refid", "") or "").strip()
+            if refid and refid in label_map:
+                parts.append(label_map[refid])
+            else:
+                parts.append(child.astext())
+            continue
+        parts.append(child.astext())
+    return "".join(parts)
+
+
+
 def check_source_links(
     source_text: str,
     fmt: str,
@@ -902,31 +943,41 @@ def check_source_links(
             return issues
 
         # Native RST named references: `.. _label:` + `\`Label\`_` produce a
-        # reference node. Per spec §3-2 row 1 we require the reader-visible
-        # text to appear in JSON.
+        # reference node whose `refid` points at a target inside the same
+        # doctree (docutils resolves the name during parsing). Per spec §3-2
+        # row 1, the reader-visible string (the target section's title)
+        # must appear in JSON.
         #
-        # Scope: restricted to references whose target is a user-defined
-        # label present in label_map. docutils also produces reference nodes
-        # for auto-generated anchors (section-N / contents TOC entries)
-        # whose target has no user-facing label; those are navigation
-        # artefacts, not links a human writer asked the reader to follow,
-        # and JSON captures their resolved titles via the section title
-        # path (covered by QC1).
+        # We look up `doctree.ids[refid]` and read the resolved section
+        # title. Auto-generated anchors (docutils synthesises them for TOC /
+        # contents directives) are skipped: their refid uses `id-N` /
+        # `section-N` patterns and the target is not a user-defined label,
+        # so they are navigation artefacts already covered by QC1.
+        _AUTO_ID_RE = re.compile(r"^(?:id|section)-\d+$")
         for ref in doctree.findall(nodes.reference):
             refuri = ref.get("refuri", "")
             if refuri:  # external link — handled by QL2
                 continue
-            refname = (ref.get("refname", "") or "").strip()
-            if not refname:
+            refid = (ref.get("refid", "") or "").strip()
+            if not refid or _AUTO_ID_RE.match(refid):
                 continue
-            resolved = label_map.get(refname)
-            if resolved is None:
-                # Unknown cross-document label — cannot verify, skip (same
-                # policy as :ref: bare-label form).
+            target = doctree.ids.get(refid)
+            if target is None or not isinstance(target, nodes.section):
                 continue
+            # Resolved title = the target section's first `title` child.
+            title_node = next(
+                (c for c in target.children if isinstance(c, nodes.title)),
+                None,
+            )
+            if title_node is None:
+                continue
+            # When the title itself embeds `:ref:\`label\`` / named refs,
+            # render it through the create-side label_map so the string we
+            # check against JSON matches what the converter emitted.
+            resolved = _resolve_title_inline(title_node, label_map).strip()
             if resolved and resolved not in json_full:
                 issues.append(
-                    f"[QL1] RST named reference '{refname}' target title missing from JSON: {resolved!r}"
+                    f"[QL1] RST named reference '{refid}' target title missing from JSON: {resolved!r}"
                 )
 
         # :ref: role references (Sphinx shim produces inline with class role-ref)

@@ -161,7 +161,7 @@
 - [メッセージ管理](component/libraries/libraries-message.md)
 - [メッセージングログの出力](component/libraries/libraries-messaging-log.md)
 - [MOMメッセージング](component/libraries/libraries-mom-system-messaging.md)
-- [Fixed(固定長)のマルチフォーマット定義のサンプル集](component/libraries/libraries-multi-format-example.md)
+- [libraries-multi-format-example](component/libraries/libraries-multi-format-example.md)
 - [Nablarch Validation](component/libraries/libraries-nablarch-validation.md)
 - [パフォーマンスログの出力](component/libraries/libraries-performance-log.md)
 - [システムリポジトリ](component/libraries/libraries-repository.md)

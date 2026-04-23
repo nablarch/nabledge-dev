@@ -142,12 +142,35 @@ def register_shims() -> None:
 # Parse entry point
 # ---------------------------------------------------------------------------
 
+# Sphinx-provided substitutions that appear throughout the Nablarch RST
+# corpus. docutils by itself does not know about these, so we prepend
+# empty-string definitions before parsing. Matches conf.py's rst_prolog.
+_SPHINX_SUBSTITUTIONS: tuple[str, ...] = (
+    "nablarch_version",
+)
+
+
+_SUBSTITUTION_PLACEHOLDER = "​"  # zero-width space; visually empty
+
+
+def _substitution_prolog() -> str:
+    lines = [
+        f".. |{name}| replace:: {_SUBSTITUTION_PLACEHOLDER}"
+        for name in _SPHINX_SUBSTITUTIONS
+    ]
+    return "\n".join(lines) + "\n\n"
+
+
 def parse(source: str, source_path: Path | None = None) -> tuple[nodes.document, str]:
     """Parse RST source into a doctree.
 
     Returns ``(doctree, warnings)`` where ``warnings`` is the concatenated
     docutils warning stream (empty string if clean). The caller decides
     whether a warning constitutes a FAIL (verify does; create logs).
+
+    Sphinx-provided substitutions (see _SPHINX_SUBSTITUTIONS) are
+    injected as empty replacements so ``|name|`` references do not raise
+    "Undefined substitution" errors on plain docutils.
     """
     register_shims()
 
@@ -163,7 +186,8 @@ def parse(source: str, source_path: Path | None = None) -> tuple[nodes.document,
     if source_path is not None:
         overrides["source"] = str(source_path)
 
-    doctree = publish_doctree(source, settings_overrides=overrides)
+    full_source = _substitution_prolog() + source
+    doctree = publish_doctree(full_source, settings_overrides=overrides)
     return doctree, warning_stream.getvalue()
 
 

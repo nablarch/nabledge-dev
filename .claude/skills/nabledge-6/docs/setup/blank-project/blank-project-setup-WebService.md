@@ -42,7 +42,7 @@ Nablarchが提供するアーキタイプを使用してブランクプロジェ
 mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArtifactId=nablarch-jaxrs-archetype -DarchetypeVersion={nablarch_version}
 ```
 
-上記コマンドで使用されているNablarchのバージョンは |nablarch_version| となっている。バージョンを変更したい場合は、以下のパラメータを変更すること。
+上記コマンドで使用されているNablarchのバージョンは ​ となっている。バージョンを変更したい場合は、以下のパラメータを変更すること。
 
 | 設定値 | 説明 |
 |---|---|

@@ -196,7 +196,7 @@ print_status info "Installing Python libraries..."
 if uv pip install --python "$VENV_DIR/bin/python" \
     pdfplumber reportlab pypdf pymupdf \
     python-pptx Pillow markitdown \
-    openpyxl xlrd python-docx lxml pandas docutils markdown-it-py; then
+    openpyxl xlrd xlwt python-docx lxml pandas docutils markdown-it-py; then
     print_status ok "Python libraries installed"
 else
     print_status error "Failed to install Python libraries"

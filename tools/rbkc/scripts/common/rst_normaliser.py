@@ -49,7 +49,17 @@ def normalise_rst(
     if source_path is not None:
         path = Path(source_path) if not isinstance(source_path, Path) else source_path
 
-    doctree, _warnings = rst_ast.parse(text, source_path=path)
+    doctree, warnings = rst_ast.parse(text, source_path=path)
+
+    # Spec §3-1b: docutils parse errors (level ≥ 3) → QC1 FAIL. docutils
+    # writes them to the warning stream without necessarily embedding them
+    # in the doctree (e.g. "Undefined substitution referenced"), so we
+    # scan the stream for the (ERROR/3) / (SEVERE/4) markers.
+    if strict_unknown and warnings:
+        for line in warnings.splitlines():
+            if "(ERROR/3)" in line or "(SEVERE/4)" in line:
+                raise UnknownSyntaxError(f"docutils parse error: {line.strip()}")
+
     try:
         parts = rst_ast_visitor.extract_document(doctree, label_map=label_map)
     except VisitorError as exc:
