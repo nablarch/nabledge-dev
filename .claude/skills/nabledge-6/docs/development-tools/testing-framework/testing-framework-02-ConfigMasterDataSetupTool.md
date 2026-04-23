@@ -48,7 +48,7 @@ mvn compile
 mvn dependency:copy-dependencies -DoutputDirectory=lib
 ```
 
-## プロパティファイルの書き換え
+### プロパティファイルの書き換え
 
 マスタデータ自動復旧機能が使用する、バックアップスキーマ名を設定する。
 
@@ -63,13 +63,13 @@ masterdata.test.backup-schema=nablarch_test_master
 
 以下の設定をすることでEclipseから本ツールを起動できる。
 
-## Antビュー起動
+### Antビュー起動
 
 ツールバーから、ウィンドウ(Window)→設定(Show View)を選択し、Antビューを開く。
 
 ![](./_image/open_ant_view.png)
 
-## ビルドファイル登録
+### ビルドファイル登録
 
 ＋印のアイコンを押下し、ビルドスクリプトを選択する。
 

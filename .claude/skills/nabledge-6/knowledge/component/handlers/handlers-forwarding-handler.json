@@ -7,32 +7,38 @@
     {
       "id": "s1",
       "title": "ハンドラクラス名",
-      "content": "* nablarch.fw.web.handler.ForwardingHandler"
+      "content": "* nablarch.fw.web.handler.ForwardingHandler",
+      "level": 2
     },
     {
       "id": "s2",
       "title": "モジュール一覧",
-      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```"
+      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```",
+      "level": 2
     },
     {
       "id": "s3",
       "title": "制約",
-      "content": "セッション変数保存ハンドラ より後ろに配置すること\nセッション変数保存ハンドラ より後ろに配置すべき理由は、\n改竄エラー時の遷移先を設定する を参照"
+      "content": "セッション変数保存ハンドラ より後ろに配置すること\nセッション変数保存ハンドラ より後ろに配置すべき理由は、\n改竄エラー時の遷移先を設定する を参照",
+      "level": 2
     },
     {
       "id": "s4",
       "title": "内部フォーワードを示すレスポンスを返却する",
-      "content": "業務アクションなどで内部フォーワードを示すレスポンスを返却する場合には、\nレスポンスが示すコンテンツパスを `forward://` から開始する。\n\n以下に例を示す。\n\n```java\npublic HttpResponse sample(HttpRequest request, ExecutionContext context) {\n  // 業務処理\n\n  // 同一業務アクションのinitializeに内部フォーワード\n  return new HttpResponse(\"forward://initialize\");\n}\n```\n\n> **Tip:**\n> ステータスコードはフォーワード時とフォーワード後を比較し、大きい値をレスポンス時のステータスコードとする。\n\n> 以下に例を示す。\n\n> * >   フォーワード時が **200** で、フォーワード後が **500** の場合は、クライアントには **500** を返却する。\n> * >   フォーワード時が **400** で、フォーワード後が **200** の場合は、クライアントには **400** を返却する。"
+      "content": "業務アクションなどで内部フォーワードを示すレスポンスを返却する場合には、\nレスポンスが示すコンテンツパスを `forward://` から開始する。\n\n以下に例を示す。\n\n```java\npublic HttpResponse sample(HttpRequest request, ExecutionContext context) {\n  // 業務処理\n\n  // 同一業務アクションのinitializeに内部フォーワード\n  return new HttpResponse(\"forward://initialize\");\n}\n```\n\n> **Tip:**\n> ステータスコードはフォーワード時とフォーワード後を比較し、大きい値をレスポンス時のステータスコードとする。\n\n> 以下に例を示す。\n\n> * >   フォーワード時が **200** で、フォーワード後が **500** の場合は、クライアントには **500** を返却する。\n> * >   フォーワード時が **400** で、フォーワード後が **200** の場合は、クライアントには **400** を返却する。",
+      "level": 2
     },
     {
       "id": "s5",
       "title": "内部フォーワードに指定するパスのルール",
-      "content": "内部フォーワードで指定するフォーワード先のパスには、相対パスと絶対パスの指定が出来る。\n\n相対パス\n現在のリクエストURIを起点としたパスになる。\n絶対パス\nサーブレットコンテキスト名を起点としたパスになる。\n\n絶対パスの場合には、指定するパスを `/` から開始する。\n\n以下に例を示す。\n\n現在のリクエストURIが `action/users/save` の場合、下記の相対パスと絶対パスが示す内部フォーワード先は同一となる。\n\n```java\n// 相対パス\nnew HttpResponse(\"forward://initialize\");\n\n// 絶対パス\nnew HttpResponse(\"forward:///action/users/initialize\");\n```"
+      "content": "内部フォーワードで指定するフォーワード先のパスには、相対パスと絶対パスの指定が出来る。\n\n相対パス\n現在のリクエストURIを起点としたパスになる。\n絶対パス\nサーブレットコンテキスト名を起点としたパスになる。\n\n絶対パスの場合には、指定するパスを `/` から開始する。\n\n以下に例を示す。\n\n現在のリクエストURIが `action/users/save` の場合、下記の相対パスと絶対パスが示す内部フォーワード先は同一となる。\n\n```java\n// 相対パス\nnew HttpResponse(\"forward://initialize\");\n\n// 絶対パス\nnew HttpResponse(\"forward:///action/users/initialize\");\n```",
+      "level": 2
     },
     {
       "id": "s6",
       "title": "内部リクエストIDについて",
-      "content": "内部フォーワード時、フォーワード先のリクエストIDを内部リクエストIDとしてスレッドコンテキストに保持する。"
+      "content": "内部フォーワード時、フォーワード先のリクエストIDを内部リクエストIDとしてスレッドコンテキストに保持する。",
+      "level": 2
     }
   ]
 }

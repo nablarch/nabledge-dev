@@ -67,7 +67,7 @@ HttpResponseHandler へ設定する。
 
 > このため、 `ServletContextTemplateResolver` ではなく、 `ClassLoaderTemplateResolver` 等の別の実装クラスを使用すること。
 
-## 処理対象判定について
+### 処理対象判定について
 
 ThymeleafResponseWriter は
 HttpResponse のコンテンツパスの内容によって、

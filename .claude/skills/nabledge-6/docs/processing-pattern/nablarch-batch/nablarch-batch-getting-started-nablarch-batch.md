@@ -41,7 +41,7 @@ $mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
 
 住所ファイル登録バッチのハンドラ構成については import-zip-code-file.xml を参照。
 
-## 入力データソースからデータを読み込む
+### 入力データソースからデータを読み込む
 
 入力データソースからデータを読み込む処理について解説する。
 
@@ -189,7 +189,7 @@ public class ZipCodeFileReader implements DataReader<ZipCodeForm> {
 > データ読み込み処理をバッチごとに実装する手間を省くことができる。
 > イテレータの実装に関してはExampleアプリケーションの ObjectMapperIterator.java の実装を参照。
 
-## 業務ロジックを実行する
+### 業務ロジックを実行する
 
 業務ロジックを実行する部分について解説する。
 

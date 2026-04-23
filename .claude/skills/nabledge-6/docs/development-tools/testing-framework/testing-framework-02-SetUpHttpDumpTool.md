@@ -54,7 +54,7 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 
 以下の設定をすることでEclipseから本ツールを起動できる。
 
-## 設定画面起動
+### 設定画面起動
 
 ツールバーから、ウィンドウ(Window)→設定(Prefernce)を選択する。
 左側のペインから一般(General)→エディタ(Editors)→ファイルの関連付け(File Associations)
@@ -62,20 +62,20 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 
 ![](./_image/01_Eclipse_Preference.png)
 
-## 外部プログラム選択
+### 外部プログラム選択
 
 ラジオボタンから外部プログラム(External program)を選択し、参照(Browse)ボタンを押下する。
 
 ![](./_image/02_Eclipse_EditorSelection.png)
 
-## 起動用バッチファイル（シェルスクリプト）選択
+### 起動用バッチファイル（シェルスクリプト）選択
 
 Windowsの場合はバッチファイル(httpDump.bat)を、
 Linuxの場合はシェルスクリプト(httpDump.sh)を選択する。
 
 ![](./_image/03_Eclipse_OpenFile.png)
 
-## HTMLファイルからの起動方法
+### HTMLファイルからの起動方法
 
 Eclipseのパッケージエクスプローラ等からHTMLファイルを右クリックし、
 httpDumpで開くことでツールを起動できる。

@@ -94,7 +94,7 @@ sqlLogFormatter.endExecuteBatchFormat=$methodName$\
 
 ## 使用方法
 
-## SQLログの設定
+### SQLログの設定
 
 SQLログの設定は、 各種ログの設定 で説明したプロパティファイルに行う。
 
@@ -285,7 +285,7 @@ sqlLogFormatter.startExecuteBatchFormat=$methodName$\n\tSQL:$sql$\n\tadditional_
 sqlLogFormatter.endExecuteBatchFormat=$methodName$\n\texe:$executeTime$ms count:$updateCount$
 ```
 
-## JSON形式の構造化ログとして出力する
+### JSON形式の構造化ログとして出力する
 
 JSON形式の構造化ログとして出力する 設定によりログをJSON形式で出力できるが、
 SqlLogFormatter では

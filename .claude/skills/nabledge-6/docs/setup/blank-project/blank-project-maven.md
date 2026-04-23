@@ -197,7 +197,7 @@ mvn clean
 
 ## Mavenのよくあるトラブル
 
-## Return code is: 503 , ReasonPhrase:Service Unavailable.が返ってくる
+### Return code is: 503 , ReasonPhrase:Service Unavailable.が返ってくる
 
 以下のように「Return code is: 503」のエラーがコンソールに出力されることがある。
 
@@ -209,7 +209,7 @@ mvn clean
 
 repositoryの設定や、proxyの設定が誤っていないか確認すること。
 
-## mvnコマンドの結果が期待と異なる
+### mvnコマンドの結果が期待と異なる
 
 mvnコマンドの結果が期待と異なる場合(warに想定外のファイルが含まれる等)は、IDEを終了し、「mvn clean」を実行してから、本来実行したかったゴールを実行することで解決することがある。
 

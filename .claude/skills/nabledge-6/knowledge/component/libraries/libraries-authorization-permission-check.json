@@ -7,52 +7,62 @@
     {
       "id": "s1",
       "title": "機能概要",
-      "content": ""
+      "content": "",
+      "level": 2
     },
     {
       "id": "s2",
       "title": "リクエスト単位で認可チェックを行うことができる",
-      "content": "認可チェックハンドラ をハンドラキューに設定することで、\nリクエスト単位で認可チェックを行うことができる。\n\n詳細は以下を参照。\n\n* 認可チェックを使うための設定\n* サーバサイドで認可チェックを行う\n* 権限に応じて画面表示を制御する"
+      "content": "認可チェックハンドラ をハンドラキューに設定することで、\nリクエスト単位で認可チェックを行うことができる。\n\n詳細は以下を参照。\n\n* 認可チェックを使うための設定\n* サーバサイドで認可チェックを行う\n* 権限に応じて画面表示を制御する",
+      "level": 3
     },
     {
       "id": "s3",
       "title": "グループ単位とユーザ単位を併用した権限設定ができる",
-      "content": "認可チェックに使う権限設定の概念モデルは以下となる。\n\n![](images/permission_check/conceptual_model.png)\n\nグループは、部署など、組織単位での権限割り当てに使用する。\n\n認可チェック単位は、複数のリクエストをまとめ、認可チェックの最小単位を表す。\n認可チェック単位には、認可チェックを実現するために必要なリクエスト、つまり、ウェブであれば画面のイベントが複数紐付く。\n例えば、ユーザ登録機能であれば、以下のようなデータとなる。\n\n認可チェック単位\nユーザ登録\n認可チェック単位「ユーザ登録」に紐付くリクエスト\n入力画面の初期表示\n入力画面の確認ボタン\n確認画面の登録ボタン\n確認画面の戻るボタン\n\nグループとユーザ、グループと認可チェック単位の関連を設定することで、グループ単位の権限を設定できる。\nさらに、ユーザに直接認可チェック単位を設定できるため、特定ユーザに対するイレギュラーな権限付与に対応できる。"
+      "content": "認可チェックに使う権限設定の概念モデルは以下となる。\n\n![](images/permission_check/conceptual_model.png)\n\nグループは、部署など、組織単位での権限割り当てに使用する。\n\n認可チェック単位は、複数のリクエストをまとめ、認可チェックの最小単位を表す。\n認可チェック単位には、認可チェックを実現するために必要なリクエスト、つまり、ウェブであれば画面のイベントが複数紐付く。\n例えば、ユーザ登録機能であれば、以下のようなデータとなる。\n\n認可チェック単位\nユーザ登録\n認可チェック単位「ユーザ登録」に紐付くリクエスト\n入力画面の初期表示\n入力画面の確認ボタン\n確認画面の登録ボタン\n確認画面の戻るボタン\n\nグループとユーザ、グループと認可チェック単位の関連を設定することで、グループ単位の権限を設定できる。\nさらに、ユーザに直接認可チェック単位を設定できるため、特定ユーザに対するイレギュラーな権限付与に対応できる。",
+      "level": 3
     },
     {
       "id": "s4",
       "title": "モジュール一覧",
-      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-auth</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-auth-jdbc</artifactId>\n</dependency>\n```"
+      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-auth</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-auth-jdbc</artifactId>\n</dependency>\n```",
+      "level": 2
     },
     {
       "id": "s5",
       "title": "使用方法",
-      "content": ""
+      "content": "",
+      "level": 2
     },
     {
       "id": "s6",
       "title": "認可チェックを使うための設定",
-      "content": "この機能では、データベースを使用して認可チェックに使う権限データを管理する。\nテーブルのレイアウトは以下となる。\n\nグループ\n| グループID(PK) | グループを識別するための値。文字列型 |\n|---|---|\nシステムアカウント\n| ユーザID(PK) | ユーザを識別するための値。文字列型 |\n|---|---|\n| ユーザIDロック状態 | ユーザIDのロック状態。文字列型。 |\n| 有効日(From) | ユーザの有効日(From)。文字列型。 |\n| 有効日(To) | ユーザの有効日(To)。文字列型。 |\n\nロックされていない場合は\"0\"、ロックされた場合は\"0\"以外\n\nyyyyMMdd形式で、指定しない場合は”19000101”\n\nyyyyMMdd形式で、指定しない場合は”99991231”\nグループシステムアカウント\n| グループID(PK) | グループを識別するための値。文字列型 |\n|---|---|\n| ユーザID(PK) | ユーザを識別するための値。文字列型 |\n| 有効日(From)(PK) | ユーザの有効日(From)。文字列型 |\n| 有効日(To) | ユーザの有効日(To)。文字列型 |\n\nyyyyMMdd形式で、指定しない場合は”19000101”\n\nyyyyMMdd形式で、指定しない場合は”99991231”\n認可チェック単位\n| 認可チェック単位ID(PK) | 認可チェック単位を識別するための値。文字列型 |\n|---|---|\n認可チェック単位リクエスト\n| 認可チェック単位ID(PK) | 認可チェック単位を識別するための値。文字列型 |\n|---|---|\n| リクエストID(PK) | リクエストを識別するための値。文字列型 |\nグループ権限\n| グループID(PK) | グループを識別するための値。文字列型 |\n|---|---|\n| 認可チェック単位ID(PK) | 認可チェック単位を識別するための値。文字列型 |\nシステムアカウント権限\n| ユーザID(PK) | ユーザを識別するための値。文字列型 |\n|---|---|\n| 認可チェック単位ID(PK) | 認可チェック単位を識別するための値。文字列型 |\n\n認可チェックを使うためには、以下のとおり設定する。\n\n* BasicPermissionFactory\n  の設定をコンポーネント定義に追加する。\n* BasicPermissionFactory は、\n  認可チェックハンドラ に設定して使うので、コンポーネント名は任意の名前を指定する。\n\n```xml\n<component name=\"permissionFactory\" class=\"nablarch.common.permission.BasicPermissionFactory\">\n\n  <!-- グループスキーマ -->\n  <property name=\"groupTableSchema\">\n    <component class=\"nablarch.common.permission.schema.GroupTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- システムアカウントスキーマ -->\n  <property name=\"systemAccountTableSchema\">\n    <component class=\"nablarch.common.permission.schema.SystemAccountTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- グループシステムアカウントスキーマ -->\n  <property name=\"groupSystemAccountTableSchema\">\n    <component class=\"nablarch.common.permission.schema.GroupSystemAccountTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- 認可チェック単位スキーマ -->\n  <property name=\"permissionUnitTableSchema\">\n    <component class=\"nablarch.common.permission.schema.PermissionUnitTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- 認可チェック単位リクエストスキーマ -->\n  <property name=\"permissionUnitRequestTableSchema\">\n    <component class=\"nablarch.common.permission.schema.PermissionUnitRequestTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- グループ権限スキーマ -->\n  <property name=\"groupAuthorityTableSchema\">\n    <component class=\"nablarch.common.permission.schema.GroupAuthorityTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- システムアカウント権限スキーマ -->\n  <property name=\"systemAccountAuthorityTableSchema\">\n    <component class=\"nablarch.common.permission.schema.SystemAccountAuthorityTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- データベースアクセスに使用するトランザクションマネージャ -->\n  <property name=\"dbManager\" ref=\"permissionCheckDbManager\"/>\n\n  <!-- 有効日(FROM/TO)の判定に使用する業務日付を提供するプロバイダ -->\n  <property name=\"businessDateProvider\" ref=\"businessDateProvider\" />\n</component>\n```\n\nBasicPermissionFactory は、\n初期化が必要なので、以下のコンポーネント定義も追加する。\n\n```xml\n<component name=\"initializer\"\n           class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <!-- BasicPermissionFactoryを初期化する -->\n      <component-ref name=\"permissionFactory\" />\n    </list>\n  </property>\n</component>\n```"
+      "content": "この機能では、データベースを使用して認可チェックに使う権限データを管理する。\nテーブルのレイアウトは以下となる。\n\nグループ\n| グループID(PK) | グループを識別するための値。文字列型 |\n|---|---|\nシステムアカウント\n| ユーザID(PK) | ユーザを識別するための値。文字列型 |\n|---|---|\n| ユーザIDロック状態 | ユーザIDのロック状態。文字列型。 |\n| 有効日(From) | ユーザの有効日(From)。文字列型。 |\n| 有効日(To) | ユーザの有効日(To)。文字列型。 |\n\nロックされていない場合は\"0\"、ロックされた場合は\"0\"以外\n\nyyyyMMdd形式で、指定しない場合は”19000101”\n\nyyyyMMdd形式で、指定しない場合は”99991231”\nグループシステムアカウント\n| グループID(PK) | グループを識別するための値。文字列型 |\n|---|---|\n| ユーザID(PK) | ユーザを識別するための値。文字列型 |\n| 有効日(From)(PK) | ユーザの有効日(From)。文字列型 |\n| 有効日(To) | ユーザの有効日(To)。文字列型 |\n\nyyyyMMdd形式で、指定しない場合は”19000101”\n\nyyyyMMdd形式で、指定しない場合は”99991231”\n認可チェック単位\n| 認可チェック単位ID(PK) | 認可チェック単位を識別するための値。文字列型 |\n|---|---|\n認可チェック単位リクエスト\n| 認可チェック単位ID(PK) | 認可チェック単位を識別するための値。文字列型 |\n|---|---|\n| リクエストID(PK) | リクエストを識別するための値。文字列型 |\nグループ権限\n| グループID(PK) | グループを識別するための値。文字列型 |\n|---|---|\n| 認可チェック単位ID(PK) | 認可チェック単位を識別するための値。文字列型 |\nシステムアカウント権限\n| ユーザID(PK) | ユーザを識別するための値。文字列型 |\n|---|---|\n| 認可チェック単位ID(PK) | 認可チェック単位を識別するための値。文字列型 |\n\n認可チェックを使うためには、以下のとおり設定する。\n\n* BasicPermissionFactory\n  の設定をコンポーネント定義に追加する。\n* BasicPermissionFactory は、\n  認可チェックハンドラ に設定して使うので、コンポーネント名は任意の名前を指定する。\n\n```xml\n<component name=\"permissionFactory\" class=\"nablarch.common.permission.BasicPermissionFactory\">\n\n  <!-- グループスキーマ -->\n  <property name=\"groupTableSchema\">\n    <component class=\"nablarch.common.permission.schema.GroupTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- システムアカウントスキーマ -->\n  <property name=\"systemAccountTableSchema\">\n    <component class=\"nablarch.common.permission.schema.SystemAccountTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- グループシステムアカウントスキーマ -->\n  <property name=\"groupSystemAccountTableSchema\">\n    <component class=\"nablarch.common.permission.schema.GroupSystemAccountTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- 認可チェック単位スキーマ -->\n  <property name=\"permissionUnitTableSchema\">\n    <component class=\"nablarch.common.permission.schema.PermissionUnitTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- 認可チェック単位リクエストスキーマ -->\n  <property name=\"permissionUnitRequestTableSchema\">\n    <component class=\"nablarch.common.permission.schema.PermissionUnitRequestTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- グループ権限スキーマ -->\n  <property name=\"groupAuthorityTableSchema\">\n    <component class=\"nablarch.common.permission.schema.GroupAuthorityTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- システムアカウント権限スキーマ -->\n  <property name=\"systemAccountAuthorityTableSchema\">\n    <component class=\"nablarch.common.permission.schema.SystemAccountAuthorityTableSchema\">\n      <!-- プロパティへの設定は省略 -->\n    </component>\n  </property>\n\n  <!-- データベースアクセスに使用するトランザクションマネージャ -->\n  <property name=\"dbManager\" ref=\"permissionCheckDbManager\"/>\n\n  <!-- 有効日(FROM/TO)の判定に使用する業務日付を提供するプロバイダ -->\n  <property name=\"businessDateProvider\" ref=\"businessDateProvider\" />\n</component>\n```\n\nBasicPermissionFactory は、\n初期化が必要なので、以下のコンポーネント定義も追加する。\n\n```xml\n<component name=\"initializer\"\n           class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <!-- BasicPermissionFactoryを初期化する -->\n      <component-ref name=\"permissionFactory\" />\n    </list>\n  </property>\n</component>\n```",
+      "level": 3
     },
     {
       "id": "s7",
       "title": "サーバサイドで認可チェックを行う",
-      "content": "認可チェックは、 Permission を使用する。\n認可チェックハンドラ により、スレッドコンテキストに\nPermission が設定されているので、\nPermissionUtil.getPermission\nを使って取得する。\n\n```java\nPermission permission = PermissionUtil.getPermission();\nif (permission.permit(\"/action/user/unlock\")) {\n    // 認可チェックがOKの場合の処理がここにくる\n}\n```"
+      "content": "認可チェックは、 Permission を使用する。\n認可チェックハンドラ により、スレッドコンテキストに\nPermission が設定されているので、\nPermissionUtil.getPermission\nを使って取得する。\n\n```java\nPermission permission = PermissionUtil.getPermission();\nif (permission.permit(\"/action/user/unlock\")) {\n    // 認可チェックがOKの場合の処理がここにくる\n}\n```",
+      "level": 3
     },
     {
       "id": "s8",
       "title": "権限に応じて画面表示を制御する",
-      "content": "権限の有無でボタンやリンクの非表示(非活性)を制御したい場合は、カスタムタグを使用する。\n認可チェック/サービス提供可否に応じてボタン/リンクの表示/非表示を切り替える を参照。"
+      "content": "権限の有無でボタンやリンクの非表示(非活性)を制御したい場合は、カスタムタグを使用する。\n認可チェック/サービス提供可否に応じてボタン/リンクの表示/非表示を切り替える を参照。",
+      "level": 3
     },
     {
       "id": "s9",
       "title": "権限データにアクセスする",
-      "content": "アプリケーションの要件によっては、特定グループに属するユーザ一覧を取得するといった、\n権限データにアクセスしたい場合がある。\nしかし、本機能では、認可チェックを行う機能しか提供していない。\n\nそのため、権限データにアクセスしたい場合は、 ユニバーサルDAO を使用し、\nSQLを作成することで対応する。"
+      "content": "アプリケーションの要件によっては、特定グループに属するユーザ一覧を取得するといった、\n権限データにアクセスしたい場合がある。\nしかし、本機能では、認可チェックを行う機能しか提供していない。\n\nそのため、権限データにアクセスしたい場合は、 ユニバーサルDAO を使用し、\nSQLを作成することで対応する。",
+      "level": 3
     },
     {
       "id": "s10",
       "title": "拡張例",
-      "content": "なし。"
+      "content": "なし。",
+      "level": 2
     }
   ]
 }

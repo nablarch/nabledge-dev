@@ -27,7 +27,7 @@
 
 ## 機能概要
 
-## 煩雑なデータ管理をせずに認可チェックができる
+### 煩雑なデータ管理をせずに認可チェックができる
 
 ![](images/role_check/conceptual_model.jpg)
 
@@ -40,7 +40,7 @@
 
 このようにアノテーションによる認可チェックでは、 permission_check よりも単純なデータ構造で権限を管理できるようになっている。
 
-## アノテーションで認可チェックができる
+### アノテーションで認可チェックができる
 
 ```java
 @CheckRole("ADMIN")
@@ -50,7 +50,7 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 アノテーションによる認可チェックでは、アクションクラスのメソッドに対してアノテーションを使ってロールを割り当てることができる。
 上記例では、 `index` メソッドを実行するために `ADMIN` ロールが必要であることを定義している。
 
-## ハンドラによる認可チェックとの使い分け
+### ハンドラによる認可チェックとの使い分け
 
 本認可チェックと permission_check を使い分ける基準について説明する。
 
@@ -83,9 +83,9 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 
 ## 使用方法
 
-## 事前準備
+### 事前準備
 
-## コンポーネントを定義する
+#### コンポーネントを定義する
 
 ```xml
 <component name="roleEvaluator"
@@ -107,7 +107,7 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 <import file="nablarch/common/authorization/role/session/authorization-session.xml" />
 ```
 
-## interceptorsOrderに追加する
+#### interceptorsOrderに追加する
 
 アノテーションによるチェックは、Nablarchの インターセプタ の仕組みを用いて実現している。
 したがって、既にコンポーネント定義にて `interceptorsOrder` を定義している場合は、 CheckRole を追加する必要がある。
@@ -125,7 +125,7 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 
 また、デフォルトコンフィグレーションの `nablarch/webui/interceptors.xml` を読み込んでいる場合も特に対応は必要ない。
 
-## ロールを定義する
+#### ロールを定義する
 
 ```java
 public class Roles {
@@ -144,7 +144,7 @@ public class Roles {
 また、アノテーションで指定する際は定数ではなく文字列リテラルを直接指定することも可能だが、修正が容易になるように定数で管理することを推奨する。
 なお、上記例では専用の定数クラスを用意しているが、より適切なクラスがある場合はプロジェクトの事情に合わせて変更して構わない。
 
-## ユーザのロールを保存する
+#### ユーザのロールを保存する
 
 アノテーションによる認可チェックでは、ユーザに割り当てられたロールをセッションストアに保存する実装をデフォルトで提供している。
 ログイン時に、ユーザに割り当てられたロールを解決してセッションストアに保存しておくことで、その後の認可チェックはセッションストアに保存されたロールの情報を用いて行われるようになる。
@@ -166,7 +166,7 @@ SessionStoreUserRoleUtil.save(userRoles, executionContext);
 > 例えば、ロールが「管理者」だけのようなシステムでは、ユーザの情報を管理するテーブルの「管理者フラグ」の値を見て解決するような方法が考えられる。
 > また、ユーザにいくつかのロールを割り当てるようなシステムでは、ユーザとロールを関連付けるテーブルを検索することで解決するような方法が考えられる。
 
-## アクションのメソッドにアノテーションでロールを割り当てる
+### アクションのメソッドにアノテーションでロールを割り当てる
 
 ```java
 @CheckRole(Roles.ROLE_ADMIN)
@@ -201,7 +201,7 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 
 上記例では、 `index` メソッドを実行するためには `ADMIN` か `PROJECT_MANAGER` のいずれかのロールを保有していれば良いということになる。
 
-## アノテーションに割り当てた CheckRole の設定を一覧で確認する
+### アノテーションに割り当てた CheckRole の設定を一覧で確認する
 
 アクションメソッドに設定した CheckRole アノテーションに誤りがないかチェックするために、アノテーションの設定状況を一覧表示する機能を提供している。
 本機能を利用することで、アノテーションの設定に漏れが無いか、設定されている内容に過不足がないかをチェックできるようになる。
@@ -270,7 +270,7 @@ com.nablarch.example.app.web.action.ProjectUploadAction       index(nablarch.fw.
 public HttpResponse index(HttpRequest request, ExecutionContext context) {
 ```
 
-## プログラムで判定する
+### プログラムで判定する
 
 ロールの有無を、プログラム上の任意の場所で判定できる。
 
@@ -285,7 +285,7 @@ if (CheckRoleUtil.checkRole(Roles.ROLE_ADMIN, executionContext)) {
 
 複数のロールを指定する場合は、 `checkRoleAllOf` メソッドか `checkRoleAnyOf` メソッドを使用して判定できる。
 
-## JSPで判定する
+### JSPで判定する
 
 permission_check では、JSPのカスタムタグで認可チェックを行い自動的にボタンの表示・非表示を切り替えるような仕組みが提供されている。
 しかし本認可チェックでは、このような仕組みは提供していない。

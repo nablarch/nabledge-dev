@@ -122,7 +122,7 @@ ThreadContextAttributeインタフェース
 </component>
 ```
 
-## ユーザIDを設定する
+### ユーザIDを設定する
 
 UserIdAttributeInSessionStore は、デフォルトではセッションストアからユーザIDを取得する。
 セッションストアへの設定はフレームワークでは実施しないため、ログイン時などにアプリケーションで設定する必要がある。

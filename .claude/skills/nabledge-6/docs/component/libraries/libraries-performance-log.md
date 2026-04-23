@@ -66,7 +66,7 @@ performanceLogFormatter.format=\n\tpoint = [$point$] result = [$result$]\
 
 ## 使用方法
 
-## パフォーマンスログを出力する
+### パフォーマンスログを出力する
 
 パフォーマンスログは、 PerformanceLogUtil を使用して出力する。
 PerformanceLogUtil は、
@@ -102,7 +102,7 @@ PerformanceLogUtil.end(point, String.valueOf(searchResult.size()));
 > このため、再帰呼び出しの中で PerformanceLogUtil
 > を使用すると計測を実施出来ないため注意すること。
 
-## パフォーマンスログの設定
+### パフォーマンスログの設定
 
 パフォーマンスログの設定は、 各種ログの設定 で説明したプロパティファイルに行う。
 
@@ -158,7 +158,7 @@ performanceLogFormatter.datePattern=yyyy-MM-dd HH:mm:ss.SSS
 performanceLogFormatter.format=point:$point$ result:$result$ exe_time:$executionTime$ms
 ```
 
-## JSON形式の構造化ログとして出力する
+### JSON形式の構造化ログとして出力する
 
 JSON形式の構造化ログとして出力する 設定によりログをJSON形式で出力できるが、
 PerformanceLogFormatter では

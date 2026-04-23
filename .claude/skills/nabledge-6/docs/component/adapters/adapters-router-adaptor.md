@@ -40,7 +40,7 @@
 
 本アダプタを使用するための手順を以下に示す。
 
-## ディスパッチハンドラを設定する
+### ディスパッチハンドラを設定する
 
 ディスパッチハンドラとして、 RoutesMapping をハンドラキューの最後に設定する。
 
@@ -77,7 +77,7 @@
 </component>
 ```
 
-## ルート定義ファイルを作成する
+### ルート定義ファイルを作成する
 
 クラスパス直下に routes.xml を作成し、
 指定したURLと業務アクションのマッピングを設定する。
@@ -134,7 +134,7 @@ router.controllerDetector=nablarch.integration.router.NablarchControllerDetector
 
 > そのようなウェブアプリケーションサーバを使用する場合は、従来通りXMLを用いたルーティングの定義を使用すること。
 
-## ディスパッチハンドラを変更する
+### ディスパッチハンドラを変更する
 
 XMLのマッピング定義を使用する場合は、ディスパッチハンドラの実装として RoutesMapping を使用していた。
 一方、 `Path` アノテーションによるマッピング定義を用いる場合は、 PathOptionsProviderRoutesMapping をディスパッチハンドラとして設定する必要がある。
@@ -199,7 +199,7 @@ Jakarta RESTful Web Services の `jakarta.ws.rs.ApplicationPath` アノテーシ
 
 以上の設定により、 `Path` アノテーションによるルーティングの登録機能が使用できるようになる。
 
-## マッピングの実装方法
+### マッピングの実装方法
 
 `Path` アノテーションを使ってマッピングを定義した実装例を以下に示す。
 
@@ -271,7 +271,7 @@ public class TestAction {
 | `/sample/foo` | `GET` | `TestAction#foo()` |
 | `/sample/bar` | `GET` | `TestAction#bar()` |
 
-## パスパラメータの定義
+### パスパラメータの定義
 
 次のように、パスにパラメータを含めることもできる。
 
@@ -315,7 +315,7 @@ HTTPリクエストのディスパッチの例は次のようになる。
 | `/sample/bar/123` | `GET` | `TestAction#bar(JaxRsHttpRequest)` |
 | `/sample/bar/987` | `GET` | `TestAction#bar(JaxRsHttpRequest)` |
 
-## インターフェースや親クラスのアノテーションを引き継ぐ
+### インターフェースや親クラスのアノテーションを引き継ぐ
 
 アクションクラスは、実装しているインターフェースや継承している親クラスに注釈されている `Path` アノテーションやメソッドに注釈されているアノテーションの内容を引き継ぐことができる。
 
@@ -397,7 +397,7 @@ public class TestAction implements TestApi {
 
 どの型定義に `Path` アノテーションが注釈されているか、そしてそのクラスにアノテーションで注釈されたメソッドが定義されているかによって、リクエストを受け付けるメソッドが決まることに注意すること。
 
-## ルーティング定義を一覧で確認する
+### ルーティング定義を一覧で確認する
 
 PathOptionsProviderRoutesMapping によって読み込まれたルーティング定義は、初期化時にデバッグレベルでログに出力される。
 

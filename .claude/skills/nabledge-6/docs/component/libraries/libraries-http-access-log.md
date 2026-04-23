@@ -92,7 +92,7 @@ httpAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$userI
 
 ## 使用方法
 
-## HTTPアクセスログの設定
+### HTTPアクセスログの設定
 
 HTTPアクセスログの設定は、 各種ログの設定 で説明したプロパティファイルに行う。
 
@@ -272,7 +272,7 @@ httpAccessLogFormatter.dispatchingClassOutputEnabled=true
 httpAccessLogFormatter.endOutputEnabled=true
 ```
 
-## JSON形式の構造化ログとして出力する
+### JSON形式の構造化ログとして出力する
 
 JSON形式の構造化ログとして出力する 設定によりログをJSON形式で出力できるが、
 HttpAccessLogFormatter では
@@ -436,7 +436,7 @@ httpAccessLogFormatter.dispatchingClassLabel=DISPATCHING CLASS
 httpAccessLogFormatter.endLabel=HTTP ACCESS END
 ```
 
-## セッションストアIDについて
+### セッションストアIDについて
 
 セッションストアIDを出力に含めた場合、 セッションストア が発行するセッションを識別するIDが出力される。
 

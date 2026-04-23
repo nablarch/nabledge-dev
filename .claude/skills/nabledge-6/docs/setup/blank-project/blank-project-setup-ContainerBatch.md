@@ -28,7 +28,7 @@
 
 Nablarchが提供するアーキタイプを使用してブランクプロジェクトを生成する。
 
-## mvnコマンドの実行
+### mvnコマンドの実行
 
 [Maven Archetype Plugin(外部サイト、英語)](https://maven.apache.org/archetype/maven-archetype-plugin/usage.html) を使用して、ブランクプロジェクトを生成する。
 
@@ -46,7 +46,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 |---|---|
 | archetypeVersion | 使用したいアーキタイプのバージョンを指定する。（Nablarch 6u2以降を指定すること） |
 
-## プロジェクト情報の入力
+### プロジェクト情報の入力
 
 上記コマンドを実行すると、以下の項目について入力を求められるので、 生成されるブランクプロジェクトに関する情報を入力する。
 
@@ -149,7 +149,7 @@ myapp-container-batch   latest      1cafd4108237   51 years ago   253MB
 
 作成したコンテナイメージは、次のコマンドで実行できる。
 
-## 都度起動バッチ
+### 都度起動バッチ
 
 ```text
 cd myapp-container-batch
@@ -159,7 +159,7 @@ docker run --rm -v %CD%\\h2:/h2 -v %CD%\\src\\main\\format:/var/nablarch/format 
 動作は 疎通確認(都度起動バッチ) と同じである。
 起動に成功すると、都度起動バッチアプリケーションの起動 と同様なログがコンソールに出力される。
 
-## テーブルをキューとして使ったメッセージング
+### テーブルをキューとして使ったメッセージング
 
 ```text
 cd myapp-container-batch

@@ -10,7 +10,7 @@
 > リクエスト単体テストの実施方法(同期応答メッセージ送信処理)
 > を参照。
 
-## 全体像
+### 全体像
 
 バッチ処理の中で同期応答メッセージ送信処理を行う場合について、以下に全体像を示す。
 
@@ -36,21 +36,21 @@
 
 ## 構造
 
-## StandaloneTestSupportTemplate
+### StandaloneTestSupportTemplate
 
 Action実行後に、MockMessagingContextを用いて、要求電文のアサートを行う機能。
 
 同期応答メッセージ送信処理のリクエスト単体テストを行う場合は、処理の形態に合わせて
 本クラスもしくはAbstractHttpRequestTestTemplateを実装したテストケースを使用する必要がある。
 
-## AbstractHttpRequestTestTemplate
+### AbstractHttpRequestTestTemplate
 
 Action実行後に、MockMessagingContextを用いて、要求電文のアサートを行う機能。
 
 同期応答メッセージ送信処理のリクエスト単体テストを行う場合は、処理の形態に合わせて
 本クラスもしくはStandaloneTestSupportTemplateを実装したテストケースを使用する必要がある。
 
-## RequestTestingMessagingProvider
+### RequestTestingMessagingProvider
 
 要求電文のアサートおよび、応答電文の生成・返却する機能を提供するクラス。
 
@@ -65,7 +65,7 @@ Action実行後に、MockMessagingContextを用いて、要求電文のアサー
 > **Tip:**
 > 要求電文のアサートは、要求電文が送信されるたびに行うのではなく、Action実行後に一括で行う。
 
-## MessageSender
+### MessageSender
 
 同期応答メッセージ送信処理で使用するコンポーネント。
 
@@ -76,7 +76,7 @@ Action実行後に、MockMessagingContextを用いて、要求電文のアサー
 * MockMessagingContextから返却された応答電文をパースする。
 * パース結果のオブジェクトを呼び出し元に返却する。
 
-## TestDataConvertor
+### TestDataConvertor
 
 Excelから読み込んだテストデータを編集するためのインタフェース。
 必要に応じてXMLやJSONなどのデータ種別ごとにアーキテクトが実装する。
@@ -94,7 +94,7 @@ Excelから読み込んだテストデータを編集するためのインタフ
 
 同期応答メッセージ送信処理固有のテストデータについて説明する。
 
-## 同期応答メッセージ送信処理
+### 同期応答メッセージ送信処理
 
 基本的な記述方法は、
  テストデータの書き方

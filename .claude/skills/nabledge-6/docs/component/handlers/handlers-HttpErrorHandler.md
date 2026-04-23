@@ -101,7 +101,7 @@ FATAL
 上記に該当しない例外及びエラーの場合には、障害扱いとしてログ出力を行う。
 また、予期しない例外やエラーであるため、レスポンスは **500** としている。
 
-## nablarch.fw.Result.Errorのログ出力について
+### nablarch.fw.Result.Errorのログ出力について
 
 後続のハンドラで発生した例外が、 Error の場合はログ出力を行うかどうかは、
 writeFailureLogPattern に設定した値によって変わる。

@@ -45,7 +45,7 @@ SELECT * FROM BONUS;
 バッチ処理は、 <a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a> で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。
 リスナーの詳細は バッチアプリケーションで使用するリスナー 及び リスナーの指定方法 を参照。
 
-## 入力データソースからデータを読み込む
+### 入力データソースからデータを読み込む
 
 計算に必要なデータを取得する処理を実装する。
 
@@ -149,7 +149,7 @@ INNER JOIN GRADE ON EMPLOYEE.GRADE_CODE = GRADE.GRADE_CODE
 * readItem メソッドで読み込んだデータから一行分のデータを返却する。
   このメソッドで返却したオブジェクトが、後続する ItemProcessor の processItem メソッドの引数として与えられる。
 
-## 業務ロジックを実行する
+### 業務ロジックを実行する
 
 賞与の計算等の業務ロジックを実装する。
 
@@ -197,7 +197,7 @@ public class BonusCalculateProcessor implements ItemProcessor {
 * processItem メソッドで一定数( JOB設定ファイルを作成する にて設定方法を解説)のエンティティを返却した時点で、
   後続する ItemWriter の writeItems メソッドが実行される。
 
-## 永続化処理を行う
+### 永続化処理を行う
 
 DB更新等の、永続化処理を実装する。
 
@@ -225,7 +225,7 @@ public class BonusWriter extends AbstractItemWriter {
 * writeItems メソッド実行後にトランザクションがコミットされ、新たなトランザクションが開始される。
 * writeItems メソッド実行後、バッチ処理が readItem メソッド実行から繰り返される。
 
-## JOB設定ファイルを作成する
+### JOB設定ファイルを作成する
 
 JOBの実行設定を記載したファイルを作成する。
 

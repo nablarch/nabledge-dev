@@ -32,7 +32,7 @@
 
 Nablarchが提供するアーキタイプを使用してブランクプロジェクトを生成する。
 
-## mvnコマンドの実行
+### mvnコマンドの実行
 
 [Maven Archetype Plugin(外部サイト、英語)](https://maven.apache.org/archetype/maven-archetype-plugin/usage.html) を使用して、ブランクプロジェクトを生成する。
 
@@ -50,7 +50,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 |---|---|
 | archetypeVersion | 使用したいアーキタイプのバージョンを指定する。（Nablarch 6u2以降を指定すること） |
 
-## プロジェクト情報の入力
+#### プロジェクト情報の入力
 
 上記コマンドを実行すると、以下の項目について入力を求められるので、 生成されるブランクプロジェクトに関する情報を入力する。
 

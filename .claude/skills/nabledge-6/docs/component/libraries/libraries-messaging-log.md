@@ -88,7 +88,7 @@ messagingLogFormatter.httpReceivedMessageFormat=@@@@ HTTP RECEIVED MESSAGE @@@@\
 
 ## 使用方法
 
-## メッセージングログの設定
+### メッセージングログの設定
 
 メッセージングログの設定は、 各種ログの設定 で説明したプロパティファイルに行う。
 
@@ -248,7 +248,7 @@ messagingLogFormatter.httpSentMessageFormat=@@@@ HTTP SENT MESSAGE @@@@\n\tthrea
 messagingLogFormatter.httpReceivedMessageFormat=@@@@ HTTP RECEIVED MESSAGE @@@@\n\tthread_name    = [$threadName$]\n\tmessage_id     = [$messageId$]\n\tdestination    = [$destination$]\n\tcorrelation_id = [$correlationId$]\n\tmessage_header = [$messageHeader$]\n\tmessage_body   = [$messageBody$]
 ```
 
-## JSON形式の構造化ログとして出力する
+### JSON形式の構造化ログとして出力する
 
 JSON形式の構造化ログとして出力する 設定によりログをJSON形式で出力できるが、
 MessagingLogFormatter では

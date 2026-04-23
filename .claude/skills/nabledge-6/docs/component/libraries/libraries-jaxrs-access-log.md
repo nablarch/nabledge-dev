@@ -86,7 +86,7 @@ jaxRsAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$user
 
 ## 使用方法
 
-## HTTPアクセスログ（RESTfulウェブサービス用）の設定
+### HTTPアクセスログ（RESTfulウェブサービス用）の設定
 
 HTTPアクセスログの設定は、 各種ログの設定 で説明したプロパティファイルに行う。
 
@@ -235,7 +235,7 @@ jaxRsAccessLogFormatter.beginOutputEnabled=true
 jaxRsAccessLogFormatter.endOutputEnabled=true
 ```
 
-## JSON形式の構造化ログとして出力する
+### JSON形式の構造化ログとして出力する
 
 JSON形式の構造化ログとして出力する 設定によりログをJSON形式で出力できるが、
 JaxRsAccessLogFormatter では
@@ -363,7 +363,7 @@ httpAccessLogFormatter.beginLabel=HTTP ACCESS BEGIN
 httpAccessLogFormatter.endLabel=HTTP ACCESS END
 ```
 
-## セッションストアIDについて
+### セッションストアIDについて
 
 セッションストアIDを出力に含めた場合、 セッションストア が発行するセッションを識別するIDが出力される。
 

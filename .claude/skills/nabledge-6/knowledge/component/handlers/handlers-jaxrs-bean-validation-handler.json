@@ -7,27 +7,32 @@
     {
       "id": "s1",
       "title": "ハンドラクラス名",
-      "content": "* nablarch.fw.jaxrs.JaxRsBeanValidationHandler"
+      "content": "* nablarch.fw.jaxrs.JaxRsBeanValidationHandler",
+      "level": 2
     },
     {
       "id": "s2",
       "title": "モジュール一覧",
-      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-jaxrs</artifactId>\n</dependency>\n\n<!-- Bean Validationのモジュール -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-validation-ee</artifactId>\n</dependency>\n```"
+      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-jaxrs</artifactId>\n</dependency>\n\n<!-- Bean Validationのモジュール -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-validation-ee</artifactId>\n</dependency>\n```",
+      "level": 2
     },
     {
       "id": "s3",
       "title": "制約",
-      "content": "リクエストボディ変換ハンドラ よりも後ろに設定すること\nこのハンドラは、 リクエストボディ変換ハンドラ がリクエストボディから変換したForm(Bean)に対してバリデーションを行うため。"
+      "content": "リクエストボディ変換ハンドラ よりも後ろに設定すること\nこのハンドラは、 リクエストボディ変換ハンドラ がリクエストボディから変換したForm(Bean)に対してバリデーションを行うため。",
+      "level": 2
     },
     {
       "id": "s4",
       "title": "リソース(アクション)で受け取るForm(Bean)に対してバリデーションを実行する",
-      "content": "リソース(アクション)のメソッドで受け取るForm(Bean)に対して、バリデーションを実行したい場合は、\nそのメソッドに対して Valid アノテーションを設定する。\n\n以下に例を示す。\n\n```java\n// Personオブジェクトに対してバリデーションを実行したいので、\n// Validアノテーションを設定する。\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```"
+      "content": "リソース(アクション)のメソッドで受け取るForm(Bean)に対して、バリデーションを実行したい場合は、\nそのメソッドに対して Valid アノテーションを設定する。\n\n以下に例を示す。\n\n```java\n// Personオブジェクトに対してバリデーションを実行したいので、\n// Validアノテーションを設定する。\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```",
+      "level": 2
     },
     {
       "id": "s5",
       "title": "Bean Validationのグループを指定する",
-      "content": "Valid アノテーションを設定したメソッドに対して\nConvertGroup アノテーションを設定することで、Bean Validationのグループを指定することができる。\n\nConvertGroup アノテーションは `from` 属性と `to` 属性の指定が必須である。\nそれぞれ以下のように指定すること。\n\n* `from` ・・・ Default.class 固定\n\n  * メソッドに Valid アノテーションを設定する場合、\n    バリデーションは Default グループを設定したものとして実行されるため。\n* `to` ・・・Bean Validationのグループを指定する\n\n以下に例を示す。\n\n```java\n// Personクラス内で設定されたバリデーションルールのうち、\n// Createグループに所属するルールのみを使用して検証する。\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\n@ConvertGroup(from = Default.class, to = Create.class)\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```"
+      "content": "Valid アノテーションを設定したメソッドに対して\nConvertGroup アノテーションを設定することで、Bean Validationのグループを指定することができる。\n\nConvertGroup アノテーションは `from` 属性と `to` 属性の指定が必須である。\nそれぞれ以下のように指定すること。\n\n* `from` ・・・ Default.class 固定\n\n  * メソッドに Valid アノテーションを設定する場合、\n    バリデーションは Default グループを設定したものとして実行されるため。\n* `to` ・・・Bean Validationのグループを指定する\n\n以下に例を示す。\n\n```java\n// Personクラス内で設定されたバリデーションルールのうち、\n// Createグループに所属するルールのみを使用して検証する。\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\n@ConvertGroup(from = Default.class, to = Create.class)\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```",
+      "level": 2
     }
   ]
 }
