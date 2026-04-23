@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 60 — 22-B-16b-main 全 step 完了 (step1 `46bd4578c` / step2a `5f0695d95` / step2b `e47859b6c` + F1F2 fix `7941b46fc` / step3 `5e70d5c83` / step4 `6b828cd01`)、22-B-16c 完了 `86549073d`、SE/QA review F1-F4 fix `cb620f73d` (linkfmt 単一ソース + AST link extraction + nested-block warning 伝播 + common/ 階層遵守)、v6 再生成 `3bd1fe3c4`。v6 verify FAIL 0、362 unit tests GREEN。次は 22-B-13 (nabledge-test v6 baseline)。)
+**Updated**: 2026-04-24 (session 61 — 22-B-13 nabledge-test v6 baseline 取得完了 `20260424-080424`。overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 100% (前回 97.3% から +2.7pp 改善、CI 非重複)。qa-001 benchmark mean 87.5% (trial 間揺らぎ)。ca-002 / ca-003 は 100%。QA 劣化は `full-text-search.sh` のバグと JSP タグサンプル不足に起因し RBKC 実力ではない。詳細 `.claude/skills/nabledge-test/baseline/v6/20260424-080424/comparison-report.md`。次は 22-B-12 (他バージョン create/verify 確認)。)
 
 ---
 
@@ -10,8 +10,9 @@
 
 - v6 verify: **FAIL 0**。362 unit tests GREEN
 - 22-B-16b/c (cross-doc MD link emission + asset + QL1 two-sided) 完了。256/353 JSON files に cross-doc MD links、`:download:` xlsx/csv assets もリンク化
-- 次のタスク: **Phase 22-B-13** — nabledge-test v6 baseline 再取得 (現在 in_progress)
-- その後: Phase 19 (他バージョン展開) → Phase 21-Z Z-4/Z-3 (setup ゴミ / CHANGELOG / README)
+- **22-B-13 完了**: v6 baseline `20260424-080424` — overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 100% (前回 97.3% → +2.7pp 有意改善)
+- 次のタスク: **Phase 22-B-12** (他バージョン create/verify)
+- その後: Phase 19 (他バージョン baseline) → Phase 21-Z Z-4/Z-3 (setup ゴミ / CHANGELOG / README)
 
 ---
 
@@ -131,8 +132,8 @@
   - [x] **22-B-16c** (`86549073d`): image/figure asset URI rewrite + `:download:` link + QL1 asset-exists
   - [x] **F1-F4 fix** (`cb620f73d`): common/ 階層遵守 + AST-based link extraction + nested-block warning 伝播 + `scripts/common/linkfmt.py` 単一ソース
   - [x] **v6 regen** (`3bd1fe3c4`): 353 files, 256 contain cross-doc MD links, verify FAIL 0
-- [ ] 22-B-13: nabledge-test v6 baseline 再取得 (次のタスク。旧 baseline 97.3% は履歴として保持)
-- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 (22-B-13 完了後)
+- [x] 22-B-13: nabledge-test v6 baseline 再取得 — `20260424-080424` 取得完了。overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 97.3% → 100% (+2.7pp、CI 非重複で有意改善)。比較レポート: `.claude/skills/nabledge-test/baseline/v6/20260424-080424/comparison-report.md`
+- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 (次のタスク)
 
 **備考**:
 - Phase 21-C (旧番 — リリースノート行粒度) は 22-B に統合済。xlsx converter 書き直しで包括する
