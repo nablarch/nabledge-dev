@@ -2,7 +2,22 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 55 — Phase 22-A 完了 (`>` 剥がし、270→4 hits)。Phase 22-B は 76 xlsx/xls を全バージョン調査完了、設計合意済 (単一シート非分割 / P1·P2 + 列数 ≤ 2 は P2 / 複数行ヘッダは副列あり列のみ合成 / sheet_type メタ / QO2 Excel 例外 / 22-B 後に baseline 再取得)。次は Phase 22-B-4 converter-design 更新 → 22-B-5 converter 書き直し。単純実装のみでリスクなし。)
+**Updated**: 2026-04-23 (session 56 — Phase 22-B-3 完了 (`f5aa6a0e3`: 古い Excel MD-table 許容条項削除 + sheet-level ファイル分割明記)。Phase 22-B-5 一部着手したが、**TDD 違反・verify 変更の事前承認取り忘れ**によりユーザー指示で全 revert。次セッションは TDD 手順厳守で 22-B-5 再着手すること。)
+
+## 重要: Phase 22-B-5 再着手手順 (TDD / verify 変更ルール厳守)
+
+前 session で以下を破った:
+- TDD 順 (`tasks.md` の verify 変更ルール): verify テスト作成 → RED → verify 実装 → GREEN → RBKC 実装 → GREEN
+- `.claude/rules/rbkc.md` の「verify 変更は明示的ユーザー承認が先」
+- `.claude/rules/development.md` の「TDD は All source code changes に必須」
+- expert review の逐次実行
+
+再着手時:
+
+1. verify 変更 (QO2 P1 分岐 / `_xlsx_source_tokens` sheet_name 拡張) を**先にユーザー承認**取得
+2. verify テスト先書き → RED → verify 実装 → GREEN (binary quality gate を先に確立)
+3. RBKC (scan/classify/converter/docs) 実装 → verify GREEN
+4. 各 source 変更後に SE + QA expert review
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
