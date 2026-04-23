@@ -472,6 +472,64 @@ class TestVerifyFileQL2:
         data = {"id": "f", "title": "T", "content": "通常テキスト。", "sections": []}
         assert self._check_ql2(src, data, "rst") == []
 
+    # --- QL2 Z-1 gap fill: MD path + URL-edge-cases ----------------------
+
+    def test_fail_md_inline_link_url_missing(self):
+        src = "# T\n\nsee [docs](https://example.com/a/b) please.\n"
+        data = {"id": "f", "title": "T", "content": "see docs please.", "sections": []}
+        issues = self._check_ql2(src, data, "md")
+        assert any("QL2" in i and "example.com/a/b" in i for i in issues)
+
+    def test_pass_md_inline_link_url_present(self):
+        src = "# T\n\nsee [docs](https://example.com/a/b)\n"
+        data = {"id": "f", "title": "T", "content": "[docs](https://example.com/a/b)", "sections": []}
+        assert self._check_ql2(src, data, "md") == []
+
+    def test_fail_md_autolink_url_missing(self):
+        """CommonMark autolink `<https://...>` must be collected via AST."""
+        src = "# T\n\nvisit <https://auto.example.com/path>\n"
+        data = {"id": "f", "title": "T", "content": "visit", "sections": []}
+        issues = self._check_ql2(src, data, "md")
+        assert any("QL2" in i and "auto.example.com/path" in i for i in issues)
+
+    def test_pass_md_url_with_query_and_fragment(self):
+        """Query string and fragment must not be truncated by the extractor."""
+        src = "# T\n\n[link](https://example.com/path?x=1&y=2#frag)\n"
+        data = {"id": "f", "title": "T",
+                "content": "[link](https://example.com/path?x=1&y=2#frag)", "sections": []}
+        assert self._check_ql2(src, data, "md") == []
+
+    def test_pass_md_url_with_parentheses_in_path(self):
+        """URL containing encoded/escaped parens must be kept intact."""
+        src = "# T\n\n[api](https://example.com/foo(bar))\n"
+        # markdown-it parses the unencoded `)` as link close — the URL should
+        # still be exactly what AST returns. Put the AST output in JSON.
+        import sys
+        sys.path.insert(0, ".")
+        from scripts.common import md_ast, md_ast_visitor
+        parts = md_ast_visitor.extract_document(md_ast.parse(src))
+        assert parts.external_urls, "sanity: AST must expose the URL"
+        expected = parts.external_urls[0]
+        data = {"id": "f", "title": "T", "content": f"link {expected}", "sections": []}
+        assert self._check_ql2(src, data, "md") == []
+
+    def test_pass_md_url_followed_by_japanese_punct_not_absorbed(self):
+        """Trailing 」 / 。 must not be absorbed into the URL (AST-only
+        principle — the old regex approach was prone to this)."""
+        src = "# T\n\n参照「[docs](https://example.com/x)」です。\n"
+        data = {"id": "f", "title": "T",
+                "content": "[docs](https://example.com/x)", "sections": []}
+        assert self._check_ql2(src, data, "md") == []
+
+    def test_fail_md_http_vs_https_distinguished(self):
+        """http:// and https:// are different URLs; substituting one for
+        the other must FAIL QL2 (exact match required)."""
+        src = "# T\n\n[link](http://example.com/a)\n"
+        data = {"id": "f", "title": "T",
+                "content": "[link](https://example.com/a)", "sections": []}
+        issues = self._check_ql2(src, data, "md")
+        assert any("QL2" in i and "http://example.com/a" in i for i in issues)
+
 
 # ---------------------------------------------------------------------------
 # QC1-QC4: content completeness (RST/MD sequential-delete)
@@ -951,3 +1009,75 @@ class TestCheckSourceLinks:
         src = ":ref:`something`\n"
         data = {"id": "f", "title": "T", "no_knowledge_content": True, "sections": []}
         assert self._check(src, "rst", data) == []
+
+    # --- QL1 Z-1 gap fill: RST figure / image + MD image ------------------
+
+    def test_fail_rst_figure_caption_missing(self):
+        src = (
+            "概要\n====\n\n"
+            ".. figure:: images/sample.png\n"
+            "\n"
+            "   サンプル画像の説明\n"
+        )
+        data = self._data(content="まったく別の内容")
+        issues = self._check(src, "rst", data)
+        assert any("QL1" in i and "caption" in i and "サンプル画像の説明" in i for i in issues)
+
+    def test_pass_rst_figure_caption_in_json(self):
+        src = (
+            "概要\n====\n\n"
+            ".. figure:: images/sample.png\n"
+            "\n"
+            "   サンプル画像の説明\n"
+        )
+        data = self._data(content="サンプル画像の説明 が JSON にある。")
+        assert self._check(src, "rst", data) == []
+
+    def test_fail_rst_figure_inline_only_caption_fallback_to_filename(self):
+        """When caption is only RST inline syntax (e.g. [1]_), fall back to
+        the image filename (§3-2 table: 'caption が RST inline 構文のみ...')."""
+        src = (
+            "概要\n====\n\n"
+            ".. figure:: images/badge.png\n"
+            "\n"
+            "   [1]_\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        assert any("QL1" in i and "badge.png" in i for i in issues)
+
+    def test_fail_rst_image_alt_missing(self):
+        src = (
+            "概要\n====\n\n"
+            ".. image:: images/logo.png\n"
+            "   :alt: 会社ロゴ\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        assert any("QL1" in i and "会社ロゴ" in i for i in issues)
+
+    def test_fail_rst_image_without_alt_falls_back_to_filename(self):
+        src = (
+            "概要\n====\n\n"
+            ".. image:: images/diagram.png\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        assert any("QL1" in i and "diagram.png" in i for i in issues)
+
+    def test_fail_md_image_alt_missing(self):
+        src = "# T\n\n![会社ロゴ](./logo.png)\n"
+        data = self._data(content="別の内容")
+        issues = self._check(src, "md", data)
+        assert any("QL1" in i and "会社ロゴ" in i for i in issues)
+
+    def test_fail_md_image_without_alt_falls_back_to_filename(self):
+        src = "# T\n\n![](./diagram.png)\n"
+        data = self._data(content="別の内容")
+        issues = self._check(src, "md", data)
+        assert any("QL1" in i and "diagram.png" in i for i in issues)
+
+    def test_pass_md_image_alt_in_json(self):
+        src = "# T\n\n![会社ロゴ](./logo.png)\n"
+        data = self._data(content="会社ロゴ が載っています。")
+        assert self._check(src, "md", data) == []
