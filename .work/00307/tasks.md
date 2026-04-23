@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-23
+**Updated**: 2026-04-23 (root cause analysis done)
 
 ## ゴール (この PR の本質)
 
@@ -46,11 +46,30 @@ L1 を残したまま speed 指標だけで ids 採用を提案しても Nabledg
 これまでの改善案は事実確認なしの思いつきだった。まず各件で **retrieved / answer / judge の 3 者の実データ突き合わせ** をして、真の原因を確定する。
 
 **Steps (これを順にやる):**
-- [x] impact-01 を 1 件詳細分析 — **原因: AI-1 検索漏れ**。TMH s1 (概要/境界定義) / s3 (配置制約) が retrieved に入らず、AI-3 は LoopHandler s5/s6 を中心に推論した結果 TMH と LoopHandler の主役を取り違え CONTRADICTION。AI-3 自体は与えられた retrieved から整合的に答えている。改善レバー: (a) TMH s1/s3 の hints に「トランザクション境界/バッチトランザクション/コミット/ロールバック」を追加、(b) AI-1 プロンプトで同一ドキュメントの s1/制約 セクションも候補にせよと誘導。
-- [ ] 同じ手順で残り 13 件を分析
-- [ ] 失敗パターンを事実に基づき分類
-- [ ] 原因ごとに具体的な改善レバーを設計
-- [ ] 効果の見込める順に 1 件ずつ適用 → 関連 scenario だけ rejudge で効果測定
+- [x] impact-01 を 1 件詳細分析 (手本)
+- [x] 残り 13 件を分析 (Explore agent で実施、事実ベース)
+- [x] 失敗パターンを事実に基づき分類 — 詳細: [l1-root-cause-analysis.md](l1-root-cause-analysis.md)
+- [x] 原因ごとに具体的な改善レバーを設計 — 上記分析ドキュメント参照
+
+## 原因サマリ (主因ベース)
+
+- **AI-1 検索漏れ (4 件)**: impact-01, impact-07, impact-08, req-10
+- **AI-3 回答ミス (4 件)**: impact-06, impact-10, req-09, review-08
+- **AI-3 + AI-1 複合 (2 件)**: impact-03, review-08 (重複)
+- **A-fact 設計不備 (3 件 L2 ボーダー)**: req-05, review-01, review-03
+- **知識ファイル不備 (副因 1)**: req-09
+
+## 改善方針 (優先順)
+
+1. AI-1 hints 充実: TMH s1/s3, permission_check_handler s3, http_access_log_handler s1/s3, bean_validation s8, use_token s1, session_store s4 の hints に質問文脈キーワードを追加
+2. AI-1 select プロンプト原則追加: ハンドラ質問では s1 + 制約系 + 機能セクション をセット選択
+3. AI-3 プロンプト補強: retrieved 内列挙項目を省略しないチェックリスト / 主役の優先順 / retrieved 空時の明示フォールバック
+4. A-fact 側微調整: req-05/review-01/review-03 の expected/a_fact 調整
+
+## 次にやること
+
+- [ ] [DECISION: ユーザー確認] 上記改善方針を適用する順番と粒度 (hints 一括 vs PE review ごとに小分割)
+- [ ] 確定後、改善レバー 1 から適用 → 該当 scenario のみ rejudge で効果測定
 - [ ] L1 以下がゼロになるまで繰り返す
 
 ## やらないことにした (スコープ外)
