@@ -111,8 +111,8 @@
   - silent skip horizontal class 4 箇所 (verify.py 1526-1529 / 1592-1598 / labels.py drop / test_pass_rst_ref_unknown_label_skipped) を一括修正
   - 各 slice で TDD RED → GREEN → v6 verify FAIL 0 → SE/QA review → commit
 
-  - [x] **22-B-16-spec**: 設計書 3 本更新 (verify §3-2 QL1 / §3-3 QO1 level / §4 マトリクス、converter §3-2-1 Section.level / §4 reference / §4-6 image+figure / §5-1 role shim リンク化 / §7-5 MD 相対リンク・画像、json-schema §2 sections[].level / §4-2 level-based heading 出力)
-  - [ ] **22-B-16a**: Section.level + docs.py `##`/`###`/`####` + QO1 level check + silent skip horizontal class 4 箇所修正
+  - [x] **22-B-16-spec**: 設計書 3 本更新 (verify §3-2 QL1 / §3-3 QO1 level / §4 マトリクス、converter §3-2-1 Section.level / §4 reference / §4-6 image+figure / §5-1 role shim リンク化 / §7-5 MD 相対リンク・画像、json-schema §2 sections[].level / §4-2 level-based heading 出力) `bdc97f077`
+  - [x] **22-B-16a**: Section.level + docs.py `##`/`###`/`####` + QO1 level check + silent skip horizontal class 4 箇所修正 `a469b0c8b` + QA F1/F2 fix `7841dd5cb` + v6 再生成 `4ab9fded9`
     1. TDD RED: `TestCheckJsonDocsMdConsistency_QO1_Level` (6 ケース: 正 / level mismatch / level 欠落 / 空 section / top-only / regression guard)
     2. TDD RED: silent skip → FAIL テスト (旧 `test_pass_rst_ref_unknown_label_skipped` を反転、labels.py drop を FAIL 化)
     3. `Section` dataclass に `level: int`、`_walk_section` で level 記録、`md_ast_visitor` heading_open で level 記録
