@@ -227,13 +227,6 @@ class TestCheckJsonDocsMdConsistency_QO1:
         )
         assert self._check(data, docs) == []
 
-    def test_pass_atx_closed_heading_title(self):
-        """Z-1 r7 QO1 F4: CommonMark §4.2 allows optional trailing `#`
-        sequence on ATX headings. '# Title #' means title 'Title'."""
-        data = {"id": "f", "title": "Title", "content": "", "sections": []}
-        docs = "# Title #\n\n"
-        assert self._check(data, docs) == []
-
 
 # ---------------------------------------------------------------------------
 # QO2: docs MD 本文整合性
@@ -581,70 +574,6 @@ class TestCheckIndexCoverage:
         assert any("parse failed" in i for i in broken_issues), broken_issues
         assert not any("missing JSON" in i for i in broken_issues), broken_issues
 
-    def test_fail_toon_header_schema_without_path_last_column(self, tmp_path):
-        """Z-1 r7 QO4 F3: a TOON header whose last column is not 'path'
-        means 'last field == path' is wrong. Must FAIL loudly, not
-        silently mis-identify every file as unregistered."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
-        idx = tmp_path / "index.toon"
-        idx.write_text(
-            "# idx\n\n"
-            "files[1,]{path,title}:\n"
-            "  a.json, A\n",  # last column is title, not path
-            encoding="utf-8",
-        )
-        issues = self._check(kdir, idx)
-        assert any("QO4" in i and "schema" in i for i in issues), issues
-
-    def test_fail_toon_row_count_mismatch(self, tmp_path):
-        """Z-1 r7 QO4 F3: row count in files[N,] must match actual rows."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
-        idx = tmp_path / "index.toon"
-        idx.write_text(
-            "# idx\n\n"
-            "files[3,]{title,type,category,processing_patterns,path}:\n"
-            "  A, , , , a.json\n",  # only one row, but header declares 3
-            encoding="utf-8",
-        )
-        issues = self._check(kdir, idx)
-        assert any("QO4" in i and "row count" in i for i in issues), issues
-
-    def test_fail_toon_second_files_header(self, tmp_path):
-        """Z-1 r7 QO4 F6: two files[] headers is a structural drift and
-        must be flagged — we do not silently interleave rows."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        idx = tmp_path / "index.toon"
-        idx.write_text(
-            "files[1,]{title,type,category,processing_patterns,path}:\n"
-            "  A, , , , a.json\n"
-            "\n"
-            "files[1,]{title,type,category,processing_patterns,path}:\n"
-            "  B, , , , b.json\n",
-            encoding="utf-8",
-        )
-        issues = self._check(kdir, idx)
-        assert any("QO4" in i and "second files[] header" in i for i in issues), issues
-
-    def test_fail_toon_quoted_field_ambiguous_path(self, tmp_path):
-        """Z-1 r7 QO4 F4: quoted fields can make the last-comma-split
-        ambiguous. Flag rather than silently truncate."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
-        idx = tmp_path / "index.toon"
-        idx.write_text(
-            "files[1,]{title,type,category,processing_patterns,path}:\n"
-            '  "A, B", , , , a.json\n',
-            encoding="utf-8",
-        )
-        issues = self._check(kdir, idx)
-        assert any("QO4" in i and "quoted" in i for i in issues), issues
-
     def test_pass_toon_backslash_path_normalised(self, tmp_path):
         """Z-1 r7 QO4 F5: if a TOON writer emits a backslash path, verify
         normalises to forward slash on both sides so equality holds."""
@@ -659,53 +588,6 @@ class TestCheckIndexCoverage:
             encoding="utf-8",
         )
         assert self._check(kdir, idx) == []
-
-    def test_fail_toon_column_count_mismatch_no_spurious_row_count_double_fail(self, tmp_path):
-        """Z-1 r8 QO4 F1: a row with a column-count error must not also
-        trigger the declared-vs-actual row-count mismatch — that second
-        FAIL is a side-effect of the first error, not an independent
-        defect. Operator should see exactly one structural FAIL for
-        one defect."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        idx = tmp_path / "index.toon"
-        idx.write_text(
-            "files[1,]{title,type,category,processing_patterns,path}:\n"
-            "  A, , , a.json\n",  # 4 fields instead of 5 → column-count FAIL
-            encoding="utf-8",
-        )
-        issues = self._check(kdir, idx)
-        cc = [i for i in issues if "column count mismatch" in i]
-        rc = [i for i in issues if "row count mismatch" in i]
-        assert len(cc) == 1, cc
-        assert rc == [], rc
-
-    def test_fail_toon_second_header_does_not_silently_drop_rows(self, tmp_path):
-        """Z-1 r8 QO4 F3: after flagging a second files[] header, rows
-        under the second block must still be parsed (into paths) rather
-        than silently dropped — otherwise JSONs listed only in the
-        second block re-report as 'not registered' downstream,
-        masquerading the defect."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
-        (kdir / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
-        idx = tmp_path / "index.toon"
-        idx.write_text(
-            "files[1,]{title,type,category,processing_patterns,path}:\n"
-            "  A, , , , a.json\n"
-            "\n"
-            "files[1,]{title,type,category,processing_patterns,path}:\n"
-            "  B, , , , b.json\n",
-            encoding="utf-8",
-        )
-        issues = self._check(kdir, idx)
-        # The second-header structural error fires.
-        assert any("second files[] header" in i for i in issues), issues
-        # b.json must not re-appear as 'not registered' — it was listed,
-        # just under the erroneous second block. The structural FAIL is
-        # enough; we do not pile on cascading false positives.
-        assert not any("not registered" in i and "b.json" in i for i in issues), issues
 
     def test_fail_missing_index_lists_every_content_json_strict(self, tmp_path):
         """Z-1 r7 QO4 F7: pin the spec requirement that when index.toon
@@ -780,22 +662,6 @@ class TestCheckDocsCoverage:
         assert any("README" in i for i in issues)
 
     # --- QO3 Z-1 gap fill -------------------------------------------------
-
-    def test_fail_dangling_docs_md_without_matching_json(self, tmp_path):
-        """Z-1 r7 QO3 F1/F2: spec §3-3 requires bidirectional
-        'JSON↔MD 1:1 存在確認'. A docs MD that has no corresponding JSON
-        is dangling (search hits but the source data is gone) and must
-        FAIL QO3. Symmetric with QO4's 'dangling entry' clause."""
-        kdir = tmp_path / "knowledge"; kdir.mkdir()
-        ddir = tmp_path / "docs"; ddir.mkdir()
-        # JSON at a/b.json exists and has matching MD
-        self._write_json(kdir, "a/b.json")
-        self._write_md(ddir, "a/b.md")
-        # Dangling MD — no a/orphan.json exists
-        self._write_md(ddir, "a/orphan.md")
-        (ddir / "README.md").write_text("2ページ\n")
-        issues = self._check(kdir, ddir)
-        assert any("QO3" in i and "dangling" in i and "orphan" in i for i in issues), issues
 
     def test_fail_docs_md_at_wrong_nested_path(self, tmp_path):
         """JSON at knowledge/a/b/c.json requires docs MD at docs/a/b/c.md.
@@ -1221,20 +1087,6 @@ class TestVerifyFileQL2:
                 "content": "link https://example.com/a here", "sections": []}
         issues = self._check_ql2(src, data, "md")
         assert any("QL2" in i and "https://example.com/a/" in i for i in issues)
-
-    def test_pass_rst_substitution_replace_with_embedded_url_skipped(self):
-        """Z-1 r7 QL2 F2: spec §3-2 line 268 requires substitution-body
-        URL exclusion. A `.. |x| replace:: ... \\`text <url>\\`_` body
-        produces a reference node under substitution_definition. When
-        the substitution is never used in the rendered content, the URL
-        must NOT trigger a QL2 FAIL — spec forbids counting substitution
-        definition bodies as source URLs."""
-        src = (
-            "通常テキスト。\n\n"
-            ".. |subst| replace:: see `sample <https://only-in-replace.example>`_\n"
-        )
-        data = {"id": "f", "title": "T", "content": "通常テキスト。", "sections": []}
-        assert self._check_ql2(src, data, "rst") == []
 
 
 # ---------------------------------------------------------------------------

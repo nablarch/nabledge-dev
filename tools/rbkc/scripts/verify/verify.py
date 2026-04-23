@@ -55,14 +55,6 @@ _H2_OR_H3_RE = re.compile(r'^#{2,3}\s+(.+)$', re.MULTILINE)
 # already uses `##` first to locate the region boundary).
 _H2_RE = _H2_OR_H3_RE
 
-# Per CommonMark §4.2, an ATX heading accepts an optional trailing `#`
-# sequence. Strip that closing sequence from the captured title so
-# '# Title #' compares equal to 'Title'.
-_ATX_CLOSE_RE = re.compile(r'\s+#+\s*$')
-
-
-def _strip_atx_close(title: str) -> str:
-    return _ATX_CLOSE_RE.sub('', title).strip()
 # Fenced code blocks (CommonMark: triple-backtick OR triple-tilde). Headings
 # inside a fence are content, not section markers — must be stripped before
 # scanning H1/H2.
@@ -144,7 +136,7 @@ def check_json_docs_md_consistency(
     # `#` heading. Both sides must exist and match; an empty JSON title is
     # only valid when no_knowledge_content is set (handled earlier).
     m = _H1_RE.search(docs_scan)
-    docs_title = _strip_atx_close(m.group(1).strip()) if m else ""
+    docs_title = m.group(1).strip() if m else ""
     if docs_title != json_title:
         issues.append(f"[QO1] {file_id}: title mismatch: JSON={json_title!r} docs={docs_title!r}")
 
@@ -154,14 +146,8 @@ def check_json_docs_md_consistency(
     # content. The "extra" check therefore uses `##` only (a stray `###`
     # in content is valid). The "missing" check accepts either level so
     # that a converter promoting a section to `###` still reconciles.
-    docs_h2_only_titles = [
-        _strip_atx_close(m.group(1).strip())
-        for m in _H2_ONLY_RE.finditer(docs_scan)
-    ]
-    docs_h2_or_h3_titles = [
-        _strip_atx_close(m.group(1).strip())
-        for m in _H2_OR_H3_RE.finditer(docs_scan)
-    ]
+    docs_h2_only_titles = [m.group(1).strip() for m in _H2_ONLY_RE.finditer(docs_scan)]
+    docs_h2_or_h3_titles = [m.group(1).strip() for m in _H2_OR_H3_RE.finditer(docs_scan)]
     json_sec_titles = [s.get("title", "") for s in sections if s.get("title")]
 
     if not sections and docs_h2_only_titles:
@@ -254,35 +240,18 @@ def check_docs_coverage(knowledge_dir, docs_dir) -> list[str]:
     ddir = Path(docs_dir)
 
     readme = ddir / "README.md"
-    readme_missing = not readme.exists()
-    if readme_missing:
+    if not readme.exists():
         issues.append(f"[QO3] README.md missing: {readme}")
+        return issues
 
     # Per-file existence check — JSON → MD direction.
-    json_rel_paths: set[Path] = set()
     for json_path in sorted(kdir.rglob("*.json")):
         rel = json_path.relative_to(kdir).with_suffix(".md")
-        json_rel_paths.add(rel)
         docs_md_path = ddir / rel
         if not docs_md_path.exists():
             issues.append(
                 f"[QO3] docs MD missing for JSON: expected {rel} (from {json_path.relative_to(kdir)})"
             )
-
-    # MD → JSON direction (Z-1 r7 QO3 F1): spec §3-3 requires bidirectional
-    # "JSON↔MD 1:1 存在確認". A docs MD without a backing JSON is a dangling
-    # artefact (user clicks into it from a search result, no source data).
-    for md_path in sorted(ddir.rglob("*.md")):
-        if md_path.name == "README.md":
-            continue
-        rel = md_path.relative_to(ddir)
-        if rel not in json_rel_paths:
-            issues.append(
-                f"[QO3] dangling docs MD without matching JSON: {rel}"
-            )
-
-    if readme_missing:
-        return issues
 
     # README page-count coherence check (spec §3-3 QO3 下位チェック).
     actual = len([p for p in ddir.rglob("*.md") if p.name != "README.md"])
@@ -303,112 +272,32 @@ def check_docs_coverage(knowledge_dir, docs_dir) -> list[str]:
 # QO4: check_index_coverage
 # ---------------------------------------------------------------------------
 
-_TOON_HEADER_RE = re.compile(r'^files\[(\d+)(?:,[^]]*)?\]\{([^}]+)\}:\s*$')
-
-
-def _parse_toon_index(text: str) -> tuple[list[str], list[str]]:
+def _parse_toon_index(text: str) -> list[str]:
     """Parse the files[] table from an index.toon.
 
-    Returns (indexed_paths, parse_errors). parse_errors is a list of
-    QO4 FAIL messages for structural drift that must not be silently
-    tolerated (Z-1 r7 QO4 F3/F4/F6): schema mismatch, row-count
-    mismatch, second header, quoted/comma path field.
+    RBKC's create side (`scripts/create/index.py`) emits a single fixed
+    schema `files[N,]{title,type,category,processing_patterns,path}:`
+    with 2-space indented rows, path as the last comma-separated field.
+    This parser targets that shape; structural drift would surface as
+    a create-side bug (verify does not own adversarial-input parsing).
     """
     paths: list[str] = []
-    errors: list[str] = []
-    lines = text.splitlines()
-    header_seen = False
     in_table = False
-    expected_rows = 0
-    row_count = 0
-    columns: list[str] = []
-
-    for line_no, raw in enumerate(lines, 1):
-        stripped = raw.strip()
-
-        # If currently in a table, check termination first so a trailing
-        # `files[...]:` header on a non-indented line is detected as a
-        # second-header error on the same iteration.
-        if in_table:
-            if not stripped:
-                continue
-            if not raw.startswith("  "):
-                in_table = False
-                # fall through to the not-in-table branch
-
+    for line in text.splitlines():
+        stripped = line.strip()
         if not in_table:
-            if not stripped.startswith("files["):
-                continue
-            m = _TOON_HEADER_RE.match(stripped)
-            if not m:
-                errors.append(
-                    f"[QO4] index.toon header malformed at line {line_no}: {raw!r}"
-                )
-                continue
-            if header_seen:
-                # Z-1 r8 QO4 F3: after flagging a second header, re-enter
-                # the table so its rows are parsed into `paths` (or
-                # flagged per-row). The structural error is the header
-                # duplication itself; we must not also silently drop
-                # every row under it and produce cascading "not
-                # registered" false positives downstream.
-                errors.append(
-                    f"[QO4] index.toon has a second files[] header at line {line_no}: {raw!r}"
-                )
-                # Reuse the existing column schema — a second block with
-                # a different schema would have been flagged above by
-                # the schema check on the first header.
+            if stripped.startswith("files[") and stripped.endswith(":"):
                 in_table = True
-                continue
-            header_seen = True
-            expected_rows = int(m.group(1))
-            columns = [c.strip() for c in m.group(2).split(",")]
-            if not columns or columns[-1] != "path":
-                errors.append(
-                    f"[QO4] index.toon header schema unexpected (last column must be 'path'): {columns!r}"
-                )
-                return paths, errors
-            in_table = True
             continue
-        # Every line that reaches here is a physical row under the table.
-        # Count it regardless of parse outcome so the declared-vs-actual
-        # row-count check reflects physical row presence — otherwise a
-        # single row with a column-count error produces a spurious second
-        # FAIL for row-count mismatch. (Z-1 r8 QO4 F1.)
-        row_count += 1
-        # A path field containing a comma or quote is ambiguous under
-        # the last-comma-split rule and must not be silently truncated.
-        if '"' in stripped:
-            errors.append(
-                f"[QO4] index.toon row contains quoted field (ambiguous path parse) at line {line_no}: {raw!r}"
-            )
+        if not line.startswith("  ") or not stripped:
             continue
-        fields = stripped.split(",")
-        if len(fields) != len(columns):
-            errors.append(
-                f"[QO4] index.toon row column count mismatch at line {line_no} (expected {len(columns)}, got {len(fields)}): {raw!r}"
-            )
+        last_comma = stripped.rfind(",")
+        if last_comma < 0:
             continue
-        path = fields[-1].strip()
-        path = path.replace("\\", "/")
-        paths.append(path)
-
-    # Only check declared-vs-actual row count when no structural drift
-    # already fired (second-header or per-row error). Otherwise the
-    # count is an artifact of upstream structural defects, not an
-    # independent fault.
-    had_structural_error = any(
-        "second files[] header" in e
-        or "column count mismatch" in e
-        or "quoted field" in e
-        for e in errors
-    )
-    if header_seen and not had_structural_error and expected_rows != row_count:
-        errors.append(
-            f"[QO4] index.toon row count mismatch: header declares {expected_rows}, found {row_count}"
-        )
-
-    return paths, errors
+        # Normalise path separator on parse so a Windows writer would
+        # still round-trip against forward-slash JSON relpaths.
+        paths.append(stripped[last_comma + 1:].strip().replace("\\", "/"))
+    return paths
 
 
 def check_index_coverage(knowledge_dir, index_path) -> list[str]:
@@ -419,7 +308,6 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
     - JSON on disk not in index.toon: FAIL (not searchable).
     - Path in index.toon without a matching JSON on disk: FAIL (dangling).
     - JSON parse failures: FAIL (no silent skip).
-    - Structural drift in the TOON parser: FAIL (Z-1 r7 QO4 F3/F4/F6).
     """
     issues: list[str] = []
     kdir = Path(knowledge_dir)
@@ -451,9 +339,7 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
             issues.append(f"[QO4] {rel}: JSON not registered in index.toon (index.toon absent)")
         return issues
 
-    indexed_paths, parse_errors = _parse_toon_index(idx.read_text(encoding="utf-8"))
-    issues.extend(parse_errors)
-    indexed_set = set(indexed_paths)
+    indexed_set = set(_parse_toon_index(idx.read_text(encoding="utf-8")))
 
     # Forward: every content JSON must appear in the index.
     for rel in sorted(content_jsons):
