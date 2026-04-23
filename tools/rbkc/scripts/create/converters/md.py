@@ -3,6 +3,11 @@
 Converts Nablarch official Markdown documentation into section-split form
 suitable for knowledge JSON files.  No AI, no external API calls.
 
+**Parser**: CommonMark via ``scripts.common.md_ast`` (markdown-it-py).
+The Visitor in ``scripts.common.md_ast_visitor`` walks the token stream
+and produces the same DocumentParts shape that RST uses, so create and
+verify share one interpretation of Markdown.
+
 **Asset copying**: This converter is a stateless text transformer.  Image
 references are preserved as-is in the output content.  Asset copying is the
 responsibility of the CLI pipeline (Phase 8): call
@@ -20,31 +25,22 @@ Public API:
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
 
+from scripts.common import md_ast
+from scripts.common.md_ast_visitor import extract_document
 from scripts.create.converters.rst import RSTResult, Section
 
 
-# ---------------------------------------------------------------------------
-# Regex helpers
-# ---------------------------------------------------------------------------
-
-# ATX heading: ``# Title`` — capture level (count of #) and title text
-_ATX_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
-
-# HTML comment block: <!-- ... --> (possibly multi-line)
+# HTML comment block: <!-- ... --> (possibly multi-line). markdown-it
+# treats HTML comments as html_block; we strip them before parsing so the
+# Visitor does not encounter arbitrary HTML content.
 _HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 
 # file_ids for files that have no knowledge value
 _NO_KNOWLEDGE_STEMS = {"readme", "changelog"}
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _strip_html_comments(text: str) -> str:
-    """Remove HTML comment blocks (e.g. textlint directives) from text."""
     return _HTML_COMMENT_RE.sub("", text)
 
 
@@ -52,56 +48,6 @@ def _is_no_knowledge(file_id: str) -> bool:
     stem = file_id.lower().rstrip("/").split("/")[-1].split(".")[0]
     return stem in _NO_KNOWLEDGE_STEMS
 
-
-# ---------------------------------------------------------------------------
-# Parsing
-# ---------------------------------------------------------------------------
-
-def _split_sections(lines: list[str]) -> tuple[str, list[str], list[tuple[str, list[str]]]]:
-    """Split Markdown lines into (title, preamble_lines, sections).
-
-    ``#`` (h1) is extracted as the document title.  Content between h1 and
-    the first h2+ heading is returned as ``preamble_lines``.  ``##`` and
-    deeper ATX headings create entries in ``sections``.
-
-    Returns:
-        (title, preamble_lines, [(section_title, section_lines), ...])
-    """
-    title = ""
-    preamble_lines: list[str] = []
-    sections: list[tuple[str, list[str]]] = []
-    current_title: str | None = None
-    current_lines: list[str] = []
-
-    for line in lines:
-        m = _ATX_RE.match(line)
-        if m:
-            level = len(m.group(1))
-            heading_text = m.group(2)
-            if level == 1:
-                title = heading_text
-                continue
-            # h2+ → new section boundary
-            if current_title is None:
-                preamble_lines.extend(current_lines)
-            else:
-                sections.append((current_title, current_lines))
-            current_title = heading_text
-            current_lines = []
-            continue
-        current_lines.append(line)
-
-    if current_title is None:
-        preamble_lines.extend(current_lines)
-    else:
-        sections.append((current_title, current_lines))
-
-    return title, preamble_lines, sections
-
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 
 def convert(source: str, file_id: str = "") -> RSTResult:
     """Convert Markdown *source* to :class:`RSTResult`.
@@ -116,24 +62,15 @@ def convert(source: str, file_id: str = "") -> RSTResult:
     Returns:
         :class:`RSTResult` with title, no_knowledge_content flag, and sections.
     """
-    # Strip HTML comments first
     cleaned = _strip_html_comments(source)
+    tokens = md_ast.parse(cleaned)
+    parts = extract_document(tokens)
 
-    lines = cleaned.splitlines(keepends=False)
-    title, preamble_lines, raw_sections = _split_sections(lines)
-
-    preamble_content = "\n".join(preamble_lines).strip()
-
-    sections: list[Section] = []
-    for sec_title, sec_lines in raw_sections:
-        content = "\n".join(sec_lines).strip()
-        sections.append(Section(title=sec_title, content=content))
-
-    no_knowledge = _is_no_knowledge(file_id)
+    sections = [Section(title=s.title, content=s.content) for s in parts.sections]
 
     return RSTResult(
-        title=title,
-        no_knowledge_content=no_knowledge,
-        content=preamble_content,
+        title=parts.title,
+        no_knowledge_content=_is_no_knowledge(file_id),
+        content=parts.content,
         sections=sections,
     )

@@ -254,22 +254,12 @@ def _check_format_purity(data: dict, fmt: str) -> list[str]:
 # QL2: 外部URL一致
 # ---------------------------------------------------------------------------
 
-_URL_RE = re.compile(r'https?://[^\s\'"<>)\]`]+')
-_URL_TRAILING_PUNCT_RE = re.compile(r'[.,;:`]+$')
-_RST_TARGET_LINE_RE = re.compile(r'^(?:\.\.?\s+_|__\s+https?://)')
-_RST_SUBSTITUTION_RE = re.compile(r'^\s*\.\.\s+\|[^|]+\|\s+[a-z_-]+::')
-
-
-def _clean_url(url: str) -> str:
-    return _URL_TRAILING_PUNCT_RE.sub('', url)
-
-
 def _source_urls(source_text: str, fmt: str) -> list[str]:
     """Extract external URLs actually visible to readers.
 
-    Per §3-2 AST-only principle: for RST, walk the doctree and collect
-    `reference.refuri` values that are http(s) URLs. For MD, fall back to
-    regex (MD AST not yet available in verify).
+    Per §3-2 AST-only principle: URLs come from AST node attributes, never
+    from raw-text regex scans. RST uses docutils' `reference.refuri`; MD
+    uses markdown-it-py's `link_open[href]` (collected by the Visitor).
     """
     urls: list[str] = []
     if fmt == "rst":
@@ -286,12 +276,16 @@ def _source_urls(source_text: str, fmt: str) -> list[str]:
                 urls.append(refuri)
         return urls
 
-    # Markdown (or other) — keep the legacy regex until MD side is AST-ified
-    for line in source_text.splitlines():
-        for url in _URL_RE.findall(line):
-            u = _clean_url(url)
-            if u:
-                urls.append(u)
+    if fmt == "md":
+        from scripts.common import md_ast, md_ast_visitor
+
+        try:
+            tokens = md_ast.parse(source_text)
+            parts = md_ast_visitor.extract_document(tokens)
+        except Exception:
+            return urls
+        return list(parts.external_urls)
+
     return urls
 
 
@@ -734,27 +728,45 @@ def _strip_allowed_residue(text: str) -> str:
 def _check_md_content_completeness(
     source_text: str, data: dict, issues: list[str]
 ) -> list[str]:
-    """QC1-QC4 for MD sources (verbatim comparison)."""
-    # Strip HTML comments: converter elides these; verify should too.
-    source_text = re.sub(r"<!--.*?-->", "", source_text, flags=re.DOTALL)
+    """QC1-QC4 for MD sources using AST-normalised comparison.
+
+    Per rbkc-verify-quality-design.md §3-1: the source is parsed by the
+    shared md_ast Visitor (same code create uses) to produce a normalised
+    MD string, then JSON search units are sequential-deleted from it.
+    Any non-whitespace residue is a QC1 FAIL (no tolerance list).
+    """
+    from scripts.common.md_normaliser import UnknownSyntaxError, normalise_md
+
+    try:
+        norm_source = normalise_md(source_text, strict_unknown=True)
+    except UnknownSyntaxError as exc:
+        issues.append(f"[QC1] markdown parse/visitor error: {exc}")
+        return issues
+
+    # Collapse whitespace to match the same normalisation applied to
+    # JSON units; sequential-delete then operates on a single-line view.
+    def _squash(text: str) -> str:
+        return re.sub(r"\s+", " ", text).strip()
+
+    norm_source = _squash(norm_source)
 
     top_title = data.get("title", "")
     top_content = data.get("content", "")
 
     search_units: list[tuple[str, str, bool]] = []
     if top_title:
-        search_units.append((top_title, "__top__", False))
+        search_units.append((_squash(top_title), "__top__", False))
     if top_content:
-        search_units.append((top_content, "__top__", True))
+        search_units.append((_squash(top_content), "__top__", True))
 
     for sec in data.get("sections", []):
         title = sec.get("title", "")
         content = sec.get("content", "")
         sid = sec.get("id", "?")
         if title:
-            search_units.append((title, sid, False))
+            search_units.append((_squash(title), sid, False))
         if content:
-            search_units.append((content, sid, True))
+            search_units.append((_squash(content), sid, True))
 
     if not search_units:
         return issues
@@ -767,12 +779,12 @@ def _check_md_content_completeness(
         return any(pos < e and end > s for s, e in consumed)
 
     for unit, sid, is_content in search_units:
-        idx = source_text.find(unit, current_pos)
+        idx = norm_source.find(unit, current_pos)
         if idx != -1:
             consumed.append((idx, idx + len(unit)))
             current_pos = idx + len(unit)
         else:
-            prev_idx = source_text.find(unit)
+            prev_idx = norm_source.find(unit)
             if not is_content:
                 if prev_idx == -1:
                     issues.append(f"[QC2] section '{sid}': fabricated title: {unit[:50]!r}")
@@ -787,7 +799,7 @@ def _check_md_content_completeness(
             else:
                 issues.append(f"[QC4] section '{sid}': misplaced content: {unit[:50]!r}")
 
-    # QC1: residual source check
+    # QC1: residual check on the normalised source (no tolerance list).
     if consumed:
         consumed.sort()
         merged: list[list[int]] = []
@@ -796,31 +808,22 @@ def _check_md_content_completeness(
                 merged[-1][1] = max(merged[-1][1], e)
             else:
                 merged.append([s, e])
-        parts: list[str] = []
+        buf: list[str] = []
         prev = 0
         for s, e in merged:
-            parts.append(source_text[prev:s])
+            buf.append(norm_source[prev:s])
             prev = e
-        parts.append(source_text[prev:])
-        remaining = ''.join(parts)
+        buf.append(norm_source[prev:])
+        remaining = "".join(buf)
     else:
-        remaining = source_text
+        remaining = norm_source
 
-    has_frontmatter = bool(re.match(r'^---+\s*$', source_text.split('\n')[0])) if source_text else False
-    in_frontmatter = False
-    frontmatter_seen = False
-    for line in remaining.split('\n'):
-        s = line.strip()
-        if has_frontmatter and not frontmatter_seen and re.match(r'^---+\s*$', s):
-            in_frontmatter = True
-            frontmatter_seen = True
-            continue
-        if in_frontmatter:
-            if re.match(r'^---+\s*$', s):
-                in_frontmatter = False
-            continue
-        if not _is_md_syntax_line(line):
-            issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
+    # Anything other than whitespace left over is a QC1 FAIL.
+    if remaining.strip():
+        # Report at most a few residue fragments for readability.
+        for frag in remaining.split():
+            if frag:
+                issues.append(f"[QC1] source content not captured: {frag[:50]!r}")
 
     return issues
 
@@ -982,11 +985,6 @@ def verify_docs_md(source_path, docs_md_path, fmt) -> list[str]:
 # QL1: check_source_links
 # ---------------------------------------------------------------------------
 
-# MD internal link regex retained for the MD format path below (QL1 for MD
-# sources is still regex-based until md.py is AST-ified).
-_MD_INTERNAL_LINK_RE = re.compile(r'\[([^\]]+)\]\((?!https?://)([^)]+)\)')
-
-
 def check_source_links(
     source_text: str,
     fmt: str,
@@ -1083,14 +1081,21 @@ def check_source_links(
         # across the full JSON content), so we don't re-check it here.
 
     elif fmt == "md":
+        from scripts.common import md_ast, md_ast_visitor
+
+        try:
+            tokens = md_ast.parse(source_text)
+            parts = md_ast_visitor.extract_document(tokens)
+        except Exception:
+            return issues
         seen_link_texts: set[str] = set()
-        for m in _MD_INTERNAL_LINK_RE.finditer(source_text):
-            link_text = m.group(1).strip()
-            if not link_text or link_text in seen_link_texts:
+        for link_text, _href in parts.internal_links:
+            t = link_text.strip()
+            if not t or t in seen_link_texts:
                 continue
-            seen_link_texts.add(link_text)
-            if link_text not in json_full:
-                issues.append(f"[QL1] internal link text missing from JSON: {link_text!r}")
+            seen_link_texts.add(t)
+            if t not in json_full:
+                issues.append(f"[QL1] internal link text missing from JSON: {t!r}")
 
     return issues
 

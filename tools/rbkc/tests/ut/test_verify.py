@@ -481,9 +481,11 @@ class TestCheckContentCompleteness:
         issues = self._check(src, data)
         assert all("QC1" not in i for i in issues)
 
-    def test_pass_md_heading_in_residual_allowed(self):
+    def test_pass_md_heading_captured_as_title(self):
+        # MD h1 is captured as the JSON top-level title; h2 opens a section.
+        # The normalised source contains both, and all are consumed by JSON.
         src = "# タイトル\n\n## セクション\n\n本文。\n"
-        data = self._data(sections=[
+        data = self._data(title="タイトル", sections=[
             {"id": "s1", "title": "セクション", "content": "本文。"}
         ])
         issues = self._check(src, data, fmt="md")
