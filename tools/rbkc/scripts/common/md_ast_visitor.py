@@ -53,7 +53,7 @@ class DocumentParts:
     # QL extraction buckets (filled during walk so verify does not re-walk)
     external_urls: list[str] = field(default_factory=list)
     internal_links: list[tuple[str, str]] = field(default_factory=list)  # (text, href)
-    images: list[tuple[str, str]] = field(default_factory=list)  # (alt, src)
+    images: list[tuple[str, str, str]] = field(default_factory=list)  # (alt, src, title)
 
 
 # ---------------------------------------------------------------------------
@@ -111,7 +111,7 @@ class _MDVisitor:
         self.sections: list[Section] = []
         self.external_urls: list[str] = []
         self.internal_links: list[tuple[str, str]] = []
-        self.images: list[tuple[str, str]] = []
+        self.images: list[tuple[str, str, str]] = []
 
         # Current open section (None before first h2+ heading)
         self._current_section: Section | None = None
@@ -387,7 +387,8 @@ class _MDVisitor:
             if t == "image":
                 alt = c.content or ""
                 src = c.attrGet("src") or ""
-                self.images.append((alt, src))
+                title = c.attrGet("title") or ""
+                self.images.append((alt, src, title))
                 out.append(f"![{alt}]({src})")
                 i += 1
                 continue
@@ -409,7 +410,11 @@ class _MDVisitor:
                 text = self._render_inline_children(inner_children)
                 if href.startswith(("http://", "https://")):
                     self.external_urls.append(href)
-                else:
+                elif href and not href.startswith(("mailto:", "tel:", "javascript:", "#")):
+                    # Internal link = relative path / sibling document. Schemed
+                    # URIs (mailto/tel/javascript) and in-document anchors (`#x`)
+                    # are not document-to-document links and do not belong in
+                    # QL1's JSON-content-contains-link-text check.
                     self.internal_links.append((text, href))
                 out.append(f"[{text}]({href})")
                 i = j + 1

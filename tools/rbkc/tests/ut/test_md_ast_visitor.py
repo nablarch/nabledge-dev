@@ -168,7 +168,7 @@ class TestLinkExtraction:
 
     def test_image_src_is_collected(self):
         parts = _run("![alt](./img.png)\n")
-        assert ("alt", "./img.png") in parts.images
+        assert ("alt", "./img.png", "") in parts.images
 
 
 # ---------------------------------------------------------------------------

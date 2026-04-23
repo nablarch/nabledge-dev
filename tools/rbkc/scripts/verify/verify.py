@@ -44,7 +44,25 @@ def _all_text(data: dict) -> str:
 # ---------------------------------------------------------------------------
 
 _H1_RE = re.compile(r'^#\s+(.+)$', re.MULTILINE)
-_H2_RE = re.compile(r'^#{2,}\s+(.+)$', re.MULTILINE)
+# Per spec §3-3 QO1: section titles are rendered at `##` or `###`.
+_H2_RE = re.compile(r'^#{2,3}\s+(.+)$', re.MULTILINE)
+# Fenced code blocks (triple-backtick). Headings inside a fence are content,
+# not section markers — must be stripped before scanning H1/H2.
+_FENCE_BLOCK_RE = re.compile(r'^```.*?^```', re.MULTILINE | re.DOTALL)
+
+
+def _strip_fenced_code(md_text: str) -> str:
+    """Return *md_text* with all fenced code blocks blanked out, preserving
+    byte positions (spaces for content, newlines kept as-is).
+
+    Used when scanning for H1/H2 so `## ...` inside ```markdown``` samples
+    or other fenced content is not misread as a section title — and so the
+    resulting match offsets are valid against the original text.
+    """
+    def _mask(m: re.Match) -> str:
+        block = m.group(0)
+        return "".join("\n" if ch == "\n" else " " for ch in block)
+    return _FENCE_BLOCK_RE.sub(_mask, md_text)
 
 
 _MD_LINK_RE = re.compile(r'(!?\[[^\]]*\])\(([^)]+)\)')
@@ -100,38 +118,63 @@ def check_json_docs_md_consistency(
     sections = data.get("sections", [])
     top_content = data.get("content", "")
 
+    # Strip fenced code blocks: headings inside ``` ... ``` are content
+    # samples (often MD-in-MD examples), not section markers.
+    docs_scan = _strip_fenced_code(docs_md_text)
+
     # QO1: title check. Spec §3-3 requires JSON top-level title == docs MD
     # `#` heading. Both sides must exist and match; an empty JSON title is
     # only valid when no_knowledge_content is set (handled earlier).
-    m = _H1_RE.search(docs_md_text)
+    m = _H1_RE.search(docs_scan)
     docs_title = m.group(1).strip() if m else ""
     if docs_title != json_title:
         issues.append(f"[QO1] {file_id}: title mismatch: JSON={json_title!r} docs={docs_title!r}")
 
     # QO1: section title order and presence
-    docs_h2_titles = [m.group(1).strip() for m in _H2_RE.finditer(docs_md_text)]
+    docs_h2_titles = [m.group(1).strip() for m in _H2_RE.finditer(docs_scan)]
     json_sec_titles = [s.get("title", "") for s in sections if s.get("title")]
 
     if not sections and docs_h2_titles:
         issues.append(f"[QO1] {file_id}: docs MD has section headings but JSON has no sections")
     else:
-        # Check all JSON section titles appear in docs MD in order
-        pos = 0
-        for title in json_sec_titles:
-            found = False
-            for i in range(pos, len(docs_h2_titles)):
-                if docs_h2_titles[i] == title:
-                    pos = i + 1
-                    found = True
-                    break
-            if not found:
-                issues.append(f"[QO1] {file_id}: section title missing or out of order in docs MD: {title!r}")
+        # Spec §3-3 QO1: section title list in docs MD must match the JSON
+        # list exactly — same entries, same order, no extras, no omissions.
+        if docs_h2_titles != json_sec_titles:
+            missing = [t for t in json_sec_titles if t not in docs_h2_titles]
+            extra = [t for t in docs_h2_titles if t not in json_sec_titles]
+            if missing:
+                for t in missing:
+                    issues.append(f"[QO1] {file_id}: section title missing in docs MD: {t!r}")
+            if extra:
+                for t in extra:
+                    issues.append(f"[QO1] {file_id}: docs MD has extra section title not in JSON: {t!r}")
+            if not missing and not extra:
+                # Same entries, different order
+                issues.append(
+                    f"[QO1] {file_id}: section title order differs: JSON={json_sec_titles!r} docs={docs_h2_titles!r}"
+                )
 
-    # QO2: top-level content verbatim (with same asset-link rewrite docs.py applies)
+    # QO2: top-level content must appear verbatim *between the `#` heading
+    # and the first `##` heading* (spec §3-3 "JSON top-level content が
+    # docs MD `#` 見出し直下に完全一致で含まれている"). Because fenced code
+    # blocks inside the top content can contain `#` / `##` tokens that
+    # must not be read as section markers, we blank out fenced ranges
+    # (same byte positions, spaces substituted) so the first real `##`
+    # offset is accurate against the original text.
     if top_content:
         expected = _apply_asset_link_rewrite(top_content, docs_md_path, knowledge_dir)
-        if expected not in docs_md_text:
-            issues.append(f"[QO2] {file_id}: top-level content not found verbatim in docs MD")
+        # Replace fence block bytes with spaces (preserve length + newlines).
+        def _mask(m: re.Match) -> str:
+            block = m.group(0)
+            return "".join("\n" if ch == "\n" else " " for ch in block)
+        masked = _FENCE_BLOCK_RE.sub(_mask, docs_md_text)
+        h1_match = _H1_RE.search(masked)
+        h2_match = _H2_RE.search(masked)
+        start = h1_match.end() if h1_match else 0
+        end = h2_match.start() if h2_match else len(docs_md_text)
+        top_region = docs_md_text[start:end] if start <= end else ""
+        if expected not in top_region:
+            issues.append(f"[QO2] {file_id}: top-level content not found verbatim directly below the # heading")
 
     # QO2: section content verbatim
     for s in sections:
@@ -181,11 +224,13 @@ def check_docs_coverage(knowledge_dir, docs_dir) -> list[str]:
                 f"[QO3] docs MD missing for JSON: expected {rel} (from {json_path.relative_to(kdir)})"
             )
 
-    # README page-count coherence check
+    # README page-count coherence check (spec §3-3 QO3 下位チェック).
     actual = len([p for p in ddir.rglob("*.md") if p.name != "README.md"])
     text = readme.read_text(encoding="utf-8")
     m = _README_COUNT_RE.search(text)
-    if m:
+    if not m:
+        issues.append(f"[QO3] README.md missing 'N ページ' declaration: {readme}")
+    else:
         declared = int(m.group(1))
         if declared != actual:
             issues.append(
@@ -271,7 +316,7 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
 # ---------------------------------------------------------------------------
 
 _RST_ROLE_RE = re.compile(r':[a-zA-Z][a-zA-Z0-9_.-]*:`')
-_RST_DIRECTIVE_RE = re.compile(r'\.\.\s+\S+.*::')
+_RST_DIRECTIVE_RE = re.compile(r'^\.\.\s+[A-Za-z][\w:-]*::', re.MULTILINE)
 _RST_HEADING_UNDERLINE_RE = re.compile(r'^[=\-~^"\'`#*+<>]{4,}\s*$', re.MULTILINE)
 _RST_LABEL_RE = re.compile(r'\.\.\s+_[a-zA-Z0-9_-]+:')
 _MD_RAW_HTML_RE = re.compile(r'<[a-zA-Z][a-zA-Z0-9]*(?:\s[^>]*)?/?>')
@@ -411,201 +456,6 @@ def _normalize_rst_source(text: str, label_map: dict | None = None) -> str:
     """
     from scripts.common.rst_normaliser import normalise_rst
     return normalise_rst(text, label_map=label_map or {}, strict_unknown=True)
-
-
-def _normalize_md_unit(text: str) -> str:
-    """Normalize MD content (JSON field) to plain text for RST source comparison.
-
-    Strips code fences, headings, inline code markers, links, table syntax, and
-    blockquote/admonition prefixes, then collapses whitespace so multi-line content
-    can be found in the normalized RST source.
-    """
-    # Strip RST footnote/citation/label remnants that converter passes through.
-    # (Source-side normalisation drops them, so we strip here for symmetry.)
-    text = re.sub(r'(?m)^\s*\.\.\s+\[[^\]]+\][^\n]*', '', text)
-    text = re.sub(r'(?m)^\s*\.\.\s+_[^:]+:[^\n]*', '', text)
-
-    # Split into fenced-code and non-code regions so MD syntax strips (HTML
-    # tags, headings, list markers, etc.) only apply to non-code text. Inside
-    # fenced code blocks, verbatim content must be preserved — otherwise HTML
-    # tags that originate from the source (e.g. ``<br/>`` inside Java
-    # Javadoc comments) get stripped on the MD side while the source side
-    # keeps them, causing a spurious QC2 fabricated-content error.
-    out: list[str] = []
-    in_fence = False
-    for line in text.split("\n"):
-        if re.match(r'^\s*```', line):
-            in_fence = not in_fence
-            continue  # drop the fence marker itself
-        if in_fence:
-            # Inside fenced code: preserve content verbatim except for a
-            # few tokens that source-side normalisation removes as well,
-            # keeping both sides aligned:
-            # - ``|`` → space (e.g. ASCII directory trees)
-            # - leading bullet markers `` * ``, `` - ``, `` + `` (Javadoc-style
-            #   line prefixes are source-side bullet markers)
-            inner = line.replace("|", " ")
-            inner = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '', inner)
-            out.append(inner)
-            continue
-        l = line
-        # Grid-table HTML scaffolding the converter emits: strip
-        # <table>/<tbody>/<tr>/<td>/<th>/<thead>/<br>/<br /> tags and their
-        # closers so the cell text aligns with source-side rst normalisation.
-        l = re.sub(r'</?(?:table|thead|tbody|tr|td|th|br)(?:\s[^>]*)?/?>', ' ', l, flags=re.IGNORECASE)
-        # Unresolved RST field-list entries the converter passes through as-is
-        # (``:name: value`` or ``:name:`` on its own line with the value
-        # continued below). Drop the ``:name:`` marker so the value aligns
-        # with the source-normalised form (which collapses these away).
-        l = re.sub(r'^\s*:([^:`\n]+):(?:\s+|$)', '', l)
-        # Footnote/citation reference trailing underscore: "[1]_" -> "[1]"
-        # (and ``name_`` → ``name``). Preceding char must be a word-ending
-        # marker (alnum, closing bracket/paren) — a backtick must NOT be
-        # allowed because that would incorrectly strip the ``_`` inside
-        # ``` `_` ``` inline code.
-        l = re.sub(r'([\w\]\)])_+(?=[\s`]|$)', r'\1', l)
-        # MD headings: #### Heading -> Heading
-        l = re.sub(r'^#{1,6}[^\S\n]+', '', l)
-        # Bullet list markers (MD): "* "/"- "/"+ ". Require the next char after
-        # the marker's whitespace to NOT be another marker so we don't eat
-        # multi-hyphen tokens (table separators, YAML `---`).
-        l = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '', l)
-        # Enumerated list markers (MD): "1." / "2." / "#." at line start
-        l = re.sub(r'^[^\S\n]*(?:\d+|#)\.[^\S\n]+', '', l)
-        # `inline code` -> inline code
-        l = re.sub(r'`([^`]+)`', r'\1', l)
-        # Image: ![alt](path) -> "" (image is covered by QL1)
-        # URL may include one level of balanced parens (common in Javadoc
-        # anchors like ``#apiKey()``).
-        l = re.sub(r'!\[[^\]]*\]\((?:[^()]|\([^)]*\))+\)', '', l)
-        # [link text](url) -> link text
-        l = re.sub(r'\[([^\]]+)\]\((?:[^()]|\([^)]*\))+\)', r'\1', l)
-        # Admonition header line: > **Type:** ... -> content only
-        l = re.sub(r'>[^\S\n]*\*\*[^*]+\*\*:?[^\S\n]*', '', l)
-        # Remaining blockquote prefix: > text -> text
-        l = re.sub(r'^>[^\S\n]*', '', l)
-        # MD table separator rows: |---|---| -> remove line
-        l = re.sub(r'^\|[-:| ]+\|[^\S\n]*$', '', l)
-        # MD table cell borders: | -> space. Before collapsing, strip bullet
-        # markers that sit inside a cell (e.g. `| * javax.json * javax.json.spi |`):
-        # they originate from a nested bullet list in an RST list-table cell
-        # but the source side normalises them away.
-        l = re.sub(r'\|[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '| ', l)
-        # Drop ``\|`` MD-cell escape sequences entirely — the source-side
-        # never has the leading backslash so a bare backslash residue would
-        # cause a mismatch.
-        l = l.replace("\\|", " ")
-        l = re.sub(r'\|', ' ', l)
-        out.append(l)
-    text = "\n".join(out)
-    # Collapse whitespace (handles multi-line content merged into one line)
-    text = re.sub(r'\s+', ' ', text)
-    # After collapsing, remove any isolated " * "/" - "/" + " bullet markers
-    # that survived from nested bullet lists inside list-table cells.
-    text = re.sub(r'(?:(?<=^)|(?<=\s))[*+\-](?=[^\S\n]+[^*+\-\s])', ' ', text)
-    text = re.sub(r'\s+', ' ', text)
-    return text.strip()
-
-
-def _strip_md_to_plain_lines(text: str) -> list[str]:
-    """Strip Markdown syntax from JSON content; return non-empty searchable lines.
-
-    Used only for MD sources (verbatim content comparison).
-    """
-    result = []
-    in_fence = False
-    for line in text.split('\n'):
-        if re.match(r'^\s*```', line):
-            in_fence = not in_fence
-            continue
-        if in_fence:
-            if line.strip():
-                result.append(line)
-            continue
-        l = re.sub(r'^#+\s*', '', line)
-        l = re.sub(r'^>\s?', '', l)
-        l = re.sub(r'^\*\*[^\*]+[：:]\*\*\s*', '', l)
-        l = re.sub(r'\*\*(.+?)\*\*', r'\1', l)
-        l = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'\1', l)
-        l = re.sub(r'(?<![a-zA-Z0-9_])__(.+?)__(?![a-zA-Z0-9_])', r'\1', l)
-        l = re.sub(r'(?<![a-zA-Z0-9_])_([^_\s][^_]*)_(?![a-zA-Z0-9_])', r'\1', l)
-        if l.strip():
-            result.append(l)
-    return result
-
-
-def _is_rst_syntax_line(line: str) -> bool:
-    s = line.strip()
-    if not s:
-        return True
-    if re.match(r"^[=\-~^\"'`#*+<>]{4,}\s*$", s):
-        return True
-    # Simple-table separator row, e.g. `=== === ====` (chars + spaces only)
-    if re.match(r'^[=\-]+(\s+[=\-]+)+\s*$', s):
-        return True
-    # Grid-table border: `+---+---+` / `+===+===+`
-    if re.match(r'^\+[-=+]+\+?\s*$', s):
-        return True
-    # Line continuation marker (RST leading backslash) `\` on its own
-    if s == '\\':
-        return True
-    if re.match(r'^\.\.\s*(\S.*::|$)', s):
-        return True
-    # Label definition: `.. _label:` / `.. _label: url` — RST permits arbitrary
-    # text in the label; accept anything up to the terminating colon (the
-    # URL/target that may follow is validated separately).
-    if re.match(r'^\.\.\s+_[^:]+:', s):
-        return True
-    # Substitution definition (any form): `.. |name| ...`
-    if re.match(r'^\.\.\s+\|', s):
-        return True
-    # Footnote / citation target: `.. [#name]` / `.. [1]` etc.
-    if re.match(r'^\.\.\s+\[[^\]]+\]', s):
-        return True
-    # Anonymous hyperlink target: `__ https://...`
-    if re.match(r'^__\s+https?://', s):
-        return True
-    # RST comment: `.. <arbitrary text without "::">`. Per spec, any `..`
-    # line that is not a directive / label / footnote / substitution is a
-    # comment. This must come AFTER the directive/label/footnote/substitution
-    # matchers above so those structural lines aren't mis-classified.
-    if re.match(r'^\.\.(?:\s|$)', s):
-        return True
-    if re.match(r'^:[a-zA-Z][a-zA-Z0-9_.-]*:`', s):
-        return True
-    if re.match(r'^\s+:[a-zA-Z]', line):
-        return True
-    # Bare field-list marker line ``:name:`` (no inline value). The value is
-    # on subsequent indented lines and will be captured as content there.
-    if re.match(r'^:[^:`\n]+:$', s):
-        return True
-    return False
-
-
-def _is_md_syntax_line(line: str, in_frontmatter: bool = False) -> bool:
-    s = line.strip()
-    if not s:
-        return True
-    if re.match(r'^---+\s*$', s):
-        return True
-    if in_frontmatter:
-        return True
-    if re.match(r'^```', s):
-        return True
-    if re.match(r'^<!--', s):
-        return True
-    if re.match(r'^#+\s*', s):
-        return True
-    return False
-
-
-_RST_STRUCTURAL_DIRECTIVES = re.compile(
-    r'^\.\.\s+(toctree|include|image|figure|raw|csv-table|list-table'
-    r'|class|only|ifconfig|replace|unicode|date|contents|sectnum'
-    r'|header|footer|rubric|meta|compound|container|math'
-    r'|code-block|code|sourcecode|highlight|parsed-literal'
-    r'|literalinclude|testsetup|testcleanup|doctest)\s*::'
-)
 
 
 def _build_rst_search_units(
@@ -1162,16 +1012,16 @@ def check_source_links(
             if t not in json_full:
                 issues.append(f"[QL1] internal link text missing from JSON: {t!r}")
 
-        # Images: prefer alt text; fall back to the filename if alt is empty.
-        # Per rbkc-verify-quality-design.md §3-2 "Markdown inline image" row.
+        # Images: prefer alt text; then title; then filename. Per spec §3-2
+        # "Markdown inline image" row: alt / title / src filename.
         seen_images: set[str] = set()
-        for alt, src in parts.images:
-            check = alt.strip() or (_Path(src).name if src else "")
+        for alt, src, title in parts.images:
+            check = alt.strip() or title.strip() or (_Path(src).name if src else "")
             if not check or check in seen_images:
                 continue
             seen_images.add(check)
             if check not in json_full:
-                issues.append(f"[QL1] image alt/filename missing from JSON: {check!r}")
+                issues.append(f"[QL1] image alt/title/filename missing from JSON: {check!r}")
 
     return issues
 

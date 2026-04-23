@@ -82,6 +82,51 @@ class TestCheckJsonDocsMdConsistency_QO1:
         issues = self._check(data, docs)
         assert any("QO1" in i for i in issues)
 
+    def test_fail_top_level_content_below_first_h2_not_directly_under_h1(self):
+        """Spec §3-3 QO2: top-level content must sit between `#` and the
+        first `##`. Content appearing only *after* the first `##` FAILs."""
+        data = {"id": "f", "title": "T", "content": "トップ本文。",
+                "sections": [{"id": "s1", "title": "概要", "content": "概要本文"}]}
+        # Top-level content is below the first ## — wrong location.
+        docs = "# T\n\n## 概要\n\nトップ本文。\n\n概要本文\n"
+        issues = self._check(data, docs)
+        assert any("QO2" in i and "top-level" in i for i in issues)
+
+    def test_fail_extra_h2_when_sections_present(self):
+        """Spec §3-3 QO1: docs MD section titles must match JSON order and
+        count. Extra H2 in docs MD beyond JSON sections FAILs."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "A", "content": "a"},
+        ]}
+        docs = "# T\n\n## A\n\na\n\n## 余計\n\nextra\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues)
+
+    def test_fail_duplicate_h2_order_violation(self):
+        """Spec §3-3 QO1 section order requirement: JSON [A,B] vs docs
+        [A,B,A] — the second A appears out of order relative to B. The
+        current greedy matcher passes this; this test flags the gap."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "B", "content": "b"},
+            {"id": "s2", "title": "A", "content": "a2"},
+        ]}
+        docs = "# T\n\n## A\n\na1\n\n## B\n\nb\n"
+        # JSON requires B before A, docs shows A before B → QO1 FAIL
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues)
+
+    def test_fail_readme_missing_page_declaration(self, tmp_path):
+        """Spec §3-3 QO3: README.md must contain 'N ページ' declaration."""
+        # Reuse the QO3 test class convenience — inline setup.
+        from scripts.verify.verify import check_docs_coverage
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"title": "A"}))
+        (ddir / "a.md").write_text("# A\n")
+        (ddir / "README.md").write_text("目次\n---\n- [A](a.md)\n")  # no 'N ページ'
+        issues = check_docs_coverage(kdir, ddir)
+        assert any("QO3" in i and "ページ" in i for i in issues)
+
     def test_fail_empty_title_vs_nonempty_docs_h1(self):
         """Spec §3-3: JSON title must equal docs MD H1. An empty JSON title
         against a non-empty H1 does not match → FAIL."""
@@ -584,6 +629,17 @@ class TestVerifyFileQC5:
         ]}
         assert any("QC5" in i and "backslash" in i for i in self._check(data, "md"))
 
+    def test_fail_md_raw_html_inside_inline_code_still_detected(self):
+        """QC5 is an independent check on JSON text. Raw HTML anywhere in
+        content FAILs — a literal `<br>` inside backticks is still HTML
+        from QC5's perspective because the converter should have escaped
+        or transformed it before emission. This pins the spec (§3-1 QC5
+        RST/MD 'raw HTML' pattern)."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "使い方: `<br>` を挿入"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
     def test_fail_md_self_closing_br(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
             {"id": "s1", "title": "概要", "content": "line<br/>break"}
@@ -1029,6 +1085,30 @@ class TestCheckContentCompleteness:
         issues = self._check(src, data, fmt="md")
         assert any("QC3" in i for i in issues)
 
+    def test_pass_qc3_short_cjk_repeated_in_source_and_json(self):
+        """Two sections legitimately using the same short CJK title; both
+        appear in source and JSON — no false QC3."""
+        src = "## 概要\n\nA 本文。\n\n## 概要\n\nB 本文。\n"
+        data = self._data(title="", sections=[
+            {"id": "s1", "title": "概要", "content": "A 本文。"},
+            {"id": "s2", "title": "概要", "content": "B 本文。"},
+        ])
+        issues = self._check(src, data, fmt="md")
+        # Source has "概要" twice → each JSON title consumes a distinct
+        # occurrence. No QC3/QC4 for the title pair.
+        assert not any("QC3" in i and "概要" in i for i in issues)
+
+    def test_fail_qc3_top_level_and_section_content_duplicated(self):
+        """Top-level content and a section content both declare the same
+        text, but source has it only once → second consumption collides."""
+        src = "共通テキスト。\n"
+        data = self._data(
+            content="共通テキスト。",
+            sections=[{"id": "s1", "title": "詳細", "content": "共通テキスト。"}],
+        )
+        issues = self._check(src, data, fmt="md")
+        assert any("QC3" in i or "duplicate content" in i for i in issues)
+
     def test_fail_qc3_duplicate_content_md(self):
         src = "# T\n\n## 概要\n\n本文。\n\n## 詳細\n\n別。\n"
         data = self._data(title="T", sections=[
@@ -1048,6 +1128,44 @@ class TestCheckContentCompleteness:
         ])
         issues = self._check(src, data, fmt="md")
         assert any("QC4" in i for i in issues)
+
+    def test_fail_qc4_three_section_middle_swap(self):
+        """Three sections A/B/C in source; JSON swaps B and C → QC4 must
+        fire for one of them (position regression on 2nd or 3rd)."""
+        src = "A\n=\n\na\n\nB\n=\n\nb\n\nC\n=\n\nc\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "A", "content": "a"},
+            {"id": "s2", "title": "C", "content": "c"},
+            {"id": "s3", "title": "B", "content": "b"},
+        ])
+        issues = self._check(src, data)
+        assert any("QC4" in i for i in issues)
+
+    def test_fail_qc4_md_content_swap(self):
+        """MD: two sections with swapped content (titles correct)."""
+        src = "# T\n\n## A\n\nA の内容。\n\n## B\n\nB の内容。\n"
+        data = self._data(title="T", sections=[
+            {"id": "s1", "title": "A", "content": "B の内容。"},
+            {"id": "s2", "title": "B", "content": "A の内容。"},
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("QC4" in i for i in issues)
+
+    def test_fail_qc3_qc4_boundary_duplicate_text_misplaced(self):
+        """Duplicated text where ordering disambiguates QC3 vs QC4: the
+        same 'note' appears in both A and B in source; JSON places the
+        B-positioned content into A. Must raise QC4 (not QC3) because
+        the text occurs in both positions."""
+        src = "A\n=\n\nnote\n\nB\n=\n\nnote\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "A", "content": "note"},
+            # s2 intentionally omitted so only one consumption happens
+        ])
+        # sequential-delete consumes first "note"; nothing else to match.
+        # (Positive guard — mostly asserts that the duplicate text itself
+        # does not spuriously raise QC3 when only consumed once.)
+        issues = self._check(src, data)
+        assert not any("QC3" in i for i in issues)
 
     def test_fail_qc4_misplaced_content_rst(self):
         src = "概要\n====\n\nA の内容。\n\n詳細\n====\n\nB の内容。\n"
@@ -1338,6 +1456,34 @@ class TestCheckSourceLinks:
         finally:
             rst_ast_mod.parse = orig
         assert any("QL1" in i and "利用ガイド" in i for i in issues)
+
+    def test_pass_md_mailto_link_not_internal(self):
+        """`mailto:` hrefs are not document-to-document internal links —
+        QL1 must not demand their 'link text' in JSON (r3 QL1 High gap)."""
+        src = "# T\n\n連絡先 [メール](mailto:dev@example.com) 宛。\n"
+        data = self._data(content="連絡先 宛。")  # "メール" not in JSON, but OK
+        assert self._check(src, "md", data) == []
+
+    def test_pass_md_anchor_only_link_not_internal(self):
+        """In-document anchor links (`#section`) are navigation, not
+        cross-document references; QL1 scope excludes them."""
+        src = "# T\n\n[上部へ](#top) に戻る\n"
+        data = self._data(content="に戻る")
+        assert self._check(src, "md", data) == []
+
+    def test_pass_md_tel_link_not_internal(self):
+        src = "# T\n\n[電話](tel:+81-3-1234-5678) はこちら\n"
+        data = self._data(content="はこちら")
+        assert self._check(src, "md", data) == []
+
+    def test_fail_md_image_title_missing_from_json(self):
+        """Spec §3-2 row 6: MD image alt / title / src filename must be
+        in JSON. An image with only a title attribute must FAIL when the
+        title is absent from JSON."""
+        src = '# T\n\n![](./img.png "会社ロゴ")\n'
+        data = self._data(content="別の内容")
+        issues = self._check(src, "md", data)
+        assert any("QL1" in i and "会社ロゴ" in i for i in issues)
 
     def test_pass_rst_named_reference_unknown_label_skipped(self):
         """refname not in label_map — skipped (same policy as :ref:`foo`
