@@ -180,6 +180,96 @@ class TestBuildLabelDocMap:
         assert lt.section_title == ""
 
 
+class TestCommonLayering:
+    """F1 regression (review-22-b-16b-step3-4-16c.md): scripts/common/
+    modules must not import scripts/create/.  Spec §2-2 independence.
+    """
+
+    def test_labels_does_not_import_from_create(self):
+        import ast
+        from pathlib import Path
+        labels_src = Path(
+            Path(__file__).resolve().parents[4]
+            / "tools/rbkc/scripts/common/labels.py"
+        ).read_text(encoding="utf-8")
+        tree = ast.parse(labels_src)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                module = (node.module or "")
+                assert not module.startswith("scripts.create"), (
+                    f"common/labels.py imports from {module!r} — "
+                    f"spec §2-2 forbids common → create dependency"
+                )
+
+    def test_common_file_id_does_not_import_from_create(self):
+        import ast
+        from pathlib import Path
+        src = Path(
+            Path(__file__).resolve().parents[4]
+            / "tools/rbkc/scripts/common/file_id.py"
+        ).read_text(encoding="utf-8")
+        tree = ast.parse(src)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                module = (node.module or "")
+                assert not module.startswith("scripts.create"), (
+                    f"common/file_id.py imports from {module!r}"
+                )
+
+
+class TestMDRelativeLinkInsideNestedBlock:
+    """F3 regression (review-22-b-16b-step3-4-16c.md): relative MD links
+    inside list items / blockquotes must be rewritten too, and any
+    dangling-link warnings must propagate to the outer visitor.
+    """
+
+    def test_warning_propagates_from_nested_block(self, tmp_path):
+        """A relative link inside a list item triggers a warning when
+        the target is not in doc_map.  F3 fix ensures the sub-visitor
+        forwards its warnings to the parent.
+        """
+        from scripts.common.md_ast import parse
+        from scripts.common.md_ast_visitor import _MDVisitor
+        from scripts.common.labels import LabelTarget
+
+        # Non-empty doc_map (at least one unrelated entry) activates the
+        # dangling-target path when foo.md isn't found.
+        doc_map = {
+            "other.md": LabelTarget(
+                title="O", file_id="x", section_title="", category="c", type="t"
+            )
+        }
+        text = "- See [Foo](foo.md)\n"
+        v = _MDVisitor(doc_map=doc_map, source_path=tmp_path / "x.md")
+        v.walk(parse(text))
+        assert any("foo.md" in w for w in v.warnings), v.warnings
+
+    def test_rewrite_inside_list_item(self, tmp_path):
+        """Positive path: relative link resolves to doc_map even when
+        nested in a list item — tests sub-visitor's doc_map propagation.
+        """
+        from scripts.common.md_ast import parse
+        from scripts.common.md_ast_visitor import _MDVisitor
+        from scripts.common.labels import LabelTarget
+
+        # Target key matches source-path-parent + href.resolve() suffix.
+        source_path = tmp_path / "foo" / "src.md"
+        source_path.parent.mkdir(parents=True)
+        target = tmp_path / "foo" / "bar.md"
+        doc_map = {
+            str(target.resolve()).replace("\\", "/").lstrip("/"): LabelTarget(
+                title="Bar", file_id="libraries-bar", section_title="",
+                category="libraries", type="component",
+            )
+        }
+        text = "- See [Bar](bar.md)\n"
+        v = _MDVisitor(doc_map=doc_map, source_path=source_path)
+        parts = v.walk(parse(text))
+        # Rewritten link must appear in top-level content (the sub-visitor
+        # renders the list item content back into the parent).
+        assert "../../component/libraries/libraries-bar.md" in parts.content, parts.content
+
+
 class TestWarningsPropagation:
     """F1 regression guard (spec §3-2-2): visitor warnings about dangling
     links must reach the caller — silent-skip is forbidden.

@@ -13,11 +13,18 @@ from pathlib import Path
 
 from scripts.common.file_id import (
     _generate_id,
+    _parent_prefix as _common_parent_prefix,
     derive_file_id,
+    disambiguate_file_classes,
     load_mappings as _load_mappings,
     rel_for_classify as _rel_for_classify,
 )
 from scripts.create.scan import SourceFile
+
+
+# Keep the old symbol for backward-compat with any external caller.
+def _parent_prefix(source_path: Path, levels: int) -> str:
+    return _common_parent_prefix(source_path, levels)
 
 
 @dataclass(frozen=True)
@@ -32,79 +39,93 @@ class FileInfo:
     sheet_name: str | None = None
 
 
-def _parent_prefix(source_path: Path, levels: int) -> str:
-    """Return a slug built from ``levels`` parent directory names."""
-    parts = source_path.parts
-    # parts[-1] is the filename; take ``levels`` dirs before it
-    dirs = parts[max(0, len(parts) - 1 - levels):len(parts) - 1]
-    return "-".join(p.lower().replace("_", "-") for p in dirs)
-
-
 def _disambiguate(
     items: list[tuple[str, "FileInfo"]],
     version: str,
 ) -> list["FileInfo"]:
-    """Resolve output_path collisions by progressively adding parent dir prefixes.
+    """Thin wrapper over :func:`common.file_id.disambiguate_file_classes`.
 
-    Tries 1-level, then 2-level parent prefixes. Raises ValueError if collisions
-    remain after 2 levels.
+    The common helper handles RST/MD disambiguation in the same way;
+    xlsx sheet-level FileInfos carry extra metadata (``sheet_name``)
+    that the common helper would lose, so we handle the xlsx-sheet
+    disambiguation here and delegate only the RST/MD path.
     """
     from collections import defaultdict
+    from scripts.common.file_id import FileClass
 
-    # Build {output_path: [FileInfo]} to find collisions
-    def find_collisions(
-        entries: list[tuple[str, FileInfo]]
-    ) -> dict[str, list[tuple[str, FileInfo]]]:
+    # Split by xlsx vs rest — xlsx FileInfos have a per-sheet file_id
+    # that already includes the sheet suffix, and we must preserve it.
+    xlsx_items: list[tuple[str, FileInfo]] = [
+        (o, fi) for o, fi in items if fi.format == "xlsx"
+    ]
+    rest_items: list[tuple[str, FileInfo]] = [
+        (o, fi) for o, fi in items if fi.format != "xlsx"
+    ]
+
+    # RST/MD path via the shared helper.
+    rest_as_fc: list[tuple[str, FileClass]] = [
+        (o, FileClass(
+            source_path=fi.source_path,
+            format=fi.format,
+            type=fi.type,
+            category=fi.category,
+            file_id=fi.file_id,
+            matched_pattern="",
+        ))
+        for o, fi in rest_items
+    ]
+    disambiguated = disambiguate_file_classes(rest_as_fc, version)
+    rest_out = [
+        FileInfo(
+            source_path=fc.source_path,
+            format=fc.format,
+            file_id=fc.file_id,
+            type=fc.type,
+            category=fc.category,
+            output_path=o,
+        )
+        for o, fc in disambiguated
+    ]
+
+    # xlsx path: same algorithm but preserve sheet_name and re-append
+    # the sheet suffix on regenerated file_ids.
+    def _find_collisions(entries):
         by_out: dict[str, list] = defaultdict(list)
-        for out, fi in entries:
-            by_out[out].append((out, fi))
+        for o, fi in entries:
+            by_out[o].append((o, fi))
         return {k: v for k, v in by_out.items() if len(v) > 1}
 
-    # Regenerate IDs with a given number of parent-dir levels
-    def regenerate(
-        colliding: list[tuple[str, FileInfo]], levels: int
-    ) -> list[tuple[str, FileInfo]]:
-        result = []
-        for _, fi in colliding:
-            prefix = _parent_prefix(fi.source_path, levels)
-            new_id = _generate_id(
-                fi.source_path.name, fi.format, fi.category,
-                fi.source_path, "", version,
-                xlsx_exact=(fi.format == "xlsx" and fi.file_id == fi.category),
-                extra_prefix=prefix,
-            )
-            # Phase 22-B: preserve the sheet suffix on xlsx rows so
-            # disambiguation does not collapse per-sheet FileInfos back
-            # to the file-level id.
-            if fi.sheet_name and fi.file_id.endswith(f"-{_sheet_slug(fi.sheet_name)}"):
-                new_id = f"{new_id}-{_sheet_slug(fi.sheet_name)}"
-            new_out = f"{fi.type}/{fi.category}/{new_id}.json"
-            result.append((new_out, FileInfo(
-                source_path=fi.source_path,
-                format=fi.format,
-                file_id=new_id,
-                type=fi.type,
-                category=fi.category,
-                output_path=new_out,
-                sheet_name=fi.sheet_name,
-            )))
-        return result
-
-    # Start with original entries
-    current = list(items)
-    collisions = find_collisions(current)
-
+    current = list(xlsx_items)
+    collisions = _find_collisions(current)
     for levels in (1, 2):
         if not collisions:
             break
-        # Replace colliding entries with disambiguated versions
         colliding_outs = set(collisions.keys())
-        non_colliding = [(out, fi) for out, fi in current if out not in colliding_outs]
-        disambiguated = []
+        non_colliding = [(o, fi) for o, fi in current if o not in colliding_outs]
+        regen: list[tuple[str, FileInfo]] = []
         for col_list in collisions.values():
-            disambiguated.extend(regenerate(col_list, levels))
-        current = non_colliding + disambiguated
-        collisions = find_collisions(current)
+            for _o, fi in col_list:
+                prefix = _common_parent_prefix(fi.source_path, levels)
+                new_id = _generate_id(
+                    fi.source_path.name, fi.format, fi.category,
+                    fi.source_path, "", version,
+                    xlsx_exact=(fi.format == "xlsx" and fi.file_id == fi.category),
+                    extra_prefix=prefix,
+                )
+                if fi.sheet_name and fi.file_id.endswith(f"-{_sheet_slug(fi.sheet_name)}"):
+                    new_id = f"{new_id}-{_sheet_slug(fi.sheet_name)}"
+                new_out = f"{fi.type}/{fi.category}/{new_id}.json"
+                regen.append((new_out, FileInfo(
+                    source_path=fi.source_path,
+                    format=fi.format,
+                    file_id=new_id,
+                    type=fi.type,
+                    category=fi.category,
+                    output_path=new_out,
+                    sheet_name=fi.sheet_name,
+                )))
+        current = non_colliding + regen
+        collisions = _find_collisions(current)
 
     if collisions:
         lines = [
@@ -112,11 +133,12 @@ def _disambiguate(
         ]
         for out_path, entries in sorted(collisions.items()):
             lines.append(f"  {out_path}:")
-            for _, fi in entries:
+            for _o, fi in entries:
                 lines.append(f"    {fi.source_path}")
         raise ValueError("\n".join(lines))
 
-    return [fi for _, fi in current]
+    xlsx_out = [fi for _o, fi in current]
+    return rest_out + xlsx_out
 
 
 def classify_sources(

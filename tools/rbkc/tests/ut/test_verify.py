@@ -3634,6 +3634,25 @@ class TestCheckQL1LinkTargets:
         assert any("asset missing" in i for i in issues)
         assert any("missing.png" in i for i in issues)
 
+    def test_link_shape_inside_code_block_is_ignored(self, tmp_path):
+        """F2 regression: a link-shaped substring inside a fenced code
+        block must NOT be extracted (CommonMark doesn't make it a link),
+        so no false-positive FAIL even when the path doesn't exist.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+
+        data = {
+            "content": (
+                "```\n"
+                "Example: [X](../../component/libraries/libraries-nosuch.md)\n"
+                "```\n"
+            ),
+            "sections": [],
+        }
+        # CommonMark fenced code blocks don't expose link tokens — no FAIL.
+        assert check_ql1_link_targets(data, kn) == []
+
     def test_dedup_repeated_link(self, tmp_path):
         """Repeated link to the same target is checked once."""
         from scripts.verify.verify import check_ql1_link_targets

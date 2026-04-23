@@ -248,36 +248,37 @@ def build_label_doc_map(
     The walk covers every source root known to the version (see
     :func:`scripts.create.scan._source_roots`).
     """
-    # Import locally to avoid a cycle at module load time.
-    from scripts.common.file_id import rel_for_classify
-    from scripts.create.classify import classify_sources
-    from scripts.create.scan import scan_sources
+    # F1 fix: depend only on ``common/`` so ``labels.py`` does not
+    # import ``create/`` (spec §2-2 layering).  ``classify_rst_and_md``
+    # applies the same collision disambiguation create uses, so
+    # label_map / doc_map file_ids still match what create writes.
+    from scripts.common.file_id import (
+        classify_rst_and_md,
+        iter_rst_paths,
+        load_mappings,
+        rel_for_classify,
+    )
 
-    # Use the full classify pipeline — including collision disambiguation
-    # — so label_map / doc_map file_ids match what create writes to disk.
-    # Calling derive_file_id directly here would miss disambiguation and
-    # produce dangling cross-document links when two RST files share a
-    # basename (e.g. multiple ``functional_comparison.rst``).
-    sources = scan_sources(version, repo_root)
-    file_infos = classify_sources(sources, version, repo_root)
+    class _RstSrc:
+        __slots__ = ("path", "format")
+        def __init__(self, path):
+            self.path = path
+            self.format = "rst"
 
-    # Build a ``{absolute_source_path_str: FileInfo}`` index for O(1)
-    # lookup while scanning labels.
-    fi_by_path: dict[str, "object"] = {}
-    for fi in file_infos:
-        if fi.format == "rst" and fi.sheet_name is None:
-            fi_by_path[str(fi.source_path)] = fi
+    mappings = load_mappings(version, repo_root)
+    srcs = [_RstSrc(p) for p in iter_rst_paths(version, repo_root)]
+    classified = classify_rst_and_md(srcs, version, repo_root, mappings=mappings)
+    by_path: dict[str, "FileClass"] = {
+        str(fc.source_path): fc for fc in classified
+    }
 
     label_map: dict[str, LabelTarget] = {}
     doc_map: dict[str, LabelTarget] = {}
 
-    for src_path_str, fi in fi_by_path.items():
+    for src_path_str, fc in by_path.items():
         rst_file = Path(src_path_str)
         found, doc_title = _scan_rst_labels(rst_file)
 
-        # label_map entries — one LabelTarget per label (anchor is
-        # per-label, so we can't share one LabelTarget across stacked
-        # labels).
         for labels, title in found:
             if not title:
                 for lbl in labels:
@@ -288,22 +289,21 @@ def build_label_doc_map(
                         lbl,
                         LabelTarget(
                             title=title,
-                            file_id=fi.file_id,
+                            file_id=fc.file_id,
                             section_title=title,
-                            category=fi.category,
-                            type=fi.type,
+                            category=fc.category,
+                            type=fc.type,
                             anchor=_anchor_for_label(lbl),
                         ),
                     )
 
-        # doc_map entry (keyed by relpath the mapping patterns use).
         relpath = rel_for_classify(rst_file, version)
         doc_map[relpath] = LabelTarget(
-            title=doc_title or fi.file_id,
-            file_id=fi.file_id,
+            title=doc_title or fc.file_id,
+            file_id=fc.file_id,
             section_title="",
-            category=fi.category,
-            type=fi.type,
+            category=fc.category,
+            type=fc.type,
             anchor="",
         )
 

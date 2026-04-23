@@ -698,7 +698,8 @@ class _MDVisitor:
             display = text or basename
             if not self._file_id:
                 return display
-            return f"[{display}](assets/{self._file_id}/{basename})"
+            from scripts.common.linkfmt import emit_asset_link
+            return emit_asset_link(display, self._file_id, basename)
         if role in {"java:extdoc", "javadoc_url"}:
             # `LinkText <fqcn>` form → keep LinkText only (Javadoc path is drop)
             if "<" in raw and raw.rstrip().endswith(">"):
@@ -739,9 +740,8 @@ class _MDVisitor:
         display = display_text or title
         if not file_id or not category or not type_:
             return display
-        if anchor:
-            return f"[{display}](../../{type_}/{category}/{file_id}.md#{anchor})"
-        return f"[{display}](../../{type_}/{category}/{file_id}.md)"
+        from scripts.common.linkfmt import emit_crossdoc_link
+        return emit_crossdoc_link(display, type_, category, file_id, anchor)
 
     def _resolve_doc_target(self, target_path: str):
         """Resolve a ``:doc:`` path against ``source_path`` and look it up

@@ -1580,18 +1580,11 @@ def verify_docs_md(source_path, docs_md_path, fmt) -> list[str]:
 # QL1 two-sided: link target existence (Phase 22-B-16b step 4)
 # ---------------------------------------------------------------------------
 
-# Matches CommonMark MD links emitted by the converter:
-#   [display](../../{type}/{category}/{file_id}.md)          ← :doc:
-#   [display](../../{type}/{category}/{file_id}.md#{anchor}) ← :ref: / numref
-_CROSSDOC_LINK_RE = re.compile(
-    r'\]\(\.\./\.\./(?P<type>[A-Za-z0-9_\-]+)/'
-    r'(?P<category>[A-Za-z0-9_\-]+)/'
-    r'(?P<file_id>[^)\s#]+)\.md(?:#(?P<anchor>[^)\s]+))?\)'
-)
-
-# Matches ``](assets/{file_id}/{basename})`` links (image/figure/download).
-_ASSET_LINK_RE = re.compile(
-    r'\]\((?P<path>assets/(?P<file_id>[^)\s/]+)/(?P<basename>[^)\s]+))\)'
+# Link regexes are owned by scripts.common.linkfmt so create-side
+# emission and verify-side parsing cannot drift (F4 fix).
+from scripts.common.linkfmt import (
+    CROSSDOC_LINK_RE as _CROSSDOC_LINK_RE,
+    ASSET_LINK_RE as _ASSET_LINK_RE,
 )
 
 
@@ -1620,22 +1613,62 @@ def check_ql1_link_targets(
     knowledge_root = _Path(knowledge_dir)
     docs_root = knowledge_root.parent / "docs"
 
-    def _collect_links(text: str) -> list[tuple[str, str, str, str]]:
-        return [
-            (
-                m.group("type"),
-                m.group("category"),
-                m.group("file_id"),
-                m.group("anchor") or "",
+    def _hrefs_in_md(text: str) -> list[str]:
+        """Extract href values from ``link_open`` / ``image`` tokens of
+        an MD parse of *text*.  Using the AST avoids F2 false positives
+        from regex-matching link-shaped strings that appear inside
+        fenced code blocks or inline code — CommonMark excludes those
+        from the inline link grammar.
+
+        markdown-it normalises href values to percent-encoded form per
+        RFC 3986, so we decode them back to the literal path that
+        matches the on-disk filename (which keeps Japanese chars
+        verbatim).
+        """
+        if not text:
+            return []
+        from scripts.common import md_ast
+        from urllib.parse import unquote
+        try:
+            tokens = md_ast.parse(text)
+        except Exception:
+            # If the JSON content is not parseable as CommonMark, fall
+            # back to the regex so we don't silently lose coverage.
+            return (
+                [m.group(0) for m in _CROSSDOC_LINK_RE.finditer(text)]
+                + [m.group(0) for m in _ASSET_LINK_RE.finditer(text)]
             )
-            for m in _CROSSDOC_LINK_RE.finditer(text or "")
-        ]
+        out: list[str] = []
+        for tok in tokens:
+            children = getattr(tok, "children", None) or []
+            for c in children:
+                t = c.type
+                if t in ("link_open", "image"):
+                    href = c.attrGet("href") or c.attrGet("src") or ""
+                    if href:
+                        out.append(unquote(href))
+        return out
+
+    def _collect_links(text: str) -> list[tuple[str, str, str, str]]:
+        out: list[tuple[str, str, str, str]] = []
+        for href in _hrefs_in_md(text):
+            m = _CROSSDOC_LINK_RE.search(f"]({href})")
+            if m is not None:
+                out.append((
+                    m.group("type"),
+                    m.group("category"),
+                    m.group("file_id"),
+                    m.group("anchor") or "",
+                ))
+        return out
 
     def _collect_assets(text: str) -> list[tuple[str, str]]:
-        return [
-            (m.group("file_id"), m.group("basename"))
-            for m in _ASSET_LINK_RE.finditer(text or "")
-        ]
+        out: list[tuple[str, str]] = []
+        for href in _hrefs_in_md(text):
+            m = _ASSET_LINK_RE.search(f"]({href})")
+            if m is not None:
+                out.append((m.group("file_id"), m.group("basename")))
+        return out
 
     sources: list[str] = []
     sources.append(data.get("content", "") or "")
@@ -1727,9 +1760,8 @@ def _resolve_title_inline(title_node, label_map: dict) -> str:
         disp = display or title
         if not file_id or not category or not type_:
             return disp
-        if anchor:
-            return f"[{disp}](../../{type_}/{category}/{file_id}.md#{anchor})"
-        return f"[{disp}](../../{type_}/{category}/{file_id}.md)"
+        from scripts.common.linkfmt import emit_crossdoc_link
+        return emit_crossdoc_link(disp, type_, category, file_id, anchor)
 
     parts: list[str] = []
     for child in title_node.children:

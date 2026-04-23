@@ -198,9 +198,8 @@ class _MDVisitor:
         type_ = getattr(target, "type", "") or ""
         if not file_id or not category or not type_:
             return f"[{text}]({href})"
-        if anchor:
-            return f"[{text}](../../{type_}/{category}/{file_id}.md#{anchor})"
-        return f"[{text}](../../{type_}/{category}/{file_id}.md)"
+        from scripts.common.linkfmt import emit_crossdoc_link
+        return emit_crossdoc_link(text, type_, category, file_id, anchor)
 
     # -------------------------------------------------------------- sections
     def _emit_block(self, text: str) -> None:
@@ -332,13 +331,24 @@ class _MDVisitor:
         return i + 1
 
     def _render_block_group(self, tokens: list[Token]) -> str:
-        """Render a sequence of block tokens (inside a list item / quote) to MD."""
-        sub = _MDVisitor()
+        """Render a sequence of block tokens (inside a list item / quote) to MD.
+
+        F3 fix (review-22-b-16b-step3-4-16c.md): propagate doc_map /
+        source_path to the sub-visitor so relative link rewriting does
+        NOT silently fall through for nested blocks, and lift any
+        sub-visitor warnings back so spec §3-2-2 "silent skip 禁止"
+        holds for nested tokens too.
+        """
+        sub = _MDVisitor(
+            doc_map=self._doc_map,
+            source_path=self._source_path,
+        )
         # Reuse QL buckets so nested structures still contribute to extraction
         sub.external_urls = self.external_urls
         sub.internal_links = self.internal_links
         sub.images = self.images
         parts = sub.walk(tokens)
+        self.warnings.extend(sub.warnings)
         # If the group produced top_content only (no sections — lists shouldn't
         # contain headings), just return that.
         return parts.content

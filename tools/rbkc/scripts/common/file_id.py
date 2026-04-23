@@ -243,3 +243,173 @@ def derive_file_id(
         file_id=file_id,
         matched_pattern=matched_pattern or "",
     )
+
+
+# ---------------------------------------------------------------------------
+# Collision disambiguation (pure — no filesystem reads)
+# ---------------------------------------------------------------------------
+# Phase 22-B-16b step 4 F1 fix: create-side's ``classify_sources`` used to
+# own collision disambiguation, but ``common/labels.py`` needs the same
+# disambiguation to build label_map file_ids that match what create will
+# eventually write.  Keeping the logic in create/ forced common/ to
+# import create/ — a layering violation (spec §2-2).  The pure helpers
+# below live in common/ so both sides can consume them without reaching
+# into create/.
+
+
+def _parent_prefix(source_path: Path, levels: int) -> str:
+    parts = source_path.parts
+    dirs = parts[max(0, len(parts) - 1 - levels):len(parts) - 1]
+    return "-".join(p.lower().replace("_", "-") for p in dirs)
+
+
+def disambiguate_file_classes(
+    items: list[tuple[str, FileClass]],
+    version: str,
+) -> list[tuple[str, FileClass]]:
+    """Resolve output-path collisions by adding 1 then 2 parent-dir
+    prefixes to the file_id.  Input/output are ``(output_path, FileClass)``
+    tuples so callers can build whatever wrapper type they need without
+    ``common/`` depending on it.
+
+    Raises :class:`ValueError` when collisions remain after 2 levels.
+    """
+    from collections import defaultdict
+
+    def _find_collisions(entries):
+        by_out: dict[str, list] = defaultdict(list)
+        for out, fc in entries:
+            by_out[out].append((out, fc))
+        return {k: v for k, v in by_out.items() if len(v) > 1}
+
+    def _regenerate(colliding, levels: int):
+        result = []
+        for _out, fc in colliding:
+            prefix = _parent_prefix(fc.source_path, levels)
+            new_id = _generate_id(
+                fc.source_path.name,
+                fc.format,
+                fc.category,
+                fc.source_path,
+                "",
+                version,
+                xlsx_exact=(fc.format == "xlsx" and fc.file_id == fc.category),
+                extra_prefix=prefix,
+            )
+            new_out = f"{fc.type}/{fc.category}/{new_id}.json"
+            result.append(
+                (
+                    new_out,
+                    FileClass(
+                        source_path=fc.source_path,
+                        format=fc.format,
+                        type=fc.type,
+                        category=fc.category,
+                        file_id=new_id,
+                        matched_pattern=fc.matched_pattern,
+                    ),
+                )
+            )
+        return result
+
+    current = list(items)
+    collisions = _find_collisions(current)
+    for levels in (1, 2):
+        if not collisions:
+            break
+        colliding_outs = set(collisions.keys())
+        non_colliding = [(o, fc) for o, fc in current if o not in colliding_outs]
+        disambiguated = []
+        for col_list in collisions.values():
+            disambiguated.extend(_regenerate(col_list, levels))
+        current = non_colliding + disambiguated
+        collisions = _find_collisions(current)
+
+    if collisions:
+        lines = [
+            "output_path collision detected — add more specific patterns to the mapping file:"
+        ]
+        for out_path, entries in sorted(collisions.items()):
+            lines.append(f"  {out_path}:")
+            for _out, fc in entries:
+                lines.append(f"    {fc.source_path}")
+        raise ValueError("\n".join(lines))
+
+    return current
+
+
+def _source_roots_for_version(version: str, repo_root: Path) -> list[Path]:
+    """Return RST/MD source root directories for *version*.
+
+    Duplicated from ``scripts.create.scan._source_roots`` so
+    ``common/`` does not import ``create/`` (spec §2-2 layering).  The
+    source-root layout is part of the RBKC input contract, not a
+    create-side concern, so it belongs in ``common/``.
+    """
+    roots: list[Path] = []
+    if version in ("5", "6"):
+        roots = [
+            repo_root / f".lw/nab-official/v{version}/nablarch-document/ja",
+            repo_root / f".lw/nab-official/v{version}/nablarch-system-development-guide",
+        ]
+    else:
+        v_dir = repo_root / f".lw/nab-official/v{version}"
+        if v_dir.exists():
+            roots = sorted(d for d in v_dir.iterdir() if d.is_dir())
+    dir_name = f"nablarch-{version}-all-releasenote"
+    all_rn = repo_root / ".lw/nab-official/all-releasenote" / dir_name
+    if all_rn.exists():
+        roots = list(roots) + [all_rn]
+    return roots
+
+
+def iter_rst_paths(version: str, repo_root: Path) -> list[Path]:
+    """Yield every .rst file under the version's source roots.  Used by
+    ``common/labels.py`` to build label / doc maps without depending on
+    ``create/scan.py``.
+    """
+    out: list[Path] = []
+    for root in _source_roots_for_version(version, repo_root):
+        if not root.exists():
+            continue
+        for p in root.rglob("*.rst"):
+            if p.is_file():
+                out.append(p)
+    return out
+
+
+def classify_rst_and_md(
+    sources: list,
+    version: str,
+    repo_root: Path,
+    *,
+    mappings: dict | None = None,
+) -> list[FileClass]:
+    """Pure-common classification for RST + MD sources, with collision
+    disambiguation applied.  Xlsx sources are skipped because their
+    expansion requires reading the workbook (impure).  Intended for
+    ``common/labels.py`` consumers — they only need RST files anyway,
+    and the disambiguation result matches what ``create/classify.py``
+    writes to disk for RST+MD entries.
+
+    Each element of ``sources`` must expose ``.path`` (Path) and
+    ``.format`` ("rst"/"md") attributes — matches the ``SourceFile``
+    duck type without importing it.
+    """
+    if mappings is None:
+        mappings = load_mappings(version, repo_root)
+    items: list[tuple[str, FileClass]] = []
+    for src in sources:
+        fmt = getattr(src, "format", "")
+        if fmt not in ("rst", "md"):
+            continue
+        path = getattr(src, "path", None)
+        if path is None:
+            continue
+        fc = derive_file_id(path, fmt, version, repo_root, mappings=mappings)
+        if fc is None:
+            continue
+        output_path = f"{fc.type}/{fc.category}/{fc.file_id}.json"
+        items.append((output_path, fc))
+    disambiguated = disambiguate_file_classes(items, version)
+    return [fc for _out, fc in disambiguated]
