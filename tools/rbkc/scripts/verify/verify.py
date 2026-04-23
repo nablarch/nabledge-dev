@@ -153,24 +153,37 @@ def check_docs_coverage(knowledge_dir, docs_dir) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def check_index_coverage(knowledge_dir, index_path) -> list[str]:
-    """QO4: every JSON (without no_knowledge_content) must be in index.toon."""
-    issues = []
+    """QO4: index.toon must list exactly the content JSON files on disk.
+
+    Per rbkc-verify-quality-design.md §3-3:
+    - index.toon missing: every content JSON is reported as FAIL.
+    - JSON on disk not in index.toon: FAIL (not searchable).
+    - Path in index.toon without a matching JSON on disk: FAIL (dangling).
+    """
+    issues: list[str] = []
     kdir = Path(knowledge_dir)
     idx = Path(index_path)
 
+    # Collect content JSON paths (relative) on disk.
+    content_jsons: dict[str, Path] = {}
+    for jf in sorted(kdir.rglob("*.json")):
+        try:
+            d = json.loads(jf.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if d.get("no_knowledge_content"):
+            continue
+        rel = str(jf.relative_to(kdir)).replace("\\", "/")
+        content_jsons[rel] = jf
+
     if not idx.exists():
-        # Collect all JSON files that need indexing
-        json_files = list(kdir.rglob("*.json"))
-        content_files = []
-        for jf in json_files:
-            try:
-                d = json.loads(jf.read_text(encoding="utf-8"))
-                if not d.get("no_knowledge_content"):
-                    content_files.append(jf)
-            except Exception:
-                pass
-        if content_files:
-            issues.append(f"[QO4] index.toon missing: {idx}")
+        # Spec: list every content JSON as FAIL because the search index
+        # is missing entirely.
+        if not content_jsons:
+            return issues
+        issues.append(f"[QO4] index.toon missing: {idx}")
+        for rel in sorted(content_jsons):
+            issues.append(f"[QO4] {rel}: JSON not registered in index.toon (index.toon absent)")
         return issues
 
     # Parse index paths from index.toon.
@@ -187,22 +200,20 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
             continue
         if not line.startswith("  ") or not stripped:
             continue
-        # Path is the last comma-separated field on the row
         last_comma = stripped.rfind(",")
         if last_comma < 0:
             continue
         indexed_paths.add(stripped[last_comma + 1:].strip())
 
-    for jf in sorted(kdir.rglob("*.json")):
-        try:
-            d = json.loads(jf.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        if d.get("no_knowledge_content"):
-            continue
-        rel = str(jf.relative_to(kdir)).replace("\\", "/")
+    # Forward: every content JSON must appear in the index.
+    for rel in sorted(content_jsons):
         if rel not in indexed_paths:
-            issues.append(f"[QO4] {jf.name}: JSON not registered in index.toon: {rel}")
+            issues.append(f"[QO4] {Path(rel).name}: JSON not registered in index.toon: {rel}")
+
+    # Reverse: every path in the index must correspond to a real file on disk.
+    for rel in sorted(indexed_paths):
+        if rel not in content_jsons:
+            issues.append(f"[QO4] index.toon lists missing JSON: {rel}")
 
     return issues
 
@@ -351,7 +362,7 @@ def _normalize_rst_source(text: str, label_map: dict | None = None) -> str:
     `rbkc-verify-quality-design.md` §3-1 手順 0.
     """
     from scripts.common.rst_normaliser import normalise_rst
-    return normalise_rst(text, label_map=label_map or {}, strict_unknown=False)
+    return normalise_rst(text, label_map=label_map or {}, strict_unknown=True)
 
 
 def _normalize_md_unit(text: str) -> str:
@@ -628,7 +639,15 @@ def _check_rst_content_completeness(
     """
     # Collect substitutions once from the full source so per-line normalisation
     # can resolve `|name|` references defined elsewhere in the file.
-    norm_source_raw = _normalize_rst_source(source_text, label_map)
+    # Per rbkc-verify-quality-design.md §3-1b, Visitor-level errors (unknown
+    # node / unknown role / unresolved reference / parse error) are QC1 FAIL,
+    # not silent fallbacks.
+    from scripts.common.rst_normaliser import UnknownSyntaxError
+    try:
+        norm_source_raw = _normalize_rst_source(source_text, label_map)
+    except UnknownSyntaxError as exc:
+        issues.append(f"[QC1] RST parse/visitor error: {exc}")
+        return issues
     # Apply the same URL-stripping normalisation as _build_rst_search_units.
     prev = None
     norm_source = norm_source_raw
@@ -1048,6 +1067,7 @@ def check_source_links(
 
     elif fmt == "md":
         from scripts.common import md_ast, md_ast_visitor
+        from pathlib import Path as _Path
 
         try:
             tokens = md_ast.parse(source_text)
@@ -1062,6 +1082,17 @@ def check_source_links(
             seen_link_texts.add(t)
             if t not in json_full:
                 issues.append(f"[QL1] internal link text missing from JSON: {t!r}")
+
+        # Images: prefer alt text; fall back to the filename if alt is empty.
+        # Per rbkc-verify-quality-design.md §3-2 "Markdown inline image" row.
+        seen_images: set[str] = set()
+        for alt, src in parts.images:
+            check = alt.strip() or (_Path(src).name if src else "")
+            if not check or check in seen_images:
+                continue
+            seen_images.add(check)
+            if check not in json_full:
+                issues.append(f"[QL1] image alt/filename missing from JSON: {check!r}")
 
     return issues
 
