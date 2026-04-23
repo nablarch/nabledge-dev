@@ -1,0 +1,54 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Servlet API を前提とした構成であること",
+        "status": "COVERED"
+      },
+      {
+        "fact": "NablarchServletContextListener がシステムリポジトリとログの初期化を行うサーブレットコンテキストリスナーであること",
+        "status": "COVERED"
+      },
+      {
+        "fact": "WebFrontController が jakarta.servlet.Filter の実装クラスであること",
+        "status": "COVERED"
+      },
+      {
+        "fact": "WebFrontController がリクエストをハンドラキューに委譲するエントリポイントであること",
+        "status": "COVERED"
+      },
+      {
+        "fact": "DispatchHandler が URI を元にアクションクラスを特定し、ハンドラキューの末尾に追加すること",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "アクションクラスがフォームクラス・エンティティクラスを使って業務ロジックを実行すること",
+        "status": "MISSING"
+      },
+      {
+        "fact": "アクションクラスが HttpResponse を返却し、HttpResponseHandler がそれをクライアントへのレスポンスに変換すること",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ハンドラキューはプロジェクト要件に応じて構築すること",
+        "status": "COVERED"
+      },
+      {
+        "fact": "最小ハンドラ構成として 13 本のハンドラを推奨順序で並べること",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ハンドラのカテゴリがリクエスト・レスポンス変換、フィルタリング、DB関連、リクエスト検証、エラー処理に分類されること",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [],
+    "reasoning": "生成回答はコンポーネント構成（NablarchServletContextListener・WebFrontController）と最小ハンドラ構成13本（正しい順序）をほぼ完全にカバーしており、web.xml 設定例や Maven アーキタイプ生成コマンドなど参照ソース外の有用な補足情報も含む。ただし処理の流れ（s2 に該当）の記述が欠落しており、特に「アクションクラスがフォームクラス・エンティティクラスを使って業務ロジックを実行する」という必須事実が完全に MISSING である。DispatchHandler の説明も RouterAdaptor の記述に留まり PARTIAL。スコア基準上、必須事実が 1 件でも MISSING の場合はレベル 2 に達せず、レベル 1 が上限となる。追加情報（web.xml 設定、Maven アーキタイプ、JBoss/WildFly 制約）はいずれも on-topic で誤誘導はなく、OVER-REACH・HALLUCINATION には該当しない。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.23341485,
+  "duration_s": 101.52449917793274,
+  "error": null
+}

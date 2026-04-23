@@ -1,0 +1,64 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "CsrfTokenVerificationHandlerをWebFrontControllerのハンドラキューに追加する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "本ハンドラはCSRFトークンをセッションストアに格納するためsession_storeの使用が必須",
+        "status": "COVERED"
+      },
+      {
+        "fact": "session_store_handlerより後ろに配置する（CSRFトークンをセッションストアに格納するため）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "nablarch_tag_handler（JSPカスタムタグ）を使う場合はnablarch_tag_handlerより後ろに配置する（hidden_encryptionでトークンを出力するため）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "デフォルトでUUIDv4ベースのトークンをセッションストアに格納する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "GET/HEAD/TRACE/OPTIONSは検証対象外、POST/PUT等は検証対象",
+        "status": "COVERED"
+      },
+      {
+        "fact": "検証失敗時は400(BadRequest)を返す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "multipart_handler使用時にファイル保存前にCSRF検証したい場合はmultipart_handlerの前に本ハンドラとsession_store_handlerを配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SessionStoreHandlerはhttp_response_handlerより後ろに配置する（サーブレットフォワード時の値アクセスのため）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "SessionStoreHandlerはforwarding_handlerより前に配置する（HIDDENストア使用時の内部フォワード問題を防ぐため）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "HIDDENストア使用時はSessionStoreHandlerをmultipart_handlerより後ろに配置する",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "ログイン時にCSRFトークンを再生成しないとセッション固定攻撃に悪用される恐れがある。CsrfTokenUtil.regenerateCsrfToken(ctx)の呼び出しが必須",
+        "type": "OVER-REACH",
+        "why": "s5およびlibraries-session_store.json:s6は参照ソースに含まれない。結論でも「必須」と明記しており、質問範囲外の要件を必須として提示している"
+      }
+    ],
+    "reasoning": "生成回答はCsrfTokenVerificationHandlerの追加・セッションストア必須・session_store_handler後配置・nablarch_tag_handler後配置・デフォルト動作（UUIDv4、400返却）・multipart考慮など、参照回答の主要事実をほぼ網羅している。しかし、質問の「他との相性で気をつけることは？」に直接対応する参照回答③のSessionStoreHandler自身の配置制約（http_response_handler後・forwarding_handler前・HIDDENストア時multipart_handler後）が完全に欠落している。さらに、参照ソースに含まれないs5/libraries-session_store.json:s6を根拠にログイン時のCSRFトークン再生成を結論レベルで「必須」と記述しており、これは参照ソースの証拠境界を超えた実質的なOVER-REACHである。必須事実のMISSINGと実質的なOVER-REACHが共存するため、スコアは1。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.1851803,
+  "duration_s": 66.18622875213623,
+  "error": null
+}

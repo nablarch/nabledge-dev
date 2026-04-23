@@ -1,0 +1,18 @@
+{
+  "variant": "current",
+  "answer": "**結論**: Nablarchのカスタムタグ（`<n:submit>` 等）が出力する `onclick` インラインJavaScriptについては、**JSPの書き方を変えずに**対応できる。`SecureHandler` の nonce 生成機能を有効にすると、カスタムタグが onclick のコードを自動的に `<script nonce=\"...\">` 要素に移動する。ただし、アプリケーション独自に書いた `onclick=\"自前の処理\"` は自動対応されないため、個別対処が必要。\n\n**根拠**:\n\n① **カスタムタグが出力する onclick の自動対応**  \n`SecureHandler` の `generateCspNonce` を `true` にすると、`<n:form>` が生成するJavaScript（onclick属性のサブミット関数呼び出しを含む）は **script 要素にまとめられ、nonce 属性が自動付与される** ように動作が変わる。JSP側の記述変更は不要。（`component/libraries/libraries-tag.json:s9`）\n\n② **設定手順（SecureHandler + ContentSecurityPolicyHeader）**  \n```xml\n<component class=\"nablarch.fw.web.handler.SecureHandler\">\n  <property name=\"generateCspNonce\" value=\"true\" />\n  <property name=\"secureResponseHeaderList\">\n    <list>\n      ...\n      <component class=\"nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader\">\n        <property name=\"policy\" value=\"default-src 'self' '$cspNonceSource$'\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n`$cspNonceSource$` はリクエスト毎に生成された nonce（例: `nonce-DhcnhD3khTMePgXwdayK9BsMqXjhguVV`）に自動置換される。（`component/handlers/handlers-secure_handler.json:s8`）\n\n③ **独自インラインJavaScriptへの対処**  \nnonce 自動付与はカスタムタグが生成するコードのみが対象。JSPに直接書いた `onclick=\"独自処理\"` や `onchange=\"...\"` には適用されない。これらは以下のいずれかで対応する：\n- `<n:cspNonce />` タグで nonce 値を取得して `<script nonce=\"<n:cspNonce />\">` ブロックに移行する\n- 外部 JS ファイルに処理を移して `<n:script>` タグで読み込む（nonce 自動付与対象になる）\n（`component/libraries/libraries-tag.json:s10`、`component/libraries/libraries-tag.json:s3`、`component/libraries/libraries-tag.json:s4`）\n\n**注意点**:\n\n- nonce はリクエスト毎に変わるため、CSP nonce を使う場合は HTML がキャッシュされないようにすること。（`component/libraries/libraries-tag.json:s9`）\n- `unsafe-inline` や `unsafe-hashes` を CSP ポリシーに追加するのは避けること。インラインスクリプトへの攻撃を許可することになり CSP の効果が失われる。（`component/libraries/libraries-tag.json:s3`）\n- `onchange` 等でサブミットボタンの `.click()` を呼び出す実装も同様に外部スクリプトへの移行を推奨。（`component/libraries/libraries-tag.json:s4`）\n- CSP 対応の全体的な設定フローは `SecureHandler` の CSP 節を参照。（`component/handlers/handlers-secure_handler.json:s6`）\n\n参照: component/libraries/libraries-tag.json:s9, component/handlers/handlers-secure_handler.json:s8, component/handlers/handlers-secure_handler.json:s6, component/libraries/libraries-tag.json:s10, component/libraries/libraries-tag.json:s3, component/libraries/libraries-tag.json:s4",
+  "cited": [
+    "component/libraries/libraries-tag.json:s9",
+    "component/handlers/handlers-secure_handler.json:s8",
+    "component/handlers/handlers-secure_handler.json:s6",
+    "component/libraries/libraries-tag.json:s10",
+    "component/libraries/libraries-tag.json:s3",
+    "component/libraries/libraries-tag.json:s4"
+  ],
+  "cost_usd": 0.2669904,
+  "duration_s": 54.40428709983826,
+  "steps": {
+    "turns": 8
+  },
+  "error": null
+}

@@ -1,0 +1,47 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch には `CsrfTokenVerificationHandler` という標準のCSRF対策ハンドラが用意されている。セッションに保存したCSRFトークンをリクエストと照合することで、外部サイトからの不正POSTを防ぐ。\n\n**根拠**:\n\n1. **ハンドラの追加**: `webFrontController` のハンドラキューに `csrfTokenVerificationHandler` を登録する。`sessionStoreHandler` および `nablarchTagHandler` より後に置くこと。\n   ```xml\n   <component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n     <property name=\"handlerQueue\">\n       <list>\n         <component-ref name=\"sessionStoreHandler\" />\n         <component-ref name=\"nablarchTagHandler\"/>\n         <component-ref name=\"csrfTokenVerificationHandler\"/>\n       </list>\n     </property>\n   </component>\n   <component name=\"csrfTokenVerificationHandler\"\n              class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\" />\n   ```\n   （`component/handlers/handlers-csrf_token_verification_handler.json:s4`）\n\n2. **デフォルト動作**: トークンは UUID v4 で生成され、セッションストアに `nablarch_csrf-token` という名前で保存される。検証対象は `POST`/`PUT` 等（`GET`/`HEAD`/`TRACE`/`OPTIONS` は対象外）。クライアントはHTTPヘッダ `X-CSRF-TOKEN` またはHTTPパラメータ `csrf-token` でトークンを送信する。検証失敗時は HTTP 400 (BadRequest) を返す。（`component/handlers/handlers-csrf_token_verification_handler.json:s4`）\n\n3. **ログイン時のトークン再生成**: ログイン処理でセッションストアを破棄・再生成しない場合は、`CsrfTokenUtil.regenerateCsrfToken` を呼び出してCSRFトークンを明示的に再生成すること。これを怠ると、ログイン前のトークンを悪用した攻撃が可能になる。（`component/handlers/handlers-csrf_token_verification_handler.json:s5`）\n\n4. **RESTfulウェブサービスへの対応**: REST APIの場合は `CsrfTokenUtil` でトークンを取得し、プロジェクトのアーキテクチャに合わせてクライアントに渡す実装を別途行う。（`component/handlers/handlers-csrf_token_verification_handler.json:s4`）\n\n**注意点**:\n- リクエスト単体テスト時は正しい画面遷移を経由しないためCSRFトークン検証が失敗する。テスト環境ではハンドラを `NopHandler` に差し替えて無効化すること。\n- トークンのヘッダ名・パラメータ名・セッションストア格納名は `nablarch.common.web.WebConfig` のプロパティで変更可能。\n- ログイン時にセッションIDのみ再生成する実装では、CSRFトークンも必ず再生成すること。\n\n参照: component/handlers/handlers-csrf_token_verification_handler.json:s4, component/handlers/handlers-csrf_token_verification_handler.json:s5, processing-pattern/web-application/web-application-feature_details.json:s19",
+  "cited": [
+    "component/handlers/handlers-csrf_token_verification_handler.json:s4",
+    "component/handlers/handlers-csrf_token_verification_handler.json:s5",
+    "processing-pattern/web-application/web-application-feature_details.json:s19"
+  ],
+  "cost_usd": 0.37078869999999997,
+  "duration_s": 33.990352630615234,
+  "steps": {
+    "raw_selections": [
+      "handlers-csrf_token_verification_handler|s4",
+      "handlers-csrf_token_verification_handler|s5",
+      "web-application-feature_details|s19"
+    ],
+    "resolved": [
+      "component/handlers/handlers-csrf_token_verification_handler.json:s4",
+      "component/handlers/handlers-csrf_token_verification_handler.json:s5",
+      "processing-pattern/web-application/web-application-feature_details.json:s19"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/handlers/handlers-csrf_token_verification_handler.json:s4",
+        "status": "ok",
+        "title": "CSRFトークンの生成と検証",
+        "chars": 1982
+      },
+      {
+        "selector": "component/handlers/handlers-csrf_token_verification_handler.json:s5",
+        "status": "ok",
+        "title": "CSRFトークンを再生成する",
+        "chars": 326
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s19",
+        "status": "ok",
+        "title": "CSRF対策",
+        "chars": 91
+      }
+    ],
+    "select_cost_usd": 0.24769,
+    "answer_cost_usd": 0.12309869999999998
+  },
+  "error": null
+}

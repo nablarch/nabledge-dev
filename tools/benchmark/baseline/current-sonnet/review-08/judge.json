@@ -1,0 +1,88 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "MultiThreadExecutionHandler で並列実行数を指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "デフォルトはサブスレッド1つ、concurrentNumber プロパティで変更する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "後続ハンドラ・バッチアクションはスレッドセーフな実装が必要",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親スレッド側でDBアクセスが必要なら、本ハンドラより前に database_connection_management_handler を配置する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "サブスレッド側のDBアクセスには、本ハンドラより後のサブスレッド用ハンドラ構成に database_connection_management_handler と transaction_management_handler を配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親・サブ両方でDBアクセスする場合、最低2つのDBコネクションが必要（サブスレッド数分追加、例：10スレッドなら合計11）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "サブスレッドで予期せぬ例外が発生した場合、ThreadPoolExecutor#shutdownNow() を呼び出して他スレッドを安全終了させる",
+        "status": "MISSING"
+      },
+      {
+        "fact": "例外発生サブスレッドは処理が中断されロールバックされる",
+        "status": "MISSING"
+      },
+      {
+        "fact": "親スレッドは各サブスレッドで使用されるデータリーダをクローズする",
+        "status": "MISSING"
+      },
+      {
+        "fact": "親スレッドは全サブスレッドに対し停止要求を行う",
+        "status": "MISSING"
+      },
+      {
+        "fact": "各サブスレッドはデータリーダがクローズされているため、実行中の処理が終わったタイミングで正常終了する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "InterruptedException を捕捉している場合は、例外を送出するなどで処理を異常終了させること",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "AtomicInteger 等のスレッドセーフなクラスでバッチアクションのインスタンス変数を保護する",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5/s7/s8）に存在しない。nablarch_batch_retention_state.json から引用しているが、evidence boundary 外"
+      },
+      {
+        "claim": "DatabaseRecordListener.beforeReadRecords() で悲観ロックSQL を別トランザクションで実行し重複処理防止",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに存在しない。nablarch_batch_multiple_process.json から引用しているが、evidence boundary 外"
+      },
+      {
+        "claim": "遅いスレッドが終了するまで他スレッドが待機し、次の監視周回の開始が遅れる常駐バッチ固有の問題",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに存在しない。nablarch-batch-architecture.json から引用しているが、evidence boundary 外"
+      },
+      {
+        "claim": "db_messaging（テーブルをキューとしたメッセージング）への移行を検討すること",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに存在しない。質問への直接的な回答ではなくアーキテクチャ変更提案であり誤誘導リスクあり"
+      },
+      {
+        "claim": "ExecutionContext のリクエストスコープ/セッションスコープの使い分け",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに存在しない。nablarch_batch_retention_state.json から引用しているが、evidence boundary 外"
+      }
+    ],
+    "reasoning": "生成回答は MultiThreadExecutionHandler の concurrentNumber 設定、スレッドセーフ要件、サブスレッド側への DB 接続・トランザクション管理ハンドラ配置を正しく説明している。しかし「親スレッド側は本ハンドラより前に配置」という重要な配置ルール、必要な DB コネクション数（スレッド数＋1）、そしてサブスレッドで例外発生時の振る舞い全体（ThreadPoolExecutor#shutdownNow、4 ステップのロールバック/停止フロー、InterruptedException 時の異常終了）が完全に欠落している。12 個の必須ファクトのうち 8 個が MISSING であり、これは過半数を占める。加えて参照ソースに存在しない複数の HALLUCINATION（AtomicInteger、DatabaseRecordListener 悲観ロック、db_messaging 推奨等）を含み、読者を本来の質問の文脈外に誘導する恐れがある。以上より level 1 とする。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.34489025,
+  "duration_s": 100.69736003875732,
+  "error": null
+}

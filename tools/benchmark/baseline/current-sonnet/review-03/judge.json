@@ -1,0 +1,64 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "NablarchのRESTfulウェブサービスはウェブアプリケーションをベースにJakarta RESTful Web Servicesサポートを組み合わせた構成",
+        "status": "COVERED"
+      },
+      {
+        "fact": "WebFrontController → DispatchHandler の基本フローでアクションクラスをJAX-RSアノテーションで定義する",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "JaxRsResponseHandler が HttpResponse をクライアントに返す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "使用可能アノテーション: @Produces（レスポンスのメディアタイプ）、@Consumes（リクエストのメディアタイプ）、@Valid（Bean Validation）",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "@Context によるServletリソースインジェクションおよびJakarta CDIは使用不可",
+        "status": "COVERED"
+      },
+      {
+        "fact": "クライアントサイドの機能は提供しない。必要な場合はJersey/RESTEasyを使う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "処理フロー: WebFrontController受信 → ハンドラキュー委譲 → DispatchHandlerがURIでアクション特定 → アクションが業務ロジック実行 → フォームクラスまたはHttpResponseを返す → JaxRsResponseHandlerがクライアントへ返す",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "最小ハンドラ構成7つの順序: GlobalErrorHandler → JaxRsResponseHandler → DBConnectionManagementHandler → TransactionManagementHandler → router_adaptor → BodyConvertHandler → JaxRsBeanValidationHandler",
+        "status": "COVERED"
+      },
+      {
+        "fact": "router_adaptor より後ろのハンドラはハンドラキューに直接設定せず、router_adaptorに対して設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "jaxrs_adaptor使用時はBodyConvertHandlerとJaxRsBeanValidationHandlerが自動追加される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "メディアタイプ拡張が必要な場合はRoutesMapping の methodBinderFactory に JaxRsMethodBinderFactory を設定し handlerList に BodyConvertHandler/JaxRsBeanValidationHandler を含める",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "推奨パターンは Jersey（または RESTEasy）アダプタ + @Path/HTTPメソッドアノテーションによるルーティング",
+        "type": "OVER-REACH",
+        "why": "参照ソースではJersey/RESTEasyはクライアントサイド用途として言及されており、サーバー側の「推奨パターン」として位置付けてはいない。WebFrontController/DispatchHandlerが基本フローとして示されている"
+      }
+    ],
+    "reasoning": "必須ファクトはすべてCOVEREDまたはPARTIALであり、MISSINGやCONTRADICTEDはない。PARTIALの箇所は①WebFrontController/DispatchHandlerの明示的なフロー記述が薄い点（ハンドラ表で補完されているが、WebFrontControllerのリクエスト受信やDispatchHandlerの役割が明示されていない）、②@Consumes/@Validが使用可能アノテーションとして明示されていない点（@Producesのみコード例に登場）。コア内容（ハンドラ構成順序・router_adaptor以降の設定位置・jaxrs_adaptor自動追加）は正確に伝えられている。OVER-REACHは結論部「推奨パターンはJersey/RESTEasyアダプタ」の表現のみで、参照ソースが示すWebFrontController/DispatchHandlerの汎用パターンをJerseyアダプタ推奨として特定化している点が軽微な誘導リスクとなる。ハルシネーションはなく（追加情報はすべてNablarch知識ベース内の実在コンポーネント）、スコア2が妥当。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.21441430000000003,
+  "duration_s": 79.93629097938538,
+  "error": null
+}

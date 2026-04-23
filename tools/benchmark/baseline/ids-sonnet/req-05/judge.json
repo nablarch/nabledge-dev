@@ -1,0 +1,64 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "Nablarch は多言語対応をビルトインで提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "メッセージの多言語化は言語ごとのプロパティファイルを作成し `PropertiesStringResourceLoader.locales` にサポート言語を設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`PropertiesStringResourceLoader.defaultLocale` は必ず設定すること（未設定は OS 依存の障害原因になる）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "未設定時は `Locale.getDefault().getLanguage()` が使われ OS 設定によって変化するため障害の原因になる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "メッセージ取得時の言語は `ThreadContext#getLanguage` が返すロケールで決まる。取得できない場合は `Locale.getDefault()`",
+        "status": "COVERED"
+      },
+      {
+        "fact": "コード名称の多言語化はコード名称テーブルに言語ごとのデータを準備する（LANG カラムに言語を設定）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`CodeUtil.getName(codeId, value, Locale)` でロケール指定取得する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`CodeUtil.getShortName(codeId, value, Locale)` でロケール指定の略称を取得する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "JSP 用カスタムタグライブラリでは言語指定による値の取得はできない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "言語切り替えは2通り: メッセージタグでの国際化対応 と 言語ごとにリソースのパスを切り替える",
+        "status": "COVERED"
+      },
+      {
+        "fact": "メッセージタグでの国際化対応を使うと画面レイアウトが崩れる可能性がある。許容できる場合のみ使用すること",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "`LanguageAttributeInHttpCookie`/`LanguageAttributeInHttpSession` と `LanguageAttributeInHttpUtil.keepLanguage()` を使いクッキーとスレッドコンテキストの両方に言語を保存する実装方法",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（handlers-thread_context_handler.json:s7）はリファレンスソースに含まれていないため、evidence boundary 外のクレームとなる"
+      }
+    ],
+    "reasoning": "必須ファクトはすべて COVERED されている。`defaultLocale` 必須設定の警告、JSP タグライブラリの制限、レイアウト崩れ警告、2通りの言語切り替え方法など、リファレンスアンサーの要点をすべて正確に網羅している。唯一の問題は、リファレンスソースに含まれない `handlers-thread_context_handler.json:s7` を引用し、`LanguageAttributeInHttpCookie`/`LanguageAttributeInHttpSession`/`keepLanguage()` を用いたユーザー言語選択の実装方法を追加していること（HALLUCINATION）。ただしこれは質問の本旨（多言語対応できるか）を誤認させるものではなく、すべての必須ファクトが COVERED であるためレベル2が妥当。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.1760538,
+  "duration_s": 55.83275818824768,
+  "error": null
+}

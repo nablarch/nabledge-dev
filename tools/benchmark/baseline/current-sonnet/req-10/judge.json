@@ -1,0 +1,70 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Nablarch には「操作監査ログ」専用機能をビルトイン提供していない",
+        "status": "CONTRADICTED"
+      },
+      {
+        "fact": "最も近い機能は HttpAccessLogHandler（HTTP アクセスログハンドラ）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "HttpAccessLogHandler はリクエスト処理開始時と完了時にアクセスログを出力する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "クラス名は nablarch.common.web.handler.HttpAccessLogHandler",
+        "status": "MISSING"
+      },
+      {
+        "fact": "ユーザ ID / リクエスト ID / セッションストア ID などはログ出力に含められる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "「何をしたか」（業務操作の内容）は自動では残らない",
+        "status": "CONTRADICTED"
+      },
+      {
+        "fact": "業務ログはプロジェクト側で実装する必要がある",
+        "status": "MISSING"
+      },
+      {
+        "fact": "ThreadContextHandler より後に配置する必要がある",
+        "status": "MISSING"
+      },
+      {
+        "fact": "HttpErrorHandler より前に配置する必要がある",
+        "status": "MISSING"
+      },
+      {
+        "fact": "セッションストア ID を出力する場合は SessionStoreHandler より後に配置する",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "「誰が・いつ・何をしたか」をログに残す仕組みは、ハンドラの設定のみで有効化できる",
+        "type": "OVER-REACH",
+        "why": "参照回答は「何をしたか（業務操作の内容）は自動では残らない」と明言しており、プロジェクト側実装が必要としている。ハンドラ設定だけで完結するかのような記述は誤解を招く。"
+      },
+      {
+        "claim": "公式ドキュメントが「証跡ログの要件を満たせる場合はHTTPアクセスログと証跡ログを兼用できる」と明示している（jaxrs_access_logを根拠に）",
+        "type": "HALLUCINATION",
+        "why": "引用元の libraries-jaxrs_access_log.json は参照ソースに含まれておらず、この記述を根拠に「監査ログに相当するビルトイン機能がある」と結論付けることは参照回答の範囲外。"
+      },
+      {
+        "claim": "jaxrs_access_log_handler が同等の監査ログ機能を提供する",
+        "type": "HALLUCINATION",
+        "why": "jaxrs_access_log_handler は参照ソースに含まれておらず、この質問に対する回答として参照回答が支持していない。"
+      }
+    ],
+    "reasoning": "生成回答の中心的な主張「Nablarch には HTTPアクセスログ（証跡ログ兼用）という形で監査ログに相当するビルトイン機能がある」は、参照回答の中心的な結論「Nablarch は『操作監査ログ』専用機能をビルトイン提供していない」と直接矛盾する。さらに「『誰が・いつ・何をしたか』をログに残す仕組みは、ハンドラの設定のみで有効化できる」という主張は、参照回答が明言する「『何をしたか』（業務操作の内容）は自動では残らない」と CONTRADICTED。HttpAccessLogHandler の存在・役割は正しく捉えているものの、それを「監査ログのビルトイン実現手段」として提示している点は読者を誤誘導する実質的な OVER-REACH。配置制約（ThreadContextHandler/HttpErrorHandler/SessionStoreHandler 順序）、クラス名、プロジェクト側の業務ログ実装必要性といった必須事実も複数 MISSING。参照ソースにない jaxrs_access_log を根拠として用いている点も HALLUCINATION。これらを総合し、コア事実が CONTRADICTED かつ読者を誤誘導する OVER-REACH が存在するためスコアは 1。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.1952721,
+  "duration_s": 70.11309909820557,
+  "error": null
+}

@@ -1,0 +1,62 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "NablarchのRESTfulウェブサービスはウェブアプリケーションをベースにJakarta RESTful Web Servicesサポートを組み合わせた構成",
+        "status": "COVERED"
+      },
+      {
+        "fact": "基本フローは WebFrontController → DispatchHandler → アクションクラスの順",
+        "status": "COVERED"
+      },
+      {
+        "fact": "JaxRsResponseHandler が HttpResponse をクライアントに返す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "使用可能なアノテーション: @Produces（レスポンスのメディアタイプ）、@Consumes（リクエストのメディアタイプ）、@Valid（Bean Validation）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@Context によるServletリソースインジェクションおよびJakarta CDIは使用不可",
+        "status": "COVERED"
+      },
+      {
+        "fact": "クライアントサイドの機能は提供しない。必要な場合はJerseyやRESTEasyなどのJAX-RS実装を使う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "処理の流れ: WebFrontController受信→ハンドラキュー委譲→DispatchHandlerがURI→アクション特定→業務ロジック実行→DTO/HttpResponse返却→JaxRsResponseHandlerが変換",
+        "status": "COVERED"
+      },
+      {
+        "fact": "アクションの処理結果がフォームクラスの場合はBodyConvertHandlerによりHttpResponseに変換される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "最小ハンドラ構成7つの順序: GlobalErrorHandler→JaxRsResponseHandler→DatabaseConnectionManagementHandler→TransactionManagementHandler→router_adaptor→BodyConvertHandler→JaxRsBeanValidationHandler",
+        "status": "COVERED"
+      },
+      {
+        "fact": "router_adaptorより後ろのハンドラはハンドラキューに直接設定せず、router_adaptorに対して設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "jaxrs_adaptorを使用した場合はBodyConvertHandlerとJaxRsBeanValidationHandlerが自動追加される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "メディアタイプ拡張が必要な場合はRoutesMapping の methodBinderFactory に JaxRsMethodBinderFactory を設定し、handlerList に BodyConvertHandler/JaxRsBeanValidationHandler を含める",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [],
+    "reasoning": "12/13の必須ファクトがCOVERED。欠落しているのはメディアタイプ拡張が必要な場合のRoutesMapping/JaxRsMethodBinderFactory設定という条件付き・発展的な設定詳細のみ。この欠落は「どう組むのが推奨？」という質問の中核部分ではなく、特定のユースケース（メディアタイプ拡張）に限定された補足事項。処理フロー・ハンドラ構成・アノテーション制約・クライアント制約など全ての主要ファクトは正確にカバーされている。http_messagingとの比較やクラス設計パターン（フォーム/DTO/エンティティ）は参照ソースには含まれないが、正規のNablarchドキュメントから引用されており、質問に対してオントピックな補足情報であるため、OVER-REACHには該当しない。CONTRADICTED・HALLUCINATION・OVER-REACHはなし。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.21522665000000002,
+  "duration_s": 78.79462718963623,
+  "error": null
+}

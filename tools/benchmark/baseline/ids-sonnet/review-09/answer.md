@@ -1,0 +1,7 @@
+**結論**: Nablarch の Universal DAO には `batchUpdate` による一括更新の仕組みがある。for 文で 1 件ずつ更新する代わりに使用することで、アプリケーションサーバと DB サーバ間のラウンドトリップ回数を削減しパフォーマンスを改善できる。
+
+**根拠**: Universal DAO のバッチ実行機能として `batchInsert` / `batchUpdate` / `batchDelete` の 3 メソッドが提供されており、大量データの一括登録・更新・削除に使用できる。これにより「アプリケーションサーバと DB サーバ間のラウンドトリップ回数を削減しパフォーマンス向上が期待できる」と明記されている。（component/libraries/libraries-universal_dao.json:s11）
+
+**注意点**: `batchUpdate` による一括更新では**排他制御が行われない**。更新対象 Entity と DB のバージョンが不一致でも、そのレコードの更新は行われずに**正常終了**してしまう（エラーにならない）。排他制御が必要な更新処理では、一括更新を使わず 1 レコードずつ更新する処理を選ぶこと。（component/libraries/libraries-universal_dao.json:s11）
+
+参照: component/libraries/libraries-universal_dao.json:s11

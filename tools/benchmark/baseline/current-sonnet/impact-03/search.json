@@ -1,0 +1,18 @@
+{
+  "variant": "current",
+  "answer": "**結論**: 常駐バッチを複数スレッドで並列実行するには `MultiThreadExecutionHandler` の `concurrentNumber` を設定する。各サブスレッド用に `DatabaseConnectionManagementHandler`（業務処理用）＋ `TransactionManagementHandler`（業務処理用）をハンドラキューの **MultiThreadExecutionHandler より後ろ**（サブスレッド側）に置くことで、各スレッドが独立したDB接続とトランザクションを持つ。いずれか1スレッドで予期せぬ例外が発生した場合、他のスレッドは現在処理中のレコードを完了させた後に正常終了する。\n\n---\n\n**根拠**:\n\n1. **スレッド数の設定**  \n   `MultiThreadExecutionHandler` の `concurrentNumber` プロパティで並列実行数を変更できる。デフォルトは1。  \n   `component/handlers/handlers-multi_thread_execution_handler.json:s5`\n   ```xml\n   <component class=\"nablarch.fw.handler.MultiThreadExecutionHandler\">\n     <!-- 後続ハンドラを8多重で実行する -->\n     <property name=\"concurrentNumber\" value=\"8\" />\n   </component>\n   ```\n\n2. **DB接続の持ち方（スレッドごとに独立）**  \n   サブスレッド側でDBアクセスが必要な場合は、`MultiThreadExecutionHandler` より後ろのハンドラ構成に `DatabaseConnectionManagementHandler` および `TransactionManagementHandler` を設定する必要がある。  \n   `component/handlers/handlers-multi_thread_execution_handler.json:s7`\n   > 親スレッド・サブスレッドの両方でDBアクセスする場合、最低2つのDBコネクションが必要。サブスレッドが複数の場合はスレッド数分が追加で必要（例: サブスレッド10の場合、合計11コネクション）。\n\n   常駐バッチのハンドラ構成では、No.12〜13がサブスレッド側に位置している：  \n   `processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1`\n   - No.11: `MultiThreadExecutionHandler`（メイン） ← ここを境にサブスレッド\n   - No.12: `DatabaseConnectionManagementHandler`（業務処理用）（サブ）\n   - No.13: `LoopHandler`（サブ） ← 業務トランザクション管理\n\n3. **例外発生時の他スレッドへの影響**  \n   サブスレッドで予期せぬ例外が発生した場合の動作：  \n   `component/handlers/handlers-multi_thread_execution_handler.json:s8`\n   1. 例外が発生したサブスレッドは処理が中断されロールバックされる\n   2. 親スレッドは各サブスレッドで使用されるデータリーダをクローズする\n   3. 親スレッドは全サブスレッドに対し停止要求（`ThreadPoolExecutor#shutdownNow()`）を行う\n   4. 各サブスレッドはデータリーダがクローズされているため、**実行中の処理が終わったタイミングで正常終了する**\n\n   → つまり「即座に強制終了」ではなく「処理中のレコードを処理し終えてから安全に停止する」。\n\n---\n\n**注意点**:\n\n- **スレッドセーフな実装が必須**: `MultiThreadExecutionHandler` 以降のハンドラおよびバッチアクションはスレッドセーフな実装が必要。スレッドセーフでない処理を複数スレッドで動かすと、予期せぬ例外やデータ不整合が発生する。  \n  `component/handlers/handlers-multi_thread_execution_handler.json:s5`\n\n- **常駐バッチのマルチスレッド化には設計上の問題あり**: 並列実行された全スレッドが終了するまで次のデータ登録の監視が始まらないため、処理が遅いスレッドがあると要求データの取り込みが遅延する。新規開発プロジェクトでは常駐バッチより **`db_messaging`（テーブルをキューとして使ったメッセージング）** の使用が推奨されている。  \n  `processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1`、`guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s2`\n\n- **`InterruptedException` は必ず再送出すること**: 業務コード内で `InterruptedException` を捕捉している場合は、割り込み要求を握りつぶさず例外を送出して処理を異常終了させること。そうしないとスレッド停止シーケンスが正常に動作しない。  \n  `component/handlers/handlers-multi_thread_execution_handler.json:s8`\n\n- **コネクション数の確保**: スレッド数分のDB接続が必要。コネクションプールのサイズをスレッド数＋親スレッド分（例: 8スレッドなら最低9コネクション）以上に設定すること。  \n  `component/handlers/handlers-multi_thread_execution_handler.json:s7`\n\n---\n\n参照: component/handlers/handlers-multi_thread_execution_handler.json:s1, component/handlers/handlers-multi_thread_execution_handler.json:s5, component/handlers/handlers-multi_thread_execution_handler.json:s7, component/handlers/handlers-multi_thread_execution_handler.json:s8, processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1, guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s2",
+  "cited": [
+    "component/handlers/handlers-multi_thread_execution_handler.json:s1",
+    "component/handlers/handlers-multi_thread_execution_handler.json:s5",
+    "component/handlers/handlers-multi_thread_execution_handler.json:s7",
+    "component/handlers/handlers-multi_thread_execution_handler.json:s8",
+    "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+    "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s2"
+  ],
+  "cost_usd": 0.43801395000000004,
+  "duration_s": 79.71228551864624,
+  "steps": {
+    "turns": 19
+  },
+  "error": null
+}

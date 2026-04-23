@@ -1,0 +1,68 @@
+{
+  "verdict": {
+    "level": 3,
+    "required_facts": [
+      {
+        "fact": "Servlet API を前提に組む",
+        "status": "COVERED"
+      },
+      {
+        "fact": "NablarchServletContextListener: システムリポジトリ・ログ初期化を行うサーブレットコンテキストリスナー",
+        "status": "COVERED"
+      },
+      {
+        "fact": "WebFrontController: jakarta.servlet.Filter 実装クラス（サーブレットフィルタ）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "WebFrontController がリクエストをハンドラキューに委譲するエントリポイント",
+        "status": "COVERED"
+      },
+      {
+        "fact": "処理の流れは7ステップ（受信→キュー委譲→DispatchHandlerがURI解析→アクション実行→HttpResponse返却→HttpResponseHandler変換→返却）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "DispatchHandler が URI を元にアクションクラスを特定してキュー末尾に追加",
+        "status": "COVERED"
+      },
+      {
+        "fact": "アクションクラスがフォームクラス・エンティティクラスを使って業務ロジックを実行",
+        "status": "COVERED"
+      },
+      {
+        "fact": "HttpResponseHandler が HttpResponse をクライアントへのレスポンスに変換（JSP Servlet Forward 等）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "カテゴリ別の主要ハンドラ群（リクエスト・レスポンス変換/フィルタリング/DB関連/リクエスト検証/エラー処理）が存在する",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "最小ハンドラ構成は13本・特定の順序でキューを組む",
+        "status": "COVERED"
+      },
+      {
+        "fact": "13本の各ハンドラとその役割（HttpCharacterEncodingHandler〜router_adaptor まで順序通り）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "最小構成をベースにプロジェクト要件に従ってハンドラを追加する",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "ブランクプロジェクトは Maven 単一プロジェクト構成で H2 DB 組み込み済み・RouterAdaptor 設定済みの状態から始められる",
+        "type": "HALLUCINATION",
+        "why": "setup/blank-project/blank-project-setup_Web.json:s2 は参照ソースに含まれておらず、エビデンス境界外の情報。内容自体は on-topic だが検証不可"
+      }
+    ],
+    "reasoning": "必須ファクトはほぼ全て COVERED。2コンポーネント（NablarchServletContextListener / WebFrontController）の役割・処理の流れ7ステップ・最小13ハンドラの順序と役割がいずれも正確に記述されている。カテゴリ別ハンドラ一覧はリファレンスほど網羅されていないが（PARTIAL）、注意点セクションで主要追加ハンドラに言及しており実用上の欠落は軽微。追加情報として「ブランクプロジェクト雛形」がリファレンスソース外から引用されているが、内容は on-topic かつ補足的であり、コア回答を誤解させる性質ではない。CONTRADICTED なし、中核要件への OVER-REACH なし。全体として品質が高く level 3 と判定する。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.22139040000000001,
+  "duration_s": 89.9697334766388,
+  "error": null
+}

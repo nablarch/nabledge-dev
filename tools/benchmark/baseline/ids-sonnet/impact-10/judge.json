@@ -1,0 +1,74 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "認証情報の保持先としてDBストアが推奨される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SessionUtil.put(ctx, \"user\", user, \"db\") でDBストアに保存する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ログイン前にSessionUtil.changeId(ctx)でセッションIDを変更する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CsrfTokenUtil.regenerateCsrfToken(ctx)でCSRFトークンを再生成する（条件付き）",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "CSRFトークン再生成が必要な条件: CsrfTokenVerificationHandlerを使用 かつ セッションIDの変更のみを行う",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "ログアウト時はSessionUtil.invalidate(ctx)でセッションストア全体を破棄する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "SessionManagerをsessionManagerコンポーネント名で登録し、defaultStoreNameをdbに設定する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "USER_SESSIONテーブルが必要で、SESSION_IDはCHARではなくVARCHARで定義する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "PermissionCheckHandlerがスレッドコンテキスト上のリクエストIDとユーザIDをもとに認可チェックし、Permissionをスレッドローカルに設定する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "業務ロジック側はスレッドローカルからPermissionを参照する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "権限管理の条件が変わる可能性があるシステムではpermission_check、そうでなければrole_checkを使う",
+        "status": "PARTIAL"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "SessionStoreUserRoleUtil.save()とrole_check（@CheckRoleアノテーション）を認可チェックの主要メカニズムとして詳述している",
+        "type": "OVER-REACH",
+        "why": "参照答えはPermissionCheckHandlerによるスレッドローカルへのPermission設定を中心的な認可チェック機構として示しており、role_checkは補足的選択肢に過ぎない。参照ソースにlibaries-role_check.json:s3は含まれない"
+      },
+      {
+        "claim": "DBストアはローリングメンテナンス等でAPサーバが停止しても復元可能でヒープを圧迫しない",
+        "type": "HALLUCINATION",
+        "why": "この具体的な利点は参照ソース（s4, s6）に記載されていない"
+      },
+      {
+        "claim": "同一セッションの並行アクセス時にデータが消失する可能性がある",
+        "type": "HALLUCINATION",
+        "why": "参照ソースにこの並行アクセス時のデータ消失リスクの記述はない"
+      }
+    ],
+    "reasoning": "生成回答はDBストアへの保存という中核的な推奨先をCOVERしており、SessionUtil.changeId/putのコード例も正確。ただし以下の重大な問題がある。①参照答えが中心的に述べる「PermissionCheckHandlerがPermissionをスレッドローカルに設定し、業務ロジックがスレッドローカルから参照する」という認可チェックの核心的メカニズムが完全に欠落（MISSING×2）。②ログアウト時のSessionUtil.invalidateが未言及（MISSING）。③SessionManager設定（sessionManagerコンポーネント名、defaultStoreName=db）が未言及（MISSING）。④最も重大なOVER-REACHとして、参照答えが補足的選択肢として示したrole_check（SessionStoreUserRoleUtil/@CheckRole）を主要な認可メカニズムとして前面に押し出しており、読者を誤った方向へ誘導する可能性がある。参照ソースに含まれないrole_check詳細（s3）を中心に据えた構成は「参照ソースが答えとしてサポートしていないメカニズムの提示」に相当する。MISSINGファクトが複数あり、かつ重要なOVER-REACHが存在するためスコアは1。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.20898645,
+  "duration_s": 77.89945864677429,
+  "error": null
+}

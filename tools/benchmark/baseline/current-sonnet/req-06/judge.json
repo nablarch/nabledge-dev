@@ -1,0 +1,56 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "HTTPセッションはAPサーバで状態を持つためスケールアウトができない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "通常の対処方法は3つ: スティッキーセッション、セッションレプリケーション、NoSQL保存",
+        "status": "COVERED"
+      },
+      {
+        "fact": "スティッキーセッション・セッションレプリケーションはTwelve-Factor Appの廃棄容易性の点で劣る",
+        "status": "COVERED"
+      },
+      {
+        "fact": "セッションレプリケーション・NoSQL保存はAPサーバ依存となる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "NablarchではHTTPセッション依存機能を非依存に切り替えてAPサーバをステートレスにするのが推奨",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Webアプリ機能詳細でスケールアウト設計として stateless_web_app が紹介されている",
+        "status": "COVERED"
+      },
+      {
+        "fact": "HTTPセッションに依存しているデフォルト機能: session_store、二重サブミット防止、thread_context_handler、http_rewrite_handler、hidden暗号化の5つ",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "複数APサーバ構成でHIDDENストアを使う場合、サーバごとに異なる暗号化キーが自動生成されて復号に失敗するケースがある",
+        "status": "CONTRADICTED"
+      },
+      {
+        "fact": "HiddenStore.encryptorに明示的な鍵・IVを設定して全サーバで揃える必要がある",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "HIDDENストアはクライアントサイドに保存されるためAPサーバ間の共有問題なし",
+        "type": "OVER-REACH",
+        "why": "参照ソースは「サーバごとに異なるキーが生成されて復号失敗するケースがある」と明示しており、HIDDENストアにAPサーバ間問題がないという主張は誤りで読者を誤解させる"
+      }
+    ],
+    "reasoning": "生成回答はスケールアウトの基本概念（HTTPセッションの問題、Twelve-Factor App、ステートレス化推奨）を正確にカバーしており、冗長でありながら実用的な情報を多く含む。しかし致命的な誤りが1点ある。HIDDENストアについて「クライアントサイドに保存されるためAPサーバ間の共有問題なし」と記述しているが、参照回答の核心的なポイント（「サーバごとに異なるキーが自動生成されて復号失敗するケースがある → HiddenStore.encryptorに明示的な鍵・IVを設定して揃える必要がある」）と真っ向から矛盾する。本番環境でHIDDENストアを選んだ開発者がこの情報を信頼すると、APサーバ冗長化後に断続的な復号エラーが発生する実害につながる。また thread_context_handler と http_rewrite_handler がHTTPセッション依存機能のリストから抜けている（PARTIAL）。CONTRADICTEDが中核的な実用事項であるためレベル1とする。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.18000865,
+  "duration_s": 56.07802772521973,
+  "error": null
+}

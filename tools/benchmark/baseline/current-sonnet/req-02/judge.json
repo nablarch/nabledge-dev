@@ -1,0 +1,74 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Nablarch はビルトインで認可チェック機能を提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "2種類の認可機能がある: permission_check と role_check",
+        "status": "COVERED"
+      },
+      {
+        "fact": "permission_check は権限管理の条件が変わり得るシステム向け（導入コスト高）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "role_check は権限管理の条件が基本的に変わらないシステム向け（ハードコーディング、導入コスト低）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "PermissionCheckHandler がリクエストレベルの認可を担う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "権限がある場合: Permission をスレッドローカルに設定し後続ハンドラを呼び出す",
+        "status": "MISSING"
+      },
+      {
+        "fact": "権限がない場合: Forbidden(403) を送出する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "setUsesInternalRequestId を true にすると内部フォワード先リクエストIDで認可チェックが行われる（デフォルト false）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "ThreadContextHandler より後に配置すること",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ForwardingHandler より後に配置すること（内部フォワード先IDで認可する場合）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "HttpErrorHandler より後に配置すること（認可エラー時のエラーページ指定のため）",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "@CheckRole アノテーション・SessionStoreUserRoleUtil・BasicRoleEvaluator・SessionStoreUserRoleResolver などの role_check 実装詳細",
+        "type": "HALLUCINATION",
+        "why": "libraries-role_check.json は参照ソースに含まれておらず、エビデンス境界外のコンテンツ"
+      },
+      {
+        "claim": "Nablarch は認証機能（ログイン処理自体）を提供していない",
+        "type": "HALLUCINATION",
+        "why": "security-check.json は参照ソースに含まれておらず、エビデンス境界外のコンテンツ"
+      },
+      {
+        "claim": "JSP 用の認可チェックカスタムタグは提供されていない（CheckRoleUtil でサーバ側判定）",
+        "type": "HALLUCINATION",
+        "why": "この詳細は参照ソースに含まれない role_check.json:s3 由来"
+      }
+    ],
+    "reasoning": "2種類の認可機能の概要（permission_check と role_check）とその使い分け、PermissionCheckHandler の基本動作（403送出、ThreadContextHandler配置）は正しくカバーされている。しかし、必須ファクトが複数欠落している：①権限がある場合に Permission をスレッドローカルに設定するという重要な動作、②setUsesInternalRequestId の説明、③ForwardingHandler および HttpErrorHandler の配置制約。加えて、参照ソースに含まれない role_check.json からの大量の実装詳細（@CheckRole、SessionStoreUserRoleUtil、コンポーネント設定等）が含まれており、これらはエビデンス境界外のコンテンツ（HALLUCINATION）として評価される。role_check の実装詳細が質問への回答として mislead するわけではないが、4つの必須ファクト欠落と複数の HALLUCINATION によりレベル1が適切。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.21012375,
+  "duration_s": 84.13143587112427,
+  "error": null
+}

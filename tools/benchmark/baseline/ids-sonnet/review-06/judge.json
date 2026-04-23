@@ -1,0 +1,76 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Nablarchは標準でCsrfTokenVerificationHandlerを提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CSRFトークンはセッションストアに格納される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "POST/PUTなどの更新系リクエストを検証する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "session_store_handlerより後に配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "nablarch_tag_handler使用時はそれより後に配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "multipart_handlerの前に配置するとファイル保存前にCSRFトークンを検証できる（その場合session_store_handlerも前に）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "セッションストア格納名のデフォルトはnablarch_csrf-token",
+        "status": "COVERED"
+      },
+      {
+        "fact": "トークン生成はUUIDv4CsrfTokenGenerator（UUID v4）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "GET/HEAD/TRACE/OPTIONSは検証対象外",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リクエストからのトークン取得はHTTPヘッダX-CSRF-TOKENまたはHTTPパラメータcsrf-token",
+        "status": "COVERED"
+      },
+      {
+        "fact": "検証失敗時はBadRequestVerificationFailureHandlerが400を返す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "XMLの設定例（handlerQueueへのcsrfTokenVerificationHandler登録）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "カスタマイズ可能なコンポーネント：csrfTokenGenerator / verificationTargetMatcher / verificationFailureHandler",
+        "status": "MISSING"
+      },
+      {
+        "fact": "RESTfulウェブサービスではCsrfTokenUtilでトークンを取得しクライアントに渡す仕組みをプロジェクトで実装する",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "ログイン処理でセッションストアを破棄・再生成しない場合はCsrfTokenUtil.regenerateCsrfTokenを呼び出してCSRFトークンを明示的に再生成する必要がある",
+        "type": "HALLUCINATION",
+        "why": "s5を引用しているが、s5は提供された参照ソース（s3・s4）に含まれておらず、エビデンス境界外の主張"
+      }
+    ],
+    "reasoning": "生成回答はCsrfTokenVerificationHandlerの基本動作・ハンドラ配置順・デフォルト動作・設定例・RESTful対応を正確にカバーしており、主要部分の品質は高い。しかし2点のMISSINGと1点のHALLUCINATIONがある。①multipart_handlerとの配置関係（ファイルアップロード時にファイル保存前にトークン検証する方法）が参照回答の①に明示されているにもかかわらず欠落している。②カスタマイズ可能なコンポーネント3種（csrfTokenGenerator・verificationTargetMatcher・verificationFailureHandler）の説明（参照回答の④）が完全に欠落している。さらに、ログイン時のCsrfTokenUtil.regenerateCsrfTokenによるトークン再生成の説明はs5を引用しているが、s5は提供された参照ソース（s3・s4のみ）に含まれておらずエビデンス境界外のHALLUCINATIONである。MISSINGが2件あるためLevel 1が適切。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.18333760000000002,
+  "duration_s": 56.042959451675415,
+  "error": null
+}

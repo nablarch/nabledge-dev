@@ -1,0 +1,86 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "MultiThreadExecutionHandler の concurrentNumber プロパティで並列実行数を指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッド用ハンドラ構成に DatabaseConnectionManagementHandler を配置してサブスレッド独自のDB接続を持たせる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッド用ハンドラ構成に TransactionManagementHandler を配置してサブスレッド独自のトランザクションを持たせる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親スレッドでDB接続が必要な場合は MultiThreadExecutionHandler より前に DatabaseConnectionManagementHandler を配置する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "サブスレッドでDB接続が必要な場合は MultiThreadExecutionHandler より後のサブスレッド用ハンドラ構成に DatabaseConnectionManagementHandler を配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親・サブ両方でDBアクセスする場合、最低2つのDBコネクションが必要（サブスレッド10なら合計11コネクション）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッドで例外が発生すると ThreadPoolExecutor#shutdownNow() が呼ばれる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "例外が発生したサブスレッドは処理が中断されロールバックされる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親スレッドは各サブスレッドで使用されるデータリーダをクローズする",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親スレッドは全サブスレッドに対し停止要求を行う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "各サブスレッドはデータリーダがクローズされているため実行中の処理が終わったタイミングで正常終了する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "InterruptedException を捕捉している場合は例外を送出するなどで処理を異常終了させる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "後続のハンドラやバッチアクションはスレッドセーフな実装が必要",
+        "status": "COVERED"
+      },
+      {
+        "fact": "TransactionManagementHandler は DatabaseConnectionManagementHandler より後ろに配置する必要がある",
+        "status": "PARTIAL"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "No.13: LoopHandler（サブ） ← 業務トランザクション管理",
+        "type": "HALLUCINATION",
+        "why": "参照ソースにない processing-pattern/nablarch-batch-architecture.json:s1 由来。参照ではトランザクション管理は TransactionManagementHandler が担うとされており、LoopHandler に業務トランザクション管理の役割を帰属させるのは誤解を招く"
+      },
+      {
+        "claim": "常駐バッチのマルチスレッド化には設計上の問題あり（全スレッド終了まで次のデータ監視が始まらない）",
+        "type": "HALLUCINATION",
+        "why": "参照ソース外（nablarch-batch-architecture.json:s1）からの情報。質問は接続管理と例外時の挙動を問うており、アーキテクチャ上の設計問題は参照根拠の範囲外"
+      },
+      {
+        "claim": "新規開発では常駐バッチより db_messaging の使用が推奨されている",
+        "type": "HALLUCINATION",
+        "why": "参照ソース外（guide/nablarch-patterns/...）からの情報。質問はマルチスレッド化の実装方法を問うており、代替アーキテクチャの推奨は参照根拠の範囲外"
+      }
+    ],
+    "reasoning": "必須ファクトのうち「親スレッドでDB接続が必要な場合は MultiThreadExecutionHandler より前に DatabaseConnectionManagementHandler を配置する」が MISSING。この情報は質問「接続はどう持つ？」への完全な回答として参照回答が明示している内容であり、欠落はレベル2非適合要件を満たす。また、TransactionManagementHandler の配置順序制約（DatabaseConnectionManagementHandler より後ろ）も PARTIAL に留まる。さらに、参照ソース外からの実質的な HALLUCINATION が3件あり（LoopHandler を業務トランザクション管理と説明、常駐バッチの設計上の問題、db_messaging 推奨）、レベル2の条件「高々1件の軽微な HALLUCINATION」を超えている。コア事実への CONTRADICTED はなく、サブスレッドのDB接続・トランザクション管理・例外時の4ステップ挙動はすべて正確に COVERED されているため、レベル0には該当しない。したがってレベル1が妥当。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.2357557,
+  "duration_s": 93.56948900222778,
+  "error": null
+}

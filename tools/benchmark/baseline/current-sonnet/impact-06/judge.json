@@ -1,0 +1,73 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "Nablarchカスタムタグを使っている場合はJSPの書き換えは不要",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SecureHandlerのnonce生成を有効にすれば、タグ側が自動的にnonce属性を埋め込む",
+        "status": "COVERED"
+      },
+      {
+        "fact": "tag-form_tagがonclick属性の関数呼び出しを含めてscript要素にまとめ直し、nonce属性が付与される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "カスタムタグを使っていない部分（素のHTMLでonclick=を書いている）は手動対応が必要",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SecureHandlerのgenerateCspNonceをtrueに設定する必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ContentSecurityPolicyHeaderのpolicyに$cspNonceSource$プレースホルダーを含める必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "tag-script_tagが生成するscript要素のnonce属性にハンドラ生成のnonceが自動設定される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "tag-csp_nonce_tagでハンドラ生成のnonceを出力可能になる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "nonceはHTML内に埋め込まれるためJSPから生成されるHTMLがリクエスト都度変化する（キャッシュ設計に注意）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "インライン記述を外部化困難な場合はtag-csp_nonce_tagで対象要素にnonce属性を付与できる（style要素の例）",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "script要素にnonceを付けたい場合はtag-csp_nonce_tagではなくtag-script_tagを使うことが推奨",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Content-Security-Policyをレスポンスヘッダで設定できない場合はmeta要素で設定し、tag-csp_nonce_tagのsourceFormat属性をtrueにするとnonce-[nonce]フォーマットで出力される",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "unsafe-inline や unsafe-hashes を CSP ポリシーに追加するのは避けること（インラインスクリプトへの攻撃を許可する）",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s8, s9, s10）にはunsafe-inline/unsafe-hashesへの言及がない。s3を引用しているが、s3は提供された参照ソースに含まれない"
+      },
+      {
+        "claim": "onchange等でサブミットボタンの.click()を呼び出す実装も外部スクリプトへの移行を推奨",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s8, s9, s10）に含まれないs4を出典としており、参照ソースの証拠境界外の主張"
+      }
+    ],
+    "reasoning": "主要な必須ファクトはほぼすべてカバーされている。カスタムタグ使用時のJSP書き換え不要という核心、SecureHandler設定手順、tag-form_tagによる自動script要素化、手動対応方法（tag-csp_nonce_tag・外部JS）、キャッシュ注意点など、質問に直接関わる事実は網羅されている。欠落しているのはmeta要素設定時のsourceFormat=true対応のみで、これは参照回答内の補足的なエッジケースであり質問の核心ではない。HALLUCINATIONとして検出した2件（unsafe-inline警告、onchange推奨）はNablarchの実際の知識ファイル（s3, s4）に由来すると考えられる技術的に正当な補足情報であり、質問に対して誤った機構を提案するような実質的なmisleadingはない。コア事実の矛盾もなし。これらを総合してレベル2と判定する。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.20416770000000004,
+  "duration_s": 75.3586175441742,
+  "error": null
+}

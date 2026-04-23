@@ -1,0 +1,20 @@
+{
+  "variant": "current",
+  "answer": "**結論**: Nablarchバッチのトランザクション境界は、使用するバッチ方式によって決まる主体が異なる。**Nablarchバッチ（スタンドアロン）**では `LoopHandler` が `commitInterval` 件数ごとにコミットし、**Jakarta EEバッチ（JSR352）** ではリスナー（`ItemWriteTransactionManagementListener`）が `ItemWriter#writeItems` 実行後にコミットする。\n\n---\n\n**根拠**:\n\n### Nablarchバッチ（スタンドアロン）の場合\n\nトランザクション制御の主体は `LoopHandler`（`nablarch.fw.handler.LoopHandler`）。\n\n> 「データリーダ上に処理対象のデータが存在する間、後続ハンドラの処理を繰り返し実行する。実行中はトランザクションを制御し、一定の繰り返し回数ごとにトランザクションをコミットする」\n> — `component/handlers/handlers-loop_handler.json:s1`\n\nコミット間隔は `commitInterval` プロパティで件数指定する：\n\n```xml\n<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"commitInterval\" value=\"1000\" />\n</component>\n```\n\n（`component/handlers/handlers-loop_handler.json:s6`）\n\nハンドラ構成表では「サブスレッドの `LoopHandler` が業務トランザクション開始→コミット間隔毎にコミット→例外時ロールバック」という役割が割り当てられている（`processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1`）。\n\nトランザクション対象DBの指定は `transactionFactory` / `transactionName` プロパティで行い、`DbConnectionManagementHandler#connectionName` と一致させる必要がある（`component/handlers/handlers-loop_handler.json:s5`）。\n\n---\n\n### Jakarta EEバッチ（JSR352 / Chunkタイプ）の場合\n\nトランザクション制御はリスナーが担当し、2層構造になっている（`processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s7`）：\n\n| リスナー | 動作タイミング | 処理 |\n|---|---|---|\n| `StepTransactionManagementListener` | ステップ開始前 / 終了後 | トランザクション開始 / 終了（commit or rollback） |\n| `ItemWriteTransactionManagementListener` | `ItemWriter` 実行後 | トランザクション終了（commit or rollback） |\n\nコミットのタイミングは `ItemWriter#writeItems` の実行後：\n\n> 「`writeItems`実行後にトランザクションがコミットされ、新たなトランザクションが開始される」\n> — `processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s5`\n\nChunkサイズ（＝何件ごとに `writeItems` を呼ぶか）はジョブ定義XMLの `item-count` で指定する（`processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s8`）：\n\n```xml\n<chunk item-count=\"10\">\n  <reader ref=\"stringReader\" />\n  <processor ref=\"createEntityProcessor\" />\n  <writer ref=\"batchOutputWriter\" />\n</chunk>\n```\n\n---\n\n**注意点**:\n- Nablarchバッチの `commitInterval` は「レコード読み込み繰り返し回数」であり、レコード件数そのものではなくループ回数で数える。\n- Jakarta EEバッチの `ItemWriteTransactionManagementListener` が行うコミット/ロールバックは、ステップレベルで開始されたトランザクションに対して行われる（`processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s7`）。\n- リスナーの実行順はJSR352では保証されないため、NablarchはExecutorパターンでリスナーリスト定義順に実行する仕組みを提供している（`processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s6`）。\n\n参照: component/handlers/handlers-loop_handler.json:s1, component/handlers/handlers-loop_handler.json:s5, component/handlers/handlers-loop_handler.json:s6, processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1, processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s6, processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s7, processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s8, processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s5",
+  "cited": [
+    "component/handlers/handlers-loop_handler.json:s1",
+    "component/handlers/handlers-loop_handler.json:s5",
+    "component/handlers/handlers-loop_handler.json:s6",
+    "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+    "processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s6",
+    "processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s7",
+    "processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s8",
+    "processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s5"
+  ],
+  "cost_usd": 0.35055445,
+  "duration_s": 75.30904865264893,
+  "steps": {
+    "turns": 13
+  },
+  "error": null
+}

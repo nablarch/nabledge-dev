@@ -1,0 +1,30 @@
+**結論**: Nablarch のバージョンアップで壊れにくいコードにするには、`@Published` アノテーションが付いた **公開API のみ** を使うことが大原則です。非公開APIの使用を機械的に検出するツールが2種類用意されており、これをCI/ローカル開発に組み込むことで「将来変わるかもしれない部分を使っていないか」を継続的にチェックできます。
+
+---
+
+**根拠**:
+
+1. **後方互換ポリシーの対象は `@Published` API のみ**
+   Nablarch のバージョンアップ後方互換ポリシーは `nablarch.core.util.annotation.Published` アノテーションが付与された公開APIだけを対象とします。非公開API（`Published` アノテーションなし）は後方互換が維持されないバージョンアップが行われる場合があり、プロジェクトで非公開APIを使用した場合バージョンアップ時に思わぬ不具合が発生する可能性があると明記されています。
+   (`about/about-nablarch/about-nablarch-versionup_policy.json:s4`)
+
+2. **公開APIかどうかの見分け方**
+   Nablarch 6 からは非公開APIを含む形でAPIドキュメントが提供されています。参照したクラス・メソッドが公開APIかどうかは、対象の Javadoc に `@Published` が記載されているかで判断します。`@Published(tag="architect")` はアーキテクト向け公開API、クラスにもメソッドにも `@Published` がなければ非公開APIです（例: `BasicDaoContext#findAll` は非公開API）。
+   (`about/about-nablarch/about-nablarch-nablarch_api.json:s1`)
+
+3. **非公開API使用チェックツール（2種類）**
+   使用不許可APIの検出ツールが2種類提供されています。(`development-tools/java-static-analysis/java-static-analysis-java_static_analysis.json:s3`)
+   - **nablarch-intellij-plugin**: IntelliJ IDEA 用プラグイン。Nablarch 非公開APIの使用時に IDE 上でリアルタイム警告を表示します。
+   - **使用不許可APIチェックツール（SpotBugsプラグイン）**: IntelliJ IDEA に依存しない SpotBugs ベースのツール。ブランクプロジェクトには Maven で実行するための設定があらかじめ含まれており、すぐにチェックを実施できます。
+
+4. **`@Deprecated` API にも注意**
+   `@Deprecated` が付いたAPIは「不具合・セキュリティ上の問題があるクラス・メソッド」であり、新たな不具合が見つかっても対応は行われません。`@Deprecated` API を使用している場合は Javadoc に記載の代替APIへ移行する必要があります。
+   (`about/about-nablarch/about-nablarch-policy.json:s12`)
+
+---
+
+**注意点**:
+- **アダプタは後方互換ポリシーの対象外**です。外部ライブラリへの依存があるため、外部ライブラリの破壊的変更に伴い後方互換を維持できない場合があります。アダプタの `Published` なしAPIは非公開APIと同様に使用しないようにしてください。(`about/about-nablarch/about-nablarch-versionup_policy.json:s4`)
+- ログのレベル・文言変更、JDKバージョンアップ起因の対応など、一部のケースでは公開APIであっても後方互換が維持されない変更が行われることがあります。その場合はリリースノートの「システムへの影響の可能性の内容と対処」列に移行方法が記載されます。(`about/about-nablarch/about-nablarch-versionup_policy.json:s6`)
+
+参照: about/about-nablarch/about-nablarch-versionup_policy.json:s4, about/about-nablarch/about-nablarch-versionup_policy.json:s5, about/about-nablarch/about-nablarch-versionup_policy.json:s6, about/about-nablarch/about-nablarch-nablarch_api.json:s1, development-tools/java-static-analysis/java-static-analysis-java_static_analysis.json:s3, about/about-nablarch/about-nablarch-policy.json:s12, about/about-nablarch/about-nablarch-policy.json:s10

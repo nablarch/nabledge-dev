@@ -1,0 +1,58 @@
+{
+  "verdict": {
+    "level": 3,
+    "required_facts": [
+      {
+        "fact": "Nablarchには標準のRetryHandlerが用意されている",
+        "status": "COVERED"
+      },
+      {
+        "fact": "retryContextFactoryプロパティでリトライ上限を設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CountingRetryContextFactoryはリトライ回数ベースの上限設定に使用する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "経過時間ベースのファクトリも選択できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リトライ対象例外を送出するハンドラはRetryHandlerより後に配置する必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "RetryHandlerより前に配置すると単なる例外として処理されリトライされない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リトライ上限の設定は必須である",
+        "status": "COVERED"
+      },
+      {
+        "fact": "上限に達しても成功しない場合は異常終了する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "設定例: retryCount=3, retryIntervals=5000のXML構成",
+        "status": "COVERED"
+      },
+      {
+        "fact": "上限値は想定する最大の復旧時間プラスアルファに設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "複数の例外をリトライ対象とする場合は最も復旧に時間を要するものをベースに上限を設定する",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [],
+    "reasoning": "生成された回答はリファレンス回答が要求する全ての事実を網羅している。RetryHandlerの存在、retryContextFactory/CountingRetryContextFactoryの使い方、ハンドラの順序制約（後ろに配置すること）、リトライ上限設定の必須性、異常終了の挙動、2種類の上限設定方式、XMLの設定例、上限値の設定指針（最大復旧時間＋アルファ）、複数例外時の考慮点、すべてCOVEREDである。「プロジェクト要件に合わない場合はプロジェクト側で実装を追加できる」という追記はリファレンスソース（s4）に明記されており、NEUTRAL扱い。矛盾・過剰主張・ハルシネーションは一切なく、スコアは3。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.1357159,
+  "duration_s": 23.53340721130371,
+  "error": null
+}

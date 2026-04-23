@@ -1,0 +1,65 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "Nablarch は多言語対応をビルトインで提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "メッセージの多言語化: 言語ごとのプロパティファイルを作成する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "PropertiesStringResourceLoader.locales にサポート言語を設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "PropertiesStringResourceLoader.defaultLocale で必ずデフォルトロケールを設定する（未設定は OS 依存で障害原因）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "メッセージ取得時の言語は ThreadContext#getLanguage が返すロケールで決まる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "言語切り替えの方法は2通り: メッセージタグでの国際化対応、言語ごとにリソースのパスを切り替える",
+        "status": "COVERED"
+      },
+      {
+        "fact": "メッセージタグで国際化対応すると画面レイアウトが崩れる可能性がある（警告）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "コード名称の多言語化: LANG カラムに言語を設定した名称テーブルを用意する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CodeUtil.getName(codeId, value, Locale) でロケール指定取得する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "JSP カスタムタグライブラリでは言語指定による値の取得はできない",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "LanguageAttributeInHttpCookie / LanguageAttributeInHttpSession と LanguageAttributeInHttpUtil.keepLanguage() を組み合わせてユーザ言語選択を保持できる（Section 3 全体）",
+        "type": "OVER-REACH",
+        "why": "handlers-thread_context_handler.json:s7 は参照ソース外。参照回答はメッセージタグ/リソースパス切り替えの2通りのみを示しており、Cookie/Sessionによるユーザ起点の言語保持は扱っていない。"
+      },
+      {
+        "claim": "カスタムレスポンスライターを使用している場合、contentPathRule によるリソースパス切り替えは使用不可",
+        "type": "OVER-REACH",
+        "why": "handlers-http_response_handler.json:s7 は参照ソース外。参照回答にはこの制約の言及がない。"
+      }
+    ],
+    "reasoning": "必須ファクト10件はすべて COVERED。参照回答が示すメッセージ多言語化・コード名称多言語化・2通りの言語切り替え・レイアウト崩れ警告・defaultLocale 必須設定など、核心的な内容はすべて正確に伝えられている。一方、参照ソース外から Section 3（Cookie/Session によるユーザ言語選択保持）と「カスタムレスポンスライター使用時の制約」が追加されており、これらは参照ソースの証拠境界外の OVER-REACH。ただし、いずれも読者を誤った方向に誘導するものではなく、補足的かつ正確な情報であるため、level 1 に相当する「実質的な OVER-REACH」には該当しない。必須ファクト完全 COVERED・矛盾なし・OVER-REACH が複数あるが非実質的という条件から level 2 と判定する。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.2173987,
+  "duration_s": 84.47103786468506,
+  "error": null
+}

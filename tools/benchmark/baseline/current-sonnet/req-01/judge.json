@@ -1,0 +1,76 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Nablarch には認証機能はビルトイン提供されていない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "認証はプロジェクト要件により仕様が異なるため、フレームワークとしては提供していない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "プロジェクト側で実装する必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "認証情報の保持には Nablarch のセッションストア（DBストア）を使う仕組みが用意されている",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ログイン時に SessionUtil.changeId でセッション ID を変更する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CsrfTokenUtil.regenerateCsrfToken で CSRF トークンを再生成してから認証情報を保存する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SessionUtil.put(ctx, \"user\", user, \"db\") でログインユーザの情報をセッションストアに保存する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ログアウト時は SessionUtil.invalidate(ctx) でセッションストア全体を破棄する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CSRF トークン再生成が必要な条件: CsrfTokenVerificationHandler 使用 + ログイン時にセッション ID の変更のみを行う（セッション情報は維持する）",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "nablarch-password-authentication ビジネスサンプルを使って認証を実装できると主要解決策として提示",
+        "type": "OVER-REACH",
+        "why": "参照ソース（web-application-feature_details, libraries-session_store）に含まれない。参照は「プロジェクトで実装」と明示するのみで特定実装パスを推奨していない"
+      },
+      {
+        "claim": "PasswordAuthenticator / SystemAccountAuthenticator / AuthenticationUtil などの具体的クラス構成",
+        "type": "OVER-REACH",
+        "why": "guide/biz-samples/biz-samples-01.json は参照ソースに含まれず、これらのクラスはこの質問への回答として参照ソースに支持されていない"
+      },
+      {
+        "claim": "アカウントロック・パスワード有効期限・PBKDF2 暗号化などのビジネスサンプルの機能詳細",
+        "type": "OVER-REACH",
+        "why": "参照ソースに存在しない情報。この質問の回答として参照ソースが支持していない"
+      },
+      {
+        "claim": "SystemAccountAuthenticator を個別アプリケーションとは別トランザクション（authenticator）で動かす必要がある",
+        "type": "OVER-REACH",
+        "why": "参照ソース外の情報"
+      },
+      {
+        "claim": "SYSTEM_ACCOUNT テーブル定義の設計についての言及",
+        "type": "OVER-REACH",
+        "why": "参照ソース外の情報"
+      }
+    ],
+    "reasoning": "必須事実はすべてCOVERED（認証ロジック非提供・DBストアによる認証情報保持・SessionUtil.changeId / CsrfTokenUtil.regenerateCsrfToken / SessionUtil.put / SessionUtil.invalidate の各操作・CSRF再生成条件）。しかし生成回答は参照ソースに含まれない guide/biz-samples/biz-samples-01.json を主要根拠として、ビジネスサンプル nablarch-password-authentication とそのクラス群を「認証の主要実装手段」として提示している。参照回答は「認証はプロジェクト要件により仕様が異なるためフレームワークとして提供していない。PJで実装すること」と明示しており、特定の実装アプローチを一切推奨していない。ビジネスサンプルへの誘導は参照ソースの範囲を大幅に超えており、読者に「標準の実装パスが存在する」という誤った印象を与える実質的なOVER-REACHに相当する。この逸脱は生成回答の冒頭の結論から全体の構成を通じて支配的であり、Level 2（at most one OVER-REACH）の閾値を超えると判断してLevel 1とする。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.2030828,
+  "duration_s": 72.51306891441345,
+  "error": null
+}

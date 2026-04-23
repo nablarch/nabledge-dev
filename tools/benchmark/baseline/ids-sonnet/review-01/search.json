@@ -1,0 +1,91 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: ファイル明細レコードをDBに取り込む夜間バッチは、**Nablarchバッチフレームワーク（都度起動バッチ）** で実装するのが推奨構成。フレームワーク選択→ハンドラ構成→クラス設計の3層で設計する。\n\n---\n\n**根拠**:\n\n**① フレームワーク選択**\nNablarchはバッチに2種類のフレームワークを提供するが、「Nablarchバッチ」を使用することが推奨されている。Jakarta Batchは2020年時点で情報・有識者が少なく学習コストが高い。 (processing-pattern/nablarch-batch/nablarch-batch-batch.json:s1)\n\n夜間定期実行には「都度起動バッチ」を使用する。常駐バッチはマルチスレッド時の遅延リスクがあり新規開発では非推奨。 (processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1)\n\n**② 最小ハンドラ構成（DB接続あり・都度起動バッチ）**\n以下の順でハンドラをキューに並べる（メインスレッド→サブスレッドの順）: (processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1)\n\n| No. | ハンドラ | スレッド | 役割 |\n|-----|---------|---------|------|\n| 1 | StatusCodeConvertHandler | メイン | 終了コード変換 |\n| 2 | GlobalErrorHandler | メイン | 例外ログ出力 |\n| 3 | DatabaseConnectionManagementHandler（初期処理用） | メイン | DB接続取得/解放 |\n| 4 | TransactionManagementHandler（初期処理用） | メイン | トランザクション管理 |\n| 5 | RequestPathJavaPackageMapping | メイン | アクションクラス決定 |\n| 6 | MultiThreadExecutionHandler | メイン | サブスレッド制御 |\n| 7 | DatabaseConnectionManagementHandler（業務処理用） | サブ | 業務用DB接続 |\n| 8 | LoopHandler | サブ | レコードループ・コミット制御 |\n| 9 | DataReadHandler | サブ | レコード1件読み込み |\n\n**③ クラス設計（3クラス構成）**\nファイル取り込みバッチの業務ロジック: (processing-pattern/nablarch-batch/nablarch-batch-application_design.json:s1)\n1. データレコードからフォームクラスを作成してバリデーション実行\n2. フォームクラスからエンティティクラスを作成してDBに登録\n3. `Success` を返す\n\n- **フォームクラス**: `DataReader` が読み込んだレコードをマッピング。プロパティは全て `String` 型で定義し、バリデーションアノテーションを付与する。\n- **エンティティクラス**: DBテーブルと1対1で対応するクラス。\n- **アクションクラス**: `BatchAction` を継承し、`handle` メソッドで業務ロジックを実装、`createReader` でデータリーダを返す。\n\n**④ 実装例（CSVファイル取り込みの場合）**\n\nデータリーダ: `ObjectMapperFactory.create(ZipCodeForm.class, ...)` で `ObjectMapper` を生成し、`ObjectMapperIterator` でラップして1行ずつ読み込む。`FilePathSetting.getInstance()` でファイルパスを取得する。 (processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2)\n\nアクション: `BeanUtil.createAndCopy(ZipCodeData.class, inputData)` でフォームをエンティティに変換し、`UniversalDao.insert` でDB登録。`@ValidateData` インターセプタで `handle` メソッドには常にバリデーション済みデータが渡される。 (processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3)\n\n処理の流れ: Main → DataReader（レコード1件読み込み）→ DispatchHandler（アクション特定）→ アクション（業務ロジック実行）→ Result返却、をレコードがなくなるまで繰り返す。 (processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3)\n\n**⑤ 標準提供のデータリーダ**\nファイル読み込み用として `FileDataReader`、バリデーション機能付きの `ValidatableFileDataReader`、レジューム機能付きの `ResumeDataReader` が標準提供されている。 (processing-pattern/nablarch-batch/nablarch-batch-feature_details.json:s5)\n\n---\n\n**注意点**:\n- `FileBatchAction` はデータアクセスに `data_format` を使用している。`data_bind`（CSVバインド等）を使う場合は `BatchAction` など他のアクションクラスを使うこと。 (processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3)\n- 入力ファイルは外部由来のため安全でないデータとみなし、必ずフォームクラス経由でバリデーションを実施すること。DBなど安全な入力源の場合はフォームクラスを省略できる。 (processing-pattern/nablarch-batch/nablarch-batch-application_design.json:s1)\n- 常駐バッチはマルチスレッド時に処理遅延が発生する可能性があるため、新規開発では使用しないこと。 (processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1)\n\n参照: processing-pattern/nablarch-batch/nablarch-batch-batch.json:s1, processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1, processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3, processing-pattern/nablarch-batch/nablarch-batch-application_design.json:s1, processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2, processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3, processing-pattern/nablarch-batch/nablarch-batch-feature_details.json:s5",
+  "cited": [
+    "processing-pattern/nablarch-batch/nablarch-batch-batch.json:s1",
+    "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+    "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+    "processing-pattern/nablarch-batch/nablarch-batch-application_design.json:s1",
+    "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+    "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+    "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json:s5"
+  ],
+  "cost_usd": 0.47899064999999996,
+  "duration_s": 69.1893937587738,
+  "steps": {
+    "raw_selections": [
+      "nablarch-batch-batch|s1",
+      "nablarch-batch-architecture|s1",
+      "nablarch-batch-architecture|s3",
+      "nablarch-batch-application_design|s1",
+      "nablarch-batch-getting-started-nablarch-batch|s2",
+      "nablarch-batch-getting-started-nablarch-batch|s3",
+      "nablarch-batch-feature_details|s5",
+      "nablarch-batch-feature_details|s4"
+    ],
+    "resolved": [
+      "processing-pattern/nablarch-batch/nablarch-batch-batch.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-application_design.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json:s4"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "processing-pattern/nablarch-batch/nablarch-batch-batch.json:s1",
+        "status": "ok",
+        "title": "バッチフレームワークの選択推奨",
+        "chars": 605
+      },
+      {
+        "selector": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+        "status": "ok",
+        "title": "Nablarchバッチアプリケーションの構成",
+        "chars": 8373
+      },
+      {
+        "selector": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+        "status": "ok",
+        "title": "Nablarchバッチアプリケーションの処理の流れ",
+        "chars": 859
+      },
+      {
+        "selector": "processing-pattern/nablarch-batch/nablarch-batch-application_design.json:s1",
+        "status": "ok",
+        "title": "クラスとその責務",
+        "chars": 668
+      },
+      {
+        "selector": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+        "status": "ok",
+        "title": "入力データソースからデータを読み込む",
+        "chars": 1028
+      },
+      {
+        "selector": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+        "status": "ok",
+        "title": "業務ロジックを実行する",
+        "chars": 557
+      },
+      {
+        "selector": "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json:s5",
+        "status": "ok",
+        "title": "ファイル入出力",
+        "chars": 199
+      },
+      {
+        "selector": "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json:s4",
+        "status": "ok",
+        "title": "データベースアクセス",
+        "chars": 126
+      }
+    ],
+    "select_cost_usd": 0.28672505,
+    "answer_cost_usd": 0.19226559999999998
+  },
+  "error": null
+}

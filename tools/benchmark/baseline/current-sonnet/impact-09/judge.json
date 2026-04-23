@@ -1,0 +1,67 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "@CodeValue アノテーションでコード管理機能と Bean Validation を連携できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@CodeValue(codeId = \"GENDER\") をフィールドに付与すれば、コード管理に登録された有効な値か自動検証できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "パターンで有効値を絞り込む場合は pattern 属性でパターン名を指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Bean Validation 用アノテーションは nablarch.common.code.validator.ee.CodeValue をフィールドに付与",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Nablarch Validation 用アノテーションは nablarch.common.code.validator.CodeValue を setter に付与",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "ドメインバリデーションを使う場合、1つのドメインに対して1つのパターンしか指定できない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "複数パターンに対応するにはパターンごとにドメインを定義する必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Bean Validation のフォームプロパティはすべて String で定義する（Bean変換失敗による予期せぬ例外を避けるため）",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "BasicCodeLoader → BasicStaticDataCache → BasicCodeManager の構成でDBからキャッシュに読み込む",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5, s6）に含まれない s1 の内部アーキテクチャ情報"
+      },
+      {
+        "claim": "コード管理機能は静的なコード情報のみ対象で、動的に変化するマスタは対象外",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5, s6）に含まれない s1 の情報"
+      },
+      {
+        "claim": "RDBMS の参照整合性制約はコード管理機能と併用できない",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5, s6）に含まれない s1 の情報"
+      },
+      {
+        "claim": "<n:codeSelect name=\"form.gender\" codeId=\"GENDER\" pattern=\"PATTERN2\" /> で JSP 側も同じパターンで絞り込める",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5, s6）に含まれない s2 の JSP タグ情報"
+      }
+    ],
+    "reasoning": "必須ファクトのうち「Bean Validation のフォームプロパティはすべて String で定義する（Bean 変換失敗による予期せぬ例外を避けるため）」が MISSING。この注意点はリファレンス回答で明示的に挙げられている重要な警告事項である。また、参照ソース範囲外（s1: BasicCodeLoader アーキテクチャ、動的マスタの制限、RDBMS 制約; s2: JSP codeSelect タグ）から複数の追加情報が含まれており、これらは HALLUCINATION に該当する。Level 2 の要件（「必須ファクトがすべて COVERED または PARTIAL、かつ OVER-REACH/HALLUCINATION が 1 件以下」）を満たさないため Level 1 となる。核心部分（@CodeValue の基本的な使い方、pattern 属性、ドメインバリデーションの制限）は正確に回答されており、主要な誤りはないが、要件を完全には満たしていない。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.19735429999999998,
+  "duration_s": 69.42219591140747,
+  "error": null
+}

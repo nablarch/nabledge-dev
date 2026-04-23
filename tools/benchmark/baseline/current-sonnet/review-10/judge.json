@@ -1,0 +1,74 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "@Publishedアノテーションで公開APIと非公開APIを区別している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@Publishedが付いていないクラス・メソッドは非公開API（将来変わる可能性がある）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@Published(tag=\"architect\")はアーキテクト向け公開API",
+        "status": "COVERED"
+      },
+      {
+        "fact": "公開APIかどうかはJavadoc上の@Publishedで判断する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "DaoContextはクラスに@Published(tag=\"architect\")があるためアーキテクト向け公開API（例）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "BasicDaoContext#findAllは@Publishedなしのため非公開API（例）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Nablarch 6からは非公開APIも含めたJavadocを提供している（Nablarch 5までは公開APIのみ）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "JavaバージョンアップによりJavadoc生成の拡張仕組みが変わり、公開APIだけに絞ったJavadoc生成ができなくなったことが理由",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "非公開API使用チェックに2種類のツールが提供されている",
+        "status": "COVERED"
+      },
+      {
+        "fact": "nablarch-intellij-plugin: IntelliJ IDEA用プラグイン、非公開API使用時に警告、ブラックリストJava API使用時にも警告",
+        "status": "COVERED"
+      },
+      {
+        "fact": "使用不許可APIチェックツール（SpotBugsプラグイン）: IntelliJ IDEA非依存、ブランクプロジェクトにMaven実行設定があらかじめ組み込まれている",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "@DeprecatedAPIは「不具合・セキュリティ上の問題があるクラス・メソッド」であり、新たな不具合が見つかっても対応されないため代替APIへ移行が必要",
+        "type": "HALLUCINATION",
+        "why": "policy.json:s12から引用されているが、参照ソース（2セクション）に含まれない。質問が問うのは@Published非公開APIのチェック方法であり、@Deprecatedは別の関心事"
+      },
+      {
+        "claim": "後方互換ポリシーの対象は@Published APIのみ（versionup_policy.json:s4）",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに含まれないversionup_policy.json:s4から引用。on-topicではあるが証拠境界外"
+      },
+      {
+        "claim": "アダプタは後方互換ポリシーの対象外（外部ライブラリの破壊的変更に伴い後方互換維持できない場合あり）",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに含まれないversionup_policy.json:s4から引用。証拠境界外"
+      }
+    ],
+    "reasoning": "必須ファクトはほぼすべてCOVEREDされており、Nablarch 6変更の具体的な理由（Javadoc生成仕組みの変更）のみPARTIAL（補足情報として扱える程度）。ツールの詳細（nablarch-intellij-pluginの両機能、SpotBugsプラグインのMaven設定組み込み）も正確に記述されている。一方、参照ソース外のversionup_policy.jsonやpolicy.jsonから@Deprecated情報・バージョンアップポリシー詳細・アダプタ除外など複数のHALLUCINATIONが含まれる。これらは誤解を招く内容ではなくon-topicな補足だが、参照ソースの証拠境界を超えている。必須ファクト全COVERED・CONTRADICTEDなし・複数のminor HALLUCINATIONという構成でLevel 2が妥当。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.22283630000000001,
+  "duration_s": 99.1883864402771,
+  "error": null
+}

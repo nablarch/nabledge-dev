@@ -1,0 +1,72 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "PermissionCheckHandler を使う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ログイン中ユーザが現在のリクエストIDに対して権限を持つかをチェックする",
+        "status": "COVERED"
+      },
+      {
+        "fact": "権限あり: Permission をスレッドローカルに設定し、後続ハンドラを呼び出す",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "権限なし: Forbidden(403) を送出する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "内部フォワード先を認可対象にするには setUsesInternalRequestId を true に設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "setUsesInternalRequestId のデフォルトは false",
+        "status": "COVERED"
+      },
+      {
+        "fact": "setUsesInternalRequestId=true 使用時は ThreadContextHandler の attributes に InternalRequestIdAttribute を追加する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "Nablarch は permission_check と role_check の2種類の認可機能を提供する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "permission_check は権限管理の条件が変わる可能性があるシステム向け（導入コスト高、しっかりしたデータ管理）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "role_check は権限管理の条件が基本的に変わらないシステム向け（ハードコーディングで低コスト）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ThreadContextHandler より後に配置すること",
+        "status": "MISSING"
+      },
+      {
+        "fact": "ForwardingHandler より後に配置すること（内部フォワード先IDで認可したい場合）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "HttpErrorHandler より後に配置すること（認可エラー時のエラーページ指定のため）",
+        "status": "PARTIAL"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "ハンドラが通過するたびにチェックが走る構造かどうかはシステム設計に依存する",
+        "type": "HALLUCINATION",
+        "why": "参照ソースにこの記述はなく、根拠のない推測である"
+      }
+    ],
+    "reasoning": "主要な回答（PermissionCheckHandler の使用、setUsesInternalRequestId=true によるフォワード先認可、デフォルト false、権限なし時の 403、permission_check/role_check の2種類）は正確に COVERED されている。しかし、setUsesInternalRequestId=true を使用する際に必須の「ThreadContextHandler の attributes に InternalRequestIdAttribute を追加する」という具体的な設定手順が MISSING であり、この欠落は実装上重要である。加えて、ハンドラの配置制約（ThreadContextHandler・ForwardingHandler・HttpErrorHandler より後）も MISSING または PARTIAL にとどまる。また「ハンドラが通過するたびにチェックが走る構造かどうかはシステム設計に依存する」という記述は参照ソースに根拠がない HALLUCINATION。必須設定手順を含む複数の required facts が MISSING であるため level 1 とする。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.18671905000000003,
+  "duration_s": 59.055349826812744,
+  "error": null
+}

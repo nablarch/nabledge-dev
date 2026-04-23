@@ -1,1613 +1,200 @@
 #!/usr/bin/env python3
-"""
-Benchmark runner for nabledge-6 faceted search flow.
+"""Benchmark runner for the nabledge-6 search flows.
 
-Stages:
-  --stage 1   AI-1 facet extraction only (tool-less), script-judged via
-              per-axis Jaccard against scenario.expected_facets.
-  --stage 2   [planned] stage 1 + mechanical type×category filter,
-              LLM-judged in an isolated sub-agent.
-  --stage 3   [planned] stage 1-2 + AI-2 section select + final answer,
-              LLM-judged in an isolated sub-agent.
+Commands:
+  python3 run.py --variant {ids|current} [--scenario X] [--limit N] [--model sonnet]
+      Run the full scenario set (or a subset) through one flow. Writes per-scenario
+      artifacts under .results/{ts}-{variant}-{model}/.
+  python3 run.py --rejudge --results-dir .results/...
+      Re-score an existing run using the current judge prompt.
 
-Results land under tools/benchmark/.results/{ts}-stage{N}-{model}/ with
-one sub-directory per scenario. Every claude -p invocation is captured as
-raw stream-json so we can audit turns / tool use / errors after the fact.
-
-Usage:
-  python3 run.py --stage 1 --scenarios-file scenarios/qa-v6-sample5.json --model sonnet
-  python3 run.py --stage 1 --scenarios-file scenarios/qa-v6-sample5.json --model haiku --scenario review-01
+Parallel runs are not supported — see .claude/rules/benchmark.md.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import json
-import subprocess
 import sys
-import time
+from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
+from typing import Callable
 
+# Allow running as a script: `python3 tools/benchmark/run.py`.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from tools.benchmark.filter.facet_filter import (  # noqa: E402
-    IndexRow,
-    filter_with_fallback,
-    load_index,
-)
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-BENCH_DIR = Path(__file__).resolve().parent
-SCENARIOS_PATH_DEFAULT = BENCH_DIR / "scenarios" / "qa-v6-sample5.json"
+from tools.benchmark.bench import io, judge, search_current, search_ids
+from tools.benchmark.bench.types import JudgeResult, Scenario, SearchResult, Variant
 
-PROMPT_STAGE1_FACET = BENCH_DIR / "prompts" / "stage1_facet.md"
-PROMPT_STAGE1_IDS = BENCH_DIR / "prompts" / "stage1_ids.md"
-PROMPT_JUDGE_STAGE2 = BENCH_DIR / "prompts" / "judge_stage2.md"
-PROMPT_STAGE3_SELECT = BENCH_DIR / "prompts" / "stage3_section_select.md"
-PROMPT_STAGE3_ANSWER = BENCH_DIR / "prompts" / "stage3_answer.md"
-PROMPT_JUDGE_STAGE3 = BENCH_DIR / "prompts" / "judge_stage3.md"
-PROMPT_SEARCH_CURRENT = BENCH_DIR / "prompts" / "search_current.md"
-PROMPT_JUDGE_STAGE3_V2 = BENCH_DIR / "prompts" / "judge_stage3_v2.md"
-REFERENCE_ANSWERS_DIR = BENCH_DIR / "scenarios" / "qa-v6-answers"
 
-KNOWLEDGE_ROOT = REPO_ROOT / ".claude" / "skills" / "nabledge-6" / "knowledge"
-INDEX_TOON_PATH = KNOWLEDGE_ROOT / "index.toon"
-INDEX_LLM_PATH = KNOWLEDGE_ROOT / "index-llm.md"
-INDEX_SCRIPT_PATH = KNOWLEDGE_ROOT / "index-script.json"
-
-TYPE_ENUM = [
-    "about", "check", "component", "development-tools",
-    "guide", "processing-pattern", "releases", "setup",
-]
-CATEGORY_ENUM = [
-    "about-nablarch", "adapters", "biz-samples", "blank-project",
-    "cloud-native", "configuration", "db-messaging", "handlers",
-    "http-messaging", "jakarta-batch", "java-static-analysis",
-    "libraries", "migration", "mom-messaging", "nablarch-batch",
-    "nablarch-patterns", "release-notes", "releases",
-    "restful-web-service", "security-check", "setting-guide",
-    "testing-framework", "toolbox", "web-application",
-]
-COVERAGE_ENUM = ["in_scope", "uncertain", "out_of_scope"]
-
-SCHEMA_JUDGE_STAGE2 = {
-    "type": "object",
-    "required": ["level", "reason"],
-    "additionalProperties": False,
-    "properties": {
-        "level": {"type": "integer", "enum": [0, 1, 2, 3]},
-        "reason": {"type": "string", "maxLength": 300},
-    },
-}
-
-SCHEMA_STAGE3_SELECT = {
-    "type": "object",
-    "required": ["selections"],
-    "additionalProperties": False,
-    "properties": {
-        "selections": {
-            "type": "array",
-            "maxItems": 10,
-            "items": {"type": "string", "pattern": r"^[^:]+\.json:[a-zA-Z0-9_-]+$"},
-        },
-    },
-}
-
-SCHEMA_STAGE1_IDS = {
-    "type": "object",
-    "required": ["selections"],
-    "additionalProperties": False,
-    "properties": {
-        "selections": {
-            "type": "array",
-            "maxItems": 10,
-            "uniqueItems": True,
-            "items": {
-                "type": "string",
-                "pattern": r"^[a-zA-Z0-9_-]+\|[a-zA-Z0-9_-]+$",
-            },
-        },
-    },
-}
-
-SCHEMA_STAGE3_ANSWER = {
-    "type": "object",
-    "required": ["answer", "cited"],
-    "additionalProperties": False,
-    "properties": {
-        "answer": {"type": "string", "maxLength": 4000},
-        "cited": {
-            "type": "array",
-            "items": {"type": "string", "pattern": r"^[^:]+\.json:[a-zA-Z0-9_-]+$"},
-        },
-    },
-}
-
-SCHEMA_JUDGE_STAGE3_V2 = {
-    "type": "object",
-    "required": ["required_facts", "over_reach", "level", "reasoning"],
-    "additionalProperties": False,
-    "properties": {
-        "required_facts": {
-            "type": "array",
-            "maxItems": 15,
-            "items": {
-                "type": "object",
-                "required": ["fact", "status"],
-                "additionalProperties": False,
-                "properties": {
-                    "fact": {"type": "string", "maxLength": 200},
-                    "status": {
-                        "enum": ["COVERED", "PARTIAL", "MISSING", "CONTRADICTED"]
-                    },
-                },
-            },
-        },
-        "over_reach": {
-            "type": "array",
-            "maxItems": 10,
-            "items": {
-                "type": "object",
-                "required": ["claim", "type", "why"],
-                "additionalProperties": False,
-                "properties": {
-                    "claim": {"type": "string", "maxLength": 200},
-                    "type": {"enum": ["OVER-REACH", "HALLUCINATION"]},
-                    "why": {"type": "string", "maxLength": 200},
-                },
-            },
-        },
-        "level": {"type": "integer", "enum": [0, 1, 2, 3]},
-        "reasoning": {"type": "string", "maxLength": 600},
-    },
-}
-
-SCHEMA_JUDGE_STAGE3 = {
-    "type": "object",
-    "required": ["level", "reason"],
-    "additionalProperties": False,
-    "properties": {
-        "level": {"type": "integer", "enum": [0, 1, 2, 3]},
-        "reason": {"type": "string", "maxLength": 300},
-    },
-}
-
-SCHEMA_STAGE1_FACET = {
-    "type": "object",
-    "required": ["type", "category", "coverage"],
-    "additionalProperties": False,
-    "properties": {
-        "type": {
-            "type": "array", "maxItems": 3, "uniqueItems": True,
-            "items": {"enum": TYPE_ENUM},
-        },
-        "category": {
-            "type": "array", "maxItems": 4, "uniqueItems": True,
-            "items": {"enum": CATEGORY_ENUM},
-        },
-        "coverage": {"enum": COVERAGE_ENUM},
-    },
-}
-
-
-def load_scenarios(path: Path) -> list[dict]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def invoke_claude_stream(
-    prompt: str,
-    schema: dict,
-    max_turns: int,
-    model: str,
-    log_path: Path,
-    allowed_tools: list[str] | None = None,
-    timeout_s: int = 300,
-) -> tuple[dict | None, dict, float, str]:
-    """Run `claude -p --output-format stream-json` and persist every event.
-
-    Returns (structured_output, final_envelope, wall_s, error).
-    The full NDJSON stream is written to log_path regardless of outcome.
-    """
-    cmd = [
-        "claude",
-        "-p",
-        "--model", model,
-        "--output-format", "stream-json",
-        "--include-partial-messages",
-        "--verbose",
-        "--max-turns", str(max_turns),
-        "--json-schema", json.dumps(schema),
-        "--permission-mode", "bypassPermissions",
-    ]
-    if allowed_tools is None:
-        pass
-    elif allowed_tools:
-        cmd += ["--tools", ",".join(allowed_tools)]
-    else:
-        cmd += ["--tools", ""]
-
-    t0 = time.time()
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        proc = subprocess.run(
-            cmd,
-            input=prompt,
-            capture_output=True,
-            text=True,
-            cwd=REPO_ROOT,
-            timeout=timeout_s,
-        )
-    except subprocess.TimeoutExpired as e:
-        log_path.write_text(
-            (e.stdout or "") + "\n---TIMEOUT---\n" + (e.stderr or ""),
-            encoding="utf-8",
-        )
-        return None, {}, time.time() - t0, f"timeout after {timeout_s}s"
-    wall_s = time.time() - t0
-
-    log_path.write_text(proc.stdout or "", encoding="utf-8")
-    if proc.stderr:
-        log_path.with_suffix(log_path.suffix + ".stderr").write_text(
-            proc.stderr, encoding="utf-8"
-        )
-
-    # Stream-json NDJSON: last "result" event carries usage/cost/structured_output.
-    # As a fallback, also pick up StructuredOutput tool_use inputs that the
-    # assistant emitted during the run — useful when max-turns is hit after
-    # the structured output was already provided.
-    final_envelope: dict = {}
-    structured: dict | None = None
-    tool_use_structured: dict | None = None
-    for line in (proc.stdout or "").splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            evt = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if evt.get("type") == "result":
-            final_envelope = evt
-            structured = evt.get("structured_output") or structured
-        elif evt.get("type") == "assistant":
-            msg = evt.get("message", {})
-            for block in msg.get("content", []) or []:
-                if (
-                    block.get("type") == "tool_use"
-                    and block.get("name") == "StructuredOutput"
-                ):
-                    inp = block.get("input")
-                    if isinstance(inp, dict) and inp:
-                        tool_use_structured = inp
-    if structured is None and tool_use_structured is not None:
-        structured = tool_use_structured
-
-    # Recover from error_max_turns when structured output was already captured.
-    if proc.returncode != 0 and structured is None:
-        return None, final_envelope, wall_s, (
-            f"claude exited {proc.returncode}: {(proc.stderr or '')[-500:]}"
-        )
-
-    if not final_envelope:
-        return structured, {}, wall_s, "no result event in stream"
-
-    return structured, final_envelope, wall_s, ""
-
-
-def jaccard(a: list[str], b: list[str]) -> float:
-    sa, sb = set(a), set(b)
-    if not sa and not sb:
-        return 1.0
-    if not sa or not sb:
-        return 0.0
-    return len(sa & sb) / len(sa | sb)
-
-
-def score_stage1_facet(extracted: dict, expected: dict) -> dict:
-    """Per-axis Jaccard + coverage exact match."""
-    ex_type = extracted.get("type", []) or []
-    ex_cat = extracted.get("category", []) or []
-    ex_cov = extracted.get("coverage")
-    want_type = expected.get("type", []) or []
-    want_cat = expected.get("category", []) or []
-    want_cov = expected.get("coverage")
-
-    j_type = jaccard(ex_type, want_type)
-    j_cat = jaccard(ex_cat, want_cat)
-    cov_match = ex_cov == want_cov
-
-    return {
-        "extracted": {"type": ex_type, "category": ex_cat, "coverage": ex_cov},
-        "expected": {"type": want_type, "category": want_cat, "coverage": want_cov},
-        "jaccard_type": j_type,
-        "jaccard_category": j_cat,
-        "coverage_match": cov_match,
-        "overall": (j_type + j_cat + (1.0 if cov_match else 0.0)) / 3.0,
-    }
-
-
-def run_stage1_facet(scenario: dict, model: str, scen_dir: Path) -> dict:
-    question = scenario["expected_question"]
-    prompt = PROMPT_STAGE1_FACET.read_text(encoding="utf-8").replace(
-        "{{question}}", question
-    )
-    (scen_dir / "ai1_prompt.md").write_text(prompt, encoding="utf-8")
-
-    structured, envelope, wall_s, err = invoke_claude_stream(
-        prompt=prompt,
-        schema=SCHEMA_STAGE1_FACET,
-        max_turns=2,
-        model=model,
-        allowed_tools=[],
-        timeout_s=180,
-        log_path=scen_dir / "ai1_facet_extract.stream-json",
-    )
-
-    result = {
-        "id": scenario["id"],
-        "stage": 1,
-        "model": model,
-        "question": question,
-        "expected_facets": scenario.get("expected_facets"),
-        "wall_s": wall_s,
-        "duration_ms": envelope.get("duration_ms"),
-        "num_turns": envelope.get("num_turns"),
-        "total_cost_usd": envelope.get("total_cost_usd"),
-        "is_error": envelope.get("is_error"),
-    }
-    if err:
-        result["error"] = err
-    else:
-        result["extracted_facets"] = structured
-        if scenario.get("expected_facets") and structured:
-            result["score"] = score_stage1_facet(
-                structured, scenario["expected_facets"]
-            )
-    (scen_dir / "ai1_result.json").write_text(
-        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    return result
-
-
-def format_candidate_list(rows: list[IndexRow], max_rows: int = 200) -> str:
-    """Format filter result as a markdown-friendly `title — path` list."""
-    head = rows[:max_rows]
-    return "\n".join(f"- {r.title} — {r.path}" for r in head)
-
-
-def load_reference_sources(reference_md: str) -> tuple[str, list[dict]]:
-    """Given the reference answer markdown, extract `path#sid` citations
-    and load the matching section bodies from the knowledge base.
-
-    Returns (formatted_text, records) analogous to `read_selected_sections`
-    but keyed on `path#sid` (reference-answer style) rather than
-    `path:section_id`.
-    """
-    from tools.benchmark.grading.reference_answer import extract_citations
-
-    citations = sorted(extract_citations(reference_md))
-    chunks: list[str] = []
-    records: list[dict] = []
-    for path, sid in citations:
-        kf = KNOWLEDGE_ROOT / path
-        try:
-            data = json.loads(kf.read_text(encoding="utf-8"))
-        except (FileNotFoundError, json.JSONDecodeError):
-            records.append({"path": path, "sid": sid, "status": "file-missing"})
-            continue
-        sections = data.get("sections") or {}
-        text = sections.get(sid)
-        title = next(
-            (s["title"] for s in data.get("index", []) or [] if s.get("id") == sid),
-            None,
-        )
-        if text is None:
-            records.append(
-                {"path": path, "sid": sid, "status": "section-missing", "title": title}
-            )
-            continue
-        chunks.append(
-            f"=== {path}:{sid} — {title or ''} ===\n{text}\n=== END ==="
-        )
-        records.append(
-            {
-                "path": path,
-                "sid": sid,
-                "status": "ok",
-                "title": title,
-                "chars": len(text),
-            }
-        )
-    return "\n\n".join(chunks), records
-
-
-def run_judge_v2_for_scenario(
-    scenario: dict, scen_dir: Path, model: str
-) -> dict:
-    """Re-score an already-run scenario using the v2 fact-coverage judge.
-
-    Reads:
-      - scenarios (for question)
-      - qa-v6-answers/{id}.md          (reference answer + citations)
-      - scen_dir/final_answer.md       (generated answer)
-      - scen_dir/ai3_result.json OR
-        scen_dir/search_current_result.json  (generated cited list)
-
-    Writes:
-      - scen_dir/judge_v2_prompt.md
-      - scen_dir/judge_v2.stream-json  (raw model log)
-      - scen_dir/judge_v2_result.json  (parsed verdict)
-    """
-    sid = scenario["id"]
-    question = scenario["expected_question"]
-    ref_path = REFERENCE_ANSWERS_DIR / f"{sid}.md"
-    if not ref_path.exists():
-        return {
-            "id": sid,
-            "error": f"reference answer missing: {ref_path}",
-        }
-    reference_md = ref_path.read_text(encoding="utf-8")
-
-    answer_path = scen_dir / "final_answer.md"
-    if not answer_path.exists():
-        return {"id": sid, "error": f"final_answer.md missing in {scen_dir}"}
-    generated_answer = answer_path.read_text(encoding="utf-8")
-
-    # Generated cited list may live in either ai3_result.json (ids/facet)
-    # or search_current_result.json (current flow).
-    cited: list[str] = []
-    for candidate in ("ai3_result.json", "search_current_result.json"):
-        cp = scen_dir / candidate
-        if cp.exists():
-            cj = json.loads(cp.read_text(encoding="utf-8"))
-            cited = cj.get("cited") or []
-            break
-
-    ref_sources_text, ref_source_records = load_reference_sources(reference_md)
-
-    prompt = (
-        PROMPT_JUDGE_STAGE3_V2.read_text(encoding="utf-8")
-        .replace("{{question}}", question)
-        .replace("{{reference_answer}}", reference_md)
-        .replace("{{reference_sources}}", ref_sources_text or "(none)")
-        .replace("{{generated_answer}}", generated_answer or "(empty)")
-        .replace(
-            "{{generated_cited}}",
-            "\n".join(f"- {c}" for c in cited) if cited else "(none)",
-        )
-    )
-    (scen_dir / "judge_v2_prompt.md").write_text(prompt, encoding="utf-8")
-
-    verdict, envelope, wall_s, err = invoke_claude_stream(
-        prompt=prompt,
-        schema=SCHEMA_JUDGE_STAGE3_V2,
-        max_turns=2,
-        model=model,
-        allowed_tools=[],
-        timeout_s=240,
-        log_path=scen_dir / "judge_v2.stream-json",
-    )
-
-    record = {
-        "id": sid,
-        "verdict": verdict,
-        "ref_sources_loaded": sum(
-            1 for r in ref_source_records if r.get("status") == "ok"
-        ),
-        "ref_sources_total": len(ref_source_records),
-        "wall_s": wall_s,
-        "total_cost_usd": envelope.get("total_cost_usd"),
-        "error": err or None,
-    }
-    (scen_dir / "judge_v2_result.json").write_text(
-        json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    return record
-
-
-def format_candidate_list_with_sections(
-    rows: list[IndexRow], max_rows: int = 200
-) -> str:
-    """For Stage 3 AI-2: title — path, then indented section id/title list.
-
-    Reads each candidate's knowledge JSON to emit its index. Skips files
-    that cannot be read (reports as missing) rather than aborting.
-    """
-    lines: list[str] = []
-    for row in rows[:max_rows]:
-        lines.append(f"- {row.title} — {row.path}")
-        kf = KNOWLEDGE_ROOT / row.path
-        try:
-            data = json.loads(kf.read_text(encoding="utf-8"))
-        except (FileNotFoundError, json.JSONDecodeError):
-            lines.append("    (sections unavailable)")
-            continue
-        for sec in data.get("index", []) or []:
-            sid = sec.get("id")
-            stitle = sec.get("title")
-            if sid and stitle:
-                lines.append(f"    - {sid}: {stitle}")
-    return "\n".join(lines)
-
-
-def read_selected_sections(
-    selectors: list[str], max_selectors: int = 10
-) -> tuple[str, list[dict]]:
-    """Load the text of each `path:section_id` selector from knowledge/.
-
-    Returns a (formatted_text, records) pair. `records` is the per-selector
-    outcome for logging. Invalid selectors are marked but do not abort.
-    """
-    chunks: list[str] = []
-    records: list[dict] = []
-    for sel in selectors[:max_selectors]:
-        if ":" not in sel:
-            records.append({"selector": sel, "status": "malformed"})
-            continue
-        path, section_id = sel.split(":", 1)
-        kf = KNOWLEDGE_ROOT / path
-        try:
-            data = json.loads(kf.read_text(encoding="utf-8"))
-        except (FileNotFoundError, json.JSONDecodeError):
-            records.append({"selector": sel, "status": "file-missing"})
-            continue
-        sections = data.get("sections") or {}
-        text = sections.get(section_id)
-        title = next(
-            (s["title"] for s in data.get("index", []) or [] if s.get("id") == section_id),
-            None,
-        )
-        if text is None:
-            records.append(
-                {"selector": sel, "status": "section-missing", "title": title}
-            )
-            continue
-        chunks.append(f"=== {sel} — {title or ''} ===\n{text}\n=== END ===")
-        records.append(
-            {
-                "selector": sel,
-                "status": "ok",
-                "title": title,
-                "chars": len(text),
-            }
-        )
-    return "\n\n".join(chunks), records
-
-
-def run_stage2(
-    scenario: dict, model: str, scen_dir: Path, index_rows: list[IndexRow]
-) -> dict:
-    """Stage 1 facet + mechanical filter + Stage 2 LLM judge."""
-    # 1. Run Stage 1 (facet extraction) — reuse run_stage1_facet output.
-    stage1 = run_stage1_facet(scenario, model, scen_dir)
-    if stage1.get("error"):
-        return {**stage1, "stage": 2, "filter": None, "judge": None}
-
-    facets = stage1.get("extracted_facets") or {}
-    want_type = facets.get("type", []) or []
-    want_cat = facets.get("category", []) or []
-    coverage = facets.get("coverage")
-
-    # 2. Mechanical filter.
-    if coverage == "out_of_scope" and not want_type and not want_cat:
-        outcome_rows: list[IndexRow] = []
-        fallback_used = "out_of_scope-shortcircuit"
-    else:
-        outcome = filter_with_fallback(index_rows, want_type, want_cat)
-        outcome_rows = outcome.rows
-        fallback_used = outcome.fallback_used
-
-    filter_record = {
-        "want_type": want_type,
-        "want_category": want_cat,
-        "coverage": coverage,
-        "fallback_used": fallback_used,
-        "candidate_count": len(outcome_rows),
-        "candidates": [
-            {"title": r.title, "type": r.type, "category": r.category, "path": r.path}
-            for r in outcome_rows
-        ],
-    }
-    (scen_dir / "filter_result.json").write_text(
-        json.dumps(filter_record, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    # 3. Judge.
-    if not outcome_rows:
-        judge = {"level": 0, "reason": "filter returned no candidates"}
-        judge_envelope: dict = {}
-        judge_wall = 0.0
-        judge_err = ""
-    else:
-        candidate_list = format_candidate_list(outcome_rows)
-        judge_prompt = (
-            PROMPT_JUDGE_STAGE2.read_text(encoding="utf-8")
-            .replace("{{question}}", scenario["expected_question"])
-            .replace("{{candidate_list}}", candidate_list)
-        )
-        (scen_dir / "judge_stage2_prompt.md").write_text(
-            judge_prompt, encoding="utf-8"
-        )
-        judge, judge_envelope, judge_wall, judge_err = invoke_claude_stream(
-            prompt=judge_prompt,
-            schema=SCHEMA_JUDGE_STAGE2,
-            max_turns=2,
-            model=model,
-            allowed_tools=[],
-            timeout_s=180,
-            log_path=scen_dir / "judge_stage2.stream-json",
-        )
-
-    judge_record = {
-        "level": (judge or {}).get("level") if judge else None,
-        "reason": (judge or {}).get("reason") if judge else None,
-        "wall_s": judge_wall,
-        "total_cost_usd": judge_envelope.get("total_cost_usd"),
-        "error": judge_err or None,
-    }
-    (scen_dir / "judge_stage2_result.json").write_text(
-        json.dumps(judge_record, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    total_cost = (stage1.get("total_cost_usd") or 0.0) + (
-        judge_envelope.get("total_cost_usd") or 0.0
-    )
-    total_wall = (stage1.get("wall_s") or 0.0) + judge_wall
-
-    return {
-        "id": scenario["id"],
-        "stage": 2,
-        "model": model,
-        "question": scenario["expected_question"],
-        "stage1": {
-            "extracted_facets": stage1.get("extracted_facets"),
-            "score": stage1.get("score"),
-            "cost_usd": stage1.get("total_cost_usd"),
-            "wall_s": stage1.get("wall_s"),
-        },
-        "filter": {
-            "fallback_used": fallback_used,
-            "candidate_count": len(outcome_rows),
-        },
-        "judge": judge_record,
-        "total_cost_usd": total_cost,
-        "wall_s": total_wall,
-    }
-
-
-def run_stage3_current(
-    scenario: dict, model: str, scen_dir: Path
-) -> dict:
-    """Current production flow: single agent with Bash access to
-    full-text-search.sh / get-hints.sh / read-sections.sh.
-
-    Produces an AI-3 shaped output (answer + cited) so the same
-    judge_stage3 prompt can score it directly.
-    """
-    question = scenario["expected_question"]
-    prompt = PROMPT_SEARCH_CURRENT.read_text(encoding="utf-8").replace(
-        "{{question}}", question
-    )
-    (scen_dir / "search_current_prompt.md").write_text(prompt, encoding="utf-8")
-
-    answer_struct, envelope, wall_s, err = invoke_claude_stream(
-        prompt=prompt,
-        schema=SCHEMA_STAGE3_ANSWER,
-        max_turns=25,
-        model=model,
-        allowed_tools=["Bash"],
-        timeout_s=900,
-        log_path=scen_dir / "search_current.stream-json",
-    )
-    answer_struct = answer_struct or {"answer": "", "cited": []}
-    (scen_dir / "final_answer.md").write_text(
-        answer_struct.get("answer") or "", encoding="utf-8"
-    )
-    (scen_dir / "search_current_result.json").write_text(
-        json.dumps(
-            {
-                "answer": answer_struct.get("answer"),
-                "cited": answer_struct.get("cited"),
-                "wall_s": wall_s,
-                "total_cost_usd": envelope.get("total_cost_usd"),
-                "num_turns": envelope.get("num_turns"),
-                "error": err or None,
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-
-    # Judge — same Stage 3 judge as the ids variant for apples-to-apples.
-    if not answer_struct.get("answer"):
-        judge: dict | None = {"level": 0, "reason": "no answer produced"}
-        judge_envelope: dict = {}
-        judge_wall = 0.0
-        judge_err = ""
-    else:
-        judge_prompt = (
-            PROMPT_JUDGE_STAGE3.read_text(encoding="utf-8")
-            .replace("{{question}}", question)
-            .replace("{{answer}}", answer_struct.get("answer") or "")
-            .replace(
-                "{{cited}}",
-                "\n".join(f"- {c}" for c in (answer_struct.get("cited") or [])),
-            )
-        )
-        (scen_dir / "judge_stage3_prompt.md").write_text(
-            judge_prompt, encoding="utf-8"
-        )
-        judge, judge_envelope, judge_wall, judge_err = invoke_claude_stream(
-            prompt=judge_prompt,
-            schema=SCHEMA_JUDGE_STAGE3,
-            max_turns=2,
-            model=model,
-            allowed_tools=[],
-            timeout_s=180,
-            log_path=scen_dir / "judge_stage3.stream-json",
-        )
-
-    judge_record = {
-        "level": (judge or {}).get("level") if judge else None,
-        "reason": (judge or {}).get("reason") if judge else None,
-        "wall_s": judge_wall,
-        "total_cost_usd": judge_envelope.get("total_cost_usd"),
-        "error": judge_err or None,
-    }
-    (scen_dir / "judge_stage3_result.json").write_text(
-        json.dumps(judge_record, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    total_cost = (envelope.get("total_cost_usd") or 0.0) + (
-        judge_envelope.get("total_cost_usd") or 0.0
-    )
-    total_wall = wall_s + judge_wall
-
-    return {
-        "id": scenario["id"],
-        "stage": 3,
-        "variant": "current",
-        "model": model,
-        "question": question,
-        "search": {
-            "cost_usd": envelope.get("total_cost_usd"),
-            "wall_s": wall_s,
-            "num_turns": envelope.get("num_turns"),
-            "error": err or None,
-        },
-        "filter": {
-            "fallback_used": "current-flow",
-            "candidate_count": len(answer_struct.get("cited") or []),
-        },
-        "answer": {
-            "cited": answer_struct.get("cited"),
-            "cost_usd": envelope.get("total_cost_usd"),
-            "wall_s": wall_s,
-            "error": err or None,
-        },
-        "judge": judge_record,
-        "total_cost_usd": total_cost,
-        "wall_s": total_wall,
-    }
-
-
-def run_stage3_ids(
-    scenario: dict, model: str, scen_dir: Path, id_to_path: dict[str, str]
-) -> dict:
-    """Direct-ID flow: AI-1 picks `file_id|sid`, script resolves to
-    `path:section_id`, read-sections, AI-3 answers, judge scores.
-
-    Replaces the facet + filter + AI-2 path for the new AI-1 redesign.
-    """
-    question = scenario["expected_question"]
-    index_text = INDEX_LLM_PATH.read_text(encoding="utf-8")
-    prompt = (
-        PROMPT_STAGE1_IDS.read_text(encoding="utf-8")
-        .replace("{{index}}", index_text)
-        .replace("{{question}}", question)
-    )
-    (scen_dir / "ai1_prompt.md").write_text(prompt, encoding="utf-8")
-
-    ai1_out, ai1_envelope, ai1_wall, ai1_err = invoke_claude_stream(
-        prompt=prompt,
-        schema=SCHEMA_STAGE1_IDS,
-        max_turns=2,
-        model=model,
-        allowed_tools=[],
-        timeout_s=300,
-        log_path=scen_dir / "ai1_ids_select.stream-json",
-    )
-    ai1_raw_selections: list[str] = list(
-        (ai1_out or {}).get("selections") or []
-    )
-
-    # Resolve file_id|sid → path:section_id using the script index.
-    resolved: list[str] = []
-    unresolved: list[dict] = []
-    for sel in ai1_raw_selections:
-        if "|" not in sel:
-            unresolved.append({"selector": sel, "reason": "malformed"})
-            continue
-        fid, sid = sel.split("|", 1)
-        info = id_to_path.get(fid)
-        if not info:
-            unresolved.append({"selector": sel, "reason": "unknown file_id"})
-            continue
-        if sid not in info.get("sections", []):
-            unresolved.append({"selector": sel, "reason": "unknown sid"})
-            continue
-        resolved.append(f"{info['path']}:{sid}")
-
-    (scen_dir / "ai1_result.json").write_text(
-        json.dumps(
-            {
-                "raw_selections": ai1_raw_selections,
-                "resolved_selectors": resolved,
-                "unresolved": unresolved,
-                "wall_s": ai1_wall,
-                "total_cost_usd": ai1_envelope.get("total_cost_usd"),
-                "error": ai1_err or None,
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-
-    # Read sections using the existing path:section_id machinery.
-    sections_text, section_records = read_selected_sections(resolved)
-    (scen_dir / "sections_read.json").write_text(
-        json.dumps(section_records, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    # AI-3 answer.
-    if not sections_text:
-        answer_struct: dict = {
-            "answer": "（参照可能なセクションがありません。）",
-            "cited": [],
-        }
-        answer_envelope: dict = {}
-        answer_wall = 0.0
-        answer_err = "no sections"
-    else:
-        answer_prompt = (
-            PROMPT_STAGE3_ANSWER.read_text(encoding="utf-8")
-            .replace("{{question}}", question)
-            .replace("{{sections_text}}", sections_text)
-        )
-        (scen_dir / "ai3_answer_prompt.md").write_text(answer_prompt, encoding="utf-8")
-        answer_struct, answer_envelope, answer_wall, answer_err = invoke_claude_stream(
-            prompt=answer_prompt,
-            schema=SCHEMA_STAGE3_ANSWER,
-            max_turns=2,
-            model=model,
-            allowed_tools=[],
-            timeout_s=300,
-            log_path=scen_dir / "ai3_answer.stream-json",
-        )
-        answer_struct = answer_struct or {"answer": "", "cited": []}
-    (scen_dir / "final_answer.md").write_text(
-        answer_struct.get("answer") or "", encoding="utf-8"
-    )
-    (scen_dir / "ai3_result.json").write_text(
-        json.dumps(
-            {
-                "answer": answer_struct.get("answer"),
-                "cited": answer_struct.get("cited"),
-                "wall_s": answer_wall,
-                "total_cost_usd": answer_envelope.get("total_cost_usd"),
-                "error": answer_err or None,
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-
-    # Judge.
-    if not answer_struct.get("answer"):
-        judge: dict | None = {"level": 0, "reason": "no answer produced"}
-        judge_envelope: dict = {}
-        judge_wall = 0.0
-        judge_err = ""
-    else:
-        judge_prompt = (
-            PROMPT_JUDGE_STAGE3.read_text(encoding="utf-8")
-            .replace("{{question}}", question)
-            .replace("{{answer}}", answer_struct.get("answer") or "")
-            .replace(
-                "{{cited}}",
-                "\n".join(f"- {c}" for c in (answer_struct.get("cited") or [])),
-            )
-        )
-        (scen_dir / "judge_stage3_prompt.md").write_text(
-            judge_prompt, encoding="utf-8"
-        )
-        judge, judge_envelope, judge_wall, judge_err = invoke_claude_stream(
-            prompt=judge_prompt,
-            schema=SCHEMA_JUDGE_STAGE3,
-            max_turns=2,
-            model=model,
-            allowed_tools=[],
-            timeout_s=180,
-            log_path=scen_dir / "judge_stage3.stream-json",
-        )
-
-    judge_record = {
-        "level": (judge or {}).get("level") if judge else None,
-        "reason": (judge or {}).get("reason") if judge else None,
-        "wall_s": judge_wall,
-        "total_cost_usd": judge_envelope.get("total_cost_usd"),
-        "error": judge_err or None,
-    }
-    (scen_dir / "judge_stage3_result.json").write_text(
-        json.dumps(judge_record, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    total_cost = sum(
-        v or 0.0
-        for v in [
-            ai1_envelope.get("total_cost_usd"),
-            answer_envelope.get("total_cost_usd"),
-            judge_envelope.get("total_cost_usd"),
-        ]
-    )
-    total_wall = ai1_wall + answer_wall + judge_wall
-
-    return {
-        "id": scenario["id"],
-        "stage": 3,
-        "variant": "ids",
-        "model": model,
-        "question": question,
-        "ai1": {
-            "raw_selections": ai1_raw_selections,
-            "resolved_count": len(resolved),
-            "unresolved_count": len(unresolved),
-            "cost_usd": ai1_envelope.get("total_cost_usd"),
-            "wall_s": ai1_wall,
-            "error": ai1_err or None,
-        },
-        "select": {  # kept for summary compatibility
-            "selections": resolved,
-            "cost_usd": 0.0,
-            "wall_s": 0.0,
-            "error": None,
-        },
-        "filter": {  # kept for summary compatibility
-            "fallback_used": "ids-direct",
-            "candidate_count": len(resolved),
-        },
-        "sections_read": {
-            "ok": sum(1 for r in section_records if r.get("status") == "ok"),
-            "total": len(section_records),
-        },
-        "answer": {
-            "cited": answer_struct.get("cited"),
-            "cost_usd": answer_envelope.get("total_cost_usd"),
-            "wall_s": answer_wall,
-            "error": answer_err or None,
-        },
-        "judge": judge_record,
-        "total_cost_usd": total_cost,
-        "wall_s": total_wall,
-    }
-
-
-def run_stage3(
-    scenario: dict, model: str, scen_dir: Path, index_rows: list[IndexRow]
-) -> dict:
-    """Stage 1 facet + filter + AI-2 section select + read + AI-3 answer + judge."""
-    # Reuse Stage 2 pipeline up to filter.
-    stage1 = run_stage1_facet(scenario, model, scen_dir)
-    if stage1.get("error"):
-        return {**stage1, "stage": 3}
-
-    facets = stage1.get("extracted_facets") or {}
-    want_type = facets.get("type", []) or []
-    want_cat = facets.get("category", []) or []
-    coverage = facets.get("coverage")
-
-    if coverage == "out_of_scope" and not want_type and not want_cat:
-        outcome_rows: list[IndexRow] = []
-        fallback_used = "out_of_scope-shortcircuit"
-    else:
-        outcome = filter_with_fallback(index_rows, want_type, want_cat)
-        outcome_rows = outcome.rows
-        fallback_used = outcome.fallback_used
-
-    filter_record = {
-        "want_type": want_type,
-        "want_category": want_cat,
-        "coverage": coverage,
-        "fallback_used": fallback_used,
-        "candidate_count": len(outcome_rows),
-    }
-    (scen_dir / "filter_result.json").write_text(
-        json.dumps(filter_record, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    question = scenario["expected_question"]
-
-    # --- AI-2: section selection ---
-    if not outcome_rows:
-        selections: list[str] = []
-        select_envelope: dict = {}
-        select_wall = 0.0
-        select_err = "no candidates"
-    else:
-        candidate_block = format_candidate_list_with_sections(outcome_rows)
-        select_prompt = (
-            PROMPT_STAGE3_SELECT.read_text(encoding="utf-8")
-            .replace("{{question}}", question)
-            .replace("{{candidate_list}}", candidate_block)
-        )
-        (scen_dir / "ai2_select_prompt.md").write_text(select_prompt, encoding="utf-8")
-        select_out, select_envelope, select_wall, select_err = invoke_claude_stream(
-            prompt=select_prompt,
-            schema=SCHEMA_STAGE3_SELECT,
-            max_turns=2,
-            model=model,
-            allowed_tools=[],
-            timeout_s=300,
-            log_path=scen_dir / "ai2_section_select.stream-json",
-        )
-        selections = (select_out or {}).get("selections", []) or []
-    (scen_dir / "ai2_result.json").write_text(
-        json.dumps(
-            {
-                "selections": selections,
-                "wall_s": select_wall,
-                "total_cost_usd": select_envelope.get("total_cost_usd"),
-                "error": select_err or None,
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-
-    # --- Read sections ---
-    sections_text, section_records = read_selected_sections(selections)
-    (scen_dir / "sections_read.json").write_text(
-        json.dumps(section_records, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    # --- AI-3: answer ---
-    if not sections_text:
-        answer_struct: dict = {
-            "answer": "（参照可能なセクションがありません。）",
-            "cited": [],
-        }
-        answer_envelope: dict = {}
-        answer_wall = 0.0
-        answer_err = "no sections"
-    else:
-        answer_prompt = (
-            PROMPT_STAGE3_ANSWER.read_text(encoding="utf-8")
-            .replace("{{question}}", question)
-            .replace("{{sections_text}}", sections_text)
-        )
-        (scen_dir / "ai3_answer_prompt.md").write_text(answer_prompt, encoding="utf-8")
-        answer_struct, answer_envelope, answer_wall, answer_err = invoke_claude_stream(
-            prompt=answer_prompt,
-            schema=SCHEMA_STAGE3_ANSWER,
-            max_turns=2,
-            model=model,
-            allowed_tools=[],
-            timeout_s=300,
-            log_path=scen_dir / "ai3_answer.stream-json",
-        )
-        answer_struct = answer_struct or {"answer": "", "cited": []}
-    (scen_dir / "final_answer.md").write_text(
-        answer_struct.get("answer") or "", encoding="utf-8"
-    )
-    (scen_dir / "ai3_result.json").write_text(
-        json.dumps(
-            {
-                "answer": answer_struct.get("answer"),
-                "cited": answer_struct.get("cited"),
-                "wall_s": answer_wall,
-                "total_cost_usd": answer_envelope.get("total_cost_usd"),
-                "error": answer_err or None,
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-
-    # --- Judge ---
-    if not answer_struct.get("answer"):
-        judge: dict | None = {"level": 0, "reason": "no answer produced"}
-        judge_envelope: dict = {}
-        judge_wall = 0.0
-        judge_err = ""
-    else:
-        judge_prompt = (
-            PROMPT_JUDGE_STAGE3.read_text(encoding="utf-8")
-            .replace("{{question}}", question)
-            .replace("{{answer}}", answer_struct.get("answer") or "")
-            .replace(
-                "{{cited}}",
-                "\n".join(f"- {c}" for c in (answer_struct.get("cited") or [])),
-            )
-        )
-        (scen_dir / "judge_stage3_prompt.md").write_text(
-            judge_prompt, encoding="utf-8"
-        )
-        judge, judge_envelope, judge_wall, judge_err = invoke_claude_stream(
-            prompt=judge_prompt,
-            schema=SCHEMA_JUDGE_STAGE3,
-            max_turns=2,
-            model=model,
-            allowed_tools=[],
-            timeout_s=180,
-            log_path=scen_dir / "judge_stage3.stream-json",
-        )
-
-    judge_record = {
-        "level": (judge or {}).get("level") if judge else None,
-        "reason": (judge or {}).get("reason") if judge else None,
-        "wall_s": judge_wall,
-        "total_cost_usd": judge_envelope.get("total_cost_usd"),
-        "error": judge_err or None,
-    }
-    (scen_dir / "judge_stage3_result.json").write_text(
-        json.dumps(judge_record, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    total_cost = sum(
-        v or 0.0
-        for v in [
-            stage1.get("total_cost_usd"),
-            select_envelope.get("total_cost_usd"),
-            answer_envelope.get("total_cost_usd"),
-            judge_envelope.get("total_cost_usd"),
-        ]
-    )
-    total_wall = (stage1.get("wall_s") or 0.0) + select_wall + answer_wall + judge_wall
-
-    return {
-        "id": scenario["id"],
-        "stage": 3,
-        "model": model,
-        "question": question,
-        "stage1": {
-            "extracted_facets": stage1.get("extracted_facets"),
-            "cost_usd": stage1.get("total_cost_usd"),
-            "wall_s": stage1.get("wall_s"),
-        },
-        "filter": {
-            "fallback_used": fallback_used,
-            "candidate_count": len(outcome_rows),
-        },
-        "select": {
-            "selections": selections,
-            "cost_usd": select_envelope.get("total_cost_usd"),
-            "wall_s": select_wall,
-            "error": select_err or None,
-        },
-        "sections_read": {
-            "ok": sum(1 for r in section_records if r.get("status") == "ok"),
-            "total": len(section_records),
-        },
-        "answer": {
-            "cited": answer_struct.get("cited"),
-            "cost_usd": answer_envelope.get("total_cost_usd"),
-            "wall_s": answer_wall,
-            "error": answer_err or None,
-        },
-        "judge": judge_record,
-        "total_cost_usd": total_cost,
-        "wall_s": total_wall,
-    }
-
-
-def summarize(results: list[dict]) -> dict:
-    def stat(values: list) -> dict:
-        vs = [v for v in values if v is not None]
-        if not vs:
-            return {"count": 0}
-        vs_sorted = sorted(vs)
-        n = len(vs_sorted)
-        median = (
-            vs_sorted[n // 2]
-            if n % 2 == 1
-            else (vs_sorted[n // 2 - 1] + vs_sorted[n // 2]) / 2
-        )
-        return {
-            "count": n,
-            "mean": sum(vs) / n,
-            "median": median,
-            "min": min(vs),
-            "max": max(vs),
-        }
-
-    ok = [r for r in results if not r.get("error")]
-    summary = {
-        "total": len(results),
-        "errors": len(results) - len(ok),
-        "wall_s": stat([r.get("wall_s") for r in ok]),
-        "cost_usd": stat([r.get("total_cost_usd") for r in ok]),
-        "turns": stat([r.get("num_turns") for r in ok]),
-    }
-    with_score = [r for r in ok if "score" in r]
-    if with_score:
-        summary["jaccard_type"] = stat(
-            [r["score"]["jaccard_type"] for r in with_score]
-        )
-        summary["jaccard_category"] = stat(
-            [r["score"]["jaccard_category"] for r in with_score]
-        )
-        summary["coverage_match_rate"] = sum(
-            1 for r in with_score if r["score"]["coverage_match"]
-        ) / len(with_score)
-        summary["overall"] = stat([r["score"]["overall"] for r in with_score])
-    with_judge = [r for r in ok if r.get("judge", {}).get("level") is not None]
-    if with_judge:
-        levels = [r["judge"]["level"] for r in with_judge]
-        summary["judge_level"] = stat(levels)
-        summary["judge_level_distribution"] = {
-            str(lv): levels.count(lv) for lv in [0, 1, 2, 3]
-        }
-        summary["candidate_count"] = stat(
-            [r["filter"]["candidate_count"] for r in with_judge if r.get("filter")]
-        )
-    return summary
-
-
-def write_markdown_summary(
-    stage: int, summary: dict, results: list[dict], out_path: Path
+def run_variant(
+    *, variant: Variant, scenarios: list[Scenario], model: str, out_dir: Path
 ) -> None:
-    lines = [f"# Stage {stage} — {summary.get('total')} scenarios", ""]
-    if "overall" in summary:
-        lines += [
-            f"- mean Jaccard(type):     {summary['jaccard_type']['mean']:.3f}",
-            f"- mean Jaccard(category): {summary['jaccard_category']['mean']:.3f}",
-            f"- coverage match rate:    {summary['coverage_match_rate']:.2%}",
-            f"- mean overall score:     {summary['overall']['mean']:.3f}",
-        ]
-    if "judge_level" in summary:
-        lines += [
-            f"- mean judge level:       {summary['judge_level']['mean']:.2f}",
-            f"- judge distribution:     {summary['judge_level_distribution']}",
-            f"- mean candidate count:   {summary['candidate_count']['mean']:.1f}",
-        ]
-    lines += [
-        f"- mean cost (USD):        {summary['cost_usd'].get('mean', 0):.4f}",
-        f"- mean wall (s):          {summary['wall_s'].get('mean', 0):.1f}",
-        "",
-    ]
-    if stage == 3:
-        lines += [
-            "| id | facets | filter | picks | judge | reason | cost | wall |",
-            "|----|--------|--------|-------|-------|--------|------|------|",
-        ]
-        for r in results:
-            if r.get("error"):
-                lines.append(
-                    f"| {r['id']} | ERROR | - | - | - | {r['error']} | - | "
-                    f"{r.get('wall_s', 0):.1f} |"
-                )
-                continue
-            s1 = r.get("stage1", {})
-            f_ = r.get("filter", {}) or {}
-            sel_ = r.get("select", {}) or {}
-            j_ = r.get("judge", {}) or {}
-            facets = s1.get("extracted_facets") or {}
-            reason = (j_.get("reason") or "").replace("|", "\\|").replace("\n", " ")
-            if len(reason) > 80:
-                reason = reason[:77] + "..."
-            lines.append(
-                "| {id} | {t}/{c} | {n} ({fb}) | {p} | {lv} | {rs} | "
-                "{cost:.4f} | {w:.1f} |".format(
-                    id=r["id"],
-                    t=",".join(facets.get("type", []) or ["∅"]),
-                    c=",".join(facets.get("category", []) or ["∅"]),
-                    n=f_.get("candidate_count", 0),
-                    fb=f_.get("fallback_used", "?"),
-                    p=len(sel_.get("selections") or []),
-                    lv=j_.get("level"),
-                    rs=reason,
-                    cost=r.get("total_cost_usd") or 0.0,
-                    w=r.get("wall_s") or 0.0,
-                )
-            )
-        out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        return
-    if stage == 2:
-        lines += [
-            "| id | facets (type / cat) | filter | judge | reason | cost | wall |",
-            "|----|----------------------|--------|-------|--------|------|------|",
-        ]
-        for r in results:
-            if r.get("error"):
-                lines.append(
-                    f"| {r['id']} | ERROR | - | - | {r['error']} | - | "
-                    f"{r.get('wall_s', 0):.1f} |"
-                )
-                continue
-            s1 = r.get("stage1", {})
-            f_ = r.get("filter", {}) or {}
-            j_ = r.get("judge", {}) or {}
-            facets = s1.get("extracted_facets") or {}
-            reason = (j_.get("reason") or "").replace("|", "\\|").replace("\n", " ")
-            if len(reason) > 80:
-                reason = reason[:77] + "..."
-            lines.append(
-                "| {id} | {t} / {c} | {n} ({fb}) | {lv} | {rs} | {cost:.4f} | {w:.1f} |".format(
-                    id=r["id"],
-                    t=",".join(facets.get("type", []) or ["∅"]),
-                    c=",".join(facets.get("category", []) or ["∅"]),
-                    n=f_.get("candidate_count", 0),
-                    fb=f_.get("fallback_used", "?"),
-                    lv=j_.get("level"),
-                    rs=reason,
-                    cost=r.get("total_cost_usd") or 0.0,
-                    w=r.get("wall_s") or 0.0,
-                )
-            )
-        out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        return
-    lines += [
-        "| id | type (got → want) | cat (got → want) | cov | J(t) | J(c) | cost | wall |",
-        "|----|-------------------|------------------|-----|------|------|------|------|",
-    ]
-    for r in results:
-        if r.get("error"):
-            lines.append(
-                f"| {r['id']} | ERROR | - | - | - | - | - | {r.get('wall_s', 0):.1f} |"
-            )
-            continue
-        s = r.get("score", {})
-        got = s.get("extracted", {})
-        want = s.get("expected", {})
-        lines.append(
-            "| {id} | {got_t} → {want_t} | {got_c} → {want_c} | "
-            "{got_cov}{cov_flag}→{want_cov} | {jt:.2f} | {jc:.2f} | "
-            "{cost:.4f} | {wall:.1f} |".format(
-                id=r["id"],
-                got_t=",".join(got.get("type", []) or ["∅"]),
-                want_t=",".join(want.get("type", []) or ["∅"]),
-                got_c=",".join(got.get("category", []) or ["∅"]),
-                want_c=",".join(want.get("category", []) or ["∅"]),
-                got_cov=got.get("coverage") or "∅",
-                want_cov=want.get("coverage") or "∅",
-                cov_flag=" ✅ " if s.get("coverage_match") else " ❌ ",
-                jt=s.get("jaccard_type", 0.0),
-                jc=s.get("jaccard_category", 0.0),
-                cost=r.get("total_cost_usd") or 0.0,
-                wall=r.get("wall_s") or 0.0,
-            )
+    search_fn = _dispatch(variant)
+    ids_map = search_ids.load_id_to_path() if variant == "ids" else {}
+    print(f"variant={variant} model={model} scenarios={len(scenarios)} out={out_dir}",
+          file=sys.stderr)
+    summary_rows: list[dict] = []
+    for i, sc in enumerate(scenarios, 1):
+        scen = io.scen_dir(out_dir, sc.id)
+        print(f"[{i}/{len(scenarios)}] {sc.id} ...", file=sys.stderr, flush=True)
+        search: SearchResult = search_fn(
+            question=sc.question, model=model, scen_dir=scen, **({"id_to_path": ids_map} if variant == "ids" else {}),
         )
-    out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        io.write_search(scen, search)
+        jr = judge.run(scenario=sc, search=search, model=model, scen_dir=scen)
+        io.write_judge(scen, jr)
+        _print_row(sc.id, search, jr)
+        summary_rows.append(_summary_row(sc.id, search, jr))
+    _write_run_meta(out_dir, variant=variant, model=model, scenarios=[s.id for s in scenarios])
+    _write_summary(out_dir, summary_rows)
 
 
-def run_judge_only(args) -> int:
-    """Re-score an existing results directory using the v2 fact-coverage judge.
-
-    Expects:
-      args.results_dir — path like tools/benchmark/.results/{ts}-stage3-.../
-      args.scenarios_file — the original scenarios JSON used for that run
-    """
-    results_dir = Path(args.results_dir)
-    if not results_dir.is_dir():
-        print(f"results dir not found: {results_dir}", file=sys.stderr)
-        return 2
-
-    scenarios = load_scenarios(Path(args.scenarios_file))
-    by_id = {s["id"]: s for s in scenarios}
-
-    if args.scenario:
-        ids = [args.scenario]
-    elif args.limit:
-        ids = [s["id"] for s in scenarios[: args.limit]]
-    else:
-        ids = [s["id"] for s in scenarios]
-
-    records: list[dict] = []
-    for i, sid in enumerate(ids, 1):
-        sc = by_id.get(sid)
-        if not sc:
-            print(f"  [{i}/{len(ids)}] {sid} — SKIP (not in scenarios file)", file=sys.stderr)
+def rejudge(*, results_dir: Path, model: str, scenarios: list[Scenario]) -> None:
+    print(f"rejudge model={model} results_dir={results_dir}", file=sys.stderr)
+    summary_rows: list[dict] = []
+    for i, sc in enumerate(scenarios, 1):
+        scen = results_dir / sc.id
+        if not scen.is_dir():
+            print(f"[{i}/{len(scenarios)}] {sc.id} — SKIP (no dir)", file=sys.stderr)
             continue
-        scen_dir = results_dir / sid
-        if not scen_dir.is_dir():
-            print(f"  [{i}/{len(ids)}] {sid} — SKIP (no dir in results)", file=sys.stderr)
+        try:
+            search = io.read_search(scen)
+        except FileNotFoundError:
+            print(f"[{i}/{len(scenarios)}] {sc.id} — SKIP (no search.json)", file=sys.stderr)
             continue
-        print(f"  [{i}/{len(ids)}] {sid} ...", file=sys.stderr, flush=True)
-        rec = run_judge_v2_for_scenario(sc, scen_dir, args.model)
-        if rec.get("error"):
-            print(f"    -> ERROR: {rec['error']}", file=sys.stderr)
-        else:
-            v = rec.get("verdict") or {}
-            print(
-                f"    -> level={v.get('level')} cost=${rec.get('total_cost_usd') or 0:.4f} "
-                f"wall={rec.get('wall_s') or 0:.1f}s "
-                f"ref_sources={rec['ref_sources_loaded']}/{rec['ref_sources_total']}",
-                file=sys.stderr,
-            )
-        records.append(rec)
+        print(f"[{i}/{len(scenarios)}] {sc.id} ...", file=sys.stderr, flush=True)
+        # Keep stream/ subdir isolated per rejudge call.
+        (scen / "stream").mkdir(exist_ok=True)
+        jr = judge.run(scenario=sc, search=search, model=model, scen_dir=scen)
+        io.write_judge(scen, jr)
+        _print_row(sc.id, search, jr)
+        summary_rows.append(_summary_row(sc.id, search, jr))
+    _write_summary(results_dir, summary_rows)
 
-    # Aggregate.
-    ok = [r for r in records if not r.get("error") and r.get("verdict")]
-    levels = [r["verdict"].get("level") for r in ok]
-    summary = {
-        "total": len(records),
-        "errors": len(records) - len(ok),
-        "mean_level": (sum(l for l in levels if l is not None) / len(levels))
-        if levels else None,
-        "level_distribution": {str(lv): levels.count(lv) for lv in [0, 1, 2, 3]},
-        "total_cost_usd": sum(r.get("total_cost_usd") or 0 for r in records),
-        "mean_wall_s": (sum(r.get("wall_s") or 0 for r in records) / len(records))
-        if records else None,
+
+# --- internals ----------------------------------------------------------------
+
+
+def _dispatch(variant: Variant) -> Callable[..., SearchResult]:
+    if variant == "ids":
+        return search_ids.run
+    if variant == "current":
+        return search_current.run
+    raise ValueError(f"unknown variant: {variant}")
+
+
+def _print_row(sid: str, search: SearchResult, jr: JudgeResult) -> None:
+    level = jr.verdict.level if jr.verdict else None
+    total_cost = search.cost_usd + jr.cost_usd
+    total_wall = search.duration_s + jr.duration_s
+    print(
+        f"  -> level={level} cited={len(search.cited)} "
+        f"cost=${total_cost:.4f} wall={total_wall:.1f}s",
+        file=sys.stderr,
+    )
+
+
+def _summary_row(sid: str, search: SearchResult, jr: JudgeResult) -> dict:
+    return {
+        "id": sid,
+        "level": jr.verdict.level if jr.verdict else None,
+        "cited_count": len(search.cited),
+        "search_cost_usd": round(search.cost_usd, 6),
+        "judge_cost_usd": round(jr.cost_usd, 6),
+        "search_s": round(search.duration_s, 2),
+        "judge_s": round(jr.duration_s, 2),
+        "error": search.error or jr.error or "",
     }
-    summary_path = results_dir / "judge_v2_summary.json"
-    summary_path.write_text(
+
+
+def _write_run_meta(out_dir: Path, *, variant: str, model: str, scenarios: list[str]) -> None:
+    (out_dir / "run.json").write_text(
+        json.dumps({
+            "variant": variant,
+            "model": model,
+            "started_at": datetime.now().isoformat(timespec="seconds"),
+            "scenarios": scenarios,
+        }, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _write_summary(out_dir: Path, rows: list[dict]) -> None:
+    csv_path = out_dir / "summary.csv"
+    fields = ["id", "level", "cited_count",
+              "search_cost_usd", "judge_cost_usd", "search_s", "judge_s", "error"]
+    with csv_path.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: r.get(k, "") for k in fields})
+
+    levels = [r["level"] for r in rows if r.get("level") is not None]
+    summary = {
+        "total": len(rows),
+        "scored": len(levels),
+        "errors": sum(1 for r in rows if r.get("error")),
+        "mean_level": sum(levels) / len(levels) if levels else None,
+        "level_distribution": {str(lv): levels.count(lv) for lv in [0, 1, 2, 3]},
+        "total_cost_usd": round(sum(
+            (r.get("search_cost_usd") or 0) + (r.get("judge_cost_usd") or 0)
+            for r in rows
+        ), 4),
+    }
+    (out_dir / "summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-
-    lines = [
-        "# Judge v2 Re-scoring",
-        "",
-        f"- scenarios scored: {summary['total']}",
-        f"- mean level: {summary['mean_level']:.2f}"
-        if summary["mean_level"] is not None else "- mean level: n/a",
-        f"- distribution: {summary['level_distribution']}",
-        f"- total cost (USD): {summary['total_cost_usd']:.4f}",
-        "",
-        "| id | level | over_reach | facts covered / total | reasoning (excerpt) |",
-        "|----|-------|------------|-----------------------|---------------------|",
-    ]
-    for r in records:
-        v = r.get("verdict") or {}
-        facts = v.get("required_facts") or []
-        covered = sum(1 for f in facts if f.get("status") == "COVERED")
-        reasoning = (v.get("reasoning") or "").replace("|", "\\|").replace("\n", " ")
-        if len(reasoning) > 100:
-            reasoning = reasoning[:97] + "..."
-        lines.append(
-            f"| {r['id']} | {v.get('level')} | {len(v.get('over_reach') or [])} | "
-            f"{covered}/{len(facts)} | {reasoning} |"
-        )
-    (results_dir / "judge_v2_summary.md").write_text(
-        "\n".join(lines) + "\n", encoding="utf-8"
-    )
-    print(f"done. summary: {summary_path}", file=sys.stderr)
-    return 0
+    print(f"summary: mean_level={summary['mean_level']} "
+          f"dist={summary['level_distribution']} cost=${summary['total_cost_usd']}",
+          file=sys.stderr)
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", type=int, choices=[1, 2, 3], required=False)
-    ap.add_argument(
-        "--judge-only",
-        action="store_true",
-        help="Re-score an existing results dir using judge_stage3_v2",
-    )
-    ap.add_argument(
-        "--results-dir",
-        help="(judge-only) path to the .results/{ts}-... dir to re-score",
-    )
-    ap_stage_old = ap  # noqa
-    ap.add_argument("--scenario", help="single scenario id")
-    ap.add_argument("--limit", type=int, help="run only first N scenarios")
-    ap.add_argument(
-        "--scenarios-file",
-        default=str(SCENARIOS_PATH_DEFAULT),
-        help=f"scenarios JSON path (default: {SCENARIOS_PATH_DEFAULT})",
-    )
+    ap.add_argument("--variant", choices=["ids", "current"],
+                    help="search flow variant (required unless --rejudge)")
+    ap.add_argument("--rejudge", action="store_true",
+                    help="re-score an existing results dir using the current judge prompt")
+    ap.add_argument("--results-dir",
+                    help="(rejudge) path to .results/{ts}-... to re-score")
+    ap.add_argument("--scenario", help="run only this scenario id")
+    ap.add_argument("--limit", type=int, help="run only the first N scenarios")
+    ap.add_argument("--scenarios-file", default=str(io.SCENARIOS_PATH),
+                    help=f"scenarios JSON path (default: {io.SCENARIOS_PATH})")
     ap.add_argument("--model", default="sonnet",
                     help="claude model id or alias (sonnet, haiku, opus, or exact id)")
-    ap.add_argument(
-        "--variant",
-        choices=["facet", "ids", "current"],
-        default="facet",
-        help="stage-3 flow variant: facet (type/category + AI-2 select), "
-             "ids (direct file_id|sid selection from LLM index), or "
-             "current (production skill: BM25 + AI section-judgement)",
-    )
-    ap.add_argument("--out", help="output directory (default: .results/{ts}-stage{N}-{model})")
+    ap.add_argument("--out", help="output directory (default: .results/{ts}-{variant}-{model})")
     args = ap.parse_args()
 
-    if args.judge_only:
-        if not args.results_dir:
-            print("--results-dir is required with --judge-only", file=sys.stderr)
-            return 2
-        return run_judge_only(args)
-
-    if args.stage is None:
-        print("--stage is required (unless --judge-only)", file=sys.stderr)
-        return 2
-
-    scenarios = load_scenarios(Path(args.scenarios_file))
+    scenarios = io.load_scenarios(Path(args.scenarios_file))
     if args.scenario:
-        scenarios = [s for s in scenarios if s["id"] == args.scenario]
+        scenarios = [s for s in scenarios if s.id == args.scenario]
         if not scenarios:
             print(f"scenario not found: {args.scenario}", file=sys.stderr)
             return 2
     if args.limit:
         scenarios = scenarios[: args.limit]
 
-    ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-    model_slug = args.model.replace("/", "_").replace(":", "_")
-    variant_slug = f"-{args.variant}" if args.stage == 3 else ""
-    default_out = BENCH_DIR / ".results" / f"{ts}-stage{args.stage}{variant_slug}-{model_slug}"
-    out_dir = Path(args.out) if args.out else default_out
-    out_dir.mkdir(parents=True, exist_ok=True)
-    results_path = out_dir / "results.jsonl"
-    summary_path = out_dir / "summary.json"
-    summary_md_path = out_dir / "summary.md"
+    if args.rejudge:
+        if not args.results_dir:
+            print("--results-dir is required with --rejudge", file=sys.stderr)
+            return 2
+        rd = Path(args.results_dir)
+        if not rd.is_dir():
+            print(f"results dir not found: {rd}", file=sys.stderr)
+            return 2
+        rejudge(results_dir=rd, model=args.model, scenarios=scenarios)
+        return 0
 
-    print(
-        f"stage={args.stage} model={args.model} scenarios={len(scenarios)} out={out_dir}",
-        file=sys.stderr,
-    )
+    if not args.variant:
+        print("--variant is required (ids|current) unless --rejudge", file=sys.stderr)
+        return 2
 
-    index_rows: list[IndexRow] = []
-    id_to_path: dict[str, dict] = {}
-    needs_facet_index = (
-        args.stage == 2
-        or (args.stage == 3 and args.variant == "facet")
-    )
-    if needs_facet_index:
-        index_rows = load_index(INDEX_TOON_PATH)
-    if args.stage == 3 and args.variant == "ids":
-        id_to_path = json.loads(INDEX_SCRIPT_PATH.read_text(encoding="utf-8"))
-
-    results: list[dict] = []
-    with results_path.open("w", encoding="utf-8") as f:
-        for i, sc in enumerate(scenarios, 1):
-            print(f"[{i}/{len(scenarios)}] {sc['id']} ...", file=sys.stderr, flush=True)
-            scen_dir = out_dir / sc["id"]
-            scen_dir.mkdir(parents=True, exist_ok=True)
-            if args.stage == 1:
-                r = run_stage1_facet(sc, args.model, scen_dir)
-            elif args.stage == 2:
-                r = run_stage2(sc, args.model, scen_dir, index_rows)
-            elif args.variant == "ids":
-                r = run_stage3_ids(sc, args.model, scen_dir, id_to_path)
-            elif args.variant == "current":
-                r = run_stage3_current(sc, args.model, scen_dir)
-            else:
-                r = run_stage3(sc, args.model, scen_dir, index_rows)
-            results.append(r)
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
-            f.flush()
-            if r.get("error"):
-                print(f"  -> ERROR: {r['error']}", file=sys.stderr)
-            elif args.stage == 1:
-                s = r.get("score", {})
-                print(
-                    f"  -> turns={r.get('num_turns')} cost=${r.get('total_cost_usd')} "
-                    f"wall={r.get('wall_s'):.1f}s "
-                    f"J(type)={s.get('jaccard_type', 0):.2f} "
-                    f"J(cat)={s.get('jaccard_category', 0):.2f} "
-                    f"cov={'✓' if s.get('coverage_match') else '✗'}",
-                    file=sys.stderr,
-                )
-            else:
-                f_ = r.get("filter", {}) or {}
-                j_ = r.get("judge", {}) or {}
-                print(
-                    f"  -> candidates={f_.get('candidate_count')} "
-                    f"fallback={f_.get('fallback_used')} "
-                    f"judge={j_.get('level')} "
-                    f"cost=${r.get('total_cost_usd'):.4f} "
-                    f"wall={r.get('wall_s'):.1f}s",
-                    file=sys.stderr,
-                )
-
-    summary = summarize(results)
-    summary_path.write_text(
-        json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    write_markdown_summary(args.stage, summary, results, summary_md_path)
-    print(f"done. results: {results_path}", file=sys.stderr)
-    print(f"       summary: {summary_path}", file=sys.stderr)
-    print(f"       summary: {summary_md_path}", file=sys.stderr)
+    out_dir = Path(args.out) if args.out else io.new_results_dir(args.variant, args.model)
+    run_variant(variant=args.variant, scenarios=scenarios, model=args.model, out_dir=out_dir)
     return 0
 
 

@@ -1,0 +1,19 @@
+{
+  "variant": "current",
+  "answer": "**結論**: NablarchのWeb画面でCSPを有効にするには、`SecureHandler` に `ContentSecurityPolicyHeader` コンポーネントを追加する。Nablarchカスタムタグ（JSP）を使用している場合はnonce方式が推奨される。\n\n---\n\n**根拠**:\n\n**① SecureHandler の概要**\n`nablarch.fw.web.handler.SecureHandler` はデフォルトで X-Frame-Options / X-XSS-Protection などのセキュリティヘッダを付与するハンドラ。CSP は標準では無効で、`ContentSecurityPolicyHeader` を追加設定することで有効になる。（`component/handlers/handlers-secure_handler.json:s1`）\n\n**② 固定ポリシーで CSP を有効にする（最小構成）**\n`secureResponseHeaderList` に `ContentSecurityPolicyHeader` を追加し `policy` プロパティを設定する。（`component/handlers/handlers-secure_handler.json:s7`）\n\n```xml\n<component class=\"nablarch.fw.web.handler.SecureHandler\">\n  <property name=\"secureResponseHeaderList\">\n    <list>\n      <!-- ... 既存ヘッダ ... -->\n      <component class=\"nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader\">\n        <property name=\"policy\" value=\"default-src 'self'\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n\nこれにより `Content-Security-Policy: default-src 'self'` がレスポンスヘッダに付与される。\n\n**③ Nablarchカスタムタグ（JSP）使用時はnonce方式が必要**\nカスタムタグは一部で JavaScript をインライン出力するため、固定ポリシーだけでは `unsafe-inline` を許可しなければならなくなる。nonce 方式を使うと `unsafe-inline` 不要になる。（`component/handlers/handlers-secure_handler.json:s6`）\n\nnonce を使う設定：`generateCspNonce` を `true` にし、`policy` にプレースホルダー `$cspNonceSource$` を含める。（`component/handlers/handlers-secure_handler.json:s8`）\n\n```xml\n<component class=\"nablarch.fw.web.handler.SecureHandler\">\n  <property name=\"generateCspNonce\" value=\"true\" />\n  <property name=\"secureResponseHeaderList\">\n    <list>\n      <!-- ... 既存ヘッダ ... -->\n      <component class=\"nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader\">\n        <property name=\"policy\" value=\"default-src 'self' '$cspNonceSource$'\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n`$cspNonceSource$` はリクエストごとに生成された nonce 値（例: `nonce-DhcnhD3khTMePgXwdayK9BsMqXjhguVV`）に自動置換される。nonce 有効化後はカスタムタグが生成する script 要素に nonce 属性が自動付与される。（`component/libraries/libraries-tag.json:s9`）\n\n**④ インラインコードへの手動 nonce 設定**\n既存のインラインスタイル等に nonce を付けたい場合は `<n:cspNonce />` カスタムタグを使用する。（`component/libraries/libraries-tag.json:s10`）\n\n```jsp\n<style nonce=\"<n:cspNonce />\">...</style>\n```\n\n**⑤ まず report-only モードで試す**\n本番適用前に違反を検出だけしたい場合は `reportOnly` を `true` に設定する。これにより `Content-Security-Policy-Report-Only` ヘッダが送られる。（`component/handlers/handlers-secure_handler.json:s9`）\n\n---\n\n**注意点**:\n- nonce はリクエストごとに変わるため、JSP から生成される HTML は毎回異なる内容になる（キャッシュとの相性に注意）。（`component/libraries/libraries-tag.json:s9`）\n- `Content-Security-Policy` をレスポンスヘッダで設定できない環境では meta 要素で代替可能。その場合 `<n:cspNonce />` の `sourceFormat` 属性を `true` にすると `nonce-xxxxx` フォーマットで出力される。（`component/libraries/libraries-tag.json:s10`）\n\n参照: component/handlers/handlers-secure_handler.json:s1, component/handlers/handlers-secure_handler.json:s6, component/handlers/handlers-secure_handler.json:s7, component/handlers/handlers-secure_handler.json:s8, component/handlers/handlers-secure_handler.json:s9, component/libraries/libraries-tag.json:s9, component/libraries/libraries-tag.json:s10",
+  "cited": [
+    "component/handlers/handlers-secure_handler.json:s1",
+    "component/handlers/handlers-secure_handler.json:s6",
+    "component/handlers/handlers-secure_handler.json:s7",
+    "component/handlers/handlers-secure_handler.json:s8",
+    "component/handlers/handlers-secure_handler.json:s9",
+    "component/libraries/libraries-tag.json:s9",
+    "component/libraries/libraries-tag.json:s10"
+  ],
+  "cost_usd": 0.20923885000000003,
+  "duration_s": 44.46715331077576,
+  "steps": {
+    "turns": 6
+  },
+  "error": null
+}

@@ -1,0 +1,15 @@
+{
+  "variant": "current",
+  "answer": "**結論**: Nablarch のコード管理機能（`nablarch-common-code`）とバリデーションアノテーション `@CodeValue` を組み合わせることで、マスタ上で定義された有効なコード値かどうかを入力チェックと連携できる。\n\n**根拠**:\n\n1. **コード管理機能の仕組み** (`component/libraries/libraries-code.json:s1`)\n   - コードパターンテーブルとコード名称テーブルの2テーブルでコード情報を管理する。\n   - テーブルの `VALUE` 列に `male` / `female` などのコード値を、`NAME` 列に「男性」「女性」などの名称を登録する。\n   - アプリ起動時に `BasicCodeLoader` → `BasicStaticDataCache` → `BasicCodeManager` の構成でDBからキャッシュに読み込む（`codeManager` というコンポーネント名で登録必須）。\n\n2. **@CodeValue アノテーションによる入力チェック** (`component/libraries/libraries-code.json:s6`)\n   - Bean Validation 用: `nablarch.common.code.validator.ee.CodeValue`\n   - Nablarch Validation 用: `nablarch.common.code.validator.CodeValue`\n   - フォームのフィールドに `@CodeValue(codeId = \"GENDER\")` を付けるだけで、コード管理テーブルに存在する有効な値かをバリデーション時に自動チェックする。\n   ```java\n   // Bean Validation の例\n   @CodeValue(codeId = \"GENDER\")\n   private String gender;\n   ```\n\n3. **パターンを使った有効値の絞り込み** (`component/libraries/libraries-code.json:s6`, `component/libraries/libraries-code.json:s2`)\n   - コードパターンテーブルの `PATTERN` 列（0/1 フラグ）を使うと、機能ごとに有効な値のサブセットを切り替えられる。\n   - バリデーション時も同パターン内の有効値かチェックするには `pattern` 属性を指定する:\n   ```java\n   @CodeValue(codeId = \"GENDER\", pattern = \"PATTERN2\")\n   private String gender;\n   ```\n   - 画面（JSP）側でも同じパターンを指定してプルダウンを絞り込める:\n   ```jsp\n   <n:codeSelect name=\"form.gender\" codeId=\"GENDER\" pattern=\"PATTERN2\" cssClass=\"form-control\" />\n   ```\n\n**注意点**:\n- コード管理機能は「静的なコード情報（値と名称のマッピング）」を対象としており、商品コード・企業コードのように値が動的に変化するマスタは対象外。動的なマスタはアプリケーション側でマスタテーブルを作成して対応すること (`component/libraries/libraries-code.json:s1`)。\n- RDBMS の参照整合性制約はコード管理機能と併用できない。制約チェックには `@CodeValue` を使用すること (`component/libraries/libraries-code.json:s1`)。\n- ドメインバリデーションと組み合わせる場合、1 つのドメインには 1 つのパターンしか指定できない。複数パターンに対応するにはパターンごとにドメインを定義する (`component/libraries/libraries-code.json:s6`)。\n\n参照: component/libraries/libraries-code.json:s1, component/libraries/libraries-code.json:s2, component/libraries/libraries-code.json:s6",
+  "cited": [
+    "component/libraries/libraries-code.json:s1",
+    "component/libraries/libraries-code.json:s2",
+    "component/libraries/libraries-code.json:s6"
+  ],
+  "cost_usd": 0.2539424,
+  "duration_s": 50.37172794342041,
+  "steps": {
+    "turns": 10
+  },
+  "error": null
+}

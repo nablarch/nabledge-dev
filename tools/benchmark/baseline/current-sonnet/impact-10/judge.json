@@ -1,0 +1,78 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "認証情報の保存先はDBストアが推奨",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SessionUtil.put(ctx, \"user\", user, \"db\") でDBストアに保存する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ログイン時は SessionUtil.changeId(ctx) でセッションIDを変更する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CsrfTokenUtil.regenerateCsrfToken(ctx) でCSRFトークンを再生成する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CSRF再生成が必要な条件: CsrfTokenVerificationHandler使用かつセッションID変更のみ行う場合",
+        "status": "MISSING"
+      },
+      {
+        "fact": "ログアウト時は SessionUtil.invalidate(ctx) でセッションストア全体を破棄する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "PermissionCheckHandler が認可チェックを行い Permission をスレッドローカルに設定する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "業務ロジック側はスレッドローカルから Permission を参照する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "権限条件が変わる可能性があるシステムでは permission_check を、そうでなければ role_check を使う",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "SessionManager を sessionManager コンポーネント名で登録し availableStores に DbStore を含める",
+        "status": "MISSING"
+      },
+      {
+        "fact": "DBストア使用時は USER_SESSION テーブルが必要 (SESSION_ID, SESSION_OBJECT, EXPIRATION_DATETIME)",
+        "status": "MISSING"
+      },
+      {
+        "fact": "SESSION_ID は CHAR ではなく VARCHAR で定義する (Oracleで正常動作しないケースあり)",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "ユーザーIDをThreadContextに持つのが推奨パターンとして主要提案している",
+        "type": "OVER-REACH",
+        "why": "reference sourcesにhandlers-thread_context_handler.json:s5は含まれず、referenceの主旨はセッションストア(DBストア)への保存"
+      },
+      {
+        "claim": "SessionStoreUserRoleUtil.save() / @CheckRole / CheckRoleUtil.checkRole() / SessionStoreUserRoleResolver を認可チェックの主要手段として提示",
+        "type": "OVER-REACH",
+        "why": "reference sourcesにlibraries-role_check.jsonは含まれない。referenceはPermissionCheckHandlerを認可チェックの主要機構として記述"
+      },
+      {
+        "claim": "DBストアとHTTPセッションストアの両方が推奨と記述",
+        "type": "OVER-REACH",
+        "why": "referenceはDBストアのみを推奨として明示しており、HTTPセッションストアを同列に並べていない"
+      }
+    ],
+    "reasoning": "生成回答はDBストアへの保存（SessionUtil.put/changeId/invalidate、CsrfTokenUtil再生成）については概ねカバーしているが、以下の重大な欠落と逸脱がある。① referenceの核心である「PermissionCheckHandler が Permission をスレッドローカルに設定し業務ロジックがそこから参照する」という認可チェック機構が完全に欠落している。② 代わりにreference sourcesに含まれないrole_check機構（SessionStoreUserRoleUtil/@CheckRole/CheckRoleUtil）を認可チェックの主要アプローチとして提示しており、これは問われた問題に対して別の機構を提案する実質的なOVER-REACH。③ DBストア設定詳細（SessionManagerのコンポーネント設定）、USER_SESSIONテーブル定義、SESSION_ID VARCHAR必須といった複数のrequired factが欠落。④ HTTPセッションストアもDBストアと同列に推奨と記述しているがreferenceはDBストアのみ。必須ファクトの欠落が多数かつ認可チェックの主要機構をすり替える実質的なOVER-REACHがあるためlevel 1。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.19251905,
+  "duration_s": 61.756941080093384,
+  "error": null
+}

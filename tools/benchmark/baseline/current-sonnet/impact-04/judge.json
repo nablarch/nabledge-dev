@@ -1,0 +1,62 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "NablarchにはRetryHandler（リトライハンドラ）が標準で用意されている",
+        "status": "COVERED"
+      },
+      {
+        "fact": "retryContextFactoryプロパティにCountingRetryContextFactory（回数ベース）または経過時間ベースのファクトリを設定して上限を決める",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リトライ対象例外を送出するハンドラはRetryHandlerより後に配置する必要がある（一般ルール、s3）",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "リトライ上限の設定は必須。上限に達しても成功しない場合は異常終了させる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "上限設定は2種類：リトライ回数による上限設定 / 経過時間による上限設定",
+        "status": "COVERED"
+      },
+      {
+        "fact": "設定例（回数ベース）：CountingRetryContextFactory、retryCount=3、retryIntervals=5000",
+        "status": "COVERED"
+      },
+      {
+        "fact": "上限値は想定する最大復旧時間プラスアルファに設定する（例：DB切り替えに最大5分かかるなら7分）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "複数の例外に対するリトライを実現する場合は、最も復旧に時間を要するものをベースに上限を設定する",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "RetryHandlerはバッチ・MOMメッセージング・DBメッセージングのみで使え、Webアプリ（サーブレット）では標準構成に含まれていない",
+        "type": "OVER-REACH",
+        "why": "参照ソース（s3/s4）に記載なし。Web app向け標準ハンドラ構成外の話を加えることで、Webアプリ開発者に「使えない」と誤解させる可能性がある"
+      },
+      {
+        "claim": "リトライ対象にするには例外がRetryableインタフェースを実装している必要があり、標準JDBCのSQLExceptionは対象外でラップが必要",
+        "type": "OVER-REACH",
+        "why": "参照ソース（s3/s4）に記載なし（s1由来）。有益な情報だが証拠境界外の追加要件"
+      },
+      {
+        "claim": "常駐バッチではretry_handlerはprocess_resident_handlerより前（外側）に置く必要があり、process_resident_handlerがRetryableExceptionでラップして委譲する",
+        "type": "OVER-REACH",
+        "why": "参照ソース（s3/s4）に記載なし（process_resident_handler.json:s4由来）。バッチ固有の実装詳細で証拠境界外"
+      }
+    ],
+    "reasoning": "必須ファクト8件はすべてCOVEREDまたはPARTIAL（CONTRADICTEDなし）。PARTIALは「リトライ対象例外を送出するハンドラはRetryHandlerより後に配置」という一般ルール（s3）で、生成回答では常駐バッチ固有のprocess_resident_handler配置として部分的にしか言及されていない。OVER-REACHは3件あり、いずれも実在するNablarchソース由来だが参照ソース（s3/s4）の証拠境界外。Webアプリ制限の主張は文脈によっては読者を誤解させるリスクがあるが、「標準構成に含まれていない」という記述に留まり「使用不可」とは断言していない。RetryableインタフェースやprocessResidentHandler詳細は有益な補足情報であり、リトライ実装の核心（RetryHandler使用・設定方法・上限設定の必須性）を損なわない。level 1の「substantive OVER-REACH that would mislead」には達していないため、level 2が適切。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.24730580000000002,
+  "duration_s": 121.61871862411499,
+  "error": null
+}

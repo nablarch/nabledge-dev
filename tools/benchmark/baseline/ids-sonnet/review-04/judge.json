@@ -1,0 +1,73 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "NablarchはBean ValidationとNablarch独自バリデーションの2系統を提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Bean Validationの使用を推奨する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "推奨理由①: Jakarta EEで仕様が定められており情報が豊富",
+        "status": "COVERED"
+      },
+      {
+        "fact": "推奨理由②: Nablarch独自のバリデーションの使い方を覚える必要がない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "WebアプリではBeanValidationStrategyをコンポーネント名validationStrategyとして登録する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "フォームクラスに@Required, @Length, @SystemChar, @Domainなどのアノテーションを付けて使う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "アノテーションはFieldかgetter（setter不可）に設定する",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "フォームのプロパティは全てStringで定義する（Bean変換失敗による例外を避けるため）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "個別アノテーションよりドメインバリデーションを推奨",
+        "status": "COVERED"
+      },
+      {
+        "fact": "相関バリデーション（複数項目の組合せチェック）には@AssertTrueを使う",
+        "status": "MISSING"
+      },
+      {
+        "fact": "Bean Validationはバリデーション実行順序が保証されないため相関バリデーションは単項目バリデーション未実行でも例外にならないよう実装すること",
+        "status": "COVERED"
+      },
+      {
+        "fact": "任意項目の未入力時は相関バリデーションでtrueを返してスキップすること",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "@InjectFormアノテーションをアクションに付けるとバリデーション実行とFormオブジェクトのリクエストスコープ格納が自動で行われる",
+        "type": "HALLUCINATION",
+        "why": "handlers-InjectForm.json:s3はreference sourcesに含まれない。参照元リファレンスが扱うスコープ外の仕組みを提案している。"
+      },
+      {
+        "claim": "ドメインBeanにルールをまとめ各FormでDomainアノテーションとドメイン名を書くだけにできる詳細実装パターン（コード例含む）",
+        "type": "HALLUCINATION",
+        "why": "libraries-bean_validation.json:s6はreference sourcesに含まれない。参照のドメインバリデーション推奨の言及はあるが、詳細実装パターンは参照外のソースから引用。"
+      }
+    ],
+    "reasoning": "生成回答はBean Validation推奨・推奨理由・BeanValidationStrategy登録・アノテーション使用方法・String型定義・ドメインバリデーション推奨・実行順序未保証の注意点など主要な事実を概ねカバーしている。しかし、参照回答が明示した「相関バリデーションには@AssertTrueを使う」という具体的な手段と「任意項目の未入力時にtrueを返してスキップ」という重要な実装ルールの2点がMISSINGである。さらに、reference sourcesに含まれないhandlers-InjectForm.json:s3からの@InjectForm説明と、同じくreference sourcesにないs6からのドメインBean詳細実装パターンの2つのHALLUCINATIONがある。MISSINGが2つあるため、Level 2の条件（すべてCOVEREDまたはPARTIAL）を満たさず、Level 1と判定する。"
+  },
+  "ref_sources_loaded": 5,
+  "ref_sources_total": 5,
+  "cost_usd": 0.21576275,
+  "duration_s": 82.40685367584229,
+  "error": null
+}

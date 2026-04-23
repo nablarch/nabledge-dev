@@ -1,0 +1,81 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch の **HIDDENストア** を使えば、HIDDEN フィールドへの入力情報の保持を簡単に実装できる。ただし AP サーバ複数台構成では **暗号化キーを明示的に統一しないと復号失敗が起きる**ため、必ず共通キーを設定すること。\n\n---\n\n**根拠**:\n\n① **HIDDENストアの使い方**\n入力～確認～完了画面でフォーム入力を HIDDEN フィールドに保持したい場合、`HiddenStore` を使う（複数タブを許容したい場合に選択するストア）。JSP には `<n:hiddenStore>` タグを記述するだけでよい。(`component/libraries/libraries-session_store.json:s5`)\n\n```jsp\n<n:form>\n  <n:hiddenStore name=\"nablarch_hiddenStore\" />\n</n:form>\n```\n\n② **格納するのは Entity（Form ではない）**\nセッションストアには Form でなく Entity を格納すること。Form には未バリデーションの外部入力値が含まれるためセキュリティリスクが高く、業務ロジックとの密結合も生じる。(`component/libraries/libraries-session_store.json:s5`)\n\n③ **AP サーバ複数台構成でのハマりどころ**\nHIDDENストアのデフォルト暗号化キーは **サーバ起動時にサーバごとに自動生成** される。AP サーバが冗長化されている場合、あるサーバで暗号化したデータを別サーバが受け取ると復号に失敗する。対策として、全サーバで共通の `key` と `iv` を XML コンポーネント定義に明示的に設定する。(`component/libraries/libraries-session_store.json:s8`)\n\n```xml\n<component class=\"nablarch.common.web.session.store.HiddenStore\">\n  <property name=\"encryptor\">\n    <component class=\"nablarch.common.encryption.AesEncryptor\">\n      <property name=\"base64Key\">\n        <component class=\"nablarch.common.encryption.Base64Key\">\n          <property name=\"key\" value=\"OwYMOWbnLyYy93P8oIayeg==\" />\n          <property name=\"iv\"  value=\"NOj5OUN+GlyGYTc6FM0+nw==\" />\n        </component>\n      </property>\n    </component>\n  </property>\n</component>\n```\n\n鍵は `KeyGenerator`、IV は `SecureRandom` で生成し、base64 エンコードして設定する。(`component/libraries/libraries-session_store.json:s8`)\n\n④ **改竄チェック**\nHIDDENストアの改竄を検知した場合はステータスコード 400 の `HttpErrorResponse` が送出される。(`component/handlers/handlers-SessionStoreHandler.json:s7`)\n\n---\n\n**注意点**:\n- 複数タブを**許容しない**場合（タブ間でデータが干渉してはいけない画面フロー）は DBストアを選択すること。(`component/libraries/libraries-session_store.json:s5`)\n- `SessionStoreHandler` と `SessionManager`（コンポーネント名は `\"sessionManager\"` 固定）の設定も必要。(`component/handlers/handlers-SessionStoreHandler.json:s5`, `component/libraries/libraries-session_store.json:s4`)\n- 共通キー・IV は機密情報のため、ソースコードやリポジトリへの平文コミットは避け、環境変数や暗号化設定管理の仕組みで注入することを推奨。\n\n参照: component/libraries/libraries-session_store.json:s5, component/libraries/libraries-session_store.json:s8, component/libraries/libraries-session_store.json:s4, component/handlers/handlers-SessionStoreHandler.json:s5, component/handlers/handlers-SessionStoreHandler.json:s7",
+  "cited": [
+    "component/libraries/libraries-session_store.json:s5",
+    "component/libraries/libraries-session_store.json:s8",
+    "component/libraries/libraries-session_store.json:s4",
+    "component/handlers/handlers-SessionStoreHandler.json:s5",
+    "component/handlers/handlers-SessionStoreHandler.json:s7"
+  ],
+  "cost_usd": 0.38484110000000005,
+  "duration_s": 46.71368885040283,
+  "steps": {
+    "raw_selections": [
+      "libraries-session_store|s5",
+      "libraries-session_store|s8",
+      "libraries-session_store|s4",
+      "web-application-feature_details|s9",
+      "handlers-SessionStoreHandler|s5",
+      "handlers-SessionStoreHandler|s7",
+      "libraries-stateless_web_app|s2"
+    ],
+    "resolved": [
+      "component/libraries/libraries-session_store.json:s5",
+      "component/libraries/libraries-session_store.json:s8",
+      "component/libraries/libraries-session_store.json:s4",
+      "processing-pattern/web-application/web-application-feature_details.json:s9",
+      "component/handlers/handlers-SessionStoreHandler.json:s5",
+      "component/handlers/handlers-SessionStoreHandler.json:s7",
+      "component/libraries/libraries-stateless_web_app.json:s2"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/libraries/libraries-session_store.json:s5",
+        "status": "ok",
+        "title": "入力～確認～完了画面間で入力情報を保持する",
+        "chars": 622
+      },
+      {
+        "selector": "component/libraries/libraries-session_store.json:s8",
+        "status": "ok",
+        "title": "HIDDENストアの暗号化設定をカスタマイズする",
+        "chars": 819
+      },
+      {
+        "selector": "component/libraries/libraries-session_store.json:s4",
+        "status": "ok",
+        "title": "セッションストアを使用するための設定",
+        "chars": 1433
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s9",
+        "status": "ok",
+        "title": "入力データの保持",
+        "chars": 30
+      },
+      {
+        "selector": "component/handlers/handlers-SessionStoreHandler.json:s5",
+        "status": "ok",
+        "title": "セッションストアを使用するための設定",
+        "chars": 530
+      },
+      {
+        "selector": "component/handlers/handlers-SessionStoreHandler.json:s7",
+        "status": "ok",
+        "title": "セッションストアの改竄をチェックする",
+        "chars": 146
+      },
+      {
+        "selector": "component/libraries/libraries-stateless_web_app.json:s2",
+        "status": "ok",
+        "title": "HTTPセッションに依存している機能",
+        "chars": 293
+      }
+    ],
+    "select_cost_usd": 0.25350005000000003,
+    "answer_cost_usd": 0.13134105
+  },
+  "error": null
+}

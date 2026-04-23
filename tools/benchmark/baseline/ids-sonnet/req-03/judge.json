@@ -1,0 +1,76 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "Nablarchは排他制御をビルトインで提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "推奨はUniversalDaoによる排他制御",
+        "status": "COVERED"
+      },
+      {
+        "fact": "楽観排他と悲観排他の両方をサポートする",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@Versionアノテーションを数値型プロパティに付与するだけで楽観的ロックが有効になる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@Version付きEntityを更新すると自動で楽観的ロックが適用される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "排他エラー時はjakarta.persistence.OptimisticLockExceptionが送出される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@Versionは数値型プロパティのみに指定可能（文字列型では正しく動作しない）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "batchUpdateでは楽観的ロックは使用できない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "排他エラー時の画面遷移は@OnErrorを使用する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "排他制御は2種類: universal_dao（推奨）とexclusive_control",
+        "status": "COVERED"
+      },
+      {
+        "fact": "exclusive_controlは非推奨",
+        "status": "COVERED"
+      },
+      {
+        "fact": "バージョンカラムをどのテーブルに定義するかは業務的観点で決める",
+        "status": "COVERED"
+      },
+      {
+        "fact": "排他制御の単位ごとに定義し、競合が許容される最大の単位で定義する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "単位を大きくすると競合確率が高まり更新失敗（楽観）や処理遅延（悲観）を招く",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "一括更新の楽観的ロックにはHttpExclusiveControlUtil#checkVersions / updateVersionsWithCheckを使う方法がある",
+        "type": "HALLUCINATION",
+        "why": "libraries-exclusive_control.json:s3を参照しているが、このセクションは参照ソースに含まれておらずエビデンス境界外の情報"
+      }
+    ],
+    "reasoning": "全14の必須ファクトがCOVERED。参照ソースに含まれないlibraries-exclusive_control.json:s3の情報（HttpExclusiveControlUtil#checkVersions / updateVersionsWithCheckによるbatchUpdate対応）が注意点として追記されておりHALLUCINATIONに該当するが、これは補足的な注意情報であり中心的な回答内容を誤らせるものではない。コアファクトに矛盾はなく、at most one minor HALLUCINATIONの条件を満たすためLevel 2とする。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.16428065000000003,
+  "duration_s": 41.049925804138184,
+  "error": null
+}

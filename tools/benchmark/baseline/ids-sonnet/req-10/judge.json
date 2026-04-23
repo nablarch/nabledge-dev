@@ -1,0 +1,75 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Nablarchは「操作監査ログ」専用機能をビルトイン提供していない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "最も近い機能はHttpAccessLogHandler（HTTPアクセスログハンドラ）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リクエスト処理開始時と完了時にアクセスログを出力する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ユーザID・リクエストID・セッションストアIDなどをログ出力に含められる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "「何をしたか」（業務操作の内容）は自動では残らない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "業務ログはプロジェクト側で実装する必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "クラス名はnablarch.common.web.handler.HttpAccessLogHandler",
+        "status": "MISSING"
+      },
+      {
+        "fact": "ThreadContextHandlerより後に配置すること（ThreadContextの内容が必要なため）",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "HttpErrorHandlerより前に配置すること（完了時ログにエラーコードが必要なため）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "セッションストアIDを出力する場合はSessionStoreHandlerより後に配置すること",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "アクセスログと証跡ログを兼用することが公式に想定されている",
+        "type": "OVER-REACH",
+        "why": "参照ソース（handlers-http_access_log_handler.json:s1/s3）はそのような公式な設計意図を記載していない。参照回答も「最も近い機能」として挙げるに留まる"
+      },
+      {
+        "claim": "JAX-RS向けjaxrs_access_log_handlerでも同様に証跡ログが兼用できる",
+        "type": "HALLUCINATION",
+        "why": "参照ソースにjaxrs_access_log関連ファイルは含まれておらず、エビデンス境界外の情報"
+      },
+      {
+        "claim": "$requestBody$/$responseBody$プレースホルダでリクエスト/レスポンスボディを記録できる",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに存在しない。libraries-jaxrs_access_log.jsonはエビデンス境界外"
+      },
+      {
+        "claim": "JaxRsBodyMaskingFilterはJSON形式のみサポート",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに存在しない情報"
+      }
+    ],
+    "reasoning": "主要な事実（専用機能なし、最も近い機能はHttpAccessLogHandler、リクエスト開始/完了時ログ、ユーザID含む、業務操作はプロジェクト実装）はCOVERED。しかし①クラス名（nablarch.common.web.handler.HttpAccessLogHandler）が欠落、②HttpErrorHandlerより前・SessionStoreHandlerより後という配置制約が未記載（ThreadContextHandlerは間接的にのみ言及）という複数のMISSINGがある。さらにJAX-RS関連の記述（jaxrs_access_log_handler、$requestBody$/$responseBody$、JaxRsBodyMaskingFilter）は参照ソースのエビデンス境界外であり複数のHALLUCINATION。「公式に想定されている」という表現も参照ソースが支持しない程度の強さのOVER-REACH。必須ファクトのMISSINGと複数HALLUCINATIONによりlevel 1が適切。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.18811755000000002,
+  "duration_s": 70.49522805213928,
+  "error": null
+}

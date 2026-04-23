@@ -1,0 +1,73 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: できる。`PermissionCheckHandler` の `setUsesInternalRequestId` を `true` に設定することで、内部フォワード先のリクエストIDを認可チェック対象にできる。\n\n**根拠**:\n\n`PermissionCheckHandler` はログイン中のユーザが現在のリクエストIDに対して権限を持っているかをチェックする。デフォルト（`false`）では元のリクエストIDでチェックするが、`PermissionCheckHandler.setUsesInternalRequestId` に `true` を指定すると、チェック対象のリクエストIDをフォワード先のリクエストIDに変更できる。（`component/handlers/handlers-permission_check_handler.json:s4`）\n\n内部フォワードは `forward://` から始まるコンテンツパスで実現され（`component/handlers/handlers-forwarding_handler.json:s4`）、フォワード先のリクエストIDは内部リクエストIDとしてスレッドコンテキストに保持される（`component/handlers/handlers-forwarding_handler.json:s6`）。`setUsesInternalRequestId(true)` はこの内部リクエストIDを参照してチェックを行う。\n\n認可チェックの基盤機能としては `permission_check`（権限管理条件が変わる可能性があるシステム向け）と `role_check`（シンプルな権限管理向け）の2種類が提供されている。（`component/libraries/libraries-permission_check.json:s1`）\n\n**注意点**:\n- デフォルトは `false`（元リクエストID基準）のため、明示的に `true` に設定しないとフォワード先のアクションは認可対象にならない。\n- 権限がない場合は `Forbidden(403)` が送出され、エラーページは `HttpErrorHandler` で設定する。（`component/handlers/handlers-permission_check_handler.json:s5`）\n- `setUsesInternalRequestId(true)` にすると、フォワード元ではなくフォワード先のリクエストIDで権限チェックが行われる点に注意。フォワード元の認可が不要になるわけではなく、ハンドラが通過するたびにチェックが走る構造かどうかはシステム設計に依存する。\n\n参照: component/handlers/handlers-permission_check_handler.json:s4, component/handlers/handlers-permission_check_handler.json:s5, component/handlers/handlers-forwarding_handler.json:s4, component/handlers/handlers-forwarding_handler.json:s6, component/libraries/libraries-permission_check.json:s1",
+  "cited": [
+    "component/handlers/handlers-permission_check_handler.json:s4",
+    "component/handlers/handlers-permission_check_handler.json:s5",
+    "component/handlers/handlers-forwarding_handler.json:s4",
+    "component/handlers/handlers-forwarding_handler.json:s6",
+    "component/libraries/libraries-permission_check.json:s1"
+  ],
+  "cost_usd": 0.37592295,
+  "duration_s": 43.475815534591675,
+  "steps": {
+    "raw_selections": [
+      "handlers-permission_check_handler|s4",
+      "handlers-permission_check_handler|s5",
+      "handlers-forwarding_handler|s4",
+      "handlers-forwarding_handler|s6",
+      "web-application-feature_details|s14",
+      "libraries-permission_check|s1"
+    ],
+    "resolved": [
+      "component/handlers/handlers-permission_check_handler.json:s4",
+      "component/handlers/handlers-permission_check_handler.json:s5",
+      "component/handlers/handlers-forwarding_handler.json:s4",
+      "component/handlers/handlers-forwarding_handler.json:s6",
+      "processing-pattern/web-application/web-application-feature_details.json:s14",
+      "component/libraries/libraries-permission_check.json:s1"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/handlers/handlers-permission_check_handler.json:s4",
+        "status": "ok",
+        "title": "リクエストに対する認可チェック",
+        "chars": 384
+      },
+      {
+        "selector": "component/handlers/handlers-permission_check_handler.json:s5",
+        "status": "ok",
+        "title": "権限がない場合に表示するエラーページを指定する",
+        "chars": 142
+      },
+      {
+        "selector": "component/handlers/handlers-forwarding_handler.json:s4",
+        "status": "ok",
+        "title": "内部フォーワードを示すレスポンスを返却する",
+        "chars": 370
+      },
+      {
+        "selector": "component/handlers/handlers-forwarding_handler.json:s6",
+        "status": "ok",
+        "title": "内部リクエストIDについて",
+        "chars": 54
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s14",
+        "status": "ok",
+        "title": "認可チェック",
+        "chars": 31
+      },
+      {
+        "selector": "component/libraries/libraries-permission_check.json:s1",
+        "status": "ok",
+        "title": "概要",
+        "chars": 518
+      }
+    ],
+    "select_cost_usd": 0.2544363,
+    "answer_cost_usd": 0.12148665
+  },
+  "error": null
+}

@@ -1,0 +1,60 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "HiddenStoreをセッションストアに登録することでHIDDENフィールドによるセッション保持が楽に書ける",
+        "status": "COVERED"
+      },
+      {
+        "fact": "複数APサーバ構成ではHiddenStoreのデフォルト暗号化キーがサーバごとに自動生成されて異なる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "あるサーバで暗号化したHIDDEN値を別サーバが復号できない問題が発生する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "HiddenStoreのencryptorプロパティに明示的な暗号化キー・IVを設定して全サーバで揃える必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SessionManagerを`sessionManager`というコンポーネント名で登録する",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "availableStoresリストにHiddenStoreを並べる",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "HiddenStoreのデフォルト暗号化アルゴリズムはAES",
+        "status": "COVERED"
+      },
+      {
+        "fact": "鍵とIVはbase64エンコードした値を設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "鍵生成はKeyGenerator、IV生成はSecureRandomを使用する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "セッションストアに保存するオブジェクトはシリアライズ可能なJava Beansオブジェクトである必要がある",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "HIDDENストアのキーが不一致の場合も改竄検知と同様にステータスコード400のHttpErrorResponseが多発する",
+        "type": "HALLUCINATION",
+        "why": "参照ソースs7は改竄検知→400を記述するが、キー不一致→400という接続は参照ソースに存在しない。復号失敗が400を引き起こすという記述はs8にはなく、推論による拡張"
+      }
+    ],
+    "reasoning": "核心的な要求事実（HiddenStoreによるHIDDENフィールド保持、複数APサーバ構成でのデフォルトキー不一致問題、encryptorプロパティによる明示的キー設定、AESアルゴリズム、base64エンコード、KeyGenerator/SecureRandomの使用）はすべてCOVERED。SessionManagerのコンポーネント設定XMLとavailableStoresリストはPARTIAL（概念は伝わるが完全なXML例が示されていない）。シリアライズ可能なJava Beansという制約はMISSING。HIDDENストアのタグ記述方法や非推奨機能の説明など参照ソース外からの追加情報は概ねon-topicでNEUTRAL。ただし、キー不一致→400エラーという推論はs8に根拠がなくHALLUCINATION1件。Level 2の条件「at most one minor HALLUCINATION」の範囲内と判断。MISSINGが1件あるため厳密にはLevel 2下限だが、該当事実は末尾注意点の副次的制約であり、質問の本旨（HIDDENフィールドの仕組みと複数台構成のハマりどころ）に対しては的確かつ充実した回答を提供しているためLevel 2とする。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.22507715,
+  "duration_s": 96.82864022254944,
+  "error": null
+}

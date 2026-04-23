@@ -1,0 +1,73 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: `SecureHandler` に `ContentSecurityPolicyHeader` を追加する設定が標準的な方法。JSP カスタムタグを使っている場合は nonce 生成も合わせて有効にする。\n\n**根拠**:\n\n① **固定ポリシーを設定する場合**（最もシンプルな方法）\n`SecureHandler` の `secureResponseHeaderList` に `ContentSecurityPolicyHeader` を追加し、`policy` プロパティにポリシー文字列を設定する。（`component/handlers/handlers-secure_handler.json:s7`）\n\n```xml\n<component class=\"nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader\">\n  <property name=\"policy\" value=\"default-src 'self'\" />\n</component>\n```\nこれにより `Content-Security-Policy: default-src 'self'` ヘッダがレスポンスに付与される。\n\n② **nonce を使う場合**（JSP カスタムタグ利用時は必須）\nNablarch のカスタムタグは一部 JavaScript を出力するため、nonce を使った対応が必要。`SecureHandler` の `generateCspNonce` を `true` にし、`policy` のプレースホルダー `$cspNonceSource$` に自動置換させる。（`component/handlers/handlers-secure_handler.json:s8`）\n\n```xml\n<property name=\"generateCspNonce\" value=\"true\" />\n<!-- policy 例 -->\n<property name=\"policy\" value=\"default-src 'self' '$cspNonceSource$'\" />\n```\nnonce はリクエストごとに生成され、カスタムタグが生成する `<script>` 要素に自動で `nonce` 属性がセットされる。（`component/libraries/libraries-tag.json:s9`）\n\n③ **まず report-only で動作確認したい場合**\n`ContentSecurityPolicyHeader` の `reportOnly` を `true` にすると `Content-Security-Policy-Report-Only` ヘッダになり、ブロックせずに違反レポートだけ収集できる。（`component/handlers/handlers-secure_handler.json:s9`）\n\n**注意点**:\n- Nablarch の CSP 対応は **nonce ベース**。nonce は HTML に埋め込まれるため、JSP 生成の HTML はリクエストごとに変化する（キャッシュに注意）。（`component/libraries/libraries-tag.json:s9`）\n- カスタムタグを使う場合、`generateCspNonce` なしで `script-src 'unsafe-inline'` を許可するアプローチは非推奨。セキュアハンドラの nonce 機能と組み合わせることが前提の設計。（`component/handlers/handlers-secure_handler.json:s6`）\n- まず `reportOnly: true` で本番同様の環境で違反を収集し、ポリシーを調整してから `false` に切り替えるのが安全な導入手順。\n\n参照: `component/handlers/handlers-secure_handler.json:s6`, `component/handlers/handlers-secure_handler.json:s7`, `component/handlers/handlers-secure_handler.json:s8`, `component/handlers/handlers-secure_handler.json:s9`, `component/libraries/libraries-tag.json:s9`",
+  "cited": [
+    "component/handlers/handlers-secure_handler.json:s6",
+    "component/handlers/handlers-secure_handler.json:s7",
+    "component/handlers/handlers-secure_handler.json:s8",
+    "component/handlers/handlers-secure_handler.json:s9",
+    "component/libraries/libraries-tag.json:s9"
+  ],
+  "cost_usd": 0.5881787,
+  "duration_s": 40.86819815635681,
+  "steps": {
+    "raw_selections": [
+      "handlers-secure_handler|s6",
+      "handlers-secure_handler|s7",
+      "handlers-secure_handler|s8",
+      "handlers-secure_handler|s9",
+      "web-application-feature_details|s21",
+      "libraries-tag|s9"
+    ],
+    "resolved": [
+      "component/handlers/handlers-secure_handler.json:s6",
+      "component/handlers/handlers-secure_handler.json:s7",
+      "component/handlers/handlers-secure_handler.json:s8",
+      "component/handlers/handlers-secure_handler.json:s9",
+      "processing-pattern/web-application/web-application-feature_details.json:s21",
+      "component/libraries/libraries-tag.json:s9"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/handlers/handlers-secure_handler.json:s6",
+        "status": "ok",
+        "title": "Content Security Policy(CSP)に対応する",
+        "chars": 504
+      },
+      {
+        "selector": "component/handlers/handlers-secure_handler.json:s7",
+        "status": "ok",
+        "title": "固定のContent-Security-Policyヘッダを設定する",
+        "chars": 1028
+      },
+      {
+        "selector": "component/handlers/handlers-secure_handler.json:s8",
+        "status": "ok",
+        "title": "nonceを生成してContent-Security-Policyヘッダに設定する",
+        "chars": 1580
+      },
+      {
+        "selector": "component/handlers/handlers-secure_handler.json:s9",
+        "status": "ok",
+        "title": "report-onlyモードで動作させる",
+        "chars": 1064
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s21",
+        "status": "ok",
+        "title": "Content Security Policy(CSP)対応",
+        "chars": 122
+      },
+      {
+        "selector": "component/libraries/libraries-tag.json:s9",
+        "status": "ok",
+        "title": "Content Security Policy(CSP)に対応する",
+        "chars": 480
+      }
+    ],
+    "select_cost_usd": 0.44436425,
+    "answer_cost_usd": 0.14381444999999998
+  },
+  "error": null
+}

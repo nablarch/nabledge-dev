@@ -1,0 +1,62 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Nablarchにはトークンベースの二重サブミット防止機能がビルトインで提供されている",
+        "status": "COVERED"
+      },
+      {
+        "fact": "JSPではformタグのuseToken属性でトークン生成とhidden埋め込みが自動で行われる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "JSP以外のテンプレートエンジンでは@UseTokenインターセプタをアクションメソッドに付与する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "@UseTokenのコード例: confirmメソッドにアノテーションを付与する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "Thymeleafでのhiddenフィールド: name属性は\"nablarch_token\"、value属性はリクエストスコープキー\"nablarch_request_token\"から取得",
+        "status": "MISSING"
+      },
+      {
+        "fact": "後続のアクションに@OnDoubleSubmissionインターセプタを設定してトークンをチェックする",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@OnDoubleSubmissionのpath属性で二重サブミット判定時の遷移先を指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@OnDoubleSubmissionを使うにはuseToken属性または@UseTokenによるトークン設定が必要",
+        "status": "PARTIAL"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "クライアント側: allowDoubleSubmission=\"false\" によるJavaScriptボタン無効化",
+        "type": "OVER-REACH",
+        "why": "参照ソースに含まれていないevidence boundary外の情報。質問はNablarchの仕組みを問うが、reference answerはサーバ側トークンのみを対象としている"
+      },
+      {
+        "claim": "BasicDoubleSubmissionHandlerコンポーネント定義によるアプリ全体のデフォルト遷移先設定",
+        "type": "OVER-REACH",
+        "why": "参照ソースにはs1とs3のみ提供されており、s4(BasicDoubleSubmissionHandler)はevidence boundary外"
+      },
+      {
+        "claim": "db_double_submit: トークンをデータベースに保管する実装",
+        "type": "HALLUCINATION",
+        "why": "参照ソースのいずれにも記載がなく、evidence boundary外"
+      }
+    ],
+    "reasoning": "生成回答はJSPのuseToken属性と@OnDoubleSubmissionの組み合わせを正しく説明しているが、参照回答の重要な要素である「JSP以外のテンプレートエンジン向けの@UseTokenインターセプタ」が完全に欠落している。@UseTokenのコード例（confirmメソッドへの付与）とThymeleafでのhiddenフィールド実装（name=\"nablarch_token\"、value=nablarch_request_tokenキー）も未記載。これらは参照回答が専用セクションを設けて説明している必須ファクトであり、MISSINGが複数存在するためlevel 1が妥当。加えて、クライアント側JS制御(allowDoubleSubmission=\"false\")とBasicDoubleSubmissionHandlerはevidence boundary外の追加情報であり、過剰回答に該当する。"
+  },
+  "ref_sources_loaded": 5,
+  "ref_sources_total": 5,
+  "cost_usd": 0.19063395,
+  "duration_s": 69.47212314605713,
+  "error": null
+}

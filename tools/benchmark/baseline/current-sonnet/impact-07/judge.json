@@ -1,0 +1,78 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "PermissionCheckHandlerを使って認可チェックを行う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ログイン中ユーザが現在のリクエストIDに対して権限を持つかをチェックする",
+        "status": "COVERED"
+      },
+      {
+        "fact": "権限がある場合はPermissionをスレッドローカルに設定し後続ハンドラを呼び出す",
+        "status": "MISSING"
+      },
+      {
+        "fact": "権限がない場合はForbidden(403)を送出する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "内部フォワード先を認可対象にするにはsetUsesInternalRequestIdをtrueにする",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ThreadContextHandlerのattributesにInternalRequestIdAttributeを追加する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Nablarchはpermission_checkとrole_checkの2種類の認可機能を提供する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "permission_checkは権限管理の条件が変わる可能性があるシステム向け（導入コスト高）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "role_checkは権限管理の条件が基本的に変わらないシステム向け（ハードコーディングで低コスト）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ThreadContextHandlerより後に配置すること",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ForwardingHandlerより後に配置すること（内部フォワード先を認可対象にする場合）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "HttpErrorHandlerより後に配置すること",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "@CheckRoleアノテーションをフォワード先のアクションメソッドに付与することで内部フォワード後の認可チェックができる",
+        "type": "OVER-REACH",
+        "why": "参照回答は内部フォワード先の認可にsetUsesInternalRequestIdを解決策とし、@CheckRoleをその代替としては示していない"
+      },
+      {
+        "claim": "@CheckRoleはNablarchのインターセプタ機構で動作するため内部フォワード後のアクションでも有効",
+        "type": "HALLUCINATION",
+        "why": "libraries-role_check.json:s4はエビデンス境界外。インターセプタ機構の詳細はリファレンスソースで裏付けられていない"
+      },
+      {
+        "claim": "PermissionCheckHandler.ignoreRequestIdsで認可チェックから除外できる",
+        "type": "HALLUCINATION",
+        "why": "handlers-permission_check_handler.json:s6はリファレンスソースに含まれておらず、エビデンス境界外のソースに基づく"
+      }
+    ],
+    "reasoning": "内部フォワード先の認可チェックに必要なコア情報（PermissionCheckHandler、setUsesInternalRequestId=true、InternalRequestIdAttribute、ThreadContextHandler/ForwardingHandlerより後に配置）はカバーされている。しかし、権限あり時のPermissionのスレッドローカル設定、権限なし時のForbidden(403)送出、HttpErrorHandlerより後への配置という3つの必須事実が欠落している。さらに、@CheckRoleをフォワード先の内部認可の代替解決策として提示しているが、参照回答はそれをこの問題の解決策として示しておらず（OVER-REACH）、@CheckRoleのインターセプタ機構の詳細やignoreRequestIdsはエビデンス境界外のソースに依拠したHALLUCINATIONである。必須事実の欠落と実質的なOVER-REACH/HALLUCINATIONの存在からレベル1と判定する。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.1953061,
+  "duration_s": 65.6471471786499,
+  "error": null
+}

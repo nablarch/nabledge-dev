@@ -1,0 +1,15 @@
+{
+  "variant": "current",
+  "answer": "**結論**: メールアドレスの DB 重複チェックを Bean Validation の中で実装するのはセキュリティ上問題がある。Bean Validation を通過した後、ビジネスアクション内で実施すること。\n\n**根拠**:\n\n`component/libraries/libraries-bean_validation.json:s9` に明確な警告がある：\n\n> 「Bean Validationでデータベースアクセスを行うと、**まだバリデーションされていない不正な値をDB問い合わせに使用するため、SQLインジェクションの脆弱性につながる可能性がある**。データベースとの相関チェック（例：メールアドレスの重複チェック）は、Bean Validationを通過した後のビジネスアクション内で実施すること。」\n\nつまり問題の構造は次のとおり：\n\n- Bean Validation のカスタムバリデータ内で DB クエリを発行すると、そのクエリには**まだ検証されていない生の入力値**が使われる\n- フォーマット・文字種などの基本チェックが終わっていない値を DB に渡すことになり、悪意ある入力がそのままクエリに乗るリスクがある\n- Nablarch（および Jakarta Bean Validation）はバリデーション実行順序を保証しないため、「他のバリデーションが先に終わっている」と仮定することも危険\n\n**正しい実装パターン**（`component/libraries/libraries-bean_validation.json:s9` より）:\n\n1. Bean Validation でメールアドレスの形式・文字種・必須などを検証する\n2. Bean Validation をすべて通過した後、ビジネスアクションの処理内で DB を参照して重複チェックを行う\n3. 重複があれば業務例外としてエラーを返す（入力チェックエラーと区別することも検討）\n\n**注意点**:\n\n- セキュリティチェックリスト（`check/security-check/security-check.json:s1`）でも、SQLインジェクション対策として「SQL文はプレースホルダで実装」「ウェブアプリのパラメータにSQL文を直接指定しない」が挙げられている。ビジネスアクションで DB 重複チェックを行う際も、UniversalDAO や JDBCラッパーを使い、入力値を直接文字列連結しないこと\n- Bean Validation のフレームワーク内（カスタム `ConstraintValidator`）で DI を使って DB アクセスすること自体、Nablarch では明示的に禁止されている\n\n参照: component/libraries/libraries-bean_validation.json:s9, component/libraries/libraries-bean_validation.json:s1, check/security-check/security-check.json:s1",
+  "cited": [
+    "component/libraries/libraries-bean_validation.json:s9",
+    "component/libraries/libraries-bean_validation.json:s1",
+    "check/security-check/security-check.json:s1"
+  ],
+  "cost_usd": 0.27828875,
+  "duration_s": 56.933401584625244,
+  "steps": {
+    "turns": 10
+  },
+  "error": null
+}

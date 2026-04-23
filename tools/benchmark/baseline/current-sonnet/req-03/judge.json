@@ -1,0 +1,64 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "NablarchはビルトインでUniversalDaoによる排他制御を提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "排他制御の推奨方式はUniversalDao",
+        "status": "COVERED"
+      },
+      {
+        "fact": "楽観排他と悲観排他の両方をサポートする",
+        "status": "MISSING"
+      },
+      {
+        "fact": "@Versionアノテーションを数値型プロパティに付与することで楽観的ロックが自動的に有効になる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "排他エラー発生時はjakarta.persistence.OptimisticLockExceptionを送出する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "排他エラー時の画面遷移は@OnErrorを使用する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@Versionは数値型プロパティのみに指定可能。文字列型では正しく動作しない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "一括更新処理（batchUpdate）では楽観的ロックは使用できない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "バージョンカラムをどのテーブルに定義するかは業務的な観点で決める",
+        "status": "COVERED"
+      },
+      {
+        "fact": "バージョン番号を持つテーブルは排他制御の単位ごとに定義し、競合が許容される最大の単位で定義する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "exclusive_controlライブラリは非推奨。UniversalDaoを使用すること",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "二重サブミット防止には@OnDoubleSubmissionを併用します",
+        "type": "OVER-REACH",
+        "why": "質問は複数人同時編集による後勝ち問題（排他制御）に関するもの。@OnDoubleSubmissionは同一ユーザーの二重送信防止であり、別の問題を扱う機能。参照ソースにも含まれておらず、本来の問いの解答として誤解を招く"
+      }
+    ],
+    "reasoning": "生成回答は楽観的ロックの実装詳細（@Version、OptimisticLockException、@OnError、数値型制約、batchUpdate制限、バージョンカラム設計指針）を網羅的かつ正確に説明している。しかし参照回答が明示する「楽観排他と悲観排他の両方をサポートする」という事実が完全に欠落しており、悲観排他（pessimistic lock）についての言及が一切ない。これはNablarchの排他制御機能の全体像を伝える上で必須の情報。さらに@OnDoubleSubmissionへの言及はOVER-REACHであり（二重サブミット防止は別問題）、MISSING事実と合わせてLevel 1と判定する。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.17811214999999997,
+  "duration_s": 53.57416319847107,
+  "error": null
+}

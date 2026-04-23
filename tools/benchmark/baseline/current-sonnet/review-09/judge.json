@@ -1,0 +1,40 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "UniversalDaoにbatchInsert / batchUpdate / batchDeleteの3メソッドが提供されている",
+        "status": "COVERED"
+      },
+      {
+        "fact": "大量データの一括処理でAPサーバ〜DBサーバ間のラウンドトリップ回数を削減しパフォーマンス向上が期待できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "batchUpdateは排他制御を行わない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "更新対象EntityとDBのバージョンが不一致でも、そのレコードの更新は行われずに正常終了する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "排他制御が必要な更新処理では一括更新ではなく1レコード毎の更新処理を使用すること",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "楽観的ロックエラー（OptimisticLockException）のハンドリングが必要な場合は@OnErrorアノテーションで遷移先を設定する（s12引用）",
+        "type": "HALLUCINATION",
+        "why": "s12は参照ソース（エビデンス境界）に含まれない。@OnErrorによる例外ハンドリングは本質問のスコープ外のサブトピックであり、参照回答も言及していない。"
+      }
+    ],
+    "reasoning": "必須ファクト5件すべてCOVERED。batchInsert/batchUpdate/batchDeleteの提供、ラウンドトリップ削減によるパフォーマンス向上、batchUpdateの排他制御なし、バージョン不一致時の正常終了（サイレント更新漏れ）、排他制御が必要な場合は1件ずつ更新すべき点、いずれも正確に伝えられている。矛盾・誤りはない。唯一の問題は、エビデンス境界外のs12を根拠に@OnErrorアノテーションによるOptimisticLockExceptionハンドリングに言及している点。これは実在するNablarch機能だが参照ソースに含まれず、本質問（一括更新）のスコープ外のサブトピック。ただし軽微なHALLUCINATIONであり読者を誤解させる度合いは低い。「全ファクトCOVERED、軽微なHALLUCINATION1件以内」の条件を満たすためlevel 2。"
+  },
+  "ref_sources_loaded": 1,
+  "ref_sources_total": 1,
+  "cost_usd": 0.16302514999999998,
+  "duration_s": 55.169240951538086,
+  "error": null
+}

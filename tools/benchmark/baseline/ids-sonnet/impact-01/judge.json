@@ -1,0 +1,61 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "トランザクション境界はTransactionManagementHandlerが決定する",
+        "status": "CONTRADICTED"
+      },
+      {
+        "fact": "往路でトランザクション開始、復路でコミット、例外時にロールバックする",
+        "status": "MISSING"
+      },
+      {
+        "fact": "transactionFactoryプロパティにTransactionFactory実装を設定してスレッド上で管理する",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "DBの場合はJdbcTransactionFactoryを使用する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "DatabaseConnectionManagementHandlerより後ろに配置する必要がある",
+        "status": "MISSING"
+      },
+      {
+        "fact": "transactionNameプロパティのデフォルト値はtransaction",
+        "status": "COVERED"
+      },
+      {
+        "fact": "複数トランザクション使用時はtransactionNameの設定が必須",
+        "status": "COVERED"
+      },
+      {
+        "fact": "DbConnectionManagementHandler#connectionNameと同じ値をtransactionNameに指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "connectionName未設定時はtransactionNameも省略可",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "バッチのトランザクション境界は主にLoopHandlerの設定によって決まる",
+        "type": "OVER-REACH",
+        "why": "参照ソースにLoopHandlerは存在せず、リファレンス回答はTransactionManagementHandlerが境界を決定すると明示。LoopHandlerを主役とすることで読者を誤誘導する"
+      },
+      {
+        "claim": "commitIntervalプロパティでコミット間隔（件数）を設定できる",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（handlers-transaction_management_handler.json, handlers-database_connection_management_handler.json）にcommitIntervalの記述は一切ない"
+      }
+    ],
+    "reasoning": "生成回答の核心的な主張「バッチのトランザクション境界は主にLoopHandlerが決定する」は、リファレンス回答の核心的な事実「TransactionManagementHandlerがトランザクション境界を決定する」と直接矛盾している（CONTRADICTED）。生成回答はTransactionManagementHandlerを「バッチでなくリクエスト単位のWeb等向け」と位置づけており、バッチにおける正しい主役ハンドラを誤認させる実質的なOVER-REACHを含む。さらに往路・復路でのトランザクション開始・コミット動作の説明、および配置制約（DatabaseConnectionManagementHandlerより後ろ）がMISSING。transactionName・JdbcTransactionFactory・connectionName整合などの副次的事実は正確に覆われているが、中心事実のCONTRADICTEDにより最高でもlevel 1となる。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.16661815,
+  "duration_s": 45.08612394332886,
+  "error": null
+}

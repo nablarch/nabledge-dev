@@ -1,0 +1,81 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch アプリをスケールアウトするには、HTTPセッション依存の機能をすべてセッション非依存の代替に切り替え、APサーバをステートレスにする必要がある。Nablarch にはそのための仕組みが用意されている。\n\n**根拠**:\n\nHTTPセッションはAPサーバ側で状態を持つため、そのままではスケールアウトができない。スティッキーセッションやセッションレプリケーションといった一般的な回避策は Twelve-Factor App の廃棄容易性の観点で劣り、APサーバ依存にもなる。Nablarch ではセッション依存機能を非依存のものに切り替えることでステートレス化できる。(`component/libraries/libraries-stateless_web_app.json:s1`)\n\nデフォルトで HTTPセッションに依存している機能は以下の5つ:\n- セッションストア\n- 二重サブミット防止\n- スレッドコンテキスト変数管理ハンドラ\n- HTTPリライトハンドラ\n- hidden暗号化\n(`component/libraries/libraries-stateless_web_app.json:s2`)\n\n各機能の切り替え方法は以下の通り (`component/libraries/libraries-stateless_web_app.json:s3`):\n- **セッションストア** → DBストア（`db_managed_expiration`）を使用する\n- **二重サブミット防止** → `db_double_submit` を使用する\n- **スレッドコンテキストハンドラ** → `LanguageAttributeInHttpSession` を `LanguageAttributeInHttpCookie`、`TimeZoneAttributeInHttpSession` を `TimeZoneAttributeInHttpCookie`、`UserIdAttribute` を `UserIdAttributeInSessionStore` に切り替える\n- **HTTPリライトハンドラ** → セッションスコープにアクセスしないよう設定するか、使用しない\n- **hidden暗号化** → `useHiddenEncryption` を `false` に設定して無効化する\n\nDBストアを使用する場合は `USER_SESSION` テーブル（SESSION_ID, SESSION_OBJECT, EXPIRATION_DATETIME の3カラム）を作成し、`SessionManager` を `\"sessionManager\"` というコンポーネント名でDIコンテナに登録する必要がある。(`component/libraries/libraries-session_store.json:s4`)\n\n**注意点**:\n- `SESSION_ID` カラムは CHAR ではなく **VARCHAR** で定義すること（Oracle で正常動作しないケースがある）。(`component/libraries/libraries-session_store.json:s4`)\n- DBストア使用時、ブラウザが閉じられた際などにテーブルにセッション情報が残存することがある。期限切れセッション情報を**定期的に削除するバッチ**を用意する必要がある。(`component/libraries/libraries-session_store.json:s4`)\n- `SessionManager` の `sessionManager` プロパティは `SessionStoreHandler` にも設定が必要。(`component/handlers/handlers-SessionStoreHandler.json:s5`)\n\n参照: component/libraries/libraries-stateless_web_app.json:s1, component/libraries/libraries-stateless_web_app.json:s2, component/libraries/libraries-stateless_web_app.json:s3, component/libraries/libraries-session_store.json:s4, component/handlers/handlers-SessionStoreHandler.json:s5",
+  "cited": [
+    "component/libraries/libraries-stateless_web_app.json:s1",
+    "component/libraries/libraries-stateless_web_app.json:s2",
+    "component/libraries/libraries-stateless_web_app.json:s3",
+    "component/libraries/libraries-session_store.json:s4",
+    "component/handlers/handlers-SessionStoreHandler.json:s5"
+  ],
+  "cost_usd": 0.37976684999999993,
+  "duration_s": 36.36303424835205,
+  "steps": {
+    "raw_selections": [
+      "web-application-feature_details|s18",
+      "restful-web-service-feature_details|s12",
+      "libraries-stateless_web_app|s1",
+      "libraries-stateless_web_app|s2",
+      "libraries-stateless_web_app|s3",
+      "handlers-SessionStoreHandler|s5",
+      "libraries-session_store|s4"
+    ],
+    "resolved": [
+      "processing-pattern/web-application/web-application-feature_details.json:s18",
+      "processing-pattern/restful-web-service/restful-web-service-feature_details.json:s12",
+      "component/libraries/libraries-stateless_web_app.json:s1",
+      "component/libraries/libraries-stateless_web_app.json:s2",
+      "component/libraries/libraries-stateless_web_app.json:s3",
+      "component/handlers/handlers-SessionStoreHandler.json:s5",
+      "component/libraries/libraries-session_store.json:s4"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s18",
+        "status": "ok",
+        "title": "Webアプリケーションのスケールアウト設計",
+        "chars": 47
+      },
+      {
+        "selector": "processing-pattern/restful-web-service/restful-web-service-feature_details.json:s12",
+        "status": "ok",
+        "title": "Webアプリケーションのスケールアウト設計",
+        "chars": 26
+      },
+      {
+        "selector": "component/libraries/libraries-stateless_web_app.json:s1",
+        "status": "ok",
+        "title": "基本的な考え方",
+        "chars": 273
+      },
+      {
+        "selector": "component/libraries/libraries-stateless_web_app.json:s2",
+        "status": "ok",
+        "title": "HTTPセッションに依存している機能",
+        "chars": 293
+      },
+      {
+        "selector": "component/libraries/libraries-stateless_web_app.json:s3",
+        "status": "ok",
+        "title": "HTTPセッション非依存機能の導入方法",
+        "chars": 801
+      },
+      {
+        "selector": "component/handlers/handlers-SessionStoreHandler.json:s5",
+        "status": "ok",
+        "title": "セッションストアを使用するための設定",
+        "chars": 530
+      },
+      {
+        "selector": "component/libraries/libraries-session_store.json:s4",
+        "status": "ok",
+        "title": "セッションストアを使用するための設定",
+        "chars": 1433
+      }
+    ],
+    "select_cost_usd": 0.25396719999999995,
+    "answer_cost_usd": 0.12579964999999999
+  },
+  "error": null
+}

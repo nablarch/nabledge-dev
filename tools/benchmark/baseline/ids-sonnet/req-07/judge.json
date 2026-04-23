@@ -1,0 +1,55 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "Nablarch は CORS をビルトインで提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CorsPreflightRequestHandler がプリフライトリクエストを処理する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CorsResponseFinisher が実際のリクエストに対して CORS ヘッダを付与する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "完全修飾クラス名は nablarch.fw.jaxrs.CorsPreflightRequestHandler",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "CORS は RESTful ウェブサービス機能の一部として位置づけられている",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "CORS ロジックは BasicCors クラスが提供する",
+        "type": "HALLUCINATION",
+        "why": "BasicCors は参照ソース s1/s14 に存在せず s4 由来。参照ソースの証拠境界外。"
+      },
+      {
+        "claim": "BasicCors に allowOrigins を設定する XML 構成例と必須設定の説明",
+        "type": "HALLUCINATION",
+        "why": "s4 由来の設定詳細。参照ソースには含まれない。"
+      },
+      {
+        "claim": "プリフライトレスポンスのデフォルト動作（204、許可メソッド一覧、Max-Age: -1）",
+        "type": "HALLUCINATION",
+        "why": "s4 由来のデフォルト挙動詳細。参照ソースには含まれない。"
+      },
+      {
+        "claim": "CorsResponseFinisher が付与するヘッダの詳細（Access-Control-Allow-Origin、Vary、Allow-Credentials）",
+        "type": "HALLUCINATION",
+        "why": "s4 由来のヘッダ詳細。参照ソースには含まれない。"
+      }
+    ],
+    "reasoning": "必須ファクトはすべて COVERED（完全修飾クラス名のみ PARTIAL）。CorsPreflightRequestHandler と CorsResponseFinisher による CORS 対応という核心的な回答は正確に伝えられている。一方、生成回答は参照ソース s1/s14 には存在しない s4 のコンテンツ（BasicCors クラス・XML 設定例・デフォルト挙動・レスポンスヘッダ詳細）を複数追加している。これらは同じ知識ファイルの別セクション由来で事実として正確であり、読者を誤った方向へ誘導するものではないが、参照ソースの証拠境界を大きく超えている。複数の HALLUCINATION が存在するため level 3 は不可。ただし中核ファクトに矛盾はなく、追加情報が質問に対する誤解を招く内容でもないため level 2 と判定する。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.17838795,
+  "duration_s": 67.37959289550781,
+  "error": null
+}

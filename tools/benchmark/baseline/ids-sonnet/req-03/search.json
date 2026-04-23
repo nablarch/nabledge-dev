@@ -1,0 +1,56 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch には楽観的ロック・悲観的ロックの仕組みがある。推奨は **UniversalDao** の `@Version` アノテーションを使った楽観的ロックで、テーブルにバージョン番号カラムを持たせることで「後勝ち上書き」を防止できる。\n\n**根拠**:\n\n1. **UniversalDao による楽観的ロック（推奨）**  \n   `@Version` が付いた Entity を `UniversalDao.update()` で更新すると、自動的に楽観的ロックが適用される。別ユーザーが先に更新していた場合（バージョン番号が一致しない場合）は `jakarta.persistence.OptimisticLockException` がスローされ、上書きを防止できる。  \n   （`component/libraries/libraries-universal_dao.json:s12`）\n\n   画面遷移は `@OnError` で制御できる:\n   ```java\n   @OnError(type = OptimisticLockException.class,\n            path = \"/WEB-INF/view/common/errorPages/userError.jsp\")\n   public HttpResponse update(...) {\n       UniversalDao.update(user);\n   }\n   ```\n   （`component/libraries/libraries-universal_dao.json:s12`）\n\n2. **旧 exclusive_control ライブラリ（非推奨）**  \n   `BasicExclusiveControlManager` を使う旧方式も楽観的ロック・悲観的ロックの両方を実現できるが、現在は **非推奨**。PostgreSQL など暗黙型変換を行わない DB では主キーの型不一致で実行時例外が発生する問題があるため、UniversalDao 方式に移行することが推奨されている。  \n   （`component/libraries/libraries-exclusive_control.json:s1`）\n\n3. **ロック単位の設計**  \n   バージョンカラムをどのテーブルに定義するかは業務的観点で決定する。単位を大きくするほど競合確率が上がり、楽観的ロックでは更新失敗、悲観的ロックでは処理遅延を招く。  \n   （`component/libraries/libraries-universal_dao.json:s14`）\n\n**注意点**:\n- `@Version` は **数値型プロパティのみ** に指定可能。文字列型では正しく動作しない（`component/libraries/libraries-universal_dao.json:s12`）。\n- `batchUpdate`（一括更新）では楽観的ロックは **使用できない**（`component/libraries/libraries-universal_dao.json:s12`）。一括更新の楽観的ロックには旧 `HttpExclusiveControlUtil#checkVersions` / `updateVersionsWithCheck` を使う方法があるが、旧ライブラリは非推奨である点に注意（`component/libraries/libraries-exclusive_control.json:s3`）。\n\n参照: component/libraries/libraries-universal_dao.json:s12, component/libraries/libraries-universal_dao.json:s14, component/libraries/libraries-exclusive_control.json:s1, component/libraries/libraries-exclusive_control.json:s3",
+  "cited": [
+    "component/libraries/libraries-universal_dao.json:s12",
+    "component/libraries/libraries-universal_dao.json:s14",
+    "component/libraries/libraries-exclusive_control.json:s1",
+    "component/libraries/libraries-exclusive_control.json:s3"
+  ],
+  "cost_usd": 0.38127045000000004,
+  "duration_s": 40.670520067214966,
+  "steps": {
+    "raw_selections": [
+      "libraries-exclusive_control|s1",
+      "libraries-exclusive_control|s3",
+      "libraries-universal_dao|s12",
+      "libraries-universal_dao|s14"
+    ],
+    "resolved": [
+      "component/libraries/libraries-exclusive_control.json:s1",
+      "component/libraries/libraries-exclusive_control.json:s3",
+      "component/libraries/libraries-universal_dao.json:s12",
+      "component/libraries/libraries-universal_dao.json:s14"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/libraries/libraries-exclusive_control.json:s1",
+        "status": "ok",
+        "title": "機能概要",
+        "chars": 1948
+      },
+      {
+        "selector": "component/libraries/libraries-exclusive_control.json:s3",
+        "status": "ok",
+        "title": "一括更新で楽観的ロックを行う",
+        "chars": 1376
+      },
+      {
+        "selector": "component/libraries/libraries-universal_dao.json:s12",
+        "status": "ok",
+        "title": "楽観的ロックを行う",
+        "chars": 581
+      },
+      {
+        "selector": "component/libraries/libraries-universal_dao.json:s14",
+        "status": "ok",
+        "title": "排他制御の考え方",
+        "chars": 200
+      }
+    ],
+    "select_cost_usd": 0.251075,
+    "answer_cost_usd": 0.13019545000000002
+  },
+  "error": null
+}

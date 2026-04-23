@@ -1,0 +1,53 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Bean Validation を推奨する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@Valid をリソースメソッドの**引数**に設定して有効化する（例: `@Valid SampleForm form`）",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "エラー応答は JaxRsResponseHandler が生成する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "バリデーションエラー時にボディへメッセージを含めるには ErrorResponseBuilder を継承したクラスを作成する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "デフォルト実装では HttpErrorResponse がスローされた場合 HttpErrorResponse#getResponse() のレスポンスをそのまま返す",
+        "status": "MISSING"
+      },
+      {
+        "fact": "特定の例外に個別ステータスコード・ボディを返す場合も ErrorResponseBuilder を継承し例外型で分岐する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "errorResponseBuilder プロパティにカスタム ErrorResponseBuilder を設定する",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "JaxRsBeanValidationHandler がバリデーションを担うハンドラとして主要機構として紹介されている",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに handlers-jaxrs_bean_validation_handler.json は含まれておらず、リファレンス回答も @Valid アノテーションのみで説明しており、このハンドラは証拠境界外"
+      },
+      {
+        "claim": "@Valid をメソッドレベルのアノテーションとして記述したコード例（`@Valid` が引数ではなくメソッド上に付与）",
+        "type": "OVER-REACH",
+        "why": "リファレンスは `@Valid SampleForm form` のように引数に付ける形を示しており、メソッドへの付与は誤った使い方を示唆し読者を誤解させる可能性がある"
+      }
+    ],
+    "reasoning": "主要な必須ファクト（Bean Validation 推奨、JaxRsResponseHandler によるエラー応答生成、ErrorResponseBuilder 継承によるメッセージ返却）はほぼ網羅されている。しかし以下の問題がある。①コード例で @Valid をメソッドの引数ではなくメソッド自体のアノテーションとして示しており、リファレンスの `@Valid SampleForm form` という形式と矛盾する（PARTIAL/CONTRADICTED）。②JaxRsBeanValidationHandler の詳細説明を参照ソース外から追加しており、これは参照ソースに存在しない情報（HALLUCINATION）。③デフォルト ErrorResponseBuilder が HttpErrorResponse 時に getResponse() をそのまま返す動作が未言及（MISSING）。@Valid の配置誤りとソース外 HALLUCINATION の組み合わせにより Level 1 が妥当。"
+  },
+  "ref_sources_loaded": 6,
+  "ref_sources_total": 6,
+  "cost_usd": 0.19669355,
+  "duration_s": 71.81397986412048,
+  "error": null
+}

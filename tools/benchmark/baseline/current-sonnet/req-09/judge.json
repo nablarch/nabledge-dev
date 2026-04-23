@@ -1,0 +1,44 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "Nablarch はレート制限（流量制御）機能をビルトイン提供していない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "知識ファイルにレート制限・スロットリング・流量制御に関する記載はない",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "RESTful ウェブサービスではハンドラによるリクエスト処理のカスタマイズが可能",
+        "status": "COVERED"
+      },
+      {
+        "fact": "プロジェクト側でカスタムハンドラを実装してリクエスト回数・頻度をチェックする形で対応できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "カスタムハンドラを jaxrs_response_handler / router_adaptor などの前段に追加する",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "AP サーバ・API Gateway・リバースプロキシなど Nablarch 外のレイヤで流量制御を実施する選択肢がある",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "ServiceAvailabilityCheckHandler を「最も近い代替」として冒頭に提示している",
+        "type": "OVER-REACH",
+        "why": "参照ソースに含まれないハンドラ。リファレンス回答が示す最近接機能はカスタムハンドラフレームワークであり、ServiceAvailabilityCheckHandler はリファレンスで言及すらされていない。"
+      }
+    ],
+    "reasoning": "主要な必須事実はすべて COVERED または PARTIAL でカバーされている。「Nablarch にレート制限機能がない」「カスタムハンドラで対応する」「インフラレイヤでの対応も選択肢」という核心的事実は正確に伝えている。ServiceAvailabilityCheckHandler を「最も近い代替」として冒頭に置く点は OVER-REACH（参照ソース外・リファレンスが示す最近接はカスタムハンドラフレームワーク）だが、直後に「二値制御であり頻度制限ではない」と正確に説明しており、読者がこのハンドラをレート制限の解として採用することへの誘導は限定的。知識ファイルにレート制限の記載がないという事実は明示されていないが、全体の結論から同等の情報が伝わるため PARTIAL とした。核心的事実の CONTRADICTED なし・MISSING なし・OVER-REACH 1件という構成で Level 2 が妥当。"
+  },
+  "ref_sources_loaded": 1,
+  "ref_sources_total": 1,
+  "cost_usd": 0.22583519999999999,
+  "duration_s": 100.94243884086609,
+  "error": null
+}

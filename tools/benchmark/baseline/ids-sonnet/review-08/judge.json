@@ -1,0 +1,96 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "MultiThreadExecutionHandler で並列実行数を指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "concurrentNumber プロパティでスレッド数を変更する（デフォルトはサブスレッド1つ）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "後続ハンドラ・バッチアクションはスレッドセーフである必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "スレッドセーフでない処理を並列実行すると予期せぬ例外やデータ不整合が発生する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親スレッド側でDBアクセスする場合は MultiThreadExecutionHandler より前に database_connection_management_handler を配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッド側でDBアクセスする場合は後のサブスレッド用ハンドラ構成に database_connection_management_handler と transaction_management_handler を配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親・サブ両方でDBアクセスする場合、最低2つのDBコネクションが必要",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッドが複数の場合はスレッド数分が追加で必要（例: サブスレッド10なら合計11コネクション）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッドで予期せぬ例外が発生した場合、ThreadPoolExecutor#shutdownNow() を呼び出す",
+        "status": "MISSING"
+      },
+      {
+        "fact": "例外が発生したサブスレッドは処理が中断されロールバックされる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親スレッドは各サブスレッドで使用されるデータリーダをクローズする",
+        "status": "MISSING"
+      },
+      {
+        "fact": "親スレッドは全サブスレッドに対し停止要求を行う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "各サブスレッドはデータリーダがクローズされているため実行中の処理が終わったタイミングで正常終了する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "InterruptedException を捕捉している場合は例外を送出するなどで処理を異常終了させること",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "排他制御は「ロック取得→データ取得→更新」の順で1件ずつ行うことが必須（結論に記載）",
+        "type": "OVER-REACH",
+        "why": "参照ソースに含まれない libraries-exclusive_control.json:s4 由来。必須と断言しており、参照回答の範囲外の内容を主結論として提示している"
+      },
+      {
+        "claim": "④ 悲観ロックはロック時間を最小化する順序で取得（前処理でPKのみ取得し本処理で1件ずつロック）",
+        "type": "OVER-REACH",
+        "why": "参照ソースに含まれない libraries-exclusive_control.json:s4 由来。質問の排他制御側面に関連するが参照回答には含まれない"
+      },
+      {
+        "claim": "⑤ DatabaseRecordReader の beforeReadRecords() で悲観ロックSQLを別トランザクションで実行し、processId は UUID.randomUUID() で生成する",
+        "type": "OVER-REACH",
+        "why": "参照ソースに含まれない nablarch-batch-nablarch_batch_multiple_process.json:s1 由来。マルチプロセスパターンは参照回答の範囲外"
+      },
+      {
+        "claim": "LoopHandler の transactionName と DbConnectionManagementHandler の connectionName は同じ値を設定すること",
+        "type": "OVER-REACH",
+        "why": "参照ソースに含まれない handlers-loop_handler.json:s5 由来。MultiThreadExecutionHandler の設定とは別のハンドラに関する注意点"
+      },
+      {
+        "claim": "排他制御には UniversalDao の使用が推奨される",
+        "type": "OVER-REACH",
+        "why": "参照ソースに含まれない nablarch-batch-feature_details.json:s6 由来。参照回答にはこの推奨は記載されていない"
+      }
+    ],
+    "reasoning": "参照回答のコアである「DB接続の配置位置」「コネクション数の計算」「スレッドセーフ要件」はカバーされているが、以下の MISSING が存在する: (1) `concurrentNumber` プロパティとデフォルト値（サブスレッド1つ）の説明が完全に欠落、(2) 例外発生時の `ThreadPoolExecutor#shutdownNow()` 呼び出しが未記載、(3) データリーダのクローズとそれに伴うサブスレッドの安全な正常終了シーケンスが未記載。加えて、参照ソースに含まれない5つの OVER-REACH が存在し、とくに結論で「排他制御はロック取得→データ取得→更新の順で1件ずつ行うことが必須」と断言している点や、マルチプロセスパターン（⑤）を大きく追加している点は、読者を参照回答の想定範囲外の実装詳細に誘導するリスクがある。MISSING が複数あり OVER-REACH も多いため level 1 とする。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.23354989999999998,
+  "duration_s": 84.7164933681488,
+  "error": null
+}

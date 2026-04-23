@@ -1,0 +1,85 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "夜間バッチ（日次・月次など定期起動）には都度起動バッチを選択する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "常駐バッチはマルチスレッド実行時に遅延問題があり、新規開発ではdb_messagingが推奨される",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "BatchAction継承のアクションクラス・フォームクラス・エンティティクラスの3層構成",
+        "status": "COVERED"
+      },
+      {
+        "fact": "フォームクラスのプロパティは全てString型で定義する（Bean Validationの都合）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "外部ファイルなど安全でない入力には@Required/@Domainなどのバリデーションアノテーションを付与する",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "DB接続ありの最小ハンドラキュー: StatusCodeConvertHandler, GlobalErrorHandler, DBConnectionMgmt×2, TransactionMgmt, RequestPathJavaPackageMapping, MultiThreadExecution, LoopHandler, DataReadHandler",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッド側にLoopHandler→DataReadHandlerを置き1レコードずつ業務アクションに渡す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "handleメソッドでBeanUtil.createAndCopyによりフォーム→エンティティ変換後、UniversalDao.insertでDB登録し、new Result.Success()を返す",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "createReaderメソッドでデータリーダのインスタンスを返す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CSVのデータリーダはFilePathSetting.getInstance()でパス解決、ObjectMapperFactory.createでObjectMapper生成、ObjectMapperIteratorでラップして実装",
+        "status": "COVERED"
+      },
+      {
+        "fact": "フォームクラスに@Csv(type=CsvType.CUSTOM)と@CsvFormat(quoteMode=QuoteMode.NORMAL)を付与、行番号ゲッタに@LineNumberを付与",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "-requestPath引数でアクションクラスとリクエストIDを指定する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "data_bindを使う場合はFileBatchActionを使わずBatchActionを使う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@ValidateDataインターセプタを使うとhandleに常にバリデーション済みデータが渡り、バッチ間で共通化できる",
+        "status": "MISSING"
+      },
+      {
+        "fact": "標準提供のデータリーダ: FileDataReader、ValidatableFileDataReader、ResumeDataReaderの利用も検討できる",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "ファイルのレイアウトと1対1対応するカラムを持つテンポラリテーブルにINSERT、マッチングはSQL JOIN、コントロールブレイクはGROUP BYで代替",
+        "type": "HALLUCINATION",
+        "why": "guide/nablarch-patterns/...:s2を引用しているがreference sourcesに含まれないソースからの情報"
+      },
+      {
+        "claim": "ファイルの移動・コピーを取り込みバッチと別ジョブにすることで手動オペレーションが不要になる",
+        "type": "HALLUCINATION",
+        "why": "guide/nablarch-patterns/...:s3を引用しているがreference sourcesに含まれないソースからの情報"
+      }
+    ],
+    "reasoning": "生成回答は都度起動バッチの選択、DB接続ありのハンドラキュー構成（主要ハンドラ名すべて列挙）、3層クラス設計、CSVデータリーダの実装（FilePathSetting/ObjectMapperIterator）、FileBatchAction禁止など主要ファクトを多くカバーしている。しかし①フォームクラスのプロパティを全てString型とする設計制約（Bean Validationの都合）が完全に未言及（MISSING）、②-requestPath引数によるアクションクラス/リクエストID指定の仕組みが未言及（MISSING）、③@ValidateDataインターセプタによるバリデーション共通化が未言及（MISSING）という3つの必須ファクトが欠落している。加えて、reference sourcesに存在しないガイド文書（nablarch-patterns）からテンポラリテーブル戦略やファイル分離アドバイスを引用しており、これらはHALLUCINATION扱い。MISSINGファクトが複数あるためスコアは1。"
+  },
+  "ref_sources_loaded": 7,
+  "ref_sources_total": 7,
+  "cost_usd": 0.35766679999999995,
+  "duration_s": 176.28838753700256,
+  "error": null
+}
