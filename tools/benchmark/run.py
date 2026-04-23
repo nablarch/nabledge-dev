@@ -30,26 +30,39 @@ from tools.benchmark.bench.types import JudgeResult, Scenario, SearchResult, Var
 
 
 def run_variant(
-    *, variant: Variant, scenarios: list[Scenario], model: str, out_dir: Path
+    *, variant: Variant, scenarios: list[Scenario], model: str, out_dir: Path,
+    search_only: bool = False,
 ) -> None:
     search_fn = _dispatch(variant)
     ids_map = search_ids.load_id_to_path() if variant == "ids" else {}
-    print(f"variant={variant} model={model} scenarios={len(scenarios)} out={out_dir}",
+    mode = "search-only" if search_only else "full"
+    print(f"variant={variant} model={model} mode={mode} scenarios={len(scenarios)} out={out_dir}",
           file=sys.stderr)
     summary_rows: list[dict] = []
     for i, sc in enumerate(scenarios, 1):
         scen = io.scen_dir(out_dir, sc.id)
         print(f"[{i}/{len(scenarios)}] {sc.id} ...", file=sys.stderr, flush=True)
+        extra_kwargs: dict = {}
+        if variant == "ids":
+            extra_kwargs["id_to_path"] = ids_map
+            extra_kwargs["skip_answer"] = search_only
         search: SearchResult = search_fn(
-            question=sc.question, model=model, scen_dir=scen, **({"id_to_path": ids_map} if variant == "ids" else {}),
+            question=sc.question, model=model, scen_dir=scen, **extra_kwargs,
         )
         io.write_search(scen, search)
+        if search_only:
+            _print_search_row(sc.id, search)
+            summary_rows.append(_search_summary_row(sc.id, search))
+            continue
         jr = judge.run(scenario=sc, search=search, model=model, scen_dir=scen)
         io.write_judge(scen, jr)
         _print_row(sc.id, search, jr)
         summary_rows.append(_summary_row(sc.id, search, jr))
     _write_run_meta(out_dir, variant=variant, model=model, scenarios=[s.id for s in scenarios])
-    _write_summary(out_dir, summary_rows)
+    if search_only:
+        _write_search_summary(out_dir, summary_rows)
+    else:
+        _write_summary(out_dir, summary_rows)
 
 
 def rejudge(*, results_dir: Path, model: str, scenarios: list[Scenario]) -> None:
@@ -84,6 +97,58 @@ def _dispatch(variant: Variant) -> Callable[..., SearchResult]:
     if variant == "current":
         return search_current.run
     raise ValueError(f"unknown variant: {variant}")
+
+
+def _print_search_row(sid: str, search: SearchResult) -> None:
+    steps = search.steps or {}
+    n_sel = len(steps.get("raw_selections") or [])
+    n_term = len(steps.get("term_queries") or [])
+    n_hit = len(steps.get("term_hits") or [])
+    print(
+        f"  -> selections={n_sel} term_queries={n_term} term_hits={n_hit} "
+        f"cost=${search.cost_usd:.4f} wall={search.duration_s:.1f}s",
+        file=sys.stderr,
+    )
+
+
+def _search_summary_row(sid: str, search: SearchResult) -> dict:
+    steps = search.steps or {}
+    return {
+        "id": sid,
+        "selections": len(steps.get("raw_selections") or []),
+        "term_queries": len(steps.get("term_queries") or []),
+        "term_hits": len(steps.get("term_hits") or []),
+        "merged": len(steps.get("merged_selections") or steps.get("raw_selections") or []),
+        "cost_usd": round(search.cost_usd, 6),
+        "wall_s": round(search.duration_s, 2),
+        "error": search.error or "",
+    }
+
+
+def _write_search_summary(out_dir: Path, rows: list[dict]) -> None:
+    csv_path = out_dir / "search_summary.csv"
+    fields = ["id", "selections", "term_queries", "term_hits", "merged",
+              "cost_usd", "wall_s", "error"]
+    with csv_path.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: r.get(k, "") for k in fields})
+    summary = {
+        "total": len(rows),
+        "errors": sum(1 for r in rows if r.get("error")),
+        "avg_selections": round(sum(r["selections"] for r in rows) / len(rows), 2) if rows else 0,
+        "avg_term_queries": round(sum(r["term_queries"] for r in rows) / len(rows), 2) if rows else 0,
+        "avg_term_hits": round(sum(r["term_hits"] for r in rows) / len(rows), 2) if rows else 0,
+        "total_cost_usd": round(sum(r.get("cost_usd") or 0 for r in rows), 4),
+    }
+    (out_dir / "search_summary.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(f"search-only summary: avg_sel={summary['avg_selections']} "
+          f"avg_terms={summary['avg_term_queries']} avg_hits={summary['avg_term_hits']} "
+          f"cost=${summary['total_cost_usd']}",
+          file=sys.stderr)
 
 
 def _print_row(sid: str, search: SearchResult, jr: JudgeResult) -> None:
@@ -167,6 +232,8 @@ def main() -> int:
     ap.add_argument("--model", default="sonnet",
                     help="claude model id or alias (sonnet, haiku, opus, or exact id)")
     ap.add_argument("--out", help="output directory (default: .results/{ts}-{variant}-{model})")
+    ap.add_argument("--search-only", action="store_true",
+                    help="run only the AI-1 search stage; skip AI-3 answer and judge")
     args = ap.parse_args()
 
     scenarios = io.load_scenarios(Path(args.scenarios_file))
@@ -194,7 +261,8 @@ def main() -> int:
         return 2
 
     out_dir = Path(args.out) if args.out else io.new_results_dir(args.variant, args.model)
-    run_variant(variant=args.variant, scenarios=scenarios, model=args.model, out_dir=out_dir)
+    run_variant(variant=args.variant, scenarios=scenarios, model=args.model,
+                out_dir=out_dir, search_only=args.search_only)
     return 0
 
 

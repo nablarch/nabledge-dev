@@ -155,7 +155,8 @@ def resolve_selections(
     return resolved, unresolved
 
 
-def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict]) -> SearchResult:
+def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict],
+        skip_answer: bool = False) -> SearchResult:
     # AI-1 — select file_id|sid from the index.
     select_prompt = (
         (io.PROMPTS_DIR / "search_ids.md").read_text(encoding="utf-8")
@@ -181,6 +182,27 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
 
     # Load section content.
     sections_text, section_records = io.read_selected_sections(resolved)
+
+    # Phase 1 support: stop after retrieval without calling AI-3.
+    if skip_answer:
+        return SearchResult(
+            variant="ids",
+            answer="",
+            cited=[],
+            cost_usd=select.cost_usd,
+            duration_s=select.duration_s,
+            steps={
+                "raw_selections": raw_selections,
+                "term_queries": term_queries,
+                "term_hits": term_hits,
+                "merged_selections": merged_selections,
+                "resolved": resolved,
+                "unresolved": unresolved,
+                "sections_read": section_records,
+                "select_cost_usd": select.cost_usd,
+            },
+            error=select.error or None,
+        )
 
     # AI-3 — compose the answer. If no sections were resolvable, return empty.
     if not sections_text:
