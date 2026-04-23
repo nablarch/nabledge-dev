@@ -9,9 +9,13 @@ Public API:
 """
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
+
+from scripts.common.file_id import (
+    load_mappings as _load_mappings,
+    rel_for_classify as _rel_for_classify,
+)
 
 
 @dataclass(frozen=True)
@@ -19,17 +23,6 @@ class SourceFile:
     path: Path      # absolute path
     format: str     # 'rst', 'md', 'xlsx'
     filename: str   # basename
-
-
-def _load_mappings(version: str, repo_root: Path) -> dict:
-    """Load RBKC mapping file for the given version."""
-    mapping_path = repo_root / "tools/rbkc/mappings" / f"v{version}.json"
-    if not mapping_path.exists():
-        raise FileNotFoundError(
-            f"Mapping file not found: {mapping_path}\n"
-            f"Create tools/rbkc/mappings/v{version}.json to support this version."
-        )
-    return json.loads(mapping_path.read_text(encoding="utf-8"))
 
 
 def _all_releasenote_root(version: str, repo_root: Path) -> Path | None:
@@ -57,28 +50,6 @@ def _source_roots(version: str, repo_root: Path) -> list[Path]:
     if all_rn is not None:
         roots = list(roots) + [all_rn]
     return roots
-
-
-def _rel_for_classify(path: Path, version: str) -> str:
-    """Extract path segment used for pattern matching (after doc root marker)."""
-    markers = {
-        "5": "nablarch-document/ja/",
-        "6": "nablarch-document/ja/",
-        "1.4": ("document/", "workflow/", "biz_sample/", "ui_dev/"),
-        "1.3": ("document/", "biz_sample/"),
-        "1.2": ("document/",),
-    }
-    raw = str(path).replace("\\", "/")
-    marker_list = markers.get(version, ("nablarch-document/ja/",))
-    if isinstance(marker_list, str):
-        marker_list = (marker_list,)
-    for marker in marker_list:
-        idx = raw.find(marker)
-        if idx >= 0:
-            if version.startswith("1.") and marker != "document/":
-                return marker + raw[idx + len(marker):]
-            return raw[idx + len(marker):]
-    return path.name
 
 
 def scan_sources(

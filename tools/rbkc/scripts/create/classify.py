@@ -8,12 +8,16 @@ Public API:
 """
 from __future__ import annotations
 
-import json
-import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from scripts.create.scan import SourceFile, _load_mappings, _rel_for_classify
+from scripts.common.file_id import (
+    _generate_id,
+    derive_file_id,
+    load_mappings as _load_mappings,
+    rel_for_classify as _rel_for_classify,
+)
+from scripts.create.scan import SourceFile
 
 
 @dataclass(frozen=True)
@@ -26,58 +30,6 @@ class FileInfo:
     output_path: str  # relative: e.g. component/libraries/libraries-universal_dao.json
     # Phase 22-B: set only for xlsx sheet-level split.  ``None`` for rst/md.
     sheet_name: str | None = None
-
-
-def _generate_id(filename: str, fmt: str, category: str, source_path: Path,
-                 matched_pattern: str, version: str, xlsx_exact: bool = False,
-                 extra_prefix: str = "") -> str:
-    """Generate a knowledge file ID from filename and category.
-
-    Args:
-        extra_prefix: Additional path-based prefix for disambiguation (e.g. parent dir).
-                      Inserted between category and base: ``{category}-{extra_prefix}-{base}``.
-    """
-    # For xlsx exact-filename matches (not pattern), category is the full ID
-    if fmt == "xlsx" and xlsx_exact:
-        return category
-
-    # Strip extension
-    if fmt == "rst":
-        base = filename[:-4]  # remove .rst
-    elif fmt == "md":
-        base = filename[:-3]  # remove .md
-    else:
-        base = Path(filename).stem
-
-    # For index.rst, use path context to avoid collisions
-    if base == "index" and source_path is not None and matched_pattern:
-        rel = _rel_for_classify(source_path, version)
-        pattern_clean = matched_pattern.rstrip("/")
-        if not pattern_clean:
-            base = "top"
-        else:
-            idx = rel.find(pattern_clean)
-            if idx >= 0:
-                remainder = rel[idx + len(pattern_clean):].strip("/")
-                if remainder == "index.rst":
-                    base = Path(pattern_clean).name
-                else:
-                    dir_part = str(Path(remainder).parent)
-                    if dir_part == ".":
-                        base = Path(pattern_clean).name
-                    else:
-                        base = dir_part.replace("/", "-").replace("_", "-")
-
-    # Combine with category for uniqueness
-    base = base.replace("_", "-")
-    if extra_prefix:
-        extra_prefix = extra_prefix.replace("_", "-")
-        if category:
-            return f"{category}-{extra_prefix}-{base}"
-        return f"{extra_prefix}-{base}"
-    if category:
-        return f"{category}-{base}"
-    return base
 
 
 def _parent_prefix(source_path: Path, levels: int) -> str:
@@ -189,72 +141,12 @@ def classify_sources(
     """
     mappings = _load_mappings(version, repo_root)
 
-    # Sort RST patterns longest-first (more specific matches win)
-    rst_entries = sorted(
-        mappings.get("rst", []),
-        key=lambda e: len(e["pattern"]),
-        reverse=True,
-    )
-    md_mapping: dict = mappings.get("md", {})
-    xlsx_exact: dict = mappings.get("xlsx", {})
-    xlsx_patterns: list = mappings.get("xlsx_patterns", [])
-
     items: list[tuple[str, FileInfo]] = []
 
     for src in sources:
-        rel = _rel_for_classify(src.path, version)
-        type_ = category = matched_pattern = None
-        is_xlsx_exact = False
-
-        if src.format == "rst":
-            for entry in rst_entries:
-                if entry["pattern"] in rel:
-                    type_ = entry["type"]
-                    category = entry["category"]
-                    matched_pattern = entry["pattern"]
-                    break
-            if type_ is None:
-                # top-level index.rst
-                if rel == "index.rst":
-                    type_, category, matched_pattern = "about", "about-nablarch", ""
-                else:
-                    continue  # unclassified
-
-        elif src.format == "md":
-            if src.filename in md_mapping:
-                info = md_mapping[src.filename]
-                type_ = info["type"]
-                category = info["category"]
-                matched_pattern = ""
-            else:
-                continue
-
-        elif src.format == "xlsx":
-            if src.filename in xlsx_exact:
-                info = xlsx_exact[src.filename]
-                type_ = info["type"]
-                category = info["category"]
-                matched_pattern = ""
-                is_xlsx_exact = True
-            else:
-                is_xlsx_exact = False
-                for pat in xlsx_patterns:
-                    if src.filename.endswith(pat["endswith"]):
-                        type_ = pat["type"]
-                        category = pat["category"]
-                        matched_pattern = ""
-                        break
-                if type_ is None:
-                    continue
-
-        if type_ is None or category is None:
+        fc = derive_file_id(src.path, src.format, version, repo_root, mappings=mappings)
+        if fc is None:
             continue
-
-        base_file_id = _generate_id(
-            src.filename, src.format, category,
-            src.path, matched_pattern or "", version,
-            xlsx_exact=is_xlsx_exact,
-        )
 
         # Phase 22-B: xlsx files expand into one FileInfo per worksheet.
         # Sheet count = 1 keeps the bare file_id; ≥ 2 appends the sheet
@@ -267,29 +159,28 @@ def classify_sources(
                 continue
             for sheet in sheet_names:
                 if len(sheet_names) == 1:
-                    file_id = base_file_id
+                    file_id = fc.file_id
                 else:
-                    file_id = f"{base_file_id}-{_sheet_slug(sheet)}"
-                output_path = f"{type_}/{category}/{file_id}.json"
+                    file_id = f"{fc.file_id}-{_sheet_slug(sheet)}"
+                output_path = f"{fc.type}/{fc.category}/{file_id}.json"
                 items.append((output_path, FileInfo(
                     source_path=src.path,
                     format=src.format,
                     file_id=file_id,
-                    type=type_,
-                    category=category,
+                    type=fc.type,
+                    category=fc.category,
                     output_path=output_path,
                     sheet_name=sheet,
                 )))
             continue
 
-        file_id = base_file_id
-        output_path = f"{type_}/{category}/{file_id}.json"
+        output_path = f"{fc.type}/{fc.category}/{fc.file_id}.json"
         items.append((output_path, FileInfo(
             source_path=src.path,
             format=src.format,
-            file_id=file_id,
-            type=type_,
-            category=category,
+            file_id=fc.file_id,
+            type=fc.type,
+            category=fc.category,
             output_path=output_path,
         )))
 
