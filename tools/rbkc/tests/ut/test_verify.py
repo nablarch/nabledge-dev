@@ -1164,7 +1164,9 @@ class TestCheckContentCompleteness:
             {"id": "s2", "title": "詳細", "content": "共通テキスト。"},  # content in JSON not in source twice
         ])
         issues = self._check(src, data)
-        assert any("QC3" in i or "duplicate content" in i for i in issues)
+        # Spec §3-1 distinguishes QC3 from QC2/QC4 by label — assert the exact label.
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC2]" in i or "[QC4]" in i for i in issues)
 
     def test_fail_qc3_duplicate_title_md(self):
         src = "# T\n\n## 概要\n\n本文 A。\n\n## 詳細\n\n本文 B。\n"
@@ -1191,13 +1193,15 @@ class TestCheckContentCompleteness:
     def test_fail_qc3_top_level_and_section_content_duplicated(self):
         """Top-level content and a section content both declare the same
         text, but source has it only once → second consumption collides."""
-        src = "共通テキスト。\n"
+        src = "# T\n\n共通テキスト。\n\n## 詳細\n"
         data = self._data(
+            title="T",
             content="共通テキスト。",
             sections=[{"id": "s1", "title": "詳細", "content": "共通テキスト。"}],
         )
         issues = self._check(src, data, fmt="md")
-        assert any("QC3" in i or "duplicate content" in i for i in issues)
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC2]" in i or "[QC4]" in i for i in issues)
 
     def test_fail_qc3_duplicate_content_md(self):
         src = "# T\n\n## 概要\n\n本文。\n\n## 詳細\n\n別。\n"
@@ -1206,7 +1210,8 @@ class TestCheckContentCompleteness:
             {"id": "s2", "title": "詳細", "content": "本文。"},  # JSON duplicates source "本文。" substring
         ])
         issues = self._check(src, data, fmt="md")
-        assert any("QC3" in i or "duplicate content" in i for i in issues)
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC2]" in i or "[QC4]" in i for i in issues)
 
     # --- QC4 Z-1 gap fill: MD misplacement + content-only swap ------------
 
@@ -1410,7 +1415,8 @@ class TestVerifyFileExcel:
         data = {"id": "f", "title": "同じ", "content": "",
                 "sections": []}
         issues = self._check(str(xlsx_path), data)
-        assert any("QC3" in i or "duplicated" in i for i in issues)
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC1]" in i or "[QC2]" in i for i in issues)
 
 
 # ---------------------------------------------------------------------------
