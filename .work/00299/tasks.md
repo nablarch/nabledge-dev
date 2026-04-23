@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 60 — 22-B-16b-prep 完了 `c99d9992b` (file_id derivation を common へ集約、v6 output bit-identical)。22-B-16b-main 着手中。)
+**Updated**: 2026-04-23 (session 60 — 22-B-16b-prep 完了 `c99d9992b` (file_id derivation を common へ集約、v6 output bit-identical)。22-B-16b-main step 1 完了 `46bd4578c` (labels.py に LabelTarget + UNRESOLVED singleton + build_label_doc_map、v6 bit-identical)。step 2 以降を継続予定。)
 
 ---
 
@@ -123,15 +123,12 @@
     8. SE + QA expert review → Findings 全件対応
   - [x] **22-B-16b-slug**: `scripts/common/github_slug.py` 新規 (GitHub 公式仕様で独立 pin) `27fe72376`。12 unit tests GREEN
   - [x] **22-B-16b-prep**: file_id 算出を `scripts/common/file_id.py` に集約 (refactor のみ) — `c99d9992b`。v6 create output md5 `5c652df3...` 不変、verify FAIL 0、326 unit tests GREEN。SE 1 Finding (tautological test) 同コミットで修正済
-  - [ ] **22-B-16b-main**: labels.py 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化
-    1. TDD RED: `TestLabelTarget` / `TestDocMap` (labels.py 拡張)
-    2. TDD RED: `TestCheckSourceLinks_JsonSide` / `TestCheckSourceLinks_DocsMdSide` (各 link kind × pass/fail)
-    3. `labels.py` に `LabelTarget` dataclass + `build_label_doc_map(version, repo_root)`
-    4. `rst_ast_visitor.inline_inline` role=ref/doc/numref を MD リンク化 (github_slug + LabelTarget 経由)
-    5. `md_ast_visitor` の link_open href 相対解決 → MD リンク化
-    6. verify `check_source_links` 両側検証 (target `.md` 実在 + anchor slug 一致)
-    7. v6 再生成 → verify FAIL 0 を確認
-    8. SE + QA expert review → Findings 全件対応
+  - [ ] **22-B-16b-main**: labels.py 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化 (4 steps、SE design review `review-22-b-16b-main-se-design.md` 合意済)
+    1. [x] **step 1** (`46bd4578c`): labels.py に `LabelTarget` dataclass + `UNRESOLVED` singleton + `build_label_doc_map(version, repo_root) -> (label_map, doc_map)`。`build_label_map` の返り値は `dict[str, str]` → `dict[str, LabelTarget]` に変わるが `.title` 経由で後方互換。v6 bit-identical、verify FAIL 0、333 tests GREEN
+    2. [ ] **step 2**: `rst_ast_visitor` を `LabelTarget` 経由で `[text](../{category}/{file_id}.md#{github_slug(section_title)})` / `:doc:` を `[title](../{category}/{file_id}.md)` / `:numref:` 同様に変換。`source_path` を visitor `__init__` に追加。run.py に `build_label_doc_map` 呼び出しと `source_path` 引き渡しを追加
+    3. [ ] **step 3**: `md_ast_visitor` の `link_open` 相対 href を `doc_map` 経由で `[text](../{category}/{file_id}.md)` に変換。visitor に `source_path` 追加
+    4. [ ] **step 4**: verify `check_source_links_two_sided` (JSON side + docs MD side) 新規。各 link kind × pass/fail の TDD。target `.md` 実在 + anchor slug 一致検証 (`github_slug` 独立再計算で circular 回避)
+    - 各 step 終了時に `v6 verify FAIL 0` + SE + QA expert review → Findings 全件対応
   - [ ] **22-B-16c**: image/figure asset 解決 (converter 側 AST 時) + download role + QL1 asset-exists check
     1. TDD RED: asset resolution / copy / QL1 asset-exists
     2. RST `image` / `figure` / `:download:` URI を source dir からの相対で resolve、実ファイルを `knowledge/assets/{file_id}/{basename}` にコピー
