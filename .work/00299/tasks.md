@@ -2,17 +2,16 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 60 — 22-B-16b-prep 完了 `c99d9992b`、step 1 完了 `46bd4578c` (LabelTarget + UNRESOLVED singleton)、step 2a 完了 `5f0695d95` (enclosing-section 解決 + visitor plumbing)。step 2b は v6 真性 dangling `:ref:` 発見で relink emission 方針待ち。)
+**Updated**: 2026-04-23 (session 60 — 22-B-16b-main 全 step 完了 (step1 `46bd4578c` / step2a `5f0695d95` / step2b `e47859b6c` + F1F2 fix `7941b46fc` / step3 `5e70d5c83` / step4 `6b828cd01`)、22-B-16c 完了 `86549073d`、SE/QA review F1-F4 fix `cb620f73d` (linkfmt 単一ソース + AST link extraction + nested-block warning 伝播 + common/ 階層遵守)、v6 再生成 `3bd1fe3c4`。v6 verify FAIL 0、362 unit tests GREEN。次は 22-B-13 (nabledge-test v6 baseline)。)
 
 ---
 
 ## 現状サマリー
 
-- v6 verify: **FAIL 0 (Phase 21-Z 完了時点で達成)**。255 unit tests GREEN
-- 現在着手中: **Phase 22-B-5** — Excel converter を sheet-level 分割 + P1/P2 分類に書き直し
-- verify 層 (QO2 P1 一方向 containment / `_xlsx_source_tokens` sheet_name 拡張) は TDD で実装済 (`bd678e4aa`)
-- 残: xlsx converter 書き直し / docs.py P1-P2 分岐 / create→verify FAIL 0 / nabledge-test baseline 再取得 / 他バージョン展開
-- 次の土台タスク: Phase 21-Z Z-5 (nabledge-test v6 baseline)、Phase 19 (他バージョン展開)
+- v6 verify: **FAIL 0**。362 unit tests GREEN
+- 22-B-16b/c (cross-doc MD link emission + asset + QL1 two-sided) 完了。256/353 JSON files に cross-doc MD links、`:download:` xlsx/csv assets もリンク化
+- 次のタスク: **Phase 22-B-13** — nabledge-test v6 baseline 再取得 (現在 in_progress)
+- その後: Phase 19 (他バージョン展開) → Phase 21-Z Z-4/Z-3 (setup ゴミ / CHANGELOG / README)
 
 ---
 
@@ -98,7 +97,7 @@
 - [x] 22-B-9: 判定結果一覧 `.work/00299/phase22/sheet-classification.md` 出力 (`ca3bf744f`)。現状維持で確定、見た目改善は Issue #311 に切り出し
 - [ ] 22-B-11: 生成された docs MD を GitHub Web で実地確認 (ユーザー) — FB ①NULL混入 (修正済 `f67969f8a`)、②RST h3→## 潰れ、③内部リンク/画像リンクがdocs MDに反映されない → 22-B-16 で対応
 - [x] 22-B-11: 生成された docs MD を GitHub Web で実地確認 (ユーザー) — FB ①NULL混入 (修正済 `f67969f8a`)、②RST h3→## 潰れ、③内部リンク/画像リンクがdocs MDに反映されない → 22-B-16 で対応
-- [ ] 22-B-16: **RST section 階層 + 内部リンク / 画像 / literalinclude を docs MD と JSON に適切反映** (16a/16b/16c に分割)
+- [x] 22-B-16: **RST section 階層 + 内部リンク / 画像 / literalinclude を docs MD と JSON に適切反映** (16a/16b/16c 全 complete)
 
   **expert review 結果** (SE + QA): circular test / silent skip 4 箇所 / QO2 完全一致保持 / scope-split の要請を反映。詳細は `.work/00299/review-22-b-16-se.md` / `review-22-b-16-qa.md` (上記エキスパートレビュー全文).
 
@@ -123,23 +122,16 @@
     8. SE + QA expert review → Findings 全件対応
   - [x] **22-B-16b-slug**: `scripts/common/github_slug.py` 新規 (GitHub 公式仕様で独立 pin) `27fe72376`。12 unit tests GREEN
   - [x] **22-B-16b-prep**: file_id 算出を `scripts/common/file_id.py` に集約 (refactor のみ) — `c99d9992b`。v6 create output md5 `5c652df3...` 不変、verify FAIL 0、326 unit tests GREEN。SE 1 Finding (tautological test) 同コミットで修正済
-  - [ ] **22-B-16b-main**: labels.py 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化 (4 steps、SE design review `review-22-b-16b-main-se-design.md` 合意済)
-    1. [x] **step 1** (`46bd4578c`): labels.py に `LabelTarget` dataclass + `UNRESOLVED` singleton + `build_label_doc_map(version, repo_root) -> (label_map, doc_map)`。`build_label_map` の返り値は `dict[str, str]` → `dict[str, LabelTarget]` に変わるが `.title` 経由で後方互換。v6 bit-identical、verify FAIL 0、333 tests GREEN
-    2. [ ] **step 2**: `rst_ast_visitor` を `LabelTarget` 経由で MD リンク変換
-       - [x] **step 2a** (`5f0695d95`): labels scanner に enclosing-section 解決ロジックを追加 (Sphinx anchor 挙動に合わせる)。spec §3-2-2 の解釈を明文化。visitor plumbing (`doc_map` / `source_path` / helper メソッド) を追加。v6 bit-identical、337 tests GREEN
-       - [ ] **step 2b blocker**: v6 `:ref:`format_datetime`` が upstream で真に dangling (`libraries/format.rst:79,84`, `libraries/tag.rst:2028` から参照されるが定義なし)。§3-2-2 strict 適用で QC1 FAIL するが upstream 修正不能。link emission 方針をユーザー相談中
-    3. [ ] **step 3**: `md_ast_visitor` の `link_open` 相対 href を `doc_map` 経由で `[text](../{category}/{file_id}.md)` に変換。visitor に `source_path` 追加
-    4. [ ] **step 4**: verify `check_source_links_two_sided` (JSON side + docs MD side) 新規。各 link kind × pass/fail の TDD。target `.md` 実在 + anchor slug 一致検証 (`github_slug` 独立再計算で circular 回避)
-    - 各 step 終了時に `v6 verify FAIL 0` + SE + QA expert review → Findings 全件対応
-  - [ ] **22-B-16c**: image/figure asset 解決 (converter 側 AST 時) + download role + QL1 asset-exists check
-    1. TDD RED: asset resolution / copy / QL1 asset-exists
-    2. RST `image` / `figure` / `:download:` URI を source dir からの相対で resolve、実ファイルを `knowledge/assets/{file_id}/{basename}` にコピー
-    3. MD `image` も同様
-    4. JSON content は `assets/{file_id}/{basename}` で統一、docs.py rewrite は既存ロジックで対応
-    5. verify QL1 で asset の実ファイル存在確認
-    6. v6 再生成 → verify FAIL 0 を確認
-    7. SE + QA expert review → Findings 全件対応
-- [ ] 22-B-13: nabledge-test v6 baseline 再取得 (22-B-16 完了後、旧 baseline 97.3% は履歴として保持) — 他バージョン展開前に v6 を品質基準として固定
+  - [x] **22-B-16b-main**: labels.py 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化 (4 steps 全完了)
+    1. [x] **step 1** (`46bd4578c`): labels.py に `LabelTarget` + `UNRESOLVED` singleton + `build_label_doc_map`
+    2. [x] **step 2a** (`5f0695d95`): enclosing-section 解決 + visitor plumbing
+    2. [x] **step 2b** (`e47859b6c` + F1F2 fix `7941b46fc`): Sphinx-parity dangling ref handling (WARNING + display-text fallback)、`LabelTarget.anchor`、MD link emission
+    3. [x] **step 3** (`5e70d5c83`): `md_ast_visitor` relative link → cross-doc MD link
+    4. [x] **step 4** (`6b828cd01`): QL1 two-sided + cross-type link path `../../{type}/{category}/{file_id}.md`
+  - [x] **22-B-16c** (`86549073d`): image/figure asset URI rewrite + `:download:` link + QL1 asset-exists
+  - [x] **F1-F4 fix** (`cb620f73d`): common/ 階層遵守 + AST-based link extraction + nested-block warning 伝播 + `scripts/common/linkfmt.py` 単一ソース
+  - [x] **v6 regen** (`3bd1fe3c4`): 353 files, 256 contain cross-doc MD links, verify FAIL 0
+- [ ] 22-B-13: nabledge-test v6 baseline 再取得 (次のタスク。旧 baseline 97.3% は履歴として保持)
 - [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 (22-B-13 完了後)
 
 **備考**:
