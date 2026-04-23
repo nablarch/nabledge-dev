@@ -44,6 +44,9 @@ class LabelTarget:
       consumers.
     - ``category``: knowledge category of the target (empty in single-dir
       mode).
+    - ``type``: knowledge type of the target (``component`` / ``about``
+      / ...).  Needed to build the ``../../{type}/{category}/...``
+      cross-type link path.
     - ``anchor``: HTML anchor slug.  For ``:ref:``/``:numref:``, this is
       the label name slug (Sphinx parity — see spec §3-2-2).  For
       ``:doc:`` it is empty (document-level link, no ``#`` fragment).
@@ -52,6 +55,7 @@ class LabelTarget:
     file_id: str
     section_title: str
     category: str
+    type: str = ""
     anchor: str = ""
 
 
@@ -63,7 +67,7 @@ class LabelTarget:
 #: 「labels.py が heading 検出に失敗して label を map から drop →
 #:  drop せず、代わりに「解決不能ラベル」として QC1 FAIL」
 UNRESOLVED = LabelTarget(
-    title="", file_id="", section_title="", category="", anchor=""
+    title="", file_id="", section_title="", category="", type="", anchor=""
 )
 
 
@@ -245,59 +249,62 @@ def build_label_doc_map(
     :func:`scripts.create.scan._source_roots`).
     """
     # Import locally to avoid a cycle at module load time.
-    from scripts.common.file_id import derive_file_id, load_mappings, rel_for_classify
-    from scripts.create.scan import _source_roots
+    from scripts.common.file_id import rel_for_classify
+    from scripts.create.classify import classify_sources
+    from scripts.create.scan import scan_sources
 
-    mappings = load_mappings(version, repo_root)
+    # Use the full classify pipeline — including collision disambiguation
+    # — so label_map / doc_map file_ids match what create writes to disk.
+    # Calling derive_file_id directly here would miss disambiguation and
+    # produce dangling cross-document links when two RST files share a
+    # basename (e.g. multiple ``functional_comparison.rst``).
+    sources = scan_sources(version, repo_root)
+    file_infos = classify_sources(sources, version, repo_root)
+
+    # Build a ``{absolute_source_path_str: FileInfo}`` index for O(1)
+    # lookup while scanning labels.
+    fi_by_path: dict[str, "object"] = {}
+    for fi in file_infos:
+        if fi.format == "rst" and fi.sheet_name is None:
+            fi_by_path[str(fi.source_path)] = fi
 
     label_map: dict[str, LabelTarget] = {}
     doc_map: dict[str, LabelTarget] = {}
 
-    for src_root in _source_roots(version, repo_root):
-        if not src_root.exists():
-            continue
-        for rst_file in src_root.rglob("*.rst"):
-            fc = derive_file_id(rst_file, "rst", version, repo_root, mappings=mappings)
-            # fc can be None for RST files under src_root that don't match
-            # any mapping pattern (and aren't top-level index.rst).  We still
-            # skip them — they wouldn't produce a knowledge file anyway, so
-            # any labels or :doc: targets into them are unresolvable by
-            # design (verify will flag them as QC1).
-            if fc is None:
-                continue
+    for src_path_str, fi in fi_by_path.items():
+        rst_file = Path(src_path_str)
+        found, doc_title = _scan_rst_labels(rst_file)
 
-            found, doc_title = _scan_rst_labels(rst_file)
+        # label_map entries — one LabelTarget per label (anchor is
+        # per-label, so we can't share one LabelTarget across stacked
+        # labels).
+        for labels, title in found:
+            if not title:
+                for lbl in labels:
+                    label_map.setdefault(lbl, UNRESOLVED)
+            else:
+                for lbl in labels:
+                    label_map.setdefault(
+                        lbl,
+                        LabelTarget(
+                            title=title,
+                            file_id=fi.file_id,
+                            section_title=title,
+                            category=fi.category,
+                            type=fi.type,
+                            anchor=_anchor_for_label(lbl),
+                        ),
+                    )
 
-            # label_map entries — one LabelTarget per label (anchor is
-            # per-label, so we can't share one LabelTarget across stacked
-            # labels).
-            for labels, title in found:
-                if not title:
-                    for lbl in labels:
-                        label_map.setdefault(lbl, UNRESOLVED)
-                else:
-                    for lbl in labels:
-                        label_map.setdefault(
-                            lbl,
-                            LabelTarget(
-                                title=title,
-                                file_id=fc.file_id,
-                                section_title=title,
-                                category=fc.category,
-                                anchor=_anchor_for_label(lbl),
-                            ),
-                        )
-
-            # doc_map entry (keyed by relpath the mapping patterns use).
-            # :doc: links target the document as a whole, so anchor=""
-            # (no ``#`` fragment in the emitted MD link).
-            relpath = rel_for_classify(rst_file, version)
-            doc_map[relpath] = LabelTarget(
-                title=doc_title or fc.file_id,
-                file_id=fc.file_id,
-                section_title="",
-                category=fc.category,
-                anchor="",
-            )
+        # doc_map entry (keyed by relpath the mapping patterns use).
+        relpath = rel_for_classify(rst_file, version)
+        doc_map[relpath] = LabelTarget(
+            title=doc_title or fi.file_id,
+            file_id=fi.file_id,
+            section_title="",
+            category=fi.category,
+            type=fi.type,
+            anchor="",
+        )
 
     return label_map, doc_map

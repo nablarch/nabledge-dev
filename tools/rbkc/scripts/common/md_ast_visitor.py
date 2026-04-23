@@ -195,11 +195,12 @@ class _MDVisitor:
         target = self._doc_map[best_key]
         file_id = getattr(target, "file_id", "") or ""
         category = getattr(target, "category", "") or ""
-        if not file_id or not category:
+        type_ = getattr(target, "type", "") or ""
+        if not file_id or not category or not type_:
             return f"[{text}]({href})"
         if anchor:
-            return f"[{text}](../{category}/{file_id}.md#{anchor})"
-        return f"[{text}](../{category}/{file_id}.md)"
+            return f"[{text}](../../{type_}/{category}/{file_id}.md#{anchor})"
+        return f"[{text}](../../{type_}/{category}/{file_id}.md)"
 
     # -------------------------------------------------------------- sections
     def _emit_block(self, text: str) -> None:

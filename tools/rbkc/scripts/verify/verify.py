@@ -1540,6 +1540,21 @@ def verify_file(
         ))
         issues.extend(_check_format_purity(data, fmt))
         issues.extend(check_external_urls(source_text, data, fmt))
+        # Phase 22-B-16b step 4: two-sided QL1 on cross-document MD links.
+        if knowledge_dir is not None:
+            docs_md_text = None
+            try:
+                docs_md_path = (
+                    Path(knowledge_dir).parent / "docs" /
+                    Path(json_path).relative_to(Path(knowledge_dir))
+                ).with_suffix(".md")
+                if docs_md_path.exists():
+                    docs_md_text = docs_md_path.read_text(encoding="utf-8")
+            except (ValueError, OSError):
+                pass
+            issues.extend(check_ql1_link_targets(
+                data, knowledge_dir, docs_md_text=docs_md_text
+            ))
         return issues
 
     return []
@@ -1552,6 +1567,96 @@ def verify_file(
 def verify_docs_md(source_path, docs_md_path, fmt) -> list[str]:
     """Per-file docs MD checks beyond JSON↔MD consistency. Stub."""
     return []
+
+
+# ---------------------------------------------------------------------------
+# QL1 two-sided: link target existence (Phase 22-B-16b step 4)
+# ---------------------------------------------------------------------------
+
+# Matches CommonMark MD links emitted by the converter:
+#   [display](../../{type}/{category}/{file_id}.md)          ← :doc:
+#   [display](../../{type}/{category}/{file_id}.md#{anchor}) ← :ref: / numref
+_CROSSDOC_LINK_RE = re.compile(
+    r'\]\(\.\./\.\./(?P<type>[A-Za-z0-9_\-]+)/'
+    r'(?P<category>[A-Za-z0-9_\-]+)/'
+    r'(?P<file_id>[^)\s#]+)\.md(?:#(?P<anchor>[^)\s]+))?\)'
+)
+
+
+def check_ql1_link_targets(
+    data: dict,
+    knowledge_dir,
+    docs_md_text: str | None = None,
+) -> list[str]:
+    """Spec §3-2-3 QL1 two-sided: every cross-document MD link that
+    appears in JSON content or section content must point at an
+    existing target JSON file.
+
+    JSON side (always): extract ``](../../{type}/{cat}/{file_id}.md[#anchor])``
+    links from all content strings, then confirm
+    ``knowledge_dir/{type}/{cat}/{file_id}.json`` exists.  Dangling
+    links → FAIL (``[QL1] JSON link target missing``).
+
+    Docs MD side (when ``docs_md_text`` is supplied): mirror the check
+    against ``{knowledge_dir.parent}/docs/{type}/{cat}/{file_id}.md``.
+
+    Skips asset-link validation (``](assets/...)``) — that belongs to
+    22-B-16c (QL1 asset existence).
+    """
+    from pathlib import Path as _Path
+
+    knowledge_root = _Path(knowledge_dir)
+    docs_root = knowledge_root.parent / "docs"
+
+    def _collect_links(text: str) -> list[tuple[str, str, str, str]]:
+        return [
+            (
+                m.group("type"),
+                m.group("category"),
+                m.group("file_id"),
+                m.group("anchor") or "",
+            )
+            for m in _CROSSDOC_LINK_RE.finditer(text or "")
+        ]
+
+    sources: list[str] = []
+    sources.append(data.get("content", "") or "")
+    for sec in data.get("sections", []) or []:
+        sources.append(sec.get("content", "") or "")
+
+    seen: set[tuple[str, str, str]] = set()
+    issues: list[str] = []
+
+    for text in sources:
+        for type_, category, file_id, _anchor in _collect_links(text):
+            key = (type_, category, file_id)
+            if key in seen:
+                continue
+            seen.add(key)
+            target_json = knowledge_root / type_ / category / f"{file_id}.json"
+            if not target_json.exists():
+                issues.append(
+                    f"[QL1] JSON link target missing: "
+                    f"../../{type_}/{category}/{file_id}.md → "
+                    f"{target_json.relative_to(knowledge_root.parent)} not on disk"
+                )
+
+    if docs_md_text is not None:
+        seen_md: set[tuple[str, str, str]] = set()
+        for type_, category, file_id, _anchor in _collect_links(docs_md_text):
+            key = (type_, category, file_id)
+            if key in seen_md:
+                continue
+            seen_md.add(key)
+            target_md = docs_root / type_ / category / f"{file_id}.md"
+            if not target_md.exists():
+                issues.append(
+                    f"[QL1] docs MD link target missing: "
+                    f"../../{type_}/{category}/{file_id}.md → "
+                    f"{target_md.relative_to(docs_root.parent)} not on disk"
+                )
+
+    return issues
 
 
 # ---------------------------------------------------------------------------
@@ -1584,14 +1689,15 @@ def _resolve_title_inline(title_node, label_map: dict) -> str:
             return display or target
         file_id = getattr(target, "file_id", "") or ""
         category = getattr(target, "category", "") or ""
+        type_ = getattr(target, "type", "") or ""
         title = getattr(target, "title", "") or ""
         anchor = getattr(target, "anchor", "") or ""
         disp = display or title
-        if not file_id or not category:
+        if not file_id or not category or not type_:
             return disp
         if anchor:
-            return f"[{disp}](../{category}/{file_id}.md#{anchor})"
-        return f"[{disp}](../{category}/{file_id}.md)"
+            return f"[{disp}](../../{type_}/{category}/{file_id}.md#{anchor})"
+        return f"[{disp}](../../{type_}/{category}/{file_id}.md)"
 
     parts: list[str] = []
     for child in title_node.children:

@@ -704,14 +704,15 @@ class _MDVisitor:
             return display_text or target
         file_id = getattr(target, "file_id", "") or ""
         category = getattr(target, "category", "") or ""
+        type_ = getattr(target, "type", "") or ""
         title = getattr(target, "title", "") or ""
         anchor = getattr(target, "anchor", "") or ""
         display = display_text or title
-        if not file_id or not category:
+        if not file_id or not category or not type_:
             return display
         if anchor:
-            return f"[{display}](../{category}/{file_id}.md#{anchor})"
-        return f"[{display}](../{category}/{file_id}.md)"
+            return f"[{display}](../../{type_}/{category}/{file_id}.md#{anchor})"
+        return f"[{display}](../../{type_}/{category}/{file_id}.md)"
 
     def _resolve_doc_target(self, target_path: str):
         """Resolve a ``:doc:`` path against ``source_path`` and look it up

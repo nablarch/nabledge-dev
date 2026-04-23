@@ -3540,3 +3540,97 @@ class TestGithubSlug:
 # They require labels.py to depend on common/file_id.py which is 22-B-16b-prep.
 # Tests will be (re)added in 22-B-16b-main commits per SE recommendation
 # (.work/00299/review-22-b-16b-se.md).
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-16b step 4: QL1 two-sided link target existence
+# ---------------------------------------------------------------------------
+
+class TestCheckQL1LinkTargets:
+    """Spec §3-2-3: every `](../{cat}/{file_id}.md...)` link in JSON
+    content must point to an existing target JSON file under
+    knowledge_dir; same link in docs MD must point at an existing .md.
+    """
+
+    def _setup(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        # Existing target
+        (kn / "component" / "libraries" / "libraries-foo.json").write_text(
+            '{"id":"libraries-foo","title":"Foo","content":"","sections":[]}',
+            encoding="utf-8",
+        )
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n", encoding="utf-8"
+        )
+        return kn, docs
+
+    def test_pass_existing_target(self, tmp_path):
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#foo) for details.",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert issues == []
+
+    def test_fail_dangling_json_target(self, tmp_path):
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+
+        data = {
+            "content": "See [Bar](../../component/libraries/libraries-missing.md) for details.",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert len(issues) == 1
+        assert "JSON link target missing" in issues[0]
+        assert "libraries-missing" in issues[0]
+
+    def test_fail_dangling_docs_md_target(self, tmp_path):
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md) for details.",
+            "sections": [],
+        }
+        docs_md = (
+            "# Test\n\n"
+            "See [Orphan](../../component/libraries/libraries-orphan.md) for details.\n"
+        )
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        assert any("docs MD link target missing" in i for i in issues)
+        assert any("libraries-orphan" in i for i in issues)
+
+    def test_pass_asset_links_skipped(self, tmp_path):
+        """`](assets/...)` links are not checked here — they belong to
+        22-B-16c.  Ensures 22-B-16c can add its own pass without double
+        reporting."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+
+        data = {
+            "content": "![alt](assets/foo/bar.png)",
+            "sections": [],
+        }
+        assert check_ql1_link_targets(data, kn) == []
+
+    def test_dedup_repeated_link(self, tmp_path):
+        """Repeated link to the same target is checked once."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+
+        data = {
+            "content": (
+                "See [Bar](../../component/libraries/libraries-missing.md). "
+                "Again: [Bar](../../component/libraries/libraries-missing.md)."
+            ),
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert len(issues) == 1
