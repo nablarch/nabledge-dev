@@ -55,42 +55,92 @@
 
 ### Phase 21-Z Z-1: QA 反復レビュー → マトリクス復元
 
-**Status**: r6 完了 (`3e94a1f2e` / `729eba193`)。✅10 / ⚠️1 (QC1) / ❌0。Medium 19 件が未対応のため §4 マトリクスはまだ ⚠️ のまま。
+**Status**: r7 完了 (`66cc4c541`)。binary review format 適用で、27 Finding を抽出。QC2 のみ 0 Finding、その他 10 観点に残存。レビュー結果は `.work/00299/review-z1-r7/`。
 
-**背景ログ (セッション 52 から今まで)**:
-- r2 で bias-avoidance 明示により critical 5 件 + circular test 5 件発覚
-- r3-r6 で critical/❌ は全て解消、Medium は毎ラウンドほぼそのまま残存
-- 原因: 私が毎ラウンド「critical/High だけ潰す」をやって Medium を defer してきた
-- ルール追記 (今セッション、`.claude/rules/rbkc.md`): spec + ゼロトレランスから自分で決定する、review の Medium 以上はデフォルト全件対応する
+**r7 Finding 一覧 (spec clause 引用付き、全て blocking)**:
 
-**Steps:**
-- [ ] r6 Medium 19 件を spec §2-1 ゼロトレランスに従い**全件**対応
-  - **A 実装 spec 逸脱 (3)**:
-    - [ ] QC1 `verify.py:551-557` の image/link/whitespace post-normalisation を Visitor に統合または削除 (spec §3-1 残存判定の基準: create/verify は同じ normaliser を共有)
-    - [ ] QC5 `_RST_LABEL_RE` を `^\.\.\s+_[a-zA-Z0-9_-]+:` (MULTILINE) に行アンカー
-    - [ ] QC5 `_RST_ROLE_RE` を `:role:\`text\`` (閉じ backtick 必須) に厳格化
-  - **B circular test (3)**:
-    - [ ] QL2 parens URL test — 期待値を AST 出力から derive しない形に
-    - [ ] QC3 OR assert 4 箇所 (`"QC3" in i`) を spec ラベルのみに
-    - [ ] QO2 symmetric rewrite test — `docs._rewrite_asset_links` を呼んで期待値生成
-  - **C 実バグ (1)**:
-    - [ ] QL1 RST substitution image の重複 FAIL → `seen_images` dedup 追加、さらに spec §3-2 対称性により substitution 内 image は QL1 対象外へ
-  - **D テスト欠落 (12)**:
-    - [ ] QC1 no_knowledge_content RST/MD early-return テスト
-    - [ ] QC1 multi-fragment residue reporting 対称化 (RST も MD 同様に全件報告) + テスト
-    - [ ] QC3 whitespace-only unit false-fire PASS test
-    - [ ] QC4 `test_fail_qc3_qc4_boundary_duplicate_text_misplaced` docstring / assertion 不一致を 2 テストに split
-    - [ ] QC4 3-section circular rotation RST + MD
-    - [ ] QL1 `javascript:` scheme PASS test
-    - [ ] QL1 empty-href `[text]()` PASS test
-    - [ ] QL1 RST figure `:alt:`-only → filename fallback test
-    - [ ] QL2 RST bare URL (prose 内) PASS + FAIL
-    - [ ] QL2 CommonMark autolink Visitor unit test / duplicate dedup FAIL side
-    - [ ] QO2 fenced `##` inside top content PASS test
-    - [ ] QO2 empty section content: skip を削除 (spec §3-3 完全一致) + FAIL テスト
-    - [ ] QO3 dangling docs MD (MD だけあって JSON 無し) を QO3 FAIL に追加 + テスト
-- [ ] r7 QA レビュー (bias-avoidance 11 並列) で全 ✅ 確認
-- [ ] 設計書 §4 品質マトリクスを ✅ に復元
+**QC1 (2)**:
+- [ ] F1: `verify.py:551-557` の post-normalisation (image/link/whitespace strip) 削除。§3-1 "残存判定の基準" 違反。`_build_rst_search_units._norm` L475-486 の同じ strip も共通化または削除
+- [ ] F2: RST residue が 80-char 1 snippet のみ → MD 同様に全 fragment 報告 (L596-607 を MD path L688-710 と同形に統一)
+
+**QC3 (4)**: OR assert `"QC3" in i or "duplicate..." in i` を spec label 単独 `"[QC3]" in i` + `not any("[QC2]"/"[QC4]")` に
+- [ ] F1: `test_fail_qc3_duplicate_content_rst` (L1129)
+- [ ] F2: `test_fail_qc3_top_level_and_section_content_duplicated` (L1162)
+- [ ] F3: `test_fail_qc3_duplicate_content_md` (L1171)
+- [ ] F4: `test_fail_qc3_duplicate_cell_in_json` (Excel, L1375)
+
+**QC4 (4)**:
+- [ ] F1: `test_fail_qc3_qc4_boundary_duplicate_text_misplaced` — QC4 label 明示 assert 追加、真の boundary fixture に。QC3 側と QC4 側 2 本 split
+- [ ] F2: **実ロジックバグ** — `prev_idx = norm_source.find(norm_unit)` が最早出現のみ見て QC3/QC4 誤分類。3+ 回出現で中央 unconsumed のケースで QC3 誤報。RST/MD 両枝 (L576, L671) を finditer で全走査に書き直し。3-occurrence 再現テスト追加
+- [ ] F3: 3-section content-only rotation test 追加 (RST + MD)
+- [ ] F4: QC4 テスト全件に section id assert (`"s2" in i`) 追加
+
+**QC5 (2)**:
+- [ ] F1: `_RST_ROLE_RE` を `:[a-zA-Z][a-zA-Z0-9_.-]*:\`[^\`\n]+\`` に (閉じ backtick 必須)
+- [ ] F2: `_RST_LABEL_RE` を `^\.\.\s+_[a-zA-Z0-9_-]+:\s*$` (MULTILINE) に行アンカー
+
+**QL1 (4)**:
+- [ ] F1: RST substitution-body image 除外 (`isinstance(img.parent, nodes.substitution_definition)` で skip)。QL2 対称性 §3-2 line 268
+- [ ] F2: RST image dedup (`seen_rst_images: set[str]`) 追加 — MD 側 L1069-1074 と対称
+- [ ] F3: `test_pass_rst_substitution_image_body_skipped` 追加
+- [ ] F4: RST/MD duplicate image dedup テスト追加
+
+**QL2 (5)**:
+- [ ] F1: `test_pass_md_url_with_parentheses_in_path` の `expected = parts.external_urls[0]` を source literal に + truncated FAIL 対追加
+- [ ] F2: `replace::` + embedded `<url>` の substitution-body 除外テスト追加 (spec line 268 AST 属性判定)
+- [ ] F3: `test_pass_md_autolink_url_present` 追加 (PASS counterpart)
+- [ ] F4: RST URL-with-parens (Javadoc) PASS+FAIL 追加
+- [ ] F5: trailing-slash mismatch FAIL テスト追加
+
+**QO1 (2, F3/F5/F6 は Observation)**:
+- [ ] F1: `_H2_RE` の "extra" 方向を `##` only に制限。JSON section title が `###` にもあり得る "missing" 方向のみ両方許容。`### subheading` inline PASS テスト追加
+- [ ] F2: `sections=[]` + top content 内 `###` PASS テスト追加
+- [ ] F4: `# Title #` ATX 閉じ strip + テスト
+
+**QO2 (4)**:
+- [ ] F1: `test_pass_assets_link_rewrite_symmetric` — expected を `docs._rewrite_asset_links` 呼び出しで生成 (circular 解消)
+- [ ] F2: `verify.py:184-185` `if not content: continue` 削除 (§3-3 verbatim 一致)
+- [ ] F3: Top content 内 fenced `##` PASS + FAIL test 追加
+- [ ] F4: `verify._apply_asset_link_rewrite` vs `docs._rewrite_asset_links` cross-check test 追加 (マトリクス入力で出力一致 assert)
+
+**QO3 (2)**:
+- [ ] F1: MD→JSON 方向チェック追加 (dangling docs MD 検出) — §3-3 "JSON↔MD 1:1"
+- [ ] F2: dangling docs MD FAIL テスト追加
+
+**QO4 (7)**:
+- [ ] F1: `no_knowledge_content: true` JSON が index.toon に列挙された場合、distinct FAIL メッセージに ("index.toon lists no_knowledge JSON: …")
+- [ ] F2: broken JSON が index.toon に列挙された場合の double FAIL 防止 — "known on disk" set で reverse check
+- [ ] F3: TOON parser — header 列最後が `path` でない schema, 非 indented 行, row count mismatch で explicit FAIL
+- [ ] F4: TOON parser — path field の quote/comma を explicit FAIL or honour quoting
+- [ ] F5: path separator 双方を forward slash に正規化
+- [ ] F6: 2 個目の `files[…]:` header で explicit FAIL
+- [ ] F7: `test_fail_missing_index_file` を per-file FAIL line assert 強化 or 削除
+
+**進行方針**:
+
+1. 上記を根本原因クラスでまとめて横並び fix
+2. 各 fix で TDD (test → RED → 実装 → GREEN)
+3. 全 221 tests + v6 verify FAIL 0 維持
+4. r8 bias-avoidance QA review (11 並列) で 0 Findings 確認
+5. 設計書 §4 マトリクスを ✅ に復元
+6. Z-1 完了コミット
+
+**Steps**:
+- [ ] QC5 regex 厳格化 (F1 F2) — 局所、最小
+- [ ] QC3 OR assert を label-exact に (F1-F4)
+- [ ] QC4 F2 実ロジックバグ (QC3/QC4 誤分類) 修正 + 再現テスト
+- [ ] QC4 F1 F3 F4 テスト強化
+- [ ] QC1 F1 post-normalisation 整理 / F2 residue all-fragments 化
+- [ ] QL1 F1 F2 RST substitution-body image 除外 + dedup
+- [ ] QL1 F3 F4 テスト追加
+- [ ] QL2 F1 circular test 修正 / F2-F5 テスト追加
+- [ ] QO1 F1 F2 F4 regex 修正 + テスト
+- [ ] QO2 F2 silent skip 削除 / F1 F4 circular 解消 / F3 test
+- [ ] QO3 F1 MD→JSON 方向 + F2 test
+- [ ] QO4 F1-F7 修正
+- [ ] `pytest tests/` GREEN + `bash rbkc.sh verify 6` → FAIL 0
+- [ ] r8 bias-avoidance QA review 11 並列 → 全 0 Finding
+- [ ] 設計書 §4 マトリクス復元
 - [ ] Z-1 完了コミット
 
 ---
