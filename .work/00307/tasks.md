@@ -7,48 +7,52 @@
 
 ## 現在地
 
-- 30件ベンチマーク基盤 (ids / current 2 flow) 完成
-- judge は fact-coverage 方式 (模範回答を参照して採点)
-- 試行錯誤の痕跡をクリーンアップ中。SE 推奨の should-be 構成に全面書き直し予定
+- ベンチマークツールのリファクタリング完了 (should-be 構成へ全面書き直し、1572行 → 1130行)
+- run.py / bench/ パッケージ / テスト / baseline 変換すべて完了、smoke test で動作確認済み (review-09 level=3)
+- 次は answer.md 改訂版での 30件再計測 (ids + current)
 
-## 構成（should-be）
+## 構成
 
 ```
 tools/benchmark/
-├── run.py                CLI + orchestration (~150行)
+├── README.md
+├── run.py                CLI + orchestration (202行)
 ├── bench/
-│   ├── types.py          dataclasses
-│   ├── claude.py         claude CLI 呼び出し + stream-json parse
-│   ├── search_ids.py     ids variant
-│   ├── search_current.py current variant
-│   ├── judge.py          judge 呼び出し + verdict parse
-│   └── io.py             scenario 読込・path 解決
+│   ├── types.py          dataclasses (69)
+│   ├── claude.py         claude CLI + stream-json parse (123)
+│   ├── search_ids.py     ids variant (145)
+│   ├── search_current.py current variant (37)
+│   ├── judge.py          judge 呼び出し (99)
+│   └── io.py             scenario/path 解決 (177)
 ├── build_index.py
-├── prompts/ (search_ids.md / search_current.md / answer.md / judge.md)
-├── scenarios/qa-v6.json + qa-v6-answers/
+├── prompts/              search_ids.md / search_current.md / answer.md / judge.md
+├── scenarios/            qa-v6.json + qa-v6-answers/
 ├── baseline/{ids,current}-sonnet/
-└── tests/ (test_build_index / test_io / test_claude_parse / test_judge_parse)
+└── tests/                test_build_index / test_claude_parse / test_io / test_search_ids (全19 GREEN)
 ```
 
 **出力** `.results/{ts}-{variant}-{model}/`
-- `run.json` / `summary.csv`
-- `{scenario_id}/search.json`, `answer.md`, `judge.json`, `stream/*.jsonl`
+- `run.json` / `summary.csv` / `summary.json`
+- `{sid}/search.json`, `answer.md`, `judge.json`, `stream/*.jsonl`
 
 **CLI**: `run.py --variant {ids|current}` / `run.py --rejudge --results-dir ...`
 
-## 進め方
+## 残タスク
 
-1. [x] 試行錯誤の削除 (facet flow / stage2 / stage1_extract / v1 judge / sample5 / sanity6 / 過去 .results / 過去 baseline)
-2. [x] baseline 保存 (ids-sonnet / current-sonnet 最新 30件のみ、軽量化済み)
-3. [x] プロンプトリネーム (stage1_ids→search_ids, stage3_answer→answer, judge_stage3_v2→judge)
-4. [ ] **run.py 全面書き直し** (1572行 → bench/ パッケージ 6ファイル + run.py ~150行)
-5. [ ] テスト再構成 (test_reference_answer 削除、test_io / test_claude_parse / test_judge_parse 新設)
-6. [ ] 全テスト GREEN 確認
-7. [ ] answer.md の「Use only what you need」改訂版で 30件再計測 (ids + current)
-8. [ ] baseline 更新・比較表作成
-9. [ ] `.claude/rules/benchmark.md` のコマンド例を新 CLI に更新
-10. [ ] notes.md を「設計判断のみ」に整理
-11. [ ] PR 仕上げ (expert review + description 更新)
+### 次: answer.md 改訂版で 30件再計測
+
+answer.md の「Use only what you need」改訂が入った状態で ids / current の 30件を測り直し、baseline を更新する。
+
+**Steps:**
+- [ ] `python3 tools/benchmark/run.py --variant ids` 実行 (30件、~33分)
+- [ ] `python3 tools/benchmark/run.py --variant current` 実行 (30件、~40分) — **ids 完了後に逐次**
+- [ ] 結果を `baseline/ids-sonnet/` `baseline/current-sonnet/` に反映 (手動コピーまたはスクリプト)
+- [ ] baseline 比較表を notes.md or PR body に記載 (mean level / distribution / cost)
+
+### その後
+
+- [ ] PR 仕上げ (expert review + PR description 更新)
+- [ ] ユーザーに採用可否判断を提示
 
 ## ユーザー判断待ち
 
@@ -63,5 +67,9 @@ tools/benchmark/
 - [x] Haiku vs Sonnet 比較 → Sonnet 固定
 - [x] 30件 × 2 flow 初回計測
 - [x] AI-3 answer プロンプト改訂 (Use only what you need, PE レビュー反映済み)
-- [x] `.claude/rules/benchmark.md` 新設 (並列実行禁止ルール)
-- [x] 試行錯誤クリーンアップ (facet/stage2/v1判定系すべて削除)
+- [x] `.claude/rules/benchmark.md` 新設 (並列実行禁止ルール) — commit `322f616fd`
+- [x] 試行錯誤削除 (facet/stage2/v1判定系) — commit `af43acb20`
+- [x] ベンチマークツール全面リファクタ (run.py → run.py + bench/ パッケージ、命名からバージョン痕跡撤去) — commit `7abb7f3e2`
+- [x] notes.md を設計判断のみに整理 — commit `a7a016d27`
+- [x] baseline を新レイアウトに変換 (search.json / answer.md / judge.json に統一)
+- [x] 全テスト 19件 GREEN、smoke test OK
