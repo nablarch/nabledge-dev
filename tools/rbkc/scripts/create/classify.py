@@ -24,6 +24,8 @@ class FileInfo:
     type: str
     category: str
     output_path: str  # relative: e.g. component/libraries/libraries-universal_dao.json
+    # Phase 22-B: set only for xlsx sheet-level split.  ``None`` for rst/md.
+    sheet_name: str | None = None
 
 
 def _generate_id(filename: str, fmt: str, category: str, source_path: Path,
@@ -119,6 +121,11 @@ def _disambiguate(
                 xlsx_exact=(fi.format == "xlsx" and fi.file_id == fi.category),
                 extra_prefix=prefix,
             )
+            # Phase 22-B: preserve the sheet suffix on xlsx rows so
+            # disambiguation does not collapse per-sheet FileInfos back
+            # to the file-level id.
+            if fi.sheet_name and fi.file_id.endswith(f"-{_sheet_slug(fi.sheet_name)}"):
+                new_id = f"{new_id}-{_sheet_slug(fi.sheet_name)}"
             new_out = f"{fi.type}/{fi.category}/{new_id}.json"
             result.append((new_out, FileInfo(
                 source_path=fi.source_path,
@@ -127,6 +134,7 @@ def _disambiguate(
                 type=fi.type,
                 category=fi.category,
                 output_path=new_out,
+                sheet_name=fi.sheet_name,
             )))
         return result
 
@@ -242,13 +250,40 @@ def classify_sources(
         if type_ is None or category is None:
             continue
 
-        file_id = _generate_id(
+        base_file_id = _generate_id(
             src.filename, src.format, category,
             src.path, matched_pattern or "", version,
             xlsx_exact=is_xlsx_exact,
         )
-        output_path = f"{type_}/{category}/{file_id}.json"
 
+        # Phase 22-B: xlsx files expand into one FileInfo per worksheet.
+        # Sheet count = 1 keeps the bare file_id; ≥ 2 appends the sheet
+        # name (design §8-1).  Sheet names are Japanese-safe already;
+        # `/` is the only filesystem-unsafe char we have to guard.
+        if src.format == "xlsx":
+            from scripts.create.converters.xlsx_common import list_sheet_names
+            sheet_names = list_sheet_names(src.path)
+            if not sheet_names:
+                continue
+            for sheet in sheet_names:
+                if len(sheet_names) == 1:
+                    file_id = base_file_id
+                else:
+                    file_id = f"{base_file_id}-{_sheet_slug(sheet)}"
+                output_path = f"{type_}/{category}/{file_id}.json"
+                items.append((output_path, FileInfo(
+                    source_path=src.path,
+                    format=src.format,
+                    file_id=file_id,
+                    type=type_,
+                    category=category,
+                    output_path=output_path,
+                    sheet_name=sheet,
+                )))
+            continue
+
+        file_id = base_file_id
+        output_path = f"{type_}/{category}/{file_id}.json"
         items.append((output_path, FileInfo(
             source_path=src.path,
             format=src.format,
@@ -259,3 +294,15 @@ def classify_sources(
         )))
 
     return _disambiguate(items, version)
+
+
+def _sheet_slug(name: str) -> str:
+    """Make a worksheet name safe for use as a filename component.
+
+    We keep Japanese characters verbatim (design §8-1) and only replace the
+    path separator, which is the single character Linux rejects in a
+    filename.  Windows-reserved characters (``\\ : * ? " < > |``) are also
+    mapped because the repo is checked out on Windows during editing.
+    """
+    bad = '\\/:*?"<>|'
+    return "".join("_" if c in bad else c for c in name).strip() or "sheet"

@@ -28,6 +28,11 @@ class RSTResult:
     no_knowledge_content: bool
     content: str = ""
     sections: list[Section] = field(default_factory=list)
+    # Phase 22-B: populated by xlsx converters.  Carries sheet metadata that
+    # flows through to the JSON output ("sheet_type": "P1"|"P2" and, for P1,
+    # the restored column/row matrix used by docs.py to render an MD table).
+    # None for non-xlsx formats.
+    meta: dict | None = None
 
 
 def _detect_no_knowledge_content(parts: rst_ast_visitor.DocumentParts) -> bool:

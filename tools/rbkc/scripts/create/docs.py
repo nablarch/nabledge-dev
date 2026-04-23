@@ -83,6 +83,16 @@ def _render_full(data: dict, docs_md_path: Path, knowledge_dir: Path) -> str:
     (title must match H1) does not flag a spurious mismatch. A missing
     title is itself a converter bug, but emitting `# ` would paper over it.
     """
+    # Phase 22-B: xlsx sheets are rendered per sheet_type.  P1 uses a
+    # restored MD table so a human can read the original Excel back out.
+    # P2 uses plain-text flow.  Non-xlsx JSON has no sheet_type and falls
+    # through to the default section layout.
+    sheet_type = data.get("sheet_type")
+    if sheet_type == "P1":
+        return _render_xlsx_p1(data)
+    if sheet_type == "P2":
+        return _render_xlsx_p2(data)
+
     title = data.get("title", "")
     lines = [f"# {title}" if title else "", ""]
 
@@ -101,6 +111,58 @@ def _render_full(data: dict, docs_md_path: Path, knowledge_dir: Path) -> str:
             lines.append(_rewrite_asset_links(content, docs_md_path, knowledge_dir))
             lines.append("")
 
+    return "\n".join(lines)
+
+
+def _md_table_cell(s: str) -> str:
+    """Escape a cell value for a Markdown pipe table.
+
+    * Pipe ``|`` is the column separator → must be escaped.
+    * Whitespace (including embedded newlines) is collapsed to single
+      spaces.  Spec §8-4 stores P1 values line-flattened in JSON so the
+      ``{列名}: {値}`` format is parseable; keeping the docs MD cell in
+      the same flattened form lets verify's QO2 P1 one-way containment
+      check succeed on a direct substring lookup.
+    """
+    return " ".join(s.replace("|", "\\|").split())
+
+
+def _render_xlsx_p1(data: dict) -> str:
+    """Render an Excel P1 sheet as title + restored MD table."""
+    title = data.get("title", "")
+    columns = data.get("columns", [])
+    rows = data.get("data_rows", [])
+    top = data.get("content", "")
+
+    lines: list[str] = []
+    lines.append(f"# {title}" if title else "")
+    lines.append("")
+    if top:
+        lines.append(top)
+        lines.append("")
+    if columns:
+        header = "| " + " | ".join(_md_table_cell(c) for c in columns) + " |"
+        sep = "|" + "|".join("---" for _ in columns) + "|"
+        lines.append(header)
+        lines.append(sep)
+        width = len(columns)
+        for r in rows:
+            padded = list(r) + [""] * max(0, width - len(r))
+            lines.append("| " + " | ".join(_md_table_cell(v) for v in padded[:width]) + " |")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def _render_xlsx_p2(data: dict) -> str:
+    """Render an Excel P2 sheet as title + body text."""
+    title = data.get("title", "")
+    top = data.get("content", "")
+    lines: list[str] = []
+    lines.append(f"# {title}" if title else "")
+    lines.append("")
+    if top:
+        lines.append(top)
+        lines.append("")
     return "\n".join(lines)
 
 

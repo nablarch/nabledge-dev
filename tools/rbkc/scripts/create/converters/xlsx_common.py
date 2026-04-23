@@ -112,8 +112,9 @@ def _extract_title_and_preamble(sheet: RawSheet) -> tuple[str, str, int]:
         )
         if first_non_empty.startswith("■"):
             # Keep `■` prefix verbatim so verify's 1:1 source-cell match
-            # succeeds (spec §8-4: "title = row 1 の `■...`").
-            title = first_non_empty
+            # succeeds (spec §8-4: "title = row 1 の `■...`").  Flatten
+            # embedded newlines so the title stays single-line.
+            title = " ".join(first_non_empty.split())
             i = 1
 
     preamble_lines: list[str] = []
@@ -126,7 +127,7 @@ def _extract_title_and_preamble(sheet: RawSheet) -> tuple[str, str, int]:
         # A preamble row is a single text cell (paragraph).  Two or more
         # non-empty cells start the body (usually a header row).
         if len(non_empty) == 1:
-            preamble_lines.append(non_empty[0])
+            preamble_lines.append(" ".join(non_empty[0].split()))
             i += 1
             continue
         break
@@ -319,6 +320,8 @@ def _build_p1_sections(
         raw_title = cells[title_col] if 0 <= title_col < width else ""
         section_title = _flatten_ws(raw_title) or _first_non_empty(cells)
         # Section content = {col}: {val} vertical list (all non-empty cells).
+        # Flatten embedded newlines in values so each `{列名}: {値}` line
+        # is parseable by verify's line-split (§8-4 is line-based).
         content_lines = []
         for cx, col in enumerate(columns):
             if cx >= len(cells):
@@ -326,7 +329,14 @@ def _build_p1_sections(
             val = cells[cx]
             if not val:
                 continue
-            content_lines.append(f"{col}: {val}")
+            if not col:
+                # Spacer column (empty header) — skip.  Any non-empty
+                # cell here is flagged by verify QP as "unexpected
+                # column" or QC1 for the raw cell token, whichever
+                # applies; we do not emit an ambiguous ": {val}" line.
+                continue
+            flat_val = _flatten_ws(val)
+            content_lines.append(f"{col}: {flat_val}")
         sections.append(Section(
             title=section_title,
             content="\n".join(content_lines),

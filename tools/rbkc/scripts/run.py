@@ -96,7 +96,8 @@ def _convert_and_write(
     elif fi.format == "md":
         result = convert(fi.source_path.read_text(encoding="utf-8", errors="replace"), fi.file_id)
     else:
-        result = convert(fi.source_path, fi.file_id)
+        # xlsx: sheet_name is set by classify; pass it through.
+        result = convert(fi.source_path, fi.file_id, sheet_name=fi.sheet_name)
 
     sections = []
     for idx, sec in enumerate(result.sections, start=1):
@@ -114,6 +115,18 @@ def _convert_and_write(
         "no_knowledge_content": result.no_knowledge_content,
         "sections": sections,
     }
+    # Phase 22-B: xlsx results carry sheet_type + (for P1) the reconstructed
+    # column/row matrix.  sheet_type flows through to JSON (verify reads it
+    # for QO2 P1 一方向 containment).  Table data is used by docs.py only;
+    # verify does not need it, but serialising it keeps docs-MD generation
+    # idempotent w.r.t. the JSON file alone.
+    meta = getattr(result, "meta", None)
+    if meta:
+        if "sheet_type" in meta:
+            data["sheet_type"] = meta["sheet_type"]
+        if meta.get("sheet_type") == "P1":
+            data["columns"] = meta.get("columns", [])
+            data["data_rows"] = meta.get("data_rows", [])
 
     out_path = output_dir / fi.output_path
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -326,7 +339,7 @@ def verify(
             all_ok = False
             continue
 
-        for issue in verify_file(fi.source_path, json_path, fi.format, knowledge_dir=output_dir, label_map=label_map):
+        for issue in verify_file(fi.source_path, json_path, fi.format, knowledge_dir=output_dir, label_map=label_map, sheet_name=fi.sheet_name):
             print(f"FAIL {source_rel}: {issue}", file=sys.stderr)
             all_ok = False
 
