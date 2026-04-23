@@ -670,10 +670,10 @@ sample.User.address = 住所
 
 そのような場合には、 ValidatorUtil#validate を使用して明示的にバリデーションを実行することができる。
 
-> ```java
-> // バリデーションを明示的に実行する
-> ValidatorUtil.validate(form);
-> ```
+```java
+// バリデーションを明示的に実行する
+ValidatorUtil.validate(form);
+```
 
 バリデーションエラーが発生した場合は、 ApplicationException が送出される。
 
@@ -712,26 +712,26 @@ public final class ProjectValidatorUtil {
 
 以下に バリデーションの明示的な実行 の実装例にあるユーティリティクラスを使用した実装例を示す。
 
-> ```java
-> @OnError(type = ApplicationException.class, path = "/WEB-INF/view/project/create.jsp")
-> public HttpResponse create(HttpRequest request, ExecutionContext context) {
-> 
->     ProjectForm form;
-> 
->     try {
->         // バリデーションを明示的に実行し、バリデーション済みのフォームを取得する
->         form = ProjectValidatorUtil.validate(ProjectForm.class, request);
->     } catch (ApplicationException e) {
->         // バリデーションエラー時に任意の処理を行う
->         // ...
-> 
->         // ApplicationExceptionを送出し、@OnErrorアノテーションで指定された遷移先に遷移する
->         throw e;
->     }
-> 
->     // 以下省略
-> }
-> ```
+```java
+@OnError(type = ApplicationException.class, path = "/WEB-INF/view/project/create.jsp")
+public HttpResponse create(HttpRequest request, ExecutionContext context) {
+
+    ProjectForm form;
+
+    try {
+        // バリデーションを明示的に実行し、バリデーション済みのフォームを取得する
+        form = ProjectValidatorUtil.validate(ProjectForm.class, request);
+    } catch (ApplicationException e) {
+        // バリデーションエラー時に任意の処理を行う
+        // ...
+
+        // ApplicationExceptionを送出し、@OnErrorアノテーションで指定された遷移先に遷移する
+        throw e;
+    }
+
+    // 以下省略
+}
+```
 
 ## Bean Validationのグループ機能を使用したい
 

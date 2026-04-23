@@ -824,11 +824,11 @@ function nablarch_submit(event, element) {
 カスタムタグは、onclick属性が指定された場合、サブミット用のJavaScript関数を呼び出さない。
 この場合、アプリケーションで作成したJavaScriptで、カスタムタグが設定する JavaScript関数 を呼び出す必要がある。
 
-> > **Important:**
-> > Content Security Policy(CSP)に対応する場合は、onclick属性にインラインでJavaScriptを記述してしまうとCSPに対応しようとしているにも
-> > 関わらず `unsafe-inline` を使いセキュリティレベルを低下させてしまう、  もしくは `unsafe-hashes` を利用することになってしまう。
-> > このため、 Content Security Policy(CSP)に対応する の手順に従い外部スクリプトまたはnonce属性を指定したscript要素に追加の処理を実装を
-> > 行うことを推奨する。
+> **Important:**
+> Content Security Policy(CSP)に対応する場合は、onclick属性にインラインでJavaScriptを記述してしまうとCSPに対応しようとしているにも
+> 関わらず `unsafe-inline` を使いセキュリティレベルを低下させてしまう、  もしくは `unsafe-hashes` を利用することになってしまう。
+> このため、 Content Security Policy(CSP)に対応する の手順に従い外部スクリプトまたはnonce属性を指定したscript要素に追加の処理を実装を
+> 行うことを推奨する。
 
 実装例
 サブミット前に確認ダイアログを表示する。
@@ -859,11 +859,11 @@ JavaScriptの詳細については、 サブミット前に処理を追加する
 
 そのため、プルダウン変更などの画面操作でサブミットを行いたい場合は、サブミットさせたいボタンのクリックイベントを発生させる。
 
-> > **Important:**
-> > Content Security Policy(CSP)に対応する場合は、onclick属性にインラインでJavaScriptを記述してしまうとCSPに対応しようとしているにも
-> > 関わらず `unsafe-inline` を使いセキュリティレベルを低下させてしまう、  もしくは `unsafe-hashes` を利用することになってしまう。
-> > このためは、 Content Security Policy(CSP)に対応する の手順に従い外部スクリプトまたはnonce属性を指定したscript要素に追加の処理を実装を
-> > 行うことを推奨する。
+> **Important:**
+> Content Security Policy(CSP)に対応する場合は、onclick属性にインラインでJavaScriptを記述してしまうとCSPに対応しようとしているにも
+> 関わらず `unsafe-inline` を使いセキュリティレベルを低下させてしまう、  もしくは `unsafe-hashes` を利用することになってしまう。
+> このためは、 Content Security Policy(CSP)に対応する の手順に従い外部スクリプトまたはnonce属性を指定したscript要素に追加の処理を実装を
+> 行うことを推奨する。
 
 プルダウン変更でサブミットを行う場合の実装例を示す。
 

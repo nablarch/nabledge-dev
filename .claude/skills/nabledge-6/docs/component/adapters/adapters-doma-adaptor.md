@@ -126,9 +126,9 @@ public interface ProjectDao {
   Transactional インターセプタを設定する
 * DomaDaoRepository#get を使用してDaoの実装クラスをルックアップする
 
-> > **Tip:**
-> > Domaでは注釈処理によってコンパイル時に自動的にDaoの実装クラスが生成されるため、コーディング時にはまだ実装クラスが存在しない。
-> > そのため、本アダプタではDaoの実装クラスをルックアップする機能として DomaDaoRepository を提供している。
+> **Tip:**
+> Domaでは注釈処理によってコンパイル時に自動的にDaoの実装クラスが生成されるため、コーディング時にはまだ実装クラスが存在しない。
+> そのため、本アダプタではDaoの実装クラスをルックアップする機能として DomaDaoRepository を提供している。
 
 ```java
 @Transactional

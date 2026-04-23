@@ -22,7 +22,7 @@
     {
       "id": "s4",
       "title": "障害系のテスト",
-      "content": "応答電文の表に「errorMode:」から始まる特定の値を設定することで、障害系のテストを行うことができる\u0000 [1]\u0000 。\n\n以下に、設定値と、障害系のテストの対応を示す。\n\n> | > 最初のフィールドに設定する値 | > 障害内容 | > 自動テストフレームワークの動作 |\n> |---|---|---|\n> | > `errorMode:timeout` | > メッセージ送信中にタイムアウトエラーが発生する場合のテスト | > **HttpMessagingTimeoutException** > (**MessagingException** のサブクラス)を送出する。 \u0000 [2]\u0000 |\n> | > `errorMode:msgException` | > メッセージ送受信エラーが発生する場合のテスト | > **MessagingException** をスローする。 |\n\nこの値は、応答電文の表の\u0000 **ヘッダおよび本文両方の、「no」を除く最初のフィールド**\u0000 に記載すること。\n\n業務アクション内で、明示的に **MessagingException** を制御していないのであれば、\n個別のリクエスト単体テストにおいて障害系のテストを行う必要は無い。\n\n\u0000 リクエスト単体テストの実施方法(同期応答メッセージ送信処理)\u0000 と異なるクラスを送出する。"
+      "content": "応答電文の表に「errorMode:」から始まる特定の値を設定することで、障害系のテストを行うことができる\u0000 [1]\u0000 。\n\n以下に、設定値と、障害系のテストの対応を示す。\n\n| 最初のフィールドに設定する値 | 障害内容 | 自動テストフレームワークの動作 |\n|---|---|---|\n| `errorMode:timeout` | メッセージ送信中にタイムアウトエラーが発生する場合のテスト | **HttpMessagingTimeoutException** (**MessagingException** のサブクラス)を送出する。 \u0000 [2]\u0000 |\n| `errorMode:msgException` | メッセージ送受信エラーが発生する場合のテスト | **MessagingException** をスローする。 |\n\nこの値は、応答電文の表の\u0000 **ヘッダおよび本文両方の、「no」を除く最初のフィールド**\u0000 に記載すること。\n\n業務アクション内で、明示的に **MessagingException** を制御していないのであれば、\n個別のリクエスト単体テストにおいて障害系のテストを行う必要は無い。\n\n\u0000 リクエスト単体テストの実施方法(同期応答メッセージ送信処理)\u0000 と異なるクラスを送出する。"
     },
     {
       "id": "s5",
@@ -42,7 +42,7 @@
     {
       "id": "s8",
       "title": "モックアップクラスの設定",
-      "content": "コンポーネント設定ファイルに、リクエスト単体テストで使用するモックアップクラスを設定する。\n\n> ```xml\n> <!-- HTTP通信用クライアント -->\n> <component name=\"defaultMessageSenderClient\"\n>            class=\"nablarch.test.core.messaging.RequestTestingMessagingClient\">\n>   <property name=\"charset\" value=\"Shift-JIS\"/>\n> </component>\n> ```\n\nなお、\u0000 `charset`\u0000 に、文字コード名を指定することでログに出力する文字コードを変更できる。\n通常は省略可能で、省略した場合はUTF-8が使用される。"
+      "content": "コンポーネント設定ファイルに、リクエスト単体テストで使用するモックアップクラスを設定する。\n\n```xml\n<!-- HTTP通信用クライアント -->\n<component name=\"defaultMessageSenderClient\"\n           class=\"nablarch.test.core.messaging.RequestTestingMessagingClient\">\n  <property name=\"charset\" value=\"Shift-JIS\"/>\n</component>\n```\n\nなお、\u0000 `charset`\u0000 に、文字コード名を指定することでログに出力する文字コードを変更できる。\n通常は省略可能で、省略した場合はUTF-8が使用される。"
     }
   ]
 }

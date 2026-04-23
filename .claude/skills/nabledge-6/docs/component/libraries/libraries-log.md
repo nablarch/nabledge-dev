@@ -44,7 +44,7 @@
 
 ログ出力は、３つの処理から構成されており、それぞれの実装を差し替えることができる。
 
-> ![](images/log/log-structure.png)
+![](images/log/log-structure.png)
 
 アプリケーションの要件に応じて、
 LogWriter や
@@ -526,14 +526,14 @@ FileUtil#getResource を参照。
 
 ローテーションポリシーの設定例を以下に示す。ローテーションポリシーはLogWriterのプロパティに指定する。
 
-> ```properties
-> writerNames=sample
-> 
-> # writerのrotatePolicyにRotatePolicyが実装されたクラスのFQCNを指定する
-> writer.sample.rotatePolicy=nablarch.core.log.basic.DateRotatePolicy
-> # 更新時刻。オプション。
-> writer.sample.rotateTime=12:00
-> ```
+```properties
+writerNames=sample
+
+# writerのrotatePolicyにRotatePolicyが実装されたクラスのFQCNを指定する
+writer.sample.rotatePolicy=nablarch.core.log.basic.DateRotatePolicy
+# 更新時刻。オプション。
+writer.sample.rotateTime=12:00
+```
 
 ## 拡張例
 

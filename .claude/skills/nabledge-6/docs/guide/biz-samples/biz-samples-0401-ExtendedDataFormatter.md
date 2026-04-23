@@ -33,13 +33,13 @@ FormUrlEncodedデータフォーマッタはapplication/x-www-form-urlencodedで
 
 以下に本機能で使用するクラス一覧を記す。
 
-> | > パッケージ名 | > クラス名 | > 概要 |
-> |---|---|---|
-> | > *please.change.me.* **core.dataformat** | > FormUrlEncodedDataFormatterFactory | > フォーマッタファクトリクラス。 > サンプル実装ではcreateFormatter(String fileType, String formatFilePath)メソッドをオーバーライドし、FormUrlEncodedDataRecordFormatterのインスタンス生成を可能としている。 |
-> | > *please.change.me.* **core.dataformat** | > FormUrlEncodedDataRecordFormatter | > フォーマッタクラス。 > application/x-www-form-urlencodedで使用されるデータを解析、構築する。 > サンプル実装では読み込み時はパラメータの出現順を意識せず、書き込み時はフォーマット定義順でパラメータを出力する。 |
-> | > *please.change.me.* **core.dataformat.convertor** | > FormUrlEncodedDataConvertorFactory | > データコンバータのファクトリクラス。 > デフォルトのコンバータ名とコンバータ実装クラスの対応表を保持する。 |
-> | > *please.change.me.* **core.dataformat.convertor** | > FormUrlEncodedDataConvertorSetting | > コンバータの設定情報を保持するクラス。 > コンバータ名とコンバータ実装クラスの対応表を、DIコンテナから設定する。 |
-> | > *please.change.me.* **test.core.file** | > FormUrlEncodedTestDataConverter | > テストデータコンバータクラス。 > サンプル実装ではテストデータとして項目ごとにKey=Value形式を設定されたデータを解析し、Value部の値に対し動的にURLエンコーディングを行う。 |
+| パッケージ名 | クラス名 | 概要 |
+|---|---|---|
+| *please.change.me.* **core.dataformat** | FormUrlEncodedDataFormatterFactory | フォーマッタファクトリクラス。 サンプル実装ではcreateFormatter(String fileType, String formatFilePath)メソッドをオーバーライドし、FormUrlEncodedDataRecordFormatterのインスタンス生成を可能としている。 |
+| *please.change.me.* **core.dataformat** | FormUrlEncodedDataRecordFormatter | フォーマッタクラス。 application/x-www-form-urlencodedで使用されるデータを解析、構築する。 サンプル実装では読み込み時はパラメータの出現順を意識せず、書き込み時はフォーマット定義順でパラメータを出力する。 |
+| *please.change.me.* **core.dataformat.convertor** | FormUrlEncodedDataConvertorFactory | データコンバータのファクトリクラス。 デフォルトのコンバータ名とコンバータ実装クラスの対応表を保持する。 |
+| *please.change.me.* **core.dataformat.convertor** | FormUrlEncodedDataConvertorSetting | コンバータの設定情報を保持するクラス。 コンバータ名とコンバータ実装クラスの対応表を、DIコンテナから設定する。 |
+| *please.change.me.* **test.core.file** | FormUrlEncodedTestDataConverter | テストデータコンバータクラス。 サンプル実装ではテストデータとして項目ごとにKey=Value形式を設定されたデータを解析し、Value部の値に対し動的にURLエンコーディングを行う。 |
 
 ## 使用方法
 

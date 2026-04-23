@@ -94,10 +94,10 @@ HTTPレスポンスハンドラ よりも後ろに設定すること
 1. SecureResponseHeader インタフェースの実装クラスで、
   レスポンスヘッダに設定するフィールド名と値を指定する。
 
-> > **Tip:**
-> > ロジックを含まない単純なレスポンスヘッダを作成する場合は、
-> > SecureResponseHeaderSupport
-> > を継承して作成すればよい。
+> **Tip:**
+> ロジックを含まない単純なレスポンスヘッダを作成する場合は、
+> SecureResponseHeaderSupport
+> を継承して作成すればよい。
 
 1. 本ハンドラ(SecureHandler)に、`No1` で作成したクラスを設定する。
 
@@ -128,10 +128,10 @@ HTTPレスポンスハンドラ よりも後ろに設定すること
 
 本ハンドラの設定と `ContentSecurityPolicyHeader` 、そして Jakarta Server PagesカスタムタグのCSP対応 を組み合わせることでCSPに関する機能を有効にできる。
 
-> > **Tip:**
-> > Content Security Policy(CSP)は、クロスサイトスクリプティングなどのコンテンツへのインジェクションに関する攻撃を検知し影響を
-> > 軽減するために追加できる仕組みのことである。CSPそのものについては、 [Content Security Policy Level 3(外部サイト、英語)](https://www.w3.org/TR/CSP3/) や
-> > [Content Security Policy Level 2(外部サイト、英語)](https://www.w3.org/TR/CSP2/) を参照すること。
+> **Tip:**
+> Content Security Policy(CSP)は、クロスサイトスクリプティングなどのコンテンツへのインジェクションに関する攻撃を検知し影響を
+> 軽減するために追加できる仕組みのことである。CSPそのものについては、 [Content Security Policy Level 3(外部サイト、英語)](https://www.w3.org/TR/CSP3/) や
+> [Content Security Policy Level 2(外部サイト、英語)](https://www.w3.org/TR/CSP2/) を参照すること。
 
 Jakarta Server Pagesカスタムタグ を使用している場合は一部のカスタムタグでJavaScriptを出力するため、本ハンドラの機能でnonceを生成しレスポンスヘッダやscript要素などに埋め込むことで対応する。
 

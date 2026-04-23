@@ -230,9 +230,9 @@ myapp-batch-ee
 1. zipファイルを任意のディレクトリに解凍する。
 2. 以下のコマンドでバッチを実行する。
 
-> ```bash
-> java -jar <実行可能jarファイル名> <ジョブ名>
-> ```
+```bash
+java -jar <実行可能jarファイル名> <ジョブ名>
+```
 
 ## pj-batchプロジェクト
 
@@ -293,12 +293,12 @@ myapp-batch
 1. zipファイルを任意のディレクトリに解凍する。
 2. 以下のコマンドでバッチを実行する。
 
-> ```bash
-> java -jar <実行可能jarファイル名> ^
->     -diConfig <コンポーネント設定ファイル> ^
->     -requestPath <リクエストパス> ^
->     -userId <ユーザID>
-> ```
+```bash
+java -jar <実行可能jarファイル名> ^
+    -diConfig <コンポーネント設定ファイル> ^
+    -requestPath <リクエストパス> ^
+    -userId <ユーザID>
+```
 
 ## pj-batch-dblessプロジェクト
 
@@ -318,12 +318,12 @@ pj-batchプロジェクトの構成 からDB関連のディレクトリ及びフ
 1. zipファイルを任意のディレクトリに解凍する。
 2. 以下のコマンドでバッチを実行する。
 
-> ```bash
-> java -jar <実行可能jarファイル名> ^
->     -diConfig <コンポーネント設定ファイル> ^
->     -requestPath <リクエストパス> ^
->     -userId <ユーザID>
-> ```
+```bash
+java -jar <実行可能jarファイル名> ^
+    -diConfig <コンポーネント設定ファイル> ^
+    -requestPath <リクエストパス> ^
+    -userId <ユーザID>
+```
 
 ## pj-container-webプロジェクト
 

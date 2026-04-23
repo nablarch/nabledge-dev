@@ -27,7 +27,7 @@
     {
       "id": "s5",
       "title": "Bean Validationのグループを指定する",
-      "content": "バリデーションに Bean Validation を使用する場合は、 InjectForm#validationGroup にグループを指定することができる。\n\n以下に実装例を示す。\n\n> ```java\n> // UserFormクラス内で設定されたバリデーションルールのうち、Createグループに所属するルールのみを使用して検証する。\n> @InjectForm(form = UserForm.class, prefix = \"form\", validationGroup = Create.class)\n> public HttpResponse handle(HttpRequest req, ExecutionContext ctx) {\n> \n>   // リクエストスコープからバリデーション済みのフォームを取得する。\n>   UserForm form = ctx.getRequestScopedVar(\"form\");\n> \n>   // formを元に業務処理を行う。\n> }\n> ```"
+      "content": "バリデーションに Bean Validation を使用する場合は、 InjectForm#validationGroup にグループを指定することができる。\n\n以下に実装例を示す。\n\n```java\n// UserFormクラス内で設定されたバリデーションルールのうち、Createグループに所属するルールのみを使用して検証する。\n@InjectForm(form = UserForm.class, prefix = \"form\", validationGroup = Create.class)\npublic HttpResponse handle(HttpRequest req, ExecutionContext ctx) {\n\n  // リクエストスコープからバリデーション済みのフォームを取得する。\n  UserForm form = ctx.getRequestScopedVar(\"form\");\n\n  // formを元に業務処理を行う。\n}\n```"
     }
   ]
 }

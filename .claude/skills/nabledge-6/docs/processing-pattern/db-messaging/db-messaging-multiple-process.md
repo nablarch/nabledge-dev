@@ -43,45 +43,45 @@ WHERE
 
 4.悲観ロック処理と悲観ロックしたレコードを抽出するようActionを実装する。
 
-> ```java
-> /**
->  * プロセスID。
->  *
->  * この例では、UUIDを元にプロセスIDを生成している。
->  */
-> private static final String PROCESS_ID = UUID.randomUUID().toString();
-> 
-> @Override
-> public DataReader<SqlRow> createReader(ExecutionContext context) {
->     final Map<String, String> param = new HashMap<>();
->     param.put("processId", PROCESS_ID);
-> 
->     // 自身が悲観ロックした未処理データを抽出するDatabaseRecordReaderを作成する
->     final DatabaseRecordReader reader = new DatabaseRecordReader();
->     reader.setStatement(getParameterizedSqlStatement("FIND_RECEIVED_PROJECTS"), param);
-> 
->     // DatabaseRecordReaderがデータ抽出前に行うコールバック処理に、
->     // 悲観ロックSQLを実行する処理を登録する。
->     // なお、この処理は別トランザクションで実行する必要がある。
->     databaseRecordReader.setListener(new DatabaseRecordListener() {
->         @Override
->         public void beforeReadRecords() {
->             final SimpleDbTransactionManager transactionManager = SystemRepository.get("redundancyTransaction");
->             new SimpleDbTransactionExecutor<Void>(transactionManager) {
->                 @Override
->                 public Void execute(final AppDbConnection appDbConnection) {
->                     appDbConnection
->                             .prepareParameterizedSqlStatementBySqlId(SQL_ID_PREFIX + "UPDATE_PROCESS_ID")
->                             .executeUpdateByMap(PROCESS_MAP);
->                     return null;
->                 }
->             }.doTransaction();
-> 
->         }
->     });
-> 
->     return new DatabaseTableQueueReader(reader, 1000, "RECEIVED_MESSAGE_SEQUENCE");;
-> }
-> ```
+```java
+/**
+ * プロセスID。
+ *
+ * この例では、UUIDを元にプロセスIDを生成している。
+ */
+private static final String PROCESS_ID = UUID.randomUUID().toString();
+
+@Override
+public DataReader<SqlRow> createReader(ExecutionContext context) {
+    final Map<String, String> param = new HashMap<>();
+    param.put("processId", PROCESS_ID);
+
+    // 自身が悲観ロックした未処理データを抽出するDatabaseRecordReaderを作成する
+    final DatabaseRecordReader reader = new DatabaseRecordReader();
+    reader.setStatement(getParameterizedSqlStatement("FIND_RECEIVED_PROJECTS"), param);
+
+    // DatabaseRecordReaderがデータ抽出前に行うコールバック処理に、
+    // 悲観ロックSQLを実行する処理を登録する。
+    // なお、この処理は別トランザクションで実行する必要がある。
+    databaseRecordReader.setListener(new DatabaseRecordListener() {
+        @Override
+        public void beforeReadRecords() {
+            final SimpleDbTransactionManager transactionManager = SystemRepository.get("redundancyTransaction");
+            new SimpleDbTransactionExecutor<Void>(transactionManager) {
+                @Override
+                public Void execute(final AppDbConnection appDbConnection) {
+                    appDbConnection
+                            .prepareParameterizedSqlStatementBySqlId(SQL_ID_PREFIX + "UPDATE_PROCESS_ID")
+                            .executeUpdateByMap(PROCESS_MAP);
+                    return null;
+                }
+            }.doTransaction();
+
+        }
+    });
+
+    return new DatabaseTableQueueReader(reader, 1000, "RECEIVED_MESSAGE_SEQUENCE");;
+}
+```
 
 冗長化構成の複数のサーバ上で同一のデータベースをキューとしたメッセージングを起動するケースなどが該当する。

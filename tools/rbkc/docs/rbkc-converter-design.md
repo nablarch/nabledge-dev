@@ -161,7 +161,7 @@ docutils transform が解決できなかった `substitution_reference` / `refer
 
 | Node | 出力 | 備考 |
 |---|---|---|
-| `block_quote` | 子 node を再帰 Visit、各行先頭に `> ` | |
+| `block_quote` | `attribution` を子に持つ場合のみ各行先頭に `> `、それ以外は `>` を付けず子 node の出力だけ返す | RST は空白インデントで自動的に block_quote を生成するため、AST 上では「作者が引用として書いた」ものと「レイアウト上字下げしただけ」のものが区別できない。明示的な引用の印である `attribution` が無い限り字下げ扱いとして `>` を付けない (Phase 22-A)。注意書きは `admonition` で扱う。 |
 | `literal_block` | ` ```<language>\n<text>\n``` ` | `language` 属性があれば fence に付与 |
 | `doctest_block` | ` ```python\n<text>\n``` ` | Python doctest |
 

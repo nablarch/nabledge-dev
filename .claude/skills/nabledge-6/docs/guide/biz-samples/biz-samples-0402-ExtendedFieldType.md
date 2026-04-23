@@ -38,10 +38,10 @@ JDKで使用されるCP930はダブルバイト文字に対して必ずシフト
 
 以下に本機能で使用するクラス一覧を記す。
 
-> | > パッケージ名 | > クラス名 | > 概要 |
-> |---|---|---|
-> | > *please.change.me.* **core.dataformat.** **convertor.datatype** | > EbcdicDoubleByteCharacterString | > EBCDIC(CP930)のダブルバイト文字列に対応したデータタイプクラス。 > 固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に使用する。 > 入出力のバイトデータに **シフトコードが付与されるケース** を想定しているデータタイプとして実装する。 |
-> | > *please.change.me.* **core.dataformat.** **convertor.datatype** | > EbcdicNoShiftCodeDoubleByteCharacterString | > EBCDIC(CP930)のダブルバイト文字列に対応したデータタイプクラス。 > 固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に使用する。 > 入出力のバイトデータに **シフトコードが付与されないケース** を想定しているデータタイプとして実装する。 |
+| パッケージ名 | クラス名 | 概要 |
+|---|---|---|
+| *please.change.me.* **core.dataformat.** **convertor.datatype** | EbcdicDoubleByteCharacterString | EBCDIC(CP930)のダブルバイト文字列に対応したデータタイプクラス。 固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に使用する。 入出力のバイトデータに **シフトコードが付与されるケース** を想定しているデータタイプとして実装する。 |
+| *please.change.me.* **core.dataformat.** **convertor.datatype** | EbcdicNoShiftCodeDoubleByteCharacterString | EBCDIC(CP930)のダブルバイト文字列に対応したデータタイプクラス。 固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に使用する。 入出力のバイトデータに **シフトコードが付与されないケース** を想定しているデータタイプとして実装する。 |
 
 ## フィールドタイプの使用方法
 

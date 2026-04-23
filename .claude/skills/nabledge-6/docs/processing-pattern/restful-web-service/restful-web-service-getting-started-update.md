@@ -88,17 +88,17 @@ public class ProjectUpdateForm implements Serializable {
 データベース上のプロジェクト情報を更新する処理を実装する。
 
 ProjectAction.java
-> ```java
-> @Consumes(MediaType.APPLICATION_JSON)
-> @Valid
-> public HttpResponse update(ProjectUpdateForm form) {
->     Project project = BeanUtil.createAndCopy(Project.class, form);
-> 
->     UniversalDao.update(project);
-> 
->     return new HttpResponse(HttpResponse.Status.OK.getStatusCode());
-> }
-> ```
+```java
+@Consumes(MediaType.APPLICATION_JSON)
+@Valid
+public HttpResponse update(ProjectUpdateForm form) {
+    Project project = BeanUtil.createAndCopy(Project.class, form);
+
+    UniversalDao.update(project);
+
+    return new HttpResponse(HttpResponse.Status.OK.getStatusCode());
+}
+```
 
 この実装のポイント
 * リクエストボディをJSON形式で受け付けるため、 Consumes アノテーションに

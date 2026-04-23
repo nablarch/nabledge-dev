@@ -5,19 +5,19 @@ Exampleアプリケーションを元に検索機能を解説する。
 作成する機能の説明
 1. サイドメニュー「プロジェクト名」欄に検索条件を入力し、検索ボタンを押下する。
 
-> ![](../images/project_search/project_search_sidemenu.png)
+![](../images/project_search/project_search_sidemenu.png)
 
 1. プロジェクト名で検索した結果が表示される。
 
-> ![](../images/project_search/project_search_search_with_condition.png)
+![](../images/project_search/project_search_search_with_condition.png)
 
 1. プロジェクト名をクリアし、「期間からさがす」欄の「今年開始」リンクを押下する。
 
-> ![](../images/project_search/project_search_start_date.png)
+![](../images/project_search/project_search_start_date.png)
 
 1. プロジェクト開始日が今年となっているプロジェクトが表示される。
 
-> ![](../images/project_search/project_search_start_date_result.png)
+![](../images/project_search/project_search_start_date_result.png)
 
 ## 検索する
 

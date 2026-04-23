@@ -534,9 +534,9 @@ propertiesファイルはjava.util.Propertiesによりパースされる。confi
 
 環境設定ファイル
 
-> ```bash
-> message=上書きされるメッセージ
-> ```
+```bash
+message=上書きされるメッセージ
+```
 
 システムプロパティで値を上書きする
 javaコマンドの `-D` オプションでシステムプロパティを設定することで、環境設定ファイルの値を上書きできる。
@@ -779,15 +779,15 @@ HTTPリクエストディスパッチハンドラ ）では
 そのため、ActionクラスをDIコンテナに登録する場合は、ディスパッチ先のクラスをシステムリポジトリから取得するよう DelegateFactory を
 差し替える必要がある。差し替えは以下のように DispatchHandler#setDelegateFactory にて設定する。
 
-> ```xml
-> <component name="packageMapping" class="nablarch.integration.router.RoutesMapping">
->   <!-- ディスパッチ先をシステムリポジトリから取得するDelegateFactory -->
->   <property name="delegateFactory">
->       <component class="nablarch.fw.handler.SystemRepositoryDelegateFactory"/>
->   </property>
->   <!-- その他のプロパティは省略 -->
-> </component>
-> ```
+```xml
+<component name="packageMapping" class="nablarch.integration.router.RoutesMapping">
+  <!-- ディスパッチ先をシステムリポジトリから取得するDelegateFactory -->
+  <property name="delegateFactory">
+      <component class="nablarch.fw.handler.SystemRepositoryDelegateFactory"/>
+  </property>
+  <!-- その他のプロパティは省略 -->
+</component>
+```
 
 ## オブジェクトの初期化処理を行う
 

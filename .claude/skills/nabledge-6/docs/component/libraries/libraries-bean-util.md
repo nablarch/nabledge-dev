@@ -174,37 +174,37 @@ Converter 実装クラスをそれぞれ参照すること。
   今回は標準の型変換ルールに追加でルールを設定するため、 ConversionManager をプロパティとして持つ、
   ConversionManager の実装クラスを作成する。
 
-> ```java
-> public class SampleConversionManager implements ConversionManager {
-> 
->     private ConversionManager delegateManager;
-> 
->     @Override
->     public Map<Class<?>, Converter<?>> getConverters() {
->         Map<Class<?>, Converter<?>> converters = new HashMap<Class<?>, Converter<?>>();
-> 
->         // 標準のコンバータ
->         converters.putAll(delegateManager.getConverters());
-> 
->         // 今回作成したコンバータ
->         converters.put(BigInteger.class, new CustomConverter());
-> 
->         return Collections.unmodifiableMap(converters);
->     }
-> 
->     @Override
->     public List<ExtensionConverter<?>> getExtensionConvertor() {
->         final List<ExtensionConverter<?>> extensionConverters =
->             new ArrayList<ExtensionConverter<?>>(delegateManager.getExtensionConvertor());
->         extensionConverters.add(new CustomExtensionConverter());
->         return extensionConverters;
->     }
-> 
->     public void setDelegateManager(ConversionManager delegateManager) {
->         this.delegateManager = delegateManager;
->     }
-> }
-> ```
+```java
+public class SampleConversionManager implements ConversionManager {
+
+    private ConversionManager delegateManager;
+
+    @Override
+    public Map<Class<?>, Converter<?>> getConverters() {
+        Map<Class<?>, Converter<?>> converters = new HashMap<Class<?>, Converter<?>>();
+
+        // 標準のコンバータ
+        converters.putAll(delegateManager.getConverters());
+
+        // 今回作成したコンバータ
+        converters.put(BigInteger.class, new CustomConverter());
+
+        return Collections.unmodifiableMap(converters);
+    }
+
+    @Override
+    public List<ExtensionConverter<?>> getExtensionConvertor() {
+        final List<ExtensionConverter<?>> extensionConverters =
+            new ArrayList<ExtensionConverter<?>>(delegateManager.getExtensionConvertor());
+        extensionConverters.add(new CustomExtensionConverter());
+        return extensionConverters;
+    }
+
+    public void setDelegateManager(ConversionManager delegateManager) {
+        this.delegateManager = delegateManager;
+    }
+}
+```
 
 1. コンポーネント設定ファイルに、 ConversionManager の実装クラスを設定する。
 

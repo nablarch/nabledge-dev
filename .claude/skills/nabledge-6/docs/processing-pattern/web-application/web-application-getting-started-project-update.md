@@ -5,23 +5,23 @@ Exampleアプリケーションを元に更新機能を解説する。
 作成する機能の説明
 1. プロジェクト一覧のプロジェクトIDを押下する。
 
-> ![](../images/project_update/project_update_detail_link.png)
+![](../images/project_update/project_update_detail_link.png)
 
 1. 対象プロジェクトの詳細画面が表示されるので、変更ボタンを押下する。
 
-> ![](../images/project_update/project_update_detail.png)
+![](../images/project_update/project_update_detail.png)
 
 1. 更新する項目を書き換えて、更新ボタンを押下する。
 
-> ![](../images/project_update/project_update_update.png)
+![](../images/project_update/project_update_update.png)
 
 1. 更新確認画面が表示されるので、確定ボタンを押下する。
 
-> ![](../images/project_update/project_update_confirm.png)
+![](../images/project_update/project_update_confirm.png)
 
 1. データベースが更新され、更新完了画面が表示される。
 
-> ![](../images/project_update/project_update_complete.png)
+![](../images/project_update/project_update_complete.png)
 
 ## 更新内容の入力と確認
 
@@ -121,9 +121,9 @@ public HttpResponse edit(HttpRequest request, ExecutionContext context) {
   テーブルをJOINした結果を取得する ために、検索結果はBeanで受け付ける。
   一意キー検索では、対象データが存在しない場合 NoDataException を送出する。
 
-  > > **Tip:**
-> > Exampleアプリケーションでは、独自のエラー制御ハンドラを追加しているため、 NoDataException が発生した場合は404エラー画面へ遷移する。
-  > > ハンドラによるエラー制御の作成方法は、 ハンドラで例外クラスに対応したエラーページに遷移させる を参照。
+  > **Tip:**
+> Exampleアプリケーションでは、独自のエラー制御ハンドラを追加しているため、 NoDataException が発生した場合は404エラー画面へ遷移する。
+  > ハンドラによるエラー制御の作成方法は、 ハンドラで例外クラスに対応したエラーページに遷移させる を参照。
 * 編集中に他ユーザによる更新が行われる可能性を考慮し、編集開始時点のバージョン番号を用いて 楽観的ロック (後述)を行うため、
   編集開始時点のエンティティを セッションストア に登録する。
 

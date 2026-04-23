@@ -359,6 +359,36 @@ class _MDVisitor:
     # ------------------------------------------------------------------
 
     def visit_block_quote(self, node: nodes.block_quote) -> str:
+        # Structural children that must not be wrapped in a GitHub-MD
+        # blockquote (`> | ... |` breaks table rendering; admonitions
+        # and figures are not "quotes" either). If the block_quote's
+        # children are all structural, render them without the `>`
+        # prefix. Mixed or plain-paragraph content keeps the `>` so
+        # real quotations still render as blockquotes.
+        structural = (
+            nodes.table,
+            nodes.figure,
+            nodes.image,
+            nodes.literal_block,
+            nodes.doctest_block,
+            nodes.admonition,
+            nodes.note,
+            nodes.tip,
+            nodes.warning,
+            nodes.important,
+            nodes.attention,
+            nodes.hint,
+            nodes.caution,
+            nodes.danger,
+            nodes.error,
+        )
+        content_children = [
+            c for c in node.children
+            if not isinstance(c, (nodes.system_message, nodes.comment))
+        ]
+        if content_children and all(isinstance(c, structural) for c in content_children):
+            return self.render_children(node)
+
         old_prefix = self._prefix
         self._prefix = old_prefix + "> "
         try:

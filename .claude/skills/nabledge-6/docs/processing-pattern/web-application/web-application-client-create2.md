@@ -82,15 +82,15 @@ public class ClientForm implements Serializable {
 Bean Validation を使用して、入力値のチェックルールを設定する。
 
 ClientForm.java
-> ```java
-> @Required
-> @Domain("clientName")
-> private String clientName;
-> 
-> @Required(message = "{nablarch.core.validation.ee.Required.select.message}")
-> @Domain("industryCode")
-> private String industryCode;
-> ```
+```java
+@Required
+@Domain("clientName")
+private String clientName;
+
+@Required(message = "{nablarch.core.validation.ee.Required.select.message}")
+@Domain("industryCode")
+private String industryCode;
+```
 
 messages.properties
 ```jproperties
@@ -192,26 +192,26 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 バリデーションエラーが発生しないケース
 1. 顧客登録画面を表示する。
 
-> ![](../images/client_create/input_display.png)
+![](../images/client_create/input_display.png)
 
 1. 顧客名に全角文字列、業種に任意の値を選択して確認ボタンを押下する。
 
-> ![](../images/client_create/input_valid_value.png)
+![](../images/client_create/input_valid_value.png)
 
 1. 登録確認画面が表示され、2 で入力した顧客名、業種がラベルで表示されることを確認する。
 
-> ![](../images/client_create/confirm_display.png)
+![](../images/client_create/confirm_display.png)
 バリデーションエラーが発生するケース
 1. 顧客登録画面を表示する。
 
-> ![](../images/client_create/input_display.png)
+![](../images/client_create/input_display.png)
 
 1. 顧客名に半角文字列、業種を未選択にして確認ボタンを押下する。
 
-> ![](../images/client_create/input_invalid_value.png)
+![](../images/client_create/input_invalid_value.png)
 
 1. 登録画面が再度表示され、エラーメッセージが表示されていることを確認する。
 
-> ![](../images/client_create/input_invalid_display.png)
+![](../images/client_create/input_invalid_display.png)
 
 次へ

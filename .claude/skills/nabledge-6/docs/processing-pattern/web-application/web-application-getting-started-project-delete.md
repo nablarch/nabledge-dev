@@ -5,19 +5,19 @@ Exampleアプリケーションを元に削除機能を解説する。
 作成する機能の説明
 1. プロジェクト一覧のプロジェクトIDを押下する。
 
-> ![](../images/project_delete/project_delete_list.png)
+![](../images/project_delete/project_delete_list.png)
 
 1. 詳細画面の変更ボタンを押下する。
 
-> ![](../images/project_delete/project_delete_detail.png)
+![](../images/project_delete/project_delete_detail.png)
 
 1. 更新画面上の削除ボタンを押下する。
 
-> ![](../images/project_delete/project_delete_update.png)
+![](../images/project_delete/project_delete_update.png)
 
 1. 完了画面が表示される。
 
-> ![](../images/project_delete/project_delete_complete.png)
+![](../images/project_delete/project_delete_complete.png)
 
 ## 削除を行う
 

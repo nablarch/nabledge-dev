@@ -752,14 +752,17 @@ Excel 系 (リリースノート / セキュリティ対応チェックリスト
 | **22-A (RST / MD)** | きれいな MD (不要な `>` blockquote を剥がす、RST `list-table` は table のまま) | JSON と同じ | QO2 完全一致を維持 |
 | **22-B (Excel)** | 1 sheet = 1 JSON、1 行 = 1 section、section.content は `列名: 値\n...` の列挙 | 先頭に `# タイトル` + 全行 MD テーブル (全列網羅) | QO2 は「JSON section.content の全列値が MD テーブル内に含まれる」方向のみ (JSON ⊂ MD)。MD → JSON 方向 (MD に含まれるテキストが JSON にあるか) は Excel については緩和。spec §3-3 更新が必要。 |
 
-**RST/MD 側ポリシー** (依頼 1 対応):
+**RST/MD 側ポリシー** (依頼 1 対応、session 55 実サンプル調査で確定):
 
-- converter `rst_ast_visitor.py` の `visit_block_quote` を修正
-  - 子が table / admonition / figure のみのとき → `>` を付けずに中身だけ出力
-  - 本当の引用 (paragraph を含む block_quote) → 従来通り `>` 付与
-- RST `list-table` / grid-table / simple-table は blockquote に入れず、MD table として出力 (既存処理の見直し)
-- 段落 (`paragraph`) が block_quote 直下にあっても、RST 仕様上の「引用」と解釈すべき場面のみ `>` を付ける。現 converter が付けすぎているケースは仕様に従って剥がす
-- その他 spurious `>` の検出とルール化は調査結果に基づき決定
+RST の `block_quote` は「空白インデントすると勝手に発生する」ため、AST 上は「作者が引用として書いた」ものと「レイアウト上字下げしただけ」のものが区別できない。v6 実サンプル 5 件を調査した結果、attribution の無い block_quote は全て「節の本文を字下げしただけ」で引用意図は無かった。
+
+方針:
+
+- **attribution なしの `block_quote` は `>` を剥がして本文として出す** (GitHub 上で普通の段落・テーブル・コードブロックとして表示される)
+- **attribution 付き (`-- 著者`) の block_quote** は引用として `>` を維持
+- **admonition** (`.. note::` / `.. warning::` / `.. tip::` 等) は従来通り `>` + ラベル (`**Note:**` 等) を維持 — 明示的な注意書きとして残す
+- `list-table` / grid-table / simple-table は block_quote 外なら従来通り MD table、中にあっても上のルールで `>` を剥がせばテーブル表示に戻る
+- 生 RST 残渣 (directive / `:role:` / `|sub|`) は既に QC5 で検出・0 件維持
 
 **Excel 側ポリシー** (依頼 2 対応):
 
@@ -775,13 +778,11 @@ Excel 系 (リリースノート / セキュリティ対応チェックリスト
 
 ##### 22-A: RST/MD 側の docs MD 可読性修正
 
-- [ ] 22-A-1: 全 docs MD (v6 ~300 ファイル) を走査する調査スクリプトを作成 (`.work/00299/phase22/scan_docs_md.py`)
-  - 検出対象: (a) blockquote 内 table (`>` 内に `|...|`)、(b) 段落 1 個だけの block_quote 化、(c) 生 RST 残渣 (`.. directive::`, `:ref:`, `|substitution|`) が docs MD に漏れているケース
-  - 出力: 件数 + 代表ファイル/行番号
-- [ ] 22-A-2: 調査結果をユーザーに提示 → ルール確定
-- [ ] 22-A-3: `scripts/common/rst_ast_visitor.py` の `visit_block_quote` を修正 (table / admonition / figure だけの child なら `>` 剥がす、他は維持)。必要に応じて `visit_admonition` / `visit_figure` の内側 table 処理も調整
-- [ ] 22-A-4: `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → verify FAIL 0 維持
-- [ ] 22-A-5: 代表ファイルを GitHub Web で実地確認 (ユーザー)
+- [x] 22-A-1: 調査スクリプト作成 (`.work/00299/phase22/scan_docs_md.py`) + 初回スキャン。v6 341 ファイル、bq_table 270 hits / 25 ファイル、生 RST 残渣ほぼ 0
+- [x] 22-A-2: 代表 5 サンプルを RST/docs MD 実物で確認、attribution なし block_quote は全て字下げ意図で引用意図なしと判定 → `>` 全剥がし方針に決定 (session 55)
+- [ ] 22-A-3: `scripts/common/rst_ast_visitor.py` `visit_block_quote` を修正 — attribution なしなら `>` を付けずに中身だけ出力、attribution 付きのみ従来通り
+- [ ] 22-A-4: `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → verify FAIL 0 維持 (spec §3-3 QO2 完全一致は JSON も同じ変更が入るので保たれる)
+- [ ] 22-A-5: 再スキャン → bq_table 0、サンプル 5 件を GitHub Web で実地確認 (ユーザー)
 - [ ] 22-A-6: コミット
 
 ##### 22-B: Excel converter 書き直し + spec 更新

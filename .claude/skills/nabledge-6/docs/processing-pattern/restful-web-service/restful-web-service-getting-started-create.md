@@ -76,14 +76,14 @@ public class ProjectForm implements Serializable {
 プロジェクト情報をデータベースに登録する処理を実装する。
 
 ProjectAction.java
-> ```java
-> @Consumes(MediaType.APPLICATION_JSON)
-> @Valid
-> public HttpResponse save(ProjectForm project) {
->     UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project));
->     return new HttpResponse(HttpResponse.Status.CREATED.getStatusCode());
-> }
-> ```
+```java
+@Consumes(MediaType.APPLICATION_JSON)
+@Valid
+public HttpResponse save(ProjectForm project) {
+    UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project));
+    return new HttpResponse(HttpResponse.Status.CREATED.getStatusCode());
+}
+```
 
 この実装のポイント
 * リクエストをJSON形式で受け付けるため、 Consumes アノテーションに

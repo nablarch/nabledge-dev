@@ -37,7 +37,7 @@
     {
       "id": "s7",
       "title": "データベースアクセス処理を実装する",
-      "content": "業務アクションのメソッドにデータベースアクセス処理を実装する。\n\nポイント\n* 業務アクションメソッドをトランザクション管理対象とするため、\n  Transactional インターセプタを設定する\n* DomaDaoRepository#get を使用してDaoの実装クラスをルックアップする\n\n> > **Tip:**\n> > Domaでは注釈処理によってコンパイル時に自動的にDaoの実装クラスが生成されるため、コーディング時にはまだ実装クラスが存在しない。\n> > そのため、本アダプタではDaoの実装クラスをルックアップする機能として DomaDaoRepository を提供している。\n\n```java\n@Transactional\npublic HttpResponse create(final HttpRequest request, final ExecutionContext context) {\n    final Project project = SessionUtil.delete(context, \"project\");\n\n    DomaDaoRepository.get(ProjectDao.class).insert(project);\n\n    return new HttpResponse(\"redirect://complete\");\n}\n```\n\n> **Tip:**\n> Doma 2.44.0よりDaoアノテーションのconfig属性が非推奨になったため、Doma 2.44.0以前に案内していた内容から実装方法を変更している。\n> 詳しくは、 Doma 2.44.0までの実装方法から移行する を参照すること。"
+      "content": "業務アクションのメソッドにデータベースアクセス処理を実装する。\n\nポイント\n* 業務アクションメソッドをトランザクション管理対象とするため、\n  Transactional インターセプタを設定する\n* DomaDaoRepository#get を使用してDaoの実装クラスをルックアップする\n\n> **Tip:**\n> Domaでは注釈処理によってコンパイル時に自動的にDaoの実装クラスが生成されるため、コーディング時にはまだ実装クラスが存在しない。\n> そのため、本アダプタではDaoの実装クラスをルックアップする機能として DomaDaoRepository を提供している。\n\n```java\n@Transactional\npublic HttpResponse create(final HttpRequest request, final ExecutionContext context) {\n    final Project project = SessionUtil.delete(context, \"project\");\n\n    DomaDaoRepository.get(ProjectDao.class).insert(project);\n\n    return new HttpResponse(\"redirect://complete\");\n}\n```\n\n> **Tip:**\n> Doma 2.44.0よりDaoアノテーションのconfig属性が非推奨になったため、Doma 2.44.0以前に案内していた内容から実装方法を変更している。\n> 詳しくは、 Doma 2.44.0までの実装方法から移行する を参照すること。"
     },
     {
       "id": "s8",

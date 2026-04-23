@@ -109,27 +109,27 @@ public HttpResponse complete(HttpRequest request, ExecutionContext context) {
 
 1. 顧客登録画面を表示する。
 
-> ![](../images/client_create/input_display.png)
+![](../images/client_create/input_display.png)
 
 1. 顧客名に全角文字列、業種に任意の値を選択して「登録」ボタンを押下する。
 
-> ![](../images/client_create/input_valid_value.png)
+![](../images/client_create/input_valid_value.png)
 
 1. 登録確認画面が表示され、2 で入力した顧客名、業種がラベルで表示されることを確認する。
 
-> ![](../images/client_create/confirm_display.png)
+![](../images/client_create/confirm_display.png)
 
 1. 「確定」ボタンを押下し、登録完了画面が表示されることを確認する。
 
-> ![](../images/client_create/complete_display.png)
+![](../images/client_create/complete_display.png)
 
 1. サイドメニューの顧客欄の検索ボタンを押下し、顧客検索画面へ遷移する。
 
-> ![](../images/client_create/client_confirm_sidemenu.png)
+![](../images/client_create/client_confirm_sidemenu.png)
 
 1. 登録した顧客情報を検索できることを確認する。
 
-> ![](../images/client_create/client_search_result.png)
+![](../images/client_create/client_search_result.png)
 
 登録機能の解説は以上。
 

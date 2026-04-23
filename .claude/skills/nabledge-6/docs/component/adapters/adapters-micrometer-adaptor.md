@@ -275,25 +275,25 @@ nablarch.micrometer.datadog.apiKey=XXXXXXXXXXXXXXXXXXXX
 
 micrometer.properties
 
-> ```text
-> nablarch.micrometer.example.one=PROPERTIES
-> nablarch.micrometer.example.two=PROPERTIES
-> nablarch.micrometer.example.three=PROPERTIES
-> ```
+```text
+nablarch.micrometer.example.one=PROPERTIES
+nablarch.micrometer.example.two=PROPERTIES
+nablarch.micrometer.example.three=PROPERTIES
+```
 
 OS環境変数
 
-> ```text
-> $ export NABLARCH_MICROMETER_EXAMPLE_TWO=OS_ENV
-> 
-> $ export NABLARCH_MICROMETER_EXAMPLE_THREE=OS_ENV
-> ```
+```text
+$ export NABLARCH_MICROMETER_EXAMPLE_TWO=OS_ENV
+
+$ export NABLARCH_MICROMETER_EXAMPLE_THREE=OS_ENV
+```
 
 システムプロパティ
 
-> ```text
-> -Dnablarch.micrometer.example.three=SYSTEM_PROP
-> ```
+```text
+-Dnablarch.micrometer.example.three=SYSTEM_PROP
+```
 
 この場合、それぞれの設定値は最終的に次の値が採用される。
 
@@ -703,13 +703,13 @@ nablarch.micrometer.statsd.enabled=false
 多くの監視サービスでは [OpenTelemetry(外部サイト)](https://opentelemetry.io/ja) をサポートしており、通信プロトコルに OpenTelemetry Protocol (以下、OTLP) を使用してメトリクスを収集できる。
 `micrometer-registry-otlp` モジュールを用いることで、 OTLP で様々な監視サービスと連携できる。
 
-> > **Important:**
-> > OpenTelemetry によるメトリクスの収集では、どういった連携方法が適しているか（利用可能か）は監視サービスによって異なるため、使用する監視サービスの情報を確認すること。
-> > 例として、いくつかの監視サービスの情報を以下に示す。
+> **Important:**
+> OpenTelemetry によるメトリクスの収集では、どういった連携方法が適しているか（利用可能か）は監視サービスによって異なるため、使用する監視サービスの情報を確認すること。
+> 例として、いくつかの監視サービスの情報を以下に示す。
 
-> > * > >   [Datadog の OpenTelemetry(外部サイト)](https://docs.datadoghq.com/ja/opentelemetry/)
-> > * > >   [New RelicによるOpenTelemetryの紹介(外部サイト)](https://docs.newrelic.com/jp/docs/opentelemetry/opentelemetry-introduction)
-> > * > >   [Prometheus | HTTP API | OTLP Receiver(外部サイト、英語)](https://prometheus.io/docs/prometheus/latest/querying/api/#otlp-receiver)
+> * >   [Datadog の OpenTelemetry(外部サイト)](https://docs.datadoghq.com/ja/opentelemetry/)
+> * >   [New RelicによるOpenTelemetryの紹介(外部サイト)](https://docs.newrelic.com/jp/docs/opentelemetry/opentelemetry-introduction)
+> * >   [Prometheus | HTTP API | OTLP Receiver(外部サイト、英語)](https://prometheus.io/docs/prometheus/latest/querying/api/#otlp-receiver)
 
 ここでは、localhost の 9090 ポートで起動している Prometheus に OTLP で連携する場合を例にして説明する。
 

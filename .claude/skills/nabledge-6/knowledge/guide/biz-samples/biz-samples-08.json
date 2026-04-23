@@ -32,22 +32,22 @@
     {
       "id": "s6",
       "title": "メールの形式",
-      "content": "本サンプルでは、以下のメールを送信できる。\n\n| メール形式 | 業務Actionが使用するコンテキストクラス | 添付ファイル | メール構造のパターン |\n|---|---|---|---|\n| TEXT | TemplateMailContext | 無し | 1 |\n|  |  | 有り | 2 |\n| HTML | TemplateHtmlMailContext | 無し | 3 |\n|  |  | 有り | 4 |\n\n**メール構造のパターン１**\n\n> ![](_images/Mail_Pattern01.jpg)\n\n**メール構造のパターン２**\n\n> ![](_images/Mail_Pattern02.jpg)\n\n**メール構造のパターン３**\n\n> ![](_images/Mail_Pattern03.jpg)\n\n**メール構造のパターン４**\n\n> ![](_images/Mail_Pattern04.jpg)"
+      "content": "本サンプルでは、以下のメールを送信できる。\n\n| メール形式 | 業務Actionが使用するコンテキストクラス | 添付ファイル | メール構造のパターン |\n|---|---|---|---|\n| TEXT | TemplateMailContext | 無し | 1 |\n|  |  | 有り | 2 |\n| HTML | TemplateHtmlMailContext | 無し | 3 |\n|  |  | 有り | 4 |\n\n**メール構造のパターン１**\n\n![](_images/Mail_Pattern01.jpg)\n\n**メール構造のパターン２**\n\n![](_images/Mail_Pattern02.jpg)\n\n**メール構造のパターン３**\n\n![](_images/Mail_Pattern03.jpg)\n\n**メール構造のパターン４**\n\n![](_images/Mail_Pattern04.jpg)"
     },
     {
       "id": "s7",
       "title": "クラス図",
-      "content": "> ![](_images/HtmlMail_ClassDiagram.png)"
+      "content": "![](_images/HtmlMail_ClassDiagram.png)"
     },
     {
       "id": "s8",
       "title": "各クラスの責務",
-      "content": "> | > クラス名 | > 概要 |\n> |---|---|\n> | > please.change.me.common.mail.html.HtmlMailRequester | > MailRequesterを拡張したHTMLメール送信要求を受け付けるクラス。 |\n> | > please.change.me.common.mail.html.TemplateHtmlMailContext | > TemplateMailContextを拡張し、HTMLメールに必要な情報を保持するクラス。 > 代替テキストを本文に変換することで、HTMLメール用のテンプレートを使用して > プレーンテキスト形式のメールを送信する機能を実現する。 |\n> | > please.change.me.common.mail.html.HtmlMailTable | > HTMLメール用のテーブルにアクセスするクラス。 |\n> | > please.change.me.common.mail.html.HtmlMailSender | > MailSenderを拡張したHTMLメールの送信をサポートするクラス。HTMLメール用の要求でない場合は、 > 親クラスに処理を委譲し、プレーンテキスト形式のメールを送信する。 |\n> | > please.change.me.common.mail.html.HtmlMailContentCreator | > HTMLメール用のコンテンツを生成するクラス。 |"
+      "content": "| クラス名 | 概要 |\n|---|---|\n| please.change.me.common.mail.html.HtmlMailRequester | MailRequesterを拡張したHTMLメール送信要求を受け付けるクラス。 |\n| please.change.me.common.mail.html.TemplateHtmlMailContext | TemplateMailContextを拡張し、HTMLメールに必要な情報を保持するクラス。 代替テキストを本文に変換することで、HTMLメール用のテンプレートを使用して プレーンテキスト形式のメールを送信する機能を実現する。 |\n| please.change.me.common.mail.html.HtmlMailTable | HTMLメール用のテーブルにアクセスするクラス。 |\n| please.change.me.common.mail.html.HtmlMailSender | MailSenderを拡張したHTMLメールの送信をサポートするクラス。HTMLメール用の要求でない場合は、 親クラスに処理を委譲し、プレーンテキスト形式のメールを送信する。 |\n| please.change.me.common.mail.html.HtmlMailContentCreator | HTMLメール用のコンテンツを生成するクラス。 |"
     },
     {
       "id": "s9",
       "title": "設定の記述",
-      "content": "> ```xml\n> <!-- メール送信要求API -->\n> <component name=\"mailRequester\" class=\"please.change.me.common.mail.html.HtmlMailRequester\">\n>     <property name=\"mailRequestConfig\" ref=\"mailRequestConfig\" />\n>     <property name=\"mailRequestIdGenerator\" ref=\"mailRequestIdGenerator\" />\n>     <property name=\"mailRequestTable\" ref=\"mailRequestTable\" />\n>     <property name=\"mailRecipientTable\" ref=\"mailRecipientTable\" />\n>     <property name=\"mailAttachedFileTable\" ref=\"mailAttachedFileTable\" />\n>     <property name=\"mailTemplateTable\" ref=\"mailTemplateTable\" />\n>     <!-- 拡張したテーブルへのアクセス機能を設定する -->\n>     <property name=\"htmlMailTable\" ref=\"htmlMailTable\" />\n> </component>\n> \n> <!--\n> Nablarchアプリケーションフレームワークのメール送信機能ではスキーマ定義を行うが、\n> 本ライブラリではソースコードを直接修正すれば良いため、設定ファイルでの定義は行わない。\n> ただし、テーブルアクセスの機能はRequester,Senderで共通のため、コンポーネントの定義を行うこと。\n> -->\n> <component name=\"htmlMailTable\" class=\"please.change.me.common.mail.html.HtmlMailTable\" />\n> ```"
+      "content": "```xml\n<!-- メール送信要求API -->\n<component name=\"mailRequester\" class=\"please.change.me.common.mail.html.HtmlMailRequester\">\n    <property name=\"mailRequestConfig\" ref=\"mailRequestConfig\" />\n    <property name=\"mailRequestIdGenerator\" ref=\"mailRequestIdGenerator\" />\n    <property name=\"mailRequestTable\" ref=\"mailRequestTable\" />\n    <property name=\"mailRecipientTable\" ref=\"mailRecipientTable\" />\n    <property name=\"mailAttachedFileTable\" ref=\"mailAttachedFileTable\" />\n    <property name=\"mailTemplateTable\" ref=\"mailTemplateTable\" />\n    <!-- 拡張したテーブルへのアクセス機能を設定する -->\n    <property name=\"htmlMailTable\" ref=\"htmlMailTable\" />\n</component>\n\n<!--\nNablarchアプリケーションフレームワークのメール送信機能ではスキーマ定義を行うが、\n本ライブラリではソースコードを直接修正すれば良いため、設定ファイルでの定義は行わない。\nただし、テーブルアクセスの機能はRequester,Senderで共通のため、コンポーネントの定義を行うこと。\n-->\n<component name=\"htmlMailTable\" class=\"please.change.me.common.mail.html.HtmlMailTable\" />\n```"
     },
     {
       "id": "s10",
@@ -57,12 +57,12 @@
     {
       "id": "s11",
       "title": "HTMLメール用代替テキストテンプレートテーブル",
-      "content": "HTML用定型メールの代替テキストを管理するメールテンプレートの関連テーブル。\n\n> | > 定義 | > Javaの型 | > 備考 |\n> |---|---|---|\n> | > メールテンプレートID | > java.lang.String | > PK |\n> | > 言語 | > java.lang.String | > PK |\n> | > 代替テキスト | > java.lang.String | > HTMLメールを表示できないメーラーのためのテキスト。 |"
+      "content": "HTML用定型メールの代替テキストを管理するメールテンプレートの関連テーブル。\n\n| 定義 | Javaの型 | 備考 |\n|---|---|---|\n| メールテンプレートID | java.lang.String | PK |\n| 言語 | java.lang.String | PK |\n| 代替テキスト | java.lang.String | HTMLメールを表示できないメーラーのためのテキスト。 |"
     },
     {
       "id": "s12",
       "title": "HTMLメール用代替テキストテーブル",
-      "content": "HTMLメール用の代替テキストを管理するメール送信要求の関連テーブル。\n\n> | > 定義 | > Javaの型 | > 備考 |\n> |---|---|---|\n> | > メール送信要求ID | > java.lang.String | > PK |\n> | > 代替テキスト | > java.lang.String | > HTMLメールを表示できないメーラーのためのテキスト。 |"
+      "content": "HTMLメール用の代替テキストを管理するメール送信要求の関連テーブル。\n\n| 定義 | Javaの型 | 備考 |\n|---|---|---|\n| メール送信要求ID | java.lang.String | PK |\n| 代替テキスト | java.lang.String | HTMLメールを表示できないメーラーのためのテキスト。 |"
     },
     {
       "id": "s13",

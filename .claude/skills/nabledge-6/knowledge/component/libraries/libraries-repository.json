@@ -77,7 +77,7 @@
     {
       "id": "s15",
       "title": "システムプロパティを使って環境依存値を上書きする",
-      "content": "環境依存値は、システムプロパティ( java.lang.System#getProperties() で取得できる値)で上書きできる。\nシステムプロパティは、環境設定ファイルに設定した値より優先されるため、vmオプションで容易に設定値を上書きできる。\n\n例えば、特定のバッチアプリケーションだけ設定値を変えたいといった場合に、システムプロパティを使用して環境依存値を上書きするといったことができる。\n\n以下に例を示す。\n\n環境設定ファイル\n\n> ```bash\n> message=上書きされるメッセージ\n> ```\n\nシステムプロパティで値を上書きする\njavaコマンドの `-D` オプションでシステムプロパティを設定することで、環境設定ファイルの値を上書きできる。\nこの例の場合、 message の値は「上書きするメッセージ」となる。\n\njava -Dmessage=上書きするメッセージ"
+      "content": "環境依存値は、システムプロパティ( java.lang.System#getProperties() で取得できる値)で上書きできる。\nシステムプロパティは、環境設定ファイルに設定した値より優先されるため、vmオプションで容易に設定値を上書きできる。\n\n例えば、特定のバッチアプリケーションだけ設定値を変えたいといった場合に、システムプロパティを使用して環境依存値を上書きするといったことができる。\n\n以下に例を示す。\n\n環境設定ファイル\n\n```bash\nmessage=上書きされるメッセージ\n```\n\nシステムプロパティで値を上書きする\njavaコマンドの `-D` オプションでシステムプロパティを設定することで、環境設定ファイルの値を上書きできる。\nこの例の場合、 message の値は「上書きするメッセージ」となる。\n\njava -Dmessage=上書きするメッセージ"
     },
     {
       "id": "s16",
@@ -107,7 +107,7 @@
     {
       "id": "s21",
       "title": "ActionクラスをDIコンテナで管理する",
-      "content": "アノテーションをActionクラスに付与することでDIコンテナで管理可能となる。\nNablarchで用意されたディスパッチハンドラ（ ルーティングアダプタ 、 リクエストディスパッチハンドラ 、\nHTTPリクエストディスパッチハンドラ ）では\nディスパッチ先のクラスはディスパッチハンドラ内でインスタンス化される。\nそのため、ActionクラスをDIコンテナに登録する場合は、ディスパッチ先のクラスをシステムリポジトリから取得するよう DelegateFactory を\n差し替える必要がある。差し替えは以下のように DispatchHandler#setDelegateFactory にて設定する。\n\n> ```xml\n> <component name=\"packageMapping\" class=\"nablarch.integration.router.RoutesMapping\">\n>   <!-- ディスパッチ先をシステムリポジトリから取得するDelegateFactory -->\n>   <property name=\"delegateFactory\">\n>       <component class=\"nablarch.fw.handler.SystemRepositoryDelegateFactory\"/>\n>   </property>\n>   <!-- その他のプロパティは省略 -->\n> </component>\n> ```"
+      "content": "アノテーションをActionクラスに付与することでDIコンテナで管理可能となる。\nNablarchで用意されたディスパッチハンドラ（ ルーティングアダプタ 、 リクエストディスパッチハンドラ 、\nHTTPリクエストディスパッチハンドラ ）では\nディスパッチ先のクラスはディスパッチハンドラ内でインスタンス化される。\nそのため、ActionクラスをDIコンテナに登録する場合は、ディスパッチ先のクラスをシステムリポジトリから取得するよう DelegateFactory を\n差し替える必要がある。差し替えは以下のように DispatchHandler#setDelegateFactory にて設定する。\n\n```xml\n<component name=\"packageMapping\" class=\"nablarch.integration.router.RoutesMapping\">\n  <!-- ディスパッチ先をシステムリポジトリから取得するDelegateFactory -->\n  <property name=\"delegateFactory\">\n      <component class=\"nablarch.fw.handler.SystemRepositoryDelegateFactory\"/>\n  </property>\n  <!-- その他のプロパティは省略 -->\n</component>\n```"
     },
     {
       "id": "s22",

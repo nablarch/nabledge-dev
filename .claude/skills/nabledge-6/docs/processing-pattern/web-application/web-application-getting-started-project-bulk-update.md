@@ -5,23 +5,23 @@ Exampleアプリケーションを元に一括更新機能を解説する。
 作成する機能の説明
 1. メニューの一括更新リンクを押下し、一括更新画面へ遷移する。
 
-> ![](../images/project_bulk_update/project_bulk_update-menu.png)
+![](../images/project_bulk_update/project_bulk_update-menu.png)
 
 1. プロジェクト全件検索の結果が表示される。
 
-> ![](../images/project_bulk_update/project_bulk_update-list.png)
+![](../images/project_bulk_update/project_bulk_update-list.png)
 
 1. 当該ページで更新する項目を書き換えて、更新ボタンを押下する(ページをまたいだ更新はできない)。
 
-> ![](../images/project_bulk_update/project_bulk_update-list_changed.png)
+![](../images/project_bulk_update/project_bulk_update-list_changed.png)
 
 1. 更新確認画面が表示されるので、確定ボタンを押下する。
 
-> ![](../images/project_bulk_update/project_bulk_update-confirm.png)
+![](../images/project_bulk_update/project_bulk_update-confirm.png)
 
 1. データベースが更新され、更新完了画面が表示される。
 
-> ![](../images/project_bulk_update/project_bulk_update-complete.png)
+![](../images/project_bulk_update/project_bulk_update-complete.png)
 
 ## 一括更新機能の作成
 
@@ -47,7 +47,7 @@ Exampleアプリケーションを元に一括更新機能を解説する。
 > 1. >   プロジェクト１つ分の更新情報を受け付けるフォーム
 > 2. >   プロジェクト１つ分のフォームのリストをプロパティとして持つ親フォーム
 
-> > ![](../images/project_bulk_update/project_bulk_update-form.png)
+> ![](../images/project_bulk_update/project_bulk_update-form.png)
 
 プロジェクト１つ分の更新情報を受け付けるフォーム
 プロジェクト１つ分の更新値を受け付けるフォームを作成する。

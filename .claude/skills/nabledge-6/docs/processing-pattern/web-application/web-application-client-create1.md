@@ -110,14 +110,14 @@ URLと業務アクションのマッピングを行う
 
 1. アプリケーションにログインし、ヘッダメニューに「顧客登録」リンクが作成されていることを確認する。
 
-> ![](../images/client_create/header_menu.png)
+![](../images/client_create/header_menu.png)
 
 1. 「顧客登録」リンクを押下すると顧客登録画面に遷移し、「顧客名」フォーム、「業種」プルダウン、登録ボタンが表示されていることを確認する。
 
-> ![](../images/client_create/initial_display.png)
+![](../images/client_create/initial_display.png)
 
 1. 「業種」プルダウンが選択できることを確認する。
 
-> ![](../images/client_create/initial_display_select.png)
+![](../images/client_create/initial_display_select.png)
 
 次へ

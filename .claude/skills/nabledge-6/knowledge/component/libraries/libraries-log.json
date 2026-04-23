@@ -12,7 +12,7 @@
     {
       "id": "s2",
       "title": "ログ出力機能の実装を差し替えることができる",
-      "content": "ログ出力は、３つの処理から構成されており、それぞれの実装を差し替えることができる。\n\n> ![](images/log/log-structure.png)\n\nアプリケーションの要件に応じて、\nLogWriter や\nLogFormatter\nの単位で差し替えることもできるし、\nこれらだけでは要件を満たせなければ\nLogger /\nLoggerFactory\nを実装してほぼ全ての処理を差し替えることもできる。\n\n例えば、オープンソースのログ出力ライブラリを使用したい場合などは\nLogger /\nLoggerFactory を差し替えればよい。\n\nなお、オープンソースで使用実績の多いロギングフレームワークは、専用のLogger/LoggerFactoryを既に用意している。\n\n詳細は、logアダプタ を参照。\n\n本機能と使用実績の多いlog4jとの機能比較は、 log4jとの機能比較 を参照。\n\nログ出力機能がデフォルトで提供しているクラスを示す。\n\nLogger/LoggerFactory\n* BasicLogger\n* BasicLoggerFactory\n\nLogWriter\n* FileLogWriter (ファイルへ出力。ログのローテーション。)\n* SynchronousFileLogWriter (複数プロセスから1ファイルへの出力)\n* StandardOutputLogWriter (標準出力へ出力)\n* LogPublisher (任意のリスナーへ出力)\n\nLogFormatter\n* BasicLogFormatter (パターン文字列によるフォーマット)\n\nRotatePolicy\n* DateRotatePolicy (日時によるログのローテーション)\n* FileSizeRotatePolicy (ファイルサイズによるログのローテーション)\n\n> **Important:**\n> SynchronousFileLogWriter\n> を使う場合は、 SynchronousFileLogWriterを使用するにあたっての注意事項 を参照すること。\n\n> **Tip:**\n> ログ出力機能で使用するログレベルについては、 ログレベルの定義 を参照。"
+      "content": "ログ出力は、３つの処理から構成されており、それぞれの実装を差し替えることができる。\n\n![](images/log/log-structure.png)\n\nアプリケーションの要件に応じて、\nLogWriter や\nLogFormatter\nの単位で差し替えることもできるし、\nこれらだけでは要件を満たせなければ\nLogger /\nLoggerFactory\nを実装してほぼ全ての処理を差し替えることもできる。\n\n例えば、オープンソースのログ出力ライブラリを使用したい場合などは\nLogger /\nLoggerFactory を差し替えればよい。\n\nなお、オープンソースで使用実績の多いロギングフレームワークは、専用のLogger/LoggerFactoryを既に用意している。\n\n詳細は、logアダプタ を参照。\n\n本機能と使用実績の多いlog4jとの機能比較は、 log4jとの機能比較 を参照。\n\nログ出力機能がデフォルトで提供しているクラスを示す。\n\nLogger/LoggerFactory\n* BasicLogger\n* BasicLoggerFactory\n\nLogWriter\n* FileLogWriter (ファイルへ出力。ログのローテーション。)\n* SynchronousFileLogWriter (複数プロセスから1ファイルへの出力)\n* StandardOutputLogWriter (標準出力へ出力)\n* LogPublisher (任意のリスナーへ出力)\n\nLogFormatter\n* BasicLogFormatter (パターン文字列によるフォーマット)\n\nRotatePolicy\n* DateRotatePolicy (日時によるログのローテーション)\n* FileSizeRotatePolicy (ファイルサイズによるログのローテーション)\n\n> **Important:**\n> SynchronousFileLogWriter\n> を使う場合は、 SynchronousFileLogWriterを使用するにあたっての注意事項 を参照すること。\n\n> **Tip:**\n> ログ出力機能で使用するログレベルについては、 ログレベルの定義 を参照。"
     },
     {
       "id": "s3",
@@ -57,7 +57,7 @@
     {
       "id": "s11",
       "title": "ログファイルのローテーションを行う",
-      "content": "本機能で提供するFileLogWiterは、設定したポリシーに従ってログファイルのローテーションを行う。\n\nローテーションポリシーはデフォルトではファイルサイズによるローテーションを行う FileSizeRotatePolicy\nが使用される。 RotatePolicy の実装クラスを作成することで、ローテーションポリシーを変更することができる。\n\n本機能が提供している RotatePolicy の実装クラスは以下。\n各 RotatePolicy の設定はそれぞれのJavadocを参照。\n\n* FileSizeRotatePolicy\n* DateRotatePolicy\n\nローテーションポリシーの設定例を以下に示す。ローテーションポリシーはLogWriterのプロパティに指定する。\n\n> ```properties\n> writerNames=sample\n> \n> # writerのrotatePolicyにRotatePolicyが実装されたクラスのFQCNを指定する\n> writer.sample.rotatePolicy=nablarch.core.log.basic.DateRotatePolicy\n> # 更新時刻。オプション。\n> writer.sample.rotateTime=12:00\n> ```"
+      "content": "本機能で提供するFileLogWiterは、設定したポリシーに従ってログファイルのローテーションを行う。\n\nローテーションポリシーはデフォルトではファイルサイズによるローテーションを行う FileSizeRotatePolicy\nが使用される。 RotatePolicy の実装クラスを作成することで、ローテーションポリシーを変更することができる。\n\n本機能が提供している RotatePolicy の実装クラスは以下。\n各 RotatePolicy の設定はそれぞれのJavadocを参照。\n\n* FileSizeRotatePolicy\n* DateRotatePolicy\n\nローテーションポリシーの設定例を以下に示す。ローテーションポリシーはLogWriterのプロパティに指定する。\n\n```properties\nwriterNames=sample\n\n# writerのrotatePolicyにRotatePolicyが実装されたクラスのFQCNを指定する\nwriter.sample.rotatePolicy=nablarch.core.log.basic.DateRotatePolicy\n# 更新時刻。オプション。\nwriter.sample.rotateTime=12:00\n```"
     },
     {
       "id": "s12",

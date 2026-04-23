@@ -52,12 +52,12 @@
     {
       "id": "s10",
       "title": "クラス定義",
-      "content": "> | > クラス名 | > 概要 |\n> |---|---|\n> | > FileManagementUtil | > DBへ格納したファイルを管理するユーティリティクラス。処理はFileManagementを実装するクラスに委譲する。 |\n> | > FileManagement | > ファイル管理を行うクラスが実装するインターフェース。 |\n> | > DbFileManagement | > DBへ格納したファイルを管理するクラスの本体。 |"
+      "content": "| クラス名 | 概要 |\n|---|---|\n| FileManagementUtil | DBへ格納したファイルを管理するユーティリティクラス。処理はFileManagementを実装するクラスに委譲する。 |\n| FileManagement | ファイル管理を行うクラスが実装するインターフェース。 |\n| DbFileManagement | DBへ格納したファイルを管理するクラスの本体。 |"
     },
     {
       "id": "s11",
       "title": "テーブル定義",
-      "content": "**ファイル管理テーブル(FILE_CONTROL)**\n\nファイル管理テーブルには、ファイル管理IDと共にファイルを格納する。\n\n> | > 論理名 | > 物理名 | > 定義 | > 制約 | > 補足 |\n> |---|---|---|---|---|\n> | > ファイル管理ID | > FILE_CONTROL_ID | > 文字列 | > 主キー | > システムで採番した一意なID(Nablarchの採番機能で採番する) |\n> | > ファイル内容 | > FILE_OBJECT | > バイナリ |  |  |\n> | > 削除サイン | > SAKUJO_SGN | > 文字列 |  | > ファイルを削除したか否かを判定するためのサイン  > 0:未削除  > 1:削除済 |\n\n> **Important:**\n> 採番にはシーケンスが必要になる。\n> 後述のコンポーネント設定ファイルで指定するfileIdKeyと同名のシーケンスを事前に作成しておくこと。"
+      "content": "**ファイル管理テーブル(FILE_CONTROL)**\n\nファイル管理テーブルには、ファイル管理IDと共にファイルを格納する。\n\n| 論理名 | 物理名 | 定義 | 制約 | 補足 |\n|---|---|---|---|---|\n| ファイル管理ID | FILE_CONTROL_ID | 文字列 | 主キー | システムで採番した一意なID(Nablarchの採番機能で採番する) |\n| ファイル内容 | FILE_OBJECT | バイナリ |  |  |\n| 削除サイン | SAKUJO_SGN | 文字列 |  | ファイルを削除したか否かを判定するためのサイン  0:未削除  1:削除済 |\n\n> **Important:**\n> 採番にはシーケンスが必要になる。\n> 後述のコンポーネント設定ファイルで指定するfileIdKeyと同名のシーケンスを事前に作成しておくこと。"
     },
     {
       "id": "s12",
@@ -72,7 +72,7 @@
     {
       "id": "s14",
       "title": "FileManagementUtilの使用例(コンポーネント設定ファイル)",
-      "content": "FileManagementUtil使用時に必要となる各コンポーネントのプロパティを、コンポーネント設定ファイルに定義する。\n\n設定対象のコンポーネントを以下に示す。\n\n> | > 設定対象のコンポーネント | > 設定例で使用している論理名 |\n> |---|---|\n> | > ファイル管理機能本体 | > fileManagement |\n> | > 採番機能 | > sequenceIdGenerator |\n> | > 採番時に使用するフォーマッタ | > dbFileManagementFormatter |\n\n設定例を以下に示す。\n\n```xml\n<!-- ファイル管理機能(論理名fileManagementのコンポーネントを、FileManagementUtilクラスが使用する) -->\n<component name=\"fileManagement\" class=\"please.change.me.common.file.management.DbFileManagement\">\n\n  <!-- 格納ファイルの最大長(単位：バイト) -->\n  <property name=\"maxFileSize\" value=\"10000000\"/>\n\n  <!-- 採番機能で、DbFileManagement用の採番である旨を識別するためのKey -->\n  <property name=\"fileIdKey\" value=\"FILE_CONTROL_SEQ\" />\n\n  <!-- 採番機能 -->\n  <property name=\"idGenerator\" ref=\"sequenceIdGenerator\" />\n\n  <!-- 採番時に使用するフォーマッタ -->\n  <property name=\"idFormatter\" ref=\"dbFileManagementFormatter\" />\n</component>\n\n<!-- 採番機能(ファイル管理機能から使用) -->\n<component name=\"sequenceIdGenerator\" class=\"nablarch.common.idgenerator.SequenceIdGenerator\" />\n\n<!-- 採番時に使用するフォーマッタ(ファイル管理機能から使用) -->\n<component name=\"dbFileManagementFormatter\" class=\"nablarch.common.idgenerator.formatter.LpadFormatter\">\n  <!-- 桁数 -->\n  <property name=\"length\" value=\"18\" />\n  <!-- 不足している桁を埋める文字 -->\n  <property name=\"paddingChar\" value=\"0\" />\n</component>\n```"
+      "content": "FileManagementUtil使用時に必要となる各コンポーネントのプロパティを、コンポーネント設定ファイルに定義する。\n\n設定対象のコンポーネントを以下に示す。\n\n| 設定対象のコンポーネント | 設定例で使用している論理名 |\n|---|---|\n| ファイル管理機能本体 | fileManagement |\n| 採番機能 | sequenceIdGenerator |\n| 採番時に使用するフォーマッタ | dbFileManagementFormatter |\n\n設定例を以下に示す。\n\n```xml\n<!-- ファイル管理機能(論理名fileManagementのコンポーネントを、FileManagementUtilクラスが使用する) -->\n<component name=\"fileManagement\" class=\"please.change.me.common.file.management.DbFileManagement\">\n\n  <!-- 格納ファイルの最大長(単位：バイト) -->\n  <property name=\"maxFileSize\" value=\"10000000\"/>\n\n  <!-- 採番機能で、DbFileManagement用の採番である旨を識別するためのKey -->\n  <property name=\"fileIdKey\" value=\"FILE_CONTROL_SEQ\" />\n\n  <!-- 採番機能 -->\n  <property name=\"idGenerator\" ref=\"sequenceIdGenerator\" />\n\n  <!-- 採番時に使用するフォーマッタ -->\n  <property name=\"idFormatter\" ref=\"dbFileManagementFormatter\" />\n</component>\n\n<!-- 採番機能(ファイル管理機能から使用) -->\n<component name=\"sequenceIdGenerator\" class=\"nablarch.common.idgenerator.SequenceIdGenerator\" />\n\n<!-- 採番時に使用するフォーマッタ(ファイル管理機能から使用) -->\n<component name=\"dbFileManagementFormatter\" class=\"nablarch.common.idgenerator.formatter.LpadFormatter\">\n  <!-- 桁数 -->\n  <property name=\"length\" value=\"18\" />\n  <!-- 不足している桁を埋める文字 -->\n  <property name=\"paddingChar\" value=\"0\" />\n</component>\n```"
     },
     {
       "id": "s15",

@@ -37,7 +37,7 @@
     {
       "id": "s7",
       "title": "テストソースコード実装例",
-      "content": "> ```java\n> public class DbAccessTestSample extends DbAccessTestSupport {\n> \n>     /**\n>      * 全件検索のテスト。<br/>\n>      * 従業員テーブルに登録されたレコードを\n>      * 全件取得できることを確認する。\n>      */\n>     @Test\n>     public void testSelectAll() {\n> \n>         // データベースに準備データを登録する。\n>         //引数にはシート名を記載する。\n>         setUpDb(\"testSelectAll\");\n> \n>         // テスト対象メソッドを起動する。\n>         EmployeeDbAcess target = new EmployeeDbAccess();\n>         SqlResultSet actual = target.selectAll();\n> \n>         // 結果確認\n>         // Excelに記載した期待値と実際の値が等しいことを確認する\n>         // 引数には期待値を格納したシート名, 期待値のID, 実際の値を指定\n>         assertSqlResultSetEquals(\"testSelectAll\", \"expected\", actual);\n>     }\n> }\n> ```"
+      "content": "```java\npublic class DbAccessTestSample extends DbAccessTestSupport {\n\n    /**\n     * 全件検索のテスト。<br/>\n     * 従業員テーブルに登録されたレコードを\n     * 全件取得できることを確認する。\n     */\n    @Test\n    public void testSelectAll() {\n\n        // データベースに準備データを登録する。\n        //引数にはシート名を記載する。\n        setUpDb(\"testSelectAll\");\n\n        // テスト対象メソッドを起動する。\n        EmployeeDbAcess target = new EmployeeDbAccess();\n        SqlResultSet actual = target.selectAll();\n\n        // 結果確認\n        // Excelに記載した期待値と実際の値が等しいことを確認する\n        // 引数には期待値を格納したシート名, 期待値のID, 実際の値を指定\n        assertSqlResultSetEquals(\"testSelectAll\", \"expected\", actual);\n    }\n}\n```"
     },
     {
       "id": "s8",
@@ -67,7 +67,7 @@
     {
       "id": "s13",
       "title": "テストソースコード実装例",
-      "content": "> ```java\n> public class DbAccessTestSample extends DbAccsessTestSupport {\n>     @Test\n>     public void testDeleteExpired() {\n> \n>         // データベースに準備データを登録する。\n>         // 引数にはシート名を記載する。\n>         setUpDb(\"testDeleteExpired\");\n> \n>         // テスト対象メソッドを起動する。\n>         EmployeeDbAcess target = new EmployeeDbAccess();\n>         SqlResultSet actual = target.deleteExpired();  // 期限切れデータを削除\n> \n>         // トランザクションをコミット\n>         commitTransactions();\n> \n>         // 結果確認\n>         // Excelに記載した期待値と実際の値が等しいことを確認する\n>         // 引数には期待値を格納したシート名, 実際の値を指定\n>         assertTableEquals(\"testDeleteExpired\", actual);\n>     }\n> ```"
+      "content": "```java\npublic class DbAccessTestSample extends DbAccsessTestSupport {\n    @Test\n    public void testDeleteExpired() {\n\n        // データベースに準備データを登録する。\n        // 引数にはシート名を記載する。\n        setUpDb(\"testDeleteExpired\");\n\n        // テスト対象メソッドを起動する。\n        EmployeeDbAcess target = new EmployeeDbAccess();\n        SqlResultSet actual = target.deleteExpired();  // 期限切れデータを削除\n\n        // トランザクションをコミット\n        commitTransactions();\n\n        // 結果確認\n        // Excelに記載した期待値と実際の値が等しいことを確認する\n        // 引数には期待値を格納したシート名, 実際の値を指定\n        assertTableEquals(\"testDeleteExpired\", actual);\n    }\n```"
     },
     {
       "id": "s14",

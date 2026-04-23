@@ -38,29 +38,29 @@ LIST_MAP=<シート内で一意になるID（任意の文字列）>
 
 ## テストソースコード実装例
 
-> ```java
-> public class EmployeeComponentTest extends DbAccessTestSupport {
-> 
->     @Test
->     public void testGetName() {
->        // Excelファイルからデータ取得
->        List<Map<String, String>> parameters = getListMap("testGetName", "parameters");
->        Map<String, String>> param = parameters.get(0);
-> 
->        // 引数および期待値を取得
->        String empNo = parameter.get("empNo");
->        String expected = parameter.get("expected");
-> 
->        // テスト対象メソッド起動
->        EmployeeComponent target = new EmployeeComponent();
->        String actual = target.getName(empNo);
-> 
->        // 結果確認
->        assertEquals(expected, actual);
-> 
->        // ＜後略＞
->     }
-> ```
+```java
+public class EmployeeComponentTest extends DbAccessTestSupport {
+
+    @Test
+    public void testGetName() {
+       // Excelファイルからデータ取得
+       List<Map<String, String>> parameters = getListMap("testGetName", "parameters");
+       Map<String, String>> param = parameters.get(0);
+
+       // 引数および期待値を取得
+       String empNo = parameter.get("empNo");
+       String expected = parameter.get("expected");
+
+       // テスト対象メソッド起動
+       EmployeeComponent target = new EmployeeComponent();
+       String actual = target.getName(empNo);
+
+       // 結果確認
+       assertEquals(expected, actual);
+
+       // ＜後略＞
+    }
+```
 
 ## Excelファイル記述例
 
@@ -73,17 +73,17 @@ LIST_MAP=parameters
 
 上記の表で取得可能なオブジェクトは、以下のコードで取得できるListと等価である。
 
-> ```java
-> List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-> Map<String, String> first = new HashMap<String, String>();
-> first.put("empNo","00001");
-> first.put("expected", "山田太郎");
-> list.add(first);
-> Map<String, String> second = new HashMap<String, String>();
-> second.put("empNo","00002");
-> map.put("expected", "鈴木一郎");
-> list.add(second);
-> ```
+```java
+List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+Map<String, String> first = new HashMap<String, String>();
+first.put("empNo","00001");
+first.put("expected", "山田太郎");
+list.add(first);
+Map<String, String> second = new HashMap<String, String>();
+second.put("empNo","00002");
+map.put("expected", "鈴木一郎");
+list.add(second);
+```
 
 ## 同じテストメソッドをテストデータを変えて実行したい
 
@@ -94,31 +94,31 @@ LIST_MAP=parameters
 
 ## テストソースコード実装例
 
-> ```java
-> public class EmployeeComponentTest extends DbAccessTestSupport {
-> 
->     @Test
->     public void testSelectByPk() {
->        // 準備データ投入
->        setUpDb("testSelectByPk");
-> 
->        // Excelファイルからデータ取得
->        List<Map<String, String>> parameters = getListMap("testGetName", "parameters");
-> 
->        for (Map<String, String> param : parameters) {
->            // 引数および期待値を取得
->            String empNo = parameter.get("empNo");
->            String expectedDataId = parameter.get("expectedDataId");
-> 
->            // テスト対象メソッド起動
->            EmployeeComponent target = new EmployeeComponent();
->            SqlResultSet actual = target.selectByPk(empNo);
-> 
->            // 結果確認
->            assertSqlResultSetEquals("testSelectByPk", expectedDataId, actual);
->         }
->     }
-> ```
+```java
+public class EmployeeComponentTest extends DbAccessTestSupport {
+
+    @Test
+    public void testSelectByPk() {
+       // 準備データ投入
+       setUpDb("testSelectByPk");
+
+       // Excelファイルからデータ取得
+       List<Map<String, String>> parameters = getListMap("testGetName", "parameters");
+
+       for (Map<String, String> param : parameters) {
+           // 引数および期待値を取得
+           String empNo = parameter.get("empNo");
+           String expectedDataId = parameter.get("expectedDataId");
+
+           // テスト対象メソッド起動
+           EmployeeComponent target = new EmployeeComponent();
+           SqlResultSet actual = target.selectByPk(empNo);
+
+           // 結果確認
+           assertSqlResultSetEquals("testSelectByPk", expectedDataId, actual);
+        }
+    }
+```
 
 ## Excelファイル記述例
 
@@ -183,14 +183,13 @@ LIST_MAP=expected02
 
 ## テストソースコード実装例
 
-> ```java
-> // DBにデータ登録（グループIDが"case_001"のものだけ登録対象になる）
-> setUpDb("testUpdate", "case_001");
-> 
-> 
-> // 結果確認（グループIDが"case_001"のものだけassert対象になる）
-> assertTableEquals("データベース更新結果確認", "testUpdate", "case_001");
-> ```
+```java
+// DBにデータ登録（グループIDが"case_001"のものだけ登録対象になる）
+setUpDb("testUpdate", "case_001");
+
+// 結果確認（グループIDが"case_001"のものだけassert対象になる）
+assertTableEquals("データベース更新結果確認", "testUpdate", "case_001");
+```
 
 ## Excelファイル記述例
 
@@ -282,34 +281,34 @@ Date now = provider.getDate();
 
 この例では、下記のように本番用の設定ファイルにシーケンスオブジェクトの採番定義がされているとする。
 
-> ```xml
-> <!-- シーケンスオブジェクトを使用した採番設定 -->
-> <component name="idGenerator" class="nablarch.common.idgenerator.OracleSequenceIdGenerator">
->     <property name="idTable">
->         <map>
->             <entry key="1101" value="SEQ_1"/> <!-- ID1採番用 -->
->             <entry key="1102" value="SEQ_2"/> <!-- ID2採番用 -->
->             <entry key="1103" value="SEQ_3"/> <!-- ID3採番用 -->
->             <entry key="1104" value="SEQ_4"/> <!-- ID4採番用 -->
->         </map>
->     </property>
-> </component>
-> ```
+```xml
+<!-- シーケンスオブジェクトを使用した採番設定 -->
+<component name="idGenerator" class="nablarch.common.idgenerator.OracleSequenceIdGenerator">
+    <property name="idTable">
+        <map>
+            <entry key="1101" value="SEQ_1"/> <!-- ID1採番用 -->
+            <entry key="1102" value="SEQ_2"/> <!-- ID2採番用 -->
+            <entry key="1103" value="SEQ_3"/> <!-- ID3採番用 -->
+            <entry key="1104" value="SEQ_4"/> <!-- ID4採番用 -->
+        </map>
+    </property>
+</component>
+```
 
 この場合、テスト用の設定ファイルでは、上記本番用の設定をテーブル採番用の設定で上書きする。
 
-> ```xml
-> <!-- シーケンスオブジェクトの採番設定をテーブルを使用した採番設定に置き換える -->
-> <component name="idGenerator" class="nablarch.common.idgenerator.FastTableIdGenerator">
->     <property name="tableName" value="TEST_SBN_TBL"/>
->     <property name="idColumnName" value="ID_COL"/>
->     <property name="noColumnName" value="NO_COL"/>
->     <property name="dbTransactionManager" ref="dbTransactionManager" / >
-> </component>
-> ```
+```xml
+<!-- シーケンスオブジェクトの採番設定をテーブルを使用した採番設定に置き換える -->
+<component name="idGenerator" class="nablarch.common.idgenerator.FastTableIdGenerator">
+    <property name="tableName" value="TEST_SBN_TBL"/>
+    <property name="idColumnName" value="ID_COL"/>
+    <property name="noColumnName" value="NO_COL"/>
+    <property name="dbTransactionManager" ref="dbTransactionManager" / >
+</component>
+```
 
-> > **Tip:**
-> > テーブル採番用の設定値の詳細は、  IdGenerator  を参照すること。
+> **Tip:**
+> テーブル採番用の設定値の詳細は、  IdGenerator  を参照すること。
 
 ## Excelファイル記述例
 
@@ -361,16 +360,16 @@ Excelファイルに設定する値を記述して下記メソッドを呼び出
 
 ## テストソースコード実装例
 
-> ```java
-> public class DbAccessTestSample extends DbAccessTestSupport {
->     // ＜中略＞
->     @Test
->     public void testInsert() {
->         // ThreadContextに値を設定する（シート名、IDを指定）
->         setThreadContextValues("testSelect", "threadContext");
-> 
->        // ＜後略＞
-> ```
+```java
+public class DbAccessTestSample extends DbAccessTestSupport {
+    // ＜中略＞
+    @Test
+    public void testInsert() {
+        // ThreadContextに値を設定する（シート名、IDを指定）
+        setThreadContextValues("testSelect", "threadContext");
+
+       // ＜後略＞
+```
 
 ## テストデータ記述例
 
@@ -392,10 +391,10 @@ LIST_MAP=threadContext
 
 ## テストソースコード実装例
 
-> ```java
-> TestDataParser parser = (TestDataParser) SystemRepository.getObject("testDataParser");
-> List<Map<String, String>> list = parser.getListMap("/foo/bar/Baz.xlsx", "sheet001", "params");
-> ```
+```java
+TestDataParser parser = (TestDataParser) SystemRepository.getObject("testDataParser");
+List<Map<String, String>> list = parser.getListMap("/foo/bar/Baz.xlsx", "sheet001", "params");
+```
 
 ## テスト実行前後に共通処理を行いたい。
 
@@ -456,37 +455,37 @@ JUnit4で用意されたアノテーション(@Before, @After, @BeforeClass, @Af
 
 ## テストソースコード実装例
 
-> ```java
-> public class SampleTest extends AnotherSuperClass {
-> 
->     /** DbAccessテストサポート */
->     private DbAccessTestSupport dbSupport
->           = new DbAccessTestSupport(getClass());
-> 
->     /** 前処理 */
->     @Before
->     public void setUp() {
->         // DbSupportの前処理を起動
->         dbSupport.beginTransactions();
->     }
-> 
->     /** 後処理 */
->     @After
->     public void tearDown() {
->         // DbSupportの後処理を起動
->         dbSupport.endTransactions();
->     }
-> 
->     @Test
->     public void test() {
->         // データベースに準備データ投入
->         dbSupport.setUpDb("test");
-> 
->         // ＜中略＞
->         dbSupport.assertSqlResultSetEquals("test", "id", actual);
->     }
-> }
-> ```
+```java
+public class SampleTest extends AnotherSuperClass {
+
+    /** DbAccessテストサポート */
+    private DbAccessTestSupport dbSupport
+          = new DbAccessTestSupport(getClass());
+
+    /** 前処理 */
+    @Before
+    public void setUp() {
+        // DbSupportの前処理を起動
+        dbSupport.beginTransactions();
+    }
+
+    /** 後処理 */
+    @After
+    public void tearDown() {
+        // DbSupportの後処理を起動
+        dbSupport.endTransactions();
+    }
+
+    @Test
+    public void test() {
+        // データベースに準備データ投入
+        dbSupport.setUpDb("test");
+
+        // ＜中略＞
+        dbSupport.assertSqlResultSetEquals("test", "id", actual);
+    }
+}
+```
 
 ## クラスのプロパティを検証したい
 
@@ -505,27 +504,27 @@ JUnit4で用意されたアノテーション(@Before, @After, @BeforeClass, @Af
 
 ## テストソースコード実装例
 
-> ```java
-> public class UserUpdateActionRequestTest extends HttpRequestTestSupport {
-> 
->     @Test
->     public void testRW11AC0301Normal() {
->         execute("testRW11AC0301Normal", new BasicAdvice() {
->             @Override
->             public void afterExecute(TestCaseInfo testCaseInfo,
->                     ExecutionContext context) {
->                 String message = testCaseInfo.getTestCaseName();
->                 String sheetName = testCaseInfo.getSheetName();
-> 
->                 UserForm form = (UserForm) context.getRequestScopedVar("user_form");
->                 UsersEntity users = form.getUsers();
-> 
->                 // users のプロパティ kanjiName,kanaName,mailAddress を検証。
->                 assertObjectPropertyEquals(message, sheetName, "expectedUsers", users);
->             }
->         }
->     }
-> ```
+```java
+public class UserUpdateActionRequestTest extends HttpRequestTestSupport {
+
+    @Test
+    public void testRW11AC0301Normal() {
+        execute("testRW11AC0301Normal", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                String message = testCaseInfo.getTestCaseName();
+                String sheetName = testCaseInfo.getSheetName();
+
+                UserForm form = (UserForm) context.getRequestScopedVar("user_form");
+                UsersEntity users = form.getUsers();
+
+                // users のプロパティ kanjiName,kanaName,mailAddress を検証。
+                assertObjectPropertyEquals(message, sheetName, "expectedUsers", users);
+            }
+        }
+    }
+```
 
 ## Excelファイル記述例
 
