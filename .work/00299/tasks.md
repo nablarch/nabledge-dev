@@ -94,7 +94,7 @@
 - [x] 22-B-6: docs.py Excel P1/P2 分岐 (22-B-5b に統合済)
 - [x] 22-B-7: index.py sheet 分割増加に対応 (353 files で動作確認)
 - [x] 22-B-10: `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → 353 files, All files verified OK
-- [ ] 22-B-5b-review: SE + QA expert review for commits `dabc57274` + `023d53248` (22-B-5a QA 7 Findings と同様、review Findings は全件対応)
+- [x] 22-B-5b-review: SE + QA expert review for commits `dabc57274` + `023d53248` 実施済 — SE 1 Finding (`columns`/`data_rows` JSON 未記載) + QA 3 Findings (P1 #title check / flatten edge cases / sheet_name_fallback 陽性ケース) 全件対応 (`d1e4a314a`)。282 tests GREEN
 - [x] 22-B-9: 判定結果一覧 `.work/00299/phase22/sheet-classification.md` 出力 (`ca3bf744f`)。現状維持で確定、見た目改善は Issue #311 に切り出し
 - [ ] 22-B-11: 生成された docs MD を GitHub Web で実地確認 (ユーザー) — FB ①NULL混入 (修正済 `f67969f8a`)、②RST h3→## 潰れ、③内部リンク/画像リンクがdocs MDに反映されない → 22-B-16 で対応
 - [ ] 22-B-16: **RST section 階層 + 内部リンク / 画像 / literalinclude を docs MD と JSON に適切反映**
