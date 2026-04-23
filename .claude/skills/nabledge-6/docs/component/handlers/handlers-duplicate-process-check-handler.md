@@ -25,7 +25,7 @@
 
 処理の流れは以下のとおり。
 
-![](../images/DuplicateProcessCheckHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-duplicate-process-check-handler/flow.png)
 
 ## ハンドラクラス名
 
@@ -44,7 +44,7 @@
 
 本ハンドラは、スレッドコンテキスト変数管理ハンドラよりも後ろに設定すること
 本ハンドラではスレッドコンテキスト上に設定されたリクエストIDを元にプロセス多重起動のチェックを行う。
-このため、 スレッドコンテキスト変数管理ハンドラ より後ろに本ハンドラを設定する必要がある。
+このため、 [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler) より後ろに本ハンドラを設定する必要がある。
 
 ## 多重起動防止チェックを行うための設定
 
@@ -94,4 +94,4 @@
 
 多重起動防止チェック処理をカスタマイズしたい場合は、 DuplicateProcessChecker の実装クラスを作成することで対応出来る。
 
-実装したクラスは、 多重起動防止チェックを行うための設定 で説明したように、本ハンドラに設定することで使用できる。
+実装したクラスは、 [多重起動防止チェックを行うための設定](../../component/handlers/handlers-duplicate-process-check-handler.md#duplicate-process-check-handler-configuration) で説明したように、本ハンドラに設定することで使用できる。

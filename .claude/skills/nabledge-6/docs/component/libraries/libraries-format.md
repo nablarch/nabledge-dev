@@ -34,7 +34,7 @@
 フォーマッタを使用できる。
 
 デフォルトのフォーマットパターンの変更や、フォーマッタの追加をしたい場合は、
-フォーマッタの設定を変更する を参照してシステムリポジトリに設定を追加すること。
+[フォーマッタの設定を変更する](../../component/libraries/libraries-format.md#format-custom) を参照してシステムリポジトリに設定を追加すること。
 
 ### フォーマッタを使用する
 
@@ -70,8 +70,8 @@ FormatterUtil.format("dateTime", input, "yyyy年MM月dd日");
 |---|---|---|---|
 | dateTime | Date | yyyy/MM/dd |  |
 | dateTime | String | yyyy/MM/dd | フォーマット対象の日付文字列のパターンが必要(デフォルトは `yyyyMMdd` ) |
-| number | Number | #,###.### |  |
-| number | String | #,###.### |  |
+| [number](../../component/libraries/libraries-format.md#format-number) | Number | #,###.### |  |
+| [number](../../component/libraries/libraries-format.md#format-number) | String | #,###.### |  |
 
 dateTime
 日付をフォーマットするフォーマッタ。
@@ -84,7 +84,7 @@ SimpleDateFormat
 
 String 型をフォーマットする場合は、フォーマット対象となる日付文字列のパターンも設定する必要がある。
 デフォルトでは、フォーマット対象の日付文字列のパターンは `yyyyMMdd` となっている。
-設定を変更したい場合は フォーマッタの設定を変更する を参照すること。
+設定を変更したい場合は [フォーマッタの設定を変更する](../../component/libraries/libraries-format.md#format-custom) を参照すること。
 
 number
 数値をフォーマットするフォーマッタ。
@@ -177,7 +177,7 @@ public class SampleDto {
 
 1. コンポーネント設定ファイルに作成したフォーマッタの設定を追加する
 
-フォーマッタの設定を変更する を参照して、コンポーネント設定ファイルに `nablarch.core.text.FormatterConfig` とフォーマッタのリストの設定を行う。
+[フォーマッタの設定を変更する](../../component/libraries/libraries-format.md#format-custom) を参照して、コンポーネント設定ファイルに `nablarch.core.text.FormatterConfig` とフォーマッタのリストの設定を行う。
 
 ```xml
 <component name="formatterConfig" class="nablarch.core.text.FormatterConfig">

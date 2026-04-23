@@ -15,7 +15,7 @@
 
 処理の流れは以下のとおり。
 
-![](../images/FileRecordWriterDisposeHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-file-record-writer-dispose-handler/flow.png)
 
 ## ハンドラクラス名
 

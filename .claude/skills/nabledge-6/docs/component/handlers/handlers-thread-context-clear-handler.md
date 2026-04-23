@@ -7,15 +7,15 @@
 * 制約
 * スレッドコンテキストの削除処理
 
-スレッドコンテキスト変数管理ハンドラ で設定したスレッドローカル上の変数を削除するハンドラ。
+[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler) で設定したスレッドローカル上の変数を削除するハンドラ。
 
 本ハンドラでは、以下の処理を行う。
 
-* スレッドコンテキストの削除処理
+* [スレッドコンテキストの削除処理](../../component/handlers/handlers-thread-context-clear-handler.md#thread-context-clear-handler-clear)
 
 処理の流れは以下のとおり。
 
-![](../images/ThreadContextClearHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-thread-context-clear-handler/flow.png)
 
 ## ハンドラクラス名
 
@@ -37,4 +37,4 @@
 
 ## スレッドコンテキストの削除処理
 
-スレッドコンテキスト変数管理ハンドラ でスレッドローカル上に設定した値を全て削除する。
+[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler) でスレッドローカル上に設定した値を全て削除する。

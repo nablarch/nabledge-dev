@@ -18,7 +18,7 @@
 
 処理の流れは以下のとおり。
 
-![](../images/HttpCharacterEncodingHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-http-character-encoding-handler/flow.png)
 
 ## ハンドラクラス名
 

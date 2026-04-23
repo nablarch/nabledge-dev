@@ -5,30 +5,30 @@ Exampleアプリケーションを元に検索機能を解説する。
 作成する機能の説明
 1. サイドメニュー「プロジェクト名」欄に検索条件を入力し、検索ボタンを押下する。
 
-![](../images/project_search/project_search_sidemenu.png)
+![project_search_sidemenu.png](../../../knowledge/assets/web-application-getting-started-project-search/project_search_sidemenu.png)
 
 1. プロジェクト名で検索した結果が表示される。
 
-![](../images/project_search/project_search_search_with_condition.png)
+![project_search_search_with_condition.png](../../../knowledge/assets/web-application-getting-started-project-search/project_search_search_with_condition.png)
 
 1. プロジェクト名をクリアし、「期間からさがす」欄の「今年開始」リンクを押下する。
 
-![](../images/project_search/project_search_start_date.png)
+![project_search_start_date.png](../../../knowledge/assets/web-application-getting-started-project-search/project_search_start_date.png)
 
 1. プロジェクト開始日が今年となっているプロジェクトが表示される。
 
-![](../images/project_search/project_search_start_date_result.png)
+![project_search_start_date_result.png](../../../knowledge/assets/web-application-getting-started-project-search/project_search_start_date_result.png)
 
 ## 検索する
 
 検索機能の基本的な実装方法を、以下の順に説明する。
 
-1. フォームの作成
-2. 検索条件入力部分のJSPの作成
-3. 検索条件Beanの作成
-4. 検索に使用するSQLの作成
-5. 業務アクションの実装
-6. 検索結果表示部分の作成
+1. [フォームの作成](../../processing-pattern/web-application/web-application-getting-started-project-search.md#project-search-create-form)
+2. [検索条件入力部分のJSPの作成](../../processing-pattern/web-application/web-application-getting-started-project-search.md#project-search-create-jsp)
+3. [検索条件Beanの作成](../../processing-pattern/web-application/web-application-getting-started-project-search.md#project-search-create-bean)
+4. [検索に使用するSQLの作成](../../processing-pattern/web-application/web-application-getting-started-project-search.md#project-search-create-sql)
+5. [業務アクションの実装](../../processing-pattern/web-application/web-application-getting-started-project-search.md#project-search-create-action)
+6. [検索結果表示部分の作成](../../processing-pattern/web-application/web-application-getting-started-project-search.md#project-search-create-result-jsp)
 
 フォームの作成
 検索条件を受け付けるフォームを作成する。
@@ -50,7 +50,7 @@ public class ProjectSearchForm extends SearchFormBase implements Serializable {
     // ゲッタ及びセッタは省略
 ```
 この実装のポイント
-* 入力値を受け付けるプロパティは、全てString型で宣言する。詳細は バリデーションルールの設定方法 を参照。
+* 入力値を受け付けるプロパティは、全てString型で宣言する。詳細は [バリデーションルールの設定方法](../../component/libraries/libraries-bean-validation.md#bean-validation-form-property) を参照。
 
 検索条件入力部分のJSPの作成
 検索条件入力部分のJSPを作成する。
@@ -79,12 +79,12 @@ public class ProjectSearchForm extends SearchFormBase implements Serializable {
 ```
 
 この実装のポイント
-* リクエストをGETで送信する場合は、 formタグ の method 属性にGETを指定する。
-  さらに、GETの場合、ボタンやリンクにカスタムタグを使用できないので、HTMLでボタンやリンクを作成する。詳細は GETリクエストを使用する を参照。
+* リクエストをGETで送信する場合は、 [formタグ](../../component/libraries/libraries-tag-reference.md#tag-form-tag) の method 属性にGETを指定する。
+  さらに、GETの場合、ボタンやリンクにカスタムタグを使用できないので、HTMLでボタンやリンクを作成する。詳細は [GETリクエストを使用する](../../component/libraries/libraries-tag.md#tag-using-get) を参照。
 
 検索条件Beanの作成
-検索条件を設定し ユニバーサルDAO へ引き渡すBeanを作成する。
-Beanのプロパティは、対応する条件カラムの定義(型)と互換性のある型とする こと。
+検索条件を設定し [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#universal-dao) へ引き渡すBeanを作成する。
+Beanのプロパティは、[対応する条件カラムの定義(型)と互換性のある型とする](../../component/libraries/libraries-universal-dao.md#universal-dao-search-with-condition) こと。
 
 ProjectSearchDto.java
 ```java
@@ -106,7 +106,7 @@ public class ProjectSearchDto implements Serializable {
   BeanUtil は、プロパティ名が同一の項目を移送するため、
   検索条件に使用する項目のプロパティ名は、フォームと検索条件Beanで合わせる必要がある。
 * BeanUtil を用いて値を移送する場合は、互換性のある型であれば、
-  プロパティを型変換した上で移送できる。詳細は BeanUtilの型変換ルール を参照。
+  プロパティを型変換した上で移送できる。詳細は [BeanUtilの型変換ルール](../../component/libraries/libraries-bean-util.md#utility-conversion) を参照。
 * Beanのプロパティは、対応するカラムの型に合わせたJavaの型で定義する。
 
 検索に使用するSQLの作成
@@ -147,10 +147,10 @@ $sort(sortId){
 }
 ```
 この実装のポイント
-* SQLインジェクションを防ぐため、SQLは外部ファイルに記述する。詳細は SQLをファイルで管理する を参照。
-* Beanのプロパティ名を使って、SQLに値をバインドする。詳細は Beanオブジェクトを入力としてSQLを実行する を参照。
-* 検索画面で入力された項目のみを条件に含める場合には、 $if 構文を使用してSQL文を構築 する。
-* ソートキーを画面から選択可能とする場合には、 $sort 構文を使用してSQL文を構築 する。
+* SQLインジェクションを防ぐため、SQLは外部ファイルに記述する。詳細は [SQLをファイルで管理する](../../component/libraries/libraries-database.md#database-use-sql-file) を参照。
+* Beanのプロパティ名を使って、SQLに値をバインドする。詳細は [Beanオブジェクトを入力としてSQLを実行する](../../component/libraries/libraries-database.md#database-input-bean) を参照。
+* 検索画面で入力された項目のみを条件に含める場合には、 [$if 構文を使用してSQL文を構築](../../component/libraries/libraries-database.md#database-use-variable-condition) する。
+* ソートキーを画面から選択可能とする場合には、 [$sort 構文を使用してSQL文を構築](../../component/libraries/libraries-database.md#database-make-order-by) する。
 
 業務アクションの実装
 業務アクションに、検索処理を実装する。
@@ -199,10 +199,10 @@ private List<Project> searchProject(ProjectSearchDto searchCondition,
 ```
 この実装のポイント
 * 前述のSQL文を実行するには、UniversalDao#findAllBySqlFile の第二引数として、
-  SQLID (前述のSQLの場合は"SEARCH_PROJECT")を指定する。
+  [SQLID](../../component/libraries/libraries-database.md#database-execute-sqlid) (前述のSQLの場合は"SEARCH_PROJECT")を指定する。
 * ページング用の検索は、 UniversalDao#per メソッド、
   及び UniversalDao#page を用いて行うことができる。
-  詳細は ページングのために検索範囲を絞る を参照。
+  詳細は [ページングのために検索範囲を絞る](../../component/libraries/libraries-universal-dao.md#universal-dao-paging) を参照。
 
 検索結果表示部分の作成
 リクエストスコープに登録された検索結果を画面に表示する処理を、JSPに実装する。
@@ -260,10 +260,10 @@ private List<Project> searchProject(ProjectSearchDto searchCondition,
     <!-- その他の設定は省略 -->
   </routes>
   ```
-* 値を出力するために、 writeタグ を用いる。
-  値を「日付」や「金額」等の形式でフォーマットして出力したい場合は、 valueFormat 属性で形式を指定する。詳細は フォーマットして値を出力する を参照。
-* <app:listSearchResult> の使用方法については 検索結果の一覧表示 を参照。
+* 値を出力するために、 [writeタグ](../../component/libraries/libraries-tag-reference.md#tag-write-tag) を用いる。
+  値を「日付」や「金額」等の形式でフォーマットして出力したい場合は、 valueFormat 属性で形式を指定する。詳細は [フォーマットして値を出力する](../../component/libraries/libraries-tag.md#tag-format-value) を参照。
+* <app:listSearchResult> の使用方法については [検索結果の一覧表示](../../guide/biz-samples/biz-samples-03.md#list-search-result) を参照。
 
 検索機能の解説は以上。
 
-Getting Started TOPページへ
+[Getting Started TOPページへ](../../processing-pattern/web-application/web-application-getting-started.md#getting-started)

@@ -38,8 +38,8 @@ public class RM11AC0301RequestTest extends BatchRequestTestSupport {
 
 テスト対象の成果物 のテストを行うために必要なテストデータの記述方法を説明する。
 
-テストデータの記述方法は、 リクエスト単体テストの実施方法(同期応答メッセージ送信処理) を参照すること。
-本項では、 リクエスト単体テストの実施方法(同期応答メッセージ送信処理) と記述方法が異なる箇所を解説する。
+テストデータの記述方法は、 [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#message-sendsyncmessage-test) を参照すること。
+本項では、 [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#message-sendsyncmessage-test) と記述方法が異なる箇所を解説する。
 
 ### 要求電文の期待値および、返却する応答電文（レスポンスメッセージ）の準備
 
@@ -63,7 +63,7 @@ public class RM11AC0301RequestTest extends BatchRequestTestSupport {
 応答不要メッセージ送信処理用のアクションクラスは、起動パラメータとしてメッセージのリクエストIDを要求する。
 このため、「testShots」の定義に下記画像のように「KEY=messageRequestId」、「VALUE=メッセージのリクエストID」を追加する必要がある。
 
-![](_image/delayed_send.png)
+![delayed_send.png](../../../knowledge/assets/testing-framework-02-requestunittest-delayed-send/delayed_send.png)
 
 #### 異常系のテスト(障害系のテスト)
 
@@ -71,7 +71,7 @@ public class RM11AC0301RequestTest extends BatchRequestTestSupport {
 異常系テストケースを実施するには、「testShots」の定義に下記画像のように「KEY=errorCase」、「VALUE=true」と設定すれば良い。
 なお、異常系ケースでは電文が送信されないため送信電文の期待値を設定する必要はない。
 
-![](_image/delayed_send_error.png)
+![delayed_send_error.png](../../../knowledge/assets/testing-framework-02-requestunittest-delayed-send/delayed_send_error.png)
 
 > **Tip:**
 > 異常系テストケースを実施する場合には、応答不要メッセージ送信処理用共通アクションをテスト用アクションに切り替える必要がある。

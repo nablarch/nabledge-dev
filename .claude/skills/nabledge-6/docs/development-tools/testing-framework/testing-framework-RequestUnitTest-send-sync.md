@@ -7,14 +7,14 @@
 
 > **Tip:**
 > リクエスト単体テストそのものの概要については、
-> リクエスト単体テストの実施方法(同期応答メッセージ送信処理)
+> [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#message-sendsyncmessage-test)
 > を参照。
 
 ### 全体像
 
 バッチ処理の中で同期応答メッセージ送信処理を行う場合について、以下に全体像を示す。
 
-![](./_images/send_sync.png)
+![send_sync.png](../../../knowledge/assets/testing-framework-RequestUnitTest-send-sync/send_sync.png)
 
 > **Tip:**
 > 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、テストケースの親クラスは以下の２クラスのうちのいずれかを継承しておく必要がある。
@@ -97,8 +97,8 @@ Excelから読み込んだテストデータを編集するためのインタフ
 ### 同期応答メッセージ送信処理
 
 基本的な記述方法は、
- テストデータの書き方
+ [テストデータの書き方](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#send-sync-request-write-test-data)
 を参照。
 
 > **Tip:**
-> パディングおよびバイナリデータの扱いは、 固定長ファイル と同様である。
+> パディングおよびバイナリデータの扱いは、 [固定長ファイル](../../development-tools/testing-framework/testing-framework-RequestUnitTest-batch.md#about-fixed-length-file) と同様である。

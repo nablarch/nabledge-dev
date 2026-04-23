@@ -10,9 +10,9 @@
 本ハンドラは、以下のようなループ制御を行なうハンドラの後続に配置することで、
 ループを中断してプロセス停止要求を示す例外を送出する機能を提供する。
 
-* プロセス常駐化ハンドラ
-* トランザクションループ制御ハンドラ
-* リクエストスレッド内ループ制御ハンドラ
+* [プロセス常駐化ハンドラ](../../component/handlers/handlers-process-resident-handler.md#process-resident-handler)
+* [トランザクションループ制御ハンドラ](../../component/handlers/handlers-loop-handler.md#loop-handler)
+* [リクエストスレッド内ループ制御ハンドラ](../../component/handlers/handlers-request-thread-loop-handler.md#request-thread-loop-handler)
 
 本ハンドラでは以下の処理を行う。
 
@@ -28,7 +28,7 @@
 
 処理の流れは以下のとおり。
 
-![](../images/ProcessStopHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-process-stop-handler/flow.png)
 
 ## ハンドラクラス名
 
@@ -50,9 +50,9 @@
 
 ## 制約
 
-スレッドコンテキスト変数管理ハンドラ より後ろに設定すること
+[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler) より後ろに設定すること
 本ハンドラは、スレッドコンテキスト上のリクエストIDをもとに停止処理を行うため、
-スレッドコンテキスト変数管理ハンドラ より後ろに本ハンドラを設定する必要がある。
+[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler) より後ろに本ハンドラを設定する必要がある。
 
 ## プロセス停止制御を行うための設定
 

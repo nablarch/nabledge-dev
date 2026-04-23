@@ -6,18 +6,18 @@
 * ハンドラキュー(handler queue)
 
   * インターセプタ(interceptor)
-* ライブラリ(library)
+* [ライブラリ(library)](../../component/libraries/libraries-libraries.md#library)
 
 Nablarchアプリケーションフレームワークのアーキテクチャについて解説する。
 
 > **Warning:**
-> 本項で解説するアーキテクチャは、 Jakarta Batchに準拠したバッチアプリケーション には該当しない（詳細については、 Jakarta Batchに準拠したバッチアプリケーション の アーキテクチャ概要 を参照）。
+> 本項で解説するアーキテクチャは、 [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md#jsr352-batch) には該当しない（詳細については、 [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md#jsr352-batch) の [アーキテクチャ概要](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md#jsr352-architecture) を参照）。
 
 ## Nablarchアプリケーションフレームワークの主な構成要素
 
 Nablarchアプリケーションフレームワークの主な構成要素を以下に示す。
 
-![](images/fw-design.png)
+![fw-design.png](../../../knowledge/assets/about-nablarch-architecture/fw-design.png)
 
 ## ハンドラキュー(handler queue)
 
@@ -25,7 +25,7 @@ Nablarchアプリケーションフレームワークの主な構成要素を以
 
 ハンドラキューは、以下図のようにサーブレットフィルタのチェーン実行と同じように処理を実行する。
 
-![](images/handlers.png)
+![handlers.png](../../../knowledge/assets/about-nablarch-architecture/handlers.png)
 
 ハンドラでは主に以下の様な処理を行う。
 
@@ -38,7 +38,7 @@ Nablarchアプリケーションフレームワークの主な構成要素を以
 
 > 業務ロジックを実装するクラスの親クラスで共通処理を実装するようなケースを多く見かけるが、
 > 個別のハンドラとして実装することを推奨する。
-> (個別のハンドラの前後に処理を追加したい場合には インターセプタ(interceptor) を使用することを推奨する。)
+> (個別のハンドラの前後に処理を追加したい場合には [インターセプタ(interceptor)](../../about/about-nablarch/about-nablarch-architecture.md#nablarch-architecture-interceptor) を使用することを推奨する。)
 
 > 個別のハンドラで実装した場合
 > 個々のハンドラの責務が明確になるため、テストが容易であり保守性が高くなる。
@@ -83,4 +83,4 @@ Nablarchは受け取ったリクエストに対し、ハンドラキュー上に
 
 ライブラリとは、データベースアクセスやファイルアクセス、ログ出力などのようにハンドラから呼び出されるコンポーネント群のことを指す。
 
-Nablarchアプリケーションフレームワークが提供するライブラリは、 Nablarchが提供するライブラリ を参照。
+Nablarchアプリケーションフレームワークが提供するライブラリは、 [Nablarchが提供するライブラリ](../../component/libraries/libraries-libraries.md#library) を参照。

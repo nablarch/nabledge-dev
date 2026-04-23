@@ -33,27 +33,27 @@ APサーバをステートレスにできる。
 
 以下の機能は、デフォルトではHTTPセッションに依存している。
 
-* セッションストア
-* 2重サブミット防止
-* スレッドコンテキスト変数管理ハンドラ
-* HTTPリライトハンドラ
-* hidden暗号化
+* [セッションストア](../../component/libraries/libraries-session-store.md#session-store)
+* [2重サブミット防止](../../component/libraries/libraries-tag.md#tag-double-submission)
+* [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler)
+* [HTTPリライトハンドラ](../../component/handlers/handlers-http-rewrite-handler.md#http-rewrite-handler)
+* [hidden暗号化](../../component/libraries/libraries-tag.md#tag-hidden-encryption)
 
 ## HTTPセッション非依存機能の導入方法
 
-HTTPセッションに依存している機能 の各機能について以下の通り設定することでHTTPセッションへの依存をなくすことができる。
+[HTTPセッションに依存している機能](../../component/libraries/libraries-stateless-web-app.md#http-session-dependence) の各機能について以下の通り設定することでHTTPセッションへの依存をなくすことができる。
 
 ### セッションストア
 
-* 有効期間をデータベースに保存する
+* [有効期間をデータベースに保存する](../../component/handlers/handlers-SessionStoreHandler.md#db-managed-expiration)
 
 ### 2重サブミット防止
 
-* データベースを使用した二重サブミット防止
+* [データベースを使用した二重サブミット防止](../../component/libraries/libraries-db-double-submit.md#db-double-submit)
 
 ### スレッドコンテキスト変数管理ハンドラ
 
-スレッドコンテキストの初期化 に以下の部品を使用しない。
+[スレッドコンテキストの初期化](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler-initialization) に以下の部品を使用しない。
 
 * LanguageAttributeInHttpSession
 * TimeZoneAttributeInHttpSession
@@ -67,13 +67,13 @@ HTTPセッションに依存している機能 の各機能について以下の
 
 ### HTTPリライトハンドラ
 
-HTTPリライトハンドラ を使用しない。
+[HTTPリライトハンドラ](../../component/handlers/handlers-http-rewrite-handler.md#http-rewrite-handler) を使用しない。
 使用する場合にはセッションスコープにアクセスしないよう設定する。
 
 ### hidden暗号化
 
-Nablarchでは hidden暗号化 の機能を提供している。
-この機能はHTTPセッションに依存しているため、使用しないよう useHiddenEncryption に `false` を設定する。
+Nablarchでは [hidden暗号化](../../component/libraries/libraries-tag.md#tag-hidden-encryption) の機能を提供している。
+この機能はHTTPセッションに依存しているため、使用しないよう [useHiddenEncryption](../../component/libraries/libraries-tag.md#tag-use-hidden-encryption) に `false` を設定する。
 
 ## ローカルファイルシステムの使用
 

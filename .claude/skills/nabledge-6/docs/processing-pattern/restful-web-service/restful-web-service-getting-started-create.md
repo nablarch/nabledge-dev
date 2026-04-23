@@ -71,7 +71,7 @@ public class ProjectForm implements Serializable {
 ```
 
 この実装のポイント
-* プロパティは全てString型で宣言する。詳細は バリデーションルールの設定方法 を参照。
+* プロパティは全てString型で宣言する。詳細は [バリデーションルールの設定方法](../../component/libraries/libraries-bean-validation.md#bean-validation-form-property) を参照。
 業務アクションメソッドの実装
 プロジェクト情報をデータベースに登録する処理を実装する。
 
@@ -89,13 +89,13 @@ public HttpResponse save(ProjectForm project) {
 * リクエストをJSON形式で受け付けるため、 Consumes アノテーションに
   `MediaType.APPLICATION_JSON` を指定する。
 * Valid アノテーションを使用して、リクエストのバリデーションを行う。
-  詳細は Jakarta RESTful Web Servcies Bean Validationハンドラ を参照。
+  詳細は [Jakarta RESTful Web Servcies Bean Validationハンドラ](../../component/handlers/handlers-jaxrs-bean-validation-handler.md#jaxrs-bean-validation-handler) を参照。
 * BeanUtil でフォームをエンティティに変換し、
-  ユニバーサルDAO を使用してプロジェクト情報をデータベースに登録する。
+  [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#universal-dao) を使用してプロジェクト情報をデータベースに登録する。
 * 戻り値として、リソースの作成完了(ステータスコード： `201` )を表す HttpResponse を返却する。
 URLとのマッピングを定義
-ルーティングアダプタ を使用して、業務アクションとURLのマッピングを行う。
-マッピングには Jakarta RESTful Web ServicesのPathアノテーション を使用する。
+[ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md#router-adaptor) を使用して、業務アクションとURLのマッピングを行う。
+マッピングには [Jakarta RESTful Web ServicesのPathアノテーション](../../component/adapters/adapters-router-adaptor.md#router-adaptor-path-annotation) を使用する。
 
 ProjectAction.java
 ```java

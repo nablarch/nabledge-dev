@@ -7,7 +7,7 @@
 * 入力値が妥当な形式かどうか(例えば、桁数や文字種などのチェック)
 * システムの状態に適合しているかどうか(例えば、アカウントの重複登録チェック)
 
-※入力値のチェックでエラーとなった場合に表示するメッセージの定義方法は、 message を参照。
+※入力値のチェックでエラーとなった場合に表示するメッセージの定義方法は、 [メッセージ管理](../../component/libraries/libraries-message.md) を参照。
 
 Nablarchでは、以下の2種類のバリデーション機能を提供している。
 
@@ -20,6 +20,6 @@ Nablarch独自のバリデーション機能 (Nablarch Validation) <validation/n
 * 開発者がNablarch独自のバリデーションの使い方などを覚える必要がない。
 
 > **Tip:**
-> Bean Validation と Nablarch Validation で提供している機能の違いは、 Bean ValidationとNablarch Validationの機能比較 を参照。
+> [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) と [Nablarch Validation](../../component/libraries/libraries-nablarch-validation.md#nablarch-validation) で提供している機能の違いは、 [Bean ValidationとNablarch Validationの機能比較](../../component/libraries/libraries-validation-functional-comparison.md#validation-functional-comparison) を参照。
 
 validation/functional_comparison

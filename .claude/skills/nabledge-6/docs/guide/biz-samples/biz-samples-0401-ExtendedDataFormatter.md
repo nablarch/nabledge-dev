@@ -2,7 +2,7 @@
 
 本サンプルで提供するフォーマッタ機能の仕様を解説する。
 
-フォーマッタ機能の概要、基本となる汎用データフォーマット機能に関する詳細は、汎用データフォーマット を参照すること。
+フォーマッタ機能の概要、基本となる汎用データフォーマット機能に関する詳細は、[汎用データフォーマット](../../component/libraries/libraries-data-format.md#data-format) を参照すること。
 
 ## 概要
 
@@ -118,7 +118,7 @@ FormUrlEncodedデータフォーマッタを使用した場合、入力データ
 
 以下のようにfile-typeに"FormUrlEncoded"を指定し、テストデータとして項目ごとにKey-Value形式となるように記述する。
 
-![](./_images/test_data_example.png)
+![test_data_example.png](../../../knowledge/assets/biz-samples-0401-ExtendedDataFormatter/test_data_example.png)
 
 この場合、テストデータ読み込み時にテストフレームワークによりFormUrlEncodedTestDataConverterが呼び出され、
 結果的にFormUrlEncodedデータフォーマッタには以下のデータが入力される。

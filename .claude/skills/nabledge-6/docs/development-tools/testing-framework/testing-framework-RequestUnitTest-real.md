@@ -7,7 +7,7 @@
 
 ### 全体像
 
-![](./_images/real_request_test_class.png)
+![real_request_test_class.png](../../../knowledge/assets/testing-framework-RequestUnitTest-real/real_request_test_class.png)
 
 ## 主なクラス, リソース
 
@@ -66,7 +66,7 @@
 本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、
 テストソース記述量を大きく削減できる。
 
-具体的な使用方法は、 real を参照。
+具体的な使用方法は、 [リクエスト単体テストの実施方法(同期応答メッセージ受信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-real.md) を参照。
 
 > **Tip:**
 > 本クラスは、入力データをキューにPUTする用途で、main側のコンポーネント設定ファイルを読み込む。
@@ -89,7 +89,7 @@
 本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、
 テストソース記述量を大きく削減できる。
 
-具体的な使用方法は、 delayed_receive を参照。
+具体的な使用方法は、 [リクエスト単体テストの実施方法（応答不要メッセージ受信処理）](../../development-tools/testing-framework/testing-framework-02-requestunittest-delayed-receive.md) を参照。
 
 ### MainForRequestTesting
 
@@ -128,8 +128,8 @@ Excelから読み込んだテストデータを編集するためのインタフ
 ### メッセージ
 
 基本的な記述方法は、
-real
+[リクエスト単体テストの実施方法(同期応答メッセージ受信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-real.md)
 を参照。
 
 > **Tip:**
-> パディングおよびバイナリデータの扱いは、 固定長ファイル と同様である。
+> パディングおよびバイナリデータの扱いは、 [固定長ファイル](../../development-tools/testing-framework/testing-framework-RequestUnitTest-batch.md#about-fixed-length-file) と同様である。

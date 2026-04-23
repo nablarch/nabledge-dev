@@ -14,13 +14,13 @@ Nablarchバッチプロジェクトの初期セットアップでは以下を行
 | プロジェクト種別 | Mavenプロジェクト |
 | プロジェクト構成 | 単一プロジェクト構成 |
 | 使用DB | H2 Databaes Engine(アプリケーションに組み込み) |
-| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。  * Nablarchバッチアプリケーション用の基本的な設定 * 疎通確認用の都度起動バッチアプリケーション * 疎通確認用のテーブルをキューとして使ったメッセージング * メール送信バッチの設定  [1] * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
+| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。  * Nablarchバッチアプリケーション用の基本的な設定 * 疎通確認用の都度起動バッチアプリケーション * 疎通確認用のテーブルをキューとして使ったメッセージング * メール送信バッチの設定  [1] * Mavenと連動して動作するツールの初期設定( [nablarch-archetype-parent(親プロジェクト)](../../setup/blank-project/blank-project-MavenModuleStructures.md#about-maven-parent-module) を参照することによって取り込んでいる)。 |
 
-メール送信バッチは、常駐バッチ  として動作し、SMTPサーバに対してメールを送信するものである。
+メール送信バッチは、[常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#nablarch-batch-resident-batch)  として動作し、SMTPサーバに対してメールを送信するものである。
 コンポーネント設定ファイルのサンプルは `src/main/resources/mail-sender-boot.xml` に存在する。
-メール送信バッチは初期環境構築時には必要ないが、必要になったタイミングで メール送信 の解説を読んだ上で使用する。
+メール送信バッチは初期環境構築時には必要ないが、必要になったタイミングで [メール送信](../../component/libraries/libraries-mail.md#mail) の解説を読んだ上で使用する。
 
-他のプロジェクトとの関係、及びディレクトリ構成は、 index を参照。
+他のプロジェクトとの関係、及びディレクトリ構成は、 [Mavenアーキタイプの構成](../../setup/blank-project/blank-project-MavenModuleStructures.md) を参照。
 
 ## ブランクプロジェクト作成
 
@@ -163,7 +163,7 @@ Thread Result:[200 Success] The request has succeeded.
 
 #### アプリケーションのビルド
 
-まだビルドしていない場合は、 バッチアプリケーションのビルド を参照してビルドする。
+まだビルドしていない場合は、 [バッチアプリケーションのビルド](../../setup/blank-project/blank-project-setup-NablarchBatch.md#firststepbatchbuild) を参照してビルドする。
 
 #### アプリケーションの起動
 
@@ -196,20 +196,20 @@ mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
 > **Important:**
 > Nablarchが想定している正しい終了方法は、BATCH_REQUESTテーブルのPROCESS_HALT_FLGのフラグに1を設定するという方法である。本手順上では、簡単に停止させるために、ctrl + cで停止している。
 
-> テーブルをキューとして使ったメッセージングを一端終了した後に再び起動させたい場合、 ResiBatchReboot を参照。
+> テーブルをキューとして使ったメッセージングを一端終了した後に再び起動させたい場合、 [テーブルをキューとして使ったメッセージングを再び起動したい場合にすること](../../setup/blank-project/blank-project-ResiBatchReboot.md) を参照。
 
 ### 疎通確認になぜか失敗する場合
 
 原因は分からないが疎通確認に失敗する場合、どこかで手順を誤っている可能性がある。
 
-原因が分からない場合は、ブランクプロジェクト作成 からやり直してみること。
+原因が分からない場合は、[ブランクプロジェクト作成](../../setup/blank-project/blank-project-setup-NablarchBatch.md#firststepgeneratebatchblankproject) からやり直してみること。
 
 ## データベースに関する設定を行う
 
-ブランクプロジェクトは、初期状態ではH2 Database Engineを使用するように設定されている。使用するRDBMSを変更する場合は、使用するRDBMSの変更手順 を参照して設定すること。
+ブランクプロジェクトは、初期状態ではH2 Database Engineを使用するように設定されている。使用するRDBMSを変更する場合は、[使用するRDBMSの変更手順](../../setup/blank-project/blank-project-CustomizeDB.md#customize-db) を参照して設定すること。
 
-またER図からのDDL生成や実行、Entityクラスの自動生成を行うにはgsp-dba-maven-pluginの初期設定および実行を行う。詳細は gsp-dba-maven-plugin(DBA作業支援ツール)の初期設定方法 を参照。
+またER図からのDDL生成や実行、Entityクラスの自動生成を行うにはgsp-dba-maven-pluginの初期設定および実行を行う。詳細は [gsp-dba-maven-plugin(DBA作業支援ツール)の初期設定方法](../../setup/blank-project/blank-project-addin-gsp.md#gsp-maven-plugin) を参照。
 
 ## 補足
 
-H2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、 firststep_complement を参照すること。
+H2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、 [初期セットアップ手順　補足事項](../../setup/blank-project/blank-project-firststep-complement.md) を参照すること。

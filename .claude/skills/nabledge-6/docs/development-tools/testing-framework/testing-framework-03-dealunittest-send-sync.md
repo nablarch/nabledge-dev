@@ -6,11 +6,11 @@
 
 * 同期応答メッセージ送信処理を伴うウェブアプリケーションの通常の処理フロー
 
-![](./_images/send_sync_online_base.png)
+![send_sync_online_base.png](../../../knowledge/assets/testing-framework-03-dealunittest-send-sync/send_sync_online_base.png)
 
 * モックアップクラスを使用して、同期応答メッセージ送信処理を伴うウェブアプリケーションの取引単体テストを行う場合の処理フロー
 
-![](./_images/send_sync_online_mock.png)
+![send_sync_online_mock.png](../../../knowledge/assets/testing-framework-03-dealunittest-send-sync/send_sync_online_mock.png)
 
 モックアップクラスは以下の機能を提供する。
 
@@ -38,7 +38,7 @@
 
 ExcelファイルはリクエストID [2] ごとに用意する。また、ファイルの名前はリクエストIDと一致させる。
 たとえば、リクエストIDが「RM21AA0101」ならば、ファイルの名前は「RM21AA0101.xlsx」となる。
-ファイルの配置ディレクトリは、設定ファイルに定義する。詳細は Excelファイルの配置場所の設定を参照。
+ファイルの配置ディレクトリは、設定ファイルに定義する。詳細は [Excelファイルの配置場所の設定](../../development-tools/testing-framework/testing-framework-03-dealunittest-send-sync.md#send-sync-test-data-path)を参照。
 
 ここで扱うリクエストIDとは、メッセージを送信する相手先システムの機能を一意に識別するために定義するIDのことを指すものであり、
 ウェブアプリケーションやバッチ処理で使用するリクエストIDとは意味が異なる点に注意すること。
@@ -62,7 +62,7 @@ Excelファイルに定義した応答電文のフォーマットおよびデー
 
 以下に、Excelファイルの記載例を示す。
 
-![](./_images/send_sync_test_data.jpg)
+![send_sync_test_data.jpg](../../../knowledge/assets/testing-framework-03-dealunittest-send-sync/send_sync_test_data.jpg)
 
 #### 電文のフォーマットおよびデータの記載方法
 
@@ -116,13 +116,13 @@ Excelファイルのタイムスタンプが更新された場合に、ファイ
 以下のような応答電文データを定義した場合、１回目のメッセージ同期送信ではno.1の応答電文が返却され、
 noのインクリメントが行われる。そして２回目のメッセージ同期送信ではno.2の応答電文が返却される。
 
-![](./_images/send_sync_test_data_no.png)
+![send_sync_test_data_no.png](../../../knowledge/assets/testing-framework-03-dealunittest-send-sync/send_sync_test_data_no.png)
 
 しかし、Excelファイルの編集や上書きにより、タイムスタンプを更新することで、アプリケーションサーバ起動中にExcelファイルの再読み込みを行うことができる。
 
 以下に、Excelファイルを編集し、テストをやり直す場合の例を示す。
 
-![](./_images/send_sync_response_count_change.png)
+![send_sync_response_count_change.png](../../../knowledge/assets/testing-framework-03-dealunittest-send-sync/send_sync_response_count_change.png)
 
 #### 障害系のテスト
 
@@ -137,7 +137,7 @@ noのインクリメントが行われる。そして２回目のメッセージ
 
 記載例を以下に示す。
 
-![](./_images/send_sync_test_data_error.png)
+![send_sync_test_data_error.png](../../../knowledge/assets/testing-framework-03-dealunittest-send-sync/send_sync_test_data_error.png)
 
 ### 要求電文のログ出力
 
@@ -192,7 +192,7 @@ loggers.MESSAGING_MAP.writerNames=stdout,appFile
 ### フレームワークで使用するクラスの設定
 
 これらの設定は取引単体テストでのみ必要な設定である。そのため、テスト用のプロファイルにこれらを設定する。
-環境ごとにコンポーネントを切り替える方法については 環境ごとにコンポーネントを切り替える方法(モックに切り替える方法) 参照。
+環境ごとにコンポーネントを切り替える方法については [環境ごとにコンポーネントを切り替える方法(モックに切り替える方法)](../../about/about-nablarch/about-nablarch-setting-guide-ManagingEnvironmentalConfiguration.md#how-to-change-componet-define) 参照。
 
 通常、これらの設定はアーキテクトが行うものでありアプリケーションプログラマが設定する必要はない。
 
@@ -233,7 +233,7 @@ loggers.MESSAGING_MAP.writerNames=stdout,appFile
 
 以下に、Excelファイルの配置イメージを示す。
 
-![](./_images/send_sync_test_data_structure.png)
+![send_sync_test_data_structure.png](../../../knowledge/assets/testing-framework-03-dealunittest-send-sync/send_sync_test_data_structure.png)
 
 > **Tip:**
 > 配置ディレクトリのパスは、クラスパス（classpath:）ではなく、ファイルシステムのパス（file:）で指定することを推奨する。

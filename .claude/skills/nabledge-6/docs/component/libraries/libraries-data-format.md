@@ -30,7 +30,7 @@
 
 本機能の大まかな構成は以下のとおり。
 
-![](../images/data_format/structure.png)
+![structure.png](../../../knowledge/assets/libraries-data-format/structure.png)
 
 ## 機能概要
 
@@ -49,7 +49,7 @@
 > **Important:**
 > 本機能には、以下のデメリットがある。
 
-> * >   複雑な フォーマット定義ファイル を作成する必要がある。
+> * >   複雑な [フォーマット定義ファイル](../../component/libraries/libraries-data-format.md#data-format-format-definition-file) を作成する必要がある。
 > * >   入出力が Map に限定されており、実装誤りを起こしやすい。
 
 >   * >     フィールド名を文字列で指定する必要があり、IDEの補完も使えないなど、実装時にミスを起こしやすい。
@@ -70,12 +70,12 @@
 > * >   データ形式によって使用できる データタイプ の実装クラスが異なるため拡張しづらい。また、この設定の誤りは実行時まで検知できない。
 
 > このため原則本機能はやむを得ない場合を除き非推奨とする。
-> なお、 メッセージング編 は、内部で本機能を使用しているため、代替機能を使用できない。
+> なお、 [メッセージング編](../../processing-pattern/db-messaging/db-messaging-messaging.md#messaging) は、内部で本機能を使用しているため、代替機能を使用できない。
 
 > 本機能の代替機能
-> データバインド を使用すること。
+> [データバインド](../../component/libraries/libraries-data-bind.md#data-bind) を使用すること。
 
-> データバインド を使用すること。
+> [データバインド](../../component/libraries/libraries-data-bind.md#data-bind) を使用すること。
 
 > [Jakarta XML Binding](https://jakarta.ee/specifications/xml-binding/) を推奨する。
 
@@ -94,12 +94,12 @@
 固定長ファイルで多く使用されるスペースやゼロ(0)パディング及びトリミングに対応している。
 このため、アプリケーション側でパディング処理やトリミング処理を行わなくて良い。
 
-パディングやトリミングの詳細は、 フィールドコンバータ一覧 を参照。
+パディングやトリミングの詳細は、 [フィールドコンバータ一覧](../../component/libraries/libraries-format-definition.md#data-format-field-convertor-list) を参照。
 
 ## モジュール一覧
 
-* アップロードヘルパー を使用する場合は、 `nablarch-fw-web-extension` を追加する。
-* ファイルダウンロード を使用する場合は、 `nablarch-fw-web-extension` を追加する。
+* [アップロードヘルパー](../../component/libraries/libraries-data-format.md#data-format-upload-helper) を使用する場合は、 `nablarch-fw-web-extension` を追加する。
+* [ファイルダウンロード](../../component/libraries/libraries-data-format.md#data-format-file-download) を使用する場合は、 `nablarch-fw-web-extension` を追加する。
 
 ```xml
 <!-- 汎用データフォーマット -->
@@ -124,7 +124,7 @@
 入出力対象データのフォーマット定義は、フォーマット定義ファイルに行う。
 
 フォーマット定義ファイルは、以下のようなテキストファイル形式で作成する。
-詳細な仕様は、 format_definition を参照。
+詳細な仕様は、 [フォーマット定義ファイルの記述ルール](../../component/libraries/libraries-format-definition.md) を参照。
 
 ```bash
 file-type:        "Variable" # 可変長
@@ -166,7 +166,7 @@ data_format/format_definition
 
 ポイント
 * ファイルに書き込むデータは Map として準備する。
-* Map のキー値は、 入出力データのフォーマットを定義する で定義したフィールド名を設定する。(大文字、小文字は区別しない)
+* Map のキー値は、 [入出力データのフォーマットを定義する](../../component/libraries/libraries-data-format.md#data-format-format-definition-file) で定義したフィールド名を設定する。(大文字、小文字は区別しない)
 * FileRecordWriterHolder の open メソッドを呼び出して、ファイルリソースを書き込み可能状態にする。
 * FileRecordWriterHolder の write メソッドを呼び出して、データをファイルに書き込む。
 
@@ -185,16 +185,16 @@ FileRecordWriterHolder.write(user, "user.csv");
 
 > **Tip:**
 > FileRecordWriterHolder を使用するためには、
-> フォーマット定義ファイル の配置ディレクトリや出力先ディレクトリを
-> ファイルパス管理 に設定する必要がある。
+> [フォーマット定義ファイル](../../component/libraries/libraries-data-format.md#data-format-format-definition-file) の配置ディレクトリや出力先ディレクトリを
+> [ファイルパス管理](../../component/libraries/libraries-file-path-management.md#file-path-management) に設定する必要がある。
 
 > 必要となるディレクトリの設定値については、 FileRecordWriterHolder を参照。
 
 > **Important:**
 > FileRecordWriterHolder で開いたファイルリソースは、
-> 出力ファイル開放ハンドラ にて自動的に開放される。
+> [出力ファイル開放ハンドラ](../../component/handlers/handlers-file-record-writer-dispose-handler.md#file-record-writer-dispose-handler) にて自動的に開放される。
 > このため、 FileRecordWriterHolder を使用する場合には、
-> 必ず 出力ファイル開放ハンドラ をハンドラキュー上に設定すること。
+> 必ず [出力ファイル開放ハンドラ](../../component/handlers/handlers-file-record-writer-dispose-handler.md#file-record-writer-dispose-handler) をハンドラキュー上に設定すること。
 
 > **Important:**
 > 出力するデータに不正な値が設定されていた場合に正しく処理できない可能性があるため、事前にアプリケーション側で不正な値でないかをチェックすること。
@@ -258,18 +258,18 @@ public HttpResponse download(HttpRequest request, ExecutionContext context) {
 ```
 
 > **Tip:**
-> フォーマット定義ファイルの格納パスは、 ファイルパス管理 に設定する必要がある。
+> フォーマット定義ファイルの格納パスは、 [ファイルパス管理](../../component/libraries/libraries-file-path-management.md#file-path-management) に設定する必要がある。
 
 ### アップロードしたファイルを読み込む
 
 アップロードしたファイルを読み込む方法について解説する。
 
 この機能では、以下の2種類の方法でアップロードしたファイルを読み込むことが出来る。
-アップロードヘルパーを使った読み込み に記載のある通り、
-汎用データフォーマット(本機能)のみを使った読み込み の使用を推奨する。
+[アップロードヘルパーを使った読み込み](../../component/libraries/libraries-data-format.md#data-format-upload-helper) に記載のある通り、
+[汎用データフォーマット(本機能)のみを使った読み込み](../../component/libraries/libraries-data-format.md#data-format-native-upload-file-load) の使用を推奨する。
 
-* 汎用データフォーマット(本機能)のみを使った読み込み
-* アップロードヘルパーを使った読み込み
+* [汎用データフォーマット(本機能)のみを使った読み込み](../../component/libraries/libraries-data-format.md#data-format-native-upload-file-load)
+* [アップロードヘルパーを使った読み込み](../../component/libraries/libraries-data-format.md#data-format-upload-helper)
 
 汎用データフォーマット(本機能)のみを使ったアップロードファイルの読み込み
 後述のアップロードヘルパーを使わずに本機能のAPIを使用したアップロードファイルのロード処理について解説する。
@@ -325,10 +325,10 @@ public HttpResponse upload(HttpRequest req, ExecutionContext ctx) {
 アップロードヘルパー( UploadHelper )を使用すると、
 ファイルの読み込み、バリデーション、データベースへの保存を簡易的に実行出来る。
 
-しかし、この機能では以下の制限(デメリット)があるため、 汎用データフォーマット(本機能)のみを使ったアップロードファイルの読み込み
+しかし、この機能では以下の制限(デメリット)があるため、 [汎用データフォーマット(本機能)のみを使ったアップロードファイルの読み込み](../../component/libraries/libraries-data-format.md#data-format-native-upload-file-load)
 を使用することを推奨する。
 
-* 入力値のチェックは Nablarch Validation に限定される。(推奨される Bean Validation が使用できない。)
+* 入力値のチェックは [Nablarch Validation](../../component/libraries/libraries-nablarch-validation.md#nablarch-validation) に限定される。(推奨される [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) が使用できない。)
 * 拡張可能ではあるが、難易度が高く容易に要件を満たす実装ができない。
 
 以下にシングルレイアウトのアップロードファイルに対して、入力チェックを行いデータベースに登録する例を示す。
@@ -527,7 +527,7 @@ XMLで属性を持つ要素にコンテンツを定義したい場合は、
 
 ポイント
 * コンテンツを表すフィールド名には `body` を指定する。
-  コンテンツを表すフィールド名をデフォルトから変更したい場合は、 XMLで属性を持つ要素のコンテンツ名を変更する を参照。
+  コンテンツを表すフィールド名をデフォルトから変更したい場合は、 [XMLで属性を持つ要素のコンテンツ名を変更する](../../component/libraries/libraries-data-format.md#data-format-xml-content-name-change) を参照。
 フォーマット定義ファイル
 ```bash
 file-type:        "XML"
@@ -637,15 +637,15 @@ replacement の引数には、上記で設定した置き換えルールの type
 
 ### 出力するデータの表示形式をフォーマットする
 
-データを出力する際に、 フォーマッタ を使用することで日付や数値などのデータの表示形式をフォーマットできる。
+データを出力する際に、 [フォーマッタ](../../component/libraries/libraries-format.md#format) を使用することで日付や数値などのデータの表示形式をフォーマットできる。
 
-詳細は フォーマッタ を参照すること。
+詳細は [フォーマッタ](../../component/libraries/libraries-format.md#format) を参照すること。
 
 ## 拡張例
 
 ### フィールドタイプを追加する
 
-Nablarchが提供する標準データタイプ では要件を満たせない場合がある。
+[Nablarchが提供する標準データタイプ](../../component/libraries/libraries-format-definition.md#data-format-field-type-list) では要件を満たせない場合がある。
 例えば、文字列タイプのパディング文字がバイナリの場合などが該当する。
 
 このような場合は、プロジェクト固有のフィールドタイプを定義することで対応する。

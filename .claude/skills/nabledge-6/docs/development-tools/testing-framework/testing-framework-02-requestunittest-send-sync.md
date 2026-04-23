@@ -12,9 +12,9 @@
 
 リクエスト単体テスト実施時のイメージを以下に示す。
 
-![](./_image/send_sync_base.png)
+![send_sync_base.png](../../../knowledge/assets/testing-framework-02-requestunittest-send-sync/send_sync_base.png)
 
-![](./_image/hanrei.png)
+![hanrei.png](../../../knowledge/assets/testing-framework-02-requestunittest-send-sync/hanrei.png)
 
 ①自動テストフレームワークは、Nablarch Application Frameworkを起動する。
 ②Nablarch Application FrameworkはActionの入力となるパラメータ（画面ならばリクエスト、バッチならばファイルやDB）を読み込み、Actionを起動する。
@@ -59,7 +59,7 @@ Excelファイルを使用することで、外部インターフェース設計
 テストデータを記載したExcelファイルは、クラス単体テストと同様に
 テストソースコードと同じディレクトリに同じ名前で格納する（拡張子のみ異なる）。
 
-テストデータの記述方法詳細については、「 Excelによるテストデータ記述 」を参照。
+テストデータの記述方法詳細については、「 [Excelによるテストデータ記述](../../development-tools/testing-framework/testing-framework-01-Abstract.md#how-to-write-excel) 」を参照。
 
 #### 要求電文の期待値および、返却する応答電文（レスポンスメッセージ）の準備
 
@@ -76,12 +76,12 @@ Excelファイルを使用することで、外部インターフェース設計
 １つのテストケースで、同一グループIDかつ同一リクエストIDを持った電文が複数件送信される場合は、その件数分要求電文および応答電文のデータ行を記載すること。noの列の順番（連番）は送信される順番に一致する。
 
 テストケースの書き方についての詳細は、以下を参照すること。
-* ウェブアプリケーションのテストケース一覧
-* バッチ処理のテストケース一覧
+* [ウェブアプリケーションのテストケース一覧](../../development-tools/testing-framework/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest.md#request-test-testcases)
+* [バッチ処理のテストケース一覧](../../development-tools/testing-framework/testing-framework-02-requestunittest-batch.md#batch-test-testcases)
 
 以下に、実際にExcelで書かれたテストデータを示す。（グループIDの関連も示す）
 
-![](./_image/send_sync.png)
+![send_sync.png](../../../knowledge/assets/testing-framework-02-requestunittest-send-sync/send_sync.png)
 
 > **Tip:**
 > Nablarchが標準で提供する同期応答メッセージ送信機能では、要求電文と応答電文のヘッダ部は共通のフォーマットを使用するので、
@@ -147,7 +147,7 @@ Excelファイルを使用することで、外部インターフェース設計
 * レコード区切り文字は `CRLF`
 * レコード区分は `1`、 `ユーザIDは0000000001`、 `ログインIDはnabura`
 
-![](./_image/send_sync_example.png)
+![send_sync_example.png](../../../knowledge/assets/testing-framework-02-requestunittest-send-sync/send_sync_example.png)
 
 > **Important:**
 > 要求電文に複数のレコードが存在する場合、以下の様に1つのヘッダに複数の業務データを記載したくなる。
@@ -171,12 +171,12 @@ Excelファイルを使用することで、外部インターフェース設計
 
 複数回電文を送信する場合のテストは、テスティングフレームワークの以下の仕様に注意をして記述すること。
 
-* 同一データタイプ(以下の例では `RESPONSE_HEADER_MESSAGES` と `RESPONSE_BODY_MESSAGES` )は、それぞれ、まとめて記述する。詳細は、  一つのシートに複数テストケースのデータを記載したい 及び、  複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する を参照。
+* 同一データタイプ(以下の例では `RESPONSE_HEADER_MESSAGES` と `RESPONSE_BODY_MESSAGES` )は、それぞれ、まとめて記述する。詳細は、  [一つのシートに複数テストケースのデータを記載したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#tips-groupid) 及び、  [複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する](../../development-tools/testing-framework/testing-framework-01-Abstract.md#auto-test-framework-multi-datatype) を参照。
 * 同一リクエストIDの電文については、noの値を変えてまとめて記述する。
 
 以下に、複数回メッセージを送信する場合の要求電文の本文の期待値の記載例を示す。
 
-![](./_image/send_sync_ok_pattern_expected.png)
+![send_sync_ok_pattern_expected.png](../../../knowledge/assets/testing-framework-02-requestunittest-send-sync/send_sync_ok_pattern_expected.png)
 
 > **Tip:**
 > 送信対象のリクエストIDが複数存在する場合、送信順のテストは不可能である。上記の例の場合、 `ProjectInsertMessage` より先に、 `ProjectInsert2Messag` が送信された場合であってもテストは成功となる。
@@ -196,7 +196,7 @@ Excelファイルを使用することで、外部インターフェース設計
 
 Excelで設定する場合のイメージを以下に示す。
 
-![](./_image/send_sync_error.png)
+![send_sync_error.png](../../../knowledge/assets/testing-framework-02-requestunittest-send-sync/send_sync_error.png)
 
 業務アクション内で、明示的に **MessagingException** を制御していないのであれば、
 個別のリクエスト単体テストにおいて障害系のテストを行う必要は無い。

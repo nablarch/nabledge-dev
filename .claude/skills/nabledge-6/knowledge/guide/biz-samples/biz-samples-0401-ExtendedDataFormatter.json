@@ -1,7 +1,7 @@
 {
   "id": "biz-samples-0401-ExtendedDataFormatter",
   "title": "データフォーマッタの拡張",
-  "content": "本サンプルで提供するフォーマッタ機能の仕様を解説する。\n\nフォーマッタ機能の概要、基本となる汎用データフォーマット機能に関する詳細は、汎用データフォーマット を参照すること。",
+  "content": "本サンプルで提供するフォーマッタ機能の仕様を解説する。\n\nフォーマッタ機能の概要、基本となる汎用データフォーマット機能に関する詳細は、[汎用データフォーマット](../../component/libraries/libraries-data-format.md#data-format) を参照すること。",
   "no_knowledge_content": false,
   "sections": [
     {
@@ -55,7 +55,7 @@
     {
       "id": "s9",
       "title": "テストデータの記述方法",
-      "content": "FormUrlEncodedデータフォーマッタを使用した場合、入力データをURLエンコーディングする必要がある。\nしかし、URLエンコーディングされたデータをExcelファイルに直接記述することは、可読性や保守性、作業効率といった面で現実的ではない。\nそのため、以下の例のようにテストデータコンバータを指定する。\n\nテストデータコンバータについてはプログラミング・単体テストガイドの自動テストフレームワークの使用方法を参照すること。\n\n**コンポーネント設定ファイル**\n\nテスト側のコンポーネント設定ファイルに以下の設定を追記する。\n\n```xml\n<!-- テストデータコンバータ定義 -->\n<component name=\"TestDataConverter_FormUrlEncoded\"\n           class=\"please.change.me.test.core.file.FormUrlEncodedTestDataConverter\"/>\n```\n\n**Excelファイル**\n\n以下のようにfile-typeに\"FormUrlEncoded\"を指定し、テストデータとして項目ごとにKey-Value形式となるように記述する。\n\n![](./_images/test_data_example.png)\n\nこの場合、テストデータ読み込み時にテストフレームワークによりFormUrlEncodedTestDataConverterが呼び出され、\n結果的にFormUrlEncodedデータフォーマッタには以下のデータが入力される。\n\n```text\nkanjiName=%E6%BC%A2%E5%AD%97%E6%B0%8F%E5%90%8D&kanaName=%E3%82%AB%E3%83%8A%E3%82%B7%E3%83%A1%E3%82%A4&mailAddr=test%40anydomain.com\n```",
+      "content": "FormUrlEncodedデータフォーマッタを使用した場合、入力データをURLエンコーディングする必要がある。\nしかし、URLエンコーディングされたデータをExcelファイルに直接記述することは、可読性や保守性、作業効率といった面で現実的ではない。\nそのため、以下の例のようにテストデータコンバータを指定する。\n\nテストデータコンバータについてはプログラミング・単体テストガイドの自動テストフレームワークの使用方法を参照すること。\n\n**コンポーネント設定ファイル**\n\nテスト側のコンポーネント設定ファイルに以下の設定を追記する。\n\n```xml\n<!-- テストデータコンバータ定義 -->\n<component name=\"TestDataConverter_FormUrlEncoded\"\n           class=\"please.change.me.test.core.file.FormUrlEncodedTestDataConverter\"/>\n```\n\n**Excelファイル**\n\n以下のようにfile-typeに\"FormUrlEncoded\"を指定し、テストデータとして項目ごとにKey-Value形式となるように記述する。\n\n![test_data_example.png](assets/biz-samples-0401-ExtendedDataFormatter/test_data_example.png)\n\nこの場合、テストデータ読み込み時にテストフレームワークによりFormUrlEncodedTestDataConverterが呼び出され、\n結果的にFormUrlEncodedデータフォーマッタには以下のデータが入力される。\n\n```text\nkanjiName=%E6%BC%A2%E5%AD%97%E6%B0%8F%E5%90%8D&kanaName=%E3%82%AB%E3%83%8A%E3%82%B7%E3%83%A1%E3%82%A4&mailAddr=test%40anydomain.com\n```",
       "level": 3
     }
   ]

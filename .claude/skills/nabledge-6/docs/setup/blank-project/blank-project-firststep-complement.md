@@ -46,11 +46,11 @@
 
 | ツール | ツールが実行されるMavenのPhase | 補足 |
 |---|---|---|
-| index | verify |  |
+| [Jakarta Server Pages静的解析ツール](../../development-tools/toolbox/toolbox-JspStaticAnalysis.md) | verify |  |
 | カバレッジ取得 | test | jacoco.execが生成されるところまで設定済み。  jacoco.execは、SonarQube及びJenkinsのプラグインで使用出来る。 |
 | [gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) | － | 起動は、「mvn -P gsp gsp-dba:<ゴール名>」で行う。  例えば、「mvn -P gsp gsp-dba:generate-ddl」でgenerate-ddlを実行できる。  また、「mvn -P gsp generate-resources」と実行することで、「generate-ddl」「execute-ddl」「generate-entity」「load-data」「export-schema」を順に実行できる。 |
 
 > **Important:**
-> ツールの設定を変更する際は、nablarch-archetype-parent(親プロジェクト) のpom.xmlを必ず理解した上で行うこと。
+> ツールの設定を変更する際は、[nablarch-archetype-parent(親プロジェクト)](../../setup/blank-project/blank-project-MavenModuleStructures.md#about-maven-parent-module) のpom.xmlを必ず理解した上で行うこと。
 
 > pom.xmlを理解することで、多くの設定項目について **容易** に設定変更が可能になる。

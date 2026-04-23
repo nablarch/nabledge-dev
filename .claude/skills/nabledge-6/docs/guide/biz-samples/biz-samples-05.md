@@ -23,7 +23,7 @@
 
 そのファイルを、本サンプルはバイナリ形式でDBに格納する。
 
-![](./_images/DbFileManagement_outline01.png)
+![DbFileManagement_outline01.png](../../../knowledge/assets/biz-samples-05/DbFileManagement_outline01.png)
 
 ### ファイルダウンロード時
 
@@ -31,7 +31,7 @@
 
 そのStreamを、本サンプルはDBから取得する。
 
-![](./_images/DbFileManagement_outline02.png)
+![DbFileManagement_outline02.png](../../../knowledge/assets/biz-samples-05/DbFileManagement_outline02.png)
 
 ## 機能
 
@@ -63,7 +63,7 @@
 
 ### クラス図
 
-![](./_images/DbFileManagement_classdiagram.png)
+![DbFileManagement_classdiagram.png](../../../knowledge/assets/biz-samples-05/DbFileManagement_classdiagram.png)
 
 #### 各クラスの責務
 

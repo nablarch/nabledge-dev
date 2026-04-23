@@ -2,7 +2,7 @@
 
 Nablarchアプリケーションフレームワークの全体像を以下に示す。
 
-![](images/framework.png)
+![framework.png](../../../knowledge/assets/about-nablarch-big-picture/framework.png)
 
 Nablarchアプリケーションフレームワークは、ウェブやバッチといった処理方式に合わせた実行制御基盤と、
 データベースアクセスやバリデーションといった個別の機能を提供するライブラリから構成される。
@@ -11,19 +11,19 @@ Nablarchアプリケーションフレームワークは、以下の特長があ
 
 様々な処理方式に対応できる
 Nablarchアプリケーションフレームワークでは、
-実行制御基盤および ライブラリ を組み合わせることにより、
+実行制御基盤および [ライブラリ](../../component/libraries/libraries-libraries.md#library) を組み合わせることにより、
 様々な処理方式に対応できる。
 
 実行制御基盤
-* ウェブアプリケーション編
-* ウェブサービス編
-* バッチアプリケーション編
-* メッセージング編
+* [ウェブアプリケーション編](../../processing-pattern/web-application/web-application-web.md#web-application)
+* [ウェブサービス編](../../processing-pattern/restful-web-service/restful-web-service-web-service.md#web-service)
+* [バッチアプリケーション編](../../processing-pattern/nablarch-batch/nablarch-batch-batch.md#batch-application)
+* [メッセージング編](../../processing-pattern/db-messaging/db-messaging-messaging.md#messaging)
 すべての実行制御基盤で共通のアーキテクチャを採用している
-共通アーキテクチャ では、
+[共通アーキテクチャ](../../about/about-nablarch/about-nablarch-architecture.md#nablarch-architecture) では、
 パイプライン型の処理モデルに従ってすべてのデータ処理を行う。
 特に複数の処理方式を組み合わせて構築するシステムは、
-共通アーキテクチャ によって、以下のメリットを享受できる。
+[共通アーキテクチャ](../../about/about-nablarch/about-nablarch-architecture.md#nablarch-architecture) によって、以下のメリットを享受できる。
 
 柔軟な機能追加・変更
 パイプライン型の処理モデルでは、パイプラインの構成要素であるハンドラの差し替えを容易に行うことができる。

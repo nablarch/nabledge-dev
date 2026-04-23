@@ -28,4 +28,4 @@ public class M21AA03Test extends MessagingRequestTestSupport {
 
 実施方法については、バッチの実施方法を参照。
 
-batch
+[取引単体テストの実施方法（バッチ）](../../development-tools/testing-framework/testing-framework-03-dealunittest-batch.md)

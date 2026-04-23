@@ -4,7 +4,7 @@ Nablarchバッチアプリケーションを作成する際に実装すべきク
 
 **クラスとその責務**
 
-![](images/batch_design.png)
+![batch_design.png](../../../knowledge/assets/nablarch-batch-application-design/batch_design.png)
 
 アクションクラス(action class)
 アクションクラスは、2つのことを行う。
@@ -26,7 +26,7 @@ DataReader
 外部からの入力データによっては、階層構造(formがformを持つ)となる場合もある。
 
 フォームクラスのプロパティは全て String で定義する
-プロパティを String とすべき理由は、 Bean Validation を参照。
+プロパティを String とすべき理由は、 [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation-form-property) を参照。
 ただし、バイナリ項目の場合はバイト配列で定義する。
 
 > **Tip:**

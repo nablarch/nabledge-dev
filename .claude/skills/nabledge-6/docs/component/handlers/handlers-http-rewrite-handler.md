@@ -20,7 +20,7 @@
 
 処理の流れは以下のとおり。
 
-![](../images/HttpRewriteHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-http-rewrite-handler/flow.png)
 
 ## ハンドラクラス名
 
@@ -37,12 +37,12 @@
 
 ## 制約
 
-HTTPレスポンスハンドラ より後ろに配置すること
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#http-response-handler) より後ろに配置すること
 本ハンドラで書き換えたコンテンツパスは、レスポンスハンドラにより使用される。
-このため、本ハンドラは HTTPレスポンスハンドラ の後ろに配置する必要がある。
-スレッドコンテキスト変数管理ハンドラ より前に配置すること
+このため、本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#http-response-handler) の後ろに配置する必要がある。
+[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler) より前に配置すること
 本ハンドラでは、スレッドコンテキストに入れられるリクエストパスを書き換える。
-このため、本ハンドラは スレッドコンテキスト変数管理ハンドラ より前に配置する必要がある。
+このため、本ハンドラは [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler) より前に配置する必要がある。
 
 ## 書き換えの設定
 

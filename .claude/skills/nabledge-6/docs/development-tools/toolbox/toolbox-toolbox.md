@@ -8,6 +8,6 @@ NablarchOpenApiGenerator/NablarchOpenApiGenerator
 
 | ツール | 概要 |
 |---|---|
-| index | JSPで使用を許可する構文とタグを規定し、許可する構文とタグのみを使用していることをチェックするツール。 |
-| SqlExecutor | SQL文を対話的に実行するツール。 |
-| NablarchOpenApiGenerator | OpenAPIドキュメントからソースコードを生成するツール。 |
+| [Jakarta Server Pages静的解析ツール](../../development-tools/toolbox/toolbox-JspStaticAnalysis.md) | JSPで使用を許可する構文とタグを規定し、許可する構文とタグのみを使用していることをチェックするツール。 |
+| [Nablarch SQL Executor](../../development-tools/toolbox/toolbox-SqlExecutor.md) | SQL文を対話的に実行するツール。 |
+| [Nablarch OpenAPI Generator](../../development-tools/toolbox/toolbox-NablarchOpenApiGenerator.md) | OpenAPIドキュメントからソースコードを生成するツール。 |

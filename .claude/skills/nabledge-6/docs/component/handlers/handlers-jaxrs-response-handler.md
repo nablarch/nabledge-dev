@@ -19,23 +19,23 @@
 
 > 変更されたのは名称のみで、機能的な差は無い。
 
-> その他、Nablarch6で名称が変更された機能については Nablarch5と6で名称が変更になった機能について を参照のこと。
+> その他、Nablarch6で名称が変更された機能については [Nablarch5と6で名称が変更になった機能について](../../about/about-nablarch/about-nablarch-jakarta-ee.md#renamed-features-in-nablarch-6) を参照のこと。
 
-本ハンドラでは、後続のハンドラ(リソース(アクション)クラスや リクエストボディ変換ハンドラ)
+本ハンドラでは、後続のハンドラ(リソース(アクション)クラスや [リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md#body-convert-handler))
 から戻されたレスポンス情報を、クライアントに返却する。
 後続のハンドラで例外及びエラーが送出された場合には、エラー及び例外に対応したレスポンス情報を構築しクライアントに返却する。
 
 本ハンドラでは、以下の処理を行う。
 
 * 例外及びエラー発生時のレスポンス情報を生成する。
-  詳細は、 例外及びエラーに応じたレスポンスの生成 を参照。
+  詳細は、 [例外及びエラーに応じたレスポンスの生成](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler-error-response) を参照。
 * 例外及びエラー発生時のログを出力する。
-  詳細は、 例外及びエラーに応じたログ出力 を参照
+  詳細は、 [例外及びエラーに応じたログ出力](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler-error-log) を参照
 * クライアントへのレスポンスを返却する。
 
 処理の流れは以下のとおり。
 
-![](../images/JaxRsResponseHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-jaxrs-response-handler/flow.png)
 
 ## ハンドラクラス名
 
@@ -194,7 +194,7 @@ public class CustomResponseFinisher implements ResponseFinisher {
 </component>
 ```
 
-セキュリティ関連のレスポンスヘッダを設定する セキュアハンドラ のような既存のハンドラをResponseFinisherとして使用したい場合がある。
+セキュリティ関連のレスポンスヘッダを設定する [セキュアハンドラ](../../component/handlers/handlers-secure-handler.md#secure-handler) のような既存のハンドラをResponseFinisherとして使用したい場合がある。
 このような場合に対応するため、ハンドラをResponseFinisherに適用する
 AdoptHandlerResponseFinisher クラスを提供している。
 

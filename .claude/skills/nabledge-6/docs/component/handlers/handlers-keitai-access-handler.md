@@ -16,7 +16,7 @@
 
 処理の流れは以下のとおり。
 
-![](../images/KeitaiAccessHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-keitai-access-handler/flow.png)
 
 ## ハンドラクラス名
 
@@ -33,26 +33,26 @@
 
 ## 制約
 
-HTTPレスポンスハンドラ より後ろに配置すること
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#http-response-handler) より後ろに配置すること
 本ハンドラは、通常クライントからのJSP上にJavaScriptを出力しないよう変数を設定するため、
-JSPへのフォワード処理を行う HTTPレスポンスハンドラ より後に配置する必要がある。
-スレッドコンテキスト変数管理ハンドラ より前に配置すること
+JSPへのフォワード処理を行う [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#http-response-handler) より後に配置する必要がある。
+[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler) より前に配置すること
 通常JSPが出力するJavaScriptで決定されるURIを決定する処理が含まれるため、
-URIを使用する スレッドコンテキスト変数管理ハンドラ より前に配置する必要がある。
+URIを使用する [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler) より前に配置する必要がある。
 
 ## JavaScript出力が抑制されるタグ
 
 携帯端末アクセスハンドラを使用したURLにアクセスした際は、 下記Nablarch
 タグライブラリが通常出力するJavaScriptが一切出力されなくなる。
 
-* n:form タグ
-* n:script タグ
-* サブミット関連のタグ
+* [n:form タグ](../../component/libraries/libraries-tag-reference.md#tag-form-tag)
+* [n:script タグ](../../component/libraries/libraries-tag-reference.md#tag-script-tag)
+* [サブミット関連のタグ](../../component/libraries/libraries-tag-reference.md#tag-reference-submit)
 
 > **Important:**
 > 下記のタグは、元々想定していた機能が実現できないため、使用できなくなる。
 
-> * >   n:submitLink タグ
+> * >   [n:submitLink タグ](../../component/libraries/libraries-tag-reference.md#tag-submit-link-tag)
 
 > n:submitLink タグの代替として、 n:a タグを使用すること。
 > 特にリクエストパラメータについては、GETメソッドのパラメータで送信する必要がある。

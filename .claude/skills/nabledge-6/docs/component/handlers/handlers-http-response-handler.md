@@ -28,7 +28,7 @@ ServletResponse の getOutputStream メソッドを使用して直接
 
 処理の流れは以下のとおり。
 
-![](../images/HttpResponseHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-http-response-handler/flow.png)
 
 ## ハンドラクラス名
 
@@ -78,7 +78,7 @@ CustomResponseWriter
 の実装クラスを設定することで、任意のレスポンス出力処理 [3] を実行できる。
 
 具体例として、JSPではなくテンプレートエンジンを使用してレスポンスを出力するというケースが挙げられる。
-Nablarchが提供している実装としては、ウェブアプリケーション Thymeleafアダプタ がある。
+Nablarchが提供している実装としては、[ウェブアプリケーション Thymeleafアダプタ](../../component/adapters/adapters-web-thymeleaf-adaptor.md#web-thymeleaf-adaptor) がある。
 
 ## HTTPステータスコードの変更
 

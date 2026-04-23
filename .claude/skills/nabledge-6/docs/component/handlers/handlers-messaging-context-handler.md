@@ -9,7 +9,7 @@
 
 後続のハンドラ及びライブラリで使用するためのMQ接続を、スレッド上で管理するハンドラ。
 
-MOMメッセージングの詳細は、 システム間メッセージング を参照。
+MOMメッセージングの詳細は、 [システム間メッセージング](../../component/libraries/libraries-system-messaging.md#system-messaging) を参照。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -18,7 +18,7 @@ MOMメッセージングの詳細は、 システム間メッセージング を
 
 処理の流れは以下のとおり。
 
-![](../images/MessagingContextHandler/MessagingContextHandler_flow.png)
+![MessagingContextHandler_flow.png](../../../knowledge/assets/handlers-messaging-context-handler/MessagingContextHandler_flow.png)
 
 ## ハンドラクラス名
 

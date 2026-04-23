@@ -1,6 +1,6 @@
 # リクエスト単体データ作成ツール インストールガイド
 
-index のインストール方法について説明する。
+[リクエスト単体データ作成ツール](../../development-tools/testing-framework/testing-framework-guide-development-guide-08-TestTools-01-HttpDumpTool.md) のインストール方法について説明する。
 
 ## 前提事項
 
@@ -48,7 +48,7 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 
 以下のファイルをプロジェクトのpom.xmlと同じディレクトリに配置する。
 
-* httpDump.bat <download/httpDump.bat>
+* [httpDump.bat](../../../knowledge/assets/testing-framework-02-SetUpHttpDumpTool/httpDump.bat)
 
 ## Eclipseとの連携
 
@@ -60,24 +60,24 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 左側のペインから一般(General)→エディタ(Editors)→ファイルの関連付け(File Associations)
 を選択、右側のペインから*.htmlを選択し、追加(Add)ボタンを押下する。
 
-![](./_image/01_Eclipse_Preference.png)
+![01_Eclipse_Preference.png](../../../knowledge/assets/testing-framework-02-SetUpHttpDumpTool/01_Eclipse_Preference.png)
 
 ### 外部プログラム選択
 
 ラジオボタンから外部プログラム(External program)を選択し、参照(Browse)ボタンを押下する。
 
-![](./_image/02_Eclipse_EditorSelection.png)
+![02_Eclipse_EditorSelection.png](../../../knowledge/assets/testing-framework-02-SetUpHttpDumpTool/02_Eclipse_EditorSelection.png)
 
 ### 起動用バッチファイル（シェルスクリプト）選択
 
 Windowsの場合はバッチファイル(httpDump.bat)を、
 Linuxの場合はシェルスクリプト(httpDump.sh)を選択する。
 
-![](./_image/03_Eclipse_OpenFile.png)
+![03_Eclipse_OpenFile.png](../../../knowledge/assets/testing-framework-02-SetUpHttpDumpTool/03_Eclipse_OpenFile.png)
 
 ### HTMLファイルからの起動方法
 
 Eclipseのパッケージエクスプローラ等からHTMLファイルを右クリックし、
 httpDumpで開くことでツールを起動できる。
 
-![](./_image/04_Eclipse_OpenWith.png)
+![04_Eclipse_OpenWith.png](../../../knowledge/assets/testing-framework-02-SetUpHttpDumpTool/04_Eclipse_OpenWith.png)

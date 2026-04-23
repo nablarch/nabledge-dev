@@ -18,7 +18,7 @@
 同一の処理スレッド内で共有する値をスレッドローカル領域上に保持するための仕組みである。
 
 > **Important:**
-> 本ハンドラで設定したスレッドローカル上の値は、 スレッドコンテキスト変数削除ハンドラ を使用して、復路処理で削除すること。
+> 本ハンドラで設定したスレッドローカル上の値は、 [スレッドコンテキスト変数削除ハンドラ](../../component/handlers/handlers-thread-context-clear-handler.md#thread-context-clear-handler) を使用して、復路処理で削除すること。
 > 往路処理にて本ハンドラより手前のハンドラでスレッドコンテキストにアクセスした場合、
 > 値を取得できないため本ハンドラより手前ではスレッドコンテキストにアクセスしないよう注意すること。
 
@@ -28,11 +28,11 @@
 
 本ハンドラでは、以下の処理を行う。
 
-* リクエスト毎にスレッドコンテキストの初期化を行う
+* [リクエスト毎にスレッドコンテキストの初期化を行う](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler-initialization)
 
 処理の流れは以下のとおり。
 
-![](../images/ThreadContextHandler/ThreadContextHandler_flow.png)
+![ThreadContextHandler_flow.png](../../../knowledge/assets/handlers-thread-context-handler/ThreadContextHandler_flow.png)
 
 ## ハンドラクラス名
 
@@ -69,7 +69,7 @@ ThreadContextAttributeインタフェース
 * RequestIdAttribute
 * InternalRequestIdAttribute  [1]
 
-認可チェックハンドラ や サービス提供可否チェックハンドラ のような、内部リクエストIDに対する処理を実施するハンドラを使用する場合に設定する。
+[認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md#permission-check-handler) や [サービス提供可否チェックハンドラ](../../component/handlers/handlers-ServiceAvailabilityCheckHandler.md#serviceavailabilitycheckhandler) のような、内部リクエストIDに対する処理を実施するハンドラを使用する場合に設定する。
 
 ユーザID
 * UserIdAttribute

@@ -7,20 +7,20 @@
 * 制約
 * 最大処理件数の設定
 
-データリーダ を使用して、入力データの順次読み込みを行なうハンドラ。
+[データリーダ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#nablarch-batch-data-reader) を使用して、入力データの順次読み込みを行なうハンドラ。
 
-このハンドラは、実行コンテキスト上の データリーダ を使用し、業務処理に対する入力データを1件ずつ読み込み、
+このハンドラは、実行コンテキスト上の [データリーダ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#nablarch-batch-data-reader) を使用し、業務処理に対する入力データを1件ずつ読み込み、
 それを引数として後続ハンドラに処理を委譲する。
-データリーダ の終端に達した場合は、後続のハンドラを実行せずに、データの終端に達したことを示す NoMoreRecord を返却する。
+[データリーダ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#nablarch-batch-data-reader) の終端に達した場合は、後続のハンドラを実行せずに、データの終端に達したことを示す NoMoreRecord を返却する。
 
 本ハンドラでは、以下の処理を行う。
 
 * データリーダを使用して入力データの読み込み
-* 実行時ID の採番
+* [実行時ID](../../component/libraries/libraries-log.md#log-execution-id) の採番
 
 処理の流れは以下のとおり。
 
-![](../images/DataReadHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-data-read-handler/flow.png)
 
 ## ハンドラクラス名
 

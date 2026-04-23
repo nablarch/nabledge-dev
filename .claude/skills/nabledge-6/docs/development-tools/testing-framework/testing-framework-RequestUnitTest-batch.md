@@ -6,7 +6,7 @@
 
 ### 全体像
 
-![](./_images/batch_request_test_class.png)
+![batch_request_test_class.png](../../../knowledge/assets/testing-framework-RequestUnitTest-batch/batch_request_test_class.png)
 
 ## 主なクラス, リソース
 
@@ -63,7 +63,7 @@
 本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、
 テストソース記述量を大きく削減できる。
 
-具体的な使用方法は、 batch を参照。
+具体的な使用方法は、 [リクエスト単体テストの実施方法(バッチ)](../../development-tools/testing-framework/testing-framework-02-requestunittest-batch.md) を参照。
 
 ### MainForRequestTesting
 
@@ -91,7 +91,7 @@
 ### 固定長ファイル
 
 基本的な記述方法は、
-リクエスト単体テストの実施方法(バッチ)
+[リクエスト単体テストの実施方法(バッチ)](../../development-tools/testing-framework/testing-framework-02-requestunittest-batch.md#batch-request-test)
 を参照。
 
 #### パディング
@@ -116,7 +116,7 @@
 ### 可変長ファイル
 
 基本的な記述方法は、
-リクエスト単体テストの実施方法(バッチ)
+[リクエスト単体テストの実施方法(バッチ)](../../development-tools/testing-framework/testing-framework-02-requestunittest-batch.md#batch-request-test)
 を参照。
 
 ## 各種設定値

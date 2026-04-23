@@ -65,4 +65,4 @@ PC
 * Google Chrome
 * Safari
 
-Java21で使用する場合、別途設定変更が必要となる。設定方法は setup_Java21 を参照。
+Java21で使用する場合、別途設定変更が必要となる。設定方法は [Java21で使用する場合のセットアップ方法](../../setup/blank-project/blank-project-setup-Java21.md) を参照。

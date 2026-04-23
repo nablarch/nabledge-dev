@@ -1,7 +1,7 @@
 {
   "id": "handlers-main",
   "title": "共通起動ランチャ",
-  "content": "**目次**\n\n* ハンドラクラス名\n* モジュール一覧\n* アプリケーションを起動する\n* アプリケーション起動に任意のオプションを設定する\n* 例外及びエラーに応じた処理内容\n\nスタンドアロンで起動するアプリケーションの起点となるハンドラ。\n\njavaコマンドから直接起動することで、システムリポジトリの初期化を行い、そこに定義されたハンドラキューを実行させることができる。\n\n本ハンドラでは、以下の処理を行う。\n処理の詳細は、カッコ内のJavadocを参照。\n\n* コマンドライン引数のパース( CommandLine )\n* 起動ログの出力( LauncherLogFormatter#getStartLogFormat )\n* システムリポジトリの初期化\n* 実行コンテキストの初期化( Main#setupExecutionContext )\n* アプリケーション設定ログの出力( ApplicationSettingLogFormatter )\n* ハンドラキューの実行\n* 例外及びエラーに応じたログの出力\n* 終了ログの出力( LauncherLogFormatter#getEndLogFormat )\n\n処理の流れは以下のとおり。\n\n![](../images/Main/Main_flow.png)",
+  "content": "**目次**\n\n* ハンドラクラス名\n* モジュール一覧\n* アプリケーションを起動する\n* アプリケーション起動に任意のオプションを設定する\n* 例外及びエラーに応じた処理内容\n\nスタンドアロンで起動するアプリケーションの起点となるハンドラ。\n\njavaコマンドから直接起動することで、システムリポジトリの初期化を行い、そこに定義されたハンドラキューを実行させることができる。\n\n本ハンドラでは、以下の処理を行う。\n処理の詳細は、カッコ内のJavadocを参照。\n\n* コマンドライン引数のパース( CommandLine )\n* 起動ログの出力( LauncherLogFormatter#getStartLogFormat )\n* システムリポジトリの初期化\n* 実行コンテキストの初期化( Main#setupExecutionContext )\n* アプリケーション設定ログの出力( ApplicationSettingLogFormatter )\n* ハンドラキューの実行\n* 例外及びエラーに応じたログの出力\n* 終了ログの出力( LauncherLogFormatter#getEndLogFormat )\n\n処理の流れは以下のとおり。\n\n![Main_flow.png](assets/handlers-main/Main_flow.png)",
   "no_knowledge_content": false,
   "sections": [
     {
@@ -25,7 +25,7 @@
     {
       "id": "s4",
       "title": "アプリケーション起動に任意のオプションを設定する",
-      "content": "Mainクラス 起動時に、任意のオプションパラメータを指定することが出来る。\n\nオプションパラメータは、「オプション名称」と「オプションの値」のペアで設定する。\n\n例えば、オプション名称が `optionName` で 値が `optionValue` の場合は、以下のように指定する。\n\n```bash\njava nablarch.fw.launcher.Main \\\n  -optionName optionValue\n```\n\nアプリケーションでオプションを使用する場合は、 ExecutionContext から取得する。\n\n```java\n @Override\npublic Result handle(String inputData, ExecutionContext ctx) {\n  // getSessionScopedVarにオプション名称を指定して、値を取得する。\n  final String value = ctx.getSessionScopedVar(\"optionName\");\n\n  // 処理\n\n  return new Result.Success();\n}\n```\n\n> **Tip:**\n> アプリケーション起動時に必ず指定する必要があるオプションは、 アプリケーションを起動する を参照",
+      "content": "Mainクラス 起動時に、任意のオプションパラメータを指定することが出来る。\n\nオプションパラメータは、「オプション名称」と「オプションの値」のペアで設定する。\n\n例えば、オプション名称が `optionName` で 値が `optionValue` の場合は、以下のように指定する。\n\n```bash\njava nablarch.fw.launcher.Main \\\n  -optionName optionValue\n```\n\nアプリケーションでオプションを使用する場合は、 ExecutionContext から取得する。\n\n```java\n @Override\npublic Result handle(String inputData, ExecutionContext ctx) {\n  // getSessionScopedVarにオプション名称を指定して、値を取得する。\n  final String value = ctx.getSessionScopedVar(\"optionName\");\n\n  // 処理\n\n  return new Result.Success();\n}\n```\n\n> **Tip:**\n> アプリケーション起動時に必ず指定する必要があるオプションは、 [アプリケーションを起動する](../../component/handlers/handlers-main.md#main-run-application) を参照",
       "level": 2
     },
     {

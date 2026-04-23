@@ -28,7 +28,7 @@
 
 [ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-messaging-simulator)
 
-本サンプルは、Nablarchアプリケーションフレームワークの MOMメッセージング 、 HTTPメッセージング を使用する
+本サンプルは、Nablarchアプリケーションフレームワークの [MOMメッセージング](../../component/libraries/libraries-mom-system-messaging.md#mom-system-messaging) 、 [HTTPメッセージング](../../component/libraries/libraries-http-system-messaging.md#http-system-messaging) を使用する
 アプリケーションのテストにて、対向先システムをシミュレートするサンプル実装を提供する。
 
 テスト環境構築後の疎通テストやアプリケーションの結合テスト等で、アプリケーションの接続先として、
@@ -37,9 +37,9 @@
 シミュレータの動作イメージを以下に示す。
 
 シミュレータがメッセージ受信する場合
-![](./_images/behavior_illustration01.png)
+![behavior_illustration01.png](../../../knowledge/assets/biz-samples-11/behavior_illustration01.png)
 シミュレータがメッセージ送信する場合
-![](./_images/behavior_illustration02.png)
+![behavior_illustration02.png](../../../knowledge/assets/biz-samples-11/behavior_illustration02.png)
 
 > **Important:**
 > 本サンプルではMOMとしてIBM MQ 9.3 を使用している。

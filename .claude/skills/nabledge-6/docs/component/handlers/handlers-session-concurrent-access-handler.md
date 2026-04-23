@@ -18,7 +18,7 @@
 * 処理終了後、他のスレッドによってセッションが更新されていないかチェックし、更新済みであればエラーとする
 * 処理終了後、セッション情報のコピーをセッションに反映する
 
-![](../images/SessionConcurrentAccessHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-session-concurrent-access-handler/flow.png)
 
 ## ハンドラクラス名
 

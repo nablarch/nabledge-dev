@@ -50,15 +50,15 @@ Nablarch5,6で名称が変更になった機能の対応表
 
 | Nablarch5までの名称 | Nablarch6からの名称 |
 |---|---|
-| JAX-RS BeanValidationハンドラ | jaxrs_bean_validation_handler [1] |
-| JAX-RSアダプタ | jaxrs_adaptor |
-| JAX-RSサポート | Jakarta RESTful Web Servicesサポート |
-| JAX-RSレスポンスハンドラ | jaxrs_response_handler |
-| JSPカスタムタグ | tag |
-| JSP静的解析ツール | index |
-| JSR352に準拠したバッチアプリケーション | index |
+| JAX-RS BeanValidationハンドラ | [Jakarta RESTful Web Servcies Bean Validationハンドラ](../../component/handlers/handlers-jaxrs-bean-validation-handler.md) [1] |
+| JAX-RSアダプタ | [Jakarta RESTful Web Servicesアダプタ](../../component/adapters/adapters-jaxrs-adaptor.md) |
+| JAX-RSサポート | [Jakarta RESTful Web Servicesサポート](../../processing-pattern/restful-web-service/restful-web-service-architecture.md) |
+| JAX-RSレスポンスハンドラ | [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md) |
+| JSPカスタムタグ | [Jakarta Server Pagesカスタムタグ](../../component/libraries/libraries-tag.md) |
+| JSP静的解析ツール | [Jakarta Server Pages静的解析ツール](../../development-tools/toolbox/toolbox-JspStaticAnalysis.md) |
+| JSR352に準拠したバッチアプリケーション | [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md) |
 
-「BeanValidation」はNablarchが提供するバリデーション機能である bean_validation を指しているため、Jakarta Bean Validationには変更していない。
+「BeanValidation」はNablarchが提供するバリデーション機能である [Bean Validation](../../component/libraries/libraries-bean-validation.md) を指しているため、Jakarta Bean Validationには変更していない。
 
 なお、変更されたのは名称のみで機能的な変更はない。
 また、後方互換を維持するためにクラスやパッケージの名前などは変更されていない。

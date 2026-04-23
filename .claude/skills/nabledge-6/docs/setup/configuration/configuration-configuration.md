@@ -4,4 +4,4 @@
 
 デフォルト設定一覧は、以下のリンクより取得できる。
 
-デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>
+[デフォルト設定一覧.xlsx](../../../knowledge/assets/configuration-configuration/デフォルト設定一覧.xlsx)

@@ -27,7 +27,7 @@ Nablarch導入プロジェクトにて、要件に応じてログイン処理を
 本機能では、デフォルトでは [PBKDF2](https://www.ietf.org/rfc/rfc2898.txt) を使用してパスワードを暗号化するため、
 各プロジェクトで、パスワード暗号化のストレッチング回数やソルトなどを設定する必要がある。
 
-設定内容の詳細については 0101_PBKDF2PasswordEncryptor を参照。
+設定内容の詳細については [PBKDF2を用いたパスワード暗号化機能サンプル](../../guide/biz-samples/biz-samples-0101-PBKDF2PasswordEncryptor.md) を参照。
 
 ## 構成
 
@@ -35,7 +35,7 @@ Nablarch導入プロジェクトにて、要件に応じてログイン処理を
 
 ### クラス図
 
-![](./_images/Authentication_ClassDiagram.png)
+![Authentication_ClassDiagram.png](../../../knowledge/assets/biz-samples-01/Authentication_ClassDiagram.png)
 
 #### 各クラスの責務
 
@@ -73,8 +73,8 @@ d) エンティティクラス
 | SystemAccount | ユーザのアカウント情報を保持するクラス。ユニバーサルDAOの検索結果を格納する。 |
 
 > **Tip:**
-> Nablarch導入プロジェクトでは、エンティティクラスは gsp-dba-maven-plugin(DBA作業支援ツール) を使用して自動生成する。
-> 本サンプルには動作確認のため テーブル定義 に記載の定義に合わせて自動生成したエンティティクラスを同梱している(*please.change.me.entity* パッケージ)。
+> Nablarch導入プロジェクトでは、エンティティクラスは [gsp-dba-maven-plugin(DBA作業支援ツール)](../../setup/blank-project/blank-project-addin-gsp.md#gsp-maven-plugin) を使用して自動生成する。
+> 本サンプルには動作確認のため [テーブル定義](../../guide/biz-samples/biz-samples-01.md#system-account-table-definition) に記載の定義に合わせて自動生成したエンティティクラスを同梱している(*please.change.me.entity* パッケージ)。
 > プロジェクトにて実装する際は本サンプルのエンティティクラスを使用するのではなく、各プロジェクトで自動生成したエンティティクラスを使用するよう修正すること。
 
 e) 例外クラス
@@ -157,7 +157,7 @@ SystemAccountAuthenticatorの使用方法について解説する。
 
 | property名 | 設定内容 |
 |---|---|
-| passwordEncryptor(必須) | パスワードの暗号化に使用するPasswordEncryptor。  0101_PBKDF2PasswordEncryptor を参考に設定したコンポーネント名を、refに指定すること。 |
+| passwordEncryptor(必須) | パスワードの暗号化に使用するPasswordEncryptor。  [PBKDF2を用いたパスワード暗号化機能サンプル](../../guide/biz-samples/biz-samples-0101-PBKDF2PasswordEncryptor.md) を参考に設定したコンポーネント名を、refに指定すること。 |
 | dbManager(必須) | データベースへのトランザクションを制御するSimpleDbTransactionManager。  nablarch.core.db.transaction.SimpleDbTransactionManagerクラスのインスタンスを指定する。  > **Important:** > SystemAccountAuthenticatorのトランザクション制御が個別アプリケーションの処理に影響を与えないように、個別アプリケーションとは別のトランザクションを使用するように設定すること。 > 設定例では、dbTransactionNameに"authenticator"という名前を指定しているので、個別アプリケーションでは同じ名前を使用しないように設定する。 |
 | failedCountToLock | ユーザIDをロックする認証失敗回数。  指定しない場合は0となり、ユーザIDのロック機能を使用しないことになる。 |
 
@@ -166,7 +166,7 @@ SystemAccountAuthenticatorの使用方法について解説する。
 AuthenticaionUtilの使用方法について解説する。
 
 AuthenticationUtilでは、以下のユーティリティメソッドを実装している。なお、システムリポジトリからコンポーネントを取得する際の
-コンポーネント名は、上記の SystemAccountAuthenticatorの使用方法 で登録しているそれぞれのコンポーネント名と
+コンポーネント名は、上記の [SystemAccountAuthenticatorの使用方法](../../guide/biz-samples/biz-samples-01.md#passwordauth-settings-label) で登録しているそれぞれのコンポーネント名と
 あわせる必要があるため、上記の設定例と異なるコンポーネント名で登録している場合にはソースコードを修正すること。
 
 | メソッド |  |

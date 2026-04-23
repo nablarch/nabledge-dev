@@ -10,11 +10,11 @@
 * ヘルスチェック結果のレスポンスを変更する
 
 本ハンドラは、アプリケーションのヘルスチェックを行うための機能を提供する。
-本ハンドラを使用して、 Webアプリケーション と RESTfulウェブサービス
+本ハンドラを使用して、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md#web-application) と [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restful-web-service)
 のヘルスチェックを行うエンドポイントを実現できる。
 
 ヘルスチェックのデフォルト実装として DB と
-Redis のヘルスチェックを提供している。
+[Redis](../../component/adapters/adapters-lettuce-adaptor.md#lettuce-adaptor) のヘルスチェックを提供している。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -22,7 +22,7 @@ Redis のヘルスチェックを提供している。
 
 処理の流れは以下のとおり。
 
-![](../images/HealthCheckEndpointHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-health-check-endpoint-handler/flow.png)
 
 本ハンドラはヘルスチェックを行うエンドポイントとなるため、後続ハンドラの呼び出しは行わない。
 
@@ -47,10 +47,10 @@ Redis のヘルスチェックを提供している。
 
 ## 制約
 
-HTTPレスポンスハンドラ または Jakarta RESTful Web Servicesレスポンスハンドラ より後ろに配置すること
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#http-response-handler) または [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler) より後ろに配置すること
 本ハンドラで生成した HttpResponse を
-HTTPレスポンスハンドラ または Jakarta RESTful Web Servicesレスポンスハンドラ が処理するため、
-本ハンドラは HTTPレスポンスハンドラ または Jakarta RESTful Web Servicesレスポンスハンドラ より後ろに配置する必要がある。
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#http-response-handler) または [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler) が処理するため、
+本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#http-response-handler) または [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler) より後ろに配置する必要がある。
 
 ## ヘルスチェックのエンドポイントを作る
 
@@ -140,7 +140,7 @@ DB等のリソースのヘルスチェックは、 HealthChecker
 
 ## ヘルスチェックを追加する
 
-ヘルスチェックのエンドポイントを作る で説明したように、
+[ヘルスチェックのエンドポイントを作る](../../component/handlers/handlers-health-check-endpoint-handler.md#health-check-endpoint-handler-health-check-endpoint) で説明したように、
 DB等のリソースのヘルスチェックは HealthChecker
 という抽象クラスが行うので、HealthChecker を継承したクラスを作成し、
 本ハンドラのhealthCheckersプロパティに指定するとヘルスチェックを追加できる。

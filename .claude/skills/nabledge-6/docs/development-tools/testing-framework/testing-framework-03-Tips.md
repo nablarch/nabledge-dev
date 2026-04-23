@@ -2,22 +2,22 @@
 
 目的別のAPIの使用方法について説明する。
 
-* Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい
-* 同じテストメソッドをテストデータを変えて実行したい
-* 一つのシートに複数テストケースのデータを記載したい
-* システム日時を任意の値に固定したい
-* シーケンスオブジェクトを使った採番のテストをしたい
-* ThreadContextにユーザID、リクエストIDなどを設定したい
-* 任意のディレクトリのExcelファイルを読み込みたい
-* テスト実行前後に共通処理を行いたい。
-* デフォルト以外のトランザクションを使用したい
-* 本フレームワークのクラスを継承せずに使用したい
-* クラスのプロパティを検証したい
-* テストデータに空白、空文字、改行やnullを記述したい
-* テストデータに空行を記述したい
-* マスタデータを変更してテストを行いたい
-* テストデータ読み込みディレクトリを変更したい
-* メッセージング処理でテストデータに対し定型的な変換処理を追加したい
+* [Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#how-to-get-data-from-excel)
+* [同じテストメソッドをテストデータを変えて実行したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#how-to-run-the-same-test)
+* [一つのシートに複数テストケースのデータを記載したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#tips-groupid)
+* [システム日時を任意の値に固定したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#how-to-fix-date)
+* [シーケンスオブジェクトを使った採番のテストをしたい](../../development-tools/testing-framework/testing-framework-03-Tips.md#how-to-numbering-sequence)
+* [ThreadContextにユーザID、リクエストIDなどを設定したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#using-threadcontext)
+* [任意のディレクトリのExcelファイルを読み込みたい](../../development-tools/testing-framework/testing-framework-03-Tips.md#using-testdataparser)
+* [テスト実行前後に共通処理を行いたい。](../../development-tools/testing-framework/testing-framework-03-Tips.md#using-junit-annotation)
+* [デフォルト以外のトランザクションを使用したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#using-transactions)
+* [本フレームワークのクラスを継承せずに使用したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#using-ohter-class)
+* [クラスのプロパティを検証したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#how-to-assert-property-from-excel)
+* [テストデータに空白、空文字、改行やnullを記述したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#tips-test-data)
+* [テストデータに空行を記述したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#how-to-express-empty-line)
+* [マスタデータを変更してテストを行いたい](../../development-tools/testing-framework/testing-framework-03-Tips.md#how-to-change-master-data)
+* [テストデータ読み込みディレクトリを変更したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#how-to-change-test-data-dir)
+* [メッセージング処理でテストデータに対し定型的な変換処理を追加したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#how-to-convert-test-data)
 
 ## Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい
 
@@ -231,7 +231,7 @@ EXPECTED_TABLE[case_002]=EMPLOYEE_TABLE
 
 ### 注意事項
 
-複数のグループIDのデータを記述する際は、 複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する のようにグループIDごとにまとめて記述すること。
+複数のグループIDのデータを記述する際は、 [複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する](../../development-tools/testing-framework/testing-framework-01-Abstract.md#auto-test-framework-multi-datatype) のようにグループIDごとにまとめて記述すること。
 グループIDごとにまとめて記述しないとデータの読み込みが途中で終了しテストが正しく実行されない。
 
 ## システム日時を任意の値に固定したい
@@ -491,7 +491,7 @@ public class SampleTest extends AnotherSuperClass {
 
 テスト対象クラスのプロパティの検証を、容易に実装できる。
 
-テストデータの記述方法は、 Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい で記載した方法と同様に記載する。
+テストデータの記述方法は、 [Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#how-to-get-data-from-excel) で記載した方法と同様に記載する。
 
 データの意味は、2行目が プロパティ名、3行目以降が検証時に使用するプロパティの値となる。
 
@@ -536,12 +536,12 @@ LIST_MAP=expectedUsers
 
 ## テストデータに空白、空文字、改行やnullを記述したい
 
-セルへの特殊な記述方法 を参照。
+[セルへの特殊な記述方法](../../development-tools/testing-framework/testing-framework-01-Abstract.md#special-notation-in-cell) を参照。
 
 ## テストデータに空行を記述したい
 
 可変長ファイルを扱う場合等で、テストデータに空行を含めたい場合がある。
-全くの空行は無視されるため、セルへの特殊な記述方法 の
+全くの空行は無視されるため、[セルへの特殊な記述方法](../../development-tools/testing-framework/testing-framework-01-Abstract.md#special-notation-in-cell) の
 ダブルクォーテーションを使用して `""` のように空文字列を記述することで、
 空行を表すことができる。
 
@@ -564,7 +564,7 @@ LIST_MAP=expectedUsers
 
 ## マスタデータを変更してテストを行いたい
 
-04_MasterDataRestore を参照
+[マスタデータ復旧機能](../../development-tools/testing-framework/testing-framework-04-MasterDataRestore.md) を参照
 
 ## テストデータ読み込みディレクトリを変更したい
 
@@ -627,9 +627,9 @@ nablarch.test.resource-root=test/online;test/batch
 
 ### Excelファイル記述例
 
-![](./_images/data_convert_example.png)
+![data_convert_example.png](../../../knowledge/assets/testing-framework-03-Tips/data_convert_example.png)
 
 上記で指定したコンバータでセル内の各データにURLエンコーディングを行うように実装した場合、
 テストフレームワーク内部では以下のデータを記述した場合と同様に扱われる。
 
-![](./_images/data_convert_internal.png)
+![data_convert_internal.png](../../../knowledge/assets/testing-framework-03-Tips/data_convert_internal.png)

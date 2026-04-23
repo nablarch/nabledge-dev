@@ -47,7 +47,7 @@ PJにおいて設計者がSQLを設計する際などに使用する。
 
 ビルド済みのツールはJavaとDBへの接続環境があれば使用可能である。
 
-![配布イメージ](./_images/sql-executor-1.png)
+![配布イメージ](../../../knowledge/assets/toolbox-SqlExecutor/sql-executor-1.png)
 
 [1]
 
@@ -60,13 +60,13 @@ PJにおいて設計者がSQLを設計する際などに使用する。
 
 本ツールを使用する際、PJ共通のDBを使用できる。
 
-![各ユーザが同じDBに接続するイメージ](./_images/sql-executor-db-same.png)
+![各ユーザが同じDBに接続するイメージ](../../../knowledge/assets/toolbox-SqlExecutor/sql-executor-db-same.png)
 
 [1]
 
 ツール使用者それぞれがローカルのDBも使用できる。
 
-![各ユーザが別々のDBに接続するイメージ](./_images/sql-executor-db-separate.png)
+![各ユーザが別々のDBに接続するイメージ](../../../knowledge/assets/toolbox-SqlExecutor/sql-executor-db-separate.png)
 
 [1]
 
@@ -80,7 +80,7 @@ PJにおいて設計者がSQLを設計する際などに使用する。
 * DATETIMEリテラルを条件とした検索ができない。
 
 > **Tip:**
-> Nablarchでは2-way SQLとしてSQLを記述できる [Doma(外部サイト、英語)](https://doma.readthedocs.io/en/stable/) 用の アダプタ を提供している。
+> Nablarchでは2-way SQLとしてSQLを記述できる [Doma(外部サイト、英語)](https://doma.readthedocs.io/en/stable/) 用の [アダプタ](../../component/adapters/adapters-doma-adaptor.md#doma-adaptor) を提供している。
 
 > Domaを使用した場合、本ツールのような複雑なツールのセットアップを行わなくても、本番環境用に定義したSQLを簡単にテスト実行出来る。
 > (動的な条件を構築するような場合でも、SQLを書き換えることなく実行できる)
@@ -96,7 +96,7 @@ PJにおいて設計者がSQLを設計する際などに使用する。
 * FirefoxまたはChromeがインストール済みであること。
 * Nablarchの開発環境が設定済みであること。
 * Maven Central RepositoryにJDBCドライバが存在しないRDBMSを使用する場合は、Project Local RepositoryまたはLocal RepositoryにJDBCドライバを登録済みであること。
-  登録方法は、Mavenリポジトリへのファイル登録 を参照。
+  登録方法は、[Mavenリポジトリへのファイル登録](../../setup/blank-project/blank-project-CustomizeDB.md#customizedbaddfilemavenrepo) を参照。
 
 ### ソースコード取得
 
@@ -305,7 +305,7 @@ target直下に作成されたsql-executor-distribution.zipを配布すること
 ツールを使用するための前提条件を以下に示す。
 
 * PJで使用されるバージョンのJavaがインストール済みであること。
-* DB設定変更 で設定したDBに接続可能であること。
+* [DB設定変更](../../development-tools/toolbox/toolbox-SqlExecutor.md#db-settings) で設定したDBに接続可能であること。
 * FirefoxまたはChromeがインストール済みであること。
 
 ### 配布されたファイルの起動
@@ -339,7 +339,7 @@ start java -Ddb.url=jdbc:h2:./h2/db/SAMPLE -Ddb.user=SAMPLE -Ddb.password=SAMPLE
 cmd /c start http://localhost:7979/index.html
 ```
 
-実行しても何も出力されずに異常終了する場合は、 FAQ を参照。
+実行しても何も出力されずに異常終了する場合は、 [FAQ](../../development-tools/toolbox/toolbox-SqlExecutor.md#faq) を参照。
 
 ## 操作方法
 
@@ -348,7 +348,7 @@ cmd /c start http://localhost:7979/index.html
 初回起動時はカレントディレクトリ配下のSQLファイルの一覧を表示するが、
 存在しない場合は以下のような画面が表示される。
 
-![初期画面](./_images/initial_screen.png)
+![初期画面](../../../knowledge/assets/toolbox-SqlExecutor/initial_screen.png)
 
 初期画面
 
@@ -357,13 +357,13 @@ cmd /c start http://localhost:7979/index.html
 その配下の検索してSQLファイルと各ファイルに記述されているステートメントの
 一覧を表示する。
 
-![検索パス設定](./_images/setting_search_root_path.png)
+![検索パス設定](../../../knowledge/assets/toolbox-SqlExecutor/setting_search_root_path.png)
 
 検索パス設定
 
 各ステートメント名をクリックすると、その内容と操作用のボタンが表示される。
 
-![SQLステートメント一覧](./_images/browsing_sql_scripts.png)
+![SQLステートメント一覧](../../../knowledge/assets/toolbox-SqlExecutor/browsing_sql_scripts.png)
 
 SQLステートメント一覧
 
@@ -374,11 +374,11 @@ SQLステートメント一覧
 また **[Fill]**
 をクリックすると、前回の実行時の入力フィールドの内容を復元する。
 
-![SQL実行結果(クエリ)](./_images/running_sql_scripts.png)
+![SQL実行結果(クエリ)](../../../knowledge/assets/toolbox-SqlExecutor/running_sql_scripts.png)
 
 SQL実行結果(クエリ)
 
-![SQL実行結果(DML)](./_images/running_dml_scripts.png)
+![SQL実行結果(DML)](../../../knowledge/assets/toolbox-SqlExecutor/running_dml_scripts.png)
 
 SQL実行結果(DML)
 
@@ -400,12 +400,12 @@ SQL実行結果(DML)
 
 下記に例を示す。
 
-![IN句の条件を[]で囲んでいる画像](./_images/in-success.png)
+![IN句の条件を[]で囲んでいる画像](assets/toolbox-SqlExecutor/in-success.png)
 
 IN句の条件の項目に `[]` が付与されていない場合、以下のエラーが出力される。
 `java.lang.IllegalArgumentException: object type in field is invalid. valid object type is Collection or Array.`
 
-![IllegalArgumentExceptionが出力されている画像](./_images/in-fail.png)
+![IllegalArgumentExceptionが出力されている画像](../../../knowledge/assets/toolbox-SqlExecutor/in-fail.png)
 
 > **Warning:**
 > ただし、本ツールにおいて `,` をIN句の検索条件として扱うことはできない。

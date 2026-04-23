@@ -11,7 +11,7 @@
 
 処理の流れは以下のとおり。
 
-![](../images/StatusCodeConvertHandler/StatusCodeConvertHandler_flow.png)
+![StatusCodeConvertHandler_flow.png](../../../knowledge/assets/handlers-status-code-convert-handler/StatusCodeConvertHandler_flow.png)
 
 ## ハンドラクラス名
 
@@ -28,7 +28,7 @@
 
 ## 制約
 
-共通起動ランチャ の直後に設定すること
+[共通起動ランチャ](../../component/handlers/handlers-main.md#main) の直後に設定すること
 本ハンドラが処理結果のステータスコードをプロセスの終了コードに変換するため。
 
 ## ステータスコード→プロセス終了コード変換

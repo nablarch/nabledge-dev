@@ -10,10 +10,10 @@
 ウェブアプリケーションの起動時、終了時に以下の処理を行う。
 
 起動時
-* システムリポジトリ の初期化処理
-* ログ出力 の初期化処理
+* [システムリポジトリ](../../component/libraries/libraries-repository.md#repository) の初期化処理
+* [ログ出力](../../component/libraries/libraries-log.md#log) の初期化処理
 終了時
-* ログ出力 の終了処理
+* [ログ出力](../../component/libraries/libraries-log.md#log) の終了処理
 
 ## モジュール一覧
 

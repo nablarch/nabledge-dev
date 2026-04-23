@@ -1,6 +1,6 @@
 # マスタデータ投入ツール インストールガイド
 
-index のインストール方法について説明する。
+[マスタデータ投入ツール](../../development-tools/testing-framework/testing-framework-guide-development-guide-08-TestTools-02-MasterDataSetup.md) のインストール方法について説明する。
 
 ## 前提事項
 
@@ -8,12 +8,12 @@ index のインストール方法について説明する。
 
   * Eclipse
   * Maven
-* Nablarchのアーキタイプ から生成されたプロジェクトであること
+* [Nablarchのアーキタイプ](../../setup/blank-project/blank-project-blank-project.md#blank-project) から生成されたプロジェクトであること
 * テーブルが作成済みであること
 * バックアップ用スキーマにテーブルが作成済みであること [1]
 
 バックアップ用スキーマおよびそのテーブルの作成については、
-『 04_MasterDataRestore 』の 環境構築 を参照。
+『 [マスタデータ復旧機能](../../development-tools/testing-framework/testing-framework-04-MasterDataRestore.md) 』の [環境構築](../../development-tools/testing-framework/testing-framework-04-MasterDataRestore.md#master-data-backup-settings) を参照。
 
 ## 提供方法
 
@@ -29,7 +29,7 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 
 以下のファイルをダウンロードし、プロジェクトのディレクトリ(pom.xmlが存在するディレクトリ）にディレクトリ付きで展開する。
 
-* master-data-setup-tool.zip <download/master-data-setup-tool.zip>
+* [master-data-setup-tool.zip](../../../knowledge/assets/testing-framework-02-ConfigMasterDataSetupTool/master-data-setup-tool.zip)
 
 上記ファイルに含まれる設定ファイルを下記に示す。
 
@@ -67,18 +67,18 @@ masterdata.test.backup-schema=nablarch_test_master
 
 ツールバーから、ウィンドウ(Window)→設定(Show View)を選択し、Antビューを開く。
 
-![](./_image/open_ant_view.png)
+![open_ant_view.png](../../../knowledge/assets/testing-framework-02-ConfigMasterDataSetupTool/open_ant_view.png)
 
 ### ビルドファイル登録
 
 ＋印のアイコンを押下し、ビルドスクリプトを選択する。
 
-![](./_image/register_build_file.png)
+![register_build_file.png](../../../knowledge/assets/testing-framework-02-ConfigMasterDataSetupTool/register_build_file.png)
 
 Antビルドファイル(master_data-build.xml)を選択する。
 
-![](./_image/select_build_file.png)
+![select_build_file.png](../../../knowledge/assets/testing-framework-02-ConfigMasterDataSetupTool/select_build_file.png)
 
 Antビューに登録したビルドファイルが表示されることを確認する。
 
-![](./_image/build_file_in_view.png)
+![build_file_in_view.png](../../../knowledge/assets/testing-framework-02-ConfigMasterDataSetupTool/build_file_in_view.png)

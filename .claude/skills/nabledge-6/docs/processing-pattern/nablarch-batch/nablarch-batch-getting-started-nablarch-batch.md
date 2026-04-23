@@ -3,7 +3,7 @@
 Exampleアプリケーションを元に、ファイルをDBに登録するバッチを解説する。
 
 作成する機能の概要
-![](../images/overview.png)
+![overview.png](../../../knowledge/assets/nablarch-batch-getting-started-nablarch-batch/overview.png)
 住所ファイル登録バッチ実行手順
 1. 登録対象テーブルのデータを削除する
 
@@ -33,11 +33,11 @@ $mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
 ## ファイルをDBに登録する
 
 ファイルをDBに登録するバッチの作成方法について、
-入力データソースからのデータ読み込み
-と 業務ロジックの実行 に分けて解説する。
+[入力データソースからのデータ読み込み](../../processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.md#getting-started-nablarch-batch-read)
+と [業務ロジックの実行](../../processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.md#getting-started-nablarch-batch-business-action) に分けて解説する。
 
-処理フローについては、 Nablarchバッチの処理フロー を参照。
-責務配置については Nablarchバッチの責務配置 を参照。
+処理フローについては、 [Nablarchバッチの処理フロー](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#nablarch-batch-process-flow) を参照。
+責務配置については [Nablarchバッチの責務配置](../../processing-pattern/nablarch-batch/nablarch-batch-application-design.md#nablarch-batch-application-design) を参照。
 
 住所ファイル登録バッチのハンドラ構成については import-zip-code-file.xml を参照。
 
@@ -45,11 +45,11 @@ $mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
 
 入力データソースからデータを読み込む処理について解説する。
 
-1. 入力ファイルを受け付けるフォームの作成
-2. データリーダの作成
+1. [入力ファイルを受け付けるフォームの作成](../../processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.md#getting-started-nablarch-batch-form)
+2. [データリーダの作成](../../processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.md#getting-started-nablarch-batch-data-reader)
 
 入力ファイルを受け付けるフォームを作成
-データバインド を用いてCSV(住所ファイル)をバインドするフォームを作成する。
+[データバインド](../../component/libraries/libraries-data-bind.md#data-bind) を用いてCSV(住所ファイル)をバインドするフォームを作成する。
 
 ZipCodeForm.java
 ```java
@@ -95,9 +95,9 @@ public class ZipCodeForm {
 }
 ```
 この実装のポイント
-* データバインド を用いてフォームにCSVをバインドするため、Csv
+* [データバインド](../../component/libraries/libraries-data-bind.md#data-bind) を用いてフォームにCSVをバインドするため、Csv
   及び CsvFormat を付与する。
-* Bean Validation を実施するために、バリデーション用のアノテーションを付与する。
+* [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を実施するために、バリデーション用のアノテーションを付与する。
 * 行数プロパティを定義し、ゲッタに LineNumber を付与することで、
   対象データが何行目のデータであるかを自動的に設定できる。
 
@@ -193,7 +193,7 @@ public class ZipCodeFileReader implements DataReader<ZipCodeForm> {
 
 業務ロジックを実行する部分について解説する。
 
-1. 業務アクションの作成
+1. [業務アクションの作成](../../processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.md#getting-started-nablarch-batch-action)
 
 業務アクションの作成
 BatchAction を継承し、業務アクションクラスを作成する。
@@ -242,5 +242,5 @@ public class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {
 * createReader メソッドでは使用するデータリーダクラスのインスタンスを返却する。
 
 > **Tip:**
-> Bean Validation を実行するロジックにバッチごとの差はないため、Exampleアプリケーションではインターセプタを作成してバリデーション処理を共通化している。
+> [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を実行するロジックにバッチごとの差はないため、Exampleアプリケーションではインターセプタを作成してバリデーション処理を共通化している。
 > インターセプタの実装に関しては、Exampleアプリケーションの ValidateData.java の実装を参照。

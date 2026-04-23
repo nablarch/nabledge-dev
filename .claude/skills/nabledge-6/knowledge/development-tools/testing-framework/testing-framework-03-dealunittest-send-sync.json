@@ -1,13 +1,13 @@
 {
   "id": "testing-framework-03-dealunittest-send-sync",
   "title": "同期応答メッセージ送信処理を伴う取引単体テストの実施方法",
-  "content": "同期応答メッセージ送信処理を伴うウェブアプリケーションで、取引単体テストを行う場合は、Nablarchが提供するモックアップクラスを使用する。\n\n以下に、ウェブアプリケーションで同期応答メッセージ送信処理を行う場合の通常の処理フローと、モックアップクラスを使用して取引単体テストを行う場合の処理フローを示す。\n\n* 同期応答メッセージ送信処理を伴うウェブアプリケーションの通常の処理フロー\n\n![](./_images/send_sync_online_base.png)\n\n* モックアップクラスを使用して、同期応答メッセージ送信処理を伴うウェブアプリケーションの取引単体テストを行う場合の処理フロー\n\n![](./_images/send_sync_online_mock.png)\n\nモックアップクラスは以下の機能を提供する。\n\n* 任意の応答電文 [1] を返却する機能\n\n  画面から同期応答メッセージ送信処理が行われる場合に、送信キューおよび受信キューに接続することなく、取引単体テストを実施するために必要な応答電文を返却できる。\n* 要求電文 [1] をログに出力する機能\n\n  画面から同期送信された要求電文をログに出力できる。\n  出力されたログを確認することで正常にメッセージ送信が行われたかどうかを確認できる。\n  また、出力されたログをエビデンスとして使用できる。\n* 障害系のテストを行う機能\n\n  同期応答メッセージ送信処理を行う場合に発生するタイムアウトエラーや、メッセージ送受信エラーを発生させることができる。\n  この機能を使用することで、障害系のテストを行うことが可能となる。\n\nモックアップクラスを使用すればキューを用意する必要がなくなるので、特別なミドルウェアのインストールや環境設定などの準備を行うことなく、取引単体テストを行うことができる。\n\nキューへ送信するメッセージのことを「要求電文」、キューから受信するメッセージのことを「応答電文」と称す。",
+  "content": "同期応答メッセージ送信処理を伴うウェブアプリケーションで、取引単体テストを行う場合は、Nablarchが提供するモックアップクラスを使用する。\n\n以下に、ウェブアプリケーションで同期応答メッセージ送信処理を行う場合の通常の処理フローと、モックアップクラスを使用して取引単体テストを行う場合の処理フローを示す。\n\n* 同期応答メッセージ送信処理を伴うウェブアプリケーションの通常の処理フロー\n\n![send_sync_online_base.png](assets/testing-framework-03-dealunittest-send-sync/send_sync_online_base.png)\n\n* モックアップクラスを使用して、同期応答メッセージ送信処理を伴うウェブアプリケーションの取引単体テストを行う場合の処理フロー\n\n![send_sync_online_mock.png](assets/testing-framework-03-dealunittest-send-sync/send_sync_online_mock.png)\n\nモックアップクラスは以下の機能を提供する。\n\n* 任意の応答電文 [1] を返却する機能\n\n  画面から同期応答メッセージ送信処理が行われる場合に、送信キューおよび受信キューに接続することなく、取引単体テストを実施するために必要な応答電文を返却できる。\n* 要求電文 [1] をログに出力する機能\n\n  画面から同期送信された要求電文をログに出力できる。\n  出力されたログを確認することで正常にメッセージ送信が行われたかどうかを確認できる。\n  また、出力されたログをエビデンスとして使用できる。\n* 障害系のテストを行う機能\n\n  同期応答メッセージ送信処理を行う場合に発生するタイムアウトエラーや、メッセージ送受信エラーを発生させることができる。\n  この機能を使用することで、障害系のテストを行うことが可能となる。\n\nモックアップクラスを使用すればキューを用意する必要がなくなるので、特別なミドルウェアのインストールや環境設定などの準備を行うことなく、取引単体テストを行うことができる。\n\nキューへ送信するメッセージのことを「要求電文」、キューから受信するメッセージのことを「応答電文」と称す。",
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "モックアップクラスを使用した取引単体テストの実施方法",
-      "content": "モックアップクラスを使用する場合、応答電文のフォーマットおよびデータをExcelファイルに定義する。\nまた、要求電文についてはフォーマットのみ定義する。\n\nExcelファイルはリクエストID [2] ごとに用意する。また、ファイルの名前はリクエストIDと一致させる。\nたとえば、リクエストIDが「RM21AA0101」ならば、ファイルの名前は「RM21AA0101.xlsx」となる。\nファイルの配置ディレクトリは、設定ファイルに定義する。詳細は Excelファイルの配置場所の設定を参照。\n\nここで扱うリクエストIDとは、メッセージを送信する相手先システムの機能を一意に識別するために定義するIDのことを指すものであり、\nウェブアプリケーションやバッチ処理で使用するリクエストIDとは意味が異なる点に注意すること。\nこのリクエストIDにもとづき、要求電文および応答電文のフォーマット、送信キュー名、受信キュー名が決定する。",
+      "content": "モックアップクラスを使用する場合、応答電文のフォーマットおよびデータをExcelファイルに定義する。\nまた、要求電文についてはフォーマットのみ定義する。\n\nExcelファイルはリクエストID [2] ごとに用意する。また、ファイルの名前はリクエストIDと一致させる。\nたとえば、リクエストIDが「RM21AA0101」ならば、ファイルの名前は「RM21AA0101.xlsx」となる。\nファイルの配置ディレクトリは、設定ファイルに定義する。詳細は [Excelファイルの配置場所の設定](../../development-tools/testing-framework/testing-framework-03-dealunittest-send-sync.md#send-sync-test-data-path)を参照。\n\nここで扱うリクエストIDとは、メッセージを送信する相手先システムの機能を一意に識別するために定義するIDのことを指すものであり、\nウェブアプリケーションやバッチ処理で使用するリクエストIDとは意味が異なる点に注意すること。\nこのリクエストIDにもとづき、要求電文および応答電文のフォーマット、送信キュー名、受信キュー名が決定する。",
       "level": 2
     },
     {
@@ -19,7 +19,7 @@
     {
       "id": "s3",
       "title": "書き方の例",
-      "content": "以下に、Excelファイルの記載例を示す。\n\n![](./_images/send_sync_test_data.jpg)",
+      "content": "以下に、Excelファイルの記載例を示す。\n\n![send_sync_test_data.jpg](assets/testing-framework-03-dealunittest-send-sync/send_sync_test_data.jpg)",
       "level": 4
     },
     {
@@ -31,13 +31,13 @@
     {
       "id": "s5",
       "title": "Excelファイルの再読み込み",
-      "content": "モックアップクラスは、Excelファイルを手動で編集してテストをやり直すケースや、同じデータで繰り返しテストを行うケースを想定し、\nExcelファイルのタイムスタンプが更新された場合に、ファイルを再読み込みする機能を提供している。\n\n通常、以下の応答電文を返却するたびにnoのインクリメントが行われ、アプリケーションサーバが起動している間は、noの値が初期化されることはない。\n\n以下のような応答電文データを定義した場合、１回目のメッセージ同期送信ではno.1の応答電文が返却され、\nnoのインクリメントが行われる。そして２回目のメッセージ同期送信ではno.2の応答電文が返却される。\n\n![](./_images/send_sync_test_data_no.png)\n\nしかし、Excelファイルの編集や上書きにより、タイムスタンプを更新することで、アプリケーションサーバ起動中にExcelファイルの再読み込みを行うことができる。\n\n以下に、Excelファイルを編集し、テストをやり直す場合の例を示す。\n\n![](./_images/send_sync_response_count_change.png)",
+      "content": "モックアップクラスは、Excelファイルを手動で編集してテストをやり直すケースや、同じデータで繰り返しテストを行うケースを想定し、\nExcelファイルのタイムスタンプが更新された場合に、ファイルを再読み込みする機能を提供している。\n\n通常、以下の応答電文を返却するたびにnoのインクリメントが行われ、アプリケーションサーバが起動している間は、noの値が初期化されることはない。\n\n以下のような応答電文データを定義した場合、１回目のメッセージ同期送信ではno.1の応答電文が返却され、\nnoのインクリメントが行われる。そして２回目のメッセージ同期送信ではno.2の応答電文が返却される。\n\n![send_sync_test_data_no.png](assets/testing-framework-03-dealunittest-send-sync/send_sync_test_data_no.png)\n\nしかし、Excelファイルの編集や上書きにより、タイムスタンプを更新することで、アプリケーションサーバ起動中にExcelファイルの再読み込みを行うことができる。\n\n以下に、Excelファイルを編集し、テストをやり直す場合の例を示す。\n\n![send_sync_response_count_change.png](assets/testing-framework-03-dealunittest-send-sync/send_sync_response_count_change.png)",
       "level": 4
     },
     {
       "id": "s6",
       "title": "障害系のテスト",
-      "content": "応答電文の本文の表の最初のフィールドに「errorMode:」から始まる特定の値を設定することで、障害系のテストを行うことができる。\n\n以下に、設定値と、障害系のテストの対応を示す。\n\n| 最初のフィールドに設定する値 | 障害内容 | 自動テストフレームワークの動作 |\n|---|---|---|\n| errorMode:timeout | メッセージ送信中にタイムアウトエラーが発生する場合のテスト | sendSyncメソッドの戻り値としてnullを返却する。 |\n| errorMode:msgException | メッセージ送受信エラーが発生する場合のテスト | MessagingExceptionをスローする。 |\n\n記載例を以下に示す。\n\n![](./_images/send_sync_test_data_error.png)",
+      "content": "応答電文の本文の表の最初のフィールドに「errorMode:」から始まる特定の値を設定することで、障害系のテストを行うことができる。\n\n以下に、設定値と、障害系のテストの対応を示す。\n\n| 最初のフィールドに設定する値 | 障害内容 | 自動テストフレームワークの動作 |\n|---|---|---|\n| errorMode:timeout | メッセージ送信中にタイムアウトエラーが発生する場合のテスト | sendSyncメソッドの戻り値としてnullを返却する。 |\n| errorMode:msgException | メッセージ送受信エラーが発生する場合のテスト | MessagingExceptionをスローする。 |\n\n記載例を以下に示す。\n\n![send_sync_test_data_error.png](assets/testing-framework-03-dealunittest-send-sync/send_sync_test_data_error.png)",
       "level": 4
     },
     {
@@ -49,7 +49,7 @@
     {
       "id": "s8",
       "title": "フレームワークで使用するクラスの設定",
-      "content": "これらの設定は取引単体テストでのみ必要な設定である。そのため、テスト用のプロファイルにこれらを設定する。\n環境ごとにコンポーネントを切り替える方法については 環境ごとにコンポーネントを切り替える方法(モックに切り替える方法) 参照。\n\n通常、これらの設定はアーキテクトが行うものでありアプリケーションプログラマが設定する必要はない。",
+      "content": "これらの設定は取引単体テストでのみ必要な設定である。そのため、テスト用のプロファイルにこれらを設定する。\n環境ごとにコンポーネントを切り替える方法については [環境ごとにコンポーネントを切り替える方法(モックに切り替える方法)](../../about/about-nablarch/about-nablarch-setting-guide-ManagingEnvironmentalConfiguration.md#how-to-change-componet-define) 参照。\n\n通常、これらの設定はアーキテクトが行うものでありアプリケーションプログラマが設定する必要はない。",
       "level": 3
     },
     {
@@ -61,7 +61,7 @@
     {
       "id": "s10",
       "title": "Excelファイルの配置場所の設定",
-      "content": "コンポーネント設定ファイルで、Excelファイルの配置場所のパスを設定する。\n\n```xml\n<component name=\"filePathSetting\"\n         class=\"nablarch.core.util.FilePathSetting\" autowireType=\"None\">\n   <property name=\"basePathSettings\">\n     <map>\n       <!-- Excelファイルの配置場所のパスを指定する -->\n       <entry key=\"sendSyncTestData\" value=\"file:///C:/nablarch/workspace/Nablarch_sample/test/message\" />\n       <entry key=\"format\" value=\"classpath:web/format\" />\n     </map>\n   </property>\n   <property name=\"fileExtensions\">\n     <map>\n       <!-- Excelファイルの拡張子（xlsx）を定義する-->\n       <entry key=\"sendSyncTestData\" value=\"xlsx\" />\n       <entry key=\"format\" value=\"fmt\" />\n     </map>\n   </property>\n</component>\n```\n\n以下に、Excelファイルの配置イメージを示す。\n\n![](./_images/send_sync_test_data_structure.png)\n\n> **Tip:**\n> 配置ディレクトリのパスは、クラスパス（classpath:）ではなく、ファイルシステムのパス（file:）で指定することを推奨する。\n> ファイルシステムのパスを指定することで、サーバ起動中に直接Excelファイルの内容を編集し、テストすることが可能となる。",
+      "content": "コンポーネント設定ファイルで、Excelファイルの配置場所のパスを設定する。\n\n```xml\n<component name=\"filePathSetting\"\n         class=\"nablarch.core.util.FilePathSetting\" autowireType=\"None\">\n   <property name=\"basePathSettings\">\n     <map>\n       <!-- Excelファイルの配置場所のパスを指定する -->\n       <entry key=\"sendSyncTestData\" value=\"file:///C:/nablarch/workspace/Nablarch_sample/test/message\" />\n       <entry key=\"format\" value=\"classpath:web/format\" />\n     </map>\n   </property>\n   <property name=\"fileExtensions\">\n     <map>\n       <!-- Excelファイルの拡張子（xlsx）を定義する-->\n       <entry key=\"sendSyncTestData\" value=\"xlsx\" />\n       <entry key=\"format\" value=\"fmt\" />\n     </map>\n   </property>\n</component>\n```\n\n以下に、Excelファイルの配置イメージを示す。\n\n![send_sync_test_data_structure.png](assets/testing-framework-03-dealunittest-send-sync/send_sync_test_data_structure.png)\n\n> **Tip:**\n> 配置ディレクトリのパスは、クラスパス（classpath:）ではなく、ファイルシステムのパス（file:）で指定することを推奨する。\n> ファイルシステムのパスを指定することで、サーバ起動中に直接Excelファイルの内容を編集し、テストすることが可能となる。",
       "level": 4
     },
     {

@@ -25,7 +25,7 @@
     {
       "id": "s4",
       "title": "テストデータの書き方",
-      "content": "テスト対象の成果物 のテストを行うために必要なテストデータの記述方法を説明する。\n\nテストデータの記述方法は、 リクエスト単体テストの実施方法(同期応答メッセージ送信処理) を参照すること。\n本項では、 リクエスト単体テストの実施方法(同期応答メッセージ送信処理) と記述方法が異なる箇所を解説する。",
+      "content": "テスト対象の成果物 のテストを行うために必要なテストデータの記述方法を説明する。\n\nテストデータの記述方法は、 [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#message-sendsyncmessage-test) を参照すること。\n本項では、 [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#message-sendsyncmessage-test) と記述方法が異なる箇所を解説する。",
       "level": 2
     },
     {
@@ -37,13 +37,13 @@
     {
       "id": "s6",
       "title": "正常系のテスト",
-      "content": "電文が正しく送信されるケースの確認を実施する。\nこのケースでは、送信された電文の確認及び該当データのステータス更新の確認を行う。\n\n応答不要メッセージ送信処理用のアクションクラスは、起動パラメータとしてメッセージのリクエストIDを要求する。\nこのため、「testShots」の定義に下記画像のように「KEY=messageRequestId」、「VALUE=メッセージのリクエストID」を追加する必要がある。\n\n![](_image/delayed_send.png)",
+      "content": "電文が正しく送信されるケースの確認を実施する。\nこのケースでは、送信された電文の確認及び該当データのステータス更新の確認を行う。\n\n応答不要メッセージ送信処理用のアクションクラスは、起動パラメータとしてメッセージのリクエストIDを要求する。\nこのため、「testShots」の定義に下記画像のように「KEY=messageRequestId」、「VALUE=メッセージのリクエストID」を追加する必要がある。\n\n![delayed_send.png](assets/testing-framework-02-requestunittest-delayed-send/delayed_send.png)",
       "level": 4
     },
     {
       "id": "s7",
       "title": "異常系のテスト(障害系のテスト)",
-      "content": "異常系のテストは、メッセージの送信に失敗した場合に該当データのステータスをエラーに更新するUPDATE文を確認するために必要である。\n異常系テストケースを実施するには、「testShots」の定義に下記画像のように「KEY=errorCase」、「VALUE=true」と設定すれば良い。\nなお、異常系ケースでは電文が送信されないため送信電文の期待値を設定する必要はない。\n\n![](_image/delayed_send_error.png)\n\n> **Tip:**\n> 異常系テストケースを実施する場合には、応答不要メッセージ送信処理用共通アクションをテスト用アクションに切り替える必要がある。\n> 以下にその設定例を示す。\n\n> * >   本番用設定例\n\n>   ```xml\n>   <!--ディスパッチ用ハンドラ-->\n>   <component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n>     <!-- 応答不要メッセージ送信処理用共通アクションを設定する。 -->\n>     <property name=\"basePackage\" value=\"nablarch.fw.messaging.action.AsyncMessageSendAction\" />\n>     <property name=\"immediate\" value=\"false\" />\n>   </component>\n>   ```\n> * >   テスト用設定\n\n>   上記本番環境用設定をテスト用のアクションクラスで上書きを行う。\n\n>   ```xml\n>   <!--ディスパッチ用ハンドラ-->\n>   <component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n>     <property name=\"basePackage\" value=\"nablarch.test.core.messaging.AsyncMessageSendActionForUt\" />\n>     <property name=\"immediate\" value=\"false\" />\n>   </component>\n>   ```",
+      "content": "異常系のテストは、メッセージの送信に失敗した場合に該当データのステータスをエラーに更新するUPDATE文を確認するために必要である。\n異常系テストケースを実施するには、「testShots」の定義に下記画像のように「KEY=errorCase」、「VALUE=true」と設定すれば良い。\nなお、異常系ケースでは電文が送信されないため送信電文の期待値を設定する必要はない。\n\n![delayed_send_error.png](assets/testing-framework-02-requestunittest-delayed-send/delayed_send_error.png)\n\n> **Tip:**\n> 異常系テストケースを実施する場合には、応答不要メッセージ送信処理用共通アクションをテスト用アクションに切り替える必要がある。\n> 以下にその設定例を示す。\n\n> * >   本番用設定例\n\n>   ```xml\n>   <!--ディスパッチ用ハンドラ-->\n>   <component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n>     <!-- 応答不要メッセージ送信処理用共通アクションを設定する。 -->\n>     <property name=\"basePackage\" value=\"nablarch.fw.messaging.action.AsyncMessageSendAction\" />\n>     <property name=\"immediate\" value=\"false\" />\n>   </component>\n>   ```\n> * >   テスト用設定\n\n>   上記本番環境用設定をテスト用のアクションクラスで上書きを行う。\n\n>   ```xml\n>   <!--ディスパッチ用ハンドラ-->\n>   <component name=\"requestPathJavaPackageMapping\" class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n>     <property name=\"basePackage\" value=\"nablarch.test.core.messaging.AsyncMessageSendActionForUt\" />\n>     <property name=\"immediate\" value=\"false\" />\n>   </component>\n>   ```",
       "level": 4
     }
   ]

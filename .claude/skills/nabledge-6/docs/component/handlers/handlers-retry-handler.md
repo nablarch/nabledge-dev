@@ -22,7 +22,7 @@
 
 処理の流れは以下のとおり。
 
-![](../images/RetryHandler/flow.png)
+![flow.png](../../../knowledge/assets/handlers-retry-handler/flow.png)
 
 ## ハンドラクラス名
 

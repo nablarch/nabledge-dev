@@ -1,8 +1,8 @@
 # リクエスト単体テストの実施方法（HTTP同期応答メッセージ受信処理）
 
-リクエスト単体テストの実施方法は、 リクエスト単体テストの実施方法(同期応答メッセージ受信処理) を参照すること。
+リクエスト単体テストの実施方法は、 [リクエスト単体テストの実施方法(同期応答メッセージ受信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-real.md#real-request-test) を参照すること。
 
-本項では、 リクエスト単体テストの実施方法(同期応答メッセージ受信処理) と記述方法が異なる箇所を解説する。
+本項では、 [リクエスト単体テストの実施方法(同期応答メッセージ受信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-real.md#real-request-test) と記述方法が異なる箇所を解説する。
 
 ## テストデータの書き方
 
@@ -113,4 +113,4 @@ MESSAGE=setUpMessages
 
 応答電文のフィールド長は"-"(ハイフン)を設定する。
 
-![](./_image/http_real_test_data.png)
+![http_real_test_data.png](../../../knowledge/assets/testing-framework-http-real/http_real_test_data.png)

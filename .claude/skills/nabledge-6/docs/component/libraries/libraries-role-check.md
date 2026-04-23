@@ -23,13 +23,13 @@
 * 仕組み
 * 拡張方法
 
-この機能は、 permission_check と同様にアプリケーションが提供する機能に対して認可チェックを行う。
+この機能は、 [ハンドラによる認可チェック](../../component/libraries/libraries-authorization-permission-check.md) と同様にアプリケーションが提供する機能に対して認可チェックを行う。
 
 ## 機能概要
 
 ### 煩雑なデータ管理をせずに認可チェックができる
 
-![](images/role_check/conceptual_model.jpg)
+![conceptual_model.jpg](../../../knowledge/assets/libraries-role-check/conceptual_model.jpg)
 
 アノテーションによる認可チェックでは、ユーザに対してロール(役割)を割り当てる。
 また、認可チェックを行いたい機能に対しても、その機能を実行するのに必要なロールを割り当てる。
@@ -38,7 +38,7 @@
 機能とロールの割り当ては、基本的にアノテーションを用いてJavaのプログラム上で行う。
 また、ユーザとロールの割り当てについては、フレームワークでは特に方法を規定しておらず自由な方法を選択できるようにしている。
 
-このようにアノテーションによる認可チェックでは、 permission_check よりも単純なデータ構造で権限を管理できるようになっている。
+このようにアノテーションによる認可チェックでは、 [ハンドラによる認可チェック](../../component/libraries/libraries-authorization-permission-check.md) よりも単純なデータ構造で権限を管理できるようになっている。
 
 ### アノテーションで認可チェックができる
 
@@ -52,7 +52,7 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 
 ### ハンドラによる認可チェックとの使い分け
 
-本認可チェックと permission_check を使い分ける基準について説明する。
+本認可チェックと [ハンドラによる認可チェック](../../component/libraries/libraries-authorization-permission-check.md) を使い分ける基準について説明する。
 
 アノテーションによる認可チェックは、前述のとおりロール単位で権限を管理する。
 また、ロールと機能の割り当てはJavaのアノテーションで行う仕組みとなっている。
@@ -61,7 +61,7 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 例えば、権限管理が必要なロールの種類と機能の組み合わせが決まっており今後それらが大きく変化する予定がない場合は、本認可チェックを用いることで簡単に認可チェックを実現できる。
 
 一方で、ユーザが所属する部署によって権限を制御したいようなシステムでは、組織変更で部署の構成や利用できる機能の組み合わせも大きく変わることが予想される。このようなシステムで本認可チェックを用いると、変更のたびにアノテーションの書き換えが必要になり大きな修正工数が必要となる。
-このようなシステムでは、 permission_check を用いて権限の組み合わせをデータで管理することを推奨する。
+このようなシステムでは、 [ハンドラによる認可チェック](../../component/libraries/libraries-authorization-permission-check.md) を用いて権限の組み合わせをデータで管理することを推奨する。
 
 ## モジュール一覧
 
@@ -287,7 +287,7 @@ if (CheckRoleUtil.checkRole(Roles.ROLE_ADMIN, executionContext)) {
 
 ### JSPで判定する
 
-permission_check では、JSPのカスタムタグで認可チェックを行い自動的にボタンの表示・非表示を切り替えるような仕組みが提供されている。
+[ハンドラによる認可チェック](../../component/libraries/libraries-authorization-permission-check.md) では、JSPのカスタムタグで認可チェックを行い自動的にボタンの表示・非表示を切り替えるような仕組みが提供されている。
 しかし本認可チェックでは、このような仕組みは提供していない。
 
 そこでここでは、本認可チェックを採用したうえでJSPの表示・非表示をロールの有無で制御する方法について説明する。
@@ -319,7 +319,7 @@ SessionUtil.put(executionContext, "userContext", userContext);
 
 ここでは、アノテーションによる認可チェックの仕組みについて説明する。
 
-![](images/role_check/architecture.png)
+![architecture.png](../../../knowledge/assets/libraries-role-check/architecture.png)
 
 アノテーションを用いたチェック処理の実行は、Nablarchの インターセプタ の仕組みを利用して実現している。
 CheckRole アノテーションは、このインターセプタを実装したものとなっている。
