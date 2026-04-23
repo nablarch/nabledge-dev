@@ -847,14 +847,14 @@ byte[] encryptedPassword = row.getBytes("password");
 > }
 > ```
 バイナリ型の値を登録・更新する
-> サイズの小さいバイナリ値を登録・更新する場合は、 SqlPStatement#setByte を使用する。
+サイズの小さいバイナリ値を登録・更新する場合は、 SqlPStatement#setByte を使用する。
 
-> ```java
-> SqlPStatement statement = getSqlPStatement("UPDATE_PASSWORD");
-> 
-> statement.setBytes(1, new byte[] {0x30, 0x31, 0x32});
-> int updateCount = statement.executeUpdate();
-> ```
+```java
+SqlPStatement statement = getSqlPStatement("UPDATE_PASSWORD");
+
+statement.setBytes(1, new byte[] {0x30, 0x31, 0x32});
+int updateCount = statement.executeUpdate();
+```
 
 サイズが大きいバイナリ値を登録更新する場合は、 SqlPStatement#setBinaryStream
 を使用して、ファイルなどを表す InputStream から直接データベースに値を送信する。

@@ -96,21 +96,21 @@ BasicCors はデフォルトで以下の処理を行う。
 プリフライトリクエスト(CorsPreflightRequestHandlerが呼び出す処理)
 * リクエストが以下の条件を全て満たす場合にプリフライトリクエストと判定する。
 
-  > * >   HTTPメソッド：OPTIONS
-  > * >   Originヘッダ：存在する
-  > * >   Access-Control-Request-Methodヘッダ：存在する
+  * HTTPメソッド：OPTIONS
+  * Originヘッダ：存在する
+  * Access-Control-Request-Methodヘッダ：存在する
 * リクエストがプリフライトリクエストの場合は以下のレスポンスを返す。
 
 実際のリクエスト(CorsResponseFinisherが呼び出す処理)
 * 以下のレスポンスヘッダを設定する。
 
-  > * >   Access-Control-Allow-Originヘッダ：リクエストのOriginヘッダ
+  * Access-Control-Allow-Originヘッダ：リクエストのOriginヘッダ
 
-  >   > * >   >   リクエストのOriginヘッダが許可するOriginに含まれる場合のみこのヘッダを設定
-  > * >   Varyヘッダ：Origin
+    * リクエストのOriginヘッダが許可するOriginに含まれる場合のみこのヘッダを設定
+  * Varyヘッダ：Origin
 
-  >   > * >   >   リクエストのOriginヘッダが許可するOriginに含まれる場合のみこのヘッダを設定
-  > * >   Access-Control-Allow-Credentialsヘッダ：true
+    * リクエストのOriginヘッダが許可するOriginに含まれる場合のみこのヘッダを設定
+  * Access-Control-Allow-Credentialsヘッダ：true
 
 デフォルトの処理のうち、レスポンスヘッダの内容を設定で変更できる。
 設定で変更できる内容は BasicCors のJavadocを参照。

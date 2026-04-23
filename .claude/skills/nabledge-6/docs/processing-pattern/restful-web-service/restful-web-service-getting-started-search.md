@@ -11,29 +11,29 @@ Exampleアプリケーションを元に、検索機能を解説する。
 動作確認手順
 1. プロジェクト情報の検索
 
-> ここでは、顧客IDが 1 のプロジェクト情報を検索する。
+ここでは、顧客IDが 1 のプロジェクト情報を検索する。
 
-> 任意のRESTクライアントを使用して、以下のリクエストを送信する。
+任意のRESTクライアントを使用して、以下のリクエストを送信する。
 
-> URL
-> [http://localhost:9080/projects?clientId=1](http://localhost:9080/projects?clientId=1)
-> HTTPメソッド
-> GET
+URL
+[http://localhost:9080/projects?clientId=1](http://localhost:9080/projects?clientId=1)
+HTTPメソッド
+GET
 
 1. 検索結果の確認
 
-> 1.を実行した結果、以下のようなJSON形式のレスポンスが返却されることを確認する。
+1.を実行した結果、以下のようなJSON形式のレスポンスが返却されることを確認する。
 
-> ```javascript
-> [{
->     "projectId":1,
->     "projectName":"プロジェクト００１",
->     "projectType":"development",
-> 
->     // 省略
-> 
-> }]
-> ```
+```javascript
+[{
+    "projectId":1,
+    "projectName":"プロジェクト００１",
+    "projectType":"development",
+
+    // 省略
+
+}]
+```
 
 ## プロジェクト情報を検索する
 
@@ -77,21 +77,21 @@ public class ProjectSearchDto implements Serializable {
 検索に使用するSQLの作成
 検索に使用するSQLを作成する。
 
-> Project.sql
-> ```none
-> FIND_PROJECT =
-> SELECT
->     *
-> FROM
->     PROJECT
-> WHERE
->     $if(clientId) {CLIENT_ID = :clientId}
->     AND $if(projectName) {PROJECT_NAME LIKE :%projectName%}
-> ```
-> この実装のポイント
-> * >   SQLインジェクションを防ぐため、SQLは外部ファイルに記述する。詳細は SQLをファイルで管理する を参照。
-> * >   Beanのプロパティ名を使って、SQLに値をバインドする。詳細は Beanオブジェクトを入力としてSQLを実行する を参照。
-> * >   検索条件として指定された項目のみを条件に含める場合には、 $if 構文を使用してSQL文を構築 する。
+Project.sql
+```none
+FIND_PROJECT =
+SELECT
+    *
+FROM
+    PROJECT
+WHERE
+    $if(clientId) {CLIENT_ID = :clientId}
+    AND $if(projectName) {PROJECT_NAME LIKE :%projectName%}
+```
+この実装のポイント
+* SQLインジェクションを防ぐため、SQLは外部ファイルに記述する。詳細は SQLをファイルで管理する を参照。
+* Beanのプロパティ名を使って、SQLに値をバインドする。詳細は Beanオブジェクトを入力としてSQLを実行する を参照。
+* 検索条件として指定された項目のみを条件に含める場合には、 $if 構文を使用してSQL文を構築 する。
 業務アクションメソッドの実装
 検索条件をもとにデータベースから検索する処理を実装する。
 

@@ -25,35 +25,35 @@
 
 *メッセージング処理*
 
-> *同期応答メッセージ受信処理*
+*同期応答メッセージ受信処理*
 
-> 02_RequestUnitTest/real
-> 03_DealUnitTest/real
+02_RequestUnitTest/real
+03_DealUnitTest/real
 
-> *応答不要メッセージ受信処理*
+*応答不要メッセージ受信処理*
 
-> 02_RequestUnitTest/delayed_receive
-> 03_DealUnitTest/delayed_receive
+02_RequestUnitTest/delayed_receive
+03_DealUnitTest/delayed_receive
 
-> *HTTP同期応答メッセージ受信処理*
+*HTTP同期応答メッセージ受信処理*
 
-> 02_RequestUnitTest/http_real
+02_RequestUnitTest/http_real
 
-> *同期応答メッセージ送信処理*
+*同期応答メッセージ送信処理*
 
-> 02_RequestUnitTest/send_sync
+02_RequestUnitTest/send_sync
 
-> *応答不要メッセージ送信処理*
+*応答不要メッセージ送信処理*
 
-> 02_RequestUnitTest/delayed_send
-> 03_DealUnitTest/delayed_send
+02_RequestUnitTest/delayed_send
+03_DealUnitTest/delayed_send
 
-> *HTTP同期応答メッセージ送信処理*
+*HTTP同期応答メッセージ送信処理*
 
-> 02_RequestUnitTest/http_send_sync
+02_RequestUnitTest/http_send_sync
 
 *その他の処理*
 
-> *メール送信処理*
+*メール送信処理*
 
-> 02_RequestUnitTest/mail
+02_RequestUnitTest/mail

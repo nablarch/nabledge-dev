@@ -1,5 +1,5 @@
 # バッチアプリケーション専用ハンドラ
 
-> process_resident_handler
-> loop_handler
-> dbless_loop_handler
+process_resident_handler
+loop_handler
+dbless_loop_handler

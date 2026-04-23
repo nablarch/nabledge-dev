@@ -167,8 +167,8 @@ Converter 実装クラスをそれぞれ参照すること。
 
 1. 必要に応じて以下のインタフェースを実装し型変換処理を実現する。
 
-> * >   Converter
-> * >   ExtensionConverter
+* Converter
+* ExtensionConverter
 
 1. ConversionManager の実装クラスを作成する。
   今回は標準の型変換ルールに追加でルールを設定するため、 ConversionManager をプロパティとして持つ、

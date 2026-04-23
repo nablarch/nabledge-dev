@@ -124,48 +124,48 @@ public class SampleDto {
 
 コンポーネント設定ファイルに `nablarch.core.text.FormatterConfig` の設定をする。
 
-> ポイント
-> * >   コンポーネント名は `formatterConfig` とすること。
+ポイント
+* コンポーネント名は `formatterConfig` とすること。
 
-> `nablarch.core.text.FormatterConfig` に使用するフォーマッタのリストの設定をする。
-> リストのプロパティ名は `formatters` とすること。
+`nablarch.core.text.FormatterConfig` に使用するフォーマッタのリストの設定をする。
+リストのプロパティ名は `formatters` とすること。
 
-> 以下に、フレームワークがデフォルトでサポートしているフォーマッタの初期設定を示す。
+以下に、フレームワークがデフォルトでサポートしているフォーマッタの初期設定を示す。
 
-> ```xml
-> <component name="formatterConfig" class="nablarch.core.text.FormatterConfig">
->   <!-- フォーマッタを保持するリスト -->
->   <property name="formatters">
->     <list>
->       <component class="nablarch.core.text.DateTimeFormatter">
->         <!-- フォーマッタを呼び出す際に使用する名前 -->
->         <property name="formatterName" value="dateTime" />
->         <!-- デフォルトのフォーマットパターンの設定 -->
->         <property name="defaultPattern" value="yyyy/MM/dd" />
->       </component>
->       <component class="nablarch.core.text.DateTimeStrFormatter">
->         <property name="formatterName" value="dateTime" />
->         <property name="defaultPattern" value="yyyy/MM/dd" />
->         <!-- 日付文字列のフォーマッタは、日付文字列のパターンを表すプロパティも設定する必要がある -->
->         <property name="dateStrPattern" value="yyyyMMdd" />
->       </component>
->       <component class="nablarch.core.text.NumberFormatter">
->         <property name="formatterName" value="number" />
->         <property name="defaultPattern" value="#,###.###" />
->       </component>
->       <component class="nablarch.core.text.NumberStrFormatter">
->         <property name="formatterName" value="number" />
->         <property name="defaultPattern" value="#,###.###" />
->       </component>
->     </list>
->   </property>
-> </component>
-> ```
+```xml
+<component name="formatterConfig" class="nablarch.core.text.FormatterConfig">
+  <!-- フォーマッタを保持するリスト -->
+  <property name="formatters">
+    <list>
+      <component class="nablarch.core.text.DateTimeFormatter">
+        <!-- フォーマッタを呼び出す際に使用する名前 -->
+        <property name="formatterName" value="dateTime" />
+        <!-- デフォルトのフォーマットパターンの設定 -->
+        <property name="defaultPattern" value="yyyy/MM/dd" />
+      </component>
+      <component class="nablarch.core.text.DateTimeStrFormatter">
+        <property name="formatterName" value="dateTime" />
+        <property name="defaultPattern" value="yyyy/MM/dd" />
+        <!-- 日付文字列のフォーマッタは、日付文字列のパターンを表すプロパティも設定する必要がある -->
+        <property name="dateStrPattern" value="yyyyMMdd" />
+      </component>
+      <component class="nablarch.core.text.NumberFormatter">
+        <property name="formatterName" value="number" />
+        <property name="defaultPattern" value="#,###.###" />
+      </component>
+      <component class="nablarch.core.text.NumberStrFormatter">
+        <property name="formatterName" value="number" />
+        <property name="defaultPattern" value="#,###.###" />
+      </component>
+    </list>
+  </property>
+</component>
+```
 
-> > **Important:**
-> > コンポーネント定義でデフォルトのフォーマッタの設定を変更する場合は、
-> > 変更を加えないフォーマッタやプロパティに関しても必ず設定を記述すること。
-> > コンポーネント定義に記述がないフォーマッタは使用できない。
+> **Important:**
+> コンポーネント定義でデフォルトのフォーマッタの設定を変更する場合は、
+> 変更を加えないフォーマッタやプロパティに関しても必ず設定を記述すること。
+> コンポーネント定義に記述がないフォーマッタは使用できない。
 
 ## フォーマッタを追加する
 
@@ -173,40 +173,40 @@ public class SampleDto {
 
 1. Formatter の実装クラスを作成する。
 
-> フォーマット処理は Formatter を実装したクラスが行う。
+フォーマット処理は Formatter を実装したクラスが行う。
 
 1. コンポーネント設定ファイルに作成したフォーマッタの設定を追加する
 
-> フォーマッタの設定を変更する を参照して、コンポーネント設定ファイルに `nablarch.core.text.FormatterConfig` とフォーマッタのリストの設定を行う。
+フォーマッタの設定を変更する を参照して、コンポーネント設定ファイルに `nablarch.core.text.FormatterConfig` とフォーマッタのリストの設定を行う。
 
-> ```xml
-> <component name="formatterConfig" class="nablarch.core.text.FormatterConfig">
->   <property name="formatters">
->     <list>
->       <!-- デフォルトのフォーマッタ -->
->       <component class="nablarch.core.text.DateTimeFormatter">
->         <property name="formatterName" value="dateTime" />
->         <property name="defaultPattern" value="yyyy/MM/dd" />
->       </component>
->       <component class="nablarch.core.text.DateTimeStrFormatter">
->         <property name="formatterName" value="dateTime" />
->         <property name="defaultPattern" value="yyyy/MM/dd" />
->         <property name="dateStrPattern" value="yyyyMMdd" />
->       </component>
->       <component class="nablarch.core.text.NumberFormatter">
->         <property name="formatterName" value="number" />
->         <property name="defaultPattern" value="#,###.###" />
->       </component>
->       <component class="nablarch.core.text.NumberStrFormatter">
->         <property name="formatterName" value="number" />
->         <property name="defaultPattern" value="#,###.###" />
->       </component>
->       <!-- 追加したフォーマッタ -->
->       <component class="sample.SampleFormatter">
->         <property name="formatterName" value="sample" />
->         <property name="defaultPattern" value="#,### 円" />
->       </component>
->     </list>
->   </property>
-> </component>
-> ```
+```xml
+<component name="formatterConfig" class="nablarch.core.text.FormatterConfig">
+  <property name="formatters">
+    <list>
+      <!-- デフォルトのフォーマッタ -->
+      <component class="nablarch.core.text.DateTimeFormatter">
+        <property name="formatterName" value="dateTime" />
+        <property name="defaultPattern" value="yyyy/MM/dd" />
+      </component>
+      <component class="nablarch.core.text.DateTimeStrFormatter">
+        <property name="formatterName" value="dateTime" />
+        <property name="defaultPattern" value="yyyy/MM/dd" />
+        <property name="dateStrPattern" value="yyyyMMdd" />
+      </component>
+      <component class="nablarch.core.text.NumberFormatter">
+        <property name="formatterName" value="number" />
+        <property name="defaultPattern" value="#,###.###" />
+      </component>
+      <component class="nablarch.core.text.NumberStrFormatter">
+        <property name="formatterName" value="number" />
+        <property name="defaultPattern" value="#,###.###" />
+      </component>
+      <!-- 追加したフォーマッタ -->
+      <component class="sample.SampleFormatter">
+        <property name="formatterName" value="sample" />
+        <property name="defaultPattern" value="#,### 円" />
+      </component>
+    </list>
+  </property>
+</component>
+```

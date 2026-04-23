@@ -15,40 +15,40 @@ Exampleアプリケーションを元に、登録機能を解説する。
   ```
 2. プロジェクト情報の登録
 
-> 任意のRESTクライアントを使用して、以下のリクエストを送信する。
+任意のRESTクライアントを使用して、以下のリクエストを送信する。
 
-> URL
-> [http://localhost:9080/projects](http://localhost:9080/projects)
-> HTTPメソッド
-> POST
-> Content-Type
-> application/json
-> リクエストボディ
-> ```json
-> {
->     "projectName": "プロジェクト９９９",
->     "projectType": "development",
->     "projectClass": "ss",
->     "projectManager": "山田",
->     "projectLeader": "田中",
->     "clientId": 10,
->     "projectStartDate": "20160101",
->     "projectEndDate": "20161231",
->     "note": "備考９９９",
->     "sales": 10000,
->     "costOfGoodsSold": 20000,
->     "sga": 30000,
->     "allocationOfCorpExpenses": 40000
-> }
-> ```
+URL
+[http://localhost:9080/projects](http://localhost:9080/projects)
+HTTPメソッド
+POST
+Content-Type
+application/json
+リクエストボディ
+```json
+{
+    "projectName": "プロジェクト９９９",
+    "projectType": "development",
+    "projectClass": "ss",
+    "projectManager": "山田",
+    "projectLeader": "田中",
+    "clientId": 10,
+    "projectStartDate": "20160101",
+    "projectEndDate": "20161231",
+    "note": "備考９９９",
+    "sales": 10000,
+    "costOfGoodsSold": 20000,
+    "sga": 30000,
+    "allocationOfCorpExpenses": 40000
+}
+```
 
 1. 動作確認
 
-> H2のコンソールから下記SQLを実行し、レコードが1件取得できることを確認する。
+H2のコンソールから下記SQLを実行し、レコードが1件取得できることを確認する。
 
-> ```sql
-> SELECT * FROM PROJECT WHERE PROJECT_NAME = 'プロジェクト９９９';
-> ```
+```sql
+SELECT * FROM PROJECT WHERE PROJECT_NAME = 'プロジェクト９９９';
+```
 
 ## プロジェクト情報を登録する
 

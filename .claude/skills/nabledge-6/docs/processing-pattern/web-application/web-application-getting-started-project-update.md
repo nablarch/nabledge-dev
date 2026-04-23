@@ -27,11 +27,11 @@ Exampleアプリケーションを元に更新機能を解説する。
 
 更新機能の実装方法のうち、更新内容の入力及び確認について以下の順に解説する。
 
-> 1. >   フォームの作成
-> 2. >   更新画面を表示する業務アクションメソッドの作成
-> 3. >   更新画面のJSPの作成
-> 4. >   更新内容の確認を行う業務アクションメソッドの作成
-> 5. >   更新確認画面のJSPの作成
+1. フォームの作成
+2. 更新画面を表示する業務アクションメソッドの作成
+3. 更新画面のJSPの作成
+4. 更新内容の確認を行う業務アクションメソッドの作成
+5. 更新確認画面のJSPの作成
 
 フォームの作成
 詳細画面から更新画面へ遷移する際のパラメータを受け付けるフォームと、更新画面編集欄への入力値を受け付けるフォームを作成する。
@@ -226,8 +226,8 @@ WHERE
 
 更新機能の実装方法のうち、更新内容の確認について以下の順に解説する。
 
-> 1. >   業務アクションメソッドの作成
-> 2. >   更新完了画面の作成
+1. 業務アクションメソッドの作成
+2. 更新完了画面の作成
 
 業務アクションメソッドの作成
 データベースを更新し、変更を確定する業務アクションメソッドを作成する。
@@ -236,16 +236,16 @@ WHERE
 データベース更新を行う業務アクションメソッドの作成
 データベースを更新し、完了画面表示メソッドへリダイレクトする業務アクションメソッドを作成する。
 
-> ProjectAction.java
-> ```java
-> @OnDoubleSubmission
-> public HttpResponse update(HttpRequest request, ExecutionContext context) {
->     Project targetProject = SessionUtil.delete(context, "project");
->     UniversalDao.update(targetProject);
-> 
->     return new HttpResponse(303, "redirect://completeOfUpdate");
-> }
-> ```
+ProjectAction.java
+```java
+@OnDoubleSubmission
+public HttpResponse update(HttpRequest request, ExecutionContext context) {
+    Project targetProject = SessionUtil.delete(context, "project");
+    UniversalDao.update(targetProject);
+
+    return new HttpResponse(303, "redirect://completeOfUpdate");
+}
+```
 
 この実装のポイント
 * エンティティに更新したい値を設定し、 UniversalDao#update を使用してデータベースを更新する。

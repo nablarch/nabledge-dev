@@ -7,7 +7,7 @@
     {
       "id": "s1",
       "title": "提供パッケージ",
-      "content": "本サンプルは、以下のパッケージで提供される。\n\n> *please.change.me.*\u0000 **common.authentication**"
+      "content": "本サンプルは、以下のパッケージで提供される。\n\n*please.change.me.*\u0000 **common.authentication**"
     },
     {
       "id": "s2",
@@ -62,7 +62,7 @@
     {
       "id": "s12",
       "title": "AuthenticationUtilの使用例",
-      "content": "本サンプルを使用した場合の認証処理の実装例を示す。\n\n導入プロジェクトでは、本実装例を参考にし要件を満たす認証処理を実装すること。\n\n```java\n// 事前に認証を行うためのユーザID及びパスワードを取得する。\n// String userId = ・・・;\n// Strign password = ・・・;\n\ntry {\n\n    AuthenticationUtil.authenticate(userId, password);\n\n} catch (AuthenticationFailedException e) {\n\n    // 認証に失敗した場合の処理\n\n} catch (UserIdLockedException e) {\n\n    // ユーザIDがロックされていた場合の処理\n\n} catch (PasswordExpiredException e) {\n\n    // パスワードの有効期限が切れていた場合の処理\n\n}\n```\n\n> **Tip:**\n> > 上記の例では、認証エラーの状態により細かく処理を分けているが、\n> > 細かく処理を分ける必要がない場合には、以下のように上位の例外クラスを補足して処理を行えば良い。\n\n> ```java\n> try {\n> \n>     AuthenticationUtil.authenticate(userId, password);\n> \n> } catch (AuthenticationException e) {\n>     // 例外の処理\n> }\n> ```"
+      "content": "本サンプルを使用した場合の認証処理の実装例を示す。\n\n導入プロジェクトでは、本実装例を参考にし要件を満たす認証処理を実装すること。\n\n```java\n// 事前に認証を行うためのユーザID及びパスワードを取得する。\n// String userId = ・・・;\n// Strign password = ・・・;\n\ntry {\n\n    AuthenticationUtil.authenticate(userId, password);\n\n} catch (AuthenticationFailedException e) {\n\n    // 認証に失敗した場合の処理\n\n} catch (UserIdLockedException e) {\n\n    // ユーザIDがロックされていた場合の処理\n\n} catch (PasswordExpiredException e) {\n\n    // パスワードの有効期限が切れていた場合の処理\n\n}\n```\n\n> **Tip:**\n> 上記の例では、認証エラーの状態により細かく処理を分けているが、\n> 細かく処理を分ける必要がない場合には、以下のように上位の例外クラスを補足して処理を行えば良い。\n\n> ```java\n> try {\n> \n>     AuthenticationUtil.authenticate(userId, password);\n> \n> } catch (AuthenticationException e) {\n>     // 例外の処理\n> }\n> ```"
     }
   ]
 }

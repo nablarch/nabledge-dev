@@ -658,41 +658,41 @@ public class CustomLogFormatter extends BasicLogFormatter {
   ```
 3. ログ機能初期化後の初期化メッセージを出力しないよう変更する。
 
-> needsToWrite をオーバライドし、
-> 初回に呼び出される初期化メッセージの出力を行わないよう変更する。
+needsToWrite をオーバライドし、
+初回に呼び出される初期化メッセージの出力を行わないよう変更する。
 
-> ```java
-> /** 初回判定を行う為のフラグを定義する */
-> private boolean suppressionWriting = true;
-> 
-> @Override
-> public boolean needsToWrite(final LogContext context) {
->   final String message = context.getMessage();
->   if (suppressionWriting) {
->     // 出力対象のログが「initialized.」から始まっていた場合は、
->     // 初期化メッセージであるため出力対象外であることを示す「false」を戻す。
->     if (StringUtil.hasValue(message) && message.startsWith("initialized.")) {
->       suppressionWriting = false;
->       return false;
->     }
->   }
->   return super.needsToWrite(context);
-> }
-> ```
+```java
+/** 初回判定を行う為のフラグを定義する */
+private boolean suppressionWriting = true;
+
+@Override
+public boolean needsToWrite(final LogContext context) {
+  final String message = context.getMessage();
+  if (suppressionWriting) {
+    // 出力対象のログが「initialized.」から始まっていた場合は、
+    // 初期化メッセージであるため出力対象外であることを示す「false」を戻す。
+    if (StringUtil.hasValue(message) && message.startsWith("initialized.")) {
+      suppressionWriting = false;
+      return false;
+    }
+  }
+  return super.needsToWrite(context);
+}
+```
 
 1. 作成したクラスをlog.propertiesに設定する。
 
-> プロジェクト側で作成したWriterのクラス名を、log.propertiesに設定する。
+プロジェクト側で作成したWriterのクラス名を、log.propertiesに設定する。
 
-> 設定例を以下に示す。
+設定例を以下に示す。
 
-> ```properties
-> writerNames=sample
-> 
-> # writerのクラス名に作成したクラスを指定する
-> # クラスの完全修飾名が「sample.CustomFileLogWriter」の場合の設定例
-> writer.sample.className = sample.CustomFileLogWriter
-> ```
+```properties
+writerNames=sample
+
+# writerのクラス名に作成したクラスを指定する
+# クラスの完全修飾名が「sample.CustomFileLogWriter」の場合の設定例
+writer.sample.className = sample.CustomFileLogWriter
+```
 
 ## JSON形式の構造化ログとして出力する
 
@@ -808,21 +808,21 @@ LOGGER.logInfo("addition fields", structuredArgs);
 
 ## 各種ログで使用するフォーマッタをJSONログ用に差し替える
 
-> 各種ログは、メッセージ部分を個別の方法でフォーマットしている。
-> それぞれのフォーマットで使用しているフォーマッタをJSON用のフォーマッタに差し替えることで、各種ログが出力する内容もJSONログとして出力できるようになる。
+各種ログは、メッセージ部分を個別の方法でフォーマットしている。
+それぞれのフォーマットで使用しているフォーマッタをJSON用のフォーマッタに差し替えることで、各種ログが出力する内容もJSONログとして出力できるようになる。
 
-> 各フォーマッタの具体的な設定方法については、下記表のそれぞれのリンク先を参照のこと。
+各フォーマッタの具体的な設定方法については、下記表のそれぞれのリンク先を参照のこと。
 
-> 各種ログのJSON版フォーマッタ
+各種ログのJSON版フォーマッタ
 
-> | > ログの種類 | > 対応するフォーマッタ |
-> |---|---|
-> | > 障害ログ | > FailureJsonLogFormatter |
-> | > SQLログ | > SqlJsonLogFormatter |
-> | > パフォーマンスログ | > PerformanceJsonLogFormatter |
-> | > HTTPアクセスログ | > HttpAccessJsonLogFormatter |
-> | > HTTPアクセスログ（RESTfulウェブサービス用） | > JaxRsAccessJsonLogFormatter |
-> | > メッセージングログ | > MessagingJsonLogFormatter |
+| ログの種類 | 対応するフォーマッタ |
+|---|---|
+| 障害ログ | FailureJsonLogFormatter |
+| SQLログ | SqlJsonLogFormatter |
+| パフォーマンスログ | PerformanceJsonLogFormatter |
+| HTTPアクセスログ | HttpAccessJsonLogFormatter |
+| HTTPアクセスログ（RESTfulウェブサービス用） | JaxRsAccessJsonLogFormatter |
+| メッセージングログ | MessagingJsonLogFormatter |
 
 ## NablarchバッチのログをJSON形式にする
 

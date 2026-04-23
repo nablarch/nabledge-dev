@@ -22,7 +22,7 @@
     {
       "id": "s4",
       "title": "データファイルのフォーマットをアノテーションで指定できる",
-      "content": "データファイルのフォーマットは設定ファイルに記述するのではなく、\nアノテーションや DataBindConfig を使用して定義できる。\n\n詳細なフォーマットの指定方法は以下を参照。\n\n> * >   CSVファイルのフォーマットを指定する\n> * >   固定長ファイルのフォーマットを指定する"
+      "content": "データファイルのフォーマットは設定ファイルに記述するのではなく、\nアノテーションや DataBindConfig を使用して定義できる。\n\n詳細なフォーマットの指定方法は以下を参照。\n\n* CSVファイルのフォーマットを指定する\n* 固定長ファイルのフォーマットを指定する"
     },
     {
       "id": "s5",
@@ -37,22 +37,22 @@
     {
       "id": "s7",
       "title": "データをJava Beansオブジェクトとして読み込む",
-      "content": "データファイルを先頭から1データずつ読み込み、Java Beansオブジェクトとして取得できる。\n\nデータの読み込みは、 ObjectMapperFactory#create\nで生成した ObjectMapper [1] を使用して行い、\nObjectMapper の生成時に指定した、\nJava Beansクラスに定義されたアノテーションをもとにデータを読み込む。\n\nJava Beansクラスへのアノテーション定義方法の詳細は以下を参照。\n\n> * >   CSVファイルをJava Beansクラスにバインドする場合のフォーマット指定方法\n> * >   固定長ファイルをJava Beansクラスにバインドする場合のフォーマット指定方法\n\n全データを読み込む場合の実装例を以下に示す。\n\n```java\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        // Java Beansオブジェクトごとの処理を記述(Java Beansオブジェクトへの変換処理など)\n    }\n} catch (InvalidDataFormatException e) {\n    // 読み込んだデータのフォーマットが不正な場合の処理を記述\n}\n```\n\n> **Important:**\n> 全データの読み込みが完了したら、 ObjectMapper#close でリソースを解放すること。\n\n> `try-with-resources` を使用することでクローズ処理を省略可能。"
+      "content": "データファイルを先頭から1データずつ読み込み、Java Beansオブジェクトとして取得できる。\n\nデータの読み込みは、 ObjectMapperFactory#create\nで生成した ObjectMapper [1] を使用して行い、\nObjectMapper の生成時に指定した、\nJava Beansクラスに定義されたアノテーションをもとにデータを読み込む。\n\nJava Beansクラスへのアノテーション定義方法の詳細は以下を参照。\n\n* CSVファイルをJava Beansクラスにバインドする場合のフォーマット指定方法\n* 固定長ファイルをJava Beansクラスにバインドする場合のフォーマット指定方法\n\n全データを読み込む場合の実装例を以下に示す。\n\n```java\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        // Java Beansオブジェクトごとの処理を記述(Java Beansオブジェクトへの変換処理など)\n    }\n} catch (InvalidDataFormatException e) {\n    // 読み込んだデータのフォーマットが不正な場合の処理を記述\n}\n```\n\n> **Important:**\n> 全データの読み込みが完了したら、 ObjectMapper#close でリソースを解放すること。\n\n> `try-with-resources` を使用することでクローズ処理を省略可能。"
     },
     {
       "id": "s8",
       "title": "Java Beansオブジェクトの内容をデータファイルに書き込む",
-      "content": "Java Beansオブジェクトの内容をデータファイルに1データずつ書き込むことができる。\n\nデータファイルへの書き込みは、 ObjectMapperFactory#create\nで生成した ObjectMapper  [1] を使用して行い、\nObjectMapper の生成時に指定した、\nJava Beansクラスに定義されたアノテーションをもとにデータを書き込む。\n\nJava Beansクラスへのアノテーション定義方法の詳細は以下を参照。\n\n> * >   CSVファイルをJava Beansクラスにバインドする場合のフォーマット指定方法\n> * >   固定長ファイルをJava Beansクラスにバインドする場合のフォーマット指定方法\n\nリスト内の全てのJava Beansオブジェクトをデータファイルに書き込む場合の実装例を以下に示す。\n\n```java\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, outputStream)) {\n    for (Person person : personList) {\n        mapper.write(person);\n    }\n}\n```\n\n> **Tip:**\n> プロパティの値が `null` の場合は、未入力を表す値が出力される。\n> 例えば、CSVファイルに書き込む場合は空文字が出力される。"
+      "content": "Java Beansオブジェクトの内容をデータファイルに1データずつ書き込むことができる。\n\nデータファイルへの書き込みは、 ObjectMapperFactory#create\nで生成した ObjectMapper  [1] を使用して行い、\nObjectMapper の生成時に指定した、\nJava Beansクラスに定義されたアノテーションをもとにデータを書き込む。\n\nJava Beansクラスへのアノテーション定義方法の詳細は以下を参照。\n\n* CSVファイルをJava Beansクラスにバインドする場合のフォーマット指定方法\n* 固定長ファイルをJava Beansクラスにバインドする場合のフォーマット指定方法\n\nリスト内の全てのJava Beansオブジェクトをデータファイルに書き込む場合の実装例を以下に示す。\n\n```java\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, outputStream)) {\n    for (Person person : personList) {\n        mapper.write(person);\n    }\n}\n```\n\n> **Tip:**\n> プロパティの値が `null` の場合は、未入力を表す値が出力される。\n> 例えば、CSVファイルに書き込む場合は空文字が出力される。"
     },
     {
       "id": "s9",
       "title": "データをMapオブジェクトとして読み込む",
-      "content": "データファイルを先頭から1データずつ読み込み、Mapオブジェクトとして取得できる。\n\nデータの読み込みは、\nObjectMapperFactory#create\nで生成した ObjectMapper [1] を使用して行い、\nObjectMapper の生成時に指定した、\nDataBindConfig の設定値をもとにデータを読み込む。\n\nDataBindConfig への設定方法の詳細は以下を参照。\n\n> * >   CSVファイルをMapクラスにバインドする場合のフォーマット指定方法\n> * >   固定長ファイルをMapクラスにバインドする場合のフォーマット指定方法\n\nCSVファイルの全データを読み込む場合の実装例を以下に示す。\n\n```java\n// DataBindConfigオブジェクトを生成\nDataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles(\"年齢\", \"名前\")\n                                                 .withProperties(\"age\", \"name\");\ntry (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, inputStream, config)) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        // Java Beansオブジェクトごとの処理を記述(Java Beansオブジェクトへの変換処理など)\n    }\n} catch (InvalidDataFormatException e) {\n    // 読み込んだデータのフォーマットが不正な場合の処理を記述\n}\n```"
+      "content": "データファイルを先頭から1データずつ読み込み、Mapオブジェクトとして取得できる。\n\nデータの読み込みは、\nObjectMapperFactory#create\nで生成した ObjectMapper [1] を使用して行い、\nObjectMapper の生成時に指定した、\nDataBindConfig の設定値をもとにデータを読み込む。\n\nDataBindConfig への設定方法の詳細は以下を参照。\n\n* CSVファイルをMapクラスにバインドする場合のフォーマット指定方法\n* 固定長ファイルをMapクラスにバインドする場合のフォーマット指定方法\n\nCSVファイルの全データを読み込む場合の実装例を以下に示す。\n\n```java\n// DataBindConfigオブジェクトを生成\nDataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles(\"年齢\", \"名前\")\n                                                 .withProperties(\"age\", \"name\");\ntry (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, inputStream, config)) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        // Java Beansオブジェクトごとの処理を記述(Java Beansオブジェクトへの変換処理など)\n    }\n} catch (InvalidDataFormatException e) {\n    // 読み込んだデータのフォーマットが不正な場合の処理を記述\n}\n```"
     },
     {
       "id": "s10",
       "title": "Mapオブジェクトの内容をデータファイルに書き込む",
-      "content": "Mapオブジェクトの内容をデータファイルに1データずつ書き込むことができる。\n\nデータファイルへの書き込みは、\nObjectMapperFactory#create\nで生成した ObjectMapper [1] を使用して行い、\nObjectMapper の生成時に指定した、\nDataBindConfig の設定値をもとにデータを書き込む。\n\nDataBindConfig への設定方法の詳細は以下を参照。\n\n> * >   CSVファイルをMapクラスにバインドする場合のフォーマット指定方法\n> * >   固定長ファイルをMapクラスにバインドする場合のフォーマット指定方法\n\nリスト内の全てのMapオブジェクトをCSVファイルに書き込む場合の実装例を以下に示す。\n\n```java\n// DataBindConfigオブジェクトを生成\nDataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles(\"年齢\", \"名前\")\n                                                 .withProperties(\"age\", \"name\");\ntry (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStream, config)) {\n    for (Map<String, Object> person : personList) {\n        mapper.write(person);\n    }\n}\n```\n\n> **Tip:**\n> Mapオブジェクトのvalue値が `null` の場合は、未入力を表す値が出力される。\n> 例えば、CSVファイルに書き込む場合は空文字が出力される。"
+      "content": "Mapオブジェクトの内容をデータファイルに1データずつ書き込むことができる。\n\nデータファイルへの書き込みは、\nObjectMapperFactory#create\nで生成した ObjectMapper [1] を使用して行い、\nObjectMapper の生成時に指定した、\nDataBindConfig の設定値をもとにデータを書き込む。\n\nDataBindConfig への設定方法の詳細は以下を参照。\n\n* CSVファイルをMapクラスにバインドする場合のフォーマット指定方法\n* 固定長ファイルをMapクラスにバインドする場合のフォーマット指定方法\n\nリスト内の全てのMapオブジェクトをCSVファイルに書き込む場合の実装例を以下に示す。\n\n```java\n// DataBindConfigオブジェクトを生成\nDataBindConfig config = CsvDataBindConfig.DEFAULT.withHeaderTitles(\"年齢\", \"名前\")\n                                                 .withProperties(\"age\", \"name\");\ntry (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStream, config)) {\n    for (Map<String, Object> person : personList) {\n        mapper.write(person);\n    }\n}\n```\n\n> **Tip:**\n> Mapオブジェクトのvalue値が `null` の場合は、未入力を表す値が出力される。\n> 例えば、CSVファイルに書き込む場合は空文字が出力される。"
     },
     {
       "id": "s11",
@@ -102,7 +102,7 @@
     {
       "id": "s20",
       "title": "Java Beansクラスにバインドできるファイル形式を追加する",
-      "content": "Java Beansクラスにバインドできるファイル形式を追加するには、以下の手順が必要となる。\n\n1. 指定した形式のファイルとJava Beansクラスをバインドさせるため、 ObjectMapper の実装クラスを作成する。\n2. ObjectMapperFactory を継承したクラスを作成し、\n  先ほど作成した ObjectMapper の実装クラスを生成する処理を追加する。\n3. ObjectMapperFactory の継承クラスをコンポーネント設定ファイルに設定する。\n  以下にコンポーネント設定ファイルへの設定例を示す。\n\n> ポイント\n> * >   コンポーネント名は、 **objectMapperFactory** とすること。\n\n> ```xml\n> <component name=\"objectMapperFactory\" class=\"sample.SampleObjectMapperFactory\" />\n> ```"
+      "content": "Java Beansクラスにバインドできるファイル形式を追加するには、以下の手順が必要となる。\n\n1. 指定した形式のファイルとJava Beansクラスをバインドさせるため、 ObjectMapper の実装クラスを作成する。\n2. ObjectMapperFactory を継承したクラスを作成し、\n  先ほど作成した ObjectMapper の実装クラスを生成する処理を追加する。\n3. ObjectMapperFactory の継承クラスをコンポーネント設定ファイルに設定する。\n  以下にコンポーネント設定ファイルへの設定例を示す。\n\nポイント\n* コンポーネント名は、 **objectMapperFactory** とすること。\n\n```xml\n<component name=\"objectMapperFactory\" class=\"sample.SampleObjectMapperFactory\" />\n```"
     },
     {
       "id": "s21",

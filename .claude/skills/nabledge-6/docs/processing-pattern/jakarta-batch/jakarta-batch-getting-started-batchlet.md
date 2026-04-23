@@ -15,29 +15,29 @@ Exampleアプリケーションを元に、 batchletステップ で対象テー
   データが登録されていない場合は 2の手順を実施する。
 2. (データが登録されていない場合)データベースを初期状態にリセット
 
-> コマンドプロンプトから下記コマンドを実行する。
+コマンドプロンプトから下記コマンドを実行する。
 
-> ```bash
-> $cd {nablarch-example-batch-eeシステムリポジトリ}
-> $mvn generate-resources
-> ```
+```bash
+$cd {nablarch-example-batch-eeシステムリポジトリ}
+$mvn generate-resources
+```
 
-> H2のコンソールから下記SQLを実行してデータが登録されたことを確認する。
+H2のコンソールから下記SQLを実行してデータが登録されたことを確認する。
 
-> ```sql
-> SELECT * FROM ZIP_CODE_DATA;
-> SELECT * FROM ZIP_CODE_DATA_WORK;
-> ```
+```sql
+SELECT * FROM ZIP_CODE_DATA;
+SELECT * FROM ZIP_CODE_DATA_WORK;
+```
 
 1. 住所テーブル削除バッチを実行
 
-> コマンドプロンプトから下記コマンドを実行する。
+コマンドプロンプトから下記コマンドを実行する。
 
-> ```bash
-> $cd {nablarch-example-batch-eeシステムリポジトリ}
-> $mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main ^
->     -Dexec.args=zip-code-truncate-table
-> ```
+```bash
+$cd {nablarch-example-batch-eeシステムリポジトリ}
+$mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main ^
+    -Dexec.args=zip-code-truncate-table
+```
 
 1. 対象テーブルのデータが削除されていることを確認
 
@@ -55,18 +55,18 @@ Exampleアプリケーションを元に、 batchletステップ で対象テー
 処理フローについては、 Batchletステップのバッチの処理フロー を参照。
 責務配置については Batchletステップの責務配置 を参照。
 
-> 1. >   Batchletの作成
-> 2. >   JOB設定ファイルの作成
+1. Batchletの作成
+2. JOB設定ファイルの作成
 
 Batchletの作成
 住所情報を削除するバッチのBatchletクラスを作成する。
 
 実装すべきインタフェースとその責務
-> Batchletクラスに以下のインタフェースを実装してバッチ処理を作成する。オーバーライドしたメソッドは、Batch Runtimeによって適切なタイミングで呼び出される。
+Batchletクラスに以下のインタフェースを実装してバッチ処理を作成する。オーバーライドしたメソッドは、Batch Runtimeによって適切なタイミングで呼び出される。
 
 | インタフェース | 実装 |
 |---|---|
-| Batchlet | > バッチ処理を実装する。  デフォルト実装を提供する AbstractBatchlet を継承する。  > * >   Batchlet#process > * >   Batchlet#stop |
+| Batchlet | バッチ処理を実装する。  デフォルト実装を提供する AbstractBatchlet を継承する。  * Batchlet#process * Batchlet#stop |
 
 > **Tip:**
 > バッチ処理は、上記のインタフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。

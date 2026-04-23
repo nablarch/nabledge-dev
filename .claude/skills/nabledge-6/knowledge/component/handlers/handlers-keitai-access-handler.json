@@ -22,12 +22,12 @@
     {
       "id": "s4",
       "title": "JavaScript出力が抑制されるタグ",
-      "content": "携帯端末アクセスハンドラを使用したURLにアクセスした際は、 下記Nablarch\nタグライブラリが通常出力するJavaScriptが一切出力されなくなる。\n\n> * >   n:form タグ\n> * >   n:script タグ\n> * >   サブミット関連のタグ\n\n> > **Important:**\n> > 下記のタグは、元々想定していた機能が実現できないため、使用できなくなる。\n\n> > * > >   n:submitLink タグ\n\n> > n:submitLink タグの代替として、 n:a タグを使用すること。\n> > 特にリクエストパラメータについては、GETメソッドのパラメータで送信する必要がある。"
+      "content": "携帯端末アクセスハンドラを使用したURLにアクセスした際は、 下記Nablarch\nタグライブラリが通常出力するJavaScriptが一切出力されなくなる。\n\n* n:form タグ\n* n:script タグ\n* サブミット関連のタグ\n\n> **Important:**\n> 下記のタグは、元々想定していた機能が実現できないため、使用できなくなる。\n\n> * >   n:submitLink タグ\n\n> n:submitLink タグの代替として、 n:a タグを使用すること。\n> 特にリクエストパラメータについては、GETメソッドのパラメータで送信する必要がある。"
     },
     {
       "id": "s5",
       "title": "URLの関連付け",
-      "content": "携帯端末アクセスハンドラを適用した場合、下記の動作で、通常NablarchでJavaScriptで行っているformのURI属性の書き換えがサーバサイドで実施される。\n\n1. JSP表示時の動作\n\n> 1.1. n:submit、 n:button を記載した個所で出力するHTMLのinputタグについて、 name 属性に設定する値を `nablarch_uri_override_<JSP上のname属性>|<サブミット先のURI>` に出力\n\n> 1.2. n:form タグでは、単純に HTML の <form> タグを出力する。\u0000\n> つまり、ボタン押下時にはHTMLの<form>タグに記載したURLに押下したボタンのname属性が送られる。\u0000\n> (通常、閉じタグの</form>には、押下したボタンに合わせたURLに <form> タグのuri属性を変更するJavaScriptが挿入される。)\n\n1. form サブミット時の動作\n\n> 2.1. KeitaiAccessHandler にて、サブミット時に押下したボタンに設定された name 属性(1.1. で設定した  `nablarch_uri_override_` から始まる文字列)から、元のJSPタグに設定されていたURI属性を取得。\n\n> 2.2. KeitaiAccessHandler にて、リクエストパラメータに処理対象のURIとして扱われるパラメータキー `nablarch_submit` で取得したURI属性を設定。\n> (つまり、通常NablarchでJavaScriptで行っているformのURI属性の書き換えを、サーバサードで実施している)\n\n> 2.3. 後続処理に委譲する。(以降、クライアントからのリクエスト時にボタンに対応するURIが指定された場合と同じ動作をする)"
+      "content": "携帯端末アクセスハンドラを適用した場合、下記の動作で、通常NablarchでJavaScriptで行っているformのURI属性の書き換えがサーバサイドで実施される。\n\n1. JSP表示時の動作\n\n1.1. n:submit、 n:button を記載した個所で出力するHTMLのinputタグについて、 name 属性に設定する値を `nablarch_uri_override_<JSP上のname属性>|<サブミット先のURI>` に出力\n\n1.2. n:form タグでは、単純に HTML の <form> タグを出力する。\u0000\nつまり、ボタン押下時にはHTMLの<form>タグに記載したURLに押下したボタンのname属性が送られる。\u0000\n(通常、閉じタグの</form>には、押下したボタンに合わせたURLに <form> タグのuri属性を変更するJavaScriptが挿入される。)\n\n1. form サブミット時の動作\n\n2.1. KeitaiAccessHandler にて、サブミット時に押下したボタンに設定された name 属性(1.1. で設定した  `nablarch_uri_override_` から始まる文字列)から、元のJSPタグに設定されていたURI属性を取得。\n\n2.2. KeitaiAccessHandler にて、リクエストパラメータに処理対象のURIとして扱われるパラメータキー `nablarch_submit` で取得したURI属性を設定。\n(つまり、通常NablarchでJavaScriptで行っているformのURI属性の書き換えを、サーバサードで実施している)\n\n2.3. 後続処理に委譲する。(以降、クライアントからのリクエスト時にボタンに対応するURIが指定された場合と同じ動作をする)"
     }
   ]
 }

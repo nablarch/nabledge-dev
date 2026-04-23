@@ -16,7 +16,7 @@ Nablarchを使ったシステム開発に必要と考えているアクティビ
 
 詳細は、以下のリンクを参照。
 
-> [Nablarchシステム開発ガイド(外部サイト)](https://fintan.jp/page/252/)
+[Nablarchシステム開発ガイド(外部サイト)](https://fintan.jp/page/252/)
 
 ## 開発標準
 
@@ -27,4 +27,4 @@ Nablarchを使ったシステム開発に必要と考えているアクティビ
 
 開発標準として提供されているコンテンツの一覧は、以下のリンクから確認できる。
 
-> [開発標準(外部サイト)](https://fintan.jp/page/1868/#development-standards)
+[開発標準(外部サイト)](https://fintan.jp/page/1868/#development-standards)

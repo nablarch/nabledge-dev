@@ -2,9 +2,9 @@
 
 ここでは、以下の機能比較を示す。
 
-> * >   NablarchのJakarta RESTful Web Servicesサポート
-> * >   HTTPメッセージング
-> * >   [Jakarta RESTful Web Services(外部サイト、英語)](https://jakarta.ee/specifications/restful-ws/)
+* NablarchのJakarta RESTful Web Servicesサポート
+* HTTPメッセージング
+* [Jakarta RESTful Web Services(外部サイト、英語)](https://jakarta.ee/specifications/restful-ws/)
 
 > **Tip:**
 > NablarchのJakarta RESTful Web ServicesサポートとHTTPメッセージングのみ、表内のマークをクリックすると、解説書の説明ページに遷移する。

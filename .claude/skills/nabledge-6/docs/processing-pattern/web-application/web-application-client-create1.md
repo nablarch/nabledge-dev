@@ -5,7 +5,7 @@
 登録画面のJSPを作成する
 ひな形となるJSPを /src/main/webapp/WEB-INF/view/client 配下に配置する。
 
-> create.jsp <../downloads/client_create/create.jsp>
+create.jsp <../downloads/client_create/create.jsp>
 画面に初期表示する部分を実装する
 create.jspに登録画面の内容を追加する。
 
@@ -52,45 +52,45 @@ create.jspに登録画面の内容を追加する。
 業務アクションに初期表示メソッドを作成する
 ClientAction に、以下の処理を行う業務アクションメソッドを追加する
 
-> * >   プルダウンに表示するデータを取得しリクエストスコープに登録する。
-> * >   初期表示画面のJSPへフォーワードする。
+* プルダウンに表示するデータを取得しリクエストスコープに登録する。
+* 初期表示画面のJSPへフォーワードする。
 
-> ClientAction.java
-> ```java
-> public HttpResponse input(HttpRequest request, ExecutionContext context) {
->     EntityList<Industry> industries = UniversalDao.findAll(Industry.class);
->     context.setRequestScopedVar("industries", industries);
->     return new HttpResponse("/WEB-INF/view/client/create.jsp");
-> }
-> ```
+ClientAction.java
+```java
+public HttpResponse input(HttpRequest request, ExecutionContext context) {
+    EntityList<Industry> industries = UniversalDao.findAll(Industry.class);
+    context.setRequestScopedVar("industries", industries);
+    return new HttpResponse("/WEB-INF/view/client/create.jsp");
+}
+```
 
-> 業務アクションメソッドのシグネチャは以下とすること。
-> 業務アクションメソッドが以下のシグネチャを満たさない場合、404エラーが発生する。
+業務アクションメソッドのシグネチャは以下とすること。
+業務アクションメソッドが以下のシグネチャを満たさない場合、404エラーが発生する。
 
-> フレームワークから受け渡されるリクエストオブジェクト
+フレームワークから受け渡されるリクエストオブジェクト
 
-> フレームワークから受け渡される実行コンテキスト
+フレームワークから受け渡される実行コンテキスト
 
-> 遷移先を設定したレスポンスオブジェクト
+遷移先を設定したレスポンスオブジェクト
 
-> この実装のポイント
-> * >   登録画面に業種のプルダウンを表示するために、ユニバーサルDAO を使用してデータベースから業種情報を全件取得する。
-> * >   JSPへ値を受け渡すために、取得した業種リストをリクエストスコープに登録する。
+この実装のポイント
+* 登録画面に業種のプルダウンを表示するために、ユニバーサルDAO を使用してデータベースから業種情報を全件取得する。
+* JSPへ値を受け渡すために、取得した業種リストをリクエストスコープに登録する。
 URLと業務アクションのマッピングを行う
 マッピング処理はOSSライブラリである [http_request_router(外部サイト)](https://github.com/kawasima/http-request-router) を使用して行う。
 指定したURLと初期表示処理をマッピングするための設定を追加する。
 
-> routes.xml
-> ```xml
-> <routes>
->   <!-- 上から評価されるので、他のマッピングより前に設定する -->
->   <get path="/action/client" to="Client#input"/>
->   <!-- その他の設定は省略 -->
-> </routes>
-> ```
+routes.xml
+```xml
+<routes>
+  <!-- 上から評価されるので、他のマッピングより前に設定する -->
+  <get path="/action/client" to="Client#input"/>
+  <!-- その他の設定は省略 -->
+</routes>
+```
 
-> > **Tip:**
-> > routes.xmlの指定方法は、[ライブラリのREADMEドキュメント(外部サイト)](https://github.com/kawasima/http-request-router/blob/master/README.ja.md) を参照。
+> **Tip:**
+> routes.xmlの指定方法は、[ライブラリのREADMEドキュメント(外部サイト)](https://github.com/kawasima/http-request-router/blob/master/README.ja.md) を参照。
 登録画面へのリンクを作成する
 ヘッダメニューに顧客登録画面へのリンクを作成する。
 

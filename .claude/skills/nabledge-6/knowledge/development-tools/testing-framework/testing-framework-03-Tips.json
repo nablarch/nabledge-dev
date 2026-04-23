@@ -7,7 +7,7 @@
     {
       "id": "s1",
       "title": "Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい",
-      "content": "テスト対象クラスのメソッドを呼び出す際の引数や、メソッドの戻り値をExcelファイルに記載しておくことができる。\n記載したデータは、List-Map形式（List<Map<String, String>>の形式）で取得できる。\n\nこの形式でデータを取得する場合は、データタイプLIST_MAPを使用する。\nLIST_MAP=<シート内で一意になるID（任意の文字列）>\n\nデータの2行目はMapのKeyと解釈される。\nデータの3行目以降はMapのValueと解釈される。\n\n以下のメソッドにより、Map形式またはList-Map形式で、Excelファイルよりデータを取得できる。\n第1引数にはシート名、第2引数にはIDを指定する。\n\n> * >   `TestSupport#getListMap(String sheetName, String id)`\n> * >   `DbAccessTestSupport#getListMap(String sheetName, String id)`"
+      "content": "テスト対象クラスのメソッドを呼び出す際の引数や、メソッドの戻り値をExcelファイルに記載しておくことができる。\n記載したデータは、List-Map形式（List<Map<String, String>>の形式）で取得できる。\n\nこの形式でデータを取得する場合は、データタイプLIST_MAPを使用する。\nLIST_MAP=<シート内で一意になるID（任意の文字列）>\n\nデータの2行目はMapのKeyと解釈される。\nデータの3行目以降はMapのValueと解釈される。\n\n以下のメソッドにより、Map形式またはList-Map形式で、Excelファイルよりデータを取得できる。\n第1引数にはシート名、第2引数にはIDを指定する。\n\n* `TestSupport#getListMap(String sheetName, String id)`\n* `DbAccessTestSupport#getListMap(String sheetName, String id)`"
     },
     {
       "id": "s2",
@@ -37,7 +37,7 @@
     {
       "id": "s7",
       "title": "一つのシートに複数テストケースのデータを記載したい",
-      "content": "１つのテスト対象メソッドに対して多くのテストケースが存在する場合、\n１シート１テストケースという書き方をすると、シート数が増加して保守容易性が落ちることが懸念される。\n\nテーブルデータをグルーピングするための情報（グループID）を付与することで、複数テストケースのデータをひとつのシートに混在させることができる。\n\nサポートされるデータタイプは以下の通り。\n\n* EXPECTED_TABLE\n* SETUP_TABLE\n\n書式は以下の通り。\n\n> データタイプ[グループID]=テーブル名\n\n例えば、2種類のテストケースのデータ(case_001,case_002)を混在させる場合は、以下のように記載する。\n\nテストクラス側では、前述のAPIと同名のオーバーロードメソッドに引数グループIDを渡す。\nこれにより、指定したグループIDのデータのみを処理対象にできる。"
+      "content": "１つのテスト対象メソッドに対して多くのテストケースが存在する場合、\n１シート１テストケースという書き方をすると、シート数が増加して保守容易性が落ちることが懸念される。\n\nテーブルデータをグルーピングするための情報（グループID）を付与することで、複数テストケースのデータをひとつのシートに混在させることができる。\n\nサポートされるデータタイプは以下の通り。\n\n* EXPECTED_TABLE\n* SETUP_TABLE\n\n書式は以下の通り。\n\nデータタイプ[グループID]=テーブル名\n\n例えば、2種類のテストケースのデータ(case_001,case_002)を混在させる場合は、以下のように記載する。\n\nテストクラス側では、前述のAPIと同名のオーバーロードメソッドに引数グループIDを渡す。\nこれにより、指定したグループIDのデータのみを処理対象にできる。"
     },
     {
       "id": "s8",
@@ -67,7 +67,7 @@
     {
       "id": "s13",
       "title": "シーケンスオブジェクトを使った採番のテストをしたい",
-      "content": "シーケンスオブジェクトを使用して値の採番処理を行った場合、次に採番される値が事前に予測できないため期待値を設定できない。\nそこで、本フレームワークではシーケンスオブジェクトを使用した採番処理を設定ファイルの変更のみでテーブル採番に置き換える機能を提供する。\nこの機能を使用することで、正しく採番処理を行なっていることを確認できる。\n\n手順は以下のとおり。\n\n> ① 準備データをテーブルにセットアップする。\n> ② 期待値はテーブルに設定した値を元に設定する。\n\n以下に設定例及び使用例を示す。"
+      "content": "シーケンスオブジェクトを使用して値の採番処理を行った場合、次に採番される値が事前に予測できないため期待値を設定できない。\nそこで、本フレームワークではシーケンスオブジェクトを使用した採番処理を設定ファイルの変更のみでテーブル採番に置き換える機能を提供する。\nこの機能を使用することで、正しく採番処理を行なっていることを確認できる。\n\n手順は以下のとおり。\n\n① 準備データをテーブルにセットアップする。\n② 期待値はテーブルに設定した値を元に設定する。\n\n以下に設定例及び使用例を示す。"
     },
     {
       "id": "s14",
@@ -77,12 +77,12 @@
     {
       "id": "s15",
       "title": "Excelファイル記述例",
-      "content": "採番対象ID:1101を採番する処理をテストする場合を例に説明する。\n\n> // 準備データ\n> // 採番用テーブル\n> SETUP_TABLE=TEST_SBN_TBL\n\n> | > ID_COL | > NO_COL |\n> |---|---|\n> | > 1101 | > 100 |\n\n> > **Tip:**\n> > 採番用テーブルに準備データを設定する。\n> > 準備データでは、テスト範囲内で使用する採番対象のレコードのみを設定する。\n\n> // 期待値\n> // 採番用テーブル\n> EXPECTED_TABLE=TEST_SBN_TBL\n\n> | > ID_COL | > NO_COL |\n> |---|---|\n> | > 1101 | > 101 |\n\n> // 期待値\n> // 採番した値が登録されるテーブル(USER_IDに採番された値が登録される。)\n> EXPECTED_TABLE=USER_INFO\n\n> | > USER_ID | > KANJI_NAME | > KANA_NAME |\n> |---|---|---|\n> | > 0000000101 | > 漢字名 | > ｶﾅﾒｲ |\n\n> > **Tip:**\n> > 本記述例では、テスト内で1度のみ採番処理が行われていることを想定している。\n> > このため、期待値は「準備データの値 + 1」となっている。"
+      "content": "採番対象ID:1101を採番する処理をテストする場合を例に説明する。\n\n// 準備データ\n// 採番用テーブル\nSETUP_TABLE=TEST_SBN_TBL\n\n| ID_COL | NO_COL |\n|---|---|\n| 1101 | 100 |\n\n> **Tip:**\n> 採番用テーブルに準備データを設定する。\n> 準備データでは、テスト範囲内で使用する採番対象のレコードのみを設定する。\n\n// 期待値\n// 採番用テーブル\nEXPECTED_TABLE=TEST_SBN_TBL\n\n| ID_COL | NO_COL |\n|---|---|\n| 1101 | 101 |\n\n// 期待値\n// 採番した値が登録されるテーブル(USER_IDに採番された値が登録される。)\nEXPECTED_TABLE=USER_INFO\n\n| USER_ID | KANJI_NAME | KANA_NAME |\n|---|---|---|\n| 0000000101 | 漢字名 | ｶﾅﾒｲ |\n\n> **Tip:**\n> 本記述例では、テスト内で1度のみ採番処理が行われていることを想定している。\n> このため、期待値は「準備データの値 + 1」となっている。"
     },
     {
       "id": "s16",
       "title": "ThreadContextにユーザID、リクエストIDなどを設定したい",
-      "content": "Nablarch Application Frameworkでは、通常ThreadContextにてユーザIDやリクエストIDがあらかじめ設定されている。データベースアクセスクラスの自動テストを行う場合、フレームワークを経由せず、テストクラスからテスト対象クラスを直接起動するため、ThreadContextには値が設定されていない。\n\nExcelファイルに設定する値を記述して下記メソッドを呼び出すことで、ThreadContextに値を設定できる。\n\n> * >   `TestSupport#setThreadContextValues(String sheetName, String id)`\n> * >   `DbAccessTestSupport#setThreadContextValues(String sheetName, String id)`\n\n> **Tip:**\n> 特に自動設定項目を使用してデータベースを登録・更新する際は、ThreadContextにリクエストIDとユーザIDが設定されている必要がある。テスト対象クラス起動前にこれらの値をThreadContextに設定しておくこと。"
+      "content": "Nablarch Application Frameworkでは、通常ThreadContextにてユーザIDやリクエストIDがあらかじめ設定されている。データベースアクセスクラスの自動テストを行う場合、フレームワークを経由せず、テストクラスからテスト対象クラスを直接起動するため、ThreadContextには値が設定されていない。\n\nExcelファイルに設定する値を記述して下記メソッドを呼び出すことで、ThreadContextに値を設定できる。\n\n* `TestSupport#setThreadContextValues(String sheetName, String id)`\n* `DbAccessTestSupport#setThreadContextValues(String sheetName, String id)`\n\n> **Tip:**\n> 特に自動設定項目を使用してデータベースを登録・更新する際は、ThreadContextにリクエストIDとユーザIDが設定されている必要がある。テスト対象クラス起動前にこれらの値をThreadContextに設定しておくこと。"
     },
     {
       "id": "s17",
@@ -117,7 +117,7 @@
     {
       "id": "s23",
       "title": "@BeforeClass, @AfterClass使用時の注意点",
-      "content": "> * >   サブクラスにて、スーパークラスと同名の名前、同じアノテーションを付与のメソッドを作成しないこと。\n>   同名のメソッドに同種のアノテーションを付与した場合、スーパークラスのメソッドは起動されなくなる。\n\n> ```java\n> public class TestSuper {\n>     @BeforeClass\n>     public static void setUpBeforeClass() {\n>         System.out.println(\"super\");   // 表示されない。\n>     }\n> }\n> \n> public class TestSub extends TestSuper {\n> \n>     @BeforeClass\n>     public static void setUpBeforeClass() {\n>         // スーパークラスのメソッドを上書き\n>     }\n> \n>     @Test\n>     public void test() {\n>         System.out.println(\"test\");\n>     }\n> }\n> ```\n\n上記のTestSubを実行した場合、「test」と表示される。"
+      "content": "* サブクラスにて、スーパークラスと同名の名前、同じアノテーションを付与のメソッドを作成しないこと。\n  同名のメソッドに同種のアノテーションを付与した場合、スーパークラスのメソッドは起動されなくなる。\n\n```java\npublic class TestSuper {\n    @BeforeClass\n    public static void setUpBeforeClass() {\n        System.out.println(\"super\");   // 表示されない。\n    }\n}\n\npublic class TestSub extends TestSuper {\n\n    @BeforeClass\n    public static void setUpBeforeClass() {\n        // スーパークラスのメソッドを上書き\n    }\n\n    @Test\n    public void test() {\n        System.out.println(\"test\");\n    }\n}\n```\n\n上記のTestSubを実行した場合、「test」と表示される。"
     },
     {
       "id": "s24",
@@ -137,7 +137,7 @@
     {
       "id": "s27",
       "title": "クラスのプロパティを検証したい",
-      "content": "テスト対象クラスのプロパティの検証を、容易に実装できる。\n\nテストデータの記述方法は、 Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい で記載した方法と同様に記載する。\n\nデータの意味は、2行目が プロパティ名、3行目以降が検証時に使用するプロパティの値となる。\n\n以下のメソッドにより、プロパティの持つ値がExcelファイルに記載したデータとなっていることを検証できる。\n第1引数にはエラー時に表示するメッセージ、第2引数にはシート名、第3引数にはID、第4引数に検証対象のクラス、クラスの配列、クラスのリストのいずれかを指定する。\n\n> * >   `HttpRequestTestSupport#assertObjectPropertyEquals(String message, String sheetName, String id, Object actual)`\n> * >   `HttpRequestTestSupport#assertObjectArrayPropertyEquals(String message, String sheetName, String id, Object[] actual)`\n> * >   `HttpRequestTestSupport#assertObjectListPropertyEquals(String message, String sheetName, String id, List<?> actual)`"
+      "content": "テスト対象クラスのプロパティの検証を、容易に実装できる。\n\nテストデータの記述方法は、 Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい で記載した方法と同様に記載する。\n\nデータの意味は、2行目が プロパティ名、3行目以降が検証時に使用するプロパティの値となる。\n\n以下のメソッドにより、プロパティの持つ値がExcelファイルに記載したデータとなっていることを検証できる。\n第1引数にはエラー時に表示するメッセージ、第2引数にはシート名、第3引数にはID、第4引数に検証対象のクラス、クラスの配列、クラスのリストのいずれかを指定する。\n\n* `HttpRequestTestSupport#assertObjectPropertyEquals(String message, String sheetName, String id, Object actual)`\n* `HttpRequestTestSupport#assertObjectArrayPropertyEquals(String message, String sheetName, String id, Object[] actual)`\n* `HttpRequestTestSupport#assertObjectListPropertyEquals(String message, String sheetName, String id, List<?> actual)`"
     },
     {
       "id": "s28",
@@ -152,17 +152,17 @@
     {
       "id": "s30",
       "title": "テストデータに空白、空文字、改行やnullを記述したい",
-      "content": "> セルへの特殊な記述方法 を参照。\n\n\u0000"
+      "content": "セルへの特殊な記述方法 を参照。\n\n\u0000"
     },
     {
       "id": "s31",
       "title": "テストデータに空行を記述したい",
-      "content": "可変長ファイルを扱う場合等で、テストデータに空行を含めたい場合がある。\n全くの空行は無視されるため、セルへの特殊な記述方法 の\nダブルクォーテーションを使用して\u0000 `\"\"`\u0000 のように空文字列を記述することで、\n空行を表すことができる。\n\n以下の例では、2レコード目が空行となる。\n\n**SETUP_VARIABLE=/path/to/file.csv**\n\n> ＜中略＞\n\n| name | address |\n|---|---|\n| 山田 | 東京都 |\n| \"\" |  |\n| 田中 | 大阪府 |\n\n> **Tip:**\n> 空行を表す場合、全てのセルを\u0000 `\"\"`\u0000 で埋める必要はない。\n> 行のうちのいずれか1セルだけでよい。可読性を考慮し、\n> 左端のセルに\u0000 `\"\"`\u0000 を記載することを推奨する。"
+      "content": "可変長ファイルを扱う場合等で、テストデータに空行を含めたい場合がある。\n全くの空行は無視されるため、セルへの特殊な記述方法 の\nダブルクォーテーションを使用して\u0000 `\"\"`\u0000 のように空文字列を記述することで、\n空行を表すことができる。\n\n以下の例では、2レコード目が空行となる。\n\n**SETUP_VARIABLE=/path/to/file.csv**\n\n＜中略＞\n\n| name | address |\n|---|---|\n| 山田 | 東京都 |\n| \"\" |  |\n| 田中 | 大阪府 |\n\n> **Tip:**\n> 空行を表す場合、全てのセルを\u0000 `\"\"`\u0000 で埋める必要はない。\n> 行のうちのいずれか1セルだけでよい。可読性を考慮し、\n> 左端のセルに\u0000 `\"\"`\u0000 を記載することを推奨する。"
     },
     {
       "id": "s32",
       "title": "マスタデータを変更してテストを行いたい",
-      "content": "> 04_MasterDataRestore を参照"
+      "content": "04_MasterDataRestore を参照"
     },
     {
       "id": "s33",
@@ -177,7 +177,7 @@
     {
       "id": "s35",
       "title": "実装するインタフェース",
-      "content": "> * >   `nablarch.test.core.file.TestDataConverter`"
+      "content": "* `nablarch.test.core.file.TestDataConverter`"
     },
     {
       "id": "s36",

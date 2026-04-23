@@ -271,13 +271,13 @@ HTTPリクエストのデータ領域をメッセージボディと呼ぶ。
 フレームワーク制御ヘッダは、デフォルトの設定では、
 メッセージボディの最初のデータレコード中に、それぞれ以下のフィールド名で定義されている必要がある。
 
-> requestId
+requestId
 
-> userId
+userId
 
-> resendFlag
+resendFlag
 
-> statusCode
+statusCode
 
 以下は、標準的なフレームワーク制御ヘッダの定義例である。
 

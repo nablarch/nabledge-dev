@@ -27,14 +27,14 @@ Exampleアプリケーションを元に一括更新機能を解説する。
 
 一括更新機能の作成方法を解説する。
 
-> 1. >   フォームの作成
-> 2. >   画面に更新対象を受け渡すBeanの作成
-> 3. >   一括更新画面を表示する業務アクションメソッドの作成
-> 4. >   一括更新画面JSPの作成
-> 5. >   更新内容を確認する業務アクションメソッドの作成
-> 6. >   確認画面JSPの作成
-> 7. >   データベースを一括更新する業務アクションメソッドの作成
-> 8. >   完了画面の作成
+1. フォームの作成
+2. 画面に更新対象を受け渡すBeanの作成
+3. 一括更新画面を表示する業務アクションメソッドの作成
+4. 一括更新画面JSPの作成
+5. 更新内容を確認する業務アクションメソッドの作成
+6. 確認画面JSPの作成
+7. データベースを一括更新する業務アクションメソッドの作成
+8. 完了画面の作成
 
 フォームの作成
 検索条件を受け付けるフォームと、更新内容を受け付けるフォームをそれぞれ作成する。
@@ -44,28 +44,28 @@ Exampleアプリケーションを元に一括更新機能を解説する。
 更新フォームの作成
 複数のプロジェクトの更新情報を一括で送信するため、フォームを2種類作成する。
 
-> 1. >   プロジェクト１つ分の更新情報を受け付けるフォーム
-> 2. >   プロジェクト１つ分のフォームのリストをプロパティとして持つ親フォーム
+1. プロジェクト１つ分の更新情報を受け付けるフォーム
+2. プロジェクト１つ分のフォームのリストをプロパティとして持つ親フォーム
 
-> ![](../images/project_bulk_update/project_bulk_update-form.png)
+![](../images/project_bulk_update/project_bulk_update-form.png)
 
 プロジェクト１つ分の更新情報を受け付けるフォーム
 プロジェクト１つ分の更新値を受け付けるフォームを作成する。
 
-> InnerProjectForm.java
-> ```java
-> public class InnerProjectForm implements Serializable {
-> 
->     // 一部項目のみ抜粋
-> 
->     /** プロジェクト名 */
->     @Required
->     @Domain("projectName")
->     private String projectName;
-> 
->     // ゲッタ及びセッタは省略
-> }
-> ```
+InnerProjectForm.java
+```java
+public class InnerProjectForm implements Serializable {
+
+    // 一部項目のみ抜粋
+
+    /** プロジェクト名 */
+    @Required
+    @Domain("projectName")
+    private String projectName;
+
+    // ゲッタ及びセッタは省略
+}
+```
 
 この実装のポイント
 * 入れ子となったフォームに対しても  Bean Validation を実行するため、
@@ -92,19 +92,19 @@ public class ProjectBulkForm implements Serializable {
 業務アクションで取得した更新対象リストを画面へ受け渡すBeanの作成
 業務アクションで取得した更新対象リストを画面へ受け渡すBeanを作成する。このBeanは一括更新画面と確認画面で持ちまわすため、 セッションストア に登録する。
 
-> ProjectListDto.java
-> ```java
-> public class ProjectListDto implements Serializable {
-> 
->     /** プロジェクトリスト */
->     private List<Project> projectList = new ArrayList<>();
-> 
->     // ゲッタ及びセッタは省略
-> }
-> ```
-> この実装のポイント
-> * >   配列やコレクション型を セッションストア に登録する場合は、シリアライズ可能なBeanのプロパティとして定義し、
->   そのBeanを セッションストア に登録すること。詳細は セッションストア使用上の制約 を参照。
+ProjectListDto.java
+```java
+public class ProjectListDto implements Serializable {
+
+    /** プロジェクトリスト */
+    private List<Project> projectList = new ArrayList<>();
+
+    // ゲッタ及びセッタは省略
+}
+```
+この実装のポイント
+* 配列やコレクション型を セッションストア に登録する場合は、シリアライズ可能なBeanのプロパティとして定義し、
+  そのBeanを セッションストア に登録すること。詳細は セッションストア使用上の制約 を参照。
 
 一括更新画面を表示する業務アクションメソッドの作成
 データベースから対象プロジェクトを取得し、一括更新画面に表示する業務アクションメソッドを作成する。

@@ -15,42 +15,42 @@ Exampleアプリケーションを元に、更新機能を解説する。
   ```
 2. プロジェクト情報の更新
 
-> 任意のRESTクライアントを使用して、以下のリクエストを送信する。
+任意のRESTクライアントを使用して、以下のリクエストを送信する。
 
-> URL
-> [http://localhost:9080/projects](http://localhost:9080/projects)
-> HTTPメソッド
-> PUT
-> Content-Type
-> application/json
-> リクエストボディ
-> ```json
-> {
->     "projectId": 1,
->     "projectName": "プロジェクト９９９",
->     "projectType": "development",
->     "projectClass": "ss",
->     "projectManager": "山田",
->     "projectLeader": "田中",
->     "clientId": 10,
->     "projectStartDate": "20160101",
->     "projectEndDate": "20161231",
->     "note": "備考９９９",
->     "sales": 10000,
->     "costOfGoodsSold": 20000,
->     "sga": 30000,
->     "allocationOfCorpExpenses": 40000,
->     "version": 1
-> }
-> ```
+URL
+[http://localhost:9080/projects](http://localhost:9080/projects)
+HTTPメソッド
+PUT
+Content-Type
+application/json
+リクエストボディ
+```json
+{
+    "projectId": 1,
+    "projectName": "プロジェクト９９９",
+    "projectType": "development",
+    "projectClass": "ss",
+    "projectManager": "山田",
+    "projectLeader": "田中",
+    "clientId": 10,
+    "projectStartDate": "20160101",
+    "projectEndDate": "20161231",
+    "note": "備考９９９",
+    "sales": 10000,
+    "costOfGoodsSold": 20000,
+    "sga": 30000,
+    "allocationOfCorpExpenses": 40000,
+    "version": 1
+}
+```
 
 1. 動作確認
 
-> H2のコンソールから下記SQLを実行し、レコードが更新されていることを確認する。
+H2のコンソールから下記SQLを実行し、レコードが更新されていることを確認する。
 
-> ```sql
-> SELECT * FROM PROJECT WHERE PROJECT_ID = 1;
-> ```
+```sql
+SELECT * FROM PROJECT WHERE PROJECT_ID = 1;
+```
 
 ## プロジェクト情報を更新する
 

@@ -24,11 +24,11 @@ $mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main ^
 
 1. バッチ実行後の状態の確認
 
-> H2のコンソールから下記SQLを実行し、賞与情報が登録されたことを確認する。
+H2のコンソールから下記SQLを実行し、賞与情報が登録されたことを確認する。
 
-> ```sql
-> SELECT * FROM BONUS;
-> ```
+```sql
+SELECT * FROM BONUS;
+```
 
 ## データを導出する
 
@@ -90,7 +90,7 @@ AbstractItemReader を継承し、データの読み込みを行う。
 
 | インタフェース名 | 責務 |
 |---|---|
-| ItemReader | > データの読み込みを行う。  空実装を提供する AbstractItemReader を継承する。  > * >   ItemReader#open > * >   ItemReader#readItem > * >   ItemReader#close |
+| ItemReader | データの読み込みを行う。  空実装を提供する AbstractItemReader を継承する。  * ItemReader#open * ItemReader#readItem * ItemReader#close |
 
 EmployeeSearchReader.java
 ```java
@@ -229,29 +229,29 @@ public class BonusWriter extends AbstractItemWriter {
 
 JOBの実行設定を記載したファイルを作成する。
 
-> bonus-calculate.xml
-> ```xml
-> <job id="bonus-calculate" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
->   <listeners>
->     <listener ref="nablarchJobListenerExecutor" />
->   </listeners>
-> 
->   <step id="step1">
->     <listeners>
->       <listener ref="nablarchStepListenerExecutor" />
->       <listener ref="nablarchItemWriteListenerExecutor" />
->     </listeners>
-> 
->     <chunk item-count="1000">
->       <reader ref="employeeSearchReader" />
->       <processor ref="bonusCalculateProcessor" />
->       <writer ref="bonusWriter" />
->     </chunk>
->   </step>
-> </job>
-> ```
-> この実装のポイント
-> * >   ジョブ定義ファイルは /src/main/resources/META-INF/batch-jobs/ 配下に配置する。
-> * >   job 要素 の id 属性で、ジョブ名称を指定する。
-> * >   chunk 要素の item-count 属性で writeItems 一回当たりで処理する件数を設定する。
-> * >   設定ファイルの詳細な記述方法は <a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a> を参照。
+bonus-calculate.xml
+```xml
+<job id="bonus-calculate" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+  <listeners>
+    <listener ref="nablarchJobListenerExecutor" />
+  </listeners>
+
+  <step id="step1">
+    <listeners>
+      <listener ref="nablarchStepListenerExecutor" />
+      <listener ref="nablarchItemWriteListenerExecutor" />
+    </listeners>
+
+    <chunk item-count="1000">
+      <reader ref="employeeSearchReader" />
+      <processor ref="bonusCalculateProcessor" />
+      <writer ref="bonusWriter" />
+    </chunk>
+  </step>
+</job>
+```
+この実装のポイント
+* ジョブ定義ファイルは /src/main/resources/META-INF/batch-jobs/ 配下に配置する。
+* job 要素 の id 属性で、ジョブ名称を指定する。
+* chunk 要素の item-count 属性で writeItems 一回当たりで処理する件数を設定する。
+* 設定ファイルの詳細な記述方法は <a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a> を参照。
