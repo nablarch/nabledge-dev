@@ -1,7 +1,6 @@
 """Phase 4: Cross-reference resolution and asset copying.
 
 Provides:
-- build_label_map: collect all RST ``.. _label:`` definitions
 - collect_asset_refs: find image/figure/download assets referenced in an RST file
 - copy_assets: copy collected assets to the output directory
 """
@@ -11,7 +10,6 @@ import re
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
 
 
 # ---------------------------------------------------------------------------
@@ -24,39 +22,6 @@ class AssetRef:
 
     source_path: Path   # Absolute path to the source file
     dest_rel: str       # Relative output path, e.g. "assets/{file_id}/filename"
-
-
-# ---------------------------------------------------------------------------
-# Label map
-# ---------------------------------------------------------------------------
-
-# Matches ``.. _label:`` and ``.. _`label with spaces`:`` (with optional indentation)
-_LABEL_RE = re.compile(r"^\s*\.\. _`?([^:`\n]+?)`?\s*:\s*$", re.MULTILINE)
-
-
-def build_label_map(
-    source_dir: Path,
-    path_to_id: Callable[[Path], str] = lambda p: p.stem,
-) -> dict[str, str]:
-    """Scan RST files under *source_dir* and build a label → file_id mapping.
-
-    Args:
-        source_dir: Root directory to scan recursively for ``*.rst`` files.
-        path_to_id: Callable that converts an RST :class:`Path` to a file_id.
-                    Defaults to ``path.stem``.
-
-    Returns:
-        ``{label: file_id}`` dict.  If the same label appears in multiple files,
-        the last one wins (consistent with Sphinx behaviour).
-    """
-    result: dict[str, str] = {}
-    for rst_path in sorted(source_dir.rglob("*.rst")):
-        file_id = path_to_id(rst_path)
-        text = rst_path.read_text(encoding="utf-8", errors="replace")
-        for m in _LABEL_RE.finditer(text):
-            label = m.group(1).strip()
-            result[label] = file_id
-    return result
 
 
 # ---------------------------------------------------------------------------

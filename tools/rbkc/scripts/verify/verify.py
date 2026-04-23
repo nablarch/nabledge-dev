@@ -19,7 +19,7 @@ import json
 import re
 from pathlib import Path
 
-from scripts.common.labels import build_label_map, _RST_LABEL_DEF_RE  # noqa: F401 (re-exported)
+from scripts.common.labels import build_label_map  # noqa: F401 (used by run.py)
 
 
 # ---------------------------------------------------------------------------

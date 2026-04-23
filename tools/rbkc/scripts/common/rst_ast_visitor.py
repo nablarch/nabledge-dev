@@ -39,10 +39,6 @@ class UnresolvedReferenceError(VisitorError):
     """A reference or substitution could not be resolved (even via label_map)."""
 
 
-class UnknownSyntaxError(VisitorError):
-    """docutils emitted a parse error (level >= 3)."""
-
-
 # Roles registered in rst_ast._SPHINX_INLINE_ROLES; kept here to allow the
 # Visitor to reject any role not in this set (zero-exception).
 _KNOWN_ROLES: set[str] = {
