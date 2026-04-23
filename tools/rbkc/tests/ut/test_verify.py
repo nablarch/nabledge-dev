@@ -2013,11 +2013,20 @@ class TestCheckSourceLinks:
         issues = self._check(src, "rst", data, label_map)
         assert any("QL1" in i and "usage" in i for i in issues)
 
-    def test_pass_rst_ref_unknown_label_skipped(self):
+    def test_fail_rst_ref_unknown_label_is_dangling(self):
+        """Phase 22-B-16: unknown label is a dangling reference, not a skip.
+
+        Spec §3-1 手順0 exception-ban forbids silent text fallback. A label
+        that neither docutils nor label_map can resolve must FAIL (QC1 or
+        QL1 dangling link) rather than silently pass.
+        """
         src = ":ref:`cross-file-label`\n"
         data = self._data(content="内容")
-        # Unknown label (not in label_map) → cannot verify cross-file ref → PASS
-        assert self._check(src, "rst", data, {}) == []
+        issues = self._check(src, "rst", data, {})
+        # Either QC1 (unresolved reference) or QL1 (dangling link) — both are
+        # FAIL signals; silent PASS (empty issues list) is the bug we fix.
+        assert issues, "unknown :ref: label must not pass silently"
+        assert any(("QC1" in i or "QL1" in i) and "cross-file-label" in i for i in issues), issues
 
     # MD internal links
     def test_pass_md_internal_link_text_in_json(self):
@@ -3216,3 +3225,136 @@ class TestVerifyQC5NullByte:
         # No NULLs → no QC5-NULL issue (other QC5 checks still run).
         issues = _check_format_purity(data, "rst")
         assert not any("NULL" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-16a: QO1 level alignment (JSON sections[].level ↔ docs MD #-count)
+# ---------------------------------------------------------------------------
+
+
+class TestCheckJsonDocsMdConsistency_QO1_Level:
+    """QO1 level check: JSON sections[].level must match docs MD heading #-count.
+
+    Spec reference: rbkc-verify-quality-design.md §3-3 QO1
+        「JSON sections[].level (2/3/4...) と docs MD の対応 heading の
+         `#` 数が一致する」
+    """
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_pass_level_2_3_4_nesting_matches(self):
+        """Correctly nested h2/h3/h4 → PASS."""
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "A", "level": 2, "content": "a"},
+                {"id": "s2", "title": "B", "level": 3, "content": "b"},
+                {"id": "s3", "title": "C", "level": 4, "content": "c"},
+            ]
+        }
+        docs = "# T\n\n## A\n\na\n\n### B\n\nb\n\n#### C\n\nc\n"
+        issues = self._check(data, docs)
+        # No QO1 level FAIL expected.
+        assert not any("QO1" in i and "level" in i.lower() for i in issues), issues
+
+    def test_fail_json_level_2_but_docs_emits_level_3(self):
+        """JSON says level=2 but docs MD emits `###` → QO1 FAIL."""
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "A", "level": 2, "content": "a"},
+            ]
+        }
+        docs = "# T\n\n### A\n\na\n"  # wrong heading level
+        issues = self._check(data, docs)
+        assert any("QO1" in i and "level" in i.lower() and "A" in i for i in issues), issues
+
+    def test_fail_json_level_3_but_docs_emits_level_2(self):
+        """JSON says level=3 but docs MD emits `##` → QO1 FAIL."""
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "A", "level": 3, "content": "a"},
+            ]
+        }
+        docs = "# T\n\n## A\n\na\n"  # should be ###
+        issues = self._check(data, docs)
+        assert any("QO1" in i and "level" in i.lower() and "A" in i for i in issues), issues
+
+    def test_fail_level_field_missing(self):
+        """A section without `level` field is a schema violation under 22-B-16."""
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "A", "content": "a"},  # no level
+            ]
+        }
+        docs = "# T\n\n## A\n\na\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i and "level" in i.lower() for i in issues), issues
+
+    def test_pass_empty_section_at_level_3(self):
+        """Section at level 3 with no body still emits `###` in docs MD."""
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "A", "level": 2, "content": "a"},
+                {"id": "s2", "title": "B", "level": 3, "content": ""},
+            ]
+        }
+        docs = "# T\n\n## A\n\na\n\n### B\n\n"
+        issues = self._check(data, docs)
+        assert not any("QO1" in i and "level" in i.lower() for i in issues), issues
+
+    def test_pass_top_only_no_sections_no_level_check(self):
+        """Top-level content only (no sections) → no level mismatch possible."""
+        data = {
+            "id": "f", "title": "T", "content": "本文です。", "sections": []
+        }
+        docs = "# T\n\n本文です。\n"
+        issues = self._check(data, docs)
+        assert not any("QO1" in i and "level" in i.lower() for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-16a: silent-skip horizontal class — labels.py label drop
+# ---------------------------------------------------------------------------
+
+
+class TestLabelMapStrict:
+    """labels.build_label_map must NOT silently drop labels that fail to
+    resolve to a heading (Phase 22-B-16a horizontal class fix).
+
+    Spec reference: rbkc-verify-quality-design.md §3-2-2 zero-exception —
+        「labels.py が heading 検出に失敗して label を map から drop →
+         drop せず、代わりに「解決不能ラベル」として QC1 FAIL」
+    """
+
+    def test_label_with_no_following_heading_is_reported(self, tmp_path):
+        """A `.. _label:` with no heading beneath it must not be silently dropped.
+
+        Pre-22-B-16 behaviour was to drop the label from the returned map,
+        which caused downstream verify to silently PASS on dangling refs.
+        Post-22-B-16: the label must appear in the map with a sentinel
+        target that downstream verify treats as unresolvable (FAIL).
+        """
+        from scripts.common.labels import build_label_map
+        src = tmp_path / "foo.rst"
+        src.write_text(
+            ".. _orphan-label:\n\n"
+            "Just a paragraph, no heading here.\n",
+            encoding="utf-8",
+        )
+        label_map = build_label_map(tmp_path)
+        # The label must be present in the map — either resolving to a real
+        # target OR to a sentinel that verify can detect as "dangling".
+        # Silent drop (label absent from dict) is the bug we fix.
+        # After Phase 22-B-16 labels.py returns LabelTarget dataclass, so
+        # accept either legacy `str` or new `LabelTarget` form.
+        assert "orphan-label" in label_map or any(
+            k == "orphan-label" for k in label_map
+        ), f"label dropped silently: {label_map}"
+
+    # NOTE: LabelTarget dataclass + (title, file_id, section_title) extension
+    # is Phase 22-B-16b scope — tests added there.
+
+
+# NOTE: Phase 22-B-16b will add TestGithubSlug and the LabelTarget-shape tests.
+# Keeping 16a scope tight: QO1 level + silent-skip horizontal class only.
