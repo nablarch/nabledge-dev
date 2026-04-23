@@ -178,6 +178,42 @@ def check_json_docs_md_consistency(
                 f"[QO1] {file_id}: section title order differs: JSON={json_sec_titles!r} docs={filtered!r}"
             )
 
+    # QO2 Excel P1 例外 (spec §3-3): per-sheet Excel JSON whose
+    # sheet_type == "P1" cannot be checked verbatim because docs MD renders
+    # the row as an MD table — the column headers and `|---|` separators
+    # are only in the MD side. Enforce one-way containment instead: every
+    # non-empty value token from each `{列名}: {値}` line in JSON must
+    # appear in docs MD. The column-name side is naturally in the MD
+    # header row. No asset-link rewrite (Excel has no RST asset refs).
+    if data.get("sheet_type") == "P1":
+        if top_content:
+            # P1 top content is plain preamble text (design §8-4);
+            # verbatim containment is still the right check.
+            if top_content not in docs_md_text:
+                issues.append(
+                    f"[QO2] {file_id}: top-level content not found in docs MD"
+                )
+        for s in sections:
+            content = s.get("content", "")
+            title = s.get("title", "")
+            for line in content.split("\n"):
+                line = line.strip()
+                if not line:
+                    continue
+                # Split once on ":" so values containing ":" are preserved.
+                if ":" in line:
+                    _key, _, value = line.partition(":")
+                    value = value.strip()
+                else:
+                    value = line
+                if not value:
+                    continue
+                if value not in docs_md_text:
+                    issues.append(
+                        f"[QO2] {file_id}: section {title!r} value {value!r} not found in docs MD"
+                    )
+        return issues
+
     # QO2: top-level content must appear verbatim *between the `#` heading
     # and the first `##` heading* (spec §3-3 "JSON top-level content が
     # docs MD `#` 見出し直下に完全一致で含まれている"). Because fenced code
@@ -836,13 +872,24 @@ _MD_SYNTAX_RE = re.compile(
 )
 
 
-def _xlsx_source_tokens(source_path) -> list[str]:
+def _xlsx_source_tokens(source_path, sheet_name: str | None = None) -> list[str]:
+    """Return non-empty cell tokens from *source_path*.
+
+    When ``sheet_name`` is given, only that worksheet is tokenised. This
+    supports Phase 22-B sheet-level file split, where each generated JSON
+    corresponds to one sheet and must be verified only against its own
+    cells. ``sheet_name=None`` preserves the all-sheet behaviour.
+    """
     ext = Path(source_path).suffix.lower()
     if ext == ".xls":
         import xlrd
         wb = xlrd.open_workbook(str(source_path))
+        if sheet_name is not None:
+            sheets = [wb.sheet_by_name(sheet_name)]
+        else:
+            sheets = list(wb.sheets())
         tokens = []
-        for sheet in wb.sheets():
+        for sheet in sheets:
             for rx in range(sheet.nrows):
                 for cx in range(sheet.ncols):
                     val = str(sheet.cell_value(rx, cx)).strip()
@@ -852,8 +899,12 @@ def _xlsx_source_tokens(source_path) -> list[str]:
     else:
         import openpyxl
         wb = openpyxl.load_workbook(str(source_path), data_only=True)
+        if sheet_name is not None:
+            sheets = [wb[sheet_name]]
+        else:
+            sheets = list(wb.worksheets)
         tokens = []
-        for ws in wb.worksheets:
+        for ws in sheets:
             for row in ws.iter_rows(values_only=True):
                 for cell in row:
                     if cell is None:

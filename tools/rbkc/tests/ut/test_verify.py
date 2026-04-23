@@ -1751,6 +1751,227 @@ class TestVerifyFileExcel:
 
 
 # ---------------------------------------------------------------------------
+# Phase 22-B: Excel P1 — per-sheet tokens + QO2 one-way containment
+# ---------------------------------------------------------------------------
+
+
+class TestXlsxSourceTokensPerSheet:
+    """Phase 22-B-5: sheet-level file split requires per-sheet source tokens.
+
+    `_xlsx_source_tokens(source_path, sheet_name=...)` must scope the token
+    extraction to a single worksheet so that a sheet-specific JSON is verified
+    only against cells from its own sheet. Calling without `sheet_name` must
+    preserve the prior all-sheet behaviour (back-compat for ad-hoc callers —
+    the production dispatch always passes a name).
+    """
+
+    def test_per_sheet_tokens_restricted_to_named_sheet(self, tmp_path):
+        import openpyxl
+        from scripts.verify.verify import _xlsx_source_tokens
+        wb = openpyxl.Workbook()
+        ws1 = wb.active
+        ws1.title = "Alpha"
+        ws1["A1"] = "alpha-only"
+        ws2 = wb.create_sheet("Beta")
+        ws2["A1"] = "beta-only"
+        xlsx_path = tmp_path / "two.xlsx"
+        wb.save(xlsx_path)
+
+        alpha_tokens = _xlsx_source_tokens(str(xlsx_path), sheet_name="Alpha")
+        beta_tokens = _xlsx_source_tokens(str(xlsx_path), sheet_name="Beta")
+        assert "alpha-only" in alpha_tokens
+        assert "beta-only" not in alpha_tokens
+        assert "beta-only" in beta_tokens
+        assert "alpha-only" not in beta_tokens
+
+    def test_all_sheets_when_sheet_name_omitted(self, tmp_path):
+        import openpyxl
+        from scripts.verify.verify import _xlsx_source_tokens
+        wb = openpyxl.Workbook()
+        ws1 = wb.active
+        ws1.title = "Alpha"
+        ws1["A1"] = "alpha-only"
+        ws2 = wb.create_sheet("Beta")
+        ws2["A1"] = "beta-only"
+        xlsx_path = tmp_path / "two.xlsx"
+        wb.save(xlsx_path)
+
+        tokens = _xlsx_source_tokens(str(xlsx_path), sheet_name=None)
+        assert "alpha-only" in tokens
+        assert "beta-only" in tokens
+
+    def test_per_sheet_xls_tokens_restricted_to_named_sheet(self, tmp_path):
+        import xlwt
+        from scripts.verify.verify import _xlsx_source_tokens
+        wb = xlwt.Workbook()
+        ws1 = wb.add_sheet("Alpha")
+        ws1.write(0, 0, "alpha-xls")
+        ws2 = wb.add_sheet("Beta")
+        ws2.write(0, 0, "beta-xls")
+        xls_path = tmp_path / "two.xls"
+        wb.save(str(xls_path))
+
+        alpha = _xlsx_source_tokens(str(xls_path), sheet_name="Alpha")
+        beta = _xlsx_source_tokens(str(xls_path), sheet_name="Beta")
+        assert "alpha-xls" in alpha and "beta-xls" not in alpha
+        assert "beta-xls" in beta and "alpha-xls" not in beta
+
+
+class TestCheckJsonDocsMdConsistency_QO2_ExcelP1:
+    """Phase 22-B-5: spec §3-3 QO2 Excel 例外 — for P1 sheets, verify uses
+    one-way containment (JSON section.content text ⊂ docs MD), because the
+    docs MD table has structural tokens (`|---|`, column headers) that do
+    not appear verbatim in JSON. Non-Excel / non-P1 JSON still uses strict
+    verbatim containment.
+    """
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_pass_p1_section_content_tokens_all_in_md_table(self):
+        # JSON section.content is vertical "列名: 値" enumeration; docs MD
+        # renders the same row as an MD table. Each non-empty token from
+        # section.content must appear in the MD, but the table's pipes /
+        # separators are only in MD.
+        data = {
+            "id": "f",
+            "title": "リリースノート Sheet1",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "バグ-001",
+                    "content": "No.: 001\n種別: バグ\nタイトル: バグ-001\n対応: 修正済",
+                },
+            ],
+        }
+        docs = (
+            "# リリースノート Sheet1\n\n"
+            "## バグ-001\n\n"
+            "| No. | 種別 | タイトル | 対応 |\n"
+            "| --- | --- | --- | --- |\n"
+            "| 001 | バグ | バグ-001 | 修正済 |\n"
+        )
+        assert self._check(data, docs) == []
+
+    def test_fail_p1_section_content_token_missing_from_md(self):
+        # If one of the "値" tokens from JSON is missing from docs MD, QO2
+        # must still FAIL (the one-way check still enforces JSON ⊂ MD).
+        data = {
+            "id": "f",
+            "title": "リリースノート Sheet1",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "バグ-001",
+                    "content": "No.: 001\n種別: バグ\nタイトル: バグ-001\n対応: 修正済",
+                },
+            ],
+        }
+        # "修正済" is missing from the MD table row.
+        docs = (
+            "# リリースノート Sheet1\n\n"
+            "## バグ-001\n\n"
+            "| No. | 種別 | タイトル | 対応 |\n"
+            "| --- | --- | --- | --- |\n"
+            "| 001 | バグ | バグ-001 |  |\n"
+        )
+        issues = self._check(data, docs)
+        assert any("[QO2]" in i and "修正済" in i for i in issues), issues
+
+    def test_pass_p2_falls_back_to_strict_verbatim(self):
+        # P2: sheet-wide text, JSON content appears verbatim in MD.
+        data = {
+            "id": "f",
+            "title": "対応表 分類",
+            "content": "カテゴリA\n項目1\n項目2\n",
+            "sheet_type": "P2",
+            "sections": [],
+        }
+        docs = "# 対応表 分類\n\nカテゴリA\n項目1\n項目2\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_p1_value_containing_colon_preserved(self):
+        # QA Finding: the implementation uses `partition(":")` so the
+        # value after the first colon is preserved. Pin this: a value
+        # containing `:` (e.g. a URL) must be checked whole, not split.
+        data = {
+            "id": "f",
+            "title": "リリースノート",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "row1",
+                    "content": "URL: https://example.com/path",
+                },
+            ],
+        }
+        # PASS: full URL present in MD.
+        docs_ok = "# リリースノート\n\n## row1\n\nhttps://example.com/path\n"
+        assert self._check(data, docs_ok) == []
+        # FAIL: only the scheme is present — full value missing.
+        docs_bad = "# リリースノート\n\n## row1\n\nhttps\n"
+        issues = self._check(data, docs_bad)
+        assert any(
+            "[QO2]" in i and "https://example.com/path" in i for i in issues
+        ), issues
+
+    def test_pass_p1_key_with_empty_value_skipped(self):
+        # QA Finding: a blank-cell row renders as `列名: ` (empty value).
+        # The implementation's `if not value: continue` must silently skip
+        # such lines. Pin this so future refactors don't regress.
+        data = {
+            "id": "f",
+            "title": "リリースノート",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "row1",
+                    "content": "No.: 001\n対応:",
+                },
+            ],
+        }
+        docs = "# リリースノート\n\n## row1\n\n| No. | 対応 |\n| --- | --- |\n| 001 |  |\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_no_sheet_type_falls_through_to_strict_verbatim(self):
+        # SE Observation: non-Excel JSON has no `sheet_type` field; the
+        # P1 gate must not trigger. Pin this with a regular RST-derived
+        # JSON shape and assert strict containment still applies.
+        data = {
+            "id": "f",
+            "title": "T",
+            "content": "",
+            "sections": [
+                {"id": "s1", "title": "概要", "content": "本文1\n本文2"},
+            ],
+        }
+        docs = "# T\n\n## 概要\n\n本文1\n本文2\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_p2_top_content_not_verbatim(self):
+        data = {
+            "id": "f",
+            "title": "対応表 分類",
+            "content": "カテゴリA\n項目1\n項目2\n",
+            "sheet_type": "P2",
+            "sections": [],
+        }
+        # Content differs (項目2 missing).
+        docs = "# 対応表 分類\n\nカテゴリA\n項目1\n"
+        issues = self._check(data, docs)
+        assert any("[QO2]" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
 # QL1: 内部リンク (check_source_links)
 # ---------------------------------------------------------------------------
 
