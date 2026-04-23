@@ -420,7 +420,7 @@ public class SampleClient {
 }
 ```
 コンポーネント設定ファイルにコンポーネントを定義する
-この例では、 SampleClient に sampleComponent propertyを定義していないが、  SampleComponent  を実装したクラスの設定が1つだけなので、
+この例では、 SampleClient に sampleComponent propertyを定義していないが、 SampleComponent を実装したクラスの設定が1つだけなので、
 sampleComponent propertyには自動的に BasicSampleComponent が設定される。
 
 ```xml
@@ -503,7 +503,7 @@ database.password = sa
 環境設定ファイルを読み込む場合には、config-file要素を使用する。
 この例のようにファイル名指定で読み込んだり、特定ディレクトリ配下のファイルを一括で読み込むことができる。
 
-上記の環境設定ファイルの名前が「database.properties」の場合、 JdbcDataSource の url には、「 jdbc:h2:mem:sample」が設定される。
+上記の環境設定ファイルの名前が「database.properties」の場合、 JdbcDataSource の url には、「jdbc:h2:mem:sample」が設定される。
 
 ```xml
 <!-- database.propertiesファイルの読み込み -->
@@ -1023,7 +1023,7 @@ efg
 
 * key -> a=a
 * key2 -> #コメントではない
-* key3 -> あ \い
+* key3 -> あ\い
 
 ```bash
 key = a\=a

@@ -72,7 +72,7 @@
     {
       "id": "s14",
       "title": "設定ファイルの例",
-      "content": "この例では、下記のように本番用の設定ファイルにシーケンスオブジェクトの採番定義がされているとする。\n\n```xml\n<!-- シーケンスオブジェクトを使用した採番設定 -->\n<component name=\"idGenerator\" class=\"nablarch.common.idgenerator.OracleSequenceIdGenerator\">\n    <property name=\"idTable\">\n        <map>\n            <entry key=\"1101\" value=\"SEQ_1\"/> <!-- ID1採番用 -->\n            <entry key=\"1102\" value=\"SEQ_2\"/> <!-- ID2採番用 -->\n            <entry key=\"1103\" value=\"SEQ_3\"/> <!-- ID3採番用 -->\n            <entry key=\"1104\" value=\"SEQ_4\"/> <!-- ID4採番用 -->\n        </map>\n    </property>\n</component>\n```\n\nこの場合、テスト用の設定ファイルでは、上記本番用の設定をテーブル採番用の設定で上書きする。\n\n```xml\n<!-- シーケンスオブジェクトの採番設定をテーブルを使用した採番設定に置き換える -->\n<component name=\"idGenerator\" class=\"nablarch.common.idgenerator.FastTableIdGenerator\">\n    <property name=\"tableName\" value=\"TEST_SBN_TBL\"/>\n    <property name=\"idColumnName\" value=\"ID_COL\"/>\n    <property name=\"noColumnName\" value=\"NO_COL\"/>\n    <property name=\"dbTransactionManager\" ref=\"dbTransactionManager\" / >\n</component>\n```\n\n> **Tip:**\n> テーブル採番用の設定値の詳細は、\u0000 IdGenerator\u0000 を参照すること。"
+      "content": "この例では、下記のように本番用の設定ファイルにシーケンスオブジェクトの採番定義がされているとする。\n\n```xml\n<!-- シーケンスオブジェクトを使用した採番設定 -->\n<component name=\"idGenerator\" class=\"nablarch.common.idgenerator.OracleSequenceIdGenerator\">\n    <property name=\"idTable\">\n        <map>\n            <entry key=\"1101\" value=\"SEQ_1\"/> <!-- ID1採番用 -->\n            <entry key=\"1102\" value=\"SEQ_2\"/> <!-- ID2採番用 -->\n            <entry key=\"1103\" value=\"SEQ_3\"/> <!-- ID3採番用 -->\n            <entry key=\"1104\" value=\"SEQ_4\"/> <!-- ID4採番用 -->\n        </map>\n    </property>\n</component>\n```\n\nこの場合、テスト用の設定ファイルでは、上記本番用の設定をテーブル採番用の設定で上書きする。\n\n```xml\n<!-- シーケンスオブジェクトの採番設定をテーブルを使用した採番設定に置き換える -->\n<component name=\"idGenerator\" class=\"nablarch.common.idgenerator.FastTableIdGenerator\">\n    <property name=\"tableName\" value=\"TEST_SBN_TBL\"/>\n    <property name=\"idColumnName\" value=\"ID_COL\"/>\n    <property name=\"noColumnName\" value=\"NO_COL\"/>\n    <property name=\"dbTransactionManager\" ref=\"dbTransactionManager\" / >\n</component>\n```\n\n> **Tip:**\n> テーブル採番用の設定値の詳細は、 IdGenerator を参照すること。"
     },
     {
       "id": "s15",
@@ -152,12 +152,12 @@
     {
       "id": "s30",
       "title": "テストデータに空白、空文字、改行やnullを記述したい",
-      "content": "セルへの特殊な記述方法 を参照。\n\n\u0000"
+      "content": "セルへの特殊な記述方法 を参照。"
     },
     {
       "id": "s31",
       "title": "テストデータに空行を記述したい",
-      "content": "可変長ファイルを扱う場合等で、テストデータに空行を含めたい場合がある。\n全くの空行は無視されるため、セルへの特殊な記述方法 の\nダブルクォーテーションを使用して\u0000 `\"\"`\u0000 のように空文字列を記述することで、\n空行を表すことができる。\n\n以下の例では、2レコード目が空行となる。\n\n**SETUP_VARIABLE=/path/to/file.csv**\n\n＜中略＞\n\n| name | address |\n|---|---|\n| 山田 | 東京都 |\n| \"\" |  |\n| 田中 | 大阪府 |\n\n> **Tip:**\n> 空行を表す場合、全てのセルを\u0000 `\"\"`\u0000 で埋める必要はない。\n> 行のうちのいずれか1セルだけでよい。可読性を考慮し、\n> 左端のセルに\u0000 `\"\"`\u0000 を記載することを推奨する。"
+      "content": "可変長ファイルを扱う場合等で、テストデータに空行を含めたい場合がある。\n全くの空行は無視されるため、セルへの特殊な記述方法 の\nダブルクォーテーションを使用して `\"\"` のように空文字列を記述することで、\n空行を表すことができる。\n\n以下の例では、2レコード目が空行となる。\n\n**SETUP_VARIABLE=/path/to/file.csv**\n\n＜中略＞\n\n| name | address |\n|---|---|\n| 山田 | 東京都 |\n| \"\" |  |\n| 田中 | 大阪府 |\n\n> **Tip:**\n> 空行を表す場合、全てのセルを `\"\"` で埋める必要はない。\n> 行のうちのいずれか1セルだけでよい。可読性を考慮し、\n> 左端のセルに `\"\"` を記載することを推奨する。"
     },
     {
       "id": "s32",
@@ -167,7 +167,7 @@
     {
       "id": "s33",
       "title": "テストデータ読み込みディレクトリを変更したい",
-      "content": "デフォルトの設定では、テストデータは\u0000 `test/java`\u0000 配下から読み込まれる。\n\nプロジェクトのディレクトリ構成に応じて、テストデータディレクトリを変更する必要がある場合、\nコンポーネント設定ファイルに以下の設定を追加する\u0000 [1]\u0000 。\n\n| キー | 値 |\n|---|---|\n| nablarch.test.resource-root | テスト実行時のカレントディレクトリからの相対パス セミコロン(;)区切りで複数指定可 \u0000 [2]\u0000 |\n\n\u0000\n\n設定例を以下に示す。\n\n```bash\nnablarch.test.resource-root=path/to/test-data-dir\n```\n\n\u0000\n\n複数のディレクトリからテストデータを読み込みたい場合は、\nセミコロンで区切ることにより複数指定できる。\n設定例を以下に示す。\n\n```text\nnablarch.test.resource-root=test/online;test/batch\n```\n\n\u0000\n\n一時的に設定を変更する場合は、設定ファイルを変更しなくても、\nテスト実行時のVM引数指定を追加することで代替可能である。\n\n【例】 \u0000 `-Dnablarch.test.resource-root=path/to/test-data-dir`\u0000\n\n\u0000\n\n複数のディレクトリを指定した場合、同名のテストデータが存在した場合、\n最初に発見されたテストデータが読み込まれる。"
+      "content": "デフォルトの設定では、テストデータは `test/java` 配下から読み込まれる。\n\nプロジェクトのディレクトリ構成に応じて、テストデータディレクトリを変更する必要がある場合、\nコンポーネント設定ファイルに以下の設定を追加する [1] 。\n\n| キー | 値 |\n|---|---|\n| nablarch.test.resource-root | テスト実行時のカレントディレクトリからの相対パス セミコロン(;)区切りで複数指定可  [2] |\n\n設定例を以下に示す。\n\n```bash\nnablarch.test.resource-root=path/to/test-data-dir\n```\n\n複数のディレクトリからテストデータを読み込みたい場合は、\nセミコロンで区切ることにより複数指定できる。\n設定例を以下に示す。\n\n```text\nnablarch.test.resource-root=test/online;test/batch\n```\n\n一時的に設定を変更する場合は、設定ファイルを変更しなくても、\nテスト実行時のVM引数指定を追加することで代替可能である。\n\n【例】  `-Dnablarch.test.resource-root=path/to/test-data-dir`\n\n複数のディレクトリを指定した場合、同名のテストデータが存在した場合、\n最初に発見されたテストデータが読み込まれる。"
     },
     {
       "id": "s34",

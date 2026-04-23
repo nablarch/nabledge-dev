@@ -67,7 +67,7 @@
     {
       "id": "s13",
       "title": "XMLで名前空間を使う",
-      "content": "接続先システムとの接続要件で、名前空間を使用しなければならない場合がある。\nこの場合は、フォーマット定義ファイルにて名前空間を定義することで対応できる。\n\n以下に例を示す。\n\nポイント\n* 名前空間は、名前空間を使用する要素に「\"?\u0000@xmlns:\" + 名前空間」として定義する。\n  タイプは、 `X` とし、フィールドコンバータ部にURIを指定する。\n* 名前空間は、「名前空間 + \":\" + 要素名」形式で表す。\n* 入出力対象データのMapのキー値は、「名前空間＋要素名(先頭大文字)」となる。\nフォーマット定義ファイル\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n\n[testns:data]\n# 名前空間の定義\n1 ?@xmlns:testns X \"http://testns.hoge.jp/apply\"\n2 testns:key1 X\n```\nXMLデータ\n上記フォーマット定義ファイルに対応したXMLは以下のとおり。\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testns:data xmlns:testns=\"http://testns.hoge.jp/apply\">\n  <testns:key1>value1</testns:key1>\n</testns:data>\n```\nMapデータ\n入出力対象のMapの構造は以下のとおり。\n\n```java\nMap<String, Object> data = new HashMap<String, Object>();\ndata.put(\"testnsKey1\", \"value1\");\n```"
+      "content": "接続先システムとの接続要件で、名前空間を使用しなければならない場合がある。\nこの場合は、フォーマット定義ファイルにて名前空間を定義することで対応できる。\n\n以下に例を示す。\n\nポイント\n* 名前空間は、名前空間を使用する要素に「\"?@xmlns:\" + 名前空間」として定義する。\n  タイプは、 `X` とし、フィールドコンバータ部にURIを指定する。\n* 名前空間は、「名前空間 + \":\" + 要素名」形式で表す。\n* 入出力対象データのMapのキー値は、「名前空間＋要素名(先頭大文字)」となる。\nフォーマット定義ファイル\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n\n[testns:data]\n# 名前空間の定義\n1 ?@xmlns:testns X \"http://testns.hoge.jp/apply\"\n2 testns:key1 X\n```\nXMLデータ\n上記フォーマット定義ファイルに対応したXMLは以下のとおり。\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testns:data xmlns:testns=\"http://testns.hoge.jp/apply\">\n  <testns:key1>value1</testns:key1>\n</testns:data>\n```\nMapデータ\n入出力対象のMapの構造は以下のとおり。\n\n```java\nMap<String, Object> data = new HashMap<String, Object>();\ndata.put(\"testnsKey1\", \"value1\");\n```"
     },
     {
       "id": "s14",

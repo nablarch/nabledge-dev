@@ -1,18 +1,18 @@
 {
   "id": "biz-samples-09",
   "title": "bouncycastleを使用した電子署名つきメールの送信サンプルの使用方法",
-  "content": "本章では、bouncycastle\u0000  [1]\u0000 を使用した電子署名付きメール送信機能の使用方法を解説する。\nなお、本機能はサンプル実装のため、導入プロジェクトで使用する際には、ソースコード(プロダクション、テストコード共に）をプロジェクトに取込使用すること。\n\n[ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-smime-integration)\n\nbouncycastleとは、暗号化等のセキュリティ関連の機能を提供するオープンソースライブラリである。\n\n詳細は、bouncycastleのサイト(\u0000 [https://www.bouncycastle.org/](https://www.bouncycastle.org/)\u0000 )を参照",
+  "content": "本章では、bouncycastle  [1] を使用した電子署名付きメール送信機能の使用方法を解説する。\nなお、本機能はサンプル実装のため、導入プロジェクトで使用する際には、ソースコード(プロダクション、テストコード共に）をプロジェクトに取込使用すること。\n\n[ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-smime-integration)\n\nbouncycastleとは、暗号化等のセキュリティ関連の機能を提供するオープンソースライブラリである。\n\n詳細は、bouncycastleのサイト( [https://www.bouncycastle.org/](https://www.bouncycastle.org/) )を参照",
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "環境準備",
-      "content": "**ライブラリの準備**\n\n以下をpom.xmlに追加する。\n\n```xml\n<dependency>\n  <groupId>org.bouncycastle</groupId>\n  <artifactId>bcjmail-jdk18on</artifactId>\n  <version>1.78.1</version>\n</dependency>\n```\n\n> **Tip:**\n> 本機能のテストでは、\u0000 **Release1.78.1**\u0000 のライブラリを使用してテストを行なっている。\n\n> バグフィックスや脆弱性対応などが行われる可能性があるため、bouncycastleのサイトで最新リリースの有無を必ず確認すること。\n> もし、1.78.1以降のバージョンがリリースされている場合には、最新バージョンのライブラリをプロジェクトに適用すること。\n\n**電子署名用の証明書の準備**\n\n証明書は、認証局から発行してもらい任意のディレクトリ（メール送信機能（バッチ）からアクセス可能なディレクトリ）に配置すること。\nこのディレクトリへのアクセス権限は必要最小限にし、必要のないユーザが証明書にアクセスできないようにすることを推奨する。"
+      "content": "**ライブラリの準備**\n\n以下をpom.xmlに追加する。\n\n```xml\n<dependency>\n  <groupId>org.bouncycastle</groupId>\n  <artifactId>bcjmail-jdk18on</artifactId>\n  <version>1.78.1</version>\n</dependency>\n```\n\n> **Tip:**\n> 本機能のテストでは、 **Release1.78.1** のライブラリを使用してテストを行なっている。\n\n> バグフィックスや脆弱性対応などが行われる可能性があるため、bouncycastleのサイトで最新リリースの有無を必ず確認すること。\n> もし、1.78.1以降のバージョンがリリースされている場合には、最新バージョンのライブラリをプロジェクトに適用すること。\n\n**電子署名用の証明書の準備**\n\n証明書は、認証局から発行してもらい任意のディレクトリ（メール送信機能（バッチ）からアクセス可能なディレクトリ）に配置すること。\nこのディレクトリへのアクセス権限は必要最小限にし、必要のないユーザが証明書にアクセスできないようにすることを推奨する。"
     },
     {
       "id": "s2",
       "title": "電子署名付きメール送信機能の構造",
-      "content": "本機能は、Nablarchアプリケーションフレームワークで提供されるメール送信機能(\u0000 *nablarch.common.mail.MailSender*\u0000 )の拡張機能である。\n\n送信対象のメール送信パターンIDを元に証明書を特定し、電子署名を付加する仕様としている。\nこのため、本機能を使用する場合には、必ずメール送信パターンIDを使用できるテーブル設計とすること。\n\n詳細は、メール送信機能 を参照すること。"
+      "content": "本機能は、Nablarchアプリケーションフレームワークで提供されるメール送信機能( *nablarch.common.mail.MailSender* )の拡張機能である。\n\n送信対象のメール送信パターンIDを元に証明書を特定し、電子署名を付加する仕様としている。\nこのため、本機能を使用する場合には、必ずメール送信パターンIDを使用できるテーブル設計とすること。\n\n詳細は、メール送信機能 を参照すること。"
     },
     {
       "id": "s3",
@@ -27,7 +27,7 @@
     {
       "id": "s5",
       "title": "実行方法",
-      "content": "実行対象のアクションクラスを、\u0000 **please.change.me.common.mail.smime.SMIMESignedMailSender**\u0000 としてメール送信のバッチプロセスを起動する。\nプロセス起動時には、このプロセスが処理すべきメールが特定できるメール送信パターンIDを引数として指定する。\n\n詳細は、Nablarchアプリケーションフレームワークのメール送信機能のガイドを参照すること。"
+      "content": "実行対象のアクションクラスを、 **please.change.me.common.mail.smime.SMIMESignedMailSender** としてメール送信のバッチプロセスを起動する。\nプロセス起動時には、このプロセスが処理すべきメールが特定できるメール送信パターンIDを引数として指定する。\n\n詳細は、Nablarchアプリケーションフレームワークのメール送信機能のガイドを参照すること。"
     }
   ]
 }

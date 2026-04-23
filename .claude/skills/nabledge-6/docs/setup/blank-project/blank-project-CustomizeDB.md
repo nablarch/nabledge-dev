@@ -391,7 +391,7 @@ Oracleを使用する場合は、記述を修正する。
 > ```
 
 > **Tip:**
-> gsp-dba-maven-plugin  [1]  使用時は、以下のコマンドでgsp-dba-maven-pluginを実行すればテーブルが作成される。
+> gsp-dba-maven-plugin [1] 使用時は、以下のコマンドでgsp-dba-maven-pluginを実行すればテーブルが作成される。
 
 > ```bash
 > mvn -P gsp clean generate-resources

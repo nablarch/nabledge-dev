@@ -1,7 +1,7 @@
 {
   "id": "about-nablarch-architecture",
   "title": "アーキテクチャ",
-  "content": "**目次**\n\n* Nablarchアプリケーションフレームワークの主な構成要素\n* ハンドラキュー(handler queue)\n\n  * インターセプタ(interceptor)\n* ライブラリ(library)\n\nNablarchアプリケーションフレームワークのアーキテクチャについて解説する。\n\n> **Warning:**\n> 本項で解説するアーキテクチャは、\u0000 Jakarta Batchに準拠したバッチアプリケーション\u0000 には該当しない（詳細については、\u0000 Jakarta Batchに準拠したバッチアプリケーション\u0000 の\u0000 アーキテクチャ概要\u0000 を参照）。",
+  "content": "**目次**\n\n* Nablarchアプリケーションフレームワークの主な構成要素\n* ハンドラキュー(handler queue)\n\n  * インターセプタ(interceptor)\n* ライブラリ(library)\n\nNablarchアプリケーションフレームワークのアーキテクチャについて解説する。\n\n> **Warning:**\n> 本項で解説するアーキテクチャは、 Jakarta Batchに準拠したバッチアプリケーション には該当しない（詳細については、 Jakarta Batchに準拠したバッチアプリケーション の アーキテクチャ概要 を参照）。",
   "no_knowledge_content": false,
   "sections": [
     {
@@ -17,7 +17,7 @@
     {
       "id": "s3",
       "title": "インターセプタ(interceptor)",
-      "content": "インターセプタとは、実行時に動的にハンドラキューに追加されるハンドラのことを指す。\n\n例えば、特定のリクエストの場合のみ処理（ハンドラ）を追加する場合や、\nリクエストごとに設定値を切り替えて処理(ハンドラ)を実行したい場合にはハンドラよりもインターセプタが適している。\n\n> **Tip:**\n> インターセプタは、Jakarta EEのJakarta Contexts and Dependency Injectionで定義されているインターセプタと同じように処理を実行する。\n\n> **Important:**\n> インターセプタの実行順序は、設定ファイルに設定する必要がある。\n> 設定がない場合、インターセプタの実行順はJVM依存となるため注意すること。\n\n> Nablarchがデフォルトで提供するインターセプタの実行順は、以下のとおり設定する必要がある。\n\n> 1. >   nablarch.common.web.token.OnDoubleSubmission\n> 2. >   nablarch.common.web.token.UseToken\n> 3. >   nablarch.fw.web.interceptor.OnErrors\n> 4. >   nablarch.fw.web.interceptor.OnError\n> 5. >   nablarch.common.web.interceptor.InjectForm\n\n> インターセプタの実行順設定に関する詳細は、\u0000 nablarch.fw.Interceptor.Factory\u0000 を参照。"
+      "content": "インターセプタとは、実行時に動的にハンドラキューに追加されるハンドラのことを指す。\n\n例えば、特定のリクエストの場合のみ処理（ハンドラ）を追加する場合や、\nリクエストごとに設定値を切り替えて処理(ハンドラ)を実行したい場合にはハンドラよりもインターセプタが適している。\n\n> **Tip:**\n> インターセプタは、Jakarta EEのJakarta Contexts and Dependency Injectionで定義されているインターセプタと同じように処理を実行する。\n\n> **Important:**\n> インターセプタの実行順序は、設定ファイルに設定する必要がある。\n> 設定がない場合、インターセプタの実行順はJVM依存となるため注意すること。\n\n> Nablarchがデフォルトで提供するインターセプタの実行順は、以下のとおり設定する必要がある。\n\n> 1. >   nablarch.common.web.token.OnDoubleSubmission\n> 2. >   nablarch.common.web.token.UseToken\n> 3. >   nablarch.fw.web.interceptor.OnErrors\n> 4. >   nablarch.fw.web.interceptor.OnError\n> 5. >   nablarch.common.web.interceptor.InjectForm\n\n> インターセプタの実行順設定に関する詳細は、 nablarch.fw.Interceptor.Factory を参照。"
     },
     {
       "id": "s4",

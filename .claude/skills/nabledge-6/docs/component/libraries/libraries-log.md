@@ -212,11 +212,7 @@ FileUtil#getResource を参照。
 プロパティファイルの記述ルールを以下に示す。
 
 LoggerFactory
- 
-
 記述ルール
- 
-
 loggerFactory.className
 LoggerFactoryを実装したクラスのFQCNを指定する。
 本機能を使う場合は、 BasicLoggerFactory を指定する。
@@ -226,11 +222,7 @@ LoggerFactoryを実装したクラスのFQCNを指定する。
 loggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory
 ```
 LogWriter
- 
-
 記述ルール
- 
-
 writerNames
 使用する全てのLogWriterの名前を指定する。複数指定する場合はカンマ区切り。
 writer.<名前>.className
@@ -251,11 +243,7 @@ writer.appLog.filePath=/var/log/app/app.log
 writer.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter
 ```
 ロガー設定
- 
-
 記述ルール
- 
-
 availableLoggersNamesOrder
 使用する全てのロガー設定の名前を指定する。複数指定する場合はカンマ区切り。
 

@@ -82,7 +82,7 @@
     {
       "id": "s16",
       "title": "切替方法",
-      "content": "メール送信要求時、TemplateHtmlMailContextのcontentTypeに **プレーンテキスト** を指定した場合、\n代替テキストを本文に差し替える。\n\n| コンテキストクラス | 指定されたType | 本文への移送元 | Content-Type |\n|---|---|---|---|\n| TemplateMailContext | \u0000- | メールテンプレート.本文 | text/plain |\n| TemplateHtmlMailContext | *text/plain* | *代替テキストテンプレート.代替テキスト* | *text/plain* |\n|  | text/html | メールテンプレート.本文 | text/html |\n\n```java\npublic HttpResponse doSendMail(HttpRequest req, ExecutionContext ctx) {\n    MailSampleForm form = MailSampleForm.validate(req, \"mail\");\n    TemplateHtmlMailContext mail = new TemplateHtmlMailContext();\n    // このとき、ユーザがContentType.PLAINを選択していれば、代替テキストが本文に切り替わる。\n    mail.setContentType(form.getType());\n    // その他のプロパティを設定し、MailRequesterを呼び出す。\n}\n```"
+      "content": "メール送信要求時、TemplateHtmlMailContextのcontentTypeに **プレーンテキスト** を指定した場合、\n代替テキストを本文に差し替える。\n\n| コンテキストクラス | 指定されたType | 本文への移送元 | Content-Type |\n|---|---|---|---|\n| TemplateMailContext | - | メールテンプレート.本文 | text/plain |\n| TemplateHtmlMailContext | *text/plain* | *代替テキストテンプレート.代替テキスト* | *text/plain* |\n|  | text/html | メールテンプレート.本文 | text/html |\n\n```java\npublic HttpResponse doSendMail(HttpRequest req, ExecutionContext ctx) {\n    MailSampleForm form = MailSampleForm.validate(req, \"mail\");\n    TemplateHtmlMailContext mail = new TemplateHtmlMailContext();\n    // このとき、ユーザがContentType.PLAINを選択していれば、代替テキストが本文に切り替わる。\n    mail.setContentType(form.getType());\n    // その他のプロパティを設定し、MailRequesterを呼び出す。\n}\n```"
     },
     {
       "id": "s17",
