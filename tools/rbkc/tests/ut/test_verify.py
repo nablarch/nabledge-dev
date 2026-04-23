@@ -530,6 +530,129 @@ class TestCheckIndexCoverage:
         issues = self._check(kdir, idx)
         assert any("QO4" in i and "broken.json" in i and "parse failed" in i for i in issues)
 
+    # --- Z-1 r7 QO4 Findings -------------------------------------------
+
+    def test_fail_no_knowledge_json_listed_in_index_has_distinct_message(self, tmp_path):
+        """Z-1 r7 QO4 F1: a no_knowledge_content JSON that is erroneously
+        listed in index.toon must NOT be reported as 'missing JSON' — the
+        file exists, the defect is that it was indexed. Distinct message."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "toc.json").write_text(json.dumps({"id": "t", "title": "T", "no_knowledge_content": True}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["T", "", "", "", "toc.json"]])
+        issues = self._check(kdir, idx)
+        assert any("QO4" in i and "no_knowledge" in i and "toc.json" in i for i in issues), issues
+        assert not any("missing JSON" in i and "toc.json" in i for i in issues), issues
+
+    def test_fail_broken_json_in_index_not_double_reported(self, tmp_path):
+        """Z-1 r7 QO4 F2: broken JSON listed in index.toon must produce
+        exactly one FAIL (the parse error), not a second misleading
+        'missing JSON' message — the file exists on disk."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "broken.json").write_text("{ not json")
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["X", "", "", "", "broken.json"]])
+        issues = self._check(kdir, idx)
+        broken_issues = [i for i in issues if "broken.json" in i]
+        assert any("parse failed" in i for i in broken_issues), broken_issues
+        assert not any("missing JSON" in i for i in broken_issues), broken_issues
+
+    def test_fail_toon_header_schema_without_path_last_column(self, tmp_path):
+        """Z-1 r7 QO4 F3: a TOON header whose last column is not 'path'
+        means 'last field == path' is wrong. Must FAIL loudly, not
+        silently mis-identify every file as unregistered."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        idx = tmp_path / "index.toon"
+        idx.write_text(
+            "# idx\n\n"
+            "files[1,]{path,title}:\n"
+            "  a.json, A\n",  # last column is title, not path
+            encoding="utf-8",
+        )
+        issues = self._check(kdir, idx)
+        assert any("QO4" in i and "schema" in i for i in issues), issues
+
+    def test_fail_toon_row_count_mismatch(self, tmp_path):
+        """Z-1 r7 QO4 F3: row count in files[N,] must match actual rows."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        idx = tmp_path / "index.toon"
+        idx.write_text(
+            "# idx\n\n"
+            "files[3,]{title,type,category,processing_patterns,path}:\n"
+            "  A, , , , a.json\n",  # only one row, but header declares 3
+            encoding="utf-8",
+        )
+        issues = self._check(kdir, idx)
+        assert any("QO4" in i and "row count" in i for i in issues), issues
+
+    def test_fail_toon_second_files_header(self, tmp_path):
+        """Z-1 r7 QO4 F6: two files[] headers is a structural drift and
+        must be flagged — we do not silently interleave rows."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        idx = tmp_path / "index.toon"
+        idx.write_text(
+            "files[1,]{title,type,category,processing_patterns,path}:\n"
+            "  A, , , , a.json\n"
+            "\n"
+            "files[1,]{title,type,category,processing_patterns,path}:\n"
+            "  B, , , , b.json\n",
+            encoding="utf-8",
+        )
+        issues = self._check(kdir, idx)
+        assert any("QO4" in i and "second files[] header" in i for i in issues), issues
+
+    def test_fail_toon_quoted_field_ambiguous_path(self, tmp_path):
+        """Z-1 r7 QO4 F4: quoted fields can make the last-comma-split
+        ambiguous. Flag rather than silently truncate."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        idx = tmp_path / "index.toon"
+        idx.write_text(
+            "files[1,]{title,type,category,processing_patterns,path}:\n"
+            '  "A, B", , , , a.json\n',
+            encoding="utf-8",
+        )
+        issues = self._check(kdir, idx)
+        assert any("QO4" in i and "quoted" in i for i in issues), issues
+
+    def test_pass_toon_backslash_path_normalised(self, tmp_path):
+        """Z-1 r7 QO4 F5: if a TOON writer emits a backslash path, verify
+        normalises to forward slash on both sides so equality holds."""
+        kdir = tmp_path / "knowledge"
+        (kdir / "sub").mkdir(parents=True)
+        (kdir / "sub" / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        idx = tmp_path / "index.toon"
+        # Write a row with a backslash separator in the path.
+        idx.write_text(
+            "files[1,]{title,type,category,processing_patterns,path}:\n"
+            "  A, , , , sub\\a.json\n",
+            encoding="utf-8",
+        )
+        assert self._check(kdir, idx) == []
+
+    def test_fail_missing_index_lists_every_content_json_strict(self, tmp_path):
+        """Z-1 r7 QO4 F7: pin the spec requirement that when index.toon
+        is absent, EVERY content JSON appears as a FAIL — not just the
+        header. A test that asserted only 'any QO4 in issues' would pass
+        even if the per-file enumeration regressed to nothing."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        (kdir / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
+        issues = self._check(kdir, tmp_path / "no-such.toon")
+        per_file = [i for i in issues if "not registered" in i]
+        assert len(per_file) >= 2
+        assert any("a.json" in i for i in per_file)
+        assert any("b.json" in i for i in per_file)
+
 
 # ---------------------------------------------------------------------------
 # QO3: docs MD 存在確認 (via check_docs_coverage)

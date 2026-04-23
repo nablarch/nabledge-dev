@@ -293,6 +293,90 @@ def check_docs_coverage(knowledge_dir, docs_dir) -> list[str]:
 # QO4: check_index_coverage
 # ---------------------------------------------------------------------------
 
+_TOON_HEADER_RE = re.compile(r'^files\[(\d+)(?:,[^]]*)?\]\{([^}]+)\}:\s*$')
+
+
+def _parse_toon_index(text: str) -> tuple[list[str], list[str]]:
+    """Parse the files[] table from an index.toon.
+
+    Returns (indexed_paths, parse_errors). parse_errors is a list of
+    QO4 FAIL messages for structural drift that must not be silently
+    tolerated (Z-1 r7 QO4 F3/F4/F6): schema mismatch, row-count
+    mismatch, second header, quoted/comma path field.
+    """
+    paths: list[str] = []
+    errors: list[str] = []
+    lines = text.splitlines()
+    header_seen = False
+    in_table = False
+    expected_rows = 0
+    row_count = 0
+    columns: list[str] = []
+
+    for line_no, raw in enumerate(lines, 1):
+        stripped = raw.strip()
+
+        # If currently in a table, check termination first so a trailing
+        # `files[...]:` header on a non-indented line is detected as a
+        # second-header error on the same iteration.
+        if in_table:
+            if not stripped:
+                continue
+            if not raw.startswith("  "):
+                in_table = False
+                # fall through to the not-in-table branch
+
+        if not in_table:
+            if not stripped.startswith("files["):
+                continue
+            m = _TOON_HEADER_RE.match(stripped)
+            if not m:
+                errors.append(
+                    f"[QO4] index.toon header malformed at line {line_no}: {raw!r}"
+                )
+                continue
+            if header_seen:
+                errors.append(
+                    f"[QO4] index.toon has a second files[] header at line {line_no}: {raw!r}"
+                )
+                continue
+            header_seen = True
+            expected_rows = int(m.group(1))
+            columns = [c.strip() for c in m.group(2).split(",")]
+            if not columns or columns[-1] != "path":
+                errors.append(
+                    f"[QO4] index.toon header schema unexpected (last column must be 'path'): {columns!r}"
+                )
+                return paths, errors
+            in_table = True
+            continue
+        # A path field containing a comma or quote is ambiguous under
+        # the last-comma-split rule and must not be silently truncated.
+        if '"' in stripped:
+            errors.append(
+                f"[QO4] index.toon row contains quoted field (ambiguous path parse) at line {line_no}: {raw!r}"
+            )
+            continue
+        fields = stripped.split(",")
+        if len(fields) != len(columns):
+            errors.append(
+                f"[QO4] index.toon row column count mismatch at line {line_no} (expected {len(columns)}, got {len(fields)}): {raw!r}"
+            )
+            continue
+        path = fields[-1].strip()
+        # Normalise path separator — Z-1 r7 QO4 F5.
+        path = path.replace("\\", "/")
+        paths.append(path)
+        row_count += 1
+
+    if header_seen and expected_rows != row_count:
+        errors.append(
+            f"[QO4] index.toon row count mismatch: header declares {expected_rows}, found {row_count}"
+        )
+
+    return paths, errors
+
+
 def check_index_coverage(knowledge_dir, index_path) -> list[str]:
     """QO4: index.toon must list exactly the content JSON files on disk.
 
@@ -300,28 +384,32 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
     - index.toon missing: every content JSON is reported as FAIL.
     - JSON on disk not in index.toon: FAIL (not searchable).
     - Path in index.toon without a matching JSON on disk: FAIL (dangling).
+    - JSON parse failures: FAIL (no silent skip).
+    - Structural drift in the TOON parser: FAIL (Z-1 r7 QO4 F3/F4/F6).
     """
     issues: list[str] = []
     kdir = Path(knowledge_dir)
     idx = Path(index_path)
 
-    # Collect content JSON paths (relative) on disk. Per spec §3-3 point 4,
-    # JSON parse failures are themselves QO4 FAIL (no silent skip).
+    # Track JSON files separately by state so we can give accurate
+    # messages (Z-1 r7 QO4 F1/F2): content, no_knowledge, broken.
     content_jsons: dict[str, Path] = {}
+    no_knowledge_jsons: set[str] = set()
+    broken_jsons: set[str] = set()
     for jf in sorted(kdir.rglob("*.json")):
         rel = str(jf.relative_to(kdir)).replace("\\", "/")
         try:
             d = json.loads(jf.read_text(encoding="utf-8"))
         except Exception as exc:
             issues.append(f"[QO4] {rel}: JSON parse failed: {exc}")
+            broken_jsons.add(rel)
             continue
         if d.get("no_knowledge_content"):
+            no_knowledge_jsons.add(rel)
             continue
         content_jsons[rel] = jf
 
     if not idx.exists():
-        # Spec: list every content JSON as FAIL because the search index
-        # is missing entirely.
         if not content_jsons:
             return issues
         issues.append(f"[QO4] index.toon missing: {idx}")
@@ -329,34 +417,30 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
             issues.append(f"[QO4] {rel}: JSON not registered in index.toon (index.toon absent)")
         return issues
 
-    # Parse index paths from index.toon.
-    # TOON format: header "files[N,]{cols}:" then indented rows
-    # with comma-separated fields; path is the last field.
-    lines = idx.read_text(encoding="utf-8").splitlines()
-    indexed_paths: set[str] = set()
-    in_table = False
-    for line in lines:
-        stripped = line.strip()
-        if not in_table:
-            if stripped.startswith("files[") and stripped.endswith(":"):
-                in_table = True
-            continue
-        if not line.startswith("  ") or not stripped:
-            continue
-        last_comma = stripped.rfind(",")
-        if last_comma < 0:
-            continue
-        indexed_paths.add(stripped[last_comma + 1:].strip())
+    indexed_paths, parse_errors = _parse_toon_index(idx.read_text(encoding="utf-8"))
+    issues.extend(parse_errors)
+    indexed_set = set(indexed_paths)
 
     # Forward: every content JSON must appear in the index.
     for rel in sorted(content_jsons):
-        if rel not in indexed_paths:
+        if rel not in indexed_set:
             issues.append(f"[QO4] {Path(rel).name}: JSON not registered in index.toon: {rel}")
 
-    # Reverse: every path in the index must correspond to a real file on disk.
-    for rel in sorted(indexed_paths):
-        if rel not in content_jsons:
-            issues.append(f"[QO4] index.toon lists missing JSON: {rel}")
+    # Reverse: every path in the index must correspond to a real content JSON.
+    # Distinct messages for each orthogonal failure mode so operators don't
+    # chase a phantom "missing file" when the file exists but is broken or
+    # no_knowledge (F1/F2).
+    for rel in sorted(indexed_set):
+        if rel in content_jsons:
+            continue
+        if rel in broken_jsons:
+            # Already reported as parse failure above; do not re-flag as
+            # missing (F2: avoid double FAIL with misleading second message).
+            continue
+        if rel in no_knowledge_jsons:
+            issues.append(f"[QO4] index.toon lists no_knowledge JSON: {rel}")
+            continue
+        issues.append(f"[QO4] index.toon lists missing JSON: {rel}")
 
     return issues
 
