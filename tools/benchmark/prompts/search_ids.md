@@ -70,6 +70,27 @@ against other handlers — information that is essential for any
 question about that handler's behavior or configuration. Do not skip
 such sections just because their titles look abstract.
 
+## Term queries (supplement selections by substring search)
+
+Titles sometimes do not surface the exact section the answer needs. To
+recover, you may also emit up to **3 term queries** — **domain-specific
+identifiers** that the answer likely hinges on. A separate script will
+grep these terms across section bodies and merge any hits into the
+selections. This supplements, does not replace, `selections`.
+
+- Return identifiers only, not natural-language phrases.
+  - ✅ `concurrentNumber`, `@AssertTrue`, `HiddenStore`, `defaultLocale`, `transactionName`
+  - ❌ `スレッドセーフ`, `並列実行`, `注意点`, `セキュリティ`, `推奨構成`
+- Prefer: property names, method names, class names, annotation names
+  (without backticks), and Nablarch-specific keywords that would
+  uniquely identify a section.
+- Emit 0 terms if the question is purely high-level / the existing
+  `selections` already cover everything.
+- Japanese domain nouns are allowed only if they are unique labels
+  (e.g. `コード名称`, `データリーダ`). Avoid generic Japanese nouns.
+- Do not repeat terms that are already obvious in the picked section
+  titles — pick terms that add *new* coverage beyond titles.
+
 ## Output schema
 
 ```json
@@ -86,6 +107,12 @@ such sections just because their titles look abstract.
         "type": "string",
         "pattern": "^[a-zA-Z0-9_-]+\\|[a-zA-Z0-9_-]+$"
       }
+    },
+    "term_queries": {
+      "type": "array",
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {"type": "string", "maxLength": 60}
     }
   }
 }

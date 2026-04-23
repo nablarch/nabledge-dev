@@ -25,8 +25,28 @@ SCHEMA_SELECT = {
                 "pattern": r"^[a-zA-Z0-9_-]+\|[a-zA-Z0-9_-]+$",
             },
         },
+        "term_queries": {
+            "type": "array",
+            "maxItems": 3,
+            "uniqueItems": True,
+            "items": {"type": "string", "maxLength": 60},
+        },
     },
 }
+
+# Per-term cap on how many sections we auto-include from a body substring match.
+TERM_HITS_PER_TERM = 3
+# Total cap on how many term-based selections we may add on top of selections.
+TERM_HITS_TOTAL = 6
+# Path prefixes whose bodies we do NOT grep for terms: sample code, migration,
+# setup guides. These carry concrete code examples that AI-3 tends to quote
+# verbatim and produce over-reach claims. The AI-1 selections still pick them
+# up via title when they truly answer the question.
+TERM_SEARCH_EXCLUDE_PREFIXES = (
+    "guide/",
+    "about/migration/",
+    "setup/",
+)
 
 SCHEMA_ANSWER = {
     "type": "object",
@@ -40,6 +60,73 @@ SCHEMA_ANSWER = {
         },
     },
 }
+
+
+def grep_term_hits(
+    terms: list[str], id_to_path: dict[str, dict]
+) -> list[dict]:
+    """Grep each term in each knowledge JSON's section bodies.
+
+    Returns a list of hit records: [{term, file_id, sid, chars}, ...].
+    Limits per-term hits (TERM_HITS_PER_TERM) and total (TERM_HITS_TOTAL).
+    Order: preserves input term order; within a term, files are alphabetical.
+    """
+    hits: list[dict] = []
+    seen: set[tuple[str, str]] = set()
+    for term in terms:
+        if not term or len(hits) >= TERM_HITS_TOTAL:
+            break
+        per_term = 0
+        for fid in sorted(id_to_path.keys()):
+            if per_term >= TERM_HITS_PER_TERM or len(hits) >= TERM_HITS_TOTAL:
+                break
+            info = id_to_path[fid]
+            path = info.get("path")
+            if not path:
+                continue
+            if any(path.startswith(p) for p in TERM_SEARCH_EXCLUDE_PREFIXES):
+                continue
+            try:
+                data = json.loads((io.KNOWLEDGE_ROOT / path).read_text(encoding="utf-8"))
+            except (FileNotFoundError, json.JSONDecodeError):
+                continue
+            sections = data.get("sections") or {}
+            if not isinstance(sections, dict):
+                continue
+            for sid, body in sections.items():
+                if per_term >= TERM_HITS_PER_TERM or len(hits) >= TERM_HITS_TOTAL:
+                    break
+                if not isinstance(body, str):
+                    continue
+                if term in body:
+                    key = (fid, sid)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    hits.append({"term": term, "file_id": fid, "sid": sid, "chars": len(body)})
+                    per_term += 1
+    return hits
+
+
+def merge_term_hits_into_selections(
+    selections: list[str], hits: list[dict], cap: int = 16
+) -> list[str]:
+    """Append term hits as `file_id|sid` to selections, skipping duplicates.
+
+    `cap` is a soft ceiling on the merged list; selections come first, then
+    term hits fill remaining capacity.
+    """
+    merged = list(selections)
+    present = set(merged)
+    for h in hits:
+        sel = f"{h['file_id']}|{h['sid']}"
+        if sel in present:
+            continue
+        if len(merged) >= cap:
+            break
+        merged.append(sel)
+        present.add(sel)
+    return merged
 
 
 def resolve_selections(
@@ -85,8 +172,12 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
         allowed_tools=[],
         timeout_s=300,
     )
-    raw_selections = list((select.structured or {}).get("selections") or [])
-    resolved, unresolved = resolve_selections(raw_selections, id_to_path)
+    structured = select.structured or {}
+    raw_selections = list(structured.get("selections") or [])
+    term_queries = [t for t in (structured.get("term_queries") or []) if isinstance(t, str) and t.strip()]
+    term_hits = grep_term_hits(term_queries, id_to_path) if term_queries else []
+    merged_selections = merge_term_hits_into_selections(raw_selections, term_hits)
+    resolved, unresolved = resolve_selections(merged_selections, id_to_path)
 
     # Load section content.
     sections_text, section_records = io.read_selected_sections(resolved)
@@ -101,6 +192,9 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
             duration_s=select.duration_s,
             steps={
                 "raw_selections": raw_selections,
+                "term_queries": term_queries,
+                "term_hits": term_hits,
+                "merged_selections": merged_selections,
                 "resolved": resolved,
                 "unresolved": unresolved,
                 "sections_read": section_records,
@@ -131,6 +225,9 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
         duration_s=select.duration_s + answer.duration_s,
         steps={
             "raw_selections": raw_selections,
+            "term_queries": term_queries,
+            "term_hits": term_hits,
+            "merged_selections": merged_selections,
             "resolved": resolved,
             "unresolved": unresolved,
             "sections_read": section_records,
