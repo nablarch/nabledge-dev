@@ -478,16 +478,12 @@ def _build_rst_search_units(
     top_content = data.get("content", "")
 
     def _norm(t: str) -> str:
-        # Strip MD image syntax entirely — alt text may contain brackets,
-        # so use a loop to handle nested brackets like ![[1]_](url).
-        # URL may contain one level of balanced parens (common in Javadoc
-        # anchors like ``#findAll(java.lang.Class)``).
-        prev = None
-        while prev != t:
-            prev = t
-            t = re.sub(r'!\[[^\n]*?\]\((?:[^()\n]|\([^)\n]*\))+\)', '', t, count=1)
-        # Strip URL bodies from [text](url), keep visible text.
-        t = re.sub(r'\[([^\]\n]+)\]\((?:[^()\n]|\([^)\n]*\))+\)', r'\1', t)
+        # Per spec §3-1 "残存判定の基準", the normalised source (Visitor
+        # output) and JSON content share the same MD syntax by
+        # construction — no post-normalisation is permitted on the verify
+        # side. The only transform here is whitespace collapse to match
+        # the same collapse applied to the source (see
+        # _check_rst_content_completeness).
         return re.sub(r'\s+', ' ', t).strip()
 
     if top_title:
@@ -594,14 +590,10 @@ def _check_rst_content_completeness(
     except UnknownSyntaxError as exc:
         issues.append(f"[QC1] RST parse/visitor error: {exc}")
         return issues
-    # Apply the same URL-stripping normalisation as _build_rst_search_units.
-    prev = None
-    norm_source = norm_source_raw
-    while prev != norm_source:
-        prev = norm_source
-        norm_source = re.sub(r'!\[[^\n]*?\]\((?:[^()\n]|\([^)\n]*\))+\)', '', norm_source, count=1)
-    norm_source = re.sub(r'\[([^\]\n]+)\]\((?:[^()\n]|\([^)\n]*\))+\)', r'\1', norm_source)
-    norm_source = re.sub(r'\s+', ' ', norm_source).strip()
+    # Per spec §3-1 "残存判定の基準": the shared Visitor already produces
+    # MD-equivalent output; no verify-only post-normalisation is permitted.
+    # Collapse whitespace only, to match _build_rst_search_units._norm.
+    norm_source = re.sub(r'\s+', ' ', norm_source_raw).strip()
     search_units = _build_rst_search_units(data)
 
     if not search_units:
@@ -629,23 +621,32 @@ def _check_rst_content_completeness(
             else:  # QC3
                 issues.append(f"[QC3] section '{sid}': duplicate {label}: {orig_unit[:50]!r}")
 
-    # QC1: delete JSON units from the normalised source in JSON order, then
-    # check the residue. Per rbkc-verify-quality-design.md §3-1 (no tolerance
-    # list): any non-whitespace residue is a FAIL. The normalised source
-    # and JSON content are both produced through the shared Visitor, so
-    # they agree on MD syntax — residue means content actually went missing.
-    residue = norm_source
-    for _orig, norm_unit, _sid, _is_c in search_units:
-        if not norm_unit:
-            continue
-        idx = residue.find(norm_unit)
-        if idx == -1:
-            continue
-        residue = residue[:idx] + residue[idx + len(norm_unit):]
+    # QC1: residual check on the normalised source (no tolerance list).
+    # Per `.claude/rules/rbkc.md` ("RST one-snippet vs MD all-fragments —
+    # All fragments"), RST must report every non-whitespace residue
+    # fragment, not a single truncated snippet. Mirror the MD path below.
+    if consumed:
+        consumed_sorted = sorted(consumed)
+        merged: list[list[int]] = []
+        for s, e in consumed_sorted:
+            if merged and s <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], e)
+            else:
+                merged.append([s, e])
+        buf: list[str] = []
+        prev_end = 0
+        for s, e in merged:
+            buf.append(norm_source[prev_end:s])
+            prev_end = e
+        buf.append(norm_source[prev_end:])
+        remaining = "".join(buf)
+    else:
+        remaining = norm_source
 
-    if residue.strip():
-        snippet = residue.strip()[:80]
-        issues.append(f"[QC1] residue not captured in JSON: {snippet!r}")
+    if remaining.strip():
+        for frag in remaining.split():
+            if frag:
+                issues.append(f"[QC1] RST source content not captured: {frag[:50]!r}")
 
     return issues
 

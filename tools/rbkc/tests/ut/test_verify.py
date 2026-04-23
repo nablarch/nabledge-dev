@@ -939,6 +939,25 @@ class TestCheckContentCompleteness:
         issues = self._check(src, data)
         assert any("QC1" in i for i in issues)
 
+    def test_fail_qc1_rst_reports_every_residue_fragment(self):
+        """Spec §3-1 判定分岐 row 4 names residue as non-whitespace text
+        remaining; per `.claude/rules/rbkc.md` ('RST one-snippet vs MD
+        all-fragments — All fragments'), every fragment must be reported.
+        A prior implementation truncated RST residue to a single 80-char
+        snippet, hiding additional gaps. (Z-1 r7 QC1 F2)"""
+        src = "概要\n====\n\n本文。\n\nalpha\n\nbravo\n\ncharlie\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "content": "本文。"}
+            # alpha / bravo / charlie all uncaptured — three disjoint
+            # residue fragments.
+        ])
+        issues = self._check(src, data)
+        qc1 = [i for i in issues if "[QC1]" in i]
+        # Expect one issue per residue fragment, not a single snippet.
+        assert any("alpha" in i for i in qc1), qc1
+        assert any("bravo" in i for i in qc1), qc1
+        assert any("charlie" in i for i in qc1), qc1
+
     def test_pass_rst_syntax_in_residual_allowed(self):
         # Converter renders `.. note::` as `> **Note:** ...` so JSON content
         # includes the MD admonition header. New Visitor renders note body
