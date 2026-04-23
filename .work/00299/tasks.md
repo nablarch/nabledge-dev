@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 59 — 22-B-16 を 16a/16b/16c に分割。SE/QA expert レビュー完了、horizontal class 4 箇所 (silent skip) + circular-test 回避の GitHub slug 独立 pin を反映。設計書 3 本 (verify / converter / json-schema) を更新して本タスクを開始。)
+**Updated**: 2026-04-23 (session 60 — 22-B-16b-prep 完了 `c99d9992b` (file_id derivation を common へ集約、v6 output bit-identical)。22-B-16b-main 着手中。)
 
 ---
 
@@ -122,12 +122,7 @@
     7. v6 再生成 → verify FAIL 0 を確認
     8. SE + QA expert review → Findings 全件対応
   - [x] **22-B-16b-slug**: `scripts/common/github_slug.py` 新規 (GitHub 公式仕様で独立 pin) `27fe72376`。12 unit tests GREEN
-  - [ ] **22-B-16b-prep**: file_id 算出を `scripts/common/file_id.py` に集約 (refactor のみ、behavioural change なし)。SE 推奨 (review-22-b-16b-se.md)
-    1. `common/file_id.py` 新規: `load_mappings`, `rel_for_classify`, `derive_file_id(source_path, format, version, repo_root) -> FileClass`
-    2. `create/scan.py`, `create/classify.py` の対応ロジックを common に移動 + re-export
-    3. TDD: `tests/ut/test_file_id.py` — 各 mapping entry を spec-pinned (classify 出力ではなく mapping 仕様から hand-computed)
-    4. v6 create → file_id が変わらない (bit-identical) を確認
-    5. SE review → Findings 全件対応
+  - [x] **22-B-16b-prep**: file_id 算出を `scripts/common/file_id.py` に集約 (refactor のみ) — `c99d9992b`。v6 create output md5 `5c652df3...` 不変、verify FAIL 0、326 unit tests GREEN。SE 1 Finding (tautological test) 同コミットで修正済
   - [ ] **22-B-16b-main**: labels.py 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化
     1. TDD RED: `TestLabelTarget` / `TestDocMap` (labels.py 拡張)
     2. TDD RED: `TestCheckSourceLinks_JsonSide` / `TestCheckSourceLinks_DocsMdSide` (各 link kind × pass/fail)
