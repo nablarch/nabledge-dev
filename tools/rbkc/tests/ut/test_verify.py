@@ -1609,6 +1609,41 @@ class TestCheckSourceLinks:
         data = self._data(content="サンプル画像の説明 が JSON にある。")
         assert self._check(src, "rst", data) == []
 
+    def test_pass_rst_substitution_image_body_skipped(self):
+        """Spec §3-2 line 268: substitution-body content (e.g. `.. |x|
+        image::` body) must be excluded from QL1 by AST-attribute /
+        parent-ancestry. The substituted occurrence is the reader-visible
+        one and is covered by the paragraph it appears in. (Z-1 r7 QL1 F1)"""
+        src = (
+            "概要\n====\n\n"
+            "ここに |icon| を挿入します。\n\n"
+            ".. |icon| image:: images/icon.png\n"
+            "   :alt: アイコン\n"
+        )
+        data = self._data(content="ここに ![アイコン](images/icon.png) を挿入します。")
+        issues = self._check(src, "rst", data)
+        # No duplicate QL1 fire on 'アイコン' — the substitution-body
+        # image is skipped; only the paragraph-rendered occurrence
+        # counts, and the JSON contains its alt text.
+        assert not any("QL1" in i and "アイコン" in i for i in issues), issues
+
+    def test_pass_rst_image_dedup_same_alt_not_reported_twice(self):
+        """Z-1 r7 QL1 F2: RST image dedup (mirror of MD's seen_images).
+        When the same alt text appears on two images in one file and
+        JSON omits it, QL1 must fire once — not once per occurrence."""
+        src = (
+            "概要\n====\n\n"
+            ".. image:: images/a.png\n"
+            "   :alt: 共通ロゴ\n"
+            "\n"
+            ".. image:: images/b.png\n"
+            "   :alt: 共通ロゴ\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        qc = [i for i in issues if "QL1" in i and "共通ロゴ" in i]
+        assert len(qc) == 1, qc
+
     def test_fail_rst_figure_inline_only_caption_fallback_to_filename(self):
         """When caption is only RST inline syntax (e.g. [1]_), fall back to
         the image filename (§3-2 table: 'caption が RST inline 構文のみ...')."""

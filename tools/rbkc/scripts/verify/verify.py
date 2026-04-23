@@ -1048,8 +1048,27 @@ def check_source_links(
                         f"[QL1] :ref:`{label}` target title missing from JSON: {title!r}"
                     )
 
-        # figure nodes
+        def _under_substitution(node) -> bool:
+            """True if *node* lives under a substitution_definition subtree.
+
+            Per spec §3-2 symmetry with QL2 (line 268) and rbkc.md decision
+            ("QL1 substitution-body image — include or exclude? → Exclude"),
+            images and figures defined inside a substitution body are not
+            QL1 targets; the visible occurrence is covered by the paragraph
+            where the substitution reference is rendered.
+            """
+            cur = node.parent
+            while cur is not None:
+                if isinstance(cur, nodes.substitution_definition):
+                    return True
+                cur = cur.parent
+            return False
+
+        # figure nodes — dedup matches the MD branch's seen_images.
+        seen_rst_figures: set[str] = set()
         for fig in doctree.findall(nodes.figure):
+            if _under_substitution(fig):
+                continue
             caption_text = ""
             uri = ""
             for ch in fig.children:
@@ -1057,24 +1076,30 @@ def check_source_links(
                     caption_text = ch.astext().strip()
                 elif isinstance(ch, nodes.image):
                     uri = ch.get("uri", "")
-            # Caption that is only an RST inline construct (e.g. "[1]_")
-            # yields no visible text after docutils rendering; fall back to
-            # filename.
             caption_for_check = caption_text if _has_visible_text(caption_text) else ""
             check_text = caption_for_check or (_Path(uri).name if uri else "")
-            if check_text and check_text not in json_full:
+            if not check_text or check_text in seen_rst_figures:
+                continue
+            seen_rst_figures.add(check_text)
+            if check_text not in json_full:
                 issues.append(
                     f"[QL1] figure caption/filename missing from JSON: {check_text!r}"
                 )
 
-        # image nodes outside figures
+        # image nodes outside figures — dedup to match MD branch behaviour.
+        seen_rst_images: set[str] = set()
         for img in doctree.findall(nodes.image):
             if isinstance(img.parent, nodes.figure):
+                continue
+            if _under_substitution(img):
                 continue
             alt = (img.get("alt") or "").strip()
             uri = img.get("uri", "")
             check_text = alt or (_Path(uri).name if uri else "")
-            if check_text and check_text not in json_full:
+            if not check_text or check_text in seen_rst_images:
+                continue
+            seen_rst_images.add(check_text)
+            if check_text not in json_full:
                 issues.append(
                     f"[QL1] image alt/filename missing from JSON: {check_text!r}"
                 )
