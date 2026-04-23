@@ -1,14 +1,5 @@
 # ベースライン比較レポート
 
-> ⚠️ **このレポートの計測は科学的に無効です**
->
-> 取得時点の nabledge-6 skill に RBKC V4 (commit `68c11a9d7`) 移行時の schema 追従漏れが複数残存しており、知識探索パイプラインが壊れた状態で計測されました。
-> - `scripts/full-text-search.sh` の jq 式が dict 前提で、list 形式 JSON に対して 0 hits silent failure
-> - `scripts/get-hints.sh` / `workflows/_knowledge-search/_section-search.md` / `_section-judgement.md` Step 0 が消失済の `.index[].hints` を参照しており機能していない
-> - SKILL.md 72 行目「index.toon with search hints」の記述も実態と乖離
->
-> **前回比較 (RBKC 改善効果の評価) としては使えません**。skill 修正後 (Phase 22-B-14) に baseline を再取得します。このレポートは「何が壊れていたか」の原因分析資料として保存しています。
-
 ## 概要
 
 | 項目 | 前回 | 今回 |
