@@ -54,17 +54,23 @@ def convert(
     file_id: str = "",
     extra_targets: dict[str, str] | None = None,
     source_path: "Path | None" = None,
-    label_map: dict[str, str] | None = None,
+    label_map: dict | None = None,
+    doc_map: dict | None = None,
 ) -> RSTResult:
     """Convert RST *source* to :class:`RSTResult`.
 
-    ``extra_targets`` / ``label_map`` are accepted for signature compatibility
-    with the legacy converter; label resolution is delegated to docutils
-    transforms on the doctree and does not currently consume these maps.
-    They may become useful when cross-document references are added.
+    Phase 22-B-16b: ``label_map`` values may be :class:`LabelTarget`
+    (yielding CommonMark MD links) or bare ``str`` (legacy single-dir
+    title-only rendering).  ``doc_map`` resolves ``:doc:`` targets; pass
+    ``source_path`` so the visitor can resolve relative targets.
     """
     doctree, _warnings = rst_ast.parse(source, source_path=source_path)
-    parts = rst_ast_visitor.extract_document(doctree, label_map=label_map)
+    parts = rst_ast_visitor.extract_document(
+        doctree,
+        label_map=label_map,
+        doc_map=doc_map,
+        source_path=source_path,
+    )
 
     title = parts.top_title or ""
     content = parts.top_content

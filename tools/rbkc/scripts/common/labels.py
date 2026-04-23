@@ -65,87 +65,112 @@ def _is_heading_underline(line: str) -> bool:
 def _scan_rst_labels(rst_path: Path) -> tuple[list[tuple[list[str], str]], str]:
     """Scan a single RST file and return:
 
-    - ``labels_per_heading``: ``[(labels, heading_title)]`` for each heading
-      preceded by label definitions, plus ``[(orphan_labels, "")]`` for the
-      trailing orphan block.
-    - ``doc_title``: the first heading's title (document title), or ``""``
-      when none is found.
+    - ``labels_per_heading``: ``[(labels, heading_title)]`` for each label
+      set, where ``heading_title`` is the resolved section title.
+      Resolution order (matches Sphinx default anchor behaviour):
 
-    Emits the orphan list via the second tuple element with an empty title.
+      1. If the label is immediately followed by a heading, that heading
+         wins (preserves the tight ``.. _foo:\\n\\nTitle\\n====`` idiom).
+      2. Otherwise, the label resolves to the *enclosing section* — the
+         nearest preceding section heading in the same file.
+      3. When neither applies (label appears before any heading), the
+         label is emitted with an empty title and upstream stamps it
+         ``UNRESOLVED``.
+
+    - ``doc_title``: the first heading's title (document title), or ``""``
+      when the file has no heading at all.
     """
     try:
         text = rst_path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return [], ""
     lines = text.splitlines()
-    pending_labels: list[str] = []
-    found: list[tuple[list[str], str]] = []
-    doc_title = ""
 
-    def _flush_unresolved() -> None:
-        nonlocal pending_labels
-        if pending_labels:
-            found.append((list(pending_labels), ""))
-            pending_labels = []
-
+    # Pass 1: collect heading positions and titles.
+    #   headings[i] = (line_index, title)
+    # Overline style (underline above + below) and underline-only are both
+    # recognised.  Any title line followed by an underline counts; any
+    # underline with a non-underline blank-separated line above it counts.
+    headings: list[tuple[int, str]] = []
     i = 0
-    while i < len(lines):
-        line = lines[i]
-        m = _RST_LABEL_DEF_RE.match(line.strip())
-        if m:
-            pending_labels.append(m.group(1) or m.group(2))
-            i += 1
+    n = len(lines)
+    while i < n:
+        stripped = lines[i].strip()
+        if stripped and i + 1 < n and _is_heading_underline(lines[i + 1].strip()):
+            # underline-only: title (i), underline (i+1)
+            headings.append((i, stripped))
+            i += 2
             continue
-
-        stripped = line.strip()
         if _is_heading_underline(stripped):
-            # overline style: underline line reached before title — the title
-            # is the next non-blank line.
-            next_non_blank_idx = next(
-                (j for j in range(i + 1, len(lines)) if lines[j].strip()),
-                None,
+            # overline style: overline (i), title (i+1 non-blank),
+            # underline (i+2).  Tolerate blank lines between overline
+            # and title (docutils does too).
+            next_idx = next(
+                (j for j in range(i + 1, n) if lines[j].strip()), None
             )
             if (
-                next_non_blank_idx is not None
-                and not _is_heading_underline(lines[next_non_blank_idx])
+                next_idx is not None
+                and not _is_heading_underline(lines[next_idx].strip())
+                and next_idx + 1 < n
+                and _is_heading_underline(lines[next_idx + 1].strip())
             ):
-                title = lines[next_non_blank_idx].strip()
-                if pending_labels:
-                    found.append((list(pending_labels), title))
-                    pending_labels = []
-                if not doc_title:
-                    doc_title = title
-            else:
-                _flush_unresolved()
-            i += 1
-            continue
-
-        if stripped and i + 1 < len(lines):
-            underline = lines[i + 1].strip()
-            if _is_heading_underline(underline):
-                # underline-only: title then underline
-                title = stripped
-                if pending_labels:
-                    found.append((list(pending_labels), title))
-                    pending_labels = []
-                if not doc_title:
-                    doc_title = title
-                i += 2
+                headings.append((next_idx, lines[next_idx].strip()))
+                i = next_idx + 2
                 continue
-
-        if pending_labels and not stripped:
-            # blank line between label and heading is allowed
-            i += 1
-            continue
-
-        if pending_labels and stripped:
-            # non-heading content between label and heading: labels don't
-            # resolve.
-            _flush_unresolved()
-
         i += 1
 
-    _flush_unresolved()
+    doc_title = headings[0][1] if headings else ""
+
+    # Pass 2: walk line by line, accumulating pending labels, and for each
+    # label decide its target title.
+    found: list[tuple[list[str], str]] = []
+    pending: list[tuple[int, str]] = []  # (line_index, label_name)
+
+    def _enclosing_section_title(line_idx: int) -> str:
+        """Return the innermost enclosing section's title for a label at
+        ``line_idx``, or ``""`` when no preceding heading exists.
+        """
+        target = ""
+        for h_line, h_title in headings:
+            if h_line < line_idx:
+                target = h_title
+            else:
+                break
+        return target
+
+    def _next_heading_title(line_idx: int) -> str | None:
+        """Return the next heading's title iff it is the very next
+        meaningful content after ``line_idx`` (i.e. only blank lines
+        and other label definitions intervene)."""
+        for h_line, h_title in headings:
+            if h_line <= line_idx:
+                continue
+            # Any non-blank non-label line between line_idx and h_line
+            # breaks the "immediately followed by heading" rule.
+            for k in range(line_idx + 1, h_line):
+                raw = lines[k]
+                if not raw.strip():
+                    continue
+                if _RST_LABEL_DEF_RE.match(raw.strip()):
+                    continue
+                if _is_heading_underline(raw.strip()):
+                    # part of the heading block itself — fine.
+                    continue
+                return None
+            return h_title
+        return None
+
+    for idx, line in enumerate(lines):
+        m = _RST_LABEL_DEF_RE.match(line.strip())
+        if m:
+            pending.append((idx, m.group(1) or m.group(2)))
+
+    for line_idx, label in pending:
+        title = _next_heading_title(line_idx)
+        if not title:
+            title = _enclosing_section_title(line_idx)
+        found.append(([label], title))
+
     return found, doc_title
 
 

@@ -171,6 +171,107 @@ class TestBuildLabelDocMap:
         assert lt.section_title == ""
 
 
+class TestEnclosingSectionResolution:
+    """Orphan labels (declared but not followed by a heading) resolve to
+    the enclosing section's heading — matching Sphinx's default anchor
+    behaviour.  Only labels that appear before any heading in the file
+    remain UNRESOLVED.
+    """
+
+    def test_label_inside_block_quote_resolves_to_enclosing_section(self, tmp_path):
+        """A label nested inside a block_quote under a section must
+        resolve to that section's title (not to UNRESOLVED).
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "big_picture.rst"
+        rst.write_text(
+            "様々な処理方式に対応できる\n"
+            "============================\n\n"
+            "本文。\n\n"
+            " .. _runtime_platform:\n\n"
+            " 実行制御基盤\n"
+            "  * :ref:`web_application`\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        assert "runtime_platform" in m
+        lt = m["runtime_platform"]
+        assert isinstance(lt, LabelTarget)
+        assert lt.title == "様々な処理方式に対応できる"
+        assert lt.section_title == "様々な処理方式に対応できる"
+
+    def test_label_before_any_heading_remains_unresolved(self, tmp_path):
+        """A label that appears before the first heading in a file has no
+        enclosing section — it stays UNRESOLVED.
+        """
+        from scripts.common.labels import build_label_map, UNRESOLVED
+
+        rst = tmp_path / "orphan_first.rst"
+        rst.write_text(
+            ".. _top_level_orphan:\n\n"
+            "Some paragraph that is not a heading.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        assert m.get("top_level_orphan") is UNRESOLVED
+
+    def test_label_in_subsection_resolves_to_subsection_not_parent(self, tmp_path):
+        """Enclosing section is the *innermost* enclosing heading — when a
+        label is under h3, it resolves to the h3 title, not the h2 parent.
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "nested.rst"
+        rst.write_text(
+            "親セクション\n"
+            "============\n\n"
+            "親の本文。\n\n"
+            "子セクション\n"
+            "-------------\n\n"
+            "子の本文。\n\n"
+            " .. _nested_orphan:\n\n"
+            " block_quote 内の段落\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        lt = m.get("nested_orphan")
+        assert lt is not None
+        assert lt.title == "子セクション"
+        assert lt.section_title == "子セクション"
+
+    def test_label_directly_before_heading_still_wins(self, tmp_path):
+        """When a label *is* directly followed by a heading, the heading
+        (not the outer enclosing section) is the target — the existing
+        behaviour must not regress.
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "direct.rst"
+        rst.write_text(
+            "親セクション\n"
+            "============\n\n"
+            "親の本文。\n\n"
+            ".. _direct_label:\n\n"
+            "直接の見出し\n"
+            "--------------\n\n"
+            "本文。\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        lt = m.get("direct_label")
+        assert lt is not None
+        assert lt.title == "直接の見出し"
+
+
 class TestBuildLabelMapBackwardCompat:
     """The old ``build_label_map(source_dir) -> dict[label, str|UNRESOLVED]``
     must keep working so downstream callers that haven't migrated keep going.

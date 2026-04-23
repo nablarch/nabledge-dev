@@ -107,7 +107,13 @@ class _MDVisitor:
     recursion stays readable.
     """
 
-    def __init__(self, label_map: dict[str, str] | None = None) -> None:
+    def __init__(
+        self,
+        label_map: dict | None = None,
+        doc_map: dict | None = None,
+        source_path=None,
+        source_root=None,
+    ) -> None:
         self.warnings: list[str] = []
         # Current indent for list / blockquote nesting (as a prefix string).
         self._prefix: str = ""
@@ -115,8 +121,18 @@ class _MDVisitor:
         self._enum_stack: list[int] = []
         # Cross-document label → target-title map (used to resolve :ref:
         # whose target lives in another file; docutils only resolves within
-        # one doctree).
-        self._label_map: dict[str, str] = label_map or {}
+        # one doctree).  Phase 22-B-16b: values may be :class:`LabelTarget`
+        # or bare ``str`` (legacy single-dir mode where file_id is absent).
+        # LabelTarget with non-empty file_id emits a CommonMark MD link;
+        # otherwise the visitor falls back to plain title text.
+        self._label_map: dict = label_map or {}
+        # rst_relpath -> LabelTarget for :doc: resolution (Phase 22-B-16b).
+        self._doc_map: dict = doc_map or {}
+        # Path of the RST file being rendered — enables :doc: resolution
+        # of relative targets like ``:doc:`../foo/bar```.
+        self._source_path = source_path
+        # Source root (repo/v6/ja) — used to compute rel-for-classify keys.
+        self._source_root = source_root
 
     # ------------------------------------------------------------------
     # Public entry
@@ -656,6 +672,79 @@ class _MDVisitor:
         # :method / :field) emit raw text.
         return raw
 
+    # ------------------------------------------------------------------
+    # Phase 22-B-16b step 2: CommonMark MD-link emission for internal refs
+    # ------------------------------------------------------------------
+
+    def _render_label_target(self, target, display_text: str) -> str:
+        """Render a label_map value as a CommonMark MD link or plain text.
+
+        - :class:`LabelTarget` with non-empty ``file_id`` + ``category``
+          → ``[display](../{category}/{file_id}.md#{github_slug(section_title)})``
+          (no ``#anchor`` when ``section_title`` is empty).
+        - Bare ``str`` value (legacy single-dir mode): plain text fallback.
+        - ``LabelTarget`` with empty ``file_id`` (single-dir build): plain
+          text fallback, using the resolved ``title``.
+        """
+        if isinstance(target, str):
+            return display_text or target
+        file_id = getattr(target, "file_id", "") or ""
+        category = getattr(target, "category", "") or ""
+        title = getattr(target, "title", "") or ""
+        section_title = getattr(target, "section_title", "") or ""
+        display = display_text or title
+        if not file_id or not category:
+            return display
+        from scripts.common.github_slug import github_slug
+        if section_title:
+            return f"[{display}](../{category}/{file_id}.md#{github_slug(section_title)})"
+        return f"[{display}](../{category}/{file_id}.md)"
+
+    def _resolve_doc_target(self, target_path: str):
+        """Resolve a ``:doc:`` path against ``source_path`` and look it up
+        in ``doc_map``.  Returns ``LabelTarget`` or ``None``.
+
+        The path is relative to the current RST file.  Normalise with
+        ``.resolve()`` and compare against doc_map keys by longest suffix
+        match — doc_map keys are the ``rel_for_classify`` output, so
+        the resolved absolute path must end with one of them.
+        """
+        if not self._doc_map or self._source_path is None:
+            return None
+        tp = target_path.strip()
+        if not tp.endswith(".rst"):
+            tp_rst = tp + ".rst"
+        else:
+            tp_rst = tp
+        try:
+            from pathlib import Path as _Path
+            resolved = (_Path(self._source_path).parent / tp_rst).resolve()
+        except (OSError, ValueError):
+            return None
+        resolved_str = str(resolved).replace("\\", "/")
+        best_key = None
+        best_len = -1
+        for key in self._doc_map:
+            if resolved_str.endswith("/" + key) or resolved_str == key:
+                if len(key) > best_len:
+                    best_key = key
+                    best_len = len(key)
+        if best_key is None:
+            return None
+        return self._doc_map[best_key]
+
+    def _resolve_label_or_fail(self, label: str):
+        """Return a LabelTarget (or legacy str) for ``label``.
+
+        Unresolved → :class:`UnresolvedReferenceError`.  UNRESOLVED
+        sentinel → same FAIL (zero-exception §3-2-2).
+        """
+        from scripts.common.labels import UNRESOLVED
+        r = self._label_map.get(label)
+        if r is None or r is UNRESOLVED:
+            raise UnresolvedReferenceError(f"unresolved :ref: {label}")
+        return r
+
     def inline_reference(self, node: nodes.reference) -> str:
         text = self.render_inline(node)
         refuri = node.get("refuri")
@@ -754,11 +843,19 @@ def _join_blocks(parts: list[str | None]) -> str:
 
 def extract_document(
     doctree: nodes.document,
-    label_map: dict[str, str] | None = None,
+    label_map: dict | None = None,
+    doc_map: dict | None = None,
+    source_path=None,
+    source_root=None,
 ) -> DocumentParts:
     """Walk the document and return top-level title/content + sections."""
     parts = DocumentParts()
-    visitor = _MDVisitor(label_map=label_map)
+    visitor = _MDVisitor(
+        label_map=label_map,
+        doc_map=doc_map,
+        source_path=source_path,
+        source_root=source_root,
+    )
 
     # Separate top-level content (before first section) from sections.
     top_children: list[nodes.Node] = []

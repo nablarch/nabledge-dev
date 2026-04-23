@@ -3340,8 +3340,11 @@ class TestLabelMapStrict:
         assert label_map.get("orphan-label") == UNRESOLVED, label_map
 
     def test_label_orphan_at_end_of_file(self, tmp_path):
-        """Orphan label at EOF (no lines after it) → UNRESOLVED."""
-        from scripts.common.labels import build_label_map, UNRESOLVED
+        """A label at EOF (no following heading) resolves to the enclosing
+        section — matches Sphinx anchor behaviour (§3-2-2 interpretation
+        confirmed 2026-04-23).
+        """
+        from scripts.common.labels import build_label_map
         src = tmp_path / "foo.rst"
         src.write_text(
             "見出し\n"
@@ -3351,7 +3354,9 @@ class TestLabelMapStrict:
             encoding="utf-8",
         )
         label_map = build_label_map(tmp_path)
-        assert label_map.get("trailing-orphan") == UNRESOLVED, label_map
+        lt = label_map.get("trailing-orphan")
+        assert lt is not None
+        assert lt.title == "見出し"
 
     def test_stacked_orphan_labels_all_reported(self, tmp_path):
         """Multiple consecutive labels followed by a paragraph → all UNRESOLVED."""
@@ -3386,7 +3391,10 @@ class TestLabelMapStrict:
         label_map = build_label_map(tmp_path)
         assert label_map.get("resolved-a").title == "見出し"
         assert label_map.get("resolved-b").title == "見出し"
-        assert label_map.get("orphan-after") is UNRESOLVED, label_map
+        # Phase 22-B-16b step 2: a label declared after the heading but
+        # not directly followed by another heading resolves to the
+        # enclosing section (Sphinx anchor semantics).
+        assert label_map.get("orphan-after").title == "見出し"
 
     def test_orphan_sentinel_does_not_leak_into_rst_inline_reference(self):
         """Horizontal-class regression: rst_ast_visitor.inline_reference must

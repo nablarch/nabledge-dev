@@ -36,7 +36,7 @@ from scripts.create.docs import generate_docs
 from scripts.create.index import generate_index
 from scripts.create.resolver import collect_asset_refs, copy_assets
 from scripts.create.scan import scan_sources
-from scripts.common.labels import build_label_map
+from scripts.common.labels import build_label_doc_map, build_label_map  # noqa: F401
 from scripts.verify.verify import (
     verify_file,
     verify_docs_md,
@@ -77,13 +77,16 @@ def _convert_and_write(
     fi: FileInfo,
     output_dir: Path,
     label_map: dict | None = None,
+    doc_map: dict | None = None,
 ) -> None:
     """Convert one source file and write its knowledge JSON to *output_dir*.
 
     Args:
         fi: FileInfo for the source file.
         output_dir: Output directory for knowledge JSON files.
-        label_map: RST label→title map for :ref: resolution.
+        label_map: RST label→LabelTarget map (legacy bare-str values still
+            accepted for backward compat).
+        doc_map: rst_relpath→LabelTarget map for :doc: resolution.
     """
     convert = _converter_for(fi.format, fi.source_path.name)
 
@@ -91,7 +94,9 @@ def _convert_and_write(
         result = convert(
             fi.source_path.read_text(encoding="utf-8", errors="replace"),
             fi.file_id,
+            source_path=fi.source_path,
             label_map=label_map,
+            doc_map=doc_map,
         )
     elif fi.format == "md":
         result = convert(fi.source_path.read_text(encoding="utf-8", errors="replace"), fi.file_id)
@@ -192,16 +197,13 @@ def create(
     sources = scan_sources(version, repo_root, files)
     file_infos = classify_sources(sources, version, repo_root)
 
-    # Build RST label map for :ref: resolution in converters
-    from scripts.create.scan import _source_roots
-    label_map: dict = {}
-    for src_root in _source_roots(version, repo_root):
-        if src_root.exists():
-            label_map.update(build_label_map(src_root))
+    # Phase 22-B-16b: single call replaces per-source-root walks, and
+    # also returns doc_map for :doc: resolution.
+    label_map, doc_map = build_label_doc_map(version, repo_root)
 
     all_asset_refs = []
     for fi in file_infos:
-        _convert_and_write(fi, output_dir, label_map)
+        _convert_and_write(fi, output_dir, label_map, doc_map)
         if fi.format == "rst":
             all_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
 
@@ -232,12 +234,8 @@ def update(
     sources = scan_sources(version, repo_root, files)
     file_infos = classify_sources(sources, version, repo_root)
 
-    # Build RST label map for :ref: resolution in converters
-    from scripts.create.scan import _source_roots
-    label_map: dict = {}
-    for src_root in _source_roots(version, repo_root):
-        if src_root.exists():
-            label_map.update(build_label_map(src_root))
+    # Phase 22-B-16b: see create().
+    label_map, doc_map = build_label_doc_map(version, repo_root)
 
     snap_path = _snapshot_path(state_dir, version)
     old_snap = load_snapshot(snap_path)
@@ -251,7 +249,7 @@ def update(
     for fi in file_infos:
         rel = str(fi.source_path.relative_to(repo_root)).replace("\\", "/")
         if rel in changed_keys:
-            _convert_and_write(fi, output_dir, label_map)
+            _convert_and_write(fi, output_dir, label_map, doc_map)
             if fi.format == "rst":
                 changed_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
             count += 1
@@ -328,12 +326,10 @@ def verify(
     docs_dir = output_dir.parent / "docs"
     all_ok = True
 
-    # Build global RST label map once for Check C source-driven link verification
-    from scripts.create.scan import _source_roots
-    label_map: dict = {}
-    for src_root in _source_roots(version, repo_root):
-        if src_root.exists():
-            label_map.update(build_label_map(src_root))
+    # Phase 22-B-16b: single call for QL1 link verification.  doc_map
+    # is currently read via the label_map (LabelTarget per-file; QL1
+    # consumers resolve file_id through it).
+    label_map, _doc_map = build_label_doc_map(version, repo_root)
 
     for fi in file_infos:
         # B3: use repo-relative source path in FAIL lines
