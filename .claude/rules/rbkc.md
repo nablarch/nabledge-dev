@@ -52,3 +52,49 @@ verify changes require explicit user approval before implementation.
    - Write the verify unit test → confirm RED
    - Implement the verify check → confirm GREEN
    - Implement the RBKC fix → confirm verify GREEN on actual output
+
+## Decide from the spec and quality standard — do not punt to the user
+
+The `rbkc-verify-quality-design.md` spec plus the ゼロトレランス quality
+standard (§2-1: 1% のリスクも許容しない) already determine the answer to
+most design / review questions. Derive that answer yourself and implement
+it. Do not ask the user to pick between options the standard has ruled out.
+
+**Examples the standard already decides:**
+
+- "1-char Excel residue — tolerate or FAIL?" → FAIL. Spec §3-1 Excel
+  節 says any residue other than whitespace is QC2.
+- "JSON section with empty content — skip or match?" → Match. Spec §3-3
+  requires verbatim containment.
+- "`:role:` regex — must the closing backtick be required per spec wording?"
+  → Yes. Spec §3-1 QC5 writes `:role:\`text\`` (both backticks).
+- "QL1 substitution-body image — include or exclude?" → Exclude, by spec
+  symmetry with QL2's explicit substitution-body URL exclusion.
+- "QC1 residue reporting — RST one-snippet vs MD all-fragments — which
+  is correct?" → All fragments. The one-snippet form hides gaps, which
+  ゼロトレランス forbids.
+
+**Ask the user only when:**
+
+1. The spec is silent and the quality standard does not force a direction, AND
+2. Multiple directions all pass the standard but affect user-visible behaviour
+   (output format, API shape, process) that the user owns.
+
+In that case, state the spec gap, propose the stricter direction (default
+under ゼロトレランス), and ask for confirmation — not an open-ended menu.
+
+## Review findings — default is fix, not triage
+
+All Medium and higher findings from a bias-avoidance QA review are
+blocking unless the spec / standard says otherwise. "Low impact in v6"
+is not a valid defer reason — ゼロトレランス forbids accepting risk
+just because the corpus happens not to exercise it right now.
+
+Acceptable defer reasons:
+- The finding names behaviour the spec explicitly sanctions (with the
+  clause quoted), and the reviewer missed that sanction.
+- The finding is Low-severity cosmetic drift that cannot cause a spec
+  violation (e.g. message formatting, docstring wording).
+
+Any other deferral needs the user's explicit approval with the spec
+clause that permits the deferral quoted inline.

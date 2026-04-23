@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 52 — Phase 21-Z の Z-1 完了: QA エキスパート 11 並列レビューで gap を洗い出し、設計ドリフト 3 件解消 (RST strict_unknown=True / MD image QL1 / QO4 双方向チェック) + gap test 追加で 11 観点すべてが ✅ 化 (実装 + テスト + v6 FAIL 0 の三条件)。190 unit test GREEN / v6 FAIL 0。次は Z-5 nabledge-test v6 ベースライン → Phase 19 他バージョン展開。)
+**Updated**: 2026-04-23 (session 53 — Z-1 を r2〜r6 の 5 ラウンド bias-avoidance QA レビューで反復中。r6 で ✅10/⚠️1/❌0。Medium 19 件が残っており、次セッションは spec §2-1 ゼロトレランスに従って**全件対応**してから r7 で最終確認・§4 マトリクス復元。`.claude/rules/rbkc.md` に「spec と品質基準から自分で判断せよ、ユーザーに open question を丸投げするな」「Medium 以上は原則全て潰す」ルールを追記した。)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -53,7 +53,45 @@
 
 ## In Progress
 
-_(none — session 52 で Phase 21-Z の Z-1 完了。次は Z-5 から。)_
+### Phase 21-Z Z-1: QA 反復レビュー → マトリクス復元
+
+**Status**: r6 完了 (`3e94a1f2e` / `729eba193`)。✅10 / ⚠️1 (QC1) / ❌0。Medium 19 件が未対応のため §4 マトリクスはまだ ⚠️ のまま。
+
+**背景ログ (セッション 52 から今まで)**:
+- r2 で bias-avoidance 明示により critical 5 件 + circular test 5 件発覚
+- r3-r6 で critical/❌ は全て解消、Medium は毎ラウンドほぼそのまま残存
+- 原因: 私が毎ラウンド「critical/High だけ潰す」をやって Medium を defer してきた
+- ルール追記 (今セッション、`.claude/rules/rbkc.md`): spec + ゼロトレランスから自分で決定する、review の Medium 以上はデフォルト全件対応する
+
+**Steps:**
+- [ ] r6 Medium 19 件を spec §2-1 ゼロトレランスに従い**全件**対応
+  - **A 実装 spec 逸脱 (3)**:
+    - [ ] QC1 `verify.py:551-557` の image/link/whitespace post-normalisation を Visitor に統合または削除 (spec §3-1 残存判定の基準: create/verify は同じ normaliser を共有)
+    - [ ] QC5 `_RST_LABEL_RE` を `^\.\.\s+_[a-zA-Z0-9_-]+:` (MULTILINE) に行アンカー
+    - [ ] QC5 `_RST_ROLE_RE` を `:role:\`text\`` (閉じ backtick 必須) に厳格化
+  - **B circular test (3)**:
+    - [ ] QL2 parens URL test — 期待値を AST 出力から derive しない形に
+    - [ ] QC3 OR assert 4 箇所 (`"QC3" in i`) を spec ラベルのみに
+    - [ ] QO2 symmetric rewrite test — `docs._rewrite_asset_links` を呼んで期待値生成
+  - **C 実バグ (1)**:
+    - [ ] QL1 RST substitution image の重複 FAIL → `seen_images` dedup 追加、さらに spec §3-2 対称性により substitution 内 image は QL1 対象外へ
+  - **D テスト欠落 (12)**:
+    - [ ] QC1 no_knowledge_content RST/MD early-return テスト
+    - [ ] QC1 multi-fragment residue reporting 対称化 (RST も MD 同様に全件報告) + テスト
+    - [ ] QC3 whitespace-only unit false-fire PASS test
+    - [ ] QC4 `test_fail_qc3_qc4_boundary_duplicate_text_misplaced` docstring / assertion 不一致を 2 テストに split
+    - [ ] QC4 3-section circular rotation RST + MD
+    - [ ] QL1 `javascript:` scheme PASS test
+    - [ ] QL1 empty-href `[text]()` PASS test
+    - [ ] QL1 RST figure `:alt:`-only → filename fallback test
+    - [ ] QL2 RST bare URL (prose 内) PASS + FAIL
+    - [ ] QL2 CommonMark autolink Visitor unit test / duplicate dedup FAIL side
+    - [ ] QO2 fenced `##` inside top content PASS test
+    - [ ] QO2 empty section content: skip を削除 (spec §3-3 完全一致) + FAIL テスト
+    - [ ] QO3 dangling docs MD (MD だけあって JSON 無し) を QO3 FAIL に追加 + テスト
+- [ ] r7 QA レビュー (bias-avoidance 11 並列) で全 ✅ 確認
+- [ ] 設計書 §4 品質マトリクスを ✅ に復元
+- [ ] Z-1 完了コミット
 
 ---
 
