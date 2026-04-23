@@ -151,10 +151,15 @@ class _MDVisitor:
     # ------------------------------------------------------------------
 
     def visit_system_message(self, node: nodes.system_message) -> str | None:
+        # Per rbkc-verify-quality-design.md §3-1b: docutils parse errors
+        # (level >= 3) are QC1 FAIL. Warnings (level 2) are recorded for
+        # optional surfacing; infos (level 1) are ignored.
         level = node.get("level", 0)
+        line = node.get("line", "?")
+        text = node.astext()[:120]
+        if level >= 3:
+            raise VisitorError(f"RST parse error (level={level}) at line {line}: {text}")
         if level >= 2:
-            line = node.get("line", "?")
-            text = node.astext()[:120]
             self.warnings.append(f"level={level} line={line} {text}")
         return None
 

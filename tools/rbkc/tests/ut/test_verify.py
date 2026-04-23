@@ -335,6 +335,61 @@ class TestVerifyFileQC5:
         data = {"id": "f", "title": "T", "no_knowledge_content": True, "sections": []}
         assert self._check(data, "rst") == []
 
+    # --- QC5 Z-1 gap fill -------------------------------------------------
+
+    def test_pass_rst_heading_underline_in_code_block_content(self):
+        """Heading underline `====` can legitimately appear inside code
+        blocks in content; QC5 restricts the underline check to titles only."""
+        content_with_code = "```\n===== \n```"
+        data = {"id": "f", "title": "概要", "content": "",
+                "sections": [{"id": "s1", "title": "詳細", "content": content_with_code}]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i and "underline" in i] == []
+
+    def test_pass_rst_role_marker_without_backtick_arg(self):
+        """`:role:` without the `\\`text\\`` argument is not the role syntax
+        per spec §3-1 QC5 ("`:role:\\`text\\`` パターン"); must not FAIL."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "フィールド :name: 値 のような行は許容"}
+        ]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i and "role" in i] == []
+
+    def test_pass_rst_japanese_punctuation_not_confused_with_role(self):
+        """Japanese colon-like punctuation must not be mistaken for a role."""
+        data = {"id": "f", "title": "概要", "content": "", "sections": [
+            {"id": "s1", "title": "詳細", "content": "注意：ここは普通の文章です。"}
+        ]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i] == []
+
+    def test_fail_md_summary_tag(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "<summary>タイトル</summary>"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_br_tag(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "改行<br>入り"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_a_tag(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "<a href='x'>link</a>"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_escaped_underscore(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": r"word\_word"}
+        ]}
+        assert any("QC5" in i and "backslash" in i for i in self._check(data, "md"))
+
+    def test_fail_md_escaped_bracket(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": r"\[not a link\]"}
+        ]}
+        assert any("QC5" in i and "backslash" in i for i in self._check(data, "md"))
+
 
 # ---------------------------------------------------------------------------
 # QL2: 外部URL一致
@@ -625,6 +680,109 @@ class TestCheckContentCompleteness:
         ])
         assert self._check(src, data) == []
 
+    # --- QC1 Z-1 gap fill: parse / Visitor error paths -------------------
+
+    def test_fail_qc1_md_parse_visitor_error(self):
+        """MD markdown-it parse error surfaces as [QC1] markdown parse/visitor error."""
+        # A synthetic token type that md_ast_visitor will reject with
+        # UnknownTokenError is hard to produce at parse time; instead,
+        # stub md_ast.parse to raise.
+        import scripts.common.md_normaliser as md_norm
+        from scripts.common.md_ast_visitor import UnknownTokenError
+
+        def _bad_extract(tokens):
+            raise UnknownTokenError("synthetic: unknown token 'xxx'")
+
+        orig = md_norm.md_ast_visitor.extract_document
+        md_norm.md_ast_visitor.extract_document = _bad_extract
+        try:
+            issues = self._check("# T\n\n本文。\n", self._data(title="T"), fmt="md")
+        finally:
+            md_norm.md_ast_visitor.extract_document = orig
+        assert any("[QC1]" in i and "markdown parse/visitor error" in i for i in issues)
+
+    def test_fail_qc1_rst_unknown_role_surfaces(self):
+        """Unknown RST role (not in Sphinx shim list) → UnknownSyntaxError → QC1 FAIL."""
+        # `:unknownshim:` is not in _SPHINX_INLINE_ROLES and not a docutils native role
+        src = "概要\n====\n\nテキスト :unknownshim:`x` を含む。\n"
+        data = self._data(sections=[{"id": "s1", "title": "概要", "content": "テキスト を含む。"}])
+        issues = self._check(src, data)
+        assert any("[QC1]" in i and "RST parse/visitor error" in i for i in issues)
+
+    # --- QC2 Z-1 gap fill: multiple fabrications + top-level + near-miss ---
+
+    def test_fail_qc2_multiple_fabricated_contents(self):
+        src = "概要\n====\n\n本文。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "content": "捏造 A。"},
+            {"id": "s2", "title": "詳細", "content": "捏造 B。"},
+        ])
+        issues = self._check(src, data)
+        qc2 = [i for i in issues if "QC2" in i]
+        assert len(qc2) >= 2
+
+    def test_fail_qc2_top_level_fabricated_content(self):
+        src = "概要\n====\n\n本文。\n"
+        data = self._data(title="概要", content="存在しないトップレベル本文。",
+                          sections=[{"id": "s1", "title": "概要", "content": "本文。"}])
+        issues = self._check(src, data)
+        assert any("QC2" in i and "fabricated content" in i for i in issues)
+
+    def test_fail_qc2_near_miss_one_char_differs(self):
+        src = "概要\n====\n\nABCDEFG\n"
+        data = self._data(sections=[{"id": "s1", "title": "概要", "content": "ABCXEFG"}])
+        issues = self._check(src, data)
+        assert any("QC2" in i for i in issues)
+
+    # --- QC3 Z-1 gap fill: all 4 untested paths + CJK short collision ----
+
+    def test_fail_qc3_duplicate_content_rst(self):
+        src = "概要\n====\n\n共通テキスト。\n\n詳細\n====\n\n別テキスト。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "content": "共通テキスト。"},
+            {"id": "s2", "title": "詳細", "content": "共通テキスト。"},  # content in JSON not in source twice
+        ])
+        issues = self._check(src, data)
+        assert any("QC3" in i or "duplicate content" in i for i in issues)
+
+    def test_fail_qc3_duplicate_title_md(self):
+        src = "# T\n\n## 概要\n\n本文 A。\n\n## 詳細\n\n本文 B。\n"
+        data = self._data(title="T", sections=[
+            {"id": "s1", "title": "概要", "content": "本文 A。"},
+            {"id": "s2", "title": "概要", "content": "本文 B。"},  # duplicate title in JSON
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("QC3" in i for i in issues)
+
+    def test_fail_qc3_duplicate_content_md(self):
+        src = "# T\n\n## 概要\n\n本文。\n\n## 詳細\n\n別。\n"
+        data = self._data(title="T", sections=[
+            {"id": "s1", "title": "概要", "content": "本文。"},
+            {"id": "s2", "title": "詳細", "content": "本文。"},  # JSON duplicates source "本文。" substring
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("QC3" in i or "duplicate content" in i for i in issues)
+
+    # --- QC4 Z-1 gap fill: MD misplacement + content-only swap ------------
+
+    def test_fail_qc4_misplaced_title_md(self):
+        src = "# T\n\n## 詳細\n\n詳細内容。\n\n## 概要\n\n概要内容。\n"
+        data = self._data(title="T", sections=[
+            {"id": "s1", "title": "概要", "content": "概要内容。"},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。"},
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("QC4" in i for i in issues)
+
+    def test_fail_qc4_misplaced_content_rst(self):
+        src = "概要\n====\n\nA の内容。\n\n詳細\n====\n\nB の内容。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "content": "B の内容。"},  # swapped
+            {"id": "s2", "title": "詳細", "content": "A の内容。"},
+        ])
+        issues = self._check(src, data)
+        assert any("QC4" in i for i in issues)
+
 
 # ---------------------------------------------------------------------------
 # Excel QC1/QC2/QC3: verify_file(fmt="xlsx")
@@ -684,6 +842,43 @@ class TestVerifyFileExcel:
         wb.save(xlsx_path)
         data = {"id": "f", "title": "T", "no_knowledge_content": True, "sections": []}
         assert self._check(str(xlsx_path), data) == []
+
+    def test_fail_qc2_fabricated_content_in_json(self, tmp_path):
+        """Excel QC2: JSON text contains a string not present in any cell."""
+        try:
+            import openpyxl
+        except ImportError:
+            pytest.skip("openpyxl not available")
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "セル値A"
+        ws["A2"] = "セル値B"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        # JSON has an extra string that no cell covers — QC2 fabrication.
+        data = {"id": "f", "title": "セル値A", "content": "これは捏造された追加本文です。",
+                "sections": [{"id": "s1", "title": "セル値B", "content": ""}]}
+        issues = self._check(str(xlsx_path), data)
+        assert any("QC2" in i for i in issues)
+
+    def test_fail_qc3_duplicate_cell_in_json(self, tmp_path):
+        """Excel QC3: two source cells with the same value but JSON only
+        contains that value once → second match falls into the consumed
+        region → QC3 duplicate."""
+        try:
+            import openpyxl
+        except ImportError:
+            pytest.skip("openpyxl not available")
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "同じ"
+        ws["B1"] = "同じ"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        data = {"id": "f", "title": "同じ", "content": "",
+                "sections": []}
+        issues = self._check(str(xlsx_path), data)
+        assert any("QC3" in i or "duplicated" in i for i in issues)
 
 
 # ---------------------------------------------------------------------------
