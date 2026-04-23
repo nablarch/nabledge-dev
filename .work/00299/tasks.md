@@ -138,8 +138,17 @@
 - [ ] QO2 F2 silent skip 削除 / F1 F4 circular 解消 / F3 test
 - [ ] QO3 F1 MD→JSON 方向 + F2 test
 - [ ] QO4 F1-F7 修正
-- [ ] `pytest tests/` GREEN + `bash rbkc.sh verify 6` → FAIL 0
-- [ ] r8 bias-avoidance QA review 11 並列 → 全 0 Finding
+- [x] `pytest tests/` GREEN + `bash rbkc.sh verify 6` → FAIL 0
+- [x] r8 bias-avoidance QA review 11 並列 — 5 観点 ✅ / 6 観点で新 Finding
+- [ ] r8 Finding の実質 fix (後続 reviewer が binary ルール違反で Medium/Low を使ったため、spec 条文違反のみ抽出)
+  - [ ] QC2 F-QC2-1: Excel `_MD_SYNTAX_RE` に `---` standalone 追加 (spec §3-1 Excel 節 許容構文)
+  - [ ] QC3 F1: 3 テスト (L1215, L1494, L1507) の `"QC3"` substring を `"[QC3]"` label-exact に
+  - [ ] QL1 F1: substitution-body skip test を真の RED fixture に (JSON から alt 省略して skip を pin)
+  - [ ] QL1 F2: RST figure dedup test 追加 (MD dedup と対称)
+  - [ ] QO1 F1: order 比較を `##`/`###` 両方許容する形に (現 `##`-only equality が spec-sanctioned `###` section title で spurious FAIL)
+  - [ ] QO4 F1: column-count error 時の spurious row-count double-FAIL 抑制
+  - [ ] QO4 F3: second files[] header 以降の row を silent に drop しない
+- [ ] r9 bias-avoidance QA review → 0 Finding
 - [ ] 設計書 §4 マトリクス復元
 - [ ] Z-1 完了コミット
 
