@@ -3,95 +3,92 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-23 (root cause analysis done)
+**Updated**: 2026-04-23 (phase split: search → answer)
 
 ## ゴール (この PR の本質)
 
-ids flow の L1 以下を 0 にする。それが達成できて初めて current より「明確に良い」と言える。
-L1 を残したまま speed 指標だけで ids 採用を提案しても Nabledge 品質基準 (1% リスク排除 / 品質は二値) に反する。
+ids flow の L1 以下を 0 にする。Nabledge 品質基準 (1% リスク排除 / 品質は二値) に沿う。
 
-## 現在地
+## アプローチ: 段階分離
 
-- judge を A 事前準備 / B,C は KB (reference + retrieved) で LLM 判定する方式に確定
-- 30 scenario 全件に A-fact を手書き (review-01 は私が手書き、29件は Agent 草案→私がレビュー→17件修正)
-- ids 30件 rejudge: mean=2.10, L3=16, L1=13, None=1 (req-09), cost=$16.48, 32.3min
-- current 30件 rejudge: mean=2.17, L3=18, L1=11, L0=1, cost=$15.60, 51.3min
+検索 → 回答 → 判定 の連鎖問題を一気に追うと原因が混線する。Phase 1 で検索だけを完成させ、その後 Phase 2 で回答に進む。
 
-## ids L1 以下 14件の症状分類 (事実 = judge output ベース)
+### Phase 1: 検索 LLM (AI-1) の精度向上 ← 今ここ
 
-**A-only fail (9件)** — A-fact 欠け、C なし
-- impact-01 (L1): A1/A2 PARTIAL/MISSING (TransactionManagementHandler, 往路/復路)
-- impact-04 (L1): A3 MISSING (RetryHandler 配置順)
-- impact-06 (L1): A3 PARTIAL (手動 nonce 付与 / JS 外出しの選択肢)
-- impact-07 (L1): A2 PARTIAL, A4/A5 MISSING (内部フォワード認可の設定群)
-- impact-10 (L1): A3 MISSING (PermissionCheckHandler 参照)
-- req-04 (L1): A2/A3 MISSING (useToken / @UseToken)
-- req-05 (L1): A3 MISSING (コード名称多言語化)
-- review-03 (L1): A2 PARTIAL (リソースクラスとアノテーションの結びつけ)
-- review-08 (L1): A5 PARTIAL (例外時の他スレッド終了描写)
+**目的**: a_fact の根拠 section が必ず selections に入る状態にする。
 
-**C-only fail (2件)** — A は全 COVERED だが C あり
-- impact-03 (L1): CONTRADICTION (他スレッドが「ロールバック」、KB は「正常終了」)
-- review-01 (L1): CONTRADICTION (data_bind 前提で ValidatableFileDataReader 推薦)
+**測定**: 検索 LLM のみ実行し `selections` と `term_queries` のマージ集合で coverage 判定する。回答 LLM / judge は呼ばない (1 件 10〜20 秒 / $0.05 程度)。
 
-**A+C fail (2件)**
-- impact-08 (L1): A3 MISSING (@AssertTrue) + C UNSUPPORTED (「標準機能として提供されていない」を勝手に断言)
-- req-10 (L1): A3 PARTIAL + C CONTRADICTION ($url$ プレースホルダの誤用)
+**指標**: "必要な section がすべて selections に含まれているか" の 0/1 / 30 件で 100% を目指す。
 
-**None (1件)**
-- req-09: AI-1 が selections=[] を返して answer 未生成 (ビルトインなし質問)
+### Phase 2: 回答 LLM (AI-3) の改善 (Phase 1 完了後)
 
-## 次にやること (決まっていない — 根拠ある改善案を作る)
+Phase 1 が 100% に届いたら着手。under-reach / over-reach の双方に対策を入れ、judge で level 測定を再開する。
 
-これまでの改善案は事実確認なしの思いつきだった。まず各件で **retrieved / answer / judge の 3 者の実データ突き合わせ** をして、真の原因を確定する。
+## Phase 1 で Phase 1 を進めるステップ
 
-**Steps (これを順にやる):**
-- [x] impact-01 を 1 件詳細分析 (手本)
-- [x] 残り 13 件を分析 (Explore agent で実施、事実ベース)
-- [x] 失敗パターンを事実に基づき分類 — 詳細: [l1-root-cause-analysis.md](l1-root-cause-analysis.md)
-- [x] 原因ごとに具体的な改善レバーを設計 — 上記分析ドキュメント参照
+### Step 1: 用語検索 (term_queries) 機構の追加
 
-## 原因サマリ (主因ベース)
+**背景**: 現行 search_ids.md は title 字面のみで選ばせる設計で、LLM が質問を狭く解釈すると肝心の section (MTH s5 の concurrentNumber 等) が落ちる。LLM に固有名 (API/プロパティ/アノテーション) を 1〜3 個返してもらい、スクリプト側で body substring grep して selections にマージする。
 
-- **AI-1 検索漏れ (4 件)**: impact-01, impact-07, impact-08, req-10
-- **AI-3 回答ミス (4 件)**: impact-06, impact-10, req-09, review-08
-- **AI-3 + AI-1 複合 (2 件)**: impact-03, review-08 (重複)
-- **A-fact 設計不備 (3 件 L2 ボーダー)**: req-05, review-01, review-03
-- **知識ファイル不備 (副因 1)**: req-09
+- [ ] search_ids.md に `term_queries` フィールド追加 (固有名のみ、最大 3 個、自然文禁止)
+- [ ] search_ids.py: grep 実装 (全 knowledge JSON の body に substring match、term あたり section 上限 3)
+- [ ] run.py: `SCHEMA_STAGE1_IDS` に `term_queries` 追加
+- [ ] search.json 出力に `term_queries` / `term_hits` を記録
+- [ ] PE レビュー (プロンプト変更)、実行ログ添付
 
-## 改善方針 (優先順)
+### Step 2: 検索専用の coverage 測定ツール
 
-1. AI-1 hints 充実: TMH s1/s3, permission_check_handler s3, http_access_log_handler s1/s3, bean_validation s8, use_token s1, session_store s4 の hints に質問文脈キーワードを追加
-2. AI-1 select プロンプト原則追加: ハンドラ質問では s1 + 制約系 + 機能セクション をセット選択
-3. AI-3 プロンプト補強: retrieved 内列挙項目を省略しないチェックリスト / 主役の優先順 / retrieved 空時の明示フォールバック
-4. A-fact 側微調整: req-05/review-01/review-03 の expected/a_fact 調整
+- [ ] `tools/benchmark/search_only.py` (または `run.py --search-only`) を作る: 全 scenario の search_ids のみ実行
+- [ ] `expected_sections` と selections+term_hits を比較し coverage を計算
+- [ ] 30 件で実測、L1 原因だった 9 件の漏れ section が救われたか確認
 
-## 次にやること
+### Step 3: 検索 100% まで回す
+
+- [ ] Step 2 の結果から未解決を特定
+- [ ] 原因別 (LLM 解釈狭い / term で救えない / expected_sections 側の問題) に対策
+- [ ] 100% 到達でフェーズ完了
+
+## Phase 2 (先送り)
+
+- [ ] AI-3 answer.md 改訂 (over-reach / under-reach 両面)
+- [ ] PE レビュー + 実行ログ添付
+- [ ] 30 件 rerun で L1 件数を測定
+- [ ] judge の非決定性対策 (実測揺れが多ければ)
+
+## やらないこと (スコープ外)
+
+- current variant の改善
+- 他バージョン (v1.2/1.3/1.4/5) 適用
+- knowledge file の hints 追加・title 書き換え (benchmark 失敗を受けた個別調整はいたちごっこ、禁止)
+
+## 方針確認済み
+
+- 合格ライン = L2 以上。L1 は Nabledge 品質基準で失格
+- 改善ターゲットは ids のみ
+- 設計意図: AI-1 は recall 優先、AI-3 は precision 側で絞る
+- 検索精度を上げるのに hints 調整はしない (プロンプトと index 生成ロジックだけで戦う)
+
+## 現在地の測定結果 (参考)
+
+| 測定 | mean | L3 | L1 | 備考 |
+|---|---|---|---|---|
+| 旧 search + 旧 a_facts | 2.10 | 16 | 13+1 | 初回 30 件 |
+| 旧 current | 2.17 | 18 | 11+1 | 比較用 |
+| 新 search (recall-first) + 旧 a_facts | — | — | — | 6 件のみ測定、1 件 L3 改善 |
+| 旧 search + 新 a_facts (rejudge) | — | — | — | 8 件対象、judge 非決定性で不安定 |
+| 新 search + 新 a_facts (30 件) | 2.20 | 18 | 12 | 4 件劣化 (C over-reach 混入) |
+
+30 件全件での Phase 1 完了後の目標: coverage 100%。その上で Phase 2 を測定する。
+
+## Done (直近)
 
 - [x] search_ids.md を recall-first に書き直し (PE review 4/5 approve、M1/M2 反映)
-- [x] 検索ミス 6 scenario で再計測 → 4 件検索改善、1 件 L3 合格
-- [x] a_facts 横並びチェック (30 件) → 8 件修正 (5 削除 / 4 追加、review-04 削除のみ)
-- [x] baseline で a_facts 修正の rejudge → review-08/req-08 が L3 安定改善、他は検索漏れが主因で未改善
-
-**現在の主要な未解決課題**:
-1. 検索漏れ (旧 search) が残る scenario: impact-01 (TMH s1 未取得), impact-02 (SessionStoreHandler ファイル未取得), req-05
-2. AI-3 の OVER-REACH による C 系違反: review-01 (ValidatableFileDataReader), review-08 (マルチプロセス情報混入)
-3. judge の非決定性 (review-08 で 1 回目 L3 / 2 回目 L1)
-
-- [ ] [DECISION: ユーザー確認] 次は新 search + 修正 a_facts で全件再計測するか、判定非決定性対策を先にやるか
-
-## やらないことにした (スコープ外)
-
-- current variant の改善 (PR スコープ外、比較用のみ)
-- 他バージョン (v1.2/1.3/1.4/5) 適用は別 PR
-- 30件一括 rerun (改善は該当 scenario のみピンポイントで測る)
-- speed / cost を根拠とした採用提案 (L1 があれば速度は無関係)
-
-## ユーザー判断待ち / 方針確認済み
-
-- 合格ライン = L2 以上。L1 は Nabledge 品質基準で失格 (確認済)
-- 改善ターゲットは ids のみ (確認済)
-- 改善案はこれから事実ベースで作る (思いつき提案をやめる)
+- [x] a_facts 横並びチェック (30 件) → 8 件修正 (5 削除 / 4 追加)
+- [x] 新 search + 新 a_facts で 30 件再計測 → mean=2.20, L3=18, L1=12
+- [x] L1 12 件の検索 vs 回答 切り分け → 検索 OK 9 件 / 検索漏れ 3 件 (review-08 MTH s5 / impact-08 bean_validation s8 / req-05 libraries-code)
+- [x] 検索漏れ 3 件の LLM 思考ログ確認 → 「質問を狭く解釈」が共通原因
+- [x] term 検索シミュレーション → 固有名は ~1 ヒットで精度高い、概念語は誤爆
 
 ## 既知の bug / 対処済
 
@@ -99,7 +96,7 @@ L1 を残したまま speed 指標だけで ids 採用を提案しても Nabledg
 - max_turns 2 で A 長いと切れる → 4 に引き上げ
 - `list(string)` で char-list 化する事故 → `_facts()` type ガード
 
-## Done
+## 初期タスク群 (完了済)
 
 - [x] 30 シナリオ + 模範回答 30件作成
 - [x] 2-flow 比較基盤 (ids / current)
@@ -116,6 +113,3 @@ L1 を残したまま speed 指標だけで ids 採用を提案しても Nabledg
 - [x] judge 方式確定: A 事前準備 / B,C は KB (ref∪retrieved) 基準
 - [x] scenarios JSON に `a_facts` フィールド追加、io/types/judge.py 改修
 - [x] 30 scenario に A-fact を書いた (手書き 1 + Agent 草案 29 → 17件は私がレビュー修正)
-- [x] ids 30件 rejudge (新 judge): mean=2.10, L3=16, L1=13, None=1
-- [x] current 30件 rejudge (新 judge): mean=2.17, L3=18, L1=11, L0=1
-- [x] ids L1 14件の失敗パターン分類 (judge output ベース)
