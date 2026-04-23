@@ -78,18 +78,32 @@ identifiers** that the answer likely hinges on. A separate script will
 grep these terms across section bodies and merge any hits into the
 selections. This supplements, does not replace, `selections`.
 
+### How to choose terms (coverage-gap first)
+
+After drafting `selections`, ask yourself:
+> *"What concept / handler / property / annotation would a complete
+> answer still cite, that none of my picked section **titles** name?"*
+
+Emit terms for those gaps. If `selections` already cover everything, emit 0 terms.
+
+Do not repeat a term that already appears in any picked section title — it
+adds no new coverage. Pick terms that reach *new* sections.
+
+### Rules
+
 - Return identifiers only, not natural-language phrases.
-  - ✅ `concurrentNumber`, `@AssertTrue`, `HiddenStore`, `defaultLocale`, `transactionName`
+  - ✅ `concurrentNumber`, `@AssertTrue`, `HiddenStore`, `defaultLocale`, `transactionName`, `コード名称`, `データリーダ`, `業務日付`
   - ❌ `スレッドセーフ`, `並列実行`, `注意点`, `セキュリティ`, `推奨構成`
-- Prefer: property names, method names, class names, annotation names
-  (without backticks), and Nablarch-specific keywords that would
-  uniquely identify a section.
-- Emit 0 terms if the question is purely high-level / the existing
-  `selections` already cover everything.
-- Japanese domain nouns are allowed only if they are unique labels
-  (e.g. `コード名称`, `データリーダ`). Avoid generic Japanese nouns.
-- Do not repeat terms that are already obvious in the picked section
-  titles — pick terms that add *new* coverage beyond titles.
+- Prefer **narrow** identifiers: property names, method names, annotation
+  names. Avoid **broadly used** class names — they produce noisy hits
+  across many files.
+  - ✅ `transactionName`, `commitInterval`, `@OnDoubleSubmission`
+  - ❌ `SimpleDbTransactionManager`, `DbConnectionContext` — widely
+    referenced class names hit too many files. Pick the property/annotation
+    that is unique to the concern instead.
+- Japanese domain nouns are allowed only if they are unique Nablarch
+  labels (`コード名称`, `データリーダ`). Avoid generic Japanese nouns.
+- Emit 0 terms if the question is purely high-level.
 
 ## Output schema
 
