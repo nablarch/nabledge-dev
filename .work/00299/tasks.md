@@ -167,11 +167,11 @@
 - [x] 旧テスト (`tests/ut/test_rst_converter.py` / `test_rst_normaliser.py` / `test_rst_include.py` / `test_rst_substitutions.py`) 削除
 - [x] `verify.py` の `_collect_rst_substitutions` / 未使用 substitutions 引数を削除
 
-**Y-3b-6: 収束確認 ✅ 完了**
+**Y-3b-6: 収束確認 ✅ 完了 (session 50)**
 - [x] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → **"All files verified OK"** (v6 FAIL 0)
-- [x] `pytest tests/` → 123 passed (全テスト GREEN)
-- [ ] サブエージェント品質チェック (SE + QA) — 進行中
-- [ ] コミット・プッシュ
+- [x] `pytest tests/` → 120 passed (全テスト GREEN)
+- [x] サブエージェント品質チェック (SE 4/5) — High/Medium 指摘を全て取り込み `6ee04b9c4`
+- [x] コミット・プッシュ (`4ae3ada3b` 本体 / `6ee04b9c4` SE 指摘反映)
 
 #### Y-4: v6 verify FAIL 0 まで収束
 
