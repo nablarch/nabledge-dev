@@ -22,8 +22,8 @@ class TestCheckJsonDocsMdConsistency_QO1:
     def test_pass_title_and_sections_match(self):
         data = {
             "id": "f", "title": "タイトル", "content": "", "sections": [
-                {"id": "s1", "title": "概要", "content": "説明"},
-                {"id": "s2", "title": "設定", "content": "設定内容"},
+                {"id": "s1", "title": "概要", "level": 2, "content": "説明"},
+                {"id": "s2", "title": "設定", "level": 2, "content": "設定内容"},
             ]
         }
         docs = "# タイトル\n\n## 概要\n\n説明\n\n## 設定\n\n設定内容\n"
@@ -38,7 +38,7 @@ class TestCheckJsonDocsMdConsistency_QO1:
     def test_fail_section_title_missing(self):
         data = {
             "id": "f", "title": "T", "content": "", "sections": [
-                {"id": "s1", "title": "存在しないセクション", "content": "c"},
+                {"id": "s1", "title": "存在しないセクション", "level": 2, "content": "c"},
             ]
         }
         docs = "# T\n\n## 別のセクション\n\nc\n"
@@ -48,8 +48,8 @@ class TestCheckJsonDocsMdConsistency_QO1:
     def test_fail_section_order_reversed(self):
         data = {
             "id": "f", "title": "T", "content": "", "sections": [
-                {"id": "s1", "title": "A", "content": "a"},
-                {"id": "s2", "title": "B", "content": "b"},
+                {"id": "s1", "title": "A", "level": 2, "content": "a"},
+                {"id": "s2", "title": "B", "level": 2, "content": "b"},
             ]
         }
         # B appears before A in docs MD — order mismatch
@@ -86,7 +86,7 @@ class TestCheckJsonDocsMdConsistency_QO1:
         """Spec §3-3 QO2: top-level content must sit between `#` and the
         first `##`. Content appearing only *after* the first `##` FAILs."""
         data = {"id": "f", "title": "T", "content": "トップ本文。",
-                "sections": [{"id": "s1", "title": "概要", "content": "概要本文"}]}
+                "sections": [{"id": "s1", "title": "概要", "level": 2, "content": "概要本文"}]}
         # Top-level content is below the first ## — wrong location.
         docs = "# T\n\n## 概要\n\nトップ本文。\n\n概要本文\n"
         issues = self._check(data, docs)
@@ -96,7 +96,7 @@ class TestCheckJsonDocsMdConsistency_QO1:
         """Spec §3-3 QO1: docs MD section titles must match JSON order and
         count. Extra H2 in docs MD beyond JSON sections FAILs."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "A", "content": "a"},
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
         ]}
         docs = "# T\n\n## A\n\na\n\n## 余計\n\nextra\n"
         issues = self._check(data, docs)
@@ -107,8 +107,8 @@ class TestCheckJsonDocsMdConsistency_QO1:
         [A,B,A] — the second A appears out of order relative to B. The
         current greedy matcher passes this; this test flags the gap."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "B", "content": "b"},
-            {"id": "s2", "title": "A", "content": "a2"},
+            {"id": "s1", "title": "B", "level": 2, "content": "b"},
+            {"id": "s2", "title": "A", "level": 2, "content": "a2"},
         ]}
         docs = "# T\n\n## A\n\na1\n\n## B\n\nb\n"
         # JSON requires B before A, docs shows A before B → QO1 FAIL
@@ -131,7 +131,7 @@ class TestCheckJsonDocsMdConsistency_QO1:
         """Spec §3-3: JSON title must equal docs MD H1. An empty JSON title
         against a non-empty H1 does not match → FAIL."""
         data = {"id": "f", "title": "", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": ""}
+            {"id": "s1", "title": "概要", "level": 2, "content": ""}
         ]}
         docs = "# 何か\n\n## 概要\n"
         issues = self._check(data, docs)
@@ -154,7 +154,7 @@ class TestCheckJsonDocsMdConsistency_QO1:
         before scanning section titles — `##` inside a ~~~ fence is
         content, not a section marker."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "A", "content": "a"},
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
         ]}
         docs = (
             "# T\n\n"
@@ -171,7 +171,7 @@ class TestCheckJsonDocsMdConsistency_QO1:
     def test_pass_backtick_fenced_code_block_with_heading_inside(self):
         """Same invariant for triple-backtick fences (regression guard)."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "A", "content": "a"},
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
         ]}
         docs = (
             "# T\n\n"
@@ -191,7 +191,7 @@ class TestCheckJsonDocsMdConsistency_QO1:
         check must use `##` only so content-level `###` does not produce
         a spurious QO1 FAIL."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "セクション A",
+            {"id": "s1", "title": "セクション A", "level": 2,
              "content": "本文。\n\n### 小見出し\n\n詳細。"},
         ]}
         docs = "# T\n\n## セクション A\n\n本文。\n\n### 小見出し\n\n詳細。\n"
@@ -205,19 +205,18 @@ class TestCheckJsonDocsMdConsistency_QO1:
         docs = "# T\n\n前文。\n\n### 注記\n\n注記本文。\n"
         assert self._check(data, docs) == []
 
-    def test_pass_section_title_rendered_at_h3(self):
-        """Z-1 r8 QO1 F1: spec §3-3 "JSON 各セクションのタイトルが docs MD
-        の `##`/`###` に存在し、かつ JSON と同じ順序で並んでいる" permits
-        a section title at `###`. When docs.py (or a future emitter)
-        renders a section at `###`, QO1 must accept it. The previous
-        `##`-only equality emitted a spurious 'order differs' FAIL."""
+    def test_pass_section_title_rendered_at_declared_level(self):
+        """Phase 22-B-16a: JSON `level` and docs MD `#` count must match.
+
+        This supersedes the prior "either ## or ### OK" interpretation —
+        under the strengthened QO1 level check, docs MD heading must use
+        exactly `level` hashes. Here section B is declared at level=3 so
+        docs MD renders it at ###, matching by design.
+        """
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "セクション A", "content": "a"},
-            {"id": "s2", "title": "セクション B", "content": "b"},
+            {"id": "s1", "title": "セクション A", "level": 2, "content": "a"},
+            {"id": "s2", "title": "セクション B", "level": 3, "content": "b"},
         ]}
-        # Second section rendered at ### (spec-sanctioned); docs.py's
-        # current emitter uses ## only, but the verify check must accept
-        # either level per the spec wording.
         docs = (
             "# T\n\n"
             "## セクション A\n\n"
@@ -253,7 +252,7 @@ class TestCheckJsonDocsMdConsistency_QO2:
     def test_pass_section_content_in_docs(self):
         data = {
             "id": "f", "title": "T", "content": "", "sections": [
-                {"id": "s1", "title": "概要", "content": "概要の説明。"},
+                {"id": "s1", "title": "概要", "level": 2, "content": "概要の説明。"},
             ]
         }
         docs = "# T\n\n## 概要\n\n概要の説明。\n"
@@ -262,7 +261,7 @@ class TestCheckJsonDocsMdConsistency_QO2:
     def test_fail_section_content_missing(self):
         data = {
             "id": "f", "title": "T", "content": "", "sections": [
-                {"id": "s1", "title": "概要", "content": "欠落する説明。"},
+                {"id": "s1", "title": "概要", "level": 2, "content": "欠落する説明。"},
             ]
         }
         docs = "# T\n\n## 概要\n\n別の説明。\n"
@@ -288,7 +287,7 @@ class TestCheckJsonDocsMdConsistency_QO2:
         docs_md_path = docs_dir / "x.md"
         data = {
             "id": "f", "title": "T", "content": "", "sections": [
-                {"id": "s1", "title": "図", "content": "![図](assets/img.png)"},
+                {"id": "s1", "title": "図", "level": 2, "content": "![図](assets/img.png)"},
             ]
         }
         # Generate the expected docs body via docs._rewrite_asset_links so
@@ -344,7 +343,7 @@ class TestCheckJsonDocsMdConsistency_QO2:
         docs_md_path = docs_dir / "x.md"
         data = {
             "id": "f", "title": "T", "content": "", "sections": [
-                {"id": "s1", "title": "図", "content": "![図](assets/img.png)"},
+                {"id": "s1", "title": "図", "level": 2, "content": "![図](assets/img.png)"},
             ]
         }
         docs = "# T\n\n## 図\n\n画像なし\n"
@@ -360,7 +359,7 @@ class TestCheckJsonDocsMdConsistency_QO2:
         """Whitespace-only deviation between JSON and docs MD is still a
         FAIL: spec §3-3 requires verbatim match."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "本文\n\n続き"},
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文\n\n続き"},
         ]}
         docs = "# T\n\n## 概要\n\n本文 続き\n"  # newline replaced by space
         issues = self._check(data, docs)
@@ -374,7 +373,7 @@ class TestCheckJsonDocsMdConsistency_QO2:
         appears to be missing."""
         data = {"id": "f", "title": "T",
                 "content": "説明:\n\n```md\n## not a heading\n```",
-                "sections": [{"id": "s1", "title": "本題", "content": "本文。"}]}
+                "sections": [{"id": "s1", "title": "本題", "level": 2, "content": "本文。"}]}
         docs = (
             "# T\n\n"
             "説明:\n\n"
@@ -391,7 +390,7 @@ class TestCheckJsonDocsMdConsistency_QO2:
         docs MD, QO2 must flag the top content as not verbatim."""
         data = {"id": "f", "title": "T",
                 "content": "説明:\n\n```md\n## not a heading\n```",
-                "sections": [{"id": "s1", "title": "本題", "content": "本文。"}]}
+                "sections": [{"id": "s1", "title": "本題", "level": 2, "content": "本文。"}]}
         docs = (
             "# T\n\n"
             "説明:\n\n"
@@ -403,23 +402,23 @@ class TestCheckJsonDocsMdConsistency_QO2:
 
     def test_pass_section_content_with_fenced_code(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "コード例", "content": "```java\nint x;\n```"},
+            {"id": "s1", "title": "コード例", "level": 2, "content": "```java\nint x;\n```"},
         ]}
         docs = "# T\n\n## コード例\n\n```java\nint x;\n```\n"
         assert self._check(data, docs) == []
 
     def test_pass_section_content_with_md_special_chars(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "式", "content": "評価式は `a | b` と記述。"},
+            {"id": "s1", "title": "式", "level": 2, "content": "評価式は `a | b` と記述。"},
         ]}
         docs = "# T\n\n## 式\n\n評価式は `a | b` と記述。\n"
         assert self._check(data, docs) == []
 
     def test_fail_multiple_sections_one_content_wrong(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "A", "content": "A content"},
-            {"id": "s2", "title": "B", "content": "B content"},
-            {"id": "s3", "title": "C", "content": "C content"},
+            {"id": "s1", "title": "A", "level": 2, "content": "A content"},
+            {"id": "s2", "title": "B", "level": 2, "content": "B content"},
+            {"id": "s3", "title": "C", "level": 2, "content": "C content"},
         ]}
         # middle section content differs
         docs = "# T\n\n## A\n\nA content\n\n## B\n\nWRONG\n\n## C\n\nC content\n"
@@ -725,21 +724,21 @@ class TestVerifyFileQC5:
     # RST format
     def test_fail_rst_role_in_content(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": ":ref:`something`"}
+            {"id": "s1", "title": "概要", "level": 2, "content": ":ref:`something`"}
         ]}
         issues = self._check(data, "rst")
         assert any("QC5" in i and "RST role" in i for i in issues)
 
     def test_fail_rst_directive_in_content(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": ".. note::"}
+            {"id": "s1", "title": "概要", "level": 2, "content": ".. note::"}
         ]}
         issues = self._check(data, "rst")
         assert any("QC5" in i and "directive" in i for i in issues)
 
     def test_fail_rst_label_in_content(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": ".. _my-label:"}
+            {"id": "s1", "title": "概要", "level": 2, "content": ".. _my-label:"}
         ]}
         issues = self._check(data, "rst")
         assert any("QC5" in i and "label" in i for i in issues)
@@ -751,28 +750,28 @@ class TestVerifyFileQC5:
 
     def test_pass_rst_clean_content(self):
         data = {"id": "f", "title": "概要", "content": "普通の本文です。", "sections": [
-            {"id": "s1", "title": "詳細", "content": "詳細説明。"}
+            {"id": "s1", "title": "詳細", "level": 2, "content": "詳細説明。"}
         ]}
         assert [i for i in self._check(data, "rst") if "QC5" in i] == []
 
     # MD format
     def test_fail_md_raw_html_in_content(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "<details>内容</details>"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "<details>内容</details>"}
         ]}
         issues = self._check(data, "md")
         assert any("QC5" in i and "HTML" in i for i in issues)
 
     def test_fail_md_backslash_escape_in_content(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": r"これは\*エスケープ\*です"}
+            {"id": "s1", "title": "概要", "level": 2, "content": r"これは\*エスケープ\*です"}
         ]}
         issues = self._check(data, "md")
         assert any("QC5" in i and "backslash" in i for i in issues)
 
     def test_pass_md_clean_content(self):
         data = {"id": "f", "title": "概要", "content": "普通の説明文。", "sections": [
-            {"id": "s1", "title": "詳細", "content": "詳細です。`code` も含む。"}
+            {"id": "s1", "title": "詳細", "level": 2, "content": "詳細です。`code` も含む。"}
         ]}
         assert [i for i in self._check(data, "md") if "QC5" in i] == []
 
@@ -793,7 +792,7 @@ class TestVerifyFileQC5:
         blocks in content; QC5 restricts the underline check to titles only."""
         content_with_code = "```\n===== \n```"
         data = {"id": "f", "title": "概要", "content": "",
-                "sections": [{"id": "s1", "title": "詳細", "content": content_with_code}]}
+                "sections": [{"id": "s1", "title": "詳細", "level": 2, "content": content_with_code}]}
         assert [i for i in self._check(data, "rst") if "QC5" in i and "underline" in i] == []
 
     def test_pass_rst_field_list_syntax_is_not_qc5_role(self):
@@ -802,14 +801,14 @@ class TestVerifyFileQC5:
         is legitimate inline syntax that survives verbatim into the normalised
         MD; it is not an unprocessed role, so QC5 must not FAIL."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "フィールド :name: 値 のような行は許容"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "フィールド :name: 値 のような行は許容"}
         ]}
         assert [i for i in self._check(data, "rst") if "QC5" in i and "role" in i] == []
 
     def test_pass_rst_japanese_punctuation_not_confused_with_role(self):
         """Japanese colon-like punctuation must not be mistaken for a role."""
         data = {"id": "f", "title": "概要", "content": "", "sections": [
-            {"id": "s1", "title": "詳細", "content": "注意：ここは普通の文章です。"}
+            {"id": "s1", "title": "詳細", "level": 2, "content": "注意：ここは普通の文章です。"}
         ]}
         assert [i for i in self._check(data, "rst") if "QC5" in i] == []
 
@@ -822,7 +821,7 @@ class TestVerifyFileQC5:
         sequence is malformed and not the named pattern; QC5 must not FAIL
         on it. (Z-1 r7 QC5 F1)"""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "文中に :foo:` のような破片"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "文中に :foo:` のような破片"}
         ]}
         assert [i for i in self._check(data, "rst") if "QC5" in i and "role" in i] == []
 
@@ -830,7 +829,7 @@ class TestVerifyFileQC5:
         """Complement to the pass test: a real role `:ref:\\`x\\`` must
         still FAIL QC5 (the converter should have resolved it)."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "未処理 :ref:`label` 残"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "未処理 :ref:`label` 残"}
         ]}
         assert any("QC5" in i and "role" in i for i in self._check(data, "rst"))
 
@@ -840,44 +839,44 @@ class TestVerifyFileQC5:
         start. A mid-sentence occurrence is not a label definition and
         must not FAIL QC5. (Z-1 r7 QC5 F2)"""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "see .. _foo: below in text"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "see .. _foo: below in text"}
         ]}
         assert [i for i in self._check(data, "rst") if "QC5" in i and "label" in i] == []
 
     def test_fail_rst_label_on_its_own_line_flagged(self):
         """A label definition on its own line must still FAIL QC5."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "前文\n.. _my-label:\n後文"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "前文\n.. _my-label:\n後文"}
         ]}
         assert any("QC5" in i and "label" in i for i in self._check(data, "rst"))
 
     def test_fail_md_summary_tag(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "<summary>タイトル</summary>"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "<summary>タイトル</summary>"}
         ]}
         assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
 
     def test_fail_md_br_tag(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "改行<br>入り"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "改行<br>入り"}
         ]}
         assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
 
     def test_fail_md_a_tag(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "<a href='x'>link</a>"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "<a href='x'>link</a>"}
         ]}
         assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
 
     def test_fail_md_escaped_underscore(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": r"word\_word"}
+            {"id": "s1", "title": "概要", "level": 2, "content": r"word\_word"}
         ]}
         assert any("QC5" in i and "backslash" in i for i in self._check(data, "md"))
 
     def test_fail_md_escaped_bracket(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": r"\[not a link\]"}
+            {"id": "s1", "title": "概要", "level": 2, "content": r"\[not a link\]"}
         ]}
         assert any("QC5" in i and "backslash" in i for i in self._check(data, "md"))
 
@@ -888,25 +887,25 @@ class TestVerifyFileQC5:
         or transformed it before emission. This pins the spec (§3-1 QC5
         RST/MD 'raw HTML' pattern)."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "使い方: `<br>` を挿入"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "使い方: `<br>` を挿入"}
         ]}
         assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
 
     def test_fail_md_self_closing_br(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "line<br/>break"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "line<br/>break"}
         ]}
         assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
 
     def test_fail_md_self_closing_hr(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "sep<hr/>done"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "sep<hr/>done"}
         ]}
         assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
 
     def test_fail_md_self_closing_img(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "概要", "content": "see <img/>"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "see <img/>"}
         ]}
         assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
 
@@ -964,7 +963,7 @@ class TestVerifyFileQL2:
     def test_fail_url_in_section_content_missing(self):
         src = "詳細は https://example.com を参照。\n"
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "参照", "content": "リンクなし"}
+            {"id": "s1", "title": "参照", "level": 2, "content": "リンクなし"}
         ]}
         issues = self._check_ql2(src, data, "rst")
         assert any("QL2" in i for i in issues)
@@ -972,7 +971,7 @@ class TestVerifyFileQL2:
     def test_pass_url_in_section_content(self):
         src = "詳細は https://example.com を参照。\n"
         data = {"id": "f", "title": "T", "content": "", "sections": [
-            {"id": "s1", "title": "参照", "content": "https://example.com を参照。"}
+            {"id": "s1", "title": "参照", "level": 2, "content": "https://example.com を参照。"}
         ]}
         assert self._check_ql2(src, data, "rst") == []
 
@@ -1111,7 +1110,7 @@ class TestCheckContentCompleteness:
     def test_fail_qc2_fabricated_title(self):
         src = "概要\n====\n\n本文。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "存在しないセクション", "content": "本文。"}
+            {"id": "s1", "title": "存在しないセクション", "level": 2, "content": "本文。"}
         ])
         issues = self._check(src, data)
         assert any("QC2" in i and "fabricated" in i for i in issues)
@@ -1119,7 +1118,7 @@ class TestCheckContentCompleteness:
     def test_fail_qc2_fabricated_content(self):
         src = "概要\n====\n\n本文。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "捏造されたテキスト。"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "捏造されたテキスト。"}
         ])
         issues = self._check(src, data)
         assert any("QC2" in i and "fabricated" in i for i in issues)
@@ -1129,8 +1128,8 @@ class TestCheckContentCompleteness:
     def test_fail_qc3_duplicate_title(self):
         src = "概要\n====\n\n本文。\n\n詳細\n====\n\n詳細内容。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "本文。"},
-            {"id": "s2", "title": "概要", "content": "詳細内容。"},  # duplicate title
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"},
+            {"id": "s2", "title": "概要", "level": 2, "content": "詳細内容。"},  # duplicate title
         ])
         issues = self._check(src, data)
         assert any("[QC3]" in i for i in issues)
@@ -1141,8 +1140,8 @@ class TestCheckContentCompleteness:
     def test_fail_qc4_misplaced_title(self):
         src = "詳細\n====\n\n詳細内容。\n\n概要\n====\n\n概要内容。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "概要内容。"},   # appears later in source
-            {"id": "s2", "title": "詳細", "content": "詳細内容。"},   # appears earlier in source
+            {"id": "s1", "title": "概要", "level": 2, "content": "概要内容。"},   # appears later in source
+            {"id": "s2", "title": "詳細", "level": 2, "content": "詳細内容。"},   # appears earlier in source
         ])
         issues = self._check(src, data)
         assert any("[QC4]" in i and "s2" in i for i in issues), issues
@@ -1152,7 +1151,7 @@ class TestCheckContentCompleteness:
     def test_fail_qc1_residual_content(self):
         src = "概要\n====\n\n本文。\n\n追加情報はここにあります。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "本文。"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"}
             # "追加情報はここにあります。" not captured
         ])
         issues = self._check(src, data)
@@ -1166,7 +1165,7 @@ class TestCheckContentCompleteness:
         snippet, hiding additional gaps. (Z-1 r7 QC1 F2)"""
         src = "概要\n====\n\n本文。\n\nalpha\n\nbravo\n\ncharlie\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "本文。"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"}
             # alpha / bravo / charlie all uncaptured — three disjoint
             # residue fragments.
         ])
@@ -1184,7 +1183,7 @@ class TestCheckContentCompleteness:
         # should match the visitor's output.
         src = "概要\n====\n\n本文。\n\n.. note::\n\n   注記内容。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "本文。\n\n> **Note:**\n> 注記内容。"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。\n\n> **Note:**\n> 注記内容。"}
         ])
         issues = self._check(src, data)
         assert all("QC1" not in i for i in issues)
@@ -1194,7 +1193,7 @@ class TestCheckContentCompleteness:
         # The normalised source contains both, and all are consumed by JSON.
         src = "# タイトル\n\n## セクション\n\n本文。\n"
         data = self._data(title="タイトル", sections=[
-            {"id": "s1", "title": "セクション", "content": "本文。"}
+            {"id": "s1", "title": "セクション", "level": 2, "content": "本文。"}
         ])
         issues = self._check(src, data, fmt="md")
         assert all("QC1" not in i for i in issues)
@@ -1204,7 +1203,7 @@ class TestCheckContentCompleteness:
     def test_pass_all_content_captured(self):
         src = "概要\n====\n\n本文です。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "本文です。"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文です。"}
         ])
         assert self._check(src, data) == []
 
@@ -1220,7 +1219,7 @@ class TestCheckContentCompleteness:
         """MD source and MD JSON content are same format — verbatim match."""
         src = "## セクション\n\n**重要な**情報があります。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "セクション", "content": "**重要な**情報があります。"}
+            {"id": "s1", "title": "セクション", "level": 2, "content": "**重要な**情報があります。"}
         ])
         issues = self._check(src, data, fmt="md")
         assert all("QC2" not in i for i in issues)
@@ -1231,7 +1230,7 @@ class TestCheckContentCompleteness:
         data = self._data(
             title="タイトル",
             content="トップレベル本文。",
-            sections=[{"id": "s1", "title": "セクション", "content": "セクション本文。"}]
+            sections=[{"id": "s1", "title": "セクション", "level": 2, "content": "セクション本文。"}]
         )
         assert self._check(src, data) == []
 
@@ -1249,7 +1248,7 @@ class TestCheckContentCompleteness:
         src = "詳細は :ref:`doma_dependency` を参照。\n\ndoma_dependency\n===============\n\nDoma 設定。\n"
         data = self._data(
             content="詳細は doma_dependency を参照。",
-            sections=[{"id": "s1", "title": "doma_dependency", "content": "Doma 設定。"}]
+            sections=[{"id": "s1", "title": "doma_dependency", "level": 2, "content": "Doma 設定。"}]
         )
         assert self._check(src, data, label_map={"doma_dependency": "doma_dependency"}) == []
 
@@ -1277,7 +1276,7 @@ class TestCheckContentCompleteness:
         treated as allowed syntax residue for QC1."""
         src = "概要\n====\n\n本文。\n\n.. textlint-disable ja/foo\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "本文。"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"}
         ])
         assert self._check(src, data) == []
 
@@ -1291,7 +1290,7 @@ class TestCheckContentCompleteness:
             ".. * 項目2\n"
         )
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "本文。"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"}
         ])
         assert self._check(src, data) == []
 
@@ -1300,7 +1299,7 @@ class TestCheckContentCompleteness:
         drops the name and preserves the value (recursively visited)."""
         src = "概要\n====\n\n:エスケープ対象文字: ``%`` 、 ``_``\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "`%` 、 `_`"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "`%` 、 `_`"}
         ])
         assert self._check(src, data) == []
 
@@ -1312,7 +1311,7 @@ class TestCheckContentCompleteness:
             "  応答電文のステータスコード。\n"
         )
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "応答電文のステータスコード。"}
+            {"id": "s1", "title": "概要", "level": 2, "content": "応答電文のステータスコード。"}
         ])
         assert self._check(src, data) == []
 
@@ -1347,7 +1346,7 @@ class TestCheckContentCompleteness:
         `.. |missing| replace::` definition) → QC1 FAIL. The Visitor
         raises UnresolvedReferenceError which verify reports as QC1."""
         src = "概要\n====\n\n利用バージョン: |undefined_version|\n"
-        data = self._data(sections=[{"id": "s1", "title": "概要", "content": "x"}])
+        data = self._data(sections=[{"id": "s1", "title": "概要", "level": 2, "content": "x"}])
         issues = self._check(src, data)
         assert any("[QC1]" in i and "RST parse/visitor error" in i for i in issues)
 
@@ -1356,7 +1355,7 @@ class TestCheckContentCompleteness:
         An unknown directive triggers `(ERROR/3)` in docutils' warning
         stream; the normaliser scans for that and raises UnknownSyntaxError."""
         src = "概要\n====\n\n.. unknown-directive-xyz::\n\n   body text\n"
-        data = self._data(sections=[{"id": "s1", "title": "概要", "content": "x"}])
+        data = self._data(sections=[{"id": "s1", "title": "概要", "level": 2, "content": "x"}])
         issues = self._check(src, data)
         assert any("[QC1]" in i and "RST parse/visitor error" in i for i in issues)
 
@@ -1364,7 +1363,7 @@ class TestCheckContentCompleteness:
         """Unknown RST role (not in Sphinx shim list) → UnknownSyntaxError → QC1 FAIL."""
         # `:unknownshim:` is not in _SPHINX_INLINE_ROLES and not a docutils native role
         src = "概要\n====\n\nテキスト :unknownshim:`x` を含む。\n"
-        data = self._data(sections=[{"id": "s1", "title": "概要", "content": "テキスト を含む。"}])
+        data = self._data(sections=[{"id": "s1", "title": "概要", "level": 2, "content": "テキスト を含む。"}])
         issues = self._check(src, data)
         assert any("[QC1]" in i and "RST parse/visitor error" in i for i in issues)
 
@@ -1373,8 +1372,8 @@ class TestCheckContentCompleteness:
     def test_fail_qc2_multiple_fabricated_contents(self):
         src = "概要\n====\n\n本文。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "捏造 A。"},
-            {"id": "s2", "title": "詳細", "content": "捏造 B。"},
+            {"id": "s1", "title": "概要", "level": 2, "content": "捏造 A。"},
+            {"id": "s2", "title": "詳細", "level": 2, "content": "捏造 B。"},
         ])
         issues = self._check(src, data)
         qc2 = [i for i in issues if "QC2" in i]
@@ -1383,13 +1382,13 @@ class TestCheckContentCompleteness:
     def test_fail_qc2_top_level_fabricated_content(self):
         src = "概要\n====\n\n本文。\n"
         data = self._data(title="概要", content="存在しないトップレベル本文。",
-                          sections=[{"id": "s1", "title": "概要", "content": "本文。"}])
+                          sections=[{"id": "s1", "title": "概要", "level": 2, "content": "本文。"}])
         issues = self._check(src, data)
         assert any("QC2" in i and "fabricated content" in i for i in issues)
 
     def test_fail_qc2_near_miss_one_char_differs(self):
         src = "概要\n====\n\nABCDEFG\n"
-        data = self._data(sections=[{"id": "s1", "title": "概要", "content": "ABCXEFG"}])
+        data = self._data(sections=[{"id": "s1", "title": "概要", "level": 2, "content": "ABCXEFG"}])
         issues = self._check(src, data)
         assert any("QC2" in i for i in issues)
 
@@ -1398,8 +1397,8 @@ class TestCheckContentCompleteness:
     def test_fail_qc3_duplicate_content_rst(self):
         src = "概要\n====\n\n共通テキスト。\n\n詳細\n====\n\n別テキスト。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "共通テキスト。"},
-            {"id": "s2", "title": "詳細", "content": "共通テキスト。"},  # content in JSON not in source twice
+            {"id": "s1", "title": "概要", "level": 2, "content": "共通テキスト。"},
+            {"id": "s2", "title": "詳細", "level": 2, "content": "共通テキスト。"},  # content in JSON not in source twice
         ])
         issues = self._check(src, data)
         # Spec §3-1 distinguishes QC3 from QC2/QC4 by label — assert the exact label.
@@ -1409,8 +1408,8 @@ class TestCheckContentCompleteness:
     def test_fail_qc3_duplicate_title_md(self):
         src = "# T\n\n## 概要\n\n本文 A。\n\n## 詳細\n\n本文 B。\n"
         data = self._data(title="T", sections=[
-            {"id": "s1", "title": "概要", "content": "本文 A。"},
-            {"id": "s2", "title": "概要", "content": "本文 B。"},  # duplicate title in JSON
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文 A。"},
+            {"id": "s2", "title": "概要", "level": 2, "content": "本文 B。"},  # duplicate title in JSON
         ])
         issues = self._check(src, data, fmt="md")
         assert any("[QC3]" in i for i in issues)
@@ -1421,8 +1420,8 @@ class TestCheckContentCompleteness:
         appear in source and JSON — no false QC3."""
         src = "## 概要\n\nA 本文。\n\n## 概要\n\nB 本文。\n"
         data = self._data(title="", sections=[
-            {"id": "s1", "title": "概要", "content": "A 本文。"},
-            {"id": "s2", "title": "概要", "content": "B 本文。"},
+            {"id": "s1", "title": "概要", "level": 2, "content": "A 本文。"},
+            {"id": "s2", "title": "概要", "level": 2, "content": "B 本文。"},
         ])
         issues = self._check(src, data, fmt="md")
         # Source has "概要" twice → each JSON title consumes a distinct
@@ -1436,7 +1435,7 @@ class TestCheckContentCompleteness:
         data = self._data(
             title="T",
             content="共通テキスト。",
-            sections=[{"id": "s1", "title": "詳細", "content": "共通テキスト。"}],
+            sections=[{"id": "s1", "title": "詳細", "level": 2, "content": "共通テキスト。"}],
         )
         issues = self._check(src, data, fmt="md")
         assert any("[QC3]" in i for i in issues)
@@ -1445,8 +1444,8 @@ class TestCheckContentCompleteness:
     def test_fail_qc3_duplicate_content_md(self):
         src = "# T\n\n## 概要\n\n本文。\n\n## 詳細\n\n別。\n"
         data = self._data(title="T", sections=[
-            {"id": "s1", "title": "概要", "content": "本文。"},
-            {"id": "s2", "title": "詳細", "content": "本文。"},  # JSON duplicates source "本文。" substring
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"},
+            {"id": "s2", "title": "詳細", "level": 2, "content": "本文。"},  # JSON duplicates source "本文。" substring
         ])
         issues = self._check(src, data, fmt="md")
         assert any("[QC3]" in i for i in issues)
@@ -1457,8 +1456,8 @@ class TestCheckContentCompleteness:
     def test_fail_qc4_misplaced_title_md(self):
         src = "# T\n\n## 詳細\n\n詳細内容。\n\n## 概要\n\n概要内容。\n"
         data = self._data(title="T", sections=[
-            {"id": "s1", "title": "概要", "content": "概要内容。"},
-            {"id": "s2", "title": "詳細", "content": "詳細内容。"},
+            {"id": "s1", "title": "概要", "level": 2, "content": "概要内容。"},
+            {"id": "s2", "title": "詳細", "level": 2, "content": "詳細内容。"},
         ])
         issues = self._check(src, data, fmt="md")
         # Spec §3-1 L84 names the affected section id as part of the defect.
@@ -1469,9 +1468,9 @@ class TestCheckContentCompleteness:
         fire for one of them (position regression on 2nd or 3rd)."""
         src = "A\n=\n\na\n\nB\n=\n\nb\n\nC\n=\n\nc\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "A", "content": "a"},
-            {"id": "s2", "title": "C", "content": "c"},
-            {"id": "s3", "title": "B", "content": "b"},
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
+            {"id": "s2", "title": "C", "level": 2, "content": "c"},
+            {"id": "s3", "title": "B", "level": 2, "content": "b"},
         ])
         issues = self._check(src, data)
         # Spec §3-1 L185 names QC4 specifically; assert the label and the
@@ -1485,9 +1484,9 @@ class TestCheckContentCompleteness:
         of position. (Z-1 r7 QC4 F3)"""
         src = "A\n=\n\na\n\nB\n=\n\nb\n\nC\n=\n\nc\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "A", "content": "a"},
-            {"id": "s2", "title": "B", "content": "c"},  # swapped
-            {"id": "s3", "title": "C", "content": "b"},  # swapped
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
+            {"id": "s2", "title": "B", "level": 2, "content": "c"},  # swapped
+            {"id": "s3", "title": "C", "level": 2, "content": "b"},  # swapped
         ])
         issues = self._check(src, data)
         assert any("[QC4]" in i for i in issues)
@@ -1496,9 +1495,9 @@ class TestCheckContentCompleteness:
         """MD mirror of the three-section content rotation above."""
         src = "# T\n\n## A\n\na\n\n## B\n\nb\n\n## C\n\nc\n"
         data = self._data(title="T", sections=[
-            {"id": "s1", "title": "A", "content": "a"},
-            {"id": "s2", "title": "B", "content": "c"},
-            {"id": "s3", "title": "C", "content": "b"},
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
+            {"id": "s2", "title": "B", "level": 2, "content": "c"},
+            {"id": "s3", "title": "C", "level": 2, "content": "b"},
         ])
         issues = self._check(src, data, fmt="md")
         assert any("[QC4]" in i for i in issues)
@@ -1507,8 +1506,8 @@ class TestCheckContentCompleteness:
         """MD: two sections with swapped content (titles correct)."""
         src = "# T\n\n## A\n\nA の内容。\n\n## B\n\nB の内容。\n"
         data = self._data(title="T", sections=[
-            {"id": "s1", "title": "A", "content": "B の内容。"},
-            {"id": "s2", "title": "B", "content": "A の内容。"},
+            {"id": "s1", "title": "A", "level": 2, "content": "B の内容。"},
+            {"id": "s2", "title": "B", "level": 2, "content": "A の内容。"},
         ])
         issues = self._check(src, data, fmt="md")
         assert any("[QC4]" in i and "s2" in i for i in issues), issues
@@ -1519,7 +1518,7 @@ class TestCheckContentCompleteness:
         boundary test; retained as a dedicated pass-guard.)"""
         src = "A\n=\n\nnote\n\nB\n=\n\nnote\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "A", "content": "note"},
+            {"id": "s1", "title": "A", "level": 2, "content": "note"},
         ])
         issues = self._check(src, data)
         assert not any("[QC3]" in i for i in issues)
@@ -1541,8 +1540,8 @@ class TestCheckContentCompleteness:
         """
         src = "A\n=\n\nnote1\n\nB\n=\n\nnote2\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "A", "content": "note2"},  # B's content
-            {"id": "s2", "title": "B", "content": "note1"},  # A's content
+            {"id": "s1", "title": "A", "level": 2, "content": "note2"},  # B's content
+            {"id": "s2", "title": "B", "level": 2, "content": "note1"},  # A's content
         ])
         issues = self._check(src, data)
         assert any("[QC4]" in i for i in issues)
@@ -1570,9 +1569,9 @@ class TestCheckContentCompleteness:
         """
         src = "# H\n\nnote alpha note beta note\n"
         data = self._data(title="H", sections=[
-            {"id": "s1", "title": "note", "content": "beta"},
-            {"id": "s2", "title": "note", "content": ""},
-            {"id": "s3", "title": "note", "content": ""},
+            {"id": "s1", "title": "note", "level": 2, "content": "beta"},
+            {"id": "s2", "title": "note", "level": 2, "content": ""},
+            {"id": "s3", "title": "note", "level": 2, "content": ""},
         ])
         issues = self._check(src, data, fmt="md")
         assert any("[QC4]" in i for i in issues), issues
@@ -1581,8 +1580,8 @@ class TestCheckContentCompleteness:
     def test_fail_qc4_misplaced_content_rst(self):
         src = "概要\n====\n\nA の内容。\n\n詳細\n====\n\nB の内容。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "B の内容。"},  # swapped
-            {"id": "s2", "title": "詳細", "content": "A の内容。"},
+            {"id": "s1", "title": "概要", "level": 2, "content": "B の内容。"},  # swapped
+            {"id": "s2", "title": "詳細", "level": 2, "content": "A の内容。"},
         ])
         issues = self._check(src, data)
         assert any("[QC4]" in i and "s2" in i for i in issues), issues
@@ -1649,7 +1648,7 @@ class TestVerifyFileExcel:
         wb.save(xlsx_path)
         # JSON has an extra string that no cell covers — QC2 fabrication.
         data = {"id": "f", "title": "セル値A", "content": "これは捏造された追加本文です。",
-                "sections": [{"id": "s1", "title": "セル値B", "content": ""}]}
+                "sections": [{"id": "s1", "title": "セル値B", "level": 2, "content": ""}]}
         issues = self._check(str(xlsx_path), data)
         assert any("QC2" in i for i in issues)
 
@@ -1951,7 +1950,7 @@ class TestCheckJsonDocsMdConsistency_QO2_ExcelP1:
             "title": "T",
             "content": "",
             "sections": [
-                {"id": "s1", "title": "概要", "content": "本文1\n本文2"},
+                {"id": "s1", "title": "概要", "level": 2, "content": "本文1\n本文2"},
             ],
         }
         docs = "# T\n\n## 概要\n\n本文1\n本文2\n"
@@ -3013,7 +3012,7 @@ class TestCheckJsonDocsMdConsistency_P1_TitleStillChecked:
             "content": "",
             "sheet_type": "P1",
             "sections": [
-                {"id": "s1", "title": "値A", "content": "No.: 1\nタイトル: 値A"},
+                {"id": "s1", "title": "値A", "level": 2, "content": "No.: 1\nタイトル: 値A"},
             ],
         }
         docs = "# 間違ったタイトル\n\n| No. | タイトル |\n| --- | --- |\n| 1 | 値A |\n"
@@ -3220,7 +3219,7 @@ class TestVerifyQC5NullByte:
         data = {
             "id": "x", "title": "clean title",
             "content": "clean body",
-            "sections": [{"id": "s1", "title": "section", "content": "clean"}],
+            "sections": [{"id": "s1", "title": "section", "level": 2, "content": "clean"}],
         }
         # No NULLs → no QC5-NULL issue (other QC5 checks still run).
         issues = _check_format_purity(data, "rst")
@@ -3284,7 +3283,8 @@ class TestCheckJsonDocsMdConsistency_QO1_Level:
         """A section without `level` field is a schema violation under 22-B-16."""
         data = {
             "id": "f", "title": "T", "content": "", "sections": [
-                {"id": "s1", "title": "A", "content": "a"},  # no level
+                # Intentionally missing `level` — schema violation.
+                {"id": "s1", "title": "A", "content": "a"},
             ]
         }
         docs = "# T\n\n## A\n\na\n"

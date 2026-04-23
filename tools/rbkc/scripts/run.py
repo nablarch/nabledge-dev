@@ -102,11 +102,18 @@ def _convert_and_write(
     sections = []
     for idx, sec in enumerate(result.sections, start=1):
         sid = f"s{idx}"
-        sections.append({
+        section_out = {
             "id": sid,
             "title": sec.title,
             "content": sec.content,
-        })
+        }
+        # Phase 22-B-16a: emit heading depth for RST/MD (not xlsx — xlsx
+        # sections are Excel rows, not heading-nested).  docs.py uses
+        # `level` to emit `##`/`###`/`####`; verify QO1 uses it for
+        # JSON↔docs-MD heading-level alignment.
+        if fi.format in ("rst", "md"):
+            section_out["level"] = getattr(sec, "level", 2)
+        sections.append(section_out)
 
     data = {
         "id": fi.file_id,

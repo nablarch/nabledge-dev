@@ -66,7 +66,10 @@ def convert(source: str, file_id: str = "") -> RSTResult:
     tokens = md_ast.parse(cleaned)
     parts = extract_document(tokens)
 
-    sections = [Section(title=s.title, content=s.content) for s in parts.sections]
+    sections = [
+        Section(title=s.title, content=s.content, level=s.level)
+        for s in parts.sections
+    ]
 
     return RSTResult(
         title=parts.title,

@@ -20,6 +20,7 @@ from scripts.common import rst_ast, rst_ast_visitor
 class Section:
     title: str
     content: str
+    level: int = 2  # Phase 22-B-16a: heading depth (h2=2, h3=3, ...)
 
 
 @dataclass
@@ -67,7 +68,10 @@ def convert(
 
     title = parts.top_title or ""
     content = parts.top_content
-    sections = [Section(title=s.title, content=s.content) for s in parts.sections]
+    sections = [
+        Section(title=s.title, content=s.content, level=s.level)
+        for s in parts.sections
+    ]
     no_kc = _detect_no_knowledge_content(parts)
 
     return RSTResult(

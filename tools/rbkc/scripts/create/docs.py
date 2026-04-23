@@ -104,8 +104,14 @@ def _render_full(data: dict, docs_md_path: Path, knowledge_dir: Path) -> str:
     for section in data.get("sections", []):
         title = section.get("title", "")
         content = section.get("content", "")
-
-        lines.append(f"## {title}")
+        # Phase 22-B-16a: emit heading at declared depth (spec
+        # rbkc-json-schema-design.md §4-2).  level=2 → `##`, level=3 →
+        # `###`, level=4 → `####`.  Missing level defaults to 2 only when
+        # the key is absent entirely (legacy JSON); a normal 22-B-16a
+        # build always writes level.
+        level = section.get("level", 2)
+        hashes = "#" * max(1, int(level))
+        lines.append(f"{hashes} {title}")
         lines.append("")
         if content:
             lines.append(_rewrite_asset_links(content, docs_md_path, knowledge_dir))

@@ -44,15 +44,17 @@ def _all_text(data: dict) -> str:
 # ---------------------------------------------------------------------------
 
 _H1_RE = re.compile(r'^#\s+(.+)$', re.MULTILINE)
-# Per spec §3-3 QO1: a JSON section title may appear at `##` or `###`.
-# However, docs.py only emits sections at `##`; a `###` in docs MD is a
-# subheading inside a section's content (valid CommonMark). The "extra
-# direction" check must therefore use `##` only to avoid false-positives.
-# The "missing direction" check accepts either level.
+# Phase 22-B-16a: JSON `sections[].level` records the intended heading depth
+# (h2=2, h3=3, h4=4).  Docs MD emits `#` repeated `level` times.  QO1 level
+# check matches JSON level with the docs MD heading that bears the same
+# title.
+_HEADING_RE = re.compile(r'^(#{2,6})\s+(.+)$', re.MULTILINE)
+# Legacy names kept for existing QO1 title-order / top-region bounding
+# logic.  `_H2_ONLY_RE` still bounds the top-content region (top-level
+# content ends at the first `##`); `_H2_OR_H3_RE` is kept as the
+# "accepts either level" form for backward compatibility.
 _H2_ONLY_RE = re.compile(r'^##\s+(.+)$', re.MULTILINE)
-_H2_OR_H3_RE = re.compile(r'^#{2,3}\s+(.+)$', re.MULTILINE)
-# Back-compat name (kept for the top-content region-bounding in QO2 which
-# already uses `##` first to locate the region boundary).
+_H2_OR_H3_RE = re.compile(r'^#{2,4}\s+(.+)$', re.MULTILINE)
 _H2_RE = _H2_OR_H3_RE
 
 # Fenced code blocks (CommonMark: triple-backtick OR triple-tilde). Headings
@@ -147,22 +149,24 @@ def check_json_docs_md_consistency(
     # is already checked.
     if data.get("sheet_type") != "P1":
         # QO1: section title order and presence.
-        # Per spec §3-3 QO1: the `##` level in docs MD is reserved for
-        # section titles; `###` is used only for subheadings *inside* a
-        # section's content. The "extra" check therefore uses `##` only
-        # (a stray `###` in content is valid). The "missing" check
-        # accepts either level so that a converter promoting a section to
-        # `###` still reconciles.
-        docs_h2_only_titles = [m.group(1).strip() for m in _H2_ONLY_RE.finditer(docs_scan)]
-        docs_h2_or_h3_titles = [m.group(1).strip() for m in _H2_OR_H3_RE.finditer(docs_scan)]
+        # Phase 22-B-16a: docs MD may emit `##`/`###`/`####` depending on
+        # `sections[].level`. Collect every heading and its level so we can
+        # check both title order and level alignment.
+        docs_headings: list[tuple[int, str]] = []
+        for m in _HEADING_RE.finditer(docs_scan):
+            hashes, title = m.group(1), m.group(2).strip()
+            docs_headings.append((len(hashes), title))
+        docs_h2_only_titles = [t for lvl, t in docs_headings if lvl == 2]
+        # The "missing" check still accepts any heading level ≥ 2.
+        docs_all_titles = [t for _, t in docs_headings]
         json_sec_titles = [s.get("title", "") for s in sections if s.get("title")]
 
         if not sections and docs_h2_only_titles:
             issues.append(f"[QO1] {file_id}: docs MD has section headings but JSON has no sections")
         else:
-            missing = [t for t in json_sec_titles if t not in docs_h2_or_h3_titles]
+            missing = [t for t in json_sec_titles if t not in docs_all_titles]
             extra = [t for t in docs_h2_only_titles if t not in json_sec_titles]
-            filtered = [t for t in docs_h2_or_h3_titles if t in json_sec_titles]
+            filtered = [t for t in docs_all_titles if t in json_sec_titles]
             if missing:
                 for t in missing:
                     issues.append(f"[QO1] {file_id}: section title missing in docs MD: {t!r}")
@@ -173,6 +177,37 @@ def check_json_docs_md_consistency(
                 issues.append(
                     f"[QO1] {file_id}: section title order differs: JSON={json_sec_titles!r} docs={filtered!r}"
                 )
+
+            # Phase 22-B-16a QO1 level check: every JSON section must
+            # declare `level` and docs MD's heading for that title must
+            # have `#` count equal to `level`.
+            docs_title_to_levels: dict[str, list[int]] = {}
+            for lvl, t in docs_headings:
+                docs_title_to_levels.setdefault(t, []).append(lvl)
+            used_idx: dict[str, int] = {}
+            for s in sections:
+                title = s.get("title", "")
+                if not title:
+                    continue
+                if "level" not in s:
+                    issues.append(
+                        f"[QO1] {file_id}: section {title!r} missing required 'level' field"
+                    )
+                    continue
+                declared = s.get("level")
+                levels_for_title = docs_title_to_levels.get(title, [])
+                idx = used_idx.get(title, 0)
+                if idx >= len(levels_for_title):
+                    # Already reported as "missing in docs MD" above;
+                    # no extra level message needed.
+                    continue
+                actual = levels_for_title[idx]
+                used_idx[title] = idx + 1
+                if declared != actual:
+                    issues.append(
+                        f"[QO1] {file_id}: section {title!r} level mismatch — "
+                        f"JSON level={declared}, docs MD heading has {actual} `#`"
+                    )
 
     # QO2 Excel P1 例外 (spec §3-3): per-sheet Excel JSON whose
     # sheet_type == "P1" cannot be checked verbatim because docs MD renders
@@ -1588,10 +1623,24 @@ def check_source_links(
                 issues.append(
                     f"[QL1] :ref: display text missing from JSON: {display!r}"
                 )
-            # Bare label form: the resolved target title must appear
+            # Bare label form: the resolved target title must appear.
+            # Phase 22-B-16a (spec §3-2-2 zero-exception): a label that
+            # neither docutils nor label_map can resolve is a dangling
+            # reference — FAIL.  Silent skip is the horizontal-class bug
+            # we are fixing.
             if not display and label not in seen_labels:
                 seen_labels.add(label)
-                title = label_map.get(label)
+                target = label_map.get(label)
+                from scripts.common.labels import UNRESOLVED
+                if target is None or target == UNRESOLVED:
+                    issues.append(
+                        f"[QL1] :ref:`{label}` unresolved (label not in label_map or orphan label): dangling reference"
+                    )
+                    continue
+                # Support both legacy str (title only) and the upcoming
+                # Phase 22-B-16b LabelTarget dataclass.  The dataclass case
+                # is a future-proof no-op here — we only read the title.
+                title = target if isinstance(target, str) else getattr(target, "title", str(target))
                 if title and title not in json_full:
                     issues.append(
                         f"[QL1] :ref:`{label}` target title missing from JSON: {title!r}"

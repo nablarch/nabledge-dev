@@ -43,6 +43,10 @@ class UnknownTokenError(VisitorError):
 class Section:
     title: str
     content: str
+    level: int = 2
+    # Phase 22-B-16a (spec rbkc-json-schema-design.md §2-2):
+    # heading depth — MD `##` = 2, `###` = 3, `####` = 4.  docs.py emits
+    # `#` repeated `level` times for the section heading.
 
 
 @dataclass
@@ -151,9 +155,9 @@ class _MDVisitor:
         self._current_section = None
         self._current_section_parts = []
 
-    def _open_section(self, title: str) -> None:
+    def _open_section(self, title: str, level: int = 2) -> None:
         self._close_section()
-        self._current_section = Section(title=title, content="")
+        self._current_section = Section(title=title, content="", level=level)
         self._current_section_parts = []
 
     # ----------------------------------------------------------- block walk
@@ -193,7 +197,7 @@ class _MDVisitor:
             if level == 1:
                 self.title = title_text
             else:
-                self._open_section(title_text)
+                self._open_section(title_text, level=level)
             return idx + 3
 
         if t == "paragraph_open":

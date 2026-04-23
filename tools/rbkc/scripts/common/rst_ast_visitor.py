@@ -59,9 +59,14 @@ _KNOWN_ROLES: set[str] = {
 class Section:
     title: str
     content: str
+    level: int = 2
     # For verify: the linear MD text of this section (title + content merged)
     # can be reproduced by concat; we keep title/content separate here so
     # create can write JSON directly.
+    #
+    # `level` (Phase 22-B-16a, spec rbkc-json-schema-design.md §2-2):
+    # heading depth — RST h2 / MD `##` = 2, h3 / `###` = 3, h4 / `####` = 4.
+    # docs.py emits `#` repeated `level` times for the section heading.
 
 
 @dataclass
@@ -609,20 +614,22 @@ class _MDVisitor:
         if role == "ref":
             # `:ref:` は label を必ず解決する (未解決は FAIL)。
             # `text <label>` → text (表示名) を使う。bare label は label_map で解決。
+            # Phase 22-B-16a: labels.py の UNRESOLVED sentinel (orphan label
+            # を silent drop せず sentinel で残したもの) も未解決として FAIL。
+            from scripts.common.labels import UNRESOLVED
+            def _resolve_or_fail(target: str) -> str:
+                r = self._label_map.get(target)
+                if r is None or r == UNRESOLVED:
+                    raise UnresolvedReferenceError(f"unresolved :ref: {target}")
+                return r if isinstance(r, str) else getattr(r, "title", str(r))
             if "<" in raw and raw.rstrip().endswith(">"):
                 text, _, target = raw.rpartition("<")
                 text = text.strip()
                 target = target.rstrip(">").strip()
                 if text:
                     return text
-                resolved = self._label_map.get(target)
-                if resolved is None:
-                    raise UnresolvedReferenceError(f"unresolved :ref: {target}")
-                return resolved
-            resolved = self._label_map.get(raw.strip())
-            if resolved is None:
-                raise UnresolvedReferenceError(f"unresolved :ref: {raw.strip()}")
-            return resolved
+                return _resolve_or_fail(target)
+            return _resolve_or_fail(raw.strip())
         if role in {"doc", "numref"}:
             # `:doc:` / `:numref:` は document path を参照する。
             # `text <path>` があれば表示名を優先、無ければ path の basename を残す。
@@ -801,13 +808,25 @@ def extract_document(
             section_children = promoted_subsecs + section_children[1:]
 
     for sec in section_children:
-        _walk_section(sec, visitor, parts)
+        _walk_section(sec, visitor, parts, level=2)
 
     parts.warnings.extend(visitor.warnings)
     return parts
 
 
-def _walk_section(sec: nodes.section, visitor: _MDVisitor, parts: DocumentParts) -> None:
+def _walk_section(
+    sec: nodes.section,
+    visitor: _MDVisitor,
+    parts: DocumentParts,
+    level: int = 2,
+) -> None:
+    """Walk a section and append to parts.sections with its heading level.
+
+    ``level`` is the depth of this section's heading (h2 = 2, h3 = 3, ...);
+    nested sections are walked with ``level + 1``.  This matches
+    rbkc-json-schema-design.md §2-2 sections[].level and docs.py's
+    level-to-# mapping.
+    """
     title = ""
     body_children: list[nodes.Node] = []
     subsections: list[nodes.section] = []
@@ -819,9 +838,9 @@ def _walk_section(sec: nodes.section, visitor: _MDVisitor, parts: DocumentParts)
         else:
             body_children.append(ch)
     content = _join_blocks([visitor.render(c) for c in body_children]).strip()
-    parts.sections.append(Section(title=title, content=content))
+    parts.sections.append(Section(title=title, content=content, level=level))
     for sub in subsections:
-        _walk_section(sub, visitor, parts)
+        _walk_section(sub, visitor, parts, level=level + 1)
 
 
 __all__ = [
