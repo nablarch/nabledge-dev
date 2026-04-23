@@ -3328,14 +3328,8 @@ class TestLabelMapStrict:
     """
 
     def test_label_with_no_following_heading_is_reported(self, tmp_path):
-        """A `.. _label:` with no heading beneath it must not be silently dropped.
-
-        Pre-22-B-16 behaviour was to drop the label from the returned map,
-        which caused downstream verify to silently PASS on dangling refs.
-        Post-22-B-16: the label must appear in the map with a sentinel
-        target that downstream verify treats as unresolvable (FAIL).
-        """
-        from scripts.common.labels import build_label_map
+        """A `.. _label:` with no heading beneath it must not be silently dropped."""
+        from scripts.common.labels import build_label_map, UNRESOLVED
         src = tmp_path / "foo.rst"
         src.write_text(
             ".. _orphan-label:\n\n"
@@ -3343,17 +3337,110 @@ class TestLabelMapStrict:
             encoding="utf-8",
         )
         label_map = build_label_map(tmp_path)
-        # The label must be present in the map — either resolving to a real
-        # target OR to a sentinel that verify can detect as "dangling".
-        # Silent drop (label absent from dict) is the bug we fix.
-        # After Phase 22-B-16 labels.py returns LabelTarget dataclass, so
-        # accept either legacy `str` or new `LabelTarget` form.
-        assert "orphan-label" in label_map or any(
-            k == "orphan-label" for k in label_map
-        ), f"label dropped silently: {label_map}"
+        assert label_map.get("orphan-label") == UNRESOLVED, label_map
 
-    # NOTE: LabelTarget dataclass + (title, file_id, section_title) extension
-    # is Phase 22-B-16b scope — tests added there.
+    def test_label_orphan_at_end_of_file(self, tmp_path):
+        """Orphan label at EOF (no lines after it) → UNRESOLVED."""
+        from scripts.common.labels import build_label_map, UNRESOLVED
+        src = tmp_path / "foo.rst"
+        src.write_text(
+            "見出し\n"
+            "=====\n\n"
+            "本文。\n\n"
+            ".. _trailing-orphan:\n",
+            encoding="utf-8",
+        )
+        label_map = build_label_map(tmp_path)
+        assert label_map.get("trailing-orphan") == UNRESOLVED, label_map
+
+    def test_stacked_orphan_labels_all_reported(self, tmp_path):
+        """Multiple consecutive labels followed by a paragraph → all UNRESOLVED."""
+        from scripts.common.labels import build_label_map, UNRESOLVED
+        src = tmp_path / "foo.rst"
+        src.write_text(
+            ".. _alpha:\n"
+            ".. _beta:\n"
+            ".. _gamma:\n\n"
+            "Plain paragraph, no heading.\n",
+            encoding="utf-8",
+        )
+        label_map = build_label_map(tmp_path)
+        assert label_map.get("alpha") == UNRESOLVED, label_map
+        assert label_map.get("beta") == UNRESOLVED, label_map
+        assert label_map.get("gamma") == UNRESOLVED, label_map
+
+    def test_stacked_mixed_resolved_and_new_orphan(self, tmp_path):
+        """Resolved labels preceding a heading, then another orphan after the heading."""
+        from scripts.common.labels import build_label_map, UNRESOLVED
+        src = tmp_path / "foo.rst"
+        src.write_text(
+            ".. _resolved-a:\n"
+            ".. _resolved-b:\n\n"
+            "見出し\n"
+            "=====\n\n"
+            "本文\n\n"
+            ".. _orphan-after:\n\n"
+            "Another paragraph.\n",
+            encoding="utf-8",
+        )
+        label_map = build_label_map(tmp_path)
+        assert label_map.get("resolved-a") == "見出し"
+        assert label_map.get("resolved-b") == "見出し"
+        assert label_map.get("orphan-after") == UNRESOLVED, label_map
+
+    def test_orphan_sentinel_does_not_leak_into_rst_inline_reference(self):
+        """Horizontal-class regression: rst_ast_visitor.inline_reference must
+        not return the UNRESOLVED sentinel string when label_map holds it.
+
+        Spec §3-2-2 zero-exception: silent fallback to sentinel text forbidden.
+        """
+        from docutils import nodes
+        from scripts.common import rst_ast_visitor
+        from scripts.common.labels import UNRESOLVED
+        # Build a reference node directly with refname but no refuri/refid,
+        # matching the post-docutils shape when a named reference cannot be
+        # resolved within the doctree (cross-document case).
+        ref = nodes.reference(text="Dangling")
+        ref["refname"] = "dangling"
+        text_node = nodes.Text("Dangling")
+        ref.append(text_node)
+        visitor = rst_ast_visitor._MDVisitor(
+            label_map={"dangling": UNRESOLVED}
+        )
+        try:
+            visitor.inline_reference(ref)
+        except rst_ast_visitor.UnresolvedReferenceError:
+            return  # Expected
+        raise AssertionError(
+            "inline_reference leaked UNRESOLVED sentinel without raising"
+        )
+
+    def test_orphan_sentinel_does_not_leak_into_verify_resolve_title_inline(self):
+        """Horizontal-class regression: verify._resolve_title_inline must not
+        output the UNRESOLVED sentinel as rendered title text.
+
+        Builds an :ref: inline node inside a synthetic title, resolving via
+        label_map that returns the sentinel — pre-fix this rendered the
+        sentinel string into the comparison text; post-fix it falls back to
+        the raw label.
+        """
+        from docutils import nodes
+        from scripts.common.labels import UNRESOLVED
+        # Synthesise a docutils title containing an :ref: inline to a label
+        # that resolves to the UNRESOLVED sentinel.
+        title = nodes.title()
+        inline = nodes.inline(classes=["role-ref"])
+        inline.append(nodes.Text("orphan"))
+        title.append(inline)
+        from scripts.verify.verify import _resolve_title_inline
+        rendered = _resolve_title_inline(title, {"orphan": UNRESOLVED})
+        assert UNRESOLVED not in rendered, rendered
+        # Should fall back to the raw label text, not leak the sentinel.
+        assert "orphan" in rendered
+
+
+# NOTE: Phase 22-B-16b will add TestGithubSlug and the LabelTarget-shape tests.
+# Keeping 16a scope tight: QO1 level + silent-skip horizontal class only.
 
 
 # NOTE: Phase 22-B-16b will add TestGithubSlug and the LabelTarget-shape tests.

@@ -1504,6 +1504,22 @@ def _resolve_title_inline(title_node, label_map: dict) -> str:
     their resolved form makes the verify string match the JSON string.
     """
     from docutils import nodes
+    from scripts.common.labels import UNRESOLVED
+
+    def _resolved_text(target, fallback: str) -> str:
+        """Convert a label_map value (str / LabelTarget / UNRESOLVED / None)
+        to its text form, or ``fallback`` when unresolved.
+
+        Phase 22-B-16a horizontal-class fix: UNRESOLVED sentinel must not
+        bleed through as visible text (it otherwise appeared as
+        ``"__RBKC_UNRESOLVED_LABEL__"`` in the rendered title).
+        """
+        if target is None or target == UNRESOLVED:
+            return fallback
+        if isinstance(target, str):
+            return target
+        return getattr(target, "title", str(target))
+
     parts: list[str] = []
     for child in title_node.children:
         if isinstance(child, nodes.inline):
@@ -1516,15 +1532,16 @@ def _resolve_title_inline(title_node, label_map: dict) -> str:
                         disp, _, _ = raw.rpartition("<")
                         parts.append(disp.strip())
                     else:
-                        parts.append(label_map.get(raw, raw))
+                        parts.append(_resolved_text(label_map.get(raw), raw))
                     continue
                 # Other roles: render the raw text (converter does the same).
                 parts.append(raw)
                 continue
         if isinstance(child, nodes.reference):
             refid = (child.get("refid", "") or "").strip()
-            if refid and refid in label_map:
-                parts.append(label_map[refid])
+            target = label_map.get(refid) if refid else None
+            if target and target != UNRESOLVED:
+                parts.append(_resolved_text(target, child.astext()))
             else:
                 parts.append(child.astext())
             continue

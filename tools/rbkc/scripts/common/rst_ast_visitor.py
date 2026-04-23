@@ -668,9 +668,13 @@ class _MDVisitor:
         if refname:
             # docutils could not resolve the ref within this doctree. Use the
             # cross-document label_map; fail if still unresolved.
+            # Phase 22-B-16a horizontal-class fix: UNRESOLVED sentinel (orphan
+            # label in labels.py) must be treated as unresolved — its truthy
+            # string value otherwise leaked into knowledge output.
+            from scripts.common.labels import UNRESOLVED
             resolved = self._label_map.get(refname)
-            if resolved:
-                return resolved
+            if resolved and resolved != UNRESOLVED:
+                return resolved if isinstance(resolved, str) else getattr(resolved, "title", str(resolved))
             raise UnresolvedReferenceError(f"unresolved reference: {refname}")
         return text
 
