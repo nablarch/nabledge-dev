@@ -3523,3 +3523,9 @@ class TestGithubSlug:
         from scripts.common.github_slug import github_slug
         assert github_slug("Foo") == "foo"
         assert github_slug("Foo") == "foo"
+
+
+# NOTE: TestLabelTarget and TestDocMap are Phase 22-B-16b-main scope.
+# They require labels.py to depend on common/file_id.py which is 22-B-16b-prep.
+# Tests will be (re)added in 22-B-16b-main commits per SE recommendation
+# (.work/00299/review-22-b-16b-se.md).

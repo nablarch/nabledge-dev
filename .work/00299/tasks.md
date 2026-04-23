@@ -121,17 +121,22 @@
     6. silent skip 4 箇所を FAIL に変更
     7. v6 再生成 → verify FAIL 0 を確認
     8. SE + QA expert review → Findings 全件対応
-  - [ ] **22-B-16b**: `github_slug.py` + `labels.py` 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化
-    1. TDD RED: `TestGithubSlug` (GitHub 公式仕様 fixture)
-    2. TDD RED: `TestLabelMap` / `TestDocMap` (extension + dangling)
-    3. TDD RED: `TestCheckSourceLinks_JsonSide` / `TestCheckSourceLinks_DocsMdSide` (各 link kind × pass/fail)
-    4. `scripts/common/github_slug.py` 新規実装
-    5. `scripts/common/labels.py` に LabelTarget / doc_map 追加
-    6. `rst_ast_visitor.inline_inline` role=ref/doc/numref を MD リンク化
-    7. `md_ast_visitor` の link_open href 相対解決 → MD リンク化
-    8. verify `check_source_links` 両側検証 (target `.md` 実在 + anchor slug 一致)
-    9. v6 再生成 → verify FAIL 0 を確認
-    10. SE + QA expert review → Findings 全件対応
+  - [x] **22-B-16b-slug**: `scripts/common/github_slug.py` 新規 (GitHub 公式仕様で独立 pin) `27fe72376`。12 unit tests GREEN
+  - [ ] **22-B-16b-prep**: file_id 算出を `scripts/common/file_id.py` に集約 (refactor のみ、behavioural change なし)。SE 推奨 (review-22-b-16b-se.md)
+    1. `common/file_id.py` 新規: `load_mappings`, `rel_for_classify`, `derive_file_id(source_path, format, version, repo_root) -> FileClass`
+    2. `create/scan.py`, `create/classify.py` の対応ロジックを common に移動 + re-export
+    3. TDD: `tests/ut/test_file_id.py` — 各 mapping entry を spec-pinned (classify 出力ではなく mapping 仕様から hand-computed)
+    4. v6 create → file_id が変わらない (bit-identical) を確認
+    5. SE review → Findings 全件対応
+  - [ ] **22-B-16b-main**: labels.py 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化
+    1. TDD RED: `TestLabelTarget` / `TestDocMap` (labels.py 拡張)
+    2. TDD RED: `TestCheckSourceLinks_JsonSide` / `TestCheckSourceLinks_DocsMdSide` (各 link kind × pass/fail)
+    3. `labels.py` に `LabelTarget` dataclass + `build_label_doc_map(version, repo_root)`
+    4. `rst_ast_visitor.inline_inline` role=ref/doc/numref を MD リンク化 (github_slug + LabelTarget 経由)
+    5. `md_ast_visitor` の link_open href 相対解決 → MD リンク化
+    6. verify `check_source_links` 両側検証 (target `.md` 実在 + anchor slug 一致)
+    7. v6 再生成 → verify FAIL 0 を確認
+    8. SE + QA expert review → Findings 全件対応
   - [ ] **22-B-16c**: image/figure asset 解決 (converter 側 AST 時) + download role + QL1 asset-exists check
     1. TDD RED: asset resolution / copy / QL1 asset-exists
     2. RST `image` / `figure` / `:download:` URI を source dir からの相対で resolve、実ファイルを `knowledge/assets/{file_id}/{basename}` にコピー
