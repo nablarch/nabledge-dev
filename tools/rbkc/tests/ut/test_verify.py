@@ -2252,3 +2252,368 @@ class TestCheckSourceLinks:
         )
         data = self._data(content="us.")
         assert self._check(src, "rst", data, {}) == []
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-5a-r3a: P1 header row expansion
+# ---------------------------------------------------------------------------
+
+
+class TestVerifyFileExcelP1HeaderExpansion:
+    """Spec §3-1 Excel 節 (Phase 22-B): P1 シートでは header 行のセル値
+    (列名) が、JSON の section.content に「データ行数」回現れる。sequential-
+    delete の前に header 行トークンをデータ行数ぶん複製してから照合する。
+
+    - converter を参照せず、§8-2 header 検出 + §8-4 データ行数算出のみ
+      に依拠すること
+    - P2 シートは展開なし (従来通り 1:1 照合)
+    - converter が header 行を多重展開した場合は QC2 で検出される
+      (複製数 = データ行数 = JSON section 数 + 何かが食い違えば残存)
+    """
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def _p1_sheet(self, tmp_path):
+        """Build a minimal 3-column P1 sheet: header + 2 data rows."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "概要"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["C2"] = "概要A"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "概要B"
+        xlsx_path = tmp_path / "p1.xlsx"
+        wb.save(xlsx_path)
+        return xlsx_path
+
+    def _p1_json(self):
+        """JSON that correctly mirrors the P1 sheet: 2 sections, each
+        containing the full {列名}: {値} line-listing."""
+        return {
+            "id": "p1",
+            "title": "",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "値A",
+                    "content": "No.: 1\nタイトル: 値A\n概要: 概要A",
+                },
+                {
+                    "id": "s2",
+                    "title": "値B",
+                    "content": "No.: 2\nタイトル: 値B\n概要: 概要B",
+                },
+            ],
+        }
+
+    def test_pass_p1_column_names_repeat_per_data_row(self, tmp_path):
+        """P1 converter output where each header cell appears 1 time in
+        source but `data_rows` times in JSON must PASS — header expansion
+        converts the 1 source token into N tokens matching JSON."""
+        xlsx_path = self._p1_sheet(tmp_path)
+        data = self._p1_json()
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert issues == [], issues
+
+    def test_fail_p1_data_value_missing_from_json(self, tmp_path):
+        """A data-row cell value absent from JSON must still raise QC1.
+        Header expansion applies only to header cells, not data cells."""
+        xlsx_path = self._p1_sheet(tmp_path)
+        data = self._p1_json()
+        # Drop section s2's 値B — the cell '値B' is still in title, but
+        # '概要B' is not anywhere → QC1.
+        data["sections"][1]["content"] = "No.: 2\nタイトル: 値B"
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert any("[QC1]" in i and "概要B" in i for i in issues), issues
+
+    def test_fail_p1_column_name_over_expanded_in_json(self, tmp_path):
+        """Converter bug: a header cell value appears (data_rows + 1) times
+        in JSON. After header expansion (data_rows = 2 tokens) + 1 normal
+        occurrence = 3 source tokens, sequential-delete consumes 3 but JSON
+        has 4 → 1 residue → QC2 (or QC3 if the extra sits in a consumed
+        region)."""
+        xlsx_path = self._p1_sheet(tmp_path)
+        data = self._p1_json()
+        # Inject an extra 'タイトル:' line in s1 — column name now appears
+        # 3 times in JSON but source (with header expansion = 2) + 0
+        # elsewhere = 2 source tokens → 1 residue.
+        data["sections"][0]["content"] += "\nタイトル: 重複"
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        # '重複' is never in the source → QC1 fires for that specifically,
+        # AND 'タイトル' is now over-count. Accept any FAIL (QC1 / QC2 / QC3).
+        assert issues, "Expected at least one FAIL for over-expanded header"
+
+    def test_fail_p1_column_name_under_represented(self, tmp_path):
+        """If JSON does not include a column name at all (converter bug
+        dropped the `{列名}: ` prefix), header expansion produces
+        data_rows tokens but none match → data_rows QC1 FAILs for that
+        column."""
+        xlsx_path = self._p1_sheet(tmp_path)
+        data = self._p1_json()
+        # Remove "タイトル: " prefix entirely from both sections.
+        data["sections"][0]["content"] = "No.: 1\n値A\n概要: 概要A"
+        data["sections"][1]["content"] = "No.: 2\n値B\n概要: 概要B"
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        # 'タイトル' has source=1 → after expansion = 2 tokens. Neither
+        # appears in JSON now → 2 QC1 (or QC3 depending on implementation).
+        qc_issues = [i for i in issues if "タイトル" in i]
+        assert len(qc_issues) >= 1, issues
+
+    def test_pass_p2_no_header_expansion(self, tmp_path):
+        """P2 sheets (段落主体) must NOT get header expansion — 1:1 check
+        applies. A header-like row appearing once in source must match
+        once in JSON, not N times."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # P2 indicator: only 1 non-empty cell per row (paragraph-like).
+        ws["A1"] = "■概要"
+        ws["A2"] = "これは段落のシートです。"
+        xlsx_path = tmp_path / "p2.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "p2",
+            "title": "概要",
+            "content": "これは段落のシートです。",
+            "sheet_type": "P2",
+            "sections": [],
+        }
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert issues == [], issues
+
+    def test_fail_p2_duplicated_value_triggers_qc3(self, tmp_path):
+        """P2 1:1 check: if JSON duplicates a value the source only has
+        once, QC3 must fire (no header expansion to paper over it)."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "唯一の値"
+        xlsx_path = tmp_path / "p2.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "p2",
+            "title": "",
+            "content": "唯一の値 唯一の値",  # written twice
+            "sheet_type": "P2",
+            "sections": [],
+        }
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert any("[QC3]" in i or "[QC2]" in i for i in issues), issues
+
+    def test_pass_p1_multi_row_header_merged(self, tmp_path):
+        """§8-3 multi-row header: sub-header rows merge as 'メイン/副'.
+        verify must detect the merge using the same rule as converter
+        (§8-2), then expand merged-column names by data-row count."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # Main header
+        ws["A1"] = "No."
+        ws["B1"] = "バージョン"  # parent with two subs
+        ws["D1"] = "備考"
+        # Sub-header
+        ws["B2"] = "モジュール"
+        ws["C2"] = "Nablarch"
+        # Data rows
+        ws["A3"] = "1"
+        ws["B3"] = "1.0"
+        ws["C3"] = "5"
+        ws["D3"] = "初回"
+        ws["A4"] = "2"
+        ws["B4"] = "2.0"
+        ws["C4"] = "6"
+        ws["D4"] = "二回目"
+        xlsx_path = tmp_path / "multihdr.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "mh",
+            "title": "",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1", "title": "1",
+                    "content": "No.: 1\nバージョン/モジュール: 1.0\nバージョン/Nablarch: 5\n備考: 初回",
+                },
+                {
+                    "id": "s2", "title": "2",
+                    "content": "No.: 2\nバージョン/モジュール: 2.0\nバージョン/Nablarch: 6\n備考: 二回目",
+                },
+            ],
+        }
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert issues == [], issues
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-5a-r3b: QP — P1 column-value pairing (spec §3-4)
+# ---------------------------------------------------------------------------
+
+
+class TestCheckXlsxP1Pairing:
+    """Spec §3-4 (new): For each P1 sheet, JSON section N must pair up
+    every `{列名}: {値}` with Excel data-row N's matching cell at the
+    same column. Bag matching (QC1–QC4) cannot catch swapped values —
+    QP does.
+    """
+
+    def _call(self, source_path, data, sheet_name):
+        from scripts.verify.verify import check_xlsx_p1_pairing
+        return check_xlsx_p1_pairing(source_path, data, sheet_name)
+
+    def _sheet(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "概要"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["C2"] = "概要A"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "概要B"
+        xlsx_path = tmp_path / "p1.xlsx"
+        wb.save(xlsx_path)
+        return xlsx_path
+
+    def _good_json(self):
+        return {
+            "id": "p1",
+            "title": "",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n概要: 概要A"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n概要: 概要B"},
+            ],
+        }
+
+    def test_pass_aligned_pairs(self, tmp_path):
+        xlsx = self._sheet(tmp_path)
+        assert self._call(str(xlsx), self._good_json(), "Sheet1") == []
+
+    def test_fail_swapped_values_across_rows(self, tmp_path):
+        """Row-1 value ends up in row-2 section — the exact gap QP exists
+        to close. QC1–QC4 would PASS this (tokens are present somewhere)."""
+        xlsx = self._sheet(tmp_path)
+        data = self._good_json()
+        # Swap タイトル values between sections.
+        data["sections"][0]["content"] = "No.: 1\nタイトル: 値B\n概要: 概要A"
+        data["sections"][1]["content"] = "No.: 2\nタイトル: 値A\n概要: 概要B"
+        issues = self._call(str(xlsx), data, "Sheet1")
+        assert any("[QP]" in i for i in issues), issues
+
+    def test_fail_section_count_mismatch(self, tmp_path):
+        """If JSON has fewer/more sections than Excel has data rows,
+        QP raises section_count_mismatch (independent of QC1)."""
+        xlsx = self._sheet(tmp_path)
+        data = self._good_json()
+        # Drop the second section.
+        data["sections"] = data["sections"][:1]
+        issues = self._call(str(xlsx), data, "Sheet1")
+        assert any("[QP]" in i and "section" in i.lower() for i in issues), issues
+
+    def test_fail_pair_missing_expected_column(self, tmp_path):
+        """A non-empty source cell omitted from the section's content
+        must FAIL — it means the section silently dropped a column."""
+        xlsx = self._sheet(tmp_path)
+        data = self._good_json()
+        # Drop 概要 from s1.
+        data["sections"][0]["content"] = "No.: 1\nタイトル: 値A"
+        issues = self._call(str(xlsx), data, "Sheet1")
+        assert any("[QP]" in i and "概要" in i for i in issues), issues
+
+    def test_pass_empty_source_cell_omitted_from_json(self, tmp_path):
+        """Spec §3-4: 空セルは期待ペアに含めない。空セル列を section に
+        書かないのは許容。converter が空セルを出さないのは設計通り。"""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "概要"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        # C2 intentionally empty.
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "概要B"
+        xlsx_path = tmp_path / "p1.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "p1",
+            "title": "",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A"},  # no 概要 line
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n概要: 概要B"},
+            ],
+        }
+        assert self._call(str(xlsx_path), data, "Sheet1") == []
+
+    def test_skip_non_p1(self, tmp_path):
+        """P2 JSON must not be checked — return no issues immediately."""
+        xlsx = self._sheet(tmp_path)
+        data = self._good_json()
+        data["sheet_type"] = "P2"
+        assert self._call(str(xlsx), data, "Sheet1") == []
+
+    def test_fail_value_contains_colon(self, tmp_path):
+        """Spec §8-4 + existing QO2 P1: partition on FIRST `:` so values
+        containing `:` are preserved verbatim. QP must use the same rule.
+        """
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "URL"
+        ws["A2"] = "1"
+        ws["B2"] = "https://example.com/x"
+        ws["A3"] = "2"
+        ws["B3"] = "https://example.com/y"
+        xlsx_path = tmp_path / "p1.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "p1",
+            "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                # Swap URLs → must FAIL on pair mismatch.
+                {"id": "s1", "title": "1",
+                 "content": "No.: 1\nURL: https://example.com/y"},
+                {"id": "s2", "title": "2",
+                 "content": "No.: 2\nURL: https://example.com/x"},
+            ],
+        }
+        issues = self._call(str(xlsx_path), data, "Sheet1")
+        assert any("[QP]" in i for i in issues), issues
