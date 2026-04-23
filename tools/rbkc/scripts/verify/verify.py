@@ -209,12 +209,12 @@ def check_json_docs_md_consistency(
         if expected not in top_region:
             issues.append(f"[QO2] {file_id}: top-level content not found verbatim directly below the # heading")
 
-    # QO2: section content verbatim
+    # QO2: section content verbatim. Per spec §3-3 QO2 "JSON 各セクション
+    # の content が docs MD に完全一致で含まれている" — unconditional.
+    # Empty content satisfies the containment check trivially; no skip.
     for s in sections:
         content = s.get("content", "")
         title = s.get("title", "")
-        if not content:
-            continue
         expected = _apply_asset_link_rewrite(content, docs_md_path, knowledge_dir)
         if expected not in docs_md_text:
             issues.append(f"[QO2] {file_id}: section '{title}' content not found verbatim in docs MD")
