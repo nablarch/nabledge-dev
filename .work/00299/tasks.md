@@ -87,35 +87,18 @@
 - [x] 22-B-3: `rbkc-verify-quality-design.md` §3-3 QO2 Excel 例外 + §3-1 sheet-level 分割 を仕様化 (`f5aa6a0e3`)
 - [x] 22-B-4: `rbkc-converter-design.md` §8 Excel 対応表新設 (`5a7cacf03`)
 - [x] 22-B-5a: **verify 層 TDD** (`bd678e4aa`) — `_xlsx_source_tokens(sheet_name=...)` / `sheet_type == "P1"` 一方向 containment / P2 strict verbatim fallthrough。edge cases (URL 内 `:` / blank 値 / no-sheet_type regression guard) 含む 7 + 3 tests。SE + QA expert review 済 (QA 2 Findings を同コミットで修正)
-- [ ] 22-B-5a-r2: **設計書更新** (session 58 承認) — `rbkc-verify-quality-design.md` を次の通り更新:
-  - §3-1 Excel 節: P1 header 展開仕様を追記 (対象 `sheet_type=="P1"`、データ行数ぶん header token を複製、verify は §8-2 header 検出規則に**のみ**依拠し converter 参照禁止、データ行数は §8-4 の P1 規約から算出し converter の section 数参照禁止)
-  - §3-4 **新設**: QP (P1 列-値ペアリング検査) — JSON 各 section の `{列名}: {値}` が Excel の同一行・同一列のセル値と一致することを検証
-  - §4 マトリクス: QP 行を追加 (RST —, MD —, Excel ⚠️)
-- [x] 22-B-5a-r3 (初回): **verify TDD** — RED (`a491488bb`) → GREEN (`eb0c47a77`)
-- [ ] 22-B-5a-r3-QAfix: QA expert review で 7 Findings → 全件対応
-  - F1: P2 boundary (run-length=2, useful_width=2) テスト追加
-  - F2: 無効 sub-header (parent より広い) テスト追加
-  - F3: 列名を substring として含む cell 値でのスワップ検出テスト
-  - F4: 重複列名 header 時の QP 挙動 lock (現在 silent accept → FAIL に変更)
-  - F5: 空 header cell (spacer 列) の挙動 lock
-  - F6: `:` 含む値の **PASS** 側テスト追加 (現在 FAIL 側しかない)
-  - F7: fabricated `列: 値` fragment の QC2 検出テスト
-- [ ] 22-B-5b: **xlsx converter 書き直し** (既に暫定実装済、r2/r3 完了後に verify PASS するよう微調整) — `scripts/create/converters/xlsx_releasenote.py` / `xlsx_security.py`:
-  - 1 sheet = 1 RSTResult (scan/classify/run で sheet-level に分割、下記 22-B-5c を参照)
-  - P1/P2 自動判定 (ヘッダ検出 + 列数 ≤ 2 の特例)
-  - P1: 1 行 = 1 section、content は `列名: 値` 縦列挙
-  - P2: content 一本
-  - `sheet_type` メタ出力
-  - 複数行ヘッダ合成ロジック
-- [ ] 22-B-5c: **scan/classify/run を sheet-level file split に対応** — FileInfo が (source_path, sheet_name) を持つように。run.py の dispatch で sheet_name を verify に渡す (`_verify_xlsx` 側も sheet_name 受け取りに拡張)
-- [ ] 22-B-6: `scripts/create/docs.py` に Excel 用レンダリング分岐追加 (P1: MD table / P2: テキスト)
-- [ ] 22-B-7: `scripts/create/index.py` が sheet 分割で増加 (76 → 200+) しても動作することを確認
+- [x] 22-B-5a-r2: **設計書更新** (session 58) — §3-1 Excel 節に P1 header 展開仕様、§3-4 QP 新設、§4 マトリクス更新 (`03974a0ea`)
+- [x] 22-B-5a-r3: **verify TDD** — RED (`a491488bb`) → GREEN (`eb0c47a77`) → QA 7 Findings 対応 (`45fd37de1` `04bdf74fa`)。274 tests GREEN
+- [x] 22-B-5b: **xlsx converter 書き直し** — `xlsx_common.py` 新規、`xlsx_releasenote.py` / `xlsx_security.py` / `classify.py` / `run.py` / `docs.py` 更新 (`dabc57274`)。スキーマ sheet-level split + sheet_type + P1 table / P2 text。spec §3-3 QO1 P1 例外追加 (`023d53248`)
+- [x] 22-B-5c: scan/classify/run sheet-level 対応 (22-B-5b に統合済)
+- [x] 22-B-6: docs.py Excel P1/P2 分岐 (22-B-5b に統合済)
+- [x] 22-B-7: index.py sheet 分割増加に対応 (353 files で動作確認)
+- [x] 22-B-10: `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → 353 files, All files verified OK
+- [ ] 22-B-5b-review: SE + QA expert review for commits `dabc57274` + `023d53248` (22-B-5a QA 7 Findings と同様、review Findings は全件対応)
 - [ ] 22-B-9: 判定結果一覧 `.work/00299/phase22/sheet-classification.md` を出力、ユーザーが override 必要性判断
-- [ ] 22-B-10: `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → verify FAIL 0
 - [ ] 22-B-11: 生成された docs MD を GitHub Web で実地確認 (ユーザー)
 - [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
 - [ ] 22-B-13: nabledge-test v6 baseline 再取得 (旧 baseline 97.3% は履歴として保持)
-- [ ] 22-B-14: コミット・プッシュ
 
 **備考**:
 - Phase 21-C (旧番 — リリースノート行粒度) は 22-B に統合済。xlsx converter 書き直しで包括する
