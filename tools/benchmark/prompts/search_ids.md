@@ -1,7 +1,7 @@
 # Stage 1 (IDs variant): Direct knowledge selection
 
 Given a user question and the complete knowledge index for Nablarch 6,
-identify the sections that are most likely to answer the question.
+identify the sections that are likely to answer the question.
 
 Output ONLY the JSON defined by the schema — no tools, no prose, no markdown.
 
@@ -18,32 +18,57 @@ Each entry is two lines:
 - Each `sid` (e.g., `s1`, `s2`) is a section inside that file.
 - The 2nd line is absent when the file has no sections.
 
-## Selection task
+## Selection task — recall-first
 
-Return a list of `file_id|sid` strings that point to the sections most
-likely to contain the answer.
+Return a list of `file_id|sid` strings that point to the sections that
+could contain the answer.
 
-- Pick 0–10 sections. Fewer is better when the question is narrow;
-  return the minimum that actually answers the question.
+**Your job is to maximize recall, not precision.** A downstream stage
+will read the section bodies and drop the irrelevant ones. Missing a
+required section is far worse than including an extra on-scope section.
+
+- Pick up to 10 sections. Err on the side of including a plausibly
+  relevant section rather than dropping it.
 - Always emit the full `file_id|sid` form. Do NOT emit bare `file_id`.
   If a file has no sections in the index, do not select it.
 - Each `file_id|sid` must appear at most once.
-- Prefer file_ids whose page title or a specific section title matches
-  the concrete terms in the question (framework concepts, Japanese
-  UI/business terms, concrete class names, etc.).
-- When a section title directly names the topic (e.g. "入力値のチェック",
-  "Content Security Policy(CSP)対応"), that section is almost certainly
-  the right pick.
-- When multiple files look equally relevant, include sections from both.
+- When you identify a file that matches the question topic, do not pick
+  only the section whose title most literally restates the question.
+  **Also include that file's foundational sections** — the overview /
+  concept / class-name section (usually `s1`) and any section whose
+  title signals constraints, placement, or prerequisites
+  (e.g. "制約", "前提", "ハンドラ配置"). These sections carry the
+  core facts even when their titles look generic.
+  - Apply this rule only to files you already picked a literal-match
+    section from. Do not add foundational sections from adjacent files
+    you did not otherwise select.
+  - Cap: at most 2 foundational sections per file (typically `s1` plus
+    one structural section). Do not pull 3+ structural sections from a
+    single file at the expense of crowding out another relevant file.
+- **Cap precedence** when you hit the 10-item limit: drop the
+  weakest literal-match section before dropping any file's `s1`. The
+  foundational section is what tells the downstream reader whether the
+  file is truly on-topic.
+- When multiple files look equally relevant, include sections from
+  each of them rather than picking one file.
 - The `feature_details` page of a processing pattern often has a
-  per-concern section table of contents. Those sections frequently serve
-  as the correct entry-point for pattern-specific questions.
+  per-concern section table of contents. Those sections frequently
+  serve as the correct entry-point for pattern-specific questions.
 - If the question covers multiple distinct topics, include 1–3 sections
   per topic (still within the 10-item cap).
 - If no section in the index plausibly answers the question (e.g., a
   Spring Boot configuration question, a general Java question), return
   `{"selections": []}`. Do NOT return a best-guess consolation pick —
   an empty list is the correct answer for out-of-scope questions.
+
+### Why foundational sections matter
+
+Section titles in this index often describe **document structure**
+("制約", "ハンドラクラス名", "前提") rather than content. The body of
+`s3` titled "制約" typically contains the handler's placement rules
+against other handlers — information that is essential for any
+question about that handler's behavior or configuration. Do not skip
+such sections just because their titles look abstract.
 
 ## Output schema
 
@@ -72,17 +97,17 @@ exact `file_id` and `sid` strings from the index. Do not invent values.
 ## Examples
 
 Question: "ファイルの明細レコードを読み込んで DB テーブルに取り込む夜間バッチを作りたい。Nablarch での推奨構成を知りたい"
-→ `{"selections": ["nablarch-batch-architecture|s1", "nablarch-batch-architecture|s3", "nablarch-batch-feature_details|s1"]}`
+→ `{"selections": ["nablarch-batch-architecture|s1", "nablarch-batch-architecture|s3", "nablarch-batch-feature_details|s1", "nablarch-batch-feature_details|s2"]}`
 
 Question: "画面の入力値チェックの書き方を知りたい"
-→ `{"selections": ["web-application-feature_details|s2", "libraries-bean_validation|s13"]}`
-(feature_details section titles have a per-concern table of contents; the
-section whose title names the concern — here "入力値のチェック" — is the
-right entry-point.)
+→ `{"selections": ["web-application-feature_details|s2", "libraries-bean_validation|s1", "libraries-bean_validation|s8", "libraries-bean_validation|s13"]}`
+(include foundational `s1` plus the specific sections whose titles name the concern.)
 
 Question: "Nablarch のトランザクション境界はどこで決まる？"
-→ `{"selections": ["handlers-transaction_management_handler|s3"]}`
-(a narrow, concrete-term question — one precise section is enough.)
+→ `{"selections": ["handlers-transaction_management_handler|s1", "handlers-transaction_management_handler|s3", "handlers-transaction_management_handler|s4"]}`
+(Even when one section title looks like the direct answer, pull in
+s1 (handler overview — contains the actual boundary definition) and
+s3 "制約" (placement rule) from the same file.)
 
 Question: "Spring Boot の設定ファイルはどこに置く？"
 → `{"selections": []}`

@@ -7,7 +7,7 @@
       "都度起動バッチを採用する（常駐バッチは新規開発では非推奨）",
       "BatchAction を継承したアクションクラスを実装する",
       "Form / Entity / Action の3層構成で組む",
-      "DB 接続ありの標準ハンドラキュー構成を使い、LoopHandler→DataReadHandler はサブスレッドに配置する",
+      "DB 接続ありの標準ハンドラキュー構成を使う",
       "DataReader を実装してレコードを1件ずつ供給する"
     ],
     "expected_question": "ファイルの明細レコードを読み込んで DB テーブルに取り込む夜間バッチを作りたい。Nablarch でこういうバッチを実装するときの推奨構成を知りたい",
@@ -110,8 +110,7 @@
     "a_facts": [
       "Nablarch は Bean Validation の使用を推奨する",
       "Web アプリでは `BeanValidationStrategy` を登録して有効化する",
-      "フォームクラスにアノテーションを付けて検証する",
-      "個別アノテーションより `@Domain` によるドメインバリデーションが推奨される"
+      "フォームクラスにアノテーションを付けて検証する"
     ],
     "expected_question": "ユーザーが入力する画面項目のチェックをどう書くのが Nablarch 流？ 必須・桁数・形式チェックをなるべく楽に書きたい",
     "expected_keywords": [
@@ -243,11 +242,11 @@
     "review_perspective": "並行制御",
     "context": "常駐バッチの並列化",
     "a_facts": [
-      "`MultiThreadExecutionHandler` の `concurrentNumber` プロパティで並列実行数を指定する",
       "後続ハンドラ・バッチアクションはスレッドセーフである必要がある",
       "サブスレッドで DB アクセスする場合、サブスレッド用ハンドラ構成に `DatabaseConnectionManagementHandler` と `TransactionManagementHandler` を配置する",
       "DB 接続はサブスレッド数分(親が DB アクセスするなら＋1)が追加で必要",
-      "サブスレッドで例外発生時は他スレッドをデータ処理完了後に安全に終了させる"
+      "サブスレッドで例外発生時は他スレッドをデータ処理完了後に安全に終了させる",
+      "`InterruptedException` を捕捉している場合は例外送出などで処理を異常終了させる"
     ],
     "expected_question": "常駐バッチの処理が遅いので並列実行で速くしたい。複数スレッドで同時に DB を更新することになるが、接続や排他の扱いで注意することは？",
     "expected_keywords": [
@@ -342,7 +341,9 @@
     "a_facts": [
       "トランザクション境界は `TransactionManagementHandler` が決定する",
       "往路でトランザクション開始、復路でコミット、例外時にロールバックする",
-      "`DatabaseConnectionManagementHandler` より後ろに配置する必要がある"
+      "`DatabaseConnectionManagementHandler` より後ろに配置する必要がある",
+      "制御対象は `transactionFactory` プロパティに指定した `TransactionFactory` 実装で取得しスレッド上で管理する",
+      "複数トランザクション使用時は `transactionName` の設定が必須(`DbConnectionManagementHandler#connectionName` と同じ値を指定)"
     ],
     "expected_question": "バッチで DB を更新しているんだけど、コミットのタイミングやトランザクションの区切りがどこで決まっているのかよく分からない。Nablarch でトランザクションの境界って何で決まる？",
     "expected_keywords": [
@@ -375,7 +376,8 @@
     "a_facts": [
       "`CsrfTokenVerificationHandler` をハンドラキューに追加する",
       "セッションストア必須で、セッションストアハンドラより後に配置する",
-      "Nablarch カスタムタグ使用時はカスタムタグハンドラより後に配置する"
+      "Nablarch カスタムタグ使用時はカスタムタグハンドラより後に配置する",
+      "`SessionStoreHandler` 自体の配置制約: `http_response_handler` より後、`forwarding_handler` より前に配置する"
     ],
     "expected_question": "Web アプリで CSRF 対策を入れたい。セッションも使ってるし、JSP でカスタムタグも使ってるんだけど、何を追加すればいい？ 他との相性で気をつけることは？",
     "expected_keywords": [
@@ -737,8 +739,7 @@
     "context": "同時編集防止",
     "a_facts": [
       "Nablarch は排他制御をビルトインで提供する(推奨は `UniversalDao`)",
-      "`UniversalDao` は楽観排他と悲観排他の両方をサポートする",
-      "楽観排他は `@Version` アノテーションで有効化する"
+      "`UniversalDao` は楽観排他と悲観排他の両方をサポートする"
     ],
     "builtin": true,
     "expected_question": "同じデータを複数人が同時に編集して後勝ちで消える問題を防ぎたい。Nablarch にそういう仕組みはある？",
@@ -805,7 +806,8 @@
     "a_facts": [
       "Nablarch は多言語対応をビルトインで提供している",
       "メッセージは言語ごとのプロパティファイルで管理する",
-      "コード名称も言語別データを持たせロケール指定で取得する"
+      "コード名称も言語別データを持たせロケール指定で取得する",
+      "`PropertiesStringResourceLoader.defaultLocale` を必ず明示設定する(未設定だと OS 設定依存で障害の原因になる)"
     ],
     "builtin": true,
     "expected_question": "画面の文言を日本語と英語で切り替えたい。メッセージやラベルの多言語対応は Nablarch でできる？",
@@ -907,8 +909,7 @@
     "a_facts": [
       "Nablarch は `MultipartHandler` でアップロードサイズ上限を設ける仕組みを提供している",
       "`contentLengthLimit` プロパティでサイズ上限を設定し、超過時は 413 を返す",
-      "デフォルトは無制限であり、DoS 対策のため常に設定することが推奨される",
-      "`maxFileCount` でアップロードファイル数の上限も設定できる"
+      "デフォルトは無制限であり、DoS 対策のため常に設定することが推奨される"
     ],
     "builtin": true,
     "expected_question": "ファイルアップロード機能を作るが、巨大なファイルを送りつけてサーバを落とす攻撃を防ぎたい。アップロードサイズに上限を設ける仕組みは Nablarch にある？",

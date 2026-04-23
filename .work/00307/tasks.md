@@ -68,9 +68,17 @@ L1 を残したまま speed 指標だけで ids 採用を提案しても Nabledg
 
 ## 次にやること
 
-- [ ] [DECISION: ユーザー確認] 上記改善方針を適用する順番と粒度 (hints 一括 vs PE review ごとに小分割)
-- [ ] 確定後、改善レバー 1 から適用 → 該当 scenario のみ rejudge で効果測定
-- [ ] L1 以下がゼロになるまで繰り返す
+- [x] search_ids.md を recall-first に書き直し (PE review 4/5 approve、M1/M2 反映)
+- [x] 検索ミス 6 scenario で再計測 → 4 件検索改善、1 件 L3 合格
+- [x] a_facts 横並びチェック (30 件) → 8 件修正 (5 削除 / 4 追加、review-04 削除のみ)
+- [x] baseline で a_facts 修正の rejudge → review-08/req-08 が L3 安定改善、他は検索漏れが主因で未改善
+
+**現在の主要な未解決課題**:
+1. 検索漏れ (旧 search) が残る scenario: impact-01 (TMH s1 未取得), impact-02 (SessionStoreHandler ファイル未取得), req-05
+2. AI-3 の OVER-REACH による C 系違反: review-01 (ValidatableFileDataReader), review-08 (マルチプロセス情報混入)
+3. judge の非決定性 (review-08 で 1 回目 L3 / 2 回目 L1)
+
+- [ ] [DECISION: ユーザー確認] 次は新 search + 修正 a_facts で全件再計測するか、判定非決定性対策を先にやるか
 
 ## やらないことにした (スコープ外)
 
