@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 58 — 22-B-5b 着手。converter 実装中に §8-4 ↔ §3-1 Excel の矛盾を検知 (P1 header 展開問題)。ユーザー承認 + SE レビューを経て最終方針確定: (1) §3-1 に header 展開仕様を追記、(2) §3-4 を新設し QP (P1 列-値ペアリング検査) を追加、(3) §4 マトリクス更新。Phase 22-B-5 内で設計書・verify TDD・converter 実装まで一気通貫で閉じる。)
+**Updated**: 2026-04-23 (session 58 — 22-B-5b 完了 (v6 verify PASS, 353 files)。22-B-11 実地確認 FB で 3 件発覚: ①NULL混入 修正済 (`f67969f8a`)、②RST h3→## 潰れ (22-B-15)、③内部リンク/画像が docs MD と JSON に適切反映されない + verify QL1 が docs MD 側未検証 (22-B-16)。②③は本 PR で対応。)
 
 ---
 
@@ -95,10 +95,42 @@
 - [x] 22-B-7: index.py sheet 分割増加に対応 (353 files で動作確認)
 - [x] 22-B-10: `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → 353 files, All files verified OK
 - [ ] 22-B-5b-review: SE + QA expert review for commits `dabc57274` + `023d53248` (22-B-5a QA 7 Findings と同様、review Findings は全件対応)
-- [ ] 22-B-9: 判定結果一覧 `.work/00299/phase22/sheet-classification.md` を出力、ユーザーが override 必要性判断
-- [ ] 22-B-11: 生成された docs MD を GitHub Web で実地確認 (ユーザー)
-- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
-- [ ] 22-B-13: nabledge-test v6 baseline 再取得 (旧 baseline 97.3% は履歴として保持)
+- [x] 22-B-9: 判定結果一覧 `.work/00299/phase22/sheet-classification.md` 出力 (`ca3bf744f`)。現状維持で確定、見た目改善は Issue #311 に切り出し
+- [ ] 22-B-11: 生成された docs MD を GitHub Web で実地確認 (ユーザー) — FB ①NULL混入 (修正済 `f67969f8a`)、②RST h3→## 潰れ、③内部リンク/画像リンクがdocs MDに反映されない → 22-B-15/22-B-16 で対応
+- [ ] 22-B-15: **RST section 階層 (h2/h3/h4) を docs MD `##`/`###`/`####` に反映**
+  - 現状: `_walk_section` が h2/h3/h4 を flat `parts.sections` に再帰 append → docs.py が全部 `##` で出力 → 重複 section title + 階層消失
+  - 設計書更新: `Section` に `level: int` 追加 (§3-3 QO1 と §4 マトリクス) を spec に明記
+  - verify TDD: QO1 が JSON `section.level` と docs MD heading level の一致を検証
+  - converter 修正: `rst_ast_visitor._walk_section` が level を記録 / `md_ast_visitor` 同
+  - docs.py 修正: level に応じた heading 出力
+  - run.py / JSON schema: `sections[].level` 追加
+  - v6 再生成 → verify FAIL 0
+- [ ] 22-B-16: **RST 内部リンク / 画像 / literalinclude を docs MD と JSON に適切反映**
+  - 現状の問題:
+    - `:ref:` / `reference[refid/refname]` → docs MD がプレーンテキスト (リンク消失)
+    - `.. image::` / `.. figure::` → docs MD が `![](images/xxx.png)` の RST 相対パスのまま → **リンク切れ** (実アセットは `knowledge/assets/{file_id}/` にコピー済)
+    - `:ref:` cross-document → ラベルからターゲット file_id への解決が無い
+    - verify QL1 は JSON 側の文字列含有しか見ない → docs MD 側のリンク形式チェック欠落 (spec §3-2 に「docs MD にアンカーリンクとして出現」と記載済、実装が未対応)
+  - あるべき姿:
+    - JSON (AI 向け):
+      - `:ref:` → target title + ターゲット file_id ヒント埋め込み (AI が file_id で cross-document 検索できる)
+      - `image` / `figure` → `![](assets/{file_id}/fname.ext)` で content に埋め込み
+    - docs MD (人間閲覧向け):
+      - `:ref:` → `[target title](../../{type}/{category}/{target_file_id}.md#anchor)` (GitHub Web でクリック可能)
+      - `image` / `figure` → `![alt](../../knowledge/assets/{file_id}/fname.ext)` (ブラウザで表示可能)
+    - verify QL1 強化: **JSON と docs MD **両側**でチェック**
+      - JSON: target title + asset path が content に存在
+      - docs MD: 対応するアンカーリンク / 画像リンクが実在する MD / 画像ファイルを指している
+  - 対象一覧は verify の既存 `check_source_links` が AST から抽出済 (追加調査不要)
+  - 手順:
+    1. spec §3-2 QL1 の JSON/docs MD 両側仕様を明確化 (既に記載あり、実装に合わせてテスト可能な粒度に)
+    2. `label_map` を label→(title, file_id) に拡張 (cross-document リンク解決)
+    3. verify TDD: docs MD アンカーリンク / 画像リンク存在チェックを QL1 に追加
+    4. converter 修正: `inline_reference` / `inline_inline(role=ref)` / `image` / `figure` を MD リンク/画像形式で出力
+    5. docs.py `_rewrite_asset_links`: `assets/{file_id}/...` 相対パスを docs MD からの相対に rewrite (既存 `assets/` 先頭の rewrite を拡張)
+    6. v6 再生成 → verify FAIL 0 + 実地確認
+- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 (22-B-15/16 完了後)
+- [ ] 22-B-13: nabledge-test v6 baseline 再取得 (旧 baseline 97.3% は履歴として保持) (22-B-15/16 完了後)
 
 **備考**:
 - Phase 21-C (旧番 — リリースノート行粒度) は 22-B に統合済。xlsx converter 書き直しで包括する
