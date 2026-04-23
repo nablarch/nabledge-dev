@@ -2391,7 +2391,9 @@ class TestVerifyFileExcelP1HeaderExpansion:
         wb.save(xlsx_path)
         data = {
             "id": "p2",
-            "title": "概要",
+            # Title includes the ■ prefix verbatim (spec §8-4 lets the
+            # ■... cell stand as title; stripping would break 1:1 check).
+            "title": "■概要",
             "content": "これは段落のシートです。",
             "sheet_type": "P2",
             "sections": [],
@@ -2427,22 +2429,25 @@ class TestVerifyFileExcelP1HeaderExpansion:
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Sheet1"
-        # Main header
+        # Main header (5 contiguous non-empty to satisfy run-length ≥ 3)
         ws["A1"] = "No."
-        ws["B1"] = "バージョン"  # parent with two subs
-        ws["D1"] = "備考"
-        # Sub-header
-        ws["B2"] = "モジュール"
-        ws["C2"] = "Nablarch"
+        ws["B1"] = "タイトル"
+        ws["C1"] = "バージョン"  # parent with two subs
+        ws["E1"] = "備考"
+        # Sub-header (strict subset of main, narrower)
+        ws["C2"] = "モジュール"
+        ws["D2"] = "Nablarch"
         # Data rows
         ws["A3"] = "1"
-        ws["B3"] = "1.0"
-        ws["C3"] = "5"
-        ws["D3"] = "初回"
+        ws["B3"] = "初回対応"
+        ws["C3"] = "1.0"
+        ws["D3"] = "5"
+        ws["E3"] = "初回"
         ws["A4"] = "2"
-        ws["B4"] = "2.0"
-        ws["C4"] = "6"
-        ws["D4"] = "二回目"
+        ws["B4"] = "二回目"
+        ws["C4"] = "2.0"
+        ws["D4"] = "6"
+        ws["E4"] = "追加対応"
         xlsx_path = tmp_path / "multihdr.xlsx"
         wb.save(xlsx_path)
         data = {
@@ -2452,12 +2457,13 @@ class TestVerifyFileExcelP1HeaderExpansion:
             "sheet_type": "P1",
             "sections": [
                 {
-                    "id": "s1", "title": "1",
-                    "content": "No.: 1\nバージョン/モジュール: 1.0\nバージョン/Nablarch: 5\n備考: 初回",
+                    # section.title = タイトル column value (§8-4 rule)
+                    "id": "s1", "title": "初回対応",
+                    "content": "No.: 1\nタイトル: 初回対応\nバージョン/モジュール: 1.0\nバージョン/Nablarch: 5\n備考: 初回",
                 },
                 {
-                    "id": "s2", "title": "2",
-                    "content": "No.: 2\nバージョン/モジュール: 2.0\nバージョン/Nablarch: 6\n備考: 二回目",
+                    "id": "s2", "title": "二回目",
+                    "content": "No.: 2\nタイトル: 二回目\nバージョン/モジュール: 2.0\nバージョン/Nablarch: 6\n備考: 追加対応",
                 },
             ],
         }
@@ -2595,12 +2601,16 @@ class TestCheckXlsxP1Pairing:
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Sheet1"
+        # 3 columns to escape the §8-2 ≤2-col P2 cap.
         ws["A1"] = "No."
         ws["B1"] = "URL"
+        ws["C1"] = "備考"
         ws["A2"] = "1"
         ws["B2"] = "https://example.com/x"
+        ws["C2"] = "備考X"
         ws["A3"] = "2"
         ws["B3"] = "https://example.com/y"
+        ws["C3"] = "備考Y"
         xlsx_path = tmp_path / "p1.xlsx"
         wb.save(xlsx_path)
         data = {
@@ -2608,11 +2618,11 @@ class TestCheckXlsxP1Pairing:
             "title": "", "content": "",
             "sheet_type": "P1",
             "sections": [
-                # Swap URLs → must FAIL on pair mismatch.
-                {"id": "s1", "title": "1",
-                 "content": "No.: 1\nURL: https://example.com/y"},
-                {"id": "s2", "title": "2",
-                 "content": "No.: 2\nURL: https://example.com/x"},
+                # Swap URLs between rows → QP must FAIL on pair mismatch.
+                {"id": "s1", "title": "https://example.com/y",
+                 "content": "No.: 1\nURL: https://example.com/y\n備考: 備考X"},
+                {"id": "s2", "title": "https://example.com/x",
+                 "content": "No.: 2\nURL: https://example.com/x\n備考: 備考Y"},
             ],
         }
         issues = self._call(str(xlsx_path), data, "Sheet1")

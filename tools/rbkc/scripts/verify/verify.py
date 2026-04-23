@@ -868,51 +868,386 @@ _MD_SYNTAX_RE = re.compile(
     r'|^>\s*'
     r'|^\d+\.\s+'
     r'|`'
+    # Phase 22-B P1 structural delimiter: §8-4 specifies section.content
+    # as `{列名}: {値}` per line.  The ": " separator is a structural
+    # artifact of the JSON schema, not derived from any source cell, and
+    # must not trigger QC2 residue.  Matches a lone `:` surrounded by
+    # whitespace (already the case after token removal — JSON text is
+    # split by whitespace further down, so any `:` that survives as its
+    # own token here is structural).
+    r'|:'
     , re.MULTILINE
 )
 
 
-def _xlsx_source_tokens(source_path, sheet_name: str | None = None) -> list[str]:
+def _read_sheet_matrix(source_path, sheet_name: str | None) -> list[list[list[str]]]:
+    """Load one or all worksheets as a list of row-matrices of stripped strings.
+
+    Returns ``[[row0, row1, ...], ...]`` where each row is a list of cell
+    strings.  Used by ``_xlsx_source_tokens`` and the QP / header-detection
+    helpers.  Keeps the format-dispatch (.xls vs .xlsx) in one place.
+    """
+    ext = Path(source_path).suffix.lower()
+    sheets_rows: list[list[list[str]]] = []
+    if ext == ".xls":
+        import xlrd
+        wb = xlrd.open_workbook(str(source_path))
+        sheets = [wb.sheet_by_name(sheet_name)] if sheet_name is not None else list(wb.sheets())
+        for sheet in sheets:
+            rows: list[list[str]] = []
+            for rx in range(sheet.nrows):
+                row = []
+                for cx in range(sheet.ncols):
+                    v = sheet.cell_value(rx, cx)
+                    row.append(str(v).strip() if v is not None else "")
+                rows.append(row)
+            sheets_rows.append(rows)
+    else:
+        import openpyxl
+        wb = openpyxl.load_workbook(str(source_path), data_only=True)
+        sheets = [wb[sheet_name]] if sheet_name is not None else list(wb.worksheets)
+        for ws in sheets:
+            rows = []
+            for row in ws.iter_rows(values_only=True):
+                rows.append([
+                    str(v).strip() if v is not None else ""
+                    for v in row
+                ])
+            sheets_rows.append(rows)
+    return sheets_rows
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-5a-r3a: header detection & P1 header token expansion
+#
+# verify's copy of the header-detection rules.  Per spec §3-1 Excel 節 and
+# rbkc-converter-design.md §8-2, verify MUST NOT call into converter code
+# — both sides derive from the same spec independently.  Drift between the
+# two implementations is naturally caught: if verify picks a different
+# header than converter did, QC1 / QC2 residue surfaces the mismatch.
+# ---------------------------------------------------------------------------
+
+def _run_length(row: list[str]) -> int:
+    best = cur = 0
+    for v in row:
+        if v:
+            cur += 1
+            best = max(best, cur)
+        else:
+            cur = 0
+    return best
+
+
+def _looks_like_sub_header(row_h: list[str], row_h1: list[str]) -> bool:
+    """Mirror converter-design §8-3 sub-header rule (independently derived).
+
+    Conditions: row_h1 strictly narrower than row_h AND every non-empty
+    sub cell has a non-empty parent at column ≤ its own.
+    """
+    h_non_empty = sum(1 for v in row_h if v)
+    h1_cols = [cx for cx, v in enumerate(row_h1) if v]
+    if not h1_cols:
+        return False
+    if len(h1_cols) >= h_non_empty:
+        return False
+    for cx in h1_cols:
+        px = cx
+        while px >= 0 and not row_h[px]:
+            px -= 1
+        if px < 0 or not row_h[px]:
+            return False
+    return True
+
+
+def _merge_header(row_h: list[str], row_h1: list[str]) -> list[str]:
+    """Combine main + sub header rows into a single column-name list."""
+    merged = list(row_h)
+    for cx, sub in enumerate(row_h1):
+        if not sub:
+            continue
+        parent_cx = cx
+        while parent_cx >= 0 and not row_h[parent_cx]:
+            parent_cx -= 1
+        if parent_cx >= 0 and row_h[parent_cx]:
+            merged[cx] = f"{row_h[parent_cx]}/{sub}"
+        else:
+            merged[cx] = sub
+    # Normalise embedded whitespace/newlines so column names compare cleanly
+    # with their JSON-side form (§8-4 uses flattened names).
+    return [" ".join(c.split()) for c in merged]
+
+
+def _find_body_start(rows: list[list[str]]) -> int:
+    """Skip leading title/preamble rows (single non-empty cell) per §8-4."""
+    i = 0
+    # Skip over ■title row if present.
+    if rows:
+        first = next((v for v in rows[0] if v), "")
+        if first.startswith("■"):
+            i = 1
+    while i < len(rows):
+        row = rows[i]
+        non_empty = [c for c in row if c]
+        if not non_empty:
+            i += 1
+            continue
+        if len(non_empty) == 1:
+            i += 1
+            continue
+        break
+    return i
+
+
+def _useful_width(rows: list[list[str]], body_start: int) -> int:
+    width = max((len(r) for r in rows), default=0)
+    used = [False] * width
+    for r in rows[body_start:]:
+        for cx in range(min(width, len(r))):
+            if r[cx]:
+                used[cx] = True
+    return sum(1 for u in used if u)
+
+
+def _detect_header_row(rows: list[list[str]]) -> tuple[int, int, list[str]] | None:
+    """Locate the (possibly multi-row) header and return its indices + columns.
+
+    Returns ``(header_start, data_start, columns)`` or None if the sheet
+    does not qualify as P1.  Also enforces the ≤ 2 column P2 cap (§8-2).
+    """
+    body_start = _find_body_start(rows)
+    if _useful_width(rows, body_start) <= 2:
+        return None
+    n = len(rows)
+    for h in range(body_start, min(body_start + 20, n)):
+        row_h = rows[h]
+        if _run_length(row_h) < 3:
+            continue
+        # Sub-header at h+1?
+        data_start = h + 1
+        columns = list(row_h)
+        if h + 1 < n and _looks_like_sub_header(row_h, rows[h + 1]):
+            columns = _merge_header(row_h, rows[h + 1])
+            data_start = h + 2
+        else:
+            columns = [" ".join(c.split()) for c in columns]
+        # Need at least 2 data rows
+        data_rows = [r for r in rows[data_start:] if any(c for c in r)]
+        if len(data_rows) < 2:
+            continue
+        return h, data_start, columns
+    return None
+
+
+def _data_rows(rows: list[list[str]], data_start: int, width: int) -> list[list[str]]:
+    out = []
+    for r in rows[data_start:]:
+        cells = [c for c in r[:width]] + [""] * max(0, width - len(r))
+        if any(cells):
+            out.append(cells)
+    return out
+
+
+def _pick_title_col_idx(columns: list[str]) -> int:
+    """Spec §8-4 title-column rule (derived independently of converter)."""
+    for cx, name in enumerate(columns):
+        if name == "タイトル":
+            return cx
+    for cx, name in enumerate(columns):
+        if not name:
+            continue
+        if name in ("No", "No.", "№", "#"):
+            continue
+        return cx
+    return 0
+
+
+def _trailing_extra_rows(rows: list[list[str]], data_start: int) -> int:
+    """Count of rows at ``data_start`` onward that contain data (per
+    ``_data_rows``).  Trailing rows past the last non-empty row are ignored
+    — they are not §8-4 data rows."""
+    # Find the index of the last non-empty row.
+    last = data_start
+    for i in range(data_start, len(rows)):
+        if any(c for c in rows[i]):
+            last = i + 1
+    return last - data_start
+
+
+def _xlsx_source_tokens(
+    source_path,
+    sheet_name: str | None = None,
+    sheet_type: str | None = None,
+) -> list[str]:
     """Return non-empty cell tokens from *source_path*.
 
     When ``sheet_name`` is given, only that worksheet is tokenised. This
     supports Phase 22-B sheet-level file split, where each generated JSON
     corresponds to one sheet and must be verified only against its own
     cells. ``sheet_name=None`` preserves the all-sheet behaviour.
+
+    When ``sheet_type == "P1"`` (and ``sheet_name`` is given), header-row
+    cell values are duplicated by data-row count per spec §3-1 Excel 節.
+    Without ``sheet_type`` the raw 1:1 tokenisation is returned.
     """
-    ext = Path(source_path).suffix.lower()
-    if ext == ".xls":
-        import xlrd
-        wb = xlrd.open_workbook(str(source_path))
-        if sheet_name is not None:
-            sheets = [wb.sheet_by_name(sheet_name)]
-        else:
-            sheets = list(wb.sheets())
-        tokens = []
-        for sheet in sheets:
-            for rx in range(sheet.nrows):
-                for cx in range(sheet.ncols):
-                    val = str(sheet.cell_value(rx, cx)).strip()
-                    if val:
-                        tokens.append(val)
-        return tokens
-    else:
-        import openpyxl
-        wb = openpyxl.load_workbook(str(source_path), data_only=True)
-        if sheet_name is not None:
-            sheets = [wb[sheet_name]]
-        else:
-            sheets = list(wb.worksheets)
-        tokens = []
-        for ws in sheets:
-            for row in ws.iter_rows(values_only=True):
-                for cell in row:
-                    if cell is None:
+    sheets_rows = _read_sheet_matrix(source_path, sheet_name)
+
+    if sheet_type == "P1" and sheet_name is not None and sheets_rows:
+        rows = sheets_rows[0]
+        detected = _detect_header_row(rows)
+        if detected is not None:
+            header_start, data_start, columns = detected
+            width = len(columns)
+            data_rows = _data_rows(rows, data_start, width)
+            tokens: list[str] = []
+            # Pre-header rows (title, preamble, blank rows): 1:1 as usual.
+            for r in rows[:header_start]:
+                for v in r:
+                    if v:
+                        tokens.append(v)
+            # Emit tokens in JSON appearance order (spec §8-4) so the
+            # existing forward-scan sequential-delete stays tight (QC3
+            # still catches reordering).  Per §8-4:
+            #   section.title = title-col cell value (or first non-No. col)
+            #   section.content = lines of {列名}: {値} for non-empty cells
+            # Thus for each data row R we emit:
+            #   1. title-col cell value (section.title)
+            #   2. for each non-empty col C (in column order):
+            #        merged column-name + cell value  (= {列名}: {値} line)
+            # The title-col cell therefore appears twice — inherent to §8-4,
+            # not a converter artifact.
+            title_col_idx = _pick_title_col_idx(columns)
+            for row in data_rows:
+                title_val = row[title_col_idx] if 0 <= title_col_idx < len(row) else ""
+                if not title_val:
+                    # Fallback: first non-empty cell (mirrors converter
+                    # §8-4 section-title fallback)
+                    title_val = next((c for c in row if c), "")
+                if title_val:
+                    tokens.append(title_val)
+                for cx, col in enumerate(columns):
+                    if cx >= len(row):
                         continue
-                    val = str(cell).strip()
-                    if val:
-                        tokens.append(val)
-        return tokens
+                    cell = row[cx]
+                    if not col or not cell:
+                        continue
+                    tokens.append(col)
+                    tokens.append(cell)
+            # Trailing rows after data_rows (usually none; guard anyway).
+            trailing_end = data_start + _trailing_extra_rows(rows, data_start)
+            for r in rows[trailing_end:]:
+                for v in r:
+                    if v:
+                        tokens.append(v)
+            return tokens
+
+    # Raw 1:1 (non-P1 or all-sheet legacy caller).
+    tokens: list[str] = []
+    for rows in sheets_rows:
+        for r in rows:
+            for v in r:
+                if v:
+                    tokens.append(v)
+    return tokens
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-5a-r3b: QP (spec §3-4) — P1 column-value pairing check
+# ---------------------------------------------------------------------------
+
+
+def _parse_section_pairs(content: str) -> list[tuple[str, str]]:
+    """Split a P1 section.content into ``(列名, 値)`` pairs.
+
+    Aligns with §8-4 line format and the QO2 P1 check in
+    ``check_json_docs_md_consistency``: partition on the FIRST ``:`` so
+    values containing ``:`` (URLs) are preserved verbatim.
+    """
+    pairs: list[tuple[str, str]] = []
+    for line in content.split("\n"):
+        line = line.strip()
+        if not line or ":" not in line:
+            continue
+        key, _, val = line.partition(":")
+        key = key.strip()
+        val = val.strip()
+        if not key:
+            continue
+        pairs.append((key, val))
+    return pairs
+
+
+def check_xlsx_p1_pairing(source_path, data: dict, sheet_name: str) -> list[str]:
+    """Spec §3-4 (QP): verify that JSON section N pairs up with Excel row N.
+
+    Returns ``[]`` for non-P1 sheets (QP is P1-only), else one message per
+    detected pairing issue.
+    """
+    if data.get("sheet_type") != "P1":
+        return []
+    if _no_knowledge(data):
+        return []
+
+    file_id = data.get("id", "?")
+    sheets_rows = _read_sheet_matrix(source_path, sheet_name)
+    if not sheets_rows:
+        return [f"[QP] {file_id}: source sheet {sheet_name!r} not found"]
+    rows = sheets_rows[0]
+    detected = _detect_header_row(rows)
+    if detected is None:
+        # P1 judged at converter side but verify disagreed — that
+        # inconsistency is already caught by QC1/QC2 residue; QP does not
+        # report twice.
+        return []
+    _, data_start, columns = detected
+    width = len(columns)
+    data_rows = _data_rows(rows, data_start, width)
+
+    issues: list[str] = []
+    sections = data.get("sections", [])
+    if len(sections) != len(data_rows):
+        issues.append(
+            f"[QP] {file_id} sheet={sheet_name!r}: section count mismatch — "
+            f"JSON has {len(sections)} sections, Excel has {len(data_rows)} data rows"
+        )
+        # Continue with the overlap so downstream mismatches are also reported.
+    for idx, (sec, row) in enumerate(zip(sections, data_rows), start=1):
+        expected: dict[str, str] = {}
+        for cx, col in enumerate(columns):
+            if cx >= len(row):
+                continue
+            cell = row[cx]
+            if not cell:
+                continue
+            if not col:
+                continue
+            # If the same column name maps to multiple source columns,
+            # record the last one.  The spec is silent; duplicate
+            # column-name headers are ill-formed and should be caught
+            # by QC3 on the source tokens.
+            expected[col] = cell
+        actual = dict(_parse_section_pairs(sec.get("content", "")))
+        # pair_missing: expected column absent or value mismatched.
+        for col, val in expected.items():
+            if col not in actual:
+                issues.append(
+                    f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
+                    f"missing column {col!r} (expected value {val!r})"
+                )
+            elif actual[col] != val:
+                issues.append(
+                    f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
+                    f"column {col!r} value mismatch — "
+                    f"expected {val!r}, got {actual[col]!r}"
+                )
+        # pair_extra: JSON section has a column name not present in expected.
+        # (spec allows omitting empty cells; extras indicate converter leakage.)
+        for col in actual:
+            if col not in expected:
+                issues.append(
+                    f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
+                    f"unexpected column {col!r} not in Excel header"
+                )
+    return issues
 
 
 def _xlsx_json_text(data: dict) -> str:
@@ -925,11 +1260,15 @@ def _xlsx_json_text(data: dict) -> str:
     return "\n".join(p for p in parts if p)
 
 
-def _verify_xlsx(source_path, data: dict) -> list[str]:
+def _verify_xlsx(source_path, data: dict, sheet_name: str | None = None) -> list[str]:
     if _no_knowledge(data):
         return []
 
-    tokens = _xlsx_source_tokens(source_path)
+    tokens = _xlsx_source_tokens(
+        source_path,
+        sheet_name=sheet_name,
+        sheet_type=data.get("sheet_type"),
+    )
     if not tokens:
         return []
 
@@ -1010,8 +1349,12 @@ def _verify_xlsx(source_path, data: dict) -> list[str]:
 # verify_file: dispatch per format
 # ---------------------------------------------------------------------------
 
-def verify_file(source_path, json_path, fmt, knowledge_dir=None, label_map=None) -> list[str]:
-    """Per-file JSON checks (QC1-QC5, QL2)."""
+def verify_file(source_path, json_path, fmt, knowledge_dir=None, label_map=None, sheet_name=None) -> list[str]:
+    """Per-file JSON checks (QC1-QC5, QL2).
+
+    ``sheet_name`` is used only when ``fmt == 'xlsx'`` to scope the source
+    tokens to one worksheet (Phase 22-B sheet-level split).
+    """
     if not Path(json_path).exists():
         return []
 
@@ -1021,7 +1364,12 @@ def verify_file(source_path, json_path, fmt, knowledge_dir=None, label_map=None)
         return []
 
     if fmt == "xlsx":
-        return _verify_xlsx(source_path, data)
+        issues = _verify_xlsx(source_path, data, sheet_name=sheet_name)
+        # QP (spec §3-4): P1 column-value pairing.  Runs only for P1
+        # sheets; a valid sheet_name is required for per-row pairing.
+        if sheet_name is not None and data.get("sheet_type") == "P1":
+            issues.extend(check_xlsx_p1_pairing(source_path, data, sheet_name))
+        return issues
 
     if fmt in ("rst", "md"):
         source_text = Path(source_path).read_text(encoding="utf-8", errors="replace")
