@@ -74,6 +74,7 @@ def convert(
         label_map=label_map,
         doc_map=doc_map,
         source_path=source_path,
+        file_id=file_id,
     )
 
     title = parts.top_title or ""

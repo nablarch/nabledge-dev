@@ -608,6 +608,7 @@ def _normalize_rst_source(
     label_map: dict | None = None,
     doc_map: dict | None = None,
     source_path=None,
+    file_id: str = "",
 ) -> str:
     """Normalize RST markup to plain text for comparison with JSON content.
 
@@ -624,6 +625,7 @@ def _normalize_rst_source(
         source_path=source_path,
         strict_unknown=True,
         warnings_out=warnings,
+        file_id=file_id,
     )
     # Phase 22-B-16b step 2b F1: emit dangling-link WARNINGs to stderr.
     # Spec §3-2-2 "WARNING ログ + display text fallback" is silent-skip
@@ -686,6 +688,7 @@ def check_content_completeness(
     label_map: dict | None = None,
     doc_map: dict | None = None,
     source_path=None,
+    file_id: str = "",
 ) -> list[str]:
     """QC1/QC2/QC3/QC4: sequential-delete algorithm."""
     if _no_knowledge(data):
@@ -702,7 +705,7 @@ def check_content_completeness(
 
     if fmt == "rst":
         return _check_rst_content_completeness(
-            source_text, data, issues, label_map, doc_map, source_path
+            source_text, data, issues, label_map, doc_map, source_path, file_id
         )
     elif fmt == "md":
         return _check_md_content_completeness(
@@ -760,6 +763,7 @@ def _check_rst_content_completeness(
     label_map: dict | None = None,
     doc_map: dict | None = None,
     source_path=None,
+    file_id: str = "",
 ) -> list[str]:
     """QC1-QC4 for RST sources using normalized comparison.
 
@@ -775,7 +779,8 @@ def _check_rst_content_completeness(
     from scripts.common.rst_normaliser import UnknownSyntaxError
     try:
         norm_source_raw = _normalize_rst_source(
-            source_text, label_map, doc_map=doc_map, source_path=source_path
+            source_text, label_map, doc_map=doc_map, source_path=source_path,
+            file_id=file_id,
         )
     except UnknownSyntaxError as exc:
         issues.append(f"[QC1] RST parse/visitor error: {exc}")
@@ -1510,6 +1515,7 @@ def verify_file(
     label_map=None,
     sheet_name=None,
     doc_map=None,
+    file_id: str = "",
 ) -> list[str]:
     """Per-file JSON checks (QC1-QC5, QL2).
 
@@ -1536,7 +1542,8 @@ def verify_file(
         source_text = Path(source_path).read_text(encoding="utf-8", errors="replace")
         issues: list[str] = []
         issues.extend(check_content_completeness(
-            source_text, data, fmt, label_map, doc_map=doc_map, source_path=source_path
+            source_text, data, fmt, label_map, doc_map=doc_map, source_path=source_path,
+            file_id=file_id,
         ))
         issues.extend(_check_format_purity(data, fmt))
         issues.extend(check_external_urls(source_text, data, fmt))
@@ -1582,6 +1589,11 @@ _CROSSDOC_LINK_RE = re.compile(
     r'(?P<file_id>[^)\s#]+)\.md(?:#(?P<anchor>[^)\s]+))?\)'
 )
 
+# Matches ``](assets/{file_id}/{basename})`` links (image/figure/download).
+_ASSET_LINK_RE = re.compile(
+    r'\]\((?P<path>assets/(?P<file_id>[^)\s/]+)/(?P<basename>[^)\s]+))\)'
+)
+
 
 def check_ql1_link_targets(
     data: dict,
@@ -1619,12 +1631,19 @@ def check_ql1_link_targets(
             for m in _CROSSDOC_LINK_RE.finditer(text or "")
         ]
 
+    def _collect_assets(text: str) -> list[tuple[str, str]]:
+        return [
+            (m.group("file_id"), m.group("basename"))
+            for m in _ASSET_LINK_RE.finditer(text or "")
+        ]
+
     sources: list[str] = []
     sources.append(data.get("content", "") or "")
     for sec in data.get("sections", []) or []:
         sources.append(sec.get("content", "") or "")
 
     seen: set[tuple[str, str, str]] = set()
+    seen_assets: set[tuple[str, str]] = set()
     issues: list[str] = []
 
     for text in sources:
@@ -1639,6 +1658,19 @@ def check_ql1_link_targets(
                     f"[QL1] JSON link target missing: "
                     f"../../{type_}/{category}/{file_id}.md → "
                     f"{target_json.relative_to(knowledge_root.parent)} not on disk"
+                )
+        # Phase 22-B-16c: asset existence check.  `assets/{file_id}/
+        # {basename}` must exist under knowledge_dir/assets/...
+        for asset_fid, basename in _collect_assets(text):
+            key_a = (asset_fid, basename)
+            if key_a in seen_assets:
+                continue
+            seen_assets.add(key_a)
+            asset_path = knowledge_root / "assets" / asset_fid / basename
+            if not asset_path.exists():
+                issues.append(
+                    f"[QL1] asset missing: assets/{asset_fid}/{basename} → "
+                    f"{asset_path.relative_to(knowledge_root.parent)} not on disk"
                 )
 
     if docs_md_text is not None:

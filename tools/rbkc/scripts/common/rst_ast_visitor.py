@@ -113,6 +113,7 @@ class _MDVisitor:
         doc_map: dict | None = None,
         source_path=None,
         source_root=None,
+        file_id: str = "",
     ) -> None:
         self.warnings: list[str] = []
         # Current indent for list / blockquote nesting (as a prefix string).
@@ -133,6 +134,8 @@ class _MDVisitor:
         self._source_path = source_path
         # Source root (repo/v6/ja) — used to compute rel-for-classify keys.
         self._source_root = source_root
+        # Phase 22-B-16c: file_id owns assets at ``assets/{file_id}/...``.
+        self._file_id: str = file_id
 
     # ------------------------------------------------------------------
     # Public entry
@@ -483,7 +486,17 @@ class _MDVisitor:
         if not uri and not alt:
             # Zero-exception: an image with neither uri nor alt is malformed
             raise UnknownNodeError("image node without uri or alt")
-        return self._apply_prefix(f"![{alt}]({uri})")
+        # Phase 22-B-16c: rewrite URI to ``assets/{file_id}/{basename}``
+        # so all images land under the knowledge file's asset folder and
+        # docs.py's rewrite (`assets/...` → `../../knowledge/assets/...`)
+        # keeps working.  alt defaults to the basename if the source
+        # omits it — mirrors Sphinx ``:alt:`` fallback.
+        rewritten_uri = self._rewrite_asset_uri(uri) if uri else uri
+        display_alt = alt
+        if not display_alt and uri:
+            from pathlib import Path as _P
+            display_alt = _P(uri).name
+        return self._apply_prefix(f"![{display_alt}]({rewritten_uri})")
 
     def visit_figure(self, node: nodes.figure) -> str:
         parts: list[str] = []
@@ -669,7 +682,23 @@ class _MDVisitor:
                 return display or target_path.split("/")[-1]
             return self._render_label_target(target, display)
         if role == "download":
-            return raw
+            # Phase 22-B-16c: :download:`text <path>` / :download:`path`
+            # → `[text](assets/{file_id}/{basename})`.  copy_assets (in
+            # scripts/create/resolver.py) is responsible for placing the
+            # file at that dest; verify QL1 asset-exists enforces it.
+            if "<" in raw and raw.rstrip().endswith(">"):
+                text, _, target = raw.rpartition("<")
+                text = text.strip()
+                target = target.rstrip(">").strip()
+            else:
+                text = ""
+                target = raw.strip()
+            from pathlib import Path as _P
+            basename = _P(target).name
+            display = text or basename
+            if not self._file_id:
+                return display
+            return f"[{display}](assets/{self._file_id}/{basename})"
         if role in {"java:extdoc", "javadoc_url"}:
             # `LinkText <fqcn>` form → keep LinkText only (Javadoc path is drop)
             if "<" in raw and raw.rstrip().endswith(">"):
@@ -746,6 +775,28 @@ class _MDVisitor:
         if best_key is None:
             return None
         return self._doc_map[best_key]
+
+    def _rewrite_asset_uri(self, uri: str) -> str:
+        """Rewrite an image/figure URI to ``assets/{file_id}/{basename}``.
+
+        Phase 22-B-16c: the create pipeline copies the asset via
+        :func:`scripts.create.resolver.copy_assets` to that exact dest;
+        emitting the same path here keeps JSON content pointing at the
+        real on-disk location and lets `docs.py`'s rewrite turn it into
+        a usable docs MD asset reference.
+
+        If no ``file_id`` context is available (legacy tests / single-
+        file conversion), leave the URI untouched so existing callers
+        keep working.
+        """
+        if not self._file_id or not uri:
+            return uri
+        # External URIs stay as-is.
+        if uri.startswith(("http://", "https://", "data:", "/")):
+            return uri
+        from pathlib import Path as _P
+        basename = _P(uri).name
+        return f"assets/{self._file_id}/{basename}"
 
     def _resolve_label_or_fail(self, label: str):
         """Return a LabelTarget (or legacy str) for ``label``.
@@ -871,6 +922,7 @@ def extract_document(
     doc_map: dict | None = None,
     source_path=None,
     source_root=None,
+    file_id: str = "",
 ) -> DocumentParts:
     """Walk the document and return top-level title/content + sections."""
     parts = DocumentParts()
@@ -879,6 +931,7 @@ def extract_document(
         doc_map=doc_map,
         source_path=source_path,
         source_root=source_root,
+        file_id=file_id,
     )
 
     # Separate top-level content (before first section) from sections.

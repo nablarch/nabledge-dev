@@ -3607,18 +3607,32 @@ class TestCheckQL1LinkTargets:
         assert any("docs MD link target missing" in i for i in issues)
         assert any("libraries-orphan" in i for i in issues)
 
-    def test_pass_asset_links_skipped(self, tmp_path):
-        """`](assets/...)` links are not checked here — they belong to
-        22-B-16c.  Ensures 22-B-16c can add its own pass without double
-        reporting."""
+    def test_pass_asset_exists(self, tmp_path):
+        """Phase 22-B-16c: `](assets/{file_id}/{basename})` asset link
+        passes when the file is present under knowledge/assets/..."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+        (kn / "assets" / "libraries-foo").mkdir(parents=True)
+        (kn / "assets" / "libraries-foo" / "bar.png").write_bytes(b"\x89PNG...")
+
+        data = {
+            "content": "![alt](assets/libraries-foo/bar.png)",
+            "sections": [],
+        }
+        assert check_ql1_link_targets(data, kn) == []
+
+    def test_fail_asset_missing(self, tmp_path):
+        """Phase 22-B-16c: asset missing from disk → QL1 FAIL."""
         from scripts.verify.verify import check_ql1_link_targets
         kn, _docs = self._setup(tmp_path)
 
         data = {
-            "content": "![alt](assets/foo/bar.png)",
+            "content": "![alt](assets/libraries-foo/missing.png)",
             "sections": [],
         }
-        assert check_ql1_link_targets(data, kn) == []
+        issues = check_ql1_link_targets(data, kn)
+        assert any("asset missing" in i for i in issues)
+        assert any("missing.png" in i for i in issues)
 
     def test_dedup_repeated_link(self, tmp_path):
         """Repeated link to the same target is checked once."""

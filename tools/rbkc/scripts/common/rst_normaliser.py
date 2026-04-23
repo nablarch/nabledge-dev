@@ -37,6 +37,7 @@ def normalise_rst(
     source_path: Path | str | None = None,
     strict_unknown: bool = True,
     warnings_out: list | None = None,
+    file_id: str = "",
 ) -> str:
     """Normalise RST *text* to an MD-equivalent string via docutils AST.
 
@@ -68,6 +69,7 @@ def normalise_rst(
             label_map=label_map,
             doc_map=doc_map,
             source_path=path,
+            file_id=file_id,
         )
     except VisitorError as exc:
         if strict_unknown:
