@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 61 — 22-B-13 nabledge-test v6 baseline 取得完了 `20260424-080424`。overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 100% (前回 97.3% から +2.7pp 改善、CI 非重複)。qa-001 benchmark mean 87.5% (trial 間揺らぎ)。ca-002 / ca-003 は 100%。QA 劣化は `full-text-search.sh` のバグと JSP タグサンプル不足に起因し RBKC 実力ではない。詳細 `.claude/skills/nabledge-test/baseline/v6/20260424-080424/comparison-report.md`。次は 22-B-12 (他バージョン create/verify 確認)。)
+**Updated**: 2026-04-24 (session 61 — 22-B-13 nabledge-test v6 baseline 取得完了 `20260424-080424`。overall 94.5% (QA 85.0% / CA 98.1%)。ca-002/ca-003 100%、ca-003 benchmark +2.7pp 有意改善 (CI 非重複)。QA 検出率低下の欠落キーワード全件 (qa-002 pageNumber/listSearchResult、qa-004 n:form/n:submit/useToken/allowDoubleSubmission、ca-001 Overview UniversalDao/SessionUtil) は v6 知識ファイルに実在確認済。原因は skill 側 `full-text-search.sh` のバグ + エージェントの参照ファイル選択差で RBKC 知識品質の問題ではない。コスト: Opus 4.7 で 1 run あたり約 $10.8 (入力 416K + 出力 61K tok)。詳細 `.claude/skills/nabledge-test/baseline/v6/20260424-080424/comparison-report.md`。次は 22-B-12 (他バージョン create/verify)。)
 
 ---
 
@@ -10,7 +10,7 @@
 
 - v6 verify: **FAIL 0**。362 unit tests GREEN
 - 22-B-16b/c (cross-doc MD link emission + asset + QL1 two-sided) 完了。256/353 JSON files に cross-doc MD links、`:download:` xlsx/csv assets もリンク化
-- **22-B-13 完了**: v6 baseline `20260424-080424` — overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 100% (前回 97.3% → +2.7pp 有意改善)
+- **22-B-13 完了**: v6 baseline `20260424-080424` — overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 97.3%→100% 有意改善、ca-002/ca-003 100%到達。QA 低下の原因は全て知識ファイル側ではなく参照経路 (`full-text-search.sh` バグ + エージェント探索差) であることを知識ファイルとの突合で確認済
 - 次のタスク: **Phase 22-B-12** (他バージョン create/verify)
 - その後: Phase 19 (他バージョン baseline) → Phase 21-Z Z-4/Z-3 (setup ゴミ / CHANGELOG / README)
 

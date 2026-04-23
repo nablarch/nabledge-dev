@@ -36,16 +36,29 @@
 
 ## 総合評価
 
-**第三者視点での改善効果評価**:
+### 結論: RBKC の知識品質は改善している（CA）、QA 検出低下は知識未到達のエージェント挙動差
 
-- **CA（コード分析）側は安定した改善**: CA 平均検出率 97.2% → 98.1% (+0.9pp)、CA 平均実行時間 294 秒 → 206 秒 (-30.0%) と、質と速度の両面で改善。ca-003 benchmark は 97.3% → 100.0% で CI 非重複の有意改善。ca-002 も 96.9% → 100.0% に到達。
-- **QA 側は見かけ上劣化**: QA 平均検出率 97.5% → 85.0% (-12.5pp)。ただし以下を考慮すると実力低下ではない:
-  - qa-001 benchmark: trial 1/3 は 100.0%、trial 2 のみ 5/8 (62.5%) で SD 21.6%。CI は広く [33.7%-100.0%] で前回 CI (100.0%) と重複しないが、trial 2 の低下は取りこぼし揺らぎで再現性が低い。
-  - qa-002: `pageNumber` / `listSearchResult` 未言及。回答は実装方法に集中し、画面表示の変数名まで到達していない（LLM の応答スコープの差）。
-  - qa-004: `allowDoubleSubmission` / `n:submit` / `n:form` / `useToken` 未検出。属性名を小文字で記載していない（`@UseToken` として説明）。知識ファイルの説明粒度に起因。
-- **ca-001 は -1 件劣化**: Overview セクションの `UniversalDao` / `SessionUtil` が日本語表現（「ユニバーサルDAO」「セッションストア」）に置き換わり、英名での検出不可。回答の正確性自体は維持。
-- **トークン消費は前回 0（未計測）→ 今回 38,175 で直接比較不能**: 前回 baseline はトークン計測が未実装。今回から計測開始。
-- 総合: 22-B-16 のセクション階層 + リンク対応により CA の Overview/Processing Flow 等で英語クラス名が解決されやすくなった。QA の劣化は検出基準側の細部（日本語表記 vs 英名、属性名の大小文字）に起因しており、RBKC の知識品質の問題ではなく、シナリオ期待値の粒度調整で収束する性質。
+**CA（3 シナリオ合計 106 項目）**:
+- ca-002 96.9% → 100.0% / ca-003 97.3% → 100.0% (CI 非重複の有意改善) / ca-001 97.3% → 94.6%
+- **純増分**: ca-002 の `DataReader`、ca-003 の `FilePathSetting`、ca-001 の `BeanUtil` が Nablarch Framework Usage 見出しに独立セクションとして出現。前回 ca-003 の既知ギャップ「`FilePathSetting` が独立見出しに出ない」(memory 記録 -2.7pp) が解消。
+- **純減**: ca-001 Overview で `UniversalDao` / `SessionUtil` の英名が日本語表現「ユニバーサルDAO」「セッションストア」に置換された。同ドキュメントの Nablarch Framework Usage には英名で登場しているため、Overview テンプレートの文体差に起因する表層的な問題。
+- **CA はリンクを辿ったのか?**: 辿っていない。`workflows/code-analysis.md` Step 2 は `full-text-search.sh` + `read-sections.sh` で知識を検索する構造で、Phase 22-B-16 で導入した cross-doc MD リンクはエージェント走行時に辿られていない。ただし RBKC 側の改善効果は **「知識ファイルのセクション階層が `##`/`###`/`####` に整備され、read-sections.sh で取得した section の見出しが CA 生成ドキュメントにそのまま引き継がれる」** という間接的な形で効いており、結果として `FilePathSetting` など独立見出しの情報が Nablarch Framework Usage セクションで独立見出し化された。
+
+**QA（5 シナリオ合計 40 項目）**:
+QA 検出率低下 12.5pp は **RBKC の知識不足ではなく、エージェントの知識ファイル選択の差**。4 つの欠落キーワードすべてが v6 知識ファイル内に存在することを確認:
+
+| シナリオ | 欠落キーワード | 存在する知識ファイル (件数) | 前回エージェントの参照実態 |
+|---|---|---|---|
+| qa-002 | `pageNumber` | 4 件 (biz-samples-03, project-download 等) | 前回は `web-application-getting-started-project-search.md` を読み `ProjectSearchForm#pageNumber` の実装例を回答に転記 |
+| qa-002 | `listSearchResult` | 7 件 (biz-samples-03, project-search 等) | 前回は `<app:listSearchResult>` タグ例を回答に転記 |
+| qa-004 | `n:form` | 22 件 (libraries-tag.json#s21 等) | 前回は `libraries-tag.md` 二重サブミット節 (`<n:form useToken="true">`) を回答に転記 |
+| qa-004 | `n:submit` | 8 件 | 前回は `<n:submit allowDoubleSubmission="false" />` 例を転記 |
+| qa-004 | `useToken` | 12 件 | 同上 |
+| qa-004 | `allowDoubleSubmission` | 10 件 | 同上 |
+
+今回のエージェントは qa-004 では `handlers-use-token.json#s3` のみを読み、そこに含まれる Thymeleaf 例 (`<form th:action="@{/path/to/action}">`) を転記。同ファイルの脚注で参照している `libraries-tag.md#tag-double-submission-server-side` には到達せず、JSP タグ例を回収できなかった。これはエージェントの探索範囲の差であり、知識ファイル側には必要な情報が存在している。
+
+**qa-001 benchmark の trial 間ゆらぎ**: trial 1/3 は 100.0%、trial 2 のみ 62.5%。trial 2 は回答簡潔版で `withNoneOption` / `pattern` 属性等の補足説明が欠落。LLM の応答スコープの揺らぎで、シナリオ期待値 8 項目中の補足的なキーワードが 3 項目落ちたケース。
 
 ---
 
@@ -85,31 +98,34 @@
 | 平均実行時間 | 148秒 | 118秒 | -29秒 (-19.9%) |
 | QA平均実行時間 | 60秒 | 66秒 | +6秒 (+9.6%) |
 | CA平均実行時間 | 294秒 | 206秒 | -88秒 (-30.0%) |
-| 平均トークン | 1,775 | 38,175 | +36,400 (+2050.7%) |
+| 平均トークン | (未計測 ※) | 38,175 | 比較不能 |
+
+※ 前回 baseline は qa-005 を除きトークン計測が未実装 (`steps: []` 空)。今回から Opus 4.x 駆動のサブエージェントで計測開始。今回 v6 baseline 全体 (coverage + benchmark) の合計は入力 416,500 / 出力 60,850 = 約 477K トークン。Opus 4.x 単価 (入力 $15/M、出力 $75/M) で **約 $10.8／1 baseline run**。Sonnet 4.x なら約 $2.2。
 
 ---
 
 ## 実測データからの分析
 
-**全体傾向**:
-- 全体検出率 97.3% → 94.5% (-2.7pp)。QA と CA で逆方向の動きがあり、単純な総合スコアでは RBKC の改善効果が相殺されて見える。
-- CA 系は 3 シナリオ中 2 つ (ca-002, ca-003) が検出率 100% 到達、ca-001 のみ 35/37。CA 実行時間は全体で -30% 短縮。
-- QA 系は 5 シナリオ中 2 つ (qa-002, qa-004) で未検出が目立つ。qa-001 benchmark の trial 間揺らぎが大きい。
+### 精度観点
+- **検出率の増減は「エージェントの知識ファイル選択差」で説明できる**。欠落キーワード全件 (qa-002 `pageNumber`/`listSearchResult`、qa-004 `n:form`/`n:submit`/`useToken`/`allowDoubleSubmission`、ca-001 `UniversalDao`/`SessionUtil`) は v6 知識ファイルに存在する。
+- CA の改善は **Nablarch Framework Usage の見出し粒度向上** が主因。22-B-16 の Section.level 対応で knowledge JSON の section 階層が保存され、code-analysis workflow の read-sections.sh 取得結果が独立見出しで転写されるようになった。
+- CA でリンク自体は辿られていない（Step 2 は full-text-search + read-sections による検索ベース）。22-B-16b/c の cross-doc MD リンクは **ユーザーが GitHub で docs MD を閲覧する際の辿り道** として効く設計で、エージェント走行時の探索フローには直接入っていない。
 
-**タイプ別パターン**:
-- **QA**: 回答品質は維持されているが、期待キーワードの粒度（属性名、画面変数名）に回答の語彙が一致しない。知識ファイル自体の記述は含んでいる可能性が高い（qa-004 の `@UseToken` は検出されるが `useToken` は回答に出ない、など）。
-- **CA**: 生成 MD のセクション構造が安定。Nablarch Framework Usage は前回 281 秒 → 今回 200 秒前後に短縮、かつ見出し粒度が揃った。
+### 時間観点
+- **CA 全体で -30%、ca-002 は -43% (321→184s)、ca-003 benchmark trial 3 は -43% (403→229s)**。ツール呼び出し回数は ca-002 で 33→23 回、ca-001 で 26→24 回と減少。
+- **QA は +9.6% (60→66s)**。特に qa-005 +53% (58→89s) が突出。metrics.json を読むと、前回は hints 由来の pre-filter (8s) で候補を絞ったのに対し、今回は Phase 21-K の hints スコープアウトにより route 1 (full-text-search) が 0 hits → route 2 (index.toon fallback) に落ちる構造になり、index.toon 読み込みに 20s 消費。
+- qa-002 (-11%) / qa-003 (-10%) は短縮しているため、QA 全件が悪化しているわけではない。
 
-**異常シナリオ**:
-- **qa-001 benchmark trial 2**: 5/8 (62.5%) のみ、他 2 trial は 8/8。LLM 応答の揺らぎで `withNoneOption` などの補足キーワードが欠落。
-- **qa-004**: `@UseToken` アノテーションを中心に説明、`useToken`（属性小文字）や `n:form` タグ単体への言及がない。これは知識ファイルのサンプルコード表記が `<form th:action=...>` 等、Thymeleaf 風になっているため（`n:form` ではない）。
-- **ca-001 Overview**: `UniversalDao`/`SessionUtil` の英名が Overview 段落に出てこない（Class Summary / Nablarch Usage には出る）。
+### コスト観点
+- 前回 baseline は qa-005 を除きトークン計測未実装 (`steps: []` 空) で比較不能。
+- 今回の実測: coverage 8 件 + benchmark 追加 4 trials 合計で **入力 416,500 / 出力 60,850 = 約 477K tok**。Opus 4.x (入力 $15/M、出力 $75/M) で **$10.8 / baseline run**、Sonnet 4.x だと $2.2。
+- シナリオ別の偏り: ca-001 (66.5K) / ca-002 (45K) / ca-003 trial2 (84K) が大きい。QA は 22-36K。入力の大半は workflow/SKILL.md 読み込み (各 1-15K) + index.toon フルロード (14-18K) が占める。
 
-**ステップレベル**:
-- `full-text-search.sh` は全シナリオで silent failure (jq が section オブジェクトに `test()` を適用するバグ)。全エージェントが route 2 (index.toon) にフォールバックしており、追加 60-80 秒消費しているケースあり。これは skill 側バグで、修正すれば QA 実行時間がさらに短縮する可能性。
+### ステップレベル観測
+- 3 エージェント (qa-005, ca-001, ca-002) が `full-text-search.sh` の silent failure を個別に脚注報告。jq で section オブジェクトに直接 `test()` を適用しているため常に 0 hits。nabledge-test skill 側のバグで RBKC とは無関係だが、QA 全件が route 2 にフォールバックしておりオーバーヘッドが発生している。
 
-**変動**:
-- qa-001 SD 21.6% は 3-trial の設計上想定範囲内だが、実質的な分散源は LLM 応答の揺らぎ。
+### 変動
+- qa-001 benchmark SD 21.6% は trial 2 のみの外れ値起因。trial 1/3 は 100%、trial 2 のみ 62.5%。構造的劣化ではなく LLM 応答ゆらぎ。
 
 ---
 
@@ -120,10 +136,10 @@
 - 実装: `scripts/full-text-search.sh` の jq 式が section オブジェクトを `test()` に渡している。`tostring` 経由に修正すれば検出可能。
 - 予測: 修正後、QA 平均時間 -10〜20%、qa-002 / qa-004 の期待キーワード検出率が +1〜2 項目回復する可能性。
 
-**仮説 2: qa-004 の「useToken / n:form / n:submit / allowDoubleSubmission」欠落は知識ファイルのサンプル記法に起因**
-- 証拠: 回答は `@UseToken` アノテーション + `<form th:action=...>` で説明。`n:form` / `n:submit` は出現しない。
-- 実装: `libraries/handlers-use-token.json` のサンプルコードが Thymeleaf 記法になっている可能性。`n:form` / `n:submit` タグの例を含めるか、検出側の期待値を `form` / `submit` に緩めるか、いずれかで解決。
-- 予測: 知識ファイル側に JSP タグ例を追加すれば +4 項目改善、qa-004 は 4/8 → 8/8 に回復。
+**仮説 2 (訂正): qa-004 の欠落は知識ファイルの問題ではなく「参照ファイル選択ミス」**
+- 証拠: `libraries-tag.json#s21` (「二重サブミットを防ぐ」) に `<n:form useToken="true">` + `<n:submit allowDoubleSubmission="false">` が両方明記されている。前回エージェントはこれを参照して回答に転記した痕跡あり。今回エージェントは `handlers-use-token.json#s3` の Thymeleaf 例のみ参照し、同セクションの脚注リンク (`libraries-tag.md#tag-double-submission-server-side`) を辿らなかった。
+- 実装: 知識ファイルは修正不要。代わりに (a) `full-text-search.sh` を修正して `libraries-tag.json` もキーワード検索でヒットするようにする、または (b) `handlers-use-token.json#s3` の脚注を含めて `read-sections.sh` で複数ファイル読み込みを行うよう `workflows/qa.md` で誘導する。
+- 予測: (a) で qa-004 8/8 回復見込み。
 
 **仮説 3: ca-001 Overview の英クラス名欠落は Overview 生成テンプレートの語彙選択**
 - 証拠: Overview は日本語の「ユニバーサルDAO」「セッションストア」で記述。Class Summary / Nablarch Usage には英名あり。
