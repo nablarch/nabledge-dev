@@ -94,6 +94,18 @@ def write_judge(scen: Path, judge: JudgeResult) -> None:
     )
 
 
+def load_retrieved_sections(selectors: list[str]) -> str:
+    """Load text for selectors (path:sid or path#sid) as a single block.
+
+    Used to give the judge the KB evidence the AI actually cited, so it
+    can tell "faithful quote of a non-reference section" apart from
+    "fabrication".
+    """
+    normalized = [s.replace("#", ":", 1) for s in selectors if s]
+    text, _ = read_selected_sections(normalized)
+    return text
+
+
 def read_selected_sections(selectors: list[str]) -> tuple[str, list[dict]]:
     """Load text for each `path:sid` selector from the knowledge base."""
     chunks: list[str] = []
@@ -169,9 +181,12 @@ def load_reference_sources(reference_md: str) -> tuple[str, list[dict]]:
 def verdict_from_structured(s: dict | None) -> JudgeVerdict | None:
     if s is None:
         return None
+    def _facts(v):
+        return v if isinstance(v, list) else []
     return JudgeVerdict(
         level=int(s.get("level", 0)),
-        required_facts=list(s.get("required_facts") or []),
-        over_reach=list(s.get("over_reach") or []),
-        reasoning=s.get("reasoning", ""),
+        a_facts=_facts(s.get("a_facts")),
+        b_claims=_facts(s.get("b_claims") or s.get("b_facts")),
+        c_claims=_facts(s.get("c_claims")),
+        reasoning=s.get("reasoning", "") if isinstance(s.get("reasoning"), str) else "",
     )

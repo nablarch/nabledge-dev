@@ -1,79 +1,116 @@
-# Stage 3 Judge (v2 — fact-coverage grading)
+# Judge — A/B/C coverage grading
 
-You are grading a generated answer against a reference answer for a
-Nablarch QA benchmark. Score 0–3 based ONLY on fact coverage.
+You grade a generated answer against a reference answer for a Nablarch QA
+benchmark. Score 0–3 by classifying claims in the generated answer into
+**A / B / C** and applying the decision table.
 Output ONLY the JSON defined by the schema — no tools, no prose outside JSON.
 
 ## Inputs
 
-- **Question** — the user's ask
-- **Reference answer** — the authoritative answer. This defines the set
-  of facts that a correct answer MUST convey (the "required facts").
-- **Reference sources** — the Nablarch knowledge sections the reference
-  answer cites. These define the "evidence boundary" — the set of facts
-  Nablarch actually supports for this question.
+- **Question** — the user's ask.
+- **Reference answer** — authoritative answer. Defines the A-facts
+  (required) and implicitly the topic scope.
+- **Reference sources** — sections the reference answer cites. These
+  and the `retrieved sections` below together form the **KB evidence
+  boundary**.
+- **Retrieved sections** — sections the search flow actually picked
+  and passed to the answer generator. Treated as part of the KB for
+  grading.
 - **Generated answer** — the answer to score.
 
-## Method (follow in order)
+## Fact classification
 
-**Step 1. Extract required facts from the reference answer.**
-List each atomic claim as a bullet. Examples:
-- "no built-in rate limiting exists"
-- "closest mechanism is a custom Handler"
-- "`ServiceAvailabilityCheckHandler` is NOT a rate limiter — it is an
-  availability on/off switch" (only if the reference explicitly says so)
+**A-facts (required)** — atomic claims the reference answer states as
+core. A correct answer MUST convey all A-facts. Extract from the
+reference answer's conclusions, required steps, and required
+classes/handlers.
 
-**Step 2. For each required fact, check the generated answer.**
-Mark COVERED / PARTIAL / MISSING / CONTRADICTED.
-Wording does not matter — "ビルトインなし" = "標準機能は存在しない".
-Only the semantic claim matters.
+**B-claims (on-topic supporting context)** — any claim in the generated
+answer that:
+- is supported by the KB evidence (reference sources OR retrieved
+  sections), AND
+- is on-topic for the question (addresses the concern the reference
+  answer addresses).
 
-**Step 3. Detect over-reach.**
-For each substantive claim in the generated answer that is NOT in the
-required-facts list:
-- If the claim is in the reference sources AND is on-topic for the
-  question: NEUTRAL (not penalized).
-- If the claim is in the reference sources BUT addresses a different
-  concern than the question (e.g., proposing
-  `ServiceAvailabilityCheckHandler` for rate limiting, but the sources
-  describe it as a service on/off switch): OVER-REACH.
-- If the claim is NOT in the reference sources at all: HALLUCINATION.
+B-claims are welcome but not required. Whether the reference answer
+explicitly listed them does not matter.
 
-**Step 4. Score.**
-- **3** — All required facts COVERED. No CONTRADICTED. No OVER-REACH.
-  No HALLUCINATION. (Extra on-topic detail is fine.)
-- **2** — All required facts COVERED or PARTIAL, AND at most one
-  OVER-REACH or one minor HALLUCINATION. No CONTRADICTED on a core
-  fact.
-- **1** — At least one required fact MISSING or CONTRADICTED, OR a
-  substantive OVER-REACH that would mislead the reader (e.g.,
-  proposing a mechanism that does not solve the asked problem).
-- **0** — Majority of required facts missing, OR the central claim
-  contradicts the reference, OR the answer is essentially a non-answer
-  (e.g., "参照可能なセクションがありません").
+**C-claims (unacceptable)** — any claim in the generated answer that
+is any of:
+1. **UNSUPPORTED** — not present anywhere in the KB evidence
+   (fabrication / speculation).
+2. **OFF-TOPIC** — uses a KB symbol in a way that contradicts that
+   symbol's stated purpose or scope, or addresses a different concern
+   than the question (e.g., proposing `ServiceAvailabilityCheckHandler`
+   for rate limiting when the KB describes it as a service on/off
+   switch).
+3. **CONTRADICTION** — contradicts an A-fact or the KB.
 
-## Critical rules
+Retrieval divergence from the reference is **NOT C**. If AI-1 picked a
+section the reference didn't cite and the answer quotes it faithfully,
+that claim is B (on-topic, supported) — not C.
 
-- If the reference answer says "no built-in X exists; closest is Y", an
-  answer that proposes Z instead of Y is **at most level 1**, even if Z
-  is a real Nablarch class. Proposing the wrong mechanism for the asked
-  problem is a substantive OVER-REACH.
-- A class/handler name appearing in the Nablarch knowledge base does
-  NOT license using it as an answer. It must be supported by the
-  reference sources **as an answer to THIS question**.
-- Do not reward fluency, citation count, or length. Only fact coverage
-  and absence of over-reach.
+Minor restatements, tone, and citation formatting are NOT C. Only
+substantive claims count.
+
+## Method
+
+**Step 1. A-facts.** List the A-facts extracted from the reference
+answer. Mark each `COVERED` / `PARTIAL` / `MISSING` against the
+generated answer. `PARTIAL` on an A-fact is a fail for that fact.
+
+Example — reference says "handler queue に `SessionStoreHandler` を
+`ThreadContextHandler` の前に配置する":
+- A1: `SessionStoreHandler` を handler queue に使う
+- A2: `SessionStoreHandler` は `ThreadContextHandler` より前に置く
+
+a_facts must always be populated from the reference answer, even when
+the generated answer is empty. An empty answer means all A-facts are
+MISSING (→ L0), not that a_facts is empty.
+
+**Step 2. B-claims.** List substantive on-topic claims in the generated
+answer that are supported by the KB evidence but are not A-facts.
+Record the claim text only (no status).
+
+**Step 3. C-claims.** List substantive claims in the generated answer
+that fall into UNSUPPORTED / OFF-TOPIC / CONTRADICTION. Record the
+claim and the `reason`.
+
+**Step 4. Score by the decision table.**
+
+| A full COVERED | any B | any C | Level |
+|---|---|---|---|
+| yes | yes | no | **3** |
+| yes | no  | no | **2** |
+| (majority A MISSING) | — | — | **0** |
+| non-answer (e.g. "参照可能なセクションがありません") | — | — | **0** |
+| otherwise (A partial/missing, or any C) | — | — | **1** |
+
+"A full COVERED" means every A-fact has status `COVERED` (not
+`PARTIAL`, not `MISSING`).
+
+If multiple rows apply, pick the lowest level.
+
+## Critical rules (these override anything above if in tension)
+
+- **Any C-claim forces L1** (or lower). Hallucination, off-topic
+  symbol use, and contradiction are non-negotiable.
+- A class / handler name being present in the KB does NOT license
+  using it as an answer. It must address THIS question. Otherwise
+  it is C (OFF-TOPIC).
+- Do not reward fluency, citation count, or length.
 
 ## Output schema
 
 ```json
 {
   "type": "object",
-  "required": ["required_facts", "over_reach", "level", "reasoning"],
+  "required": ["a_facts", "b_claims", "c_claims", "level", "reasoning"],
   "additionalProperties": false,
   "properties": {
-    "required_facts": {
+    "a_facts": {
       "type": "array",
+      "minItems": 1,
       "maxItems": 15,
       "items": {
         "type": "object",
@@ -81,32 +118,43 @@ required-facts list:
         "additionalProperties": false,
         "properties": {
           "fact": {"type": "string", "maxLength": 200},
-          "status": {"enum": ["COVERED","PARTIAL","MISSING","CONTRADICTED"]}
+          "status": {"enum": ["COVERED", "PARTIAL", "MISSING"]}
         }
       }
     },
-    "over_reach": {
+    "b_claims": {
+      "type": "array",
+      "maxItems": 15,
+      "items": {
+        "type": "object",
+        "required": ["claim"],
+        "additionalProperties": false,
+        "properties": {
+          "claim": {"type": "string", "maxLength": 200}
+        }
+      }
+    },
+    "c_claims": {
       "type": "array",
       "maxItems": 10,
       "items": {
         "type": "object",
-        "required": ["claim", "type", "why"],
+        "required": ["claim", "reason", "why"],
         "additionalProperties": false,
         "properties": {
           "claim": {"type": "string", "maxLength": 200},
-          "type": {"enum": ["OVER-REACH","HALLUCINATION"]},
+          "reason": {"enum": ["UNSUPPORTED", "OFF-TOPIC", "CONTRADICTION"]},
           "why": {"type": "string", "maxLength": 200}
         }
       }
     },
-    "level": {"type": "integer", "enum": [0,1,2,3]},
+    "level": {"type": "integer", "enum": [0, 1, 2, 3]},
     "reasoning": {"type": "string", "maxLength": 600}
   }
 }
 ```
 
-Write `reasoning` in the **same language as the question** (Japanese
-questions → Japanese reasoning).
+Write `reasoning` in the **same language as the question**.
 
 ## Question
 
@@ -119,6 +167,10 @@ questions → Japanese reasoning).
 ## Reference sources
 
 {{reference_sources}}
+
+## Retrieved sections
+
+{{retrieved_sections}}
 
 ## Generated answer
 

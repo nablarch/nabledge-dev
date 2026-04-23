@@ -65,6 +65,14 @@ def invoke(
     return parse_stream(proc.stdout or "", proc.returncode, proc.stderr or "", duration)
 
 
+def _is_well_formed_tool_input(inp: dict) -> bool:
+    """Reject inputs whose array-typed fields arrived as strings (truncated streams)."""
+    for k in ("a_facts", "b_facts", "b_claims", "c_claims", "required_facts", "over_reach", "selections"):
+        if k in inp and not isinstance(inp[k], list):
+            return False
+    return True
+
+
 def parse_stream(stdout: str, returncode: int, stderr: str, duration_s: float) -> ClaudeInvocation:
     """Parse a claude stream-json NDJSON payload into a ClaudeInvocation.
 
@@ -90,7 +98,7 @@ def parse_stream(stdout: str, returncode: int, stderr: str, duration_s: float) -
             for block in (evt.get("message", {}) or {}).get("content", []) or []:
                 if block.get("type") == "tool_use" and block.get("name") == "StructuredOutput":
                     inp = block.get("input")
-                    if isinstance(inp, dict) and inp:
+                    if isinstance(inp, dict) and inp and _is_well_formed_tool_input(inp):
                         tool_use_structured = inp
     if structured is None and tool_use_structured is not None:
         structured = tool_use_structured

@@ -9,34 +9,40 @@ from .claude import invoke
 from .types import JudgeResult, Scenario, SearchResult
 
 
-SCHEMA_JUDGE = {
+_FACT_ITEM = {
     "type": "object",
-    "required": ["required_facts", "over_reach", "level", "reasoning"],
+    "required": ["fact", "status"],
     "additionalProperties": False,
     "properties": {
-        "required_facts": {
-            "type": "array",
-            "maxItems": 15,
-            "items": {
-                "type": "object",
-                "required": ["fact", "status"],
-                "additionalProperties": False,
-                "properties": {
-                    "fact": {"type": "string", "maxLength": 200},
-                    "status": {"enum": ["COVERED", "PARTIAL", "MISSING", "CONTRADICTED"]},
-                },
-            },
-        },
-        "over_reach": {
+        "fact": {"type": "string", "maxLength": 200},
+        "status": {"enum": ["COVERED", "PARTIAL", "MISSING"]},
+    },
+}
+
+_CLAIM_ITEM = {
+    "type": "object",
+    "required": ["claim"],
+    "additionalProperties": False,
+    "properties": {"claim": {"type": "string", "maxLength": 200}},
+}
+
+SCHEMA_JUDGE = {
+    "type": "object",
+    "required": ["a_facts", "b_claims", "c_claims", "level", "reasoning"],
+    "additionalProperties": False,
+    "properties": {
+        "a_facts": {"type": "array", "minItems": 1, "maxItems": 15, "items": _FACT_ITEM},
+        "b_claims": {"type": "array", "maxItems": 15, "items": _CLAIM_ITEM},
+        "c_claims": {
             "type": "array",
             "maxItems": 10,
             "items": {
                 "type": "object",
-                "required": ["claim", "type", "why"],
+                "required": ["claim", "reason", "why"],
                 "additionalProperties": False,
                 "properties": {
                     "claim": {"type": "string", "maxLength": 200},
-                    "type": {"enum": ["OVER-REACH", "HALLUCINATION"]},
+                    "reason": {"enum": ["UNSUPPORTED", "OFF-TOPIC", "CONTRADICTION"]},
                     "why": {"type": "string", "maxLength": 200},
                 },
             },
@@ -68,11 +74,13 @@ def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path)
         )
 
     ref_text, ref_records = io.load_reference_sources(scenario.reference_answer)
+    retrieved_text = io.load_retrieved_sections(search.cited)
     prompt = (
         (io.PROMPTS_DIR / "judge.md").read_text(encoding="utf-8")
         .replace("{{question}}", scenario.question)
         .replace("{{reference_answer}}", scenario.reference_answer)
         .replace("{{reference_sources}}", ref_text or "(none)")
+        .replace("{{retrieved_sections}}", retrieved_text or "(none)")
         .replace("{{generated_answer}}", search.answer)
         .replace(
             "{{generated_cited}}",
@@ -83,7 +91,7 @@ def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path)
         prompt=prompt,
         schema=SCHEMA_JUDGE,
         model=model,
-        max_turns=2,
+        max_turns=4,
         log_path=scen_dir / "stream" / "judge.jsonl",
         cwd=io.REPO_ROOT,
         allowed_tools=[],

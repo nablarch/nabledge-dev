@@ -26,15 +26,17 @@ def test_extract_reference_citations_handles_no_citations():
 def test_verdict_from_structured_maps_fields():
     s = {
         "level": 2,
-        "required_facts": [{"fact": "X", "status": "COVERED"}],
-        "over_reach": [{"claim": "Y", "type": "OVER-REACH", "why": "Z"}],
+        "a_facts": [{"fact": "X", "status": "COVERED"}],
+        "b_claims": [{"claim": "Y"}],
+        "c_claims": [{"claim": "Z", "reason": "UNSUPPORTED", "why": "W"}],
         "reasoning": "ok",
     }
     v = io.verdict_from_structured(s)
     assert isinstance(v, JudgeVerdict)
     assert v.level == 2
-    assert v.required_facts == [{"fact": "X", "status": "COVERED"}]
-    assert v.over_reach[0]["type"] == "OVER-REACH"
+    assert v.a_facts == [{"fact": "X", "status": "COVERED"}]
+    assert v.b_claims[0]["claim"] == "Y"
+    assert v.c_claims[0]["reason"] == "UNSUPPORTED"
     assert v.reasoning == "ok"
 
 

@@ -47,8 +47,9 @@ class SearchResult:
 @dataclass(frozen=True)
 class JudgeVerdict:
     level: int  # 0-3
-    required_facts: list[dict]  # [{fact, status}]
-    over_reach: list[dict]  # [{claim, type, why}]
+    a_facts: list[dict]  # [{fact, status}]
+    b_claims: list[dict]  # [{claim}]
+    c_claims: list[dict]  # [{claim, reason, why}]
     reasoning: str
 
 
