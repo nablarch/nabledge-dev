@@ -25,6 +25,21 @@ Required shape of a proposal:
 4. **Proposed action**: what you will do to reach that state
 5. **Points the user may want to override**: only the genuinely ambiguous parts — not "is this OK?"
 
+### Scope-out / defer-to-another-issue proposals
+
+When proposing to treat something as out-of-scope or defer it to a separate issue,
+the proposal must be **fact-based, not inference-based**. Before making such a proposal:
+
+1. **Investigate exhaustively** — enumerate every file, function, and call site that
+   would be affected by doing the work now vs deferring it. Do not sample or guess.
+2. **Quantify the impact** — report concrete numbers: lines of code to change, number
+   of files, number of tests to add/update, dependencies on other in-progress work.
+3. **State facts, not assumptions** — "md.py is 139 lines and has no AST layer" is a fact;
+   "工事量は Phase 21-Y と同規模" without measurement is inference and is not acceptable.
+4. **Derive the recommendation from the measured numbers**, not from intuition about cost.
+
+A scope-out proposal without measured numbers will be rejected. Re-investigate and resubmit.
+
 Only ask open questions when:
 - Facts are insufficient and more investigation won't resolve the ambiguity
 - The choice depends on user preference/values that cannot be derived from the goal
