@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 58 — 22-B-5b 完了 (v6 verify PASS, 353 files)。22-B-11 実地確認 FB で 3 件発覚: ①NULL混入 修正済 (`f67969f8a`)、②RST h3→## 潰れ、③内部リンク/画像が docs MD と JSON に適切反映されない + verify QL1 が docs MD 側未検証。②③は 22-B-16 に統合して本 PR で対応 (anchor 生成の前提として階層を先に正す必要があるためセットで完結)。)
+**Updated**: 2026-04-23 (session 59 — 22-B-16 を 16a/16b/16c に分割。SE/QA expert レビュー完了、horizontal class 4 箇所 (silent skip) + circular-test 回避の GitHub slug 独立 pin を反映。設計書 3 本 (verify / converter / json-schema) を更新して本タスクを開始。)
 
 ---
 
@@ -97,44 +97,49 @@
 - [x] 22-B-5b-review: SE + QA expert review for commits `dabc57274` + `023d53248` 実施済 — SE 1 Finding (`columns`/`data_rows` JSON 未記載) + QA 3 Findings (P1 #title check / flatten edge cases / sheet_name_fallback 陽性ケース) 全件対応 (`d1e4a314a`)。282 tests GREEN
 - [x] 22-B-9: 判定結果一覧 `.work/00299/phase22/sheet-classification.md` 出力 (`ca3bf744f`)。現状維持で確定、見た目改善は Issue #311 に切り出し
 - [ ] 22-B-11: 生成された docs MD を GitHub Web で実地確認 (ユーザー) — FB ①NULL混入 (修正済 `f67969f8a`)、②RST h3→## 潰れ、③内部リンク/画像リンクがdocs MDに反映されない → 22-B-16 で対応
-- [ ] 22-B-16: **RST section 階層 + 内部リンク / 画像 / literalinclude を docs MD と JSON に適切反映**
-  - **統合理由**: 階層修正 (##/###/####) とリンク anchor 生成はセットで完結させる。§22-B-15 は 22-B-16 に統合。アンカーは section heading の slug なので、同一ファイル内で h3 が `##` に潰れると GitHub が `slug-1` と自動採番して converter が予測できなくなる。階層を正す = anchor を一意かつ安定にする前提。
-  - **現状の問題**:
-    - RST 階層: `_walk_section` が h2/h3/h4 を flat `parts.sections` に再帰 append → docs.py が全部 `##` で出力 → 重複 section title + 階層消失
-    - `:ref:` / `reference[refid/refname]` → docs MD がプレーンテキスト (リンク消失)
-    - `.. image::` / `.. figure::` → docs MD が `![](images/xxx.png)` の RST 相対パスのまま → **リンク切れ** (実アセットは `knowledge/assets/{file_id}/` にコピー済)
-    - `:ref:` cross-document → ラベルからターゲット file_id への解決が無い
-    - verify QL1 は JSON 側の文字列含有しか見ない → docs MD 側のリンク形式チェック欠落 (spec §3-2 に「docs MD にアンカーリンクとして出現」と記載済、実装が未対応)
-  - **あるべき姿**:
-    - 階層: `Section` に `level: int`、docs MD は `##`/`###`/`####` を level に応じ出力
-    - JSON (AI 向け):
-      - `:ref:` → target title + ターゲット file_id ヒント埋め込み (AI が file_id で cross-document 検索できる)
-      - `image` / `figure` → `![](assets/{file_id}/fname.ext)` で content に埋め込み
-    - docs MD (人間閲覧向け):
-      - `:ref:` → `[target title](../../{type}/{category}/{target_file_id}.md#anchor)` (GitHub Web でクリック可能)
-      - `image` / `figure` → `![alt](../../knowledge/assets/{file_id}/fname.ext)` (ブラウザで表示可能)
-    - verify QL1 強化: **JSON と docs MD **両側**でチェック**
-      - JSON: target title + asset path が content に存在
-      - docs MD: 対応するアンカーリンク / 画像リンクが実在する MD / 画像ファイルを指している
-      - QO1: section.level と docs MD heading level の一致
-  - **対象一覧**: verify の既存 `check_source_links` が AST から抽出済 (追加調査不要)
-  - **手順**:
-    1. 設計書更新
-       - `rbkc-converter-design.md`: Section に `level`, sections[].level を §4 / §7 に明記、:ref: / image の MD リンク形式
-       - `rbkc-verify-quality-design.md` §3-2 QL1 の JSON/docs MD 両側仕様、§3-3 QO1 の level 一致要件、§4 マトリクスに QL1 (docs MD 側) を追加
-    2. `label_map` を label → (title, file_id) に拡張 (cross-document リンク解決)
-    3. verify TDD:
-       - QO1 level 一致
-       - QL1 docs MD アンカーリンク存在チェック
-       - QL1 docs MD 画像リンク存在チェック (実ファイル解決)
-    4. converter 修正:
-       - `rst_ast_visitor._walk_section` が level を記録 / `md_ast_visitor` 同
-       - `Section` dataclass / JSON schema に `level` 追加
-       - `inline_reference` / `inline_inline(role=ref)` / `image` / `figure` を MD リンク/画像形式で出力
-    5. `docs.py._render_full`: level 別 heading 出力
-    6. `docs.py._rewrite_asset_links`: `assets/{file_id}/...` 相対パスを docs MD からの相対に rewrite (既存 `assets/` 先頭の rewrite を拡張)
-    7. v6 再生成 → verify FAIL 0 + 実地確認
+- [x] 22-B-11: 生成された docs MD を GitHub Web で実地確認 (ユーザー) — FB ①NULL混入 (修正済 `f67969f8a`)、②RST h3→## 潰れ、③内部リンク/画像リンクがdocs MDに反映されない → 22-B-16 で対応
+- [ ] 22-B-16: **RST section 階層 + 内部リンク / 画像 / literalinclude を docs MD と JSON に適切反映** (16a/16b/16c に分割)
+
+  **expert review 結果** (SE + QA): circular test / silent skip 4 箇所 / QO2 完全一致保持 / scope-split の要請を反映。詳細は `.work/00299/review-22-b-16-se.md` / `review-22-b-16-qa.md` (上記エキスパートレビュー全文).
+
+  **設計合意**:
+  - JSON content と docs MD は **完全に同一文字列のリンクを出力** (QO2 完全一致を維持)
+  - リンクは CommonMark `[text](../category/file_id.md#github_slug)` / `![alt](assets/file_id/foo.png)` 形式
+  - anchor は target section title の GitHub slug (`scripts/common/github_slug.py` 新設、GitHub 公式仕様由来の独立 fixture で pin)
+  - `labels.py` を `label -> (title, file_id, section_title)` に拡張、`doc_map` (`rst_relpath -> (title, file_id)`) を新設
+  - docs.py は `assets/` 先頭 path のみ docs MD 位置基準に rewrite (既存拡張)
+  - silent skip horizontal class 4 箇所 (verify.py 1526-1529 / 1592-1598 / labels.py drop / test_pass_rst_ref_unknown_label_skipped) を一括修正
+  - 各 slice で TDD RED → GREEN → v6 verify FAIL 0 → SE/QA review → commit
+
+  - [x] **22-B-16-spec**: 設計書 3 本更新 (verify §3-2 QL1 / §3-3 QO1 level / §4 マトリクス、converter §3-2-1 Section.level / §4 reference / §4-6 image+figure / §5-1 role shim リンク化 / §7-5 MD 相対リンク・画像、json-schema §2 sections[].level / §4-2 level-based heading 出力)
+  - [ ] **22-B-16a**: Section.level + docs.py `##`/`###`/`####` + QO1 level check + silent skip horizontal class 4 箇所修正
+    1. TDD RED: `TestCheckJsonDocsMdConsistency_QO1_Level` (6 ケース: 正 / level mismatch / level 欠落 / 空 section / top-only / regression guard)
+    2. TDD RED: silent skip → FAIL テスト (旧 `test_pass_rst_ref_unknown_label_skipped` を反転、labels.py drop を FAIL 化)
+    3. `Section` dataclass に `level: int`、`_walk_section` で level 記録、`md_ast_visitor` heading_open で level 記録
+    4. JSON schema 出力に `sections[].level` 追加
+    5. `docs.py._render_full` を level 別 heading 出力に変更
+    6. silent skip 4 箇所を FAIL に変更
+    7. v6 再生成 → verify FAIL 0 を確認
     8. SE + QA expert review → Findings 全件対応
+  - [ ] **22-B-16b**: `github_slug.py` + `labels.py` 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化
+    1. TDD RED: `TestGithubSlug` (GitHub 公式仕様 fixture)
+    2. TDD RED: `TestLabelMap` / `TestDocMap` (extension + dangling)
+    3. TDD RED: `TestCheckSourceLinks_JsonSide` / `TestCheckSourceLinks_DocsMdSide` (各 link kind × pass/fail)
+    4. `scripts/common/github_slug.py` 新規実装
+    5. `scripts/common/labels.py` に LabelTarget / doc_map 追加
+    6. `rst_ast_visitor.inline_inline` role=ref/doc/numref を MD リンク化
+    7. `md_ast_visitor` の link_open href 相対解決 → MD リンク化
+    8. verify `check_source_links` 両側検証 (target `.md` 実在 + anchor slug 一致)
+    9. v6 再生成 → verify FAIL 0 を確認
+    10. SE + QA expert review → Findings 全件対応
+  - [ ] **22-B-16c**: image/figure asset 解決 (converter 側 AST 時) + download role + QL1 asset-exists check
+    1. TDD RED: asset resolution / copy / QL1 asset-exists
+    2. RST `image` / `figure` / `:download:` URI を source dir からの相対で resolve、実ファイルを `knowledge/assets/{file_id}/{basename}` にコピー
+    3. MD `image` も同様
+    4. JSON content は `assets/{file_id}/{basename}` で統一、docs.py rewrite は既存ロジックで対応
+    5. verify QL1 で asset の実ファイル存在確認
+    6. v6 再生成 → verify FAIL 0 を確認
+    7. SE + QA expert review → Findings 全件対応
 - [ ] 22-B-13: nabledge-test v6 baseline 再取得 (22-B-16 完了後、旧 baseline 97.3% は履歴として保持) — 他バージョン展開前に v6 を品質基準として固定
 - [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 (22-B-13 完了後)
 
