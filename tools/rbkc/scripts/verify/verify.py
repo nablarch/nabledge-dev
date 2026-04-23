@@ -108,14 +108,35 @@ _README_COUNT_RE = re.compile(r'^(\d+)\s*ページ', re.MULTILINE)
 
 
 def check_docs_coverage(knowledge_dir, docs_dir) -> list[str]:
-    """QO3: README.md exists with correct file count."""
-    issues = []
-    readme = Path(docs_dir) / "README.md"
+    """QO3: every JSON knowledge file has a matching docs MD.
+
+    Per rbkc-verify-quality-design.md §3-3: docs MD is a per-file derived
+    artefact of its JSON. We require a 1:1 mapping between JSON relative
+    path and docs MD relative path (``.json`` -> ``.md``).
+
+    The README.md page count is still checked so a coverage mismatch is
+    surfaced at a glance.
+    """
+    issues: list[str] = []
+    kdir = Path(knowledge_dir)
+    ddir = Path(docs_dir)
+
+    readme = ddir / "README.md"
     if not readme.exists():
         issues.append(f"[QO3] README.md missing: {readme}")
         return issues
 
-    actual = len([p for p in Path(docs_dir).rglob("*.md") if p.name != "README.md"])
+    # Per-file existence check (the authoritative QO3 check)
+    for json_path in sorted(kdir.rglob("*.json")):
+        rel = json_path.relative_to(kdir).with_suffix(".md")
+        docs_md_path = ddir / rel
+        if not docs_md_path.exists():
+            issues.append(
+                f"[QO3] docs MD missing for JSON: expected {rel} (from {json_path.relative_to(kdir)})"
+            )
+
+    # README page-count coherence check
+    actual = len([p for p in ddir.rglob("*.md") if p.name != "README.md"])
     text = readme.read_text(encoding="utf-8")
     m = _README_COUNT_RE.search(text)
     if m:

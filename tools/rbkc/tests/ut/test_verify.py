@@ -196,37 +196,54 @@ class TestCheckIndexCoverage:
 # ---------------------------------------------------------------------------
 
 class TestCheckDocsCoverage:
-    """QO3: README.md count matches .md file count in docs_dir."""
+    """QO3: each JSON file has a corresponding docs MD (1:1 existence)."""
 
     def _check(self, knowledge_dir, docs_dir):
         from scripts.verify.verify import check_docs_coverage
         return check_docs_coverage(knowledge_dir, docs_dir)
 
-    def test_pass_readme_count_matches(self, tmp_path):
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        ddir = tmp_path / "docs"
-        ddir.mkdir()
-        (ddir / "a.md").write_text("content")
+    def _write_json(self, kdir: Path, rel: str, data: dict | None = None) -> Path:
+        path = kdir / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data or {"title": "t"}), encoding="utf-8")
+        return path
+
+    def _write_md(self, ddir: Path, rel: str) -> Path:
+        path = ddir / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("content")
+        return path
+
+    def test_pass_each_json_has_docs_md(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        # JSON layout mirrors docs MD layout (same relative path, .json -> .md)
+        self._write_json(kdir, "about/nablarch/a.json")
+        self._write_md(ddir, "about/nablarch/a.md")
         (ddir / "README.md").write_text("1ページ\n")
         assert self._check(kdir, ddir) == []
 
-    def test_fail_readme_count_mismatch(self, tmp_path):
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        ddir = tmp_path / "docs"
-        ddir.mkdir()
-        (ddir / "a.md").write_text("content")
-        (ddir / "b.md").write_text("content")
-        (ddir / "README.md").write_text("1ページ\n")
+    def test_fail_json_without_matching_docs_md(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "about/nablarch/a.json")
+        # Note: no corresponding a.md in docs/about/nablarch/
+        (ddir / "README.md").write_text("0ページ\n")
         issues = self._check(kdir, ddir)
-        assert any("QO3" in i or "count mismatch" in i for i in issues)
+        assert any("QO3" in i for i in issues)
+
+    def test_pass_no_knowledge_json_still_requires_docs_md(self, tmp_path):
+        """no_knowledge_content JSONs still get a minimal docs MD (see docs.py)."""
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "about/nablarch/a.json", {"no_knowledge_content": True, "title": "a"})
+        self._write_md(ddir, "about/nablarch/a.md")
+        (ddir / "README.md").write_text("1ページ\n")
+        assert self._check(kdir, ddir) == []
 
     def test_fail_readme_missing(self, tmp_path):
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        ddir = tmp_path / "docs"
-        ddir.mkdir()
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
         issues = self._check(kdir, ddir)
         assert any("README" in i for i in issues)
 
