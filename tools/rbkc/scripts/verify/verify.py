@@ -1210,6 +1210,28 @@ def check_xlsx_p1_pairing(source_path, data: dict, sheet_name: str) -> list[str]
             f"JSON has {len(sections)} sections, Excel has {len(data_rows)} data rows"
         )
         # Continue with the overlap so downstream mismatches are also reported.
+
+    # Duplicate column-name guard (zero-tolerance resolution of the spec
+    # gap): two source columns sharing the same header name make the
+    # {列名}: {値} line format ambiguous — JSON cannot record which column
+    # a given value came from.  Under zero-tolerance, treat duplicates
+    # as an explicit failure rather than collapsing silently.
+    seen_cols: set[str] = set()
+    dup_cols: list[str] = []
+    for col in columns:
+        if not col:
+            continue
+        if col in seen_cols:
+            if col not in dup_cols:
+                dup_cols.append(col)
+        else:
+            seen_cols.add(col)
+    for col in dup_cols:
+        issues.append(
+            f"[QP] {file_id} sheet={sheet_name!r}: duplicate column name "
+            f"{col!r} in Excel header — {{列名}}: {{値}} line format is ambiguous"
+        )
+
     for idx, (sec, row) in enumerate(zip(sections, data_rows), start=1):
         expected: dict[str, str] = {}
         for cx, col in enumerate(columns):
@@ -1220,10 +1242,10 @@ def check_xlsx_p1_pairing(source_path, data: dict, sheet_name: str) -> list[str]
                 continue
             if not col:
                 continue
-            # If the same column name maps to multiple source columns,
-            # record the last one.  The spec is silent; duplicate
-            # column-name headers are ill-formed and should be caught
-            # by QC3 on the source tokens.
+            if col in dup_cols:
+                # Ambiguous column already reported at header level; do
+                # not re-flag per row.
+                continue
             expected[col] = cell
         actual = dict(_parse_section_pairs(sec.get("content", "")))
         # pair_missing: expected column absent or value mismatched.
