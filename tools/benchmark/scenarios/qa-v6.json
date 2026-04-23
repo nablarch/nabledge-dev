@@ -3,6 +3,13 @@
     "id": "review-01",
     "review_perspective": "アーキテクチャ",
     "context": "ファイルからDBへの都度起動バッチ",
+    "a_facts": [
+      "都度起動バッチを採用する（常駐バッチは新規開発では非推奨）",
+      "BatchAction を継承したアクションクラスを実装する",
+      "Form / Entity / Action の3層構成で組む",
+      "DB 接続ありの標準ハンドラキュー構成を使い、LoopHandler→DataReadHandler はサブスレッドに配置する",
+      "DataReader を実装してレコードを1件ずつ供給する"
+    ],
     "expected_question": "ファイルの明細レコードを読み込んで DB テーブルに取り込む夜間バッチを作りたい。Nablarch でこういうバッチを実装するときの推奨構成を知りたい",
     "expected_keywords": [
       "バッチ",
@@ -31,6 +38,13 @@
     "id": "review-02",
     "review_perspective": "アーキテクチャ",
     "context": "ウェブアプリケーション",
+    "a_facts": [
+      "Servlet API ベース(`NablarchServletContextListener` + `WebFrontController`)で組む",
+      "`WebFrontController` がリクエストを受け、ハンドラキューに委譲する構成",
+      "`DispatchHandler` が URI からアクションクラスを特定して呼び出す",
+      "アクションは `HttpResponse` を返し、`HttpResponseHandler` がレスポンスに変換する",
+      "プロジェクト要件に応じてハンドラキューを構築する(最小構成をベースに追加する)"
+    ],
     "expected_question": "Nablarch でウェブアプリケーションを新規に立ち上げる。基本の処理構成ってどうやって組むのが推奨？",
     "expected_keywords": [
       "ウェブアプリケーション",
@@ -59,6 +73,12 @@
     "id": "review-03",
     "review_perspective": "アーキテクチャ",
     "context": "RESTfulウェブサービス",
+    "a_facts": [
+      "Web アプリをベースに JAX-RS サポート (Jakarta RESTful Web Services) を組み合わせた構成を使う",
+      "リソースクラス(アクションクラス)に JAX-RS アノテーションを付与する",
+      "レスポンスは `JaxRsResponseHandler` が返す（フォームクラス返却時は `BodyConvertHandler` が変換する）",
+      "`router_adaptor` より後のハンドラは `router_adaptor` に設定する"
+    ],
     "expected_question": "Nablarch で REST API を提供するサービスを作りたい。処理のつなぎ方や構成パターンってどう組むのが推奨？",
     "expected_keywords": [
       "RESTfulウェブサービス",
@@ -87,6 +107,12 @@
     "id": "review-04",
     "review_perspective": "セキュリティ",
     "context": "ウェブアプリケーション",
+    "a_facts": [
+      "Nablarch は Bean Validation の使用を推奨する",
+      "Web アプリでは `BeanValidationStrategy` を登録して有効化する",
+      "フォームクラスにアノテーションを付けて検証する",
+      "個別アノテーションより `@Domain` によるドメインバリデーションが推奨される"
+    ],
     "expected_question": "ユーザーが入力する画面項目のチェックをどう書くのが Nablarch 流？ 必須・桁数・形式チェックをなるべく楽に書きたい",
     "expected_keywords": [
       "バリデーション",
@@ -115,6 +141,11 @@
     "id": "review-05",
     "review_perspective": "セキュリティ",
     "context": "RESTfulウェブサービス",
+    "a_facts": [
+      "Bean Validation を推奨し、リソースメソッド引数に `@Valid` を付けて有効化する",
+      "エラー応答は `JaxRsResponseHandler` が `errorResponseBuilder` 経由で生成する",
+      "バリデーションエラー時にボディへメッセージを入れるには `ErrorResponseBuilder` を継承したクラスを作成する"
+    ],
     "expected_question": "REST API でクライアントから受け取る JSON の入力値を検証したい。不正な値のときにエラーをどう返すのが推奨？",
     "expected_keywords": [
       "バリデーション",
@@ -143,6 +174,11 @@
     "id": "review-06",
     "review_perspective": "セキュリティ",
     "context": "ウェブアプリケーション",
+    "a_facts": [
+      "Nablarch は `CsrfTokenVerificationHandler` を標準提供する",
+      "ハンドラキューに追加し、セッションストアハンドラや Nablarch カスタムタグハンドラより後ろに配置する",
+      "POST/PUT など更新系を検証し、失敗時はデフォルトで 400 を返す"
+    ],
     "expected_question": "Web アプリで外部サイトから不正に POST されるのを防ぎたい。Nablarch に対策の仕組みはある？ どう設定する？",
     "expected_keywords": [
       "CSRF",
@@ -171,6 +207,12 @@
     "id": "review-07",
     "review_perspective": "セキュリティ",
     "context": "ウェブアプリケーション",
+    "a_facts": [
+      "`SecureHandler` の `generateCspNonce` プロパティを `true` にして nonce 生成を有効化する",
+      "`secureResponseHeaderList` に `ContentSecurityPolicyHeader` を追加しポリシーを設定する",
+      "`ContentSecurityPolicyHeader` の `policy` にプレースホルダー `$cspNonceSource$` を含める",
+      "Nablarch カスタムタグは nonce 生成が有効な場合に自動的に nonce 属性を埋め込む"
+    ],
     "expected_question": "セキュリティ診断で Content Security Policy を入れろと言われた。Nablarch の Web 画面で CSP を有効にしたい。標準のやり方は？",
     "expected_keywords": [
       "CSP",
@@ -200,6 +242,13 @@
     "id": "review-08",
     "review_perspective": "並行制御",
     "context": "常駐バッチの並列化",
+    "a_facts": [
+      "`MultiThreadExecutionHandler` の `concurrentNumber` プロパティで並列実行数を指定する",
+      "後続ハンドラ・バッチアクションはスレッドセーフである必要がある",
+      "サブスレッドで DB アクセスする場合、サブスレッド用ハンドラ構成に `DatabaseConnectionManagementHandler` と `TransactionManagementHandler` を配置する",
+      "DB 接続はサブスレッド数分(親が DB アクセスするなら＋1)が追加で必要",
+      "サブスレッドで例外発生時は他スレッドをデータ処理完了後に安全に終了させる"
+    ],
     "expected_question": "常駐バッチの処理が遅いので並列実行で速くしたい。複数スレッドで同時に DB を更新することになるが、接続や排他の扱いで注意することは？",
     "expected_keywords": [
       "マルチスレッド",
@@ -228,6 +277,10 @@
     "id": "review-09",
     "review_perspective": "機能利用",
     "context": "大量データ更新",
+    "a_facts": [
+      "`UniversalDao` の `batchInsert`/`batchUpdate`/`batchDelete` でバッチ実行できる",
+      "`batchUpdate` は排他制御を行わないため、排他が必要な処理では1レコード毎の更新を使う"
+    ],
     "expected_question": "for 文で 1 万件のレコードを 1 件ずつ更新する処理を書いている。遅いしレビューでも指摘された。Nablarch に一括で扱える仕組みはある？",
     "expected_keywords": [
       "ユニバーサルDAO",
@@ -254,6 +307,11 @@
     "id": "review-10",
     "review_perspective": "後方互換",
     "context": "アプリケーション全般",
+    "a_facts": [
+      "Nablarch は公開 API と非公開 API を `@Published` アノテーションで区別しており、`@Published` が付いていないものは非公開 API",
+      "自分のコードが非公開 API を使っていないか静的解析ツールでチェックできる",
+      "チェックツールは nablarch-intellij-plugin と SpotBugs ベースの2種類が提供されている"
+    ],
     "expected_question": "Nablarch のバージョンアップで壊れにくいコードにしたい。将来変わるかもしれない部分を自分のコードで使っていないかチェックする方法はある？",
     "expected_keywords": [
       "公開API",
@@ -281,6 +339,11 @@
     "id": "impact-01",
     "impact_perspective": "ハンドラ間",
     "context": "トランザクション境界とDB接続管理",
+    "a_facts": [
+      "トランザクション境界は `TransactionManagementHandler` が決定する",
+      "往路でトランザクション開始、復路でコミット、例外時にロールバックする",
+      "`DatabaseConnectionManagementHandler` より後ろに配置する必要がある"
+    ],
     "expected_question": "バッチで DB を更新しているんだけど、コミットのタイミングやトランザクションの区切りがどこで決まっているのかよく分からない。Nablarch でトランザクションの境界って何で決まる？",
     "expected_keywords": [
       "トランザクション",
@@ -309,6 +372,11 @@
     "id": "impact-02",
     "impact_perspective": "ハンドラ間",
     "context": "CSRF対策の導入",
+    "a_facts": [
+      "`CsrfTokenVerificationHandler` をハンドラキューに追加する",
+      "セッションストア必須で、セッションストアハンドラより後に配置する",
+      "Nablarch カスタムタグ使用時はカスタムタグハンドラより後に配置する"
+    ],
     "expected_question": "Web アプリで CSRF 対策を入れたい。セッションも使ってるし、JSP でカスタムタグも使ってるんだけど、何を追加すればいい？ 他との相性で気をつけることは？",
     "expected_keywords": [
       "CSRF",
@@ -337,6 +405,12 @@
     "id": "impact-03",
     "impact_perspective": "ハンドラ間",
     "context": "バッチの並列化",
+    "a_facts": [
+      "`MultiThreadExecutionHandler` の `concurrentNumber` プロパティで並列数を指定する",
+      "サブスレッドで DB アクセスする場合、サブスレッド用ハンドラ構成に `DatabaseConnectionManagementHandler` と `TransactionManagementHandler` を配置する",
+      "親・サブ両方で DB アクセスするとサブスレッド数＋1 のコネクションが必要",
+      "サブスレッドで例外発生時はそのスレッドがロールバックされ、親スレッドが他スレッドに停止要求を出して安全に終了させる"
+    ],
     "expected_question": "常駐バッチが遅いので複数スレッドで並列実行して速くしたい。各スレッドで DB 更新したいんだけど、接続はどう持つ？ スレッドの 1 つで例外が出たら他はどうなる？",
     "expected_keywords": [
       "マルチスレッド",
@@ -365,6 +439,11 @@
     "id": "impact-04",
     "impact_perspective": "ハンドラ間",
     "context": "一時障害の自動リトライ",
+    "a_facts": [
+      "Nablarch には `RetryHandler` が標準で用意されている",
+      "リトライ上限の設定が必須で、回数ベースまたは経過時間ベースのファクトリを `retryContextFactory` に指定する",
+      "リトライ対象の例外を送出するハンドラは `RetryHandler` より後に配置する必要がある"
+    ],
     "expected_question": "DB 接続が一瞬切れるような一時的な障害で失敗したとき、自動で再実行させたい。Nablarch にそういう仕組みある？ 使う場合の注意は？",
     "expected_keywords": [
       "リトライ",
@@ -392,6 +471,11 @@
     "id": "impact-05",
     "impact_perspective": "ハンドラ×ライブラリ",
     "context": "セッション情報の保存と環境差",
+    "a_facts": [
+      "Nablarch のセッションストアに `HiddenStore` を登録すれば HIDDEN フィールドによるセッション保持が書ける",
+      "複数 AP サーバ構成では HiddenStore のデフォルト暗号化キーがサーバごとに自動生成されるため復号に失敗する問題がある",
+      "対策として `HiddenStore` の `encryptor` プロパティに明示的な暗号化キーと IV を設定して全サーバで揃える"
+    ],
     "expected_question": "画面遷移中のフォーム入力を HIDDEN フィールドに持たせたい。Nablarch の機能で楽に書けると聞いた。本番が AP サーバ複数台構成なんだけど、何かハマりどころある？",
     "expected_keywords": [
       "HIDDENストア",
@@ -420,6 +504,11 @@
     "id": "impact-06",
     "impact_perspective": "ハンドラ×ライブラリ",
     "context": "CSP対応と既存画面の影響",
+    "a_facts": [
+      "Nablarch カスタムタグを使っていれば `SecureHandler` の nonce 生成を有効にするだけで JSP の書き換えは不要",
+      "`tag-form_tag` が `onclick` 属性の関数呼び出しを含めて script 要素にまとめ直し、nonce 属性が自動付与される",
+      "カスタムタグを使っていない素の HTML 部分は `tag-csp_nonce_tag` で nonce 属性を手動付与するか、外部 JS に切り出す必要がある"
+    ],
     "expected_question": "セキュリティ対策で Content Security Policy を有効にしたら、既存の JSP 画面で onclick= とか書いてるボタンが動かなくなった。JSP の書き方を変える必要がある？ 避けられない？",
     "expected_keywords": [
       "CSP",
@@ -449,6 +538,13 @@
     "id": "impact-07",
     "impact_perspective": "ハンドラ×ライブラリ",
     "context": "認可チェックと画面遷移",
+    "a_facts": [
+      "`PermissionCheckHandler` でリクエスト認可を行う",
+      "権限があれば `Permission` をスレッドローカルに設定し、なければ 403 を返す",
+      "内部フォワード先のリクエスト ID を認可対象にするには `setUsesInternalRequestId` を `true` に設定する",
+      "併せて `ThreadContextHandler` の `attributes` に `InternalRequestIdAttribute` を追加する",
+      "`ForwardingHandler` より後に配置する(内部フォワード先で認可する場合)"
+    ],
     "expected_question": "ログイン済みユーザーの権限で画面アクセスを制限したい。ただ画面の中で内部フォワードしているところがあって、フォワード先のアクションも認可対象にしたい。Nablarch でできる？",
     "expected_keywords": [
       "認可",
@@ -477,6 +573,11 @@
     "id": "impact-08",
     "impact_perspective": "ライブラリ間",
     "context": "入力値のDB相関チェック",
+    "a_facts": [
+      "Bean Validation で DB アクセスを行うのはセキュリティ上の問題がある(未バリデーションの不正値で SQL 問合せするため SQL インジェクションにつながる可能性がある)",
+      "DB との相関バリデーション(重複チェックなど)は Bean Validation 通過後のビジネスアクション側で実施する",
+      "フィールド同士の相関チェック(DB 不要)は `@AssertTrue` で Bean Validation 内に書いてよい"
+    ],
     "expected_question": "フォームで入力されたメールアドレスが DB 上ですでに登録済みでないかチェックしたい。入力チェックのところでこれを書きたいんだけど、セキュリティ的に問題ない？",
     "expected_keywords": [
       "バリデーション",
@@ -504,6 +605,10 @@
     "id": "impact-09",
     "impact_perspective": "ライブラリ間",
     "context": "コード値の入力検証",
+    "a_facts": [
+      "Nablarch のコード管理と Bean Validation は `@CodeValue` アノテーションで連携できる",
+      "入力フィールドに付与するとコード管理に登録された有効値かを自動検証する"
+    ],
     "expected_question": "画面で選択する性別や種別が、マスタ上で定義されている有効な値かチェックしたい。マスタ管理の仕組みと入力チェックを連携できる？",
     "expected_keywords": [
       "バリデーション",
@@ -531,6 +636,11 @@
     "id": "impact-10",
     "impact_perspective": "ライブラリ間",
     "context": "ログインユーザー情報の保持",
+    "a_facts": [
+      "認証情報はセッションストアの DB ストアに持つのが推奨",
+      "`SessionUtil` で保存・破棄する",
+      "認可チェックは `PermissionCheckHandler` が設定した情報を業務ロジックから参照する"
+    ],
     "expected_question": "ログインしたユーザーの情報 (ID、名前、権限) を画面遷移中も保持して、認可チェックのときに参照したい。Nablarch ではどこに持つのが推奨？",
     "expected_keywords": [
       "セッションストア",
@@ -559,6 +669,10 @@
     "id": "req-01",
     "requirements_perspective": "認証",
     "context": "ログイン機能",
+    "a_facts": [
+      "認証ロジック自体はビルトイン提供されておらず、プロジェクト側で実装する必要がある",
+      "認証情報の保持には Nablarch のセッションストア(DB ストア)を使う"
+    ],
     "builtin": false,
     "expected_question": "ログイン認証の仕組みを作りたい。ユーザー名とパスワードで認証して、ログイン状態を保持する。Nablarch にビルトインのログイン機能はある？",
     "expected_keywords": [
@@ -587,6 +701,11 @@
     "id": "req-02",
     "requirements_perspective": "認可",
     "context": "画面アクセス制御",
+    "a_facts": [
+      "Nablarch は認可チェック機能をビルトインで提供している",
+      "リクエストレベルの認可は `PermissionCheckHandler` が担い、権限があれば `Permission` をスレッドローカルに設定、なければ 403 を返す",
+      "認可ライブラリは `permission_check`(条件変更可)と `role_check`(条件固定)の2種類がある"
+    ],
     "builtin": true,
     "expected_question": "ログインしたユーザーの権限に応じて、アクセスできる画面を制限したい。Nablarch に権限チェックの仕組みはある？",
     "expected_keywords": [
@@ -616,6 +735,11 @@
     "id": "req-03",
     "requirements_perspective": "排他制御",
     "context": "同時編集防止",
+    "a_facts": [
+      "Nablarch は排他制御をビルトインで提供する(推奨は `UniversalDao`)",
+      "`UniversalDao` は楽観排他と悲観排他の両方をサポートする",
+      "楽観排他は `@Version` アノテーションで有効化する"
+    ],
     "builtin": true,
     "expected_question": "同じデータを複数人が同時に編集して後勝ちで消える問題を防ぎたい。Nablarch にそういう仕組みはある？",
     "expected_keywords": [
@@ -645,6 +769,12 @@
     "id": "req-04",
     "requirements_perspective": "二重サブミット防止",
     "context": "登録ボタン連打防止",
+    "a_facts": [
+      "Nablarch はトークンベースの2重サブミット防止機能をビルトインで提供している",
+      "JSP の場合は `form` タグの `useToken` 属性でトークン生成と hidden 埋め込みが自動で行われる",
+      "JSP 以外のテンプレートエンジンでは `@UseToken` インターセプタでアクションに明示的に付与する",
+      "後続のアクションに `@OnDoubleSubmission` インターセプタを付けてトークンをチェックする"
+    ],
     "builtin": true,
     "expected_question": "登録ボタンを連打されると二重に登録されてしまう。ボタンの連打を防止する仕組みは Nablarch にある？",
     "expected_keywords": [
@@ -672,6 +802,11 @@
     "id": "req-05",
     "requirements_perspective": "国際化",
     "context": "画面多言語対応",
+    "a_facts": [
+      "Nablarch は多言語対応をビルトインで提供している",
+      "メッセージは言語ごとのプロパティファイルで管理する",
+      "コード名称も言語別データを持たせロケール指定で取得する"
+    ],
     "builtin": true,
     "expected_question": "画面の文言を日本語と英語で切り替えたい。メッセージやラベルの多言語対応は Nablarch でできる？",
     "expected_keywords": [
@@ -701,6 +836,12 @@
     "id": "req-06",
     "requirements_perspective": "スケールアウト",
     "context": "APサーバ複数台構成",
+    "a_facts": [
+      "HTTP セッションは AP サーバで状態を持つためそのままではスケールアウトできない",
+      "Nablarch では AP サーバをステートレス化するのが推奨 (`stateless_web_app`)",
+      "HTTP セッション依存機能を非依存機能に差し替える",
+      "セッションストアは DB ストアなどサーバ間で共有できる保存先に切り替える"
+    ],
     "builtin": true,
     "expected_question": "本番環境で AP サーバを複数台並べて負荷分散する予定。Nablarch アプリをスケールアウトさせるときに気をつけることは？ セッションの扱いとか大丈夫？",
     "expected_keywords": [
@@ -730,6 +871,11 @@
     "id": "req-07",
     "requirements_perspective": "CORS",
     "context": "REST API クロスオリジン",
+    "a_facts": [
+      "Nablarch は RESTful ウェブサービス向けに CORS 対応をビルトインで提供している",
+      "プリフライトリクエストは `CorsPreflightRequestHandler` が処理する",
+      "実リクエストへの CORS ヘッダ付与は `CorsResponseFinisher` が行う"
+    ],
     "builtin": true,
     "expected_question": "REST API を別ドメインのフロントエンドから呼び出す。ブラウザの CORS 制約に対応する仕組みは Nablarch にある？",
     "expected_keywords": [
@@ -758,6 +904,12 @@
     "id": "req-08",
     "requirements_perspective": "アップロード制限",
     "context": "巨大ファイルのDoS防止",
+    "a_facts": [
+      "Nablarch は `MultipartHandler` でアップロードサイズ上限を設ける仕組みを提供している",
+      "`contentLengthLimit` プロパティでサイズ上限を設定し、超過時は 413 を返す",
+      "デフォルトは無制限であり、DoS 対策のため常に設定することが推奨される",
+      "`maxFileCount` でアップロードファイル数の上限も設定できる"
+    ],
     "builtin": true,
     "expected_question": "ファイルアップロード機能を作るが、巨大なファイルを送りつけてサーバを落とす攻撃を防ぎたい。アップロードサイズに上限を設ける仕組みは Nablarch にある？",
     "expected_keywords": [
@@ -786,6 +938,10 @@
     "id": "req-09",
     "requirements_perspective": "流量制御",
     "context": "APIレート制限",
+    "a_facts": [
+      "Nablarch はレート制限(流量制御)機能をビルトイン提供していない",
+      "カスタムハンドラを追加する枠組みは存在するため、プロジェクト側で実装するか、Nablarch 外のレイヤで流量制御する"
+    ],
     "builtin": false,
     "expected_question": "REST API への呼び出し回数を制限して、サーバの過負荷を防ぎたい。いわゆるレート制限の仕組みは Nablarch にある？",
     "expected_keywords": [
@@ -811,6 +967,11 @@
     "id": "req-10",
     "requirements_perspective": "監査ログ",
     "context": "操作証跡",
+    "a_facts": [
+      "Nablarch は操作監査ログ専用機能をビルトイン提供していない",
+      "最も近い機能は `HttpAccessLogHandler` で、リクエスト処理開始時・完了時にユーザ ID/リクエスト ID などを含むアクセスログを出力できる",
+      "業務操作の内容(何をしたか)は自動では残らないため、業務ログはプロジェクト側で実装する必要がある"
+    ],
     "builtin": false,
     "expected_question": "誰がいつ何をしたか操作の証跡を残したい。いわゆる監査ログを出す仕組みは Nablarch にビルトインである？",
     "expected_keywords": [
