@@ -532,6 +532,48 @@ def check_content_completeness(source_text: str, data: dict, fmt: str, label_map
     return issues
 
 
+def _classify_missed_unit(
+    norm_source: str,
+    norm_unit: str,
+    consumed: list[tuple[int, int]],
+    in_consumed,
+) -> str:
+    """Classify a sequential-delete miss as QC2, QC3, or QC4 per spec §3-1.
+
+    Spec decision table (§3-1 判定分岐のまとめ):
+      - Unit does not appear anywhere in normalised source → QC2 (fabricated)
+      - Unit appears but every earlier occurrence is already consumed
+        (先行削除済み) → QC3 (duplicate)
+      - Unit appears with at least one unconsumed earlier occurrence
+        → QC4 (misplaced; position regression)
+
+    The spec's "先行削除済み" requires *every* earlier occurrence to be
+    consumed. A naive `find(unit)` that picks only the earliest
+    occurrence misclassifies the case where the earliest is consumed
+    but a middle occurrence is still unconsumed (the unit occurs 3+
+    times with a mixed consumption pattern).
+    """
+    if not norm_unit:
+        return "QC2"
+    start = 0
+    any_occurrence = False
+    has_unconsumed = False
+    while True:
+        pos = norm_source.find(norm_unit, start)
+        if pos == -1:
+            break
+        any_occurrence = True
+        if not in_consumed(pos, len(norm_unit)):
+            has_unconsumed = True
+            break
+        start = pos + 1
+    if not any_occurrence:
+        return "QC2"
+    if has_unconsumed:
+        return "QC4"
+    return "QC3"
+
+
 def _check_rst_content_completeness(
     source_text: str, data: dict, issues: list[str], label_map: dict | None = None
 ) -> list[str]:
@@ -578,20 +620,14 @@ def _check_rst_content_completeness(
             consumed.append((idx, idx + len(norm_unit)))
             current_pos = idx + len(norm_unit)
         else:
-            prev_idx = norm_source.find(norm_unit)
-            if not is_content:
-                if prev_idx == -1:
-                    issues.append(f"[QC2] section '{sid}': fabricated title: {orig_unit[:50]!r}")
-                elif _in_consumed(prev_idx, len(norm_unit)):
-                    issues.append(f"[QC3] section '{sid}': duplicate title: {orig_unit[:50]!r}")
-                else:
-                    issues.append(f"[QC4] section '{sid}': misplaced title: {orig_unit[:50]!r}")
-            elif prev_idx == -1:
-                issues.append(f"[QC2] section '{sid}': fabricated content: {orig_unit[:50]!r}")
-            elif _in_consumed(prev_idx, len(norm_unit)):
-                issues.append(f"[QC3] section '{sid}': duplicate content: {orig_unit[:50]!r}")
-            else:
-                issues.append(f"[QC4] section '{sid}': misplaced content: {orig_unit[:50]!r}")
+            verdict = _classify_missed_unit(norm_source, norm_unit, consumed, _in_consumed)
+            label = "title" if not is_content else "content"
+            if verdict == "QC2":
+                issues.append(f"[QC2] section '{sid}': fabricated {label}: {orig_unit[:50]!r}")
+            elif verdict == "QC4":
+                issues.append(f"[QC4] section '{sid}': misplaced {label}: {orig_unit[:50]!r}")
+            else:  # QC3
+                issues.append(f"[QC3] section '{sid}': duplicate {label}: {orig_unit[:50]!r}")
 
     # QC1: delete JSON units from the normalised source in JSON order, then
     # check the residue. Per rbkc-verify-quality-design.md §3-1 (no tolerance
@@ -673,20 +709,14 @@ def _check_md_content_completeness(
             consumed.append((idx, idx + len(unit)))
             current_pos = idx + len(unit)
         else:
-            prev_idx = norm_source.find(unit)
-            if not is_content:
-                if prev_idx == -1:
-                    issues.append(f"[QC2] section '{sid}': fabricated title: {unit[:50]!r}")
-                elif _in_consumed(prev_idx, len(unit)):
-                    issues.append(f"[QC3] section '{sid}': duplicate title: {unit[:50]!r}")
-                else:
-                    issues.append(f"[QC4] section '{sid}': misplaced title: {unit[:50]!r}")
-            elif prev_idx == -1:
-                issues.append(f"[QC2] section '{sid}': fabricated content: {unit[:50]!r}")
-            elif _in_consumed(prev_idx, len(unit)):
-                issues.append(f"[QC3] section '{sid}': duplicate content: {unit[:50]!r}")
-            else:
-                issues.append(f"[QC4] section '{sid}': misplaced content: {unit[:50]!r}")
+            verdict = _classify_missed_unit(norm_source, unit, consumed, _in_consumed)
+            label = "title" if not is_content else "content"
+            if verdict == "QC2":
+                issues.append(f"[QC2] section '{sid}': fabricated {label}: {unit[:50]!r}")
+            elif verdict == "QC4":
+                issues.append(f"[QC4] section '{sid}': misplaced {label}: {unit[:50]!r}")
+            else:  # QC3
+                issues.append(f"[QC3] section '{sid}': duplicate {label}: {unit[:50]!r}")
 
     # QC1: residual check on the normalised source (no tolerance list).
     if consumed:

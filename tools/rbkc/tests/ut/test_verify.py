@@ -926,7 +926,7 @@ class TestCheckContentCompleteness:
             {"id": "s2", "title": "詳細", "content": "詳細内容。"},   # appears earlier in source
         ])
         issues = self._check(src, data)
-        assert any("QC4" in i for i in issues)
+        assert any("[QC4]" in i and "s2" in i for i in issues), issues
 
     # --- QC1: source content not captured ---
 
@@ -1222,7 +1222,8 @@ class TestCheckContentCompleteness:
             {"id": "s2", "title": "詳細", "content": "詳細内容。"},
         ])
         issues = self._check(src, data, fmt="md")
-        assert any("QC4" in i for i in issues)
+        # Spec §3-1 L84 names the affected section id as part of the defect.
+        assert any("[QC4]" in i and "s2" in i for i in issues), issues
 
     def test_fail_qc4_three_section_middle_swap(self):
         """Three sections A/B/C in source; JSON swaps B and C → QC4 must
@@ -1234,7 +1235,34 @@ class TestCheckContentCompleteness:
             {"id": "s3", "title": "B", "content": "b"},
         ])
         issues = self._check(src, data)
-        assert any("QC4" in i for i in issues)
+        # Spec §3-1 L185 names QC4 specifically; assert the label and the
+        # flagged section id.
+        assert any("[QC4]" in i and "s3" in i for i in issues), issues
+
+    def test_fail_qc4_three_section_content_only_rotation_rst(self):
+        """Spec §3-1 L84: 'セクション A のコンテンツが JSON の異なる
+        セクションに配置されている'. Titles in spec order; contents
+        rotated A→a, B→c, C→b. The middle section's content (c) is out
+        of position. (Z-1 r7 QC4 F3)"""
+        src = "A\n=\n\na\n\nB\n=\n\nb\n\nC\n=\n\nc\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "A", "content": "a"},
+            {"id": "s2", "title": "B", "content": "c"},  # swapped
+            {"id": "s3", "title": "C", "content": "b"},  # swapped
+        ])
+        issues = self._check(src, data)
+        assert any("[QC4]" in i for i in issues)
+
+    def test_fail_qc4_three_section_content_only_rotation_md(self):
+        """MD mirror of the three-section content rotation above."""
+        src = "# T\n\n## A\n\na\n\n## B\n\nb\n\n## C\n\nc\n"
+        data = self._data(title="T", sections=[
+            {"id": "s1", "title": "A", "content": "a"},
+            {"id": "s2", "title": "B", "content": "c"},
+            {"id": "s3", "title": "C", "content": "b"},
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("[QC4]" in i for i in issues)
 
     def test_fail_qc4_md_content_swap(self):
         """MD: two sections with swapped content (titles correct)."""
@@ -1244,23 +1272,72 @@ class TestCheckContentCompleteness:
             {"id": "s2", "title": "B", "content": "A の内容。"},
         ])
         issues = self._check(src, data, fmt="md")
-        assert any("QC4" in i for i in issues)
+        assert any("[QC4]" in i and "s2" in i for i in issues), issues
 
-    def test_fail_qc3_qc4_boundary_duplicate_text_misplaced(self):
-        """Duplicated text where ordering disambiguates QC3 vs QC4: the
-        same 'note' appears in both A and B in source; JSON places the
-        B-positioned content into A. Must raise QC4 (not QC3) because
-        the text occurs in both positions."""
+    def test_pass_qc3_single_consumption_of_duplicated_source_text(self):
+        """Positive guard — when source has duplicated text but JSON only
+        consumes one of them, no QC3/QC4 must fire. (Was part of the old
+        boundary test; retained as a dedicated pass-guard.)"""
         src = "A\n=\n\nnote\n\nB\n=\n\nnote\n"
         data = self._data(sections=[
             {"id": "s1", "title": "A", "content": "note"},
-            # s2 intentionally omitted so only one consumption happens
         ])
-        # sequential-delete consumes first "note"; nothing else to match.
-        # (Positive guard — mostly asserts that the duplicate text itself
-        # does not spuriously raise QC3 when only consumed once.)
         issues = self._check(src, data)
-        assert not any("QC3" in i for i in issues)
+        assert not any("[QC3]" in i for i in issues)
+        assert not any("[QC4]" in i for i in issues)
+
+    def test_fail_qc4_boundary_text_occurs_in_both_positions_misplaced(self):
+        """Spec §3-1 boundary between QC3 and QC4:
+
+        Source has 'note' at positions A and B; JSON places what should
+        be s1's body into s2 and vice versa. Both occurrences exist in
+        source, both are UNCONSUMED at the time of JSON s1's lookup
+        (JSON order: s1.title=A, s1.content=note_from_B_position,
+        s2.title=B, s2.content=note_from_A_position). Position regression
+        → QC4 per spec L185 "削除位置が JSON 順より前に逆行 | QC4".
+
+        This test pins the label explicitly — a prior version of this
+        test asserted only 'not QC3' which was vacuous when only one
+        consumption occurred.
+        """
+        src = "A\n=\n\nnote1\n\nB\n=\n\nnote2\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "A", "content": "note2"},  # B's content
+            {"id": "s2", "title": "B", "content": "note1"},  # A's content
+        ])
+        issues = self._check(src, data)
+        assert any("[QC4]" in i for i in issues)
+
+    def test_fail_qc4_not_qc3_when_middle_occurrence_is_unconsumed(self):
+        """Spec §3-1 L184 '先行削除済み' means ALL earlier occurrences are
+        consumed. If the earliest occurrence is consumed but a middle
+        occurrence (still before current_pos) is NOT consumed, the verdict
+        must be QC4 (unconsumed earlier offset exists → position regression),
+        not QC3 (先行削除済み requires every earlier position consumed).
+
+        Fixture: source has 'note' three times separated by anchors
+        'alpha' and 'beta'. JSON order:
+          1. s1.title 'note' consumes the EARLIEST occurrence
+          2. s1.content 'beta' advances current_pos past the MIDDLE 'note'
+             (without consuming it)
+          3. s2.title 'note' consumes the LAST occurrence
+          4. s3.title 'note' — find from current_pos fails; earliest is
+             consumed, but middle is UNCONSUMED and < current_pos.
+
+        Spec: s3's verdict is QC4 (position regression against the middle
+        unconsumed occurrence). Buggy impl that picks only the earliest
+        occurrence labels this QC3. Middle occurrence also surfaces as
+        QC1 residue, which is orthogonal.
+        """
+        src = "# H\n\nnote alpha note beta note\n"
+        data = self._data(title="H", sections=[
+            {"id": "s1", "title": "note", "content": "beta"},
+            {"id": "s2", "title": "note", "content": ""},
+            {"id": "s3", "title": "note", "content": ""},
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("[QC4]" in i for i in issues), issues
+        assert not any("[QC3]" in i for i in issues), issues
 
     def test_fail_qc4_misplaced_content_rst(self):
         src = "概要\n====\n\nA の内容。\n\n詳細\n====\n\nB の内容。\n"
@@ -1269,7 +1346,7 @@ class TestCheckContentCompleteness:
             {"id": "s2", "title": "詳細", "content": "A の内容。"},
         ])
         issues = self._check(src, data)
-        assert any("QC4" in i for i in issues)
+        assert any("[QC4]" in i and "s2" in i for i in issues), issues
 
 
 # ---------------------------------------------------------------------------
