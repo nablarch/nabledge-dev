@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 54 — Z-1 完了: r7 全 27 Finding + r8 7 Finding 対応 → r9 で QC1/QC4/QL2 は 0 Finding、他は reviewer 間で方向が矛盾する spec 沈黙解釈で打ち切り。Excel QC3 earliest-only scan の真のバグのみ r9 で fix。§4 品質マトリクス全 ✅ 復元。SE エキスパート相談で r7-r9 で追加した防御コード (ATX-close / TOON drift 検出 / QO3 MD→JSON dangling / QL2 test) を YAGNI 原則で削除、verify.py -114 行。次フェーズは Phase 21-Z Z-5 (v6 ベースライン取得) または Phase 19 (v5/v1.x 展開)。)
+**Updated**: 2026-04-23 (session 55 — Phase 22-A 完了 (`>` 剥がし、270→4 hits)。Phase 22-B は 76 xlsx/xls を全バージョン調査完了、設計合意済 (単一シート非分割 / P1·P2 + 列数 ≤ 2 は P2 / 複数行ヘッダは副列あり列のみ合成 / sheet_type メタ / QO2 Excel 例外 / 22-B 後に baseline 再取得)。次は Phase 22-B-4 converter-design 更新 → 22-B-5 converter 書き直し。単純実装のみでリスクなし。)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
