@@ -135,8 +135,8 @@
     6. `docs.py._rewrite_asset_links`: `assets/{file_id}/...` 相対パスを docs MD からの相対に rewrite (既存 `assets/` 先頭の rewrite を拡張)
     7. v6 再生成 → verify FAIL 0 + 実地確認
     8. SE + QA expert review → Findings 全件対応
-- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 (22-B-16 完了後)
-- [ ] 22-B-13: nabledge-test v6 baseline 再取得 (旧 baseline 97.3% は履歴として保持) (22-B-16 完了後)
+- [ ] 22-B-13: nabledge-test v6 baseline 再取得 (22-B-16 完了後、旧 baseline 97.3% は履歴として保持) — 他バージョン展開前に v6 を品質基準として固定
+- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 (22-B-13 完了後)
 
 **備考**:
 - Phase 21-C (旧番 — リリースノート行粒度) は 22-B に統合済。xlsx converter 書き直しで包括する
