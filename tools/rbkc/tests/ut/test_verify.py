@@ -3439,9 +3439,87 @@ class TestLabelMapStrict:
         assert "orphan" in rendered
 
 
-# NOTE: Phase 22-B-16b will add TestGithubSlug and the LabelTarget-shape tests.
-# Keeping 16a scope tight: QO1 level + silent-skip horizontal class only.
 
 
-# NOTE: Phase 22-B-16b will add TestGithubSlug and the LabelTarget-shape tests.
-# Keeping 16a scope tight: QO1 level + silent-skip horizontal class only.
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-16b: github_slug (independent pin to GitHub auto-anchor rule)
+# ---------------------------------------------------------------------------
+
+
+class TestGithubSlug:
+    """`scripts/common/github_slug.github_slug` must reproduce GitHub Web's
+    heading auto-anchor algorithm.
+
+    Spec citation: gjtorikian/html-pipeline, lib/html/pipeline/toc_filter.rb
+        PUNCTUATION_REGEXP = /[^\\p{Word}\\- ]/u
+        id = ascii_downcase(text)
+        id.gsub!(PUNCTUATION_REGEXP, '')
+        id.tr!(' ', '-')
+        uniq = headers[id] > 0 ? "-#{headers[id]}" : ''
+        headers[id] += 1
+
+    Order: (1) ASCII downcase (non-ASCII unchanged) →
+    (2) strip every char that is NOT \\p{Word} / `-` / ` ` →
+    (3) replace spaces with hyphens (no collapse, no trim) →
+    (4) collision counter: 1st = slug, Nth (N≥2) = slug-{N-1}.
+    """
+
+    def test_lowercases_ascii(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("Foo Bar") == "foo-bar"
+
+    def test_strips_ascii_punctuation(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("Hello, World!") == "hello-world"
+
+    def test_keeps_japanese_verbatim(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("コード値の選択") == "コード値の選択"
+
+    def test_mixed_japanese_and_ascii(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("APIの設定") == "apiの設定"
+
+    def test_underscore_is_kept(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("under_score") == "under_score"
+
+    def test_hyphen_is_kept(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("a-b") == "a-b"
+
+    def test_period_is_stripped(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("a.b") == "ab"
+
+    def test_multiple_spaces_not_collapsed(self):
+        """Spec quirk: consecutive spaces produce consecutive hyphens."""
+        from scripts.common.github_slug import github_slug
+        assert github_slug("a  b   c") == "a--b---c"
+
+    def test_leading_trailing_spaces_not_trimmed(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("  Foo  ") == "--foo--"
+
+    def test_non_ascii_upper_not_downcased(self):
+        """ASCII-only downcase — É stays É, not é."""
+        from scripts.common.github_slug import github_slug
+        assert github_slug("É") == "É"
+
+    def test_dedup_with_counter(self):
+        """Duplicate slugs get `-1` / `-2` (counter, not -0)."""
+        from scripts.common.github_slug import github_slug
+        seen: dict[str, int] = {}
+        a = github_slug("Foo", seen=seen)
+        b = github_slug("Foo", seen=seen)
+        c = github_slug("Foo", seen=seen)
+        assert a == "foo"
+        assert b == "foo-1"
+        assert c == "foo-2"
+
+    def test_dedup_isolated_when_no_seen(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("Foo") == "foo"
+        assert github_slug("Foo") == "foo"
