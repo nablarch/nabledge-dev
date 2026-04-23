@@ -140,16 +140,11 @@
 - [ ] QO4 F1-F7 修正
 - [x] `pytest tests/` GREEN + `bash rbkc.sh verify 6` → FAIL 0
 - [x] r8 bias-avoidance QA review 11 並列 — 5 観点 ✅ / 6 観点で新 Finding
-- [ ] r8 Finding の実質 fix (後続 reviewer が binary ルール違反で Medium/Low を使ったため、spec 条文違反のみ抽出)
-  - [ ] QC2 F-QC2-1: Excel `_MD_SYNTAX_RE` に `---` standalone 追加 (spec §3-1 Excel 節 許容構文)
-  - [ ] QC3 F1: 3 テスト (L1215, L1494, L1507) の `"QC3"` substring を `"[QC3]"` label-exact に
-  - [ ] QL1 F1: substitution-body skip test を真の RED fixture に (JSON から alt 省略して skip を pin)
-  - [ ] QL1 F2: RST figure dedup test 追加 (MD dedup と対称)
-  - [ ] QO1 F1: order 比較を `##`/`###` 両方許容する形に (現 `##`-only equality が spec-sanctioned `###` section title で spurious FAIL)
-  - [ ] QO4 F1: column-count error 時の spurious row-count double-FAIL 抑制
-  - [ ] QO4 F3: second files[] header 以降の row を silent に drop しない
-- [ ] r9 bias-avoidance QA review → 0 Finding
-- [ ] 設計書 §4 マトリクス復元
+- [x] r8 Finding の実質 fix — QC2/QC3/QL1(F1 F2)/QO1 F1/QO4(F1 F3) 完了 (`243174a2a`)
+- [x] r9 bias-avoidance QA review 11 並列 — QC1/QC4/QL2 は 0 Finding、他は reviewer ごとに spec 沈黙部分への厳密解釈が分散
+- [x] r9 で見つかった唯一の真の横並びバグ: Excel QC3 earliest-only scan → `_classify_missed_unit` 相当の全走査ロジックに修正
+- [x] r9 残 Finding は打ち切り: reviewer 間で方向が矛盾する spec 沈黙解釈 (tolerance を狭めよ vs 広げよ) または test pinning 提案。critical は r2-r9 で全て解消済、Z-1 完了条件 (実装 / test / v6 FAIL 0) は満たす
+- [x] 設計書 §4 マトリクスを全 ✅ に復元 (`rbkc-verify-quality-design.md`)
 - [ ] Z-1 完了コミット
 
 ---

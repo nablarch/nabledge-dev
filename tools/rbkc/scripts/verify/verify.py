@@ -1014,10 +1014,26 @@ def _verify_xlsx(source_path, data: dict) -> list[str]:
             consumed.append((idx, idx + len(token)))
             search_start = idx + len(token)
         else:
-            prev_idx = json_text.find(token)
-            if prev_idx == -1:
+            # Mirror RST/MD's _classify_missed_unit: walk EVERY occurrence
+            # rather than only the earliest. Spec §3-1 Excel 節 手順 4
+            # requires QC3 when the token "is found at a consumed
+            # position" — this is an existence check across all
+            # occurrences, not a check on the first one only.
+            any_occurrence = False
+            any_consumed = False
+            scan = 0
+            while True:
+                pos = json_text.find(token, scan)
+                if pos == -1:
+                    break
+                any_occurrence = True
+                if _in_consumed(pos, len(token)):
+                    any_consumed = True
+                    break
+                scan = pos + 1
+            if not any_occurrence:
                 issues.append(f"[QC1] Excel cell value missing from JSON: {token!r}")
-            elif _in_consumed(prev_idx, len(token)):
+            elif any_consumed:
                 issues.append(f"[QC3] Excel cell value duplicated in JSON: {token!r}")
             else:
                 issues.append(f"[QC1] Excel cell value missing from JSON: {token!r}")
