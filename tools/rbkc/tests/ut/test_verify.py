@@ -2845,6 +2845,50 @@ class TestVerifyP1InvalidSubHeader:
         assert "/" not in " ".join(columns), f"columns contain / suggesting merge: {columns}"
 
 
+class TestVerifyP1SinglecellPreambleNotParent:
+    """Phase 22-B-12 regression (v1.2 .xls): a 1-cell preamble row
+    immediately above the header row must NOT be promoted to a parent
+    in multi-row-header span-inherit composition.
+
+    Spec §8-3 requires "1 親 N 子" structure; corpus evidence (95/95
+    multi-row-header sheets) shows ≥ 2 distinct parents in every
+    genuine multi-row-header case.  A single cell above the header
+    is preamble prose (§8-3a), not a parent.
+    """
+
+    def test_single_cell_preamble_row_is_not_sub_header(self, tmp_path):
+        """v1.2 releasenote .xls reproduction: row 1 has a single short
+        cell ("1.2.1版からの変更点を記載しています。"), row 2 is the real
+        header.  `_looks_like_sub_header` must return False so that
+        `_detect_header` does NOT walk upward and merge the preamble as
+        a parent.  Without the fix, composed columns become
+        "preamble-text / 実ヘッダ" for every column, producing massive
+        QC1 (missing cells) + QC2 (fabricated tokens) residue.
+        """
+        from scripts.verify.verify import _looks_like_sub_header
+        # Row 1 = 1-cell preamble (21 chars, short enough to look like
+        # a header label by length heuristic alone).
+        row_preamble = ["1.2.1版からの変更点を記載しています。", "", "", "", "", "", "", "", "", ""]
+        # Row 2 = real header with 10 filled cells.
+        row_header = ["№", "分類", "タイトル", "対象なし", "事象", "影響", "変更実施\nバージョン",
+                      "チケット番号", "互換性\nへの影響", "備考"]
+        assert _looks_like_sub_header(row_preamble, row_header) is False, (
+            "single-cell preamble row must not be promoted to parent; "
+            "requires len(h_non_empty_cols) >= 2 guard"
+        )
+
+    def test_genuine_multi_parent_still_detected(self, tmp_path):
+        """Regression guard: v5 bessatsu-style multi-row header with ≥ 2
+        distinct parent cells must still be detected as sub-header.
+        """
+        from scripts.verify.verify import _looks_like_sub_header
+        row_parent = ["", "親1", "", "親2", ""]  # 2 non-empty parents
+        row_leaf = ["No", "子A", "子B", "子A", "子B"]
+        assert _looks_like_sub_header(row_parent, row_leaf) is True, (
+            "genuine ≥ 2-parent multi-row header must remain detected"
+        )
+
+
 class TestVerifyP1ColumnNameSubstringSwap:
     """QA F3: A cell value that contains its column name as substring must
     still allow QC3 / QP to catch a swap bug.  Without this test, a

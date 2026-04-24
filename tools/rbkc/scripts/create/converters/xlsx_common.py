@@ -202,6 +202,13 @@ def _looks_like_sub_header(row_h: list[str], row_h1: list[str]) -> bool:
     h1_non_empty_cols = [cx for cx, v in enumerate(row_h1) if v]
     if not h_non_empty_cols or not h1_non_empty_cols:
         return False
+    # Spec §8-3 "1 親 N 子" requires the parent row to have ≥ 2 distinct
+    # parents — a single-cell upper row is preamble prose (§8-3a), not
+    # a parent.  Without this guard, a v1.2 .xls preamble row
+    # ("n.m 版からの変更点を記載しています。") is mistakenly promoted to
+    # parent and inherited across every leaf column.
+    if len(h_non_empty_cols) < 2:
+        return False
     if not all(_looks_like_header_cell(row_h1[c]) for c in h1_non_empty_cols):
         return False
     if not all(_looks_like_header_cell(row_h[c]) for c in h_non_empty_cols):
