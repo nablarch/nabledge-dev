@@ -10,6 +10,15 @@ verify is the final quality assurance mechanism for RBKC output. It must be kept
 - When verify reports a FAIL, the fix belongs in RBKC, not in verify
 - Never weaken verify's detection to make RBKC output pass
 
+## Change verification: all 5 versions, every time
+
+When changing RBKC (create side) or verify, run `bash rbkc.sh create <v> && bash rbkc.sh verify <v>` for **all 5 versions** (v6 / v5 / v1.4 / v1.3 / v1.2) both before and after the change. Compare FAIL counts as a diff.
+
+- Verifying only the "affected" version is not acceptable — most changes touch shared code paths (RST AST visitor, converter shared helpers, verify checks) and the same root cause typically surfaces in other versions' same-shape inputs.
+- Record the pre-change FAIL count per version as a baseline. A change is shippable only when the post-change diff is understood: expected decreases are good, expected zero change is fine, any unexpected increase is a horizontal-application miss that must be fixed before commit.
+- During investigation, check whether the hypothesized fix applies to the same structure in other versions before writing code. Predict the per-version diff, then confirm it empirically.
+- "Fix v1.4 → verify v1.4 only → commit → later find v1.3 broken → fix v1.3 → verify v1.3 only" is the anti-pattern this rule exists to prevent. It creates a cat-and-mouse loop and hides horizontal regressions.
+
 ## Scope: content only
 
 RBKC generates **content only** — titles and body text derived from source (RST/Markdown/Excel).
