@@ -138,3 +138,33 @@ class TestTopLevelContent:
         md = (docs / "other" / "nav.md").read_text(encoding="utf-8")
         assert md.splitlines()[0] == "# Nav"
         assert not any(l.startswith("## ") for l in md.splitlines())
+
+
+class TestAssetsExcluded:
+    """generate_docs must ignore JSON files under knowledge/assets/.
+
+    These are literalinclude source copies made by resolver.copy_assets,
+    not content JSON. Treating them as knowledge JSON causes json.loads
+    to crash on valid-but-non-JSON source (e.g. JavaScript-style comments).
+    """
+
+    def test_asset_json_does_not_crash_generation(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        _write_json(kn / "other/a.json", {
+            "id": "a",
+            "title": "A",
+            "content": "",
+            "no_knowledge_content": False,
+            "sections": [{"id": "s1", "title": "S", "content": "body"}],
+        })
+        # Non-JSON-parseable file under assets/ — must be skipped.
+        (kn / "assets" / "etl-etl").mkdir(parents=True)
+        (kn / "assets" / "etl-etl" / "chunk_replace.json").write_text(
+            '{ "mode": "ABORT"  // a comment\n}', encoding="utf-8"
+        )
+        generate_docs(kn, docs, "6")
+        # Content JSON rendered normally.
+        assert (docs / "other" / "a.md").exists()
+        # No MD written for the asset.
+        assert not (docs / "assets" / "etl-etl" / "chunk_replace.md").exists()

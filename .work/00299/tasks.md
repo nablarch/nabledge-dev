@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 62 終 — v6 baseline `20260424-103200` 確定 (ユーザー OK)。全量化による劣化なし確認済 (精度 139/146→140/146、QA 時間 -7%、CA 時間 -23%)。qa-001 benchmark は hints 欠落の影響で trial 揺らぎあり (100%→75% ±21.6%) が構造的劣化ではない。次セッションは 22-B-12 (他バージョン create/verify) から)
+**Updated**: 2026-04-24 (session 63 中 — 22-B-12 で全バージョン create/verify を実行し課題洗い出し完了。v5/v1.4 は verify FAIL (Excel 複数行ヘッダ未合成、前書き行欠落、QL1)、v1.3/v1.2 は create crash (`literalinclude` shim 未登録)。assets/*.json exclusion bug は先行 TDD 修正済 (365 tests GREEN、未コミット))
 
 ---
 
@@ -149,7 +149,26 @@
   - [x] Step 5 (`337c16348`): meta.json に `runner_agent` / `model_used` 追加仕様化
   - [x] Step 6: e2e smoke test — qa-001 (Sonnet 26 秒、grade 5/8) と ca-001 (185 秒、grade 35/37) で全フロー動作確認。runner agent 起動 → Skill tool → 4 デリミタ返却 → response/output 保存 → grade.py 実行まで通った
 - [x] **22-B-13b 完了** (`90061007d`): v6 baseline `20260424-103200` 取得。Sonnet + strict grader の新パイプラインでの初回 baseline。QA 90.0% / CA 98.1%、ca-001 37/37 到達、qa-001 benchmark 75.0% ±21.6% (trial 1/2 62.5%、trial 3 100%、汎用 select 系への言及有無で揺らぐ)。前回 baseline (Opus + pseudocode grading) と model/grading 両方が異なるため直接比較不能、新起点として確定。並列実行で stall 2 件 (retry で解消)
-- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
+- [~] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 — **session 63 で全バージョン実行し課題洗い出し完了**
+
+  **共通先行 fix**:
+  - [x] **22-B-12-common-1** assets/*.json exclusion bug — `docs.py` / `verify.py` (QO3/QO4) が `knowledge/assets/` 配下の literalinclude コピー JSON を content JSON として読んでクラッシュしていた。v5 で表面化 (v6 には該当 asset が無かった)。TDD で 3 tests 追加、assets/ を rglob 結果から除外。365 tests GREEN
+
+  **v5 (create 533 files、verify 57 FAIL)**:
+  - [ ] **22-B-12-v5-qp** Excel multi-row header 合成未実装 → duplicate column name FAIL 6 件。SE 推奨 Option A: span 解析で `親/副` 合成 (`nablarch5u1-releasenote.xlsx` 別紙シート — 行3 親 `nablarch-fw-webから移動したAPI` / `nablarch-testingの対応するAPI`、行4 子 `クラス` / `API` x2)
+  - [ ] **22-B-12-v5-qc1** releasenote 前書き行 (タイトル row0 と ヘッダ row3 の間にある `5u6からの変更点を記載しています。` / `※1 ...` / `※2 ...` / `※3 ...` セル) が JSON に含まれず QC1 FAIL 35 件。SE 推奨: P1 シート先頭に「preamble section」を出力 (content = preamble テキスト join、MD docs 側はテーブル上の段落として表示)
+  - [ ] **22-B-12-v5-qc2** 同上 (Java コードサンプル等トークン欠落) 16 件 → preamble fix と同時解消見込み
+
+  **v1.4 (create 161 files、verify 49 FAIL)**:
+  - [ ] **22-B-12-v1.4-ql1** `glossary.rst` の `:ref:` が 17 件 dangling。v1.4 では該当ラベルが他ドキュメントに定義されていない可能性 → 調査必要
+  - [ ] **22-B-12-v1.4-excel** QC1/QC2 32 件 → v5-qc1/qc2 fix で同時解消見込み
+
+  **v1.3 / v1.2 (create CRASH)**:
+  - [ ] **22-B-12-v1.3-crash** `literalinclude` directive が docutils で unknown (level=3 ERROR)。`rst_ast.py` の shim 未登録が原因 — v5/v6 では使われていなかっただけ。`_LiteralDirective` として `literalinclude` を登録すれば解消 (resolver.py 側は既に認識済み)
+  - [ ] **22-B-12-v1.2-crash** v1.3 と同じ root cause
+  - [ ] **22-B-12-v1.3-v1.2-verify** crash 解消後に verify 実行、残課題を追記
+
+  **完了条件**: 全バージョンで verify FAIL 0
 
 **備考**:
 - Phase 21-C (旧番 — リリースノート行粒度) は 22-B に統合済。xlsx converter 書き直しで包括する

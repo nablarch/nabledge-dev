@@ -220,6 +220,11 @@ def generate_docs(knowledge_dir: Path, docs_dir: Path, version: str = "") -> int
     readme_entries: list[tuple[str, str, str, str]] = []
 
     for json_path in sorted(knowledge_dir.rglob("*.json")):
+        # Skip literalinclude source copies under assets/ — these are not
+        # content JSON and may contain non-JSON syntax (JS-style comments
+        # in e.g. ETL config samples).
+        if "assets" in json_path.relative_to(knowledge_dir).parts:
+            continue
         data = _load_json(json_path)
         rel_path = json_path.relative_to(knowledge_dir)
         type_, category = _derive_type_category(rel_path)

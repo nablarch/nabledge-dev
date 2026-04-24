@@ -313,6 +313,9 @@ def check_docs_coverage(knowledge_dir, docs_dir) -> list[str]:
 
     # Per-file existence check — JSON → MD direction.
     for json_path in sorted(kdir.rglob("*.json")):
+        # Skip literalinclude source copies under assets/ — not content JSON.
+        if "assets" in json_path.relative_to(kdir).parts:
+            continue
         rel = json_path.relative_to(kdir).with_suffix(".md")
         docs_md_path = ddir / rel
         if not docs_md_path.exists():
@@ -386,6 +389,9 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
     no_knowledge_jsons: set[str] = set()
     broken_jsons: set[str] = set()
     for jf in sorted(kdir.rglob("*.json")):
+        # Skip literalinclude source copies under assets/ — not content JSON.
+        if "assets" in jf.relative_to(kdir).parts:
+            continue
         rel = str(jf.relative_to(kdir)).replace("\\", "/")
         try:
             d = json.loads(jf.read_text(encoding="utf-8"))

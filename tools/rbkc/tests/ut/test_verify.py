@@ -532,6 +532,23 @@ class TestCheckIndexCoverage:
         self._write_toon(idx, [["日本語", "", "", "", "sub/日本語.json"]])
         assert self._check(kdir, idx) == []
 
+    def test_assets_json_not_required_in_index(self, tmp_path):
+        """JSON files under knowledge/assets/ are literalinclude source
+        copies, not content JSON. They must be excluded from QO4 coverage
+        and must not be required to appear in index.toon.
+        """
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        (kdir / "assets" / "etl-etl").mkdir(parents=True)
+        # A non-parseable JSON asset must not even be opened.
+        (kdir / "assets" / "etl-etl" / "chunk_replace.json").write_text(
+            '{ "mode": "ABORT"  // a comment\n}', encoding="utf-8"
+        )
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["A", "", "", "", "a.json"]])
+        assert self._check(kdir, idx) == []
+
     def test_fail_broken_json_surfaces_qo4(self, tmp_path):
         """Spec §3-3 point 4: a JSON that cannot be parsed is QO4 FAIL
         (no silent skip — zero-tolerance)."""
@@ -696,6 +713,28 @@ class TestCheckDocsCoverage:
         (ddir / "README.md").write_text("99ページ\n")  # wrong
         issues = self._check(kdir, ddir)
         assert any("count mismatch" in i for i in issues)
+
+    def test_assets_json_ignored(self, tmp_path):
+        """Files under knowledge/assets/ are not knowledge JSON — a JSON
+        literalinclude target (e.g. assets/etl-etl/chunk_replace.json) must
+        not trigger a QO3 or parse error.
+
+        Rationale: `assets/` holds images and literalinclude source copies
+        made by resolver.copy_assets. These are not content JSON.
+        """
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "about/a.json")
+        self._write_md(ddir, "about/a.md")
+        # A literalinclude JSON asset — deliberately non-object shape that
+        # a real json.loads would reject is irrelevant because verify must
+        # not even read it.
+        (kdir / "assets" / "etl-etl").mkdir(parents=True)
+        (kdir / "assets" / "etl-etl" / "chunk_replace.json").write_text(
+            '{ "mode": "ABORT"  // comment breaks json\n}', encoding="utf-8"
+        )
+        (ddir / "README.md").write_text("1ページ\n")
+        assert self._check(kdir, ddir) == []
 
 
 # ---------------------------------------------------------------------------
