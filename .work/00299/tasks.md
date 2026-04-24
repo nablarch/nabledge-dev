@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 62 — 22-B-15 完了。nabledge-test を agent/skill ゼロベース再設計 (runner agent 化 + grader 昇格 + model pin)。e2e smoke test 通過。次は 22-B-13b (v6 baseline 再取得))
+**Updated**: 2026-04-24 (session 62 — 22-B-15 + 22-B-13b 完了。v6 baseline `20260424-103200` 取得、QA 90.0% / CA 98.1%、ca-001 初の 100% 到達。次は 22-B-12 (他バージョン create/verify))
 
 ---
 
@@ -12,8 +12,9 @@
 - 22-B-16b/c (cross-doc MD link emission + asset + QL1 two-sided) 完了
 - 22-B-14 完了 (`fe7a34a0c`): nabledge-6 skill を RBKC V4 schema に追従 (6 箇所修正)。無効だった 20260424-080424 baseline は削除済
 - 22-B-15 完了: nabledge-test を agent/skill 境界ゼロベース再設計。runner agent (Sonnet 固定) + grade.py (18 tests) + meta.json `runner_agent`/`model_used` + e2e smoke test 通過
-- **次のタスク**: 22-B-13b (v6 baseline 再取得) — 修正済み nabledge-6 + 新しい runner/grader パイプラインで取得
-- その後: 22-B-12 (他バージョン create/verify) → Phase 19 → Phase 21-Z
+- 22-B-13b 完了: v6 baseline `20260424-103200` (Sonnet + strict grader) 取得、QA 90.0% / CA 98.1%
+- **次のタスク**: 22-B-12 (他バージョン v5/v1.4/v1.3/v1.2 の create → verify FAIL 0 確認)
+- その後: Phase 19 (他バージョン baseline) → Phase 21-Z
 
 ---
 
@@ -147,7 +148,7 @@
   - [x] Step 4 (`337c16348`): SKILL.md Step 6 を `scripts/grade.py` 呼び出しに差し替え、擬似コード削除
   - [x] Step 5 (`337c16348`): meta.json に `runner_agent` / `model_used` 追加仕様化
   - [x] Step 6: e2e smoke test — qa-001 (Sonnet 26 秒、grade 5/8) と ca-001 (185 秒、grade 35/37) で全フロー動作確認。runner agent 起動 → Skill tool → 4 デリミタ返却 → response/output 保存 → grade.py 実行まで通った
-- [ ] 22-B-13b: 22-B-15 完了後に v6 baseline を再取得 (前回分は削除済)
+- [x] **22-B-13b 完了** (`90061007d`): v6 baseline `20260424-103200` 取得。Sonnet + strict grader の新パイプラインでの初回 baseline。QA 90.0% / CA 98.1%、ca-001 37/37 到達、qa-001 benchmark 75.0% ±21.6% (trial 1/2 62.5%、trial 3 100%、汎用 select 系への言及有無で揺らぐ)。前回 baseline (Opus + pseudocode grading) と model/grading 両方が異なるため直接比較不能、新起点として確定。並列実行で stall 2 件 (retry で解消)
 - [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
 
 **備考**:
