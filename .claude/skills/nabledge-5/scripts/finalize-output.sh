@@ -21,11 +21,7 @@ TARGET_NAME="$1"
 DATE_DIR="$2"
 
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-# NABLEDGE_OUTPUT_ROOT override: matches record-start.sh / prefill-template.sh.
-# When set (nabledge-test benchmark harness), ignore DATE_DIR and use the
-# overridden root so session temp files & output .md live in the same
-# per-trial directory.
-OUTPUT_DIR="${NABLEDGE_OUTPUT_ROOT:-$REPO_ROOT/.nabledge/$DATE_DIR}"
+OUTPUT_DIR="$REPO_ROOT/.nabledge/$DATE_DIR"
 
 # Retrieve session ID from Step 0
 UNIQUE_ID=$(cat "$OUTPUT_DIR/.nabledge-code-analysis-id" 2>/dev/null || echo "")

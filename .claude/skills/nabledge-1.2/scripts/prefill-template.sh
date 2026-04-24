@@ -96,11 +96,7 @@ if ! command -v jq &> /dev/null; then
 fi
 
 # Calculate output path internally
-# NABLEDGE_OUTPUT_ROOT override: matches record-start.sh / finalize-output.sh.
-# When set (nabledge-test benchmark harness), write the pre-filled template
-# into the overridden root so that all 3 scripts point at the same per-trial
-# directory. End users leave it unset and get the default behaviour.
-OUTPUT_DIR="${NABLEDGE_OUTPUT_ROOT:-.nabledge/$(date '+%Y%m%d')}"
+OUTPUT_DIR=".nabledge/$(date '+%Y%m%d')"
 OUTPUT_FILE="code-analysis-${TARGET_NAME}.md"
 OUTPUT_PATH="$OUTPUT_DIR/$OUTPUT_FILE"
 
