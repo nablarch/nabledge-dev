@@ -335,94 +335,44 @@ For each completed scenario:
 
 ### Step 6: Check detection items
 
-For each scenario, evaluate detection items against the response:
+Grading is performed by `scripts/grade.py`, which implements the spec-anchored strict rules (see that file for the authoritative detection logic and `scripts/test_grade.py` for regression coverage). Do NOT hand-roll grading — the ad-hoc variant in the 22-B-13 baseline relaxed the "Nablarch Framework Usage" heading rule to heading-or-text and inflated ca-002 by one item.
 
-**QA (qa-*)**:
+**Command** (per scenario, after Step 5 saved `response.md` and optional `output/`):
 
-```python
-for item in detection_items:
-    if "includes one of:" in item:
-        # OR condition: extract all quoted keywords, detected if any match
-        # Format: "Response includes one of: 'kw1', 'kw2'"
-        keywords = re.findall(r"'([^']+)'", item)
-        detected = any(k in response_text for k in keywords)
-    elif "includes" in item:
-        keyword = extract_keyword(item)  # e.g., "DataReadHandler"
-        detected = keyword in response_text
-    elif "references" in item:
-        section = extract_section(item)  # e.g., "request-path"
-        detected = section in response_text
+```bash
+python3 .claude/skills/nabledge-test/scripts/grade.py \
+  --workspace "${WORKSPACE}" \
+  --scenario-id "<scenario-id>" \
+  --scenarios ".claude/skills/nabledge-test/scenarios/nabledge-${VERSION}/scenarios.json"
 ```
 
-**Code-analysis (ca-*)**:
-
-Each detection item is checked by examining response text and output files. **CRITICAL**: For section-based checks, always read from the actual output Markdown files (e.g., `code-analysis-*.md`), NOT just `response.md`. This ensures accurate detection even when the agent writes to external files.
-
-Search order:
-1. Read all `.md` files in the output directory (e.g., `code-analysis-*.md`)
-2. Fall back to `response.md` only if output files don't exist
-3. Concatenate all sources before performing detection
-
-Detection logic:
-- "Overview includes 'X'" → check if keyword X appears within the `## Overview` section (read from output files first)
-- "Class diagram includes class 'X'" → check if class name X appears within a `classDiagram` block (read from output files first)
-- "Class diagram includes relationship 'X'" → check if relationship string X appears within a `classDiagram` block (read from output files first)
-- "Component Summary includes 'X'" → check if component name X appears within the `### Component Summary` section (read from output files first)
-- "Processing Flow includes 'X'" → check if keyword X appears within the `### Processing Flow` section (read from output files first)
-- "Sequence diagram includes object 'X'" → check if participant/object X appears within a `sequenceDiagram` block (read from output files first)
-- "Sequence diagram includes message 'X'" → check if message/method call X appears within a `sequenceDiagram` block (read from output files first)
-- "Nablarch Framework Usage includes 'X'" → check if class name X appears as a heading within the `## Nablarch Framework Usage` section (read from output files first)
-- "Output includes 'X'" → check output files or response for X
-
-**Implementation for Code-Analysis scenarios**:
-
-When checking CA detection items:
-1. List all files in the output directory (e.g., `output/code-analysis-*.md`)
-2. If output files exist, read them; otherwise fall back to `response.md`
-3. For section-based items (Overview, Class diagram, etc.), extract the relevant section and perform keyword search
-4. Example extraction:
-   ```python
-   # Read all .md files from output directory
-   output_dir = Path(workspace) / scenario_id / "output"
-   output_text = ""
-   if output_dir.exists():
-       for f in sorted(output_dir.glob("*.md")):
-           with open(f) as file:
-               output_text += file.read() + "\n"
-   else:
-       # Fall back to response.md
-       with open(Path(workspace) / scenario_id / "response.md") as f:
-           output_text = f.read()
-   
-   # Extract section and check for keyword
-   # Example: for "Overview includes 'X'", extract text between "## Overview" and next heading
-   ```
-
-**Write grading.json**:
+Writes `${WORKSPACE}/<scenario-id>/grading.json` with shape:
 
 ```json
 {
-  "scenario_id": "<id>",
+  "scenario_id": "...",
   "detection_items": [
-    {
-      "text": "Overview includes 'BusinessDateUtil'",
-      "detected": true,
-      "evidence": "Found in ## Overview section of code-analysis-*.md"
-    },
-    {
-      "text": "Nablarch Framework Usage includes 'ParameterizedSqlPStatement'",
-      "detected": false,
-      "evidence": "Not found as heading in ## Nablarch Framework Usage section"
-    }
+    {"text": "...", "detected": true|false, "evidence": "..."}
   ],
-  "summary": {
-    "detected": 5,
-    "not_detected": 1,
-    "total": 6,
-    "detection_rate": 0.833
-  }
+  "summary": {"detected": N, "not_detected": M, "total": T, "detection_rate": R}
 }
 ```
+
+**For benchmark trials**, add `--trial <N>` to grade each `trials/<N>/` independently:
+
+```bash
+python3 .claude/skills/nabledge-test/scripts/grade.py \
+  --workspace "${WORKSPACE}" --scenario-id qa-001 \
+  --scenarios ".claude/skills/nabledge-test/scenarios/nabledge-${VERSION}/scenarios.json" \
+  --trial 1
+```
+
+**Detection rules** (summary; authoritative source is `scripts/grade.py` docstring):
+- QA: each expectation string must appear as a substring of `response.md`; for nested arrays, any one must match (OR).
+- CA "Overview/Component Summary/Processing Flow includes 'X'": X is a substring of that section's body text.
+- CA "Class/Sequence diagram includes …": X is a substring of the corresponding `mermaid` fenced block.
+- CA "Nablarch Framework Usage includes 'X'" (strict): X must appear in a `###` or `####` heading within the `## Nablarch Framework Usage` section. Body mentions are rejected.
+- CA "Output includes 'X'": X anywhere in the concatenated output files + response.
 
 ### Step 7: Generate individual scenario reports and aggregate report
 
@@ -488,12 +438,20 @@ mkdir -p "${TARGET_DIR}"
   "commit_short": "<7-char_sha>",
   "scenarios_count": 10,
   "trials": 1,
+  "runner_agent": "nabledge-test-runner",
+  "model_used": "sonnet",
   "scenarios": {
     "qa": ["qa-001", "qa-002", "qa-003", "qa-004", "qa-005"],
     "code-analysis": ["ca-001", "ca-002", "ca-003", "ca-004", "ca-005"]
   }
 }
 ```
+
+**`runner_agent`**: name of the custom subagent that executed each scenario (from `.claude/agents/*.md`). Must match the agent used in Step 4.
+
+**`model_used`**: model pinned in the runner agent's frontmatter (`sonnet`, `opus`, or `haiku`). Read from `.claude/agents/<runner_agent>.md` frontmatter so the value is not hand-maintained. Record verbatim — do not resolve version suffixes.
+
+These two fields are mandatory from baseline format v2 onward. Baselines lacking them were taken under a variable-model execution path and are not directly comparable.
 
 #### 9c: Copy per-scenario data
 
