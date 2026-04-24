@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-24 (Step 0, Step 1 完了 — stoplist 51 語確定、次 Step 2 へ)
+**Updated**: 2026-04-24 (Step 0/1 完了 + パラメータ凍結 + 10 件シミュレーション済 → 次は Step 2 実装)
 
 ## ゴール (この PR の本質)
 
@@ -120,50 +120,79 @@ Phase 1 が 100% に届いたら着手。
 - [x] 判定結果を `.work/00307/stoplist-judgment.md` に記録
 - [x] 最終 stoplist: `tools/benchmark/data/index-stoplist-ja-v6.json` (51 語)
 
+### 事前準備 (完了): パラメータ凍結とシミュレーション
+
+今セッションで以下を完了。パラメータは **シナリオ非依存** にコーパス統計のみで決定、`/tmp` や `.work/00307/` に記録済み。
+
+- [x] `index-params-decision.md` — tf≥2 / N=5 / fallback tf=1 df≤20 / N=3 を凍結 — commit `ed115b132`
+  - 根拠: tf 分布 (tf=1 の 40% が df=1 のノイズ)、per-section 候補分布 (tf≥2 で median=3)
+  - page-skew: tf≥2 N=5 で top 14 ページ占有率 17.5% → 破綻なし
+- [x] 10 件検索漏れケースで「index-llm.md に付記されるキーワード」を見せて判定
+  - 決定的効果: 3 件 (impact-07 / impact-03 / req-05)
+  - 拾える確度↑: 5 件 (impact-01 / req-04 / review-08 / impact-10 / review-01)
+  - 部分/効果薄: 2 件 (impact-08 / req-10)
+- [x] 書式: ページ/セクションタイトル重複語は除外、stoplist 除外、識別子パターンは index 対象外
+
 ### Step 2: classify_terms.py 書き直し (セクション単位 TF)
 
-- [ ] 入力: (file_id, sid, body) のセクション列
-- [ ] 各セクションで tokenize → TF (セクション内登場回数) を計算
-- [ ] stoplist (Step 1 成果物) で除外
-- [ ] 識別子パターン (@Annotation/CamelCase/camelCase) も除外
-  (term_queries 経路でカバー済、index には入れない)
-- [ ] 出力: セクションごとに「そのセクションの TF 上位 N 語」(例: 上位 10 語)
-  - N は短いセクションでは unique 語が少なく自然に上限
-  - ヒット語なしセクションは空配列
+**決定済みパラメータ**: tf≥2 上位 5 語、候補 0 のときは tf=1 で df≤20 を section_df 昇順で上位 3 語 (fallback)
+
+- [ ] 入力: (file_id, sid, body) のセクション列 + stoplist
+- [ ] 各セクションで tokenize → TF 計算
+- [ ] stoplist + ページ/セクションタイトル重複語 + 識別子パターン (@Annotation/CamelCase/camelCase) を除外
+- [ ] tf≥2 が 1 個以上 → 上位 5 語を採用 (tf 降順, 同点はアルファベット順)
+- [ ] tf≥2 が 0 → fallback: tf=1 かつ section_df ≤ 20 の語を section_df 昇順で上位 3 語
+- [ ] 候補 0 → キーワード無し
+- [ ] 出力: `tools/benchmark/data/index-keywords-ja.json` (セクション × 採用キーワード配列)
+- [ ] 既存 `classify_terms.py` のページ単位 TF-IDF ロジックは完全に置き換え (MANUAL_ALLOWLIST_JA 等の定数も削除)
+- [ ] TDD: `tests/test_classify_terms.py` を書き直す
+- [ ] 既存テスト (test_term_extract / test_section_df_ja / test_build_index) が全て GREEN
 
 ### Step 3: build_index.py 書き直し
 
-- [ ] 入力: セクション × 採用キーワードリスト (Step 2 の出力)
-- [ ] 配置: 各セクション行末に採用キーワードを ` — keyword / keyword / ...` 形式で
-- [ ] index-llm.md を再生成
+- [ ] 入力変更: `--allowlist` → `--keywords`
+- [ ] 入力: Step 2 出力の `index-keywords-ja.json`
+- [ ] 配置: 各セクション行末に採用キーワードを ` — keyword / keyword / ...` 形式
+- [ ] index-llm.md 生成 (既存パス `.claude/skills/nabledge-6/knowledge/index-llm.md`)
 - [ ] index-script.json は既存どおり (セクション構造は変わらない)
+- [ ] TDD: `tests/test_build_index.py` 更新
 
-### Step 4: 計測
+### Step 4: 計測 (検索改善の効果確認)
 
-- [ ] 失敗 9 件 + 成功 1 件 = 10 件 search-only
-- [ ] `search_coverage.py` で coverage
-- [ ] review-10 / impact-01 / review-05 など「ページ単位では拾えなかった」ケースが
-      拾えるようになったかを検証
-- [ ] 期待: review-10 で `about-nablarch-versionup_policy|s4/s5`, `about-nablarch-policy|s10/s12` が selections 候補に入る
+- [ ] 10 件 search-only (失敗 9 件 + 成功 1 件) で measure
+- [ ] `search_coverage.py` で coverage 比較 (旧 index vs 新 index)
+- [ ] L1 件数の変化を測定 (現状 12 件 → 何件残るか)
+- [ ] パラメータは動かさない (出来レース回避)
 
-### Step 5: 結果次第で判断
+### Step 5: 検索改善の結論
 
-- 効果あり → 30 件フル search-only → Phase 2 へ
-- 効果なし → セクション単位 TF の限界として整理、別経路 (embedding) を次 PR で検討
+- [ ] 効果あり → 30 件フル search-only → Phase 2 (回答改善) へ移行
+- [ ] 効果薄 → Phase 1 の到達点として文書化、Phase 2 で AI-3 側から挑戦
+- いずれにせよ **Phase 2 は必ずやる** (従来「先送り」扱いだったが、L1=0 到達には検索改善だけでは不十分なので)
 
-## Phase 2 (先送り、判断材料)
+## Phase 2 (必須): AI-3 回答プロンプト改善
 
-今回は AI-3 は変更しない。既知の課題は記録しておく:
+今 PR のスコープに入れるかは Step 5 の結果次第だが、**必ず着手する**。
+Phase 1 で検索を改善しても、L1 の一部は AI-3 側の問題 (over-reach / under-reach /
+主役誤認) に起因する。本タスクを省略すると L1=0 到達は不可能。
 
+既知の課題:
 - **over-reach**: C claim が多い。候補セクションから余計なトピックを拾って回答に混ぜる
 - **C-claim 過剰**: 質問されていない注意点を埋める
 - **under-reach**: s1 overview に寄りがちで、本体セクションを引用しない
+- **主役誤認**: retrieved に複数ハンドラがあるとき、主役と脇役を取り違える (impact-10 の PermissionCheckHandler 誤認など)
 
-Phase 2 で着手予定:
-- [ ] AI-3 answer.md 改訂 (over-reach / under-reach 両面)
-- [ ] PE レビュー + 実行ログ添付
-- [ ] 30 件 rerun で L1 件数を測定
+タスク:
+- [ ] AI-3 answer.md 改訂 (over-reach / under-reach / 主役判定の 3 面)
+- [ ] PE レビュー + 実行ログ添付 (`.claude/rules/development.md` 遵守)
+- [ ] 30 件 rerun で L1 件数測定
 - [ ] judge の非決定性対策 (実測揺れが多ければ)
+
+## 進め方の原則
+
+1. **いまは検索を改善** (Step 2-4)。L1 が何件残るかを測る
+2. 目途が経ったら **回答 (AI-3) も改善** (Phase 2) — 必ずやる
+3. Phase 1+2 を経て L1=0 達成を目指す
 
 ## やらないこと (スコープ外)
 
