@@ -203,7 +203,7 @@ for item in scenario.expectations.output:
     detection_items.append(f"Output includes '{item}'")
 ```
 
-### Step 4: Execute scenarios via sub-agents
+### Step 4: Execute scenarios via the runner subagent
 
 **Before launching sub-agents**, capture the run timestamp once:
 
@@ -215,72 +215,41 @@ mkdir -p "${WORKSPACE}"
 
 Use `$RUN_TIMESTAMP` and `$WORKSPACE` consistently in all subsequent steps (Step 5, Step 9c).
 
-**CRITICAL**: Each scenario MUST run in a separate Task tool invocation. This ensures:
+**CRITICAL**: Each scenario MUST run in a separate `nabledge-test-runner` subagent invocation. This ensures:
 - No context bleeding between scenarios (bias elimination)
-- Each scenario starts from a clean state
+- Each scenario starts from a clean state under a model-pinned context (Sonnet per agent frontmatter)
 - Metrics reflect true isolated performance
 
-**For each scenario**, spawn a Task tool with the following prompt:
+**For each scenario**, spawn `Agent(subagent_type: "nabledge-test-runner", ...)` with a prompt containing only the structured input block below:
 
 ```
-You are a measurement instrument executing a nabledge skill test.
-
-## Rules
-- Follow target skill workflows EXACTLY — do NOT improvise
-- Record actual execution — do NOT fabricate steps
-- Let failures be failures — do NOT mask with workarounds
-- Complete all steps without stopping
-- No self-imposed limits on token usage or execution time
-
-## Task
-1. Read `.claude/skills/nabledge-<version>/SKILL.md` and follow its instructions
-2. Execute the following question: "<scenario.question>"
-3. Record timing for each step (use `date '+%Y-%m-%dT%H:%M:%S'`)
-
-## Output
-When complete, output the following clearly delimited sections:
-
-### RESPONSE_START
-<paste the complete response/answer from nabledge-<version> here>
-### RESPONSE_END
-
-### METRICS_START
-```json
-{
-  "total_duration_seconds": <number>,
-  "steps": [
-    {
-      "step": <number>,
-      "name": "<step name>",
-      "duration_seconds": <number>,
-      "in_tokens_estimate": <number>,
-      "out_tokens_estimate": <number>
-    }
-  ],
-  "tool_calls": {
-    "Read": <count>,
-    "Bash": <count>,
-    "Grep": <count>,
-    "Write": <count>
-  },
-  "total_tool_calls": <number>,
-  "response_chars": <number>
-}
+SCENARIO_ID: <scenario.id>
+TARGET_SKILL: nabledge-<version>
+SCENARIO_TYPE: <qa | code-analysis>
+QUESTION: <scenario.question>
+WORKSPACE_DIR: <absolute path of $WORKSPACE>/<scenario.id>
 ```
-### METRICS_END
 
-### OUTPUT_FILES_START
-<list any files created by the skill, with their full paths, one per line>
-<if no files created, write "none">
-### OUTPUT_FILES_END
+For code-analysis scenarios, also include:
 ```
+TARGET_FILE: <scenario.target_file>
+```
+
+The runner enforces measurement discipline (see `.claude/agents/nabledge-test-runner.md`) and returns four delimited blocks in its final message:
+
+- `<<<NABLEDGE_TEST_RESPONSE ... NABLEDGE_TEST_RESPONSE>>>` — complete answer text
+- `<<<NABLEDGE_TEST_METRICS ... NABLEDGE_TEST_METRICS>>>` — JSON with duration, tool_calls, response_chars
+- `<<<NABLEDGE_TEST_OUTPUT_FILES ... NABLEDGE_TEST_OUTPUT_FILES>>>` — absolute paths, one per line, or `none`
+- `<<<NABLEDGE_TEST_STATUS ... NABLEDGE_TEST_STATUS>>>` — `{"status": "ok"}` or `{"status": "error", "error": "..."}`
+
+Grading is NOT done by the runner; the skill extracts these blocks and grades in Step 6.
 
 **Execution strategy — parallel batches**:
 
 Run scenarios in two parallel batches to minimize total execution time:
 
 **Batch 1 — Coverage run** (all coverage scenarios in parallel):
-- Launch ALL coverage scenarios (`"benchmark": false/absent`) simultaneously as separate Task tools
+- Launch ALL coverage scenarios (`"benchmark": false/absent`) simultaneously as separate runner invocations
 - Wait for all to complete, then save results and run detection checks
 
 **Batch 2 — Benchmark run** (all benchmark trials in parallel):
@@ -297,12 +266,12 @@ Trial 1 of each benchmark scenario serves as the canonical result (grading.json 
 
 **For multiple trials** (`--trials N`):
 
-- Launch all N trials for a scenario simultaneously as separate Task tools
+- Launch all N trials for a scenario simultaneously as separate runner invocations
 - Wait for all to complete, then collect results
 
-**After all Tasks in a batch complete**:
+**After all runner invocations in a batch complete**:
 
-1. For each Task result: parse the delimited output sections (RESPONSE, METRICS, OUTPUT_FILES)
+1. For each runner result: parse the four `NABLEDGE_TEST_*` delimited blocks
 2. Save results to the workspace (see Step 5)
 3. Run detection check (see Step 6)
 
@@ -321,11 +290,13 @@ For each completed scenario:
     output/              # Output files (ca-* only, copied from paths in OUTPUT_FILES)
 ```
 
-**Save response.md**: Extract text between `### RESPONSE_START` and `### RESPONSE_END`.
+**Save response.md**: Extract text between `<<<NABLEDGE_TEST_RESPONSE` and `NABLEDGE_TEST_RESPONSE>>>`.
 
-**Save metrics.json**: Parse JSON from between `### METRICS_START` and `### METRICS_END`. If parsing fails (sub-agent didn't output clean JSON), extract what's available and note the error.
+**Save metrics.json**: Parse JSON from between `<<<NABLEDGE_TEST_METRICS` and `NABLEDGE_TEST_METRICS>>>`. If parsing fails (runner didn't output clean JSON), extract what's available and note the error.
 
-**Save output files** (ca-* scenarios only): Copy files listed in OUTPUT_FILES section to `output/` directory. For benchmark trials, also copy to `trials/<N>/output/` directory.
+**Check status**: Parse JSON from between `<<<NABLEDGE_TEST_STATUS` and `NABLEDGE_TEST_STATUS>>>`. If `status != "ok"`, record the error and skip grading for this scenario (still save response.md and metrics.json for inspection).
+
+**Save output files** (ca-* scenarios only): From the `<<<NABLEDGE_TEST_OUTPUT_FILES ... NABLEDGE_TEST_OUTPUT_FILES>>>` block, copy each listed absolute path into `output/` directory. For benchmark trials, also copy to `trials/<N>/output/` directory. If the block contains only the token `none`, skip.
 
 **For benchmark scenarios** (in `--baseline` mode): After saving the canonical grading.json and metrics.json (trial 1):
 
