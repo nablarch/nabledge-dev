@@ -455,9 +455,14 @@ def _build_p1_sections(
         # reflects what a reader sees.  This keeps verify's cell-tokens
         # model (tokens appear only in the top-left row) consistent.
         data_rows.append(cells)
-        # Section title = value at title_col, with fallback.
+        # Section title = value at title_col, with fallback.  Both branches
+        # must apply `_flatten_ws` so the title matches verify's flattened
+        # source token (verify emits `" ".join(title_val.split())` for the
+        # same cell per spec §8-4).  Missing flatten on the fallback branch
+        # surfaces as QC1/QC2 FAIL on multiline cells in spacer columns
+        # (e.g. v1.4 1.4.3-releasenote `UI開発基盤\n※…`).
         raw_title = cells[title_col] if 0 <= title_col < width else ""
-        section_title = _flatten_ws(raw_title) or _first_non_empty(cells)
+        section_title = _flatten_ws(raw_title or _first_non_empty(cells))
         # Section content = {col}: {val} vertical list (all non-empty cells).
         # Flatten embedded newlines in values so each `{列名}: {値}` line
         # is parseable by verify's line-split (§8-4 is line-based).
