@@ -1921,6 +1921,68 @@ class TestCheckJsonDocsMdConsistency_QO2_ExcelP1:
         issues = self._check(data, docs)
         assert any("[QO2]" in i and "修正済" in i for i in issues), issues
 
+    def test_pass_p1_value_with_pipe_char_md_escaped(self):
+        """Phase 22-B-12 Finding B: GFM requires `|` in table cells to be
+        escaped as `\\|` (create/docs.py:_md_table_cell does this). JSON
+        carries the raw `|` per spec (content only, no format-specific
+        escaping).  Therefore QO2 P1 containment must apply the same
+        _md_table_cell transform to the JSON value before substring
+        lookup — otherwise v1.2/v1.3 releasenote rows whose value
+        contains `|` (e.g. "URL 予約文字 | ; | /" prose) produce a
+        false-positive FAIL.
+        """
+        data = {
+            "id": "f",
+            "title": "リリースノート",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "fix-001",
+                    "content": "タイトル: fix-001\n事象: URL のパスに予約文字（| ; | / | # | ? | : | space）が含まれる",
+                },
+            ],
+        }
+        # docs MD has the GFM-escaped `\|`; JSON value has raw `|`.
+        docs = (
+            "# リリースノート\n\n"
+            "## fix-001\n\n"
+            "| タイトル | 事象 |\n"
+            "| --- | --- |\n"
+            "| fix-001 | URL のパスに予約文字（\\| ; \\| / \\| # \\| ? \\| : \\| space）が含まれる |\n"
+        )
+        assert self._check(data, docs) == [], (
+            "pipe-containing JSON value must match MD-escaped cell "
+            "after applying _md_table_cell normalisation"
+        )
+
+    def test_fail_p1_value_with_pipe_char_still_detects_missing(self):
+        """Regression guard: even with pipe-normalisation, a genuinely
+        missing value (tokens absent entirely from MD) must still FAIL
+        QO2.
+        """
+        data = {
+            "id": "f",
+            "title": "リリースノート",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "fix-001",
+                    "content": "事象: A|B|C",
+                },
+            ],
+        }
+        # MD only has "X|Y" — neither A|B|C nor A\|B\|C present.
+        docs = (
+            "# リリースノート\n\n## fix-001\n\n"
+            "| 事象 |\n| --- |\n| X\\|Y |\n"
+        )
+        issues = self._check(data, docs)
+        assert any("[QO2]" in i and "A|B|C" in i for i in issues), issues
+
     def test_pass_p2_falls_back_to_strict_verbatim(self):
         # P2: sheet-wide text, JSON content appears verbatim in MD.
         data = {

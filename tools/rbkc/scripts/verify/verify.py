@@ -239,7 +239,17 @@ def check_json_docs_md_consistency(
                     value = line
                 if not value:
                     continue
-                if value not in docs_md_text:
+                # Spec §8-5 P1 docs MD: each JSON value is emitted as a
+                # GFM table cell, so the docs MD side MUST escape `|` as
+                # `\|` and collapse embedded whitespace/newlines to a
+                # single space (MD table rows are single-line).  Mirror
+                # that transform on the JSON value before substring
+                # lookup so the comparison is apples-to-apples.  Without
+                # this, a JSON value containing `|` (e.g. "URL reserved
+                # chars （| ; | / …）" in v1.2/v1.3 releasenote rows)
+                # produces a false-positive FAIL.
+                md_cell_value = " ".join(value.replace("|", "\\|").split())
+                if md_cell_value not in docs_md_text:
                     issues.append(
                         f"[QO2] {file_id}: section {title!r} value {value!r} not found in docs MD"
                     )
