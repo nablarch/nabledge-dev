@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 70 — 配信物クリーン化 + ドキュメント整備完了)
+**Updated**: 2026-04-24 (session 71 — v1.x ハンドラ docs MD 問題を Issue #312 として切り出し)
 
 ---
 
@@ -143,7 +143,11 @@ kc 検索 → RBKC 検索で構造変更は 3 箇所: (1) Step 5 section search 
 
 ## Not Started
 
-(なし)
+(なし — PR #304 作業完了)
+
+## 別 issue に切り出し
+
+- **Issue #312**: v1.x ハンドラ docs MD の `<script>` 裸出力 + 背景画像孤立 + ハンドラ処理フロー改行欠落 (v1.4=63 / v1.3=56 / v1.2=54 files)。RBKC が `.. raw:: html` の body を閲覧用 MD にそのまま出力しているのが原因。本 PR スコープ外として別対応。
 
 ## Done — session 69-70 (配信物クリーン化 + ドキュメント整備)
 
