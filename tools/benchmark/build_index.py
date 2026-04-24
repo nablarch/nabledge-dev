@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
-"""Build two indexes for the benchmark AI-1 redesign.
+"""Build the two indexes consumed by the benchmark AI-1 search variant.
 
 Inputs
 ------
-.claude/skills/nabledge-{version}/knowledge/**/*.json
+- .claude/skills/nabledge-{version}/knowledge/**/*.json
+- --keywords <path>  JSON written by classify_terms.py; shape:
+      {"keywords": {"<page_id>|<section_id>": ["kw1", "kw2", ...]}}
+  When --keywords is omitted, sections render without trailing keywords.
 
 Outputs
 -------
-knowledge/index-llm.md      — human/LLM readable:
+- knowledge/index-llm.md     human/LLM readable — AI-1 reads this:
     [id] title
       sid:section_title [— keyword / keyword / ...]
       ...
-knowledge/index-script.json — compact JSON: {id: {path, sections: [sid,...]}}
+- knowledge/index-script.json  compact JSON: {id: {path, sections: [sid,...]}}
 
-Keywords come from MANUAL_ALLOWLIST_JA (see manual-allowlist-ja-*.json).
-Each allowlist term is placed after every section whose body contains
-the term. Terms not found in any section body trigger a warning (see
-docs/index-enrichment.md).
+Each section's keywords come from the `keywords` map keyed by
+`"<page_id>|<section_id>"`. Keywords are rendered in the order they appear in
+the map (classify_terms.py emits them in TF-desc / alphabetic-tie order).
 """
 from __future__ import annotations
 import argparse
@@ -29,70 +31,64 @@ import sys
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-def load_allowlist(path: str | None) -> list[str]:
+def load_keyword_map(path: str | None) -> dict[str, list[str]]:
     if not path:
-        return []
-    with open(path) as f:
+        return {}
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
-    if not isinstance(data, list):
-        raise ValueError(f"allowlist must be a JSON array: {path}")
-    return [str(t) for t in data]
+    kw = data.get("keywords") if isinstance(data, dict) else None
+    if not isinstance(kw, dict):
+        raise ValueError(
+            f"keywords file must be a JSON object with a 'keywords' map: {path}"
+        )
+    out: dict[str, list[str]] = {}
+    for key, terms in kw.items():
+        if not isinstance(terms, list):
+            continue
+        out[str(key)] = [str(t) for t in terms]
+    return out
 
 
-def collect(knowledge_dir: str, allowlist: list[str]) -> tuple[list[dict], dict]:
-    """Collect page entries. Each section dict carries its matched keywords.
+def collect(knowledge_dir: str, keyword_map: dict[str, list[str]]) -> list[dict]:
+    """Collect page entries with each section's keywords attached.
 
-    Returns (entries, stats) where stats includes terms-not-found.
+    Sections are ordered by their appearance in the page's `index` array.
     """
     entries = []
-    found_terms: set[str] = set()
-
     for fp in sorted(glob.glob(f"{knowledge_dir}/**/*.json", recursive=True)):
         try:
-            d = json.load(open(fp))
-        except Exception:
+            with open(fp, encoding="utf-8") as fh:
+                d = json.load(fh)
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"WARN: skip {fp}: {e}", file=sys.stderr)
             continue
         if not isinstance(d, dict) or "id" not in d or "title" not in d:
             continue
         if d.get("no_knowledge_content") is True:
             continue
         rel = os.path.relpath(fp, knowledge_dir)
+        page_id = d["id"]
 
-        # Map sid -> body for keyword matching
-        sections_raw = d.get("sections") or {}
-        sid_to_body: dict[str, str] = {}
-        if isinstance(sections_raw, dict):
-            for sid, body in sections_raw.items():
-                if isinstance(body, str):
-                    sid_to_body[sid] = body
-                elif isinstance(body, dict):
-                    sid_to_body[sid] = body.get("body") or ""
-
-        # Section titles (from `index` array, preserving order)
         sections = []
         for s in d.get("index", []):
             if not isinstance(s, dict) or not s.get("id"):
                 continue
             sid = s["id"]
             stitle = s.get("title", "")
-            body = sid_to_body.get(sid, "")
-            # Match keywords: term appears in body, but not in title/section_title
-            matched = []
-            for term in allowlist:
-                if term in body and term not in d["title"] and term not in stitle:
-                    matched.append(term)
-                    found_terms.add(term)
-            sections.append({"id": sid, "title": stitle, "keywords": matched})
+            key = f"{page_id}|{sid}"
+            sections.append({
+                "id": sid,
+                "title": stitle,
+                "keywords": list(keyword_map.get(key, [])),
+            })
 
         entries.append({
-            "id": d["id"],
+            "id": page_id,
             "title": d["title"],
             "path": rel,
             "sections": sections,
         })
-
-    not_found = [t for t in allowlist if t not in found_terms]
-    return entries, {"terms_not_found": not_found}
+    return entries
 
 
 def build_llm_index(entries: list[dict], version: str) -> str:
@@ -133,10 +129,8 @@ def build_script_index(entries: list[dict]) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--version", required=True)
-    ap.add_argument("--allowlist", default=None,
-                    help="Path to JSON array of allowed keywords to attach to sections")
-    ap.add_argument("--strict", action="store_true",
-                    help="Exit non-zero if any allowlist term is not found in any body")
+    ap.add_argument("--keywords", default=None,
+                    help="Path to index-keywords-ja JSON (from classify_terms.py)")
     args = ap.parse_args()
 
     knowledge_dir = f"{REPO}/.claude/skills/nabledge-{args.version}/knowledge"
@@ -144,33 +138,27 @@ def main() -> int:
         print(f"ERROR: knowledge dir not found: {knowledge_dir}", file=sys.stderr)
         return 1
 
-    allowlist = load_allowlist(args.allowlist)
-    entries, stats = collect(knowledge_dir, allowlist)
+    keyword_map = load_keyword_map(args.keywords)
+    entries = collect(knowledge_dir, keyword_map)
     llm_md = build_llm_index(entries, args.version)
     script_json = build_script_index(entries)
 
     llm_path = f"{knowledge_dir}/index-llm.md"
     script_path = f"{knowledge_dir}/index-script.json"
-    with open(llm_path, "w") as f:
+    with open(llm_path, "w", encoding="utf-8") as f:
         f.write(llm_md)
-    with open(script_path, "w") as f:
+    with open(script_path, "w", encoding="utf-8") as f:
         f.write(script_json)
 
     print(f"Wrote: {llm_path} ({len(llm_md):,} chars)")
     print(f"Wrote: {script_path} ({len(script_json):,} chars)")
-    print(f"Entries: {len(entries)} files, "
-          f"{sum(len(e['sections']) for e in entries)} sections")
+    n_sections = sum(len(e['sections']) for e in entries)
+    print(f"Entries: {len(entries)} files, {n_sections} sections")
 
-    if allowlist:
+    if keyword_map:
         n_placed = sum(len(s['keywords']) for e in entries for s in e['sections'])
-        print(f"Keyword placements: {n_placed} (allowlist size: {len(allowlist)})")
-        if stats['terms_not_found']:
-            print(f"\nWARN: {len(stats['terms_not_found'])} allowlist terms were "
-                  f"not found in any section body.", file=sys.stderr)
-            for t in stats['terms_not_found']:
-                print(f"  - {t}", file=sys.stderr)
-            if args.strict:
-                return 2
+        print(f"Keyword placements: {n_placed} "
+              f"(keyword map entries: {len(keyword_map)})")
 
     return 0
 
