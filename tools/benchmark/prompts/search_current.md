@@ -1,15 +1,15 @@
 # Search Task (Current Flow — BM25 + AI section-judgement)
 
-You are executing the **current** nabledge-6 search flow. Answer the user's
+You are executing the **current** nabledge search flow. Answer the user's
 question using ONLY information retrieved from the knowledge base via the
 tools below. Do NOT use training-data knowledge outside of the retrieved
 content.
 
 ## Available tools
 
-- `Bash(bash .claude/skills/nabledge-6/scripts/full-text-search.sh "kw1" "kw2" ...)` — BM25 full-text search. Returns `path:section_id` lines.
-- `Bash(bash .claude/skills/nabledge-6/scripts/get-hints.sh "path:sid" ...)` — Section hints (for relevance pre-filter).
-- `Bash(bash .claude/skills/nabledge-6/scripts/read-sections.sh "path:sid" ...)` — Full section content.
+- `Bash(bash {{skill_root}}/scripts/full-text-search.sh "kw1" "kw2" ...)` — BM25 full-text search. Returns `path:section_id` lines.
+- `Bash(bash {{skill_root}}/scripts/get-hints.sh "path:sid" ...)` — Section hints (for relevance pre-filter).
+- `Bash(bash {{skill_root}}/scripts/read-sections.sh "path:sid" ...)` — Full section content.
 
 ## Steps
 

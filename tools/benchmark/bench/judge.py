@@ -1,7 +1,16 @@
-"""Judge flow: compare generated answer against reference answer + reference source text."""
+"""Judge flow: compare generated answer against reference answer + reference source text.
+
+The judge is Grep/Read-enabled so it can verify C-claims against the full
+knowledge base, not just the retrieved subset. A claim that looks
+"unsupported by retrieved" may actually be a correct KB statement whose
+source section AI-1 happened not to select. Penalizing those is wrong —
+they reflect a retrieval miss, not an answer defect.
+"""
 
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 
 from . import io
@@ -26,6 +35,14 @@ _CLAIM_ITEM = {
     "properties": {"claim": {"type": "string", "maxLength": 200}},
 }
 
+# Reason taxonomy:
+#   UNSUPPORTED_KB_VERIFIED — judge searched the KB and could not find the claim
+#   SUPPORTED_BY_KB         — claim is grounded in a KB section outside retrieved
+#   OFF-TOPIC               — supported somewhere but misapplied to THIS question
+#   CONTRADICTION           — contradicts an A-fact or the KB
+# SUPPORTED_BY_KB does NOT penalize level (it's a retrieval miss, not an answer defect).
+_C_REASONS = ["UNSUPPORTED_KB_VERIFIED", "SUPPORTED_BY_KB", "OFF-TOPIC", "CONTRADICTION"]
+
 SCHEMA_JUDGE = {
     "type": "object",
     "required": ["a_facts", "b_claims", "c_claims", "level", "reasoning"],
@@ -41,9 +58,19 @@ SCHEMA_JUDGE = {
                 "required": ["claim", "reason", "why"],
                 "additionalProperties": False,
                 "properties": {
-                    "claim": {"type": "string", "maxLength": 200},
-                    "reason": {"enum": ["UNSUPPORTED", "OFF-TOPIC", "CONTRADICTION"]},
-                    "why": {"type": "string", "maxLength": 200},
+                    "claim": {"type": "string", "maxLength": 300},
+                    "reason": {"enum": _C_REASONS},
+                    "why": {"type": "string", "maxLength": 300},
+                    "kb_evidence": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["file", "sid", "quote"],
+                        "properties": {
+                            "file": {"type": "string", "maxLength": 200},
+                            "sid": {"type": "string", "maxLength": 20},
+                            "quote": {"type": "string", "maxLength": 300},
+                        },
+                    },
                 },
             },
         },
@@ -53,7 +80,97 @@ SCHEMA_JUDGE = {
 }
 
 
-def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path) -> JudgeResult:
+_NORM_WS_RE = re.compile(r"\s+")
+_NORM_MD_RE = re.compile(r"\*\*|__|^\s*#+\s+.*$", flags=re.M)
+
+
+def _normalize(s: str) -> str:
+    s = _NORM_MD_RE.sub("", s or "")
+    return _NORM_WS_RE.sub(" ", s).strip()
+
+
+def verify_kb_evidence(
+    c_claims: list[dict], *, version: str = io.DEFAULT_VERSION,
+) -> list[dict]:
+    """For every SUPPORTED_BY_KB claim, confirm that kb_evidence.quote appears
+    in the cited file/sid body (strict or normalized substring). If not,
+    downgrade the reason to UNSUPPORTED_KB_VERIFIED — the judge is
+    fabricating its citation.
+
+    Returns a new list with adjusted claims; does not mutate the input.
+    """
+    root = io.knowledge_root(version)
+    out: list[dict] = []
+    for claim in c_claims or []:
+        c = dict(claim)
+        if c.get("reason") != "SUPPORTED_BY_KB":
+            out.append(c)
+            continue
+        ev = c.get("kb_evidence") or {}
+        file_rel = ev.get("file") or ""
+        sid = ev.get("sid") or ""
+        quote = ev.get("quote") or ""
+        # kb_evidence is mandatory for SUPPORTED_BY_KB: missing or invalid →
+        # treat as fabrication.
+        try:
+            data = json.loads((root / file_rel).read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            c["reason"] = "UNSUPPORTED_KB_VERIFIED"
+            c["why"] = (c.get("why") or "") + " [kb_evidence.file unreadable]"
+            out.append(c)
+            continue
+        secs = data.get("sections") or {}
+        body = secs.get(sid)
+        if isinstance(body, dict):
+            body = body.get("body") or ""
+        if not isinstance(body, str) or not body:
+            c["reason"] = "UNSUPPORTED_KB_VERIFIED"
+            c["why"] = (c.get("why") or "") + " [kb_evidence.sid missing]"
+            out.append(c)
+            continue
+        if quote and (
+            quote in body or _normalize(quote) in _normalize(body)
+        ):
+            out.append(c)
+        else:
+            c["reason"] = "UNSUPPORTED_KB_VERIFIED"
+            c["why"] = (c.get("why") or "") + " [quote not verbatim in section]"
+            out.append(c)
+    return out
+
+
+def compute_level(verdict: dict) -> int:
+    """Apply the new level rule given a raw verdict dict.
+
+    Level 3: A all COVERED AND no penalizing C AND at least one B or SUPPORTED_BY_KB.
+    Level 2: A all COVERED AND no penalizing C AND no supporting B/SUPPORTED_BY_KB.
+    Level 1: A partial/missing OR any penalizing C (UNSUPPORTED_KB_VERIFIED / OFF-TOPIC / CONTRADICTION).
+    Level 0: majority of A_facts MISSING.
+    """
+    a_facts = verdict.get("a_facts") or []
+    if not a_facts:
+        return 0
+    covered = sum(1 for f in a_facts if f.get("status") == "COVERED")
+    missing = sum(1 for f in a_facts if f.get("status") == "MISSING")
+    if missing > len(a_facts) / 2:
+        return 0
+    all_covered = covered == len(a_facts)
+    c_claims = verdict.get("c_claims") or []
+    penalizing = sum(
+        1 for c in c_claims
+        if c.get("reason") in ("UNSUPPORTED_KB_VERIFIED", "OFF-TOPIC", "CONTRADICTION")
+    )
+    supported = sum(1 for c in c_claims if c.get("reason") == "SUPPORTED_BY_KB")
+    b_claims = verdict.get("b_claims") or []
+    if not all_covered or penalizing > 0:
+        return 1
+    if b_claims or supported:
+        return 3
+    return 2
+
+
+def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path,
+        version: str = io.DEFAULT_VERSION) -> JudgeResult:
     if not search.answer:
         return JudgeResult(
             verdict=None,
@@ -82,9 +199,12 @@ def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path)
             error="a_facts missing in scenario",
         )
 
-    ref_text, ref_records = io.load_reference_sources(scenario.reference_answer)
-    retrieved_text = io.load_retrieved_sections(search.cited)
+    ref_text, ref_records = io.load_reference_sources(
+        scenario.reference_answer, version=version,
+    )
+    retrieved_text = io.load_retrieved_sections(search.cited, version=version)
     a_facts_text = "\n".join(f"- {f}" for f in scenario.a_facts)
+    knowledge_rel = f".claude/skills/nabledge-{version}/knowledge"
     prompt = (
         (io.PROMPTS_DIR / "judge.md").read_text(encoding="utf-8")
         .replace("{{question}}", scenario.question)
@@ -97,19 +217,28 @@ def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path)
             "{{generated_cited}}",
             "\n".join(f"- {c}" for c in search.cited) if search.cited else "(none)",
         )
+        .replace("{{knowledge_root}}", knowledge_rel)
     )
     call = invoke(
         prompt=prompt,
         schema=SCHEMA_JUDGE,
         model=model,
-        max_turns=4,
+        max_turns=8,
         log_path=scen_dir / "stream" / "judge.jsonl",
         cwd=io.REPO_ROOT,
-        allowed_tools=[],
+        allowed_tools=["Grep", "Read"],
         timeout_s=300,
     )
+    structured = call.structured or {}
+    # Post-verify every SUPPORTED_BY_KB claim; downgrade any with a quote that
+    # doesn't actually appear in the cited file. Then recompute level from the
+    # adjusted verdict so the level reflects verification results.
+    if isinstance(structured, dict):
+        c_adjusted = verify_kb_evidence(structured.get("c_claims") or [], version=version)
+        structured["c_claims"] = c_adjusted
+        structured["level"] = compute_level(structured)
     return JudgeResult(
-        verdict=io.verdict_from_structured(call.structured),
+        verdict=io.verdict_from_structured(structured),
         ref_sources_loaded=sum(1 for r in ref_records if r.get("status") == "ok"),
         ref_sources_total=len(ref_records),
         cost_usd=call.cost_usd,
