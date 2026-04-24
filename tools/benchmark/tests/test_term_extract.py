@@ -25,31 +25,12 @@ def test_extract_picks_up_annotation_camel_lower_camel():
     assert "concurrentNumber" in terms
 
 
-def test_extract_picks_up_japanese_4_plus_chars():
-    q = "二重サブミット防止 の 実装方法 について"
-    terms = extract_terms(q)
-    assert "二重サブミット防止" in terms
-    # 3-char words are intentionally excluded; they over-match in the corpus.
-    assert "実装" not in terms
-    # But 4+ char kanji words are kept.
-    assert "実装方法" in terms
-
-
-def test_extract_does_not_include_3_char_katakana():
-    # 3-char words are too generic; the spec excludes everything under 4 chars.
-    q = "ログ の 設定"
-    terms = extract_terms(q)
-    assert "ログ" not in terms
-
-
-def test_extract_deduplicates_preserving_order():
-    q = "concurrentNumber は concurrentNumber で指定。二重サブミット防止 も 二重サブミット防止。"
+def test_extract_deduplicates():
+    q = "concurrentNumber は concurrentNumber で指定。@UseToken も @UseToken。"
     terms = extract_terms(q)
     counts = {t: terms.count(t) for t in set(terms)}
     assert counts.get("concurrentNumber") == 1
-    assert counts.get("二重サブミット防止") == 1
-    # First occurrence order is preserved.
-    assert terms.index("concurrentNumber") < terms.index("二重サブミット防止")
+    assert counts.get("@UseToken") == 1
 
 
 def test_extract_drops_java_stoplist():
@@ -61,10 +42,8 @@ def test_extract_drops_java_stoplist():
 
 def test_extract_returns_empty_for_prose_only_question():
     q = "よろしく お願い します"
-    # 4+ kanji words may match — but the three hiragana words should all be absent.
-    terms = extract_terms(q)
-    assert "よろしく" not in terms
-    assert "お願い" not in terms
+    # Hiragana was never matched; now kanji/katakana are also out.
+    assert extract_terms(q) == []
 
 
 def test_filter_terms_applies_stoplist():
@@ -81,7 +60,62 @@ def test_filter_terms_preserves_order():
 
 
 def test_patterns_contract():
-    # PATTERNS must stay aligned with classify_terms.py. This is an anchor
-    # test: if either side changes, someone has to look at both.
+    # PATTERNS is identifier-only by design — Japanese is handled by
+    # index-llm.md. Guard against accidental re-introduction.
     keys = {name for name, _ in PATTERNS}
-    assert keys == {"annotation", "camel", "lower_camel", "katakana", "kanji", "mixed"}
+    assert keys == {"annotation", "camel", "lower_camel"}
+
+
+# ---- min-length policy: every emitted term must be 4+ chars (docs) ----
+
+def test_extract_rejects_3char_annotation():
+    # @Ab is 3 chars — below the 4+ minimum, even though re pattern would match.
+    terms = extract_terms("@Ab で始まる 3 字の注釈 @AbCd が混在")
+    assert "@Ab" not in terms
+    assert "@AbCd" in terms
+
+
+def test_extract_rejects_3char_camel():
+    # AaB is 3 chars (old pattern allowed it).
+    terms = extract_terms("AaB と AaBc を比較")
+    assert "AaB" not in terms
+    assert "AaBc" in terms
+
+
+def test_extract_rejects_3char_lower_camel():
+    # aaBc was already 4 chars under the old pattern; guard against
+    # regression if someone loosens it.
+    terms = extract_terms("a1B と aaB と aaBc")
+    for t in ("aaB", "a1B"):
+        assert t not in terms
+    assert "aaBc" in terms
+
+
+def test_extract_min_length_all_patterns():
+    """No emitted term should ever be shorter than 4 chars."""
+    terms = extract_terms(
+        "@Ab AaB aaB テスト 実装 実装方法 暗号化 暗号化処理 悲観 悲観ロック"
+    )
+    assert all(len(t) >= 4 for t in terms), terms
+
+
+# ---- identifier-only policy for grep path ----
+# Japanese terms from the question do not reliably hit body text (orthographic
+# drift) and when they do hit they are usually generic (チェック / レコード),
+# producing noise that eats the per-term cap. The index-llm.md path handles
+# the Japanese-concept layer already, so the grep path is restricted to
+# ASCII identifiers (@Annotation / CamelCase / camelCase).
+
+def test_extract_drops_japanese_terms():
+    q = "@UseToken と TransactionManagementHandler と concurrentNumber と トランザクション と 悲観ロック"
+    terms = extract_terms(q)
+    assert "@UseToken" in terms
+    assert "TransactionManagementHandler" in terms
+    assert "concurrentNumber" in terms
+    assert "トランザクション" not in terms
+    assert "悲観ロック" not in terms
+
+
+def test_extract_returns_empty_for_japanese_only_question():
+    q = "二重サブミット防止 の 実装方法 を 教えて"
+    assert extract_terms(q) == []

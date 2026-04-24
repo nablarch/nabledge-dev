@@ -12,14 +12,16 @@ AI-1 の検索は 2 経路で構成される:
    全ページ本文を grep し、ヒットしたセクションを selections にマージ
 
 本ワークフローは **1 の index-llm.md 経路** を強化するもの。
-2 の term_queries は識別子（CamelCase / camelCase / @Annotation）や
-長い日本語語を機械的に拾えるので、index-llm.md にそれらを追記しても
-重複するだけで価値が増えない。
+2 の term_queries は **ASCII 識別子** (CamelCase / camelCase / @Annotation)
+のみを機械抽出するので、それら識別子を index-llm.md に追記しても重複する
+だけで価値が増えない。
 
-そのため **index-llm.md に入れるのは「term_queries では拾えない語」**
-に限定する。具体的には、**ページ本文に存在しないがそのページの主題を
-表す日本語の概念語**、または**ページ本文に出るが AI-1 が質問と結び付け
-にくい特徴語**。
+そのため **index-llm.md に入れるのは日本語の概念語** に限定する。
+具体的には、**ページ本文に存在しないがそのページの主題を表す日本語語**、
+または**ページ本文に出るが AI-1 が質問と結び付けにくい日本語特徴語**。
+
+日本語は term_queries では扱わない。質問の複合語は本文と表記がズレ、
+短い語は generic すぎて noise になるため。
 
 ## 目的
 
@@ -349,20 +351,21 @@ python3 tools/benchmark/search_coverage.py --run-dir .tmp/search-only-XXXX
 ## term_queries (機械抽出、本文 grep 経路)
 
 `search_ids.py` は AI-1 の `selections` 応答に加え、質問文から機械抽出した
-語で本文 grep を行う。抽出ルールは index-llm.md 側と **完全に一致** させる:
+**識別子** で本文 grep を行う。抽出対象は ASCII のみ:
 
 | パターン | 例 |
 |---|---|
-| `@Annotation` | `@Published` `@UseToken` |
-| CamelCase 2-hump | `TransactionManagementHandler` |
-| camelCase | `connectionFactory` `transactionName` |
-| カタカナ 4 字以上 | `トランザクション` `バリデーション` |
-| 漢字 4 字以上 | `要求電文` `悲観ロック` |
-| 漢字+カタカナ混合 4 字以上 | `暗号化処理` `悲観ロック` |
+| `@Annotation` (4+ 字) | `@Published` `@UseToken` |
+| CamelCase 2-hump (4+ 字) | `TransactionManagementHandler` |
+| camelCase (4+ 字) | `connectionFactory` `transactionName` |
 
-一致させる理由:
-- 両経路の粒度を揃えると「ユーザーの質問語 ↔ ページの語」の紐付けが単純化される
-- 3 字以下を除外する原則 (一般語が多い、複合語で代替できる) を両方で守る
+**日本語は対象外**。実測ですべて次のいずれかに落ちるため:
+- 質問の複合語 (`明細レコード` `夜間バッチ`) は本文に出ない (表記ズレ)
+- 抽出できた短い語 (`レコード` `チェック` `クライアント`) は generic すぎて
+  noise にしかならず、per-term/total cap を食い尽くす
+
+日本語概念語は **index-llm.md の section-level keyword** で扱う
+(役割分担を崩さない)。
 
 term_queries は AI-1 に生成させず **スクリプトが機械抽出する**。これで:
 - AI-1 のプロンプトから term_queries 生成タスクを削除できる
@@ -370,8 +373,8 @@ term_queries は AI-1 に生成させず **スクリプトが機械抽出する*
 - AI-1 が抽出語を選ぶ際のバイアスが入らない
 
 grep 側のフィルタ:
-- ストップリスト (一般すぎる語) で除外
 - df_pct が 20% を超える語は grep 対象から外す (候補爆発を防ぐ)
+  ASCII 識別子のみなので v6 では 2 語 (`artifactId`, `groupId`)
 - per-term ヒット上限、total ヒット上限で selections に merge する量を制御
 
 ## 注意事項
