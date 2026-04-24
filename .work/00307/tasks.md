@@ -98,7 +98,7 @@ Phase 1 が 100% に届いたら着手。
 コードの allowlist → keywords リネームは Step 2/3 の書き直しで同時に
 達成するため、ここでは docs のみを対象にする。
 
-- [ ] `docs/index-enrichment.md` をセクション単位 TF ベースに書き換え
+- [x] `docs/index-enrichment.md` をセクション単位 TF ベースに書き換え — committed `93af2c75d`
   - 「ページ単位 TF-IDF」→「セクション単位 TF (IDF なし)」
   - 用語統一: 採用キーワード / INDEX_KEYWORDS_JA / index-keywords-ja.json
   - 配置ルール: セクションごとに TF を計算、自セクションの上位語を stoplist
