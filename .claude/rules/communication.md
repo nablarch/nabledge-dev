@@ -2,10 +2,11 @@
 
 ## Explaining and Reporting
 
-- Lead with a concise summary and concrete examples only
-- Do not include details unless the user asks
+- **First message is the point only** — 1〜3 文で結論・判断・次アクションだけを返す。背景・根拠・対照表・引用は書かない
+- 詳細 (コード片、引用、比較表、AST ダンプ、spec の該当節、選択肢の trade-off 等) は **ユーザーから "詳細を"/"なぜ"/"根拠"/"詳しく" 等の明示要求があってから** 出す
 - Do not mix multiple topics in one message — separate concerns clearly
 - When reporting status, always anchor to the task file so the user knows where things stand
+- 質問に YES/NO で答えられる場合、まず YES/NO を返す。理由はユーザーが求めたら追加する
 
 ## Proposing, not asking for permission
 
