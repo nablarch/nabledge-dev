@@ -176,21 +176,23 @@ class _MDVisitor:
     # ------------------------------------------------------------------
 
     def visit_system_message(self, node: nodes.system_message) -> str | None:
-        # Per rbkc-verify-quality-design.md §3-1b: docutils parse errors
-        # (level >= 3) are QC1 FAIL. Warnings (level 2) are recorded for
-        # optional surfacing; infos (level 1) are ignored.
+        # Spec §3-1b / §3-2-3 Sphinx 追従原則:
+        #   - level 1 (INFO): 無視
+        #   - level 2 (WARNING): self.warnings に記録、render 継続
+        #   - level 3 (ERROR): docutils は halt_level=5 下で parse を継続し
+        #     doctree は valid のまま。Sphinx 本体も ERROR/3 で halt せず
+        #     WARNING として HTML build を継続する。RBKC もこれに追従し
+        #     warning 記録扱いで render 継続 (silent skip ではない)。
+        #   - level 4 (SEVERE): docutils の doctree も信用できない破壊的
+        #     状態なので QC1 FAIL (VisitorError raise)。
+        # 既知の ERROR/3 クラス: "Unknown target name", "Inconsistent
+        # title style", "Unexpected indentation" (v1.x corpus の title
+        # 記法混在・bullet / note ブロック配置由来)。いずれも AST 上に
+        # 全 section / title / body が保持されることを実測確認済。
         level = node.get("level", 0)
         line = node.get("line", "?")
         text = node.astext()[:120]
-        if level >= 3:
-            # Spec §3-2-3 Sphinx 追従原則: "Unknown target name" is a
-            # WARNING in Sphinx (trailing-underscore prose like
-            # 「nablarch_」).  The problematic-node visitor preserves
-            # the text verbatim, so QC1 must not FAIL here — downgrade
-            # to a warning entry.
-            if "Unknown target name" in text:
-                self.warnings.append(f"level={level} line={line} {text}")
-                return None
+        if level >= 4:
             raise VisitorError(f"RST parse error (level={level}) at line {line}: {text}")
         if level >= 2:
             self.warnings.append(f"level={level} line={line} {text}")

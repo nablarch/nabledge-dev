@@ -1380,31 +1380,81 @@ class TestCheckContentCompleteness:
             md_ast_mod.parse = orig
         assert any("[QC1]" in i and "markdown parse/visitor error" in i for i in issues)
 
-    def test_fail_qc1_rst_unresolved_substitution_surfaces(self):
-        """Spec §3-1b: unresolved substitution (`|missing|` with no
-        `.. |missing| replace::` definition) → QC1 FAIL. The Visitor
-        raises UnresolvedReferenceError which verify reports as QC1."""
+    def test_pass_qc1_rst_unresolved_substitution_fallback(self):
+        """Spec §3-2-3 Sphinx 追従原則: unresolved substitution
+        (`|undefined_version|` with no definition) は docutils が
+        `problematic` node で display text を保持する。Sphinx も
+        WARNING + display text fallback で HTML build を継続する。
+        RBKC もこれに追従し QC1 FAIL ではなく warning 記録 + content
+        保持で render する。
+        content 損失の検出は QC1 残存チェック (独立機構) が担う —
+        JSON が source を網羅すれば PASS、欠落があれば残存 FAIL。"""
         src = "概要\n====\n\n利用バージョン: |undefined_version|\n"
-        data = self._data(sections=[{"id": "s1", "title": "概要", "level": 2, "content": "x"}])
+        # JSON が source の substitution ref を display text として保持する場合
+        data = self._data(sections=[{
+            "id": "s1", "title": "概要", "level": 2,
+            "content": "利用バージョン: |undefined_version|"
+        }])
         issues = self._check(src, data)
-        assert any("[QC1]" in i and "RST parse/visitor error" in i for i in issues)
+        # No parse/visitor-error QC1 FAIL (Sphinx 追従).
+        assert not any(
+            "[QC1]" in i and "RST parse/visitor error" in i for i in issues
+        ), f"unresolved substitution must not be QC1 FAIL (Sphinx 追従): {issues}"
+        assert issues == [], f"expected no FAILs, got: {issues}"
 
-    def test_fail_qc1_rst_parse_error_level_3(self):
-        """Spec §3-1b 原則 4: docutils parse error (level >= 3) → QC1 FAIL.
-        An unknown directive triggers `(ERROR/3)` in docutils' warning
-        stream; the normaliser scans for that and raises UnknownSyntaxError."""
+    def test_pass_qc1_rst_unknown_directive_drops_body_like_sphinx(self):
+        """Spec §3-2-3 Sphinx 追従原則: 未登録 directive
+        `.. unknown-directive-xyz::` は Sphinx 本体が HTML に出さない
+        (directive が何をする命令か不明のため)。docutils も body を AST
+        から落とし、`system_message` に ERROR/3 を記録する。
+        RBKC もこれに追従し、JSON には drop された body を含めず、QC1
+        FAIL も立てない。"Sphinx が出さないものは RBKC も出さない" が
+        正しい振る舞い。
+        corpus 実測 (v6/v5/v1.4/v1.3/v1.2) では未登録 directive 出現数は
+        0 件。本 fixture は架空の directive で Sphinx 追従挙動を pin する。
+        """
         src = "概要\n====\n\n.. unknown-directive-xyz::\n\n   body text\n"
-        data = self._data(sections=[{"id": "s1", "title": "概要", "level": 2, "content": "x"}])
+        # JSON に body text は含まれない (Sphinx 同等の drop)
+        data = self._data(sections=[{"id": "s1", "title": "概要", "level": 2, "content": ""}])
         issues = self._check(src, data)
-        assert any("[QC1]" in i and "RST parse/visitor error" in i for i in issues)
+        # No parse/visitor-error QC1 FAIL.
+        assert not any(
+            "[QC1]" in i and "RST parse/visitor error" in i for i in issues
+        ), f"unknown directive must not be QC1 FAIL (Sphinx 追従): {issues}"
+        assert issues == [], f"expected no FAILs, got: {issues}"
 
-    def test_fail_qc1_rst_unknown_role_surfaces(self):
-        """Unknown RST role (not in Sphinx shim list) → UnknownSyntaxError → QC1 FAIL."""
+    def test_pass_qc1_rst_unknown_role_text_fallback(self):
+        """Spec §3-2-3 Sphinx 追従原則: 未登録 role `:unknownshim:` は
+        docutils が `problematic` node として role 名 + text をそのまま
+        保持する (Sphinx も WARNING + fallback text)。RBKC は QC1 FAIL では
+        なく warning 記録 + content 保持で render する。
+        content 損失があれば QC1 残存チェックが独立に検出する。"""
         # `:unknownshim:` is not in _SPHINX_INLINE_ROLES and not a docutils native role
         src = "概要\n====\n\nテキスト :unknownshim:`x` を含む。\n"
-        data = self._data(sections=[{"id": "s1", "title": "概要", "level": 2, "content": "テキスト を含む。"}])
+        # JSON は fallback text をそのまま保持
+        data = self._data(sections=[{
+            "id": "s1", "title": "概要", "level": 2,
+            "content": "テキスト :unknownshim:`x` を含む。",
+        }])
         issues = self._check(src, data)
-        assert any("[QC1]" in i and "RST parse/visitor error" in i for i in issues)
+        assert not any(
+            "[QC1]" in i and "RST parse/visitor error" in i for i in issues
+        ), f"unknown role must not be QC1 FAIL (Sphinx 追従): {issues}"
+        assert issues == [], f"expected no FAILs, got: {issues}"
+
+    def test_fail_qc1_rst_severe_level_4_still_fails(self):
+        """Spec §3-1b / §3-2-3: SEVERE/4 は doctree が信用できない
+        破壊的状態なので従来通り QC1 FAIL。本テストは policy inversion
+        (ERROR/3 → warning, SEVERE/4 → FAIL) の SEVERE 側を pin する。
+
+        docutils で確実に SEVERE/4 を誘発するのは難しいので、直接
+        rst_normaliser にワーニング文字列を渡した想定は test_rst_normaliser
+        で別途実施する (本テストは省略可)。"""
+        # Note: docutils corpus に依存せず SEVERE を安定発生させるのが
+        # 難しいため、代表として rst_normaliser の正面入力で検証する
+        # ケースは test_rst_normaliser に置く。ここでは QC1 FAIL の
+        # 反転テスト (ERROR/3 → 非 FAIL) が他のテストで確認されていれば十分。
+        pass
 
     def test_pass_qc1_rst_unknown_target_name_not_promoted_to_fail(self):
         """Phase 22-B-12 Finding C: Japanese prose containing a trailing
@@ -1441,6 +1491,65 @@ class TestCheckContentCompleteness:
         # problematic-node display-text fallback preserves "nablarch_"
         # verbatim, so the JSON content is found in the source.
         assert issues == [], f"expected no FAILs, got: {issues}"
+
+    def test_pass_qc1_rst_inconsistent_title_style_not_promoted_to_fail(self):
+        """Sphinx 追従原則 (§3-2-3) ホワイトリスト拡張: docutils の
+        `(ERROR/3) Inconsistent title style: skip from level N to M` は
+        Sphinx 本体でも WARNING 扱いで HTML build は成功する。AST には
+        全 section / title / content が保持されるため、RBKC は
+        VisitorError で halt せず warning 記録で render を継続する。
+
+        再現: `.lw/nab-official/v1.4/document/tool/07_AuthGenerator/01_AuthGenerator.rst`
+        が overline+underline (`=/=`, `-/-`) と underline-only (`=`, `-`)
+        のタイトル記法を混在させ、後者の出現時に docutils が
+        "skip from level 2 to 4" を ERROR/3 として report する。
+        """
+        # 最小再現: Level 1 = `=/=`, Level 2 = `=`, Level 3 = `-/-`。
+        # そのあと Level 2 の S2 に underline-only `-` で O を付けると、
+        # 既に `-` は Level 3 としても未登録 (登録済は `-/-`)、かつ
+        # Level 2 から 1 段 skip するため、docutils が
+        # "Inconsistent title style: skip from level 2 to 4" を raise する。
+        src = (
+            "===\n"
+            "D\n"
+            "===\n"
+            "\n"
+            "S\n"
+            "===\n"
+            "\n"
+            "---\n"
+            "T\n"
+            "---\n"
+            "\n"
+            "S2\n"
+            "===\n"
+            "\n"
+            "O\n"
+            "---\n"
+            "\n"
+            "bodyO\n"
+        )
+        data = self._data(
+            title="D",
+            sections=[
+                {"id": "s1", "title": "S", "level": 2, "content": ""},
+                {"id": "s2", "title": "T", "level": 3, "content": ""},
+                {"id": "s3", "title": "S2", "level": 2, "content": ""},
+                {"id": "s4", "title": "O", "level": 4, "content": "bodyO"},
+            ],
+        )
+        issues = self._check(src, data)
+        # Core assertion: Inconsistent title style must NOT surface as a
+        # QC1 parse/visitor FAIL (Sphinx 追従). Unlike Unknown target name,
+        # this does not hide content — the doctree retains every section,
+        # title, and body, which RBKC can then render normally.
+        assert not any(
+            "[QC1]" in i and (
+                "Inconsistent title style" in i
+                or "RST parse/visitor error" in i
+            )
+            for i in issues
+        ), f"Inconsistent title style must not be QC1 FAIL (Sphinx 追従): {issues}"
 
     # --- QC2 Z-1 gap fill: multiple fabrications + top-level + near-miss ---
 

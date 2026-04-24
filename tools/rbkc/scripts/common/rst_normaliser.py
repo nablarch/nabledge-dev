@@ -60,22 +60,17 @@ def normalise_rst(
     # scan the stream for the (ERROR/3) / (SEVERE/4) markers.
     if strict_unknown and warnings:
         for line in warnings.splitlines():
-            if "(ERROR/3)" in line or "(SEVERE/4)" in line:
-                # Spec §3-2-3 Sphinx 追従原則: "Unknown target name" is a
-                # WARNING in Sphinx (docutils raises it as ERROR/3 when
-                # a trailing-underscore name appears in prose, e.g.
-                # Japanese 「nablarch_」).  docutils still produces a
-                # valid doctree with the text preserved in a
-                # `problematic` node; the visitor emits it verbatim.
-                # Treat this as a WARNING (surfaced via warnings_out),
-                # not QC1 FAIL.  Narrow filter to ERROR/3 only because
-                # SEVERE/4 never carries this message class (structural
-                # failures where the doctree is unreliable).
-                if "(ERROR/3)" in line and "Unknown target name:" in line:
-                    if warnings_out is not None:
-                        warnings_out.append(line.strip())
-                    continue
+            # Spec §3-2-3 Sphinx 追従原則: docutils が halt_level=5 下で
+            # parse を継続し Sphinx 本体もビルドを継続する ERROR/3 は
+            # QC1 FAIL ではなく warning 記録扱い。SEVERE/4 は doctree が
+            # 信用できない破壊的状態なので QC1 FAIL を維持。
+            # silent skip 禁止のため warnings_out には全て記録する。
+            if "(SEVERE/4)" in line:
                 raise UnknownSyntaxError(f"docutils parse error: {line.strip()}")
+            if "(ERROR/3)" in line:
+                if warnings_out is not None:
+                    warnings_out.append(line.strip())
+                continue
 
     try:
         parts = rst_ast_visitor.extract_document(
