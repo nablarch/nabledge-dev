@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-24
+**Updated**: 2026-04-24 (Step A 完了)
 
 ## ゴール (この PR の本質)
 
@@ -82,15 +82,19 @@ Phase 1 が 100% に届いたら着手。
 
 ## 次ステップ: term_queries 機械抽出 + 10 件 search-only 計測
 
-### Step A: term_queries 機械抽出の実装
+### Step A: term_queries 機械抽出の実装 ✅
 
-- [ ] `tools/benchmark/bench/search_ids.py` に機械抽出関数を追加
-  - `@Annotation`, CamelCase 2-hump, camelCase, カタカナ 4+, 漢字 4+, 漢字+カタカナ混合 4+
-  - df_pct > 20% の語は grep 対象外 (ストップリスト)
-  - 抽出ルールは `classify_terms.py` と完全一致させる
-- [ ] AI-1 の返り値 `term_queries` を無視するか削除
-- [ ] `tools/benchmark/prompts/search_ids.md` から term_queries 生成セクション削除
-  - Stage 1 の説明を `selections` のみに集中させる
+- [x] `tools/benchmark/bench/term_extract.py` を新設
+  - `extract_terms(text)` が `@Annotation`, CamelCase, camelCase, カタカナ/漢字/混合 4+ を抽出
+  - `filter_terms` で df_pct stopset 適用
+  - パターンは `classify_terms.py` の `JAVA_STOPLIST` を共有
+- [x] `tools/benchmark/build_term_stopset.py` を新設 → `data/term_stopset-v6.json` 生成 (16 語)
+- [x] `search_ids.py` が質問から機械抽出して filter_terms 経由で grep 実行
+  - AI-1 の `term_queries` は schema/prompt から完全削除
+- [x] `prompts/search_ids.md` から term_queries 生成セクション削除
+- [x] `tests/test_term_extract.py` 追加 (9 ケース GREEN)
+- [x] 既存 test_build_index.py の pre-existing failure 6 件も修正 (allowlist 対応)
+- [x] 全 34 テスト GREEN
 
 ### Step B: 10 件 search-only 計測
 
