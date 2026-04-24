@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 65 — tasks re-ordered after C2 revert)
+**Updated**: 2026-04-24 (session 66 — C3/C4/C6 done, see c3-c4-c6-results.md)
 
 ---
 
@@ -21,44 +21,26 @@
 
 baseline 取得は create/verify の生成物が安定してから。C3/C4/C6 で生成物の品質が動く可能性があるため、それらを全部潰してから baseline を取る (そうしないと C7 で取った v6 baseline も後から取り直しになる)。
 
-## In Progress — create/verify 安定化 (baseline 取得前に完了必須)
+## In Progress
 
-### C3: "Unknown target name" filter が silent skip 化していないか確認
+### C7: v6 nabledge-test baseline 再取得
 
-Finding C (`2e45cea4d`) で 2 箇所に filter 追加 (rst_normaliser / rst_ast_visitor)。WARN は `warnings_out` 経由で stderr に出るが件数を集計していない。
+create/verify 安定化完了 (C3/C4/C6 done)。runner は Sonnet 固定 (`nabledge-test-runner.md` frontmatter)。trial の response.md をコピー偽造しない、各 runner 応答をそのまま保存すること (前回偽造の反省)。
 
-**Fix**:
-- 5 バージョンで create + verify を走らせ、stderr の "Unknown target name" を含む WARN を grep して件数記録
-- 想定: 07_BasicRules.rst (v1.3/v1.2 各 1 件) + 他に同構文あれば数件
-- 想定を大幅超過したら silent skip を疑い追加調査
+## Done — Stabilization (session 66)
 
-### C4: ws3 resolver AST 書き換えの挙動差分を確認
+### C3 / C4 / C6 — create/verify 安定化 (see `c3-c4-c6-results.md`)
 
-旧 regex `:download:`label <path>`` は `<>` 必須、新 AST は `<>` なし `:download:`path`` も拾う。verify FAIL 0 は「コピー漏れなし」は保証するが「余分コピーなし」は保証しない。
+- **C3**: "Unknown target name" filter は silent skip でない。v6/v5/v1.4 = 0 件、v1.3/v1.2 = 2 件 (同一箇所 07_BasicRules.rst:6 を 2 経路から再 parse しているため)。想定通り。
+- **C4**: ws3 resolver の差分は v1.3/v1.2 で 64-65 asset dir 追加のみ、byte 差分 / 削除 = 0。追加は全て docs MD が `![…](…)` で参照する asset (include 先 RST の `image::` をようやく拾った)。余分コピーではない。
+- **C6**: v6 は 22-B-12 前後で完全一致 (knowledge 677 / docs 354, added=removed=differ=0)。副作用ゼロ確認。
 
-**Fix**:
-- 22-B-12 前後で 5 バージョンの `knowledge/assets/` ツリーを `diff -r` で比較
-- 差分を吟味し、妥当でなければ resolver を regex 時代と同じ条件に絞る
-
-### C6: v6 生成物 byte-level diff 未確認
-
-22-B-12 の fix は v1.x ターゲットだが resolver AST 化は全版に効く。v6 knowledge/docs の byte diff は未確認。
-
-**Fix**:
-- 22-B-12 前 (1 commit 戻した状態) と 後 (`3dd3d483f`) で v6 `knowledge/` と `docs/` を `diff -r` で比較
-- 差分があれば内容を吟味 (ある・ないどちらも事実として記録)
-- C3/C4 と連動する可能性あり
-
-### C1, C2 — Done
+### C1, C2 — Done (session 65)
 
 - C1: Finding B 事後承認 (commit `9b3d5d032` keep) — session 65 user approval
 - C2: Option F 方針断念・revert (`8315683cb`)。main baseline で運用されてきた並列方式 (race は known limitation) に戻す。偽造部分は C7 再取得でクリア
 
 ## Not Started
-
-### C7: v6 nabledge-test baseline 再取得
-
-C3/C4/C6 完了後に実施。runner は Sonnet 固定 (`nabledge-test-runner.md` frontmatter)。trial の response.md をコピー偽造しない、各 runner 応答をそのまま保存すること (今回偽造の反省)。
 
 ### v5 / v1.4 / v1.3 / v1.2 nabledge-test baseline 取得
 
