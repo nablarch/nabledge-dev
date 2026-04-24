@@ -2,19 +2,33 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 63 終 — 22-B-12 大規模リファクタリング完了。v6/v5 FAIL 0、v1.4 残 6、v1.3/v1.2 include 解決問題。372 tests GREEN)
+**Updated**: 2026-04-24 (session 64 — v1.4 spacer + v1.3 include fix 適用済 (未 commit)、v1.3 verify で resolver の include 非追従 class of bug が可視化、resolver AST 化決定)
 
 ---
 
 ## 現状サマリー
 
-- **v6 verify: FAIL 0** (353 files) / **v5 verify: FAIL 0** (533 files)
-- v1.4 残 6 FAIL (`nablarch-1.4.3-releasenote.xlsx` 1 シートの spacer col 特殊構造)
-- v1.3/v1.2 は `.. include:: links.lst` 解決失敗で create 途中 crash (docutils 相対パス問題)
+- **v6 verify: FAIL 0** (353 files) / **v5 verify: FAIL 0** (533 files) / **v1.4 verify: FAIL 0** (161 files、spacer fix 適用済)
+- v1.3: create 成功 (327 files)、verify で 120 FAIL (118 QL1 asset / 1 QO2 / 1 QC1)
+- v1.2: 未実行
 - 372 tests GREEN (unit + e2e)
 - 設計書 3 本 (verify-quality / converter / json-schema) を 22-B-12 決定で更新済 (`91cb46603`)
 - 実装: Excel span-inherit + preamble in content + QL1 5-quadrant + literalinclude shim (`7e1ac1fa3`)
-- **次のタスク**: 22-B-12 残件 — v1.4 spacer col ケース + v1.3/v1.2 include 解決。その後 Phase 19 (他バージョン baseline)
+
+## セッション判明事項 (2026-04-24 session 64)
+
+- **resolver.py が Phase 21-Y の AST 化対象から取り残されていた**: Phase 4 (`4d0517910`) で正規表現実装、その後 converter/verify は 21-Y で AST 化されたが resolver は未対応。22-B-16c (`86549073d`) で image URI rewrite は AST 化されたが asset 物理コピー列挙は正規表現のまま
+- **v1.3 で初顕在化**: 58 RST が `.. include:: ../api/link.rst` を介して link.rst 内の `.. image::` を参照、resolver が include 先を追わず asset copy 不発
+- **ルール追記** (`.claude/rules/rbkc.md`): 「RBKC / verify 変更時は 5 バージョン全量 pre/post verify 必須」を明文化 (今セッションのいたちごっこ防止)
+
+## 次の作業方針 (SE 相談済)
+
+SE 推奨の 4 段階ワークフロー:
+
+1. **ベースライン取得**: 現状 2 fix を `git stash -u` → 5 バージョン verify 取得 (**pre baseline A**) → stash pop → 5 バージョン verify (**post-fix baseline B**) → A/B diff で fix 効果を立証
+2. **commit 粒度**: fix ごと独立 commit。5 バージョン pre/post diff を commit message に記載。残 FAIL は「次 commit でゼロ化」が明示される場合のみ許容
+3. **横展開調査**: resolver 着手前に v1.3 の QO2/QC1 根本原因を 5 バージョンで grep、発生件数を fact 化
+4. **完了条件**: 5 バージョン全てで verify FAIL 0。post baseline を `.work/00299/` に保存して PR に link
 
 ---
 
@@ -159,12 +173,17 @@
   - [x] **v6 FAIL 0** (353 files)
   - [x] **v5 FAIL 0** (533 files)
 
-  **残件**:
-  - [ ] **22-B-12-v1.4-spacer**: `nablarch-1.4.3-releasenote.xlsx` 1 シートで spacer col (header 名空) に `UI開発基盤\n※…` 注釈が入っている。P1 schema `{col}: {val}` では表現不能。対応方針: P1 スキーマの spacer 列意味論を見直す (カテゴリラベル行として別 section 化 or preamble 拡張)。残 6 FAIL
-  - [ ] **22-B-12-v1.3-include**: v1.3 の `.. include:: links.lst` で docutils `file_insertion_enabled=True` が source_path 相対として解決失敗し create crash。対応方針: `rst_ast.py` の `parse()` に source_path からの相対解決を docutils に正しく伝える (現状も `source` 設定しているが include resolve が機能していない)。要調査
-  - [ ] **22-B-12-v1.2-include**: v1.2 同じ root cause。v1.3 fix で解消見込み
+  **残件** (session 64 更新):
+  - [x] **22-B-12-v1.4-spacer** (未 commit): `xlsx_common.py:460` section_title fallback で `_first_non_empty(cells)` に `_flatten_ws` が掛かっていなかった (horizontal class 漏れ、他 5 箇所は適用済)。C16 `'UI開発基盤\n※…'` が flatten されず verify と mismatch。1 行 fix で v1.4 FAIL 6→0
+  - [x] **22-B-12-v1.3-include** (未 commit): `rst_ast.py:parse()` で docutils `source_path` を `settings_overrides["source"]` 経由で渡していたが、これは include 解決に使われない。`publish_doctree(source_path=...)` の位置/キーワード引数として正しく渡す fix で v1.3 create 成功 (327 files)。v1.2 も同 fix で解消見込み
+  - [ ] **22-B-12-ws1 ベースライン取得**: 2 fix を stash → 5 バージョン pre baseline A → pop → 5 バージョン post baseline B
+  - [ ] **22-B-12-ws2 fix commit**: A/B diff を commit message に記載、2 fix を独立 commit
+  - [ ] **22-B-12-ws3 横展開調査**: v1.3 QO2 (releasenote detail `｜;｜/｜#｜?｜:｜space｜` 含む値) と QC1 (`07_BasicRules.rst` Unknown target name "nablarch") の根本原因を特定し 5 バージョンで grep
+  - [ ] **22-B-12-resolver-AST**: `scripts/create/resolver.py` を正規表現から docutils AST walk (`nodes.image` / `nodes.reference[refuri]` / figure) に書き換え。include 経由 asset を自動追従。Phase 21-Y の AST 化遅延 cleanup
+  - [ ] **22-B-12-v1.3-QO2-QC1**: 横展開調査の結果に応じて個別 fix
+  - [ ] **22-B-12-final-baseline**: 5 バージョン全て FAIL 0 達成、post baseline を `.work/00299/baseline-22-B-12-final/` に保存し PR に link
 
-  **完了条件**: 全バージョンで verify FAIL 0
+  **完了条件**: 全バージョン (v6/v5/v1.4/v1.3/v1.2) で verify FAIL 0
 
 **備考**:
 - Phase 21-C (旧番 — リリースノート行粒度) は 22-B に統合済。xlsx converter 書き直しで包括する
