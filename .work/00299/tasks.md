@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 66 — C7 v6 baseline 20260424-172654 main 比較追記)
+**Updated**: 2026-04-24 (session 66 end — C5 削除)
 
 ---
 
@@ -79,10 +79,3 @@ kc 検索 → RBKC 検索で構造変更は 3 箇所: (1) Step 5 section search 
 - `tools/rbkc/README.md` を現状構成に書き直し
 - `.work/00299/notes.md` を Phase 21-Y〜22 要約に圧縮
 
----
-
-## 本 PR 対象外 (別 issue)
-
-### C5: Finding A guard (`len(parents) >= 2`) の将来リスク
-
-corpus 95/95 で該当なしのため現時点 risk=0。spec `rbkc-converter-design.md` §8-3 に「parent row ≥ 2 non-empty cells 必須」を明文化する作業は別 issue で。
