@@ -1,5 +1,9 @@
 """ids search variant: AI-1 picks file_id|sid from the LLM index, script resolves
-to path:sid, read-sections fetches content, AI-3 composes the answer."""
+to path:sid, read-sections fetches content, AI-3 composes the answer.
+
+Term queries (for grepping section bodies) are extracted deterministically
+from the question by `term_extract` — AI-1 no longer generates them.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +12,7 @@ from pathlib import Path
 
 from . import io
 from .claude import invoke
+from .term_extract import extract_terms, filter_terms, load_stopset
 from .types import SearchResult
 
 
@@ -25,14 +30,11 @@ SCHEMA_SELECT = {
                 "pattern": r"^[a-zA-Z0-9_-]+\|[a-zA-Z0-9_-]+$",
             },
         },
-        "term_queries": {
-            "type": "array",
-            "maxItems": 3,
-            "uniqueItems": True,
-            "items": {"type": "string", "maxLength": 60},
-        },
     },
 }
+
+
+TERM_STOPSET_PATH = io.BENCH_DIR / "data" / "term_stopset-v6.json"
 
 # Per-term cap on how many sections we auto-include from a body substring match.
 TERM_HITS_PER_TERM = 3
@@ -157,6 +159,11 @@ def resolve_selections(
 
 def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict],
         skip_answer: bool = False) -> SearchResult:
+    # Deterministic term extraction from the question, filtered by df_pct
+    # stopset. AI-1 no longer generates term_queries.
+    stopset = load_stopset(TERM_STOPSET_PATH)
+    term_queries = filter_terms(extract_terms(question), stopset=stopset)
+
     # AI-1 — select file_id|sid from the index.
     select_prompt = (
         (io.PROMPTS_DIR / "search_ids.md").read_text(encoding="utf-8")
@@ -175,7 +182,6 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
     )
     structured = select.structured or {}
     raw_selections = list(structured.get("selections") or [])
-    term_queries = [t for t in (structured.get("term_queries") or []) if isinstance(t, str) and t.strip()]
     term_hits = grep_term_hits(term_queries, id_to_path) if term_queries else []
     merged_selections = merge_term_hits_into_selections(raw_selections, term_hits)
     resolved, unresolved = resolve_selections(merged_selections, id_to_path)
