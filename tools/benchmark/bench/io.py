@@ -14,22 +14,60 @@ from .types import JudgeResult, JudgeVerdict, Scenario, ScenarioRun, SearchResul
 BENCH_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = BENCH_DIR.parent.parent
 
-SCENARIOS_PATH = BENCH_DIR / "scenarios" / "qa-v6.json"
-ANSWERS_DIR = BENCH_DIR / "scenarios" / "qa-v6-answers"
 PROMPTS_DIR = BENCH_DIR / "prompts"
 RESULTS_DIR = BENCH_DIR / ".results"
 
-KNOWLEDGE_ROOT = REPO_ROOT / ".claude" / "skills" / "nabledge-6" / "knowledge"
-INDEX_LLM_PATH = KNOWLEDGE_ROOT / "index-llm.md"
-INDEX_SCRIPT_PATH = KNOWLEDGE_ROOT / "index-script.json"
+# Default version — all accessors honor the `version` kwarg so other versions
+# (v5 / v1.2 / v1.3 / v1.4) can run through the same benchmark code paths.
+DEFAULT_VERSION = "6"
 
 
-def load_scenarios(path: Path = SCENARIOS_PATH) -> list[Scenario]:
+def knowledge_root(version: str = DEFAULT_VERSION) -> Path:
+    # Honor monkeypatches on the module-level KNOWLEDGE_ROOT for the default
+    # version — existing tests set KNOWLEDGE_ROOT to a fake tree and expect
+    # all downstream code to pick it up.
+    if version == DEFAULT_VERSION:
+        mod_default = globals().get("KNOWLEDGE_ROOT")
+        if mod_default is not None:
+            return mod_default
+    return REPO_ROOT / ".claude" / "skills" / f"nabledge-{version}" / "knowledge"
+
+
+def index_llm_path(version: str = DEFAULT_VERSION) -> Path:
+    return knowledge_root(version) / "index-llm.md"
+
+
+def index_script_path(version: str = DEFAULT_VERSION) -> Path:
+    return knowledge_root(version) / "index-script.json"
+
+
+def scenarios_path(version: str = DEFAULT_VERSION) -> Path:
+    return BENCH_DIR / "scenarios" / f"qa-v{version}.json"
+
+
+def answers_dir(version: str = DEFAULT_VERSION) -> Path:
+    return BENCH_DIR / "scenarios" / f"qa-v{version}-answers"
+
+
+# Legacy module-level constants (default to v6). Prefer the helpers above for
+# new code. Existing tests and tools still reference these names.
+SCENARIOS_PATH = scenarios_path()
+ANSWERS_DIR = answers_dir()
+KNOWLEDGE_ROOT = knowledge_root()
+INDEX_LLM_PATH = index_llm_path()
+INDEX_SCRIPT_PATH = index_script_path()
+
+
+def load_scenarios(
+    path: Path | None = None, *, version: str = DEFAULT_VERSION,
+) -> list[Scenario]:
+    path = path or scenarios_path(version)
+    answers = answers_dir(version)
     raw = json.loads(path.read_text(encoding="utf-8"))
     out: list[Scenario] = []
     for item in raw:
         sid = item["id"]
-        answer_path = ANSWERS_DIR / f"{sid}.md"
+        answer_path = answers / f"{sid}.md"
         reference = answer_path.read_text(encoding="utf-8") if answer_path.exists() else ""
         out.append(Scenario(
             id=sid,
@@ -44,10 +82,12 @@ def load_scenarios(path: Path = SCENARIOS_PATH) -> list[Scenario]:
     return out
 
 
-def new_results_dir(variant: Variant, model: str) -> Path:
+def new_results_dir(
+    variant: Variant, model: str, *, version: str = DEFAULT_VERSION,
+) -> Path:
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
     model_slug = model.replace("/", "_").replace(":", "_")
-    out = RESULTS_DIR / f"{ts}-{variant}-{model_slug}"
+    out = RESULTS_DIR / f"{ts}-v{version}-{variant}-{model_slug}"
     out.mkdir(parents=True, exist_ok=True)
     return out
 
@@ -95,7 +135,9 @@ def write_judge(scen: Path, judge: JudgeResult) -> None:
     )
 
 
-def load_retrieved_sections(selectors: list[str]) -> str:
+def load_retrieved_sections(
+    selectors: list[str], *, version: str = DEFAULT_VERSION,
+) -> str:
     """Load text for selectors (path:sid or path#sid) as a single block.
 
     Used to give the judge the KB evidence the AI actually cited, so it
@@ -103,12 +145,15 @@ def load_retrieved_sections(selectors: list[str]) -> str:
     "fabrication".
     """
     normalized = [s.replace("#", ":", 1) for s in selectors if s]
-    text, _ = read_selected_sections(normalized)
+    text, _ = read_selected_sections(normalized, version=version)
     return text
 
 
-def read_selected_sections(selectors: list[str]) -> tuple[str, list[dict]]:
+def read_selected_sections(
+    selectors: list[str], *, version: str = DEFAULT_VERSION,
+) -> tuple[str, list[dict]]:
     """Load text for each `path:sid` selector from the knowledge base."""
+    root = knowledge_root(version)
     chunks: list[str] = []
     records: list[dict] = []
     for sel in selectors:
@@ -116,7 +161,7 @@ def read_selected_sections(selectors: list[str]) -> tuple[str, list[dict]]:
             records.append({"selector": sel, "status": "malformed"})
             continue
         path, sid = sel.split(":", 1)
-        kf = KNOWLEDGE_ROOT / path
+        kf = root / path
         try:
             data = json.loads(kf.read_text(encoding="utf-8"))
         except (FileNotFoundError, json.JSONDecodeError):
@@ -150,17 +195,20 @@ def extract_reference_citations(reference_md: str) -> list[tuple[str, str]]:
     return out
 
 
-def load_reference_sources(reference_md: str) -> tuple[str, list[dict]]:
+def load_reference_sources(
+    reference_md: str, *, version: str = DEFAULT_VERSION,
+) -> tuple[str, list[dict]]:
     """Load bodies for each citation path:sid in the reference answer.
 
     Returns (formatted_text, per-citation records) analogous to
     read_selected_sections but driven by the reference answer's citations.
     """
+    root = knowledge_root(version)
     citations = extract_reference_citations(reference_md)
     chunks: list[str] = []
     records: list[dict] = []
     for path, sid in citations:
-        kf = KNOWLEDGE_ROOT / path
+        kf = root / path
         try:
             data = json.loads(kf.read_text(encoding="utf-8"))
         except (FileNotFoundError, json.JSONDecodeError):

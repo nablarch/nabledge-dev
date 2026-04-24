@@ -31,18 +31,19 @@ from tools.benchmark.bench.types import JudgeResult, Scenario, SearchResult, Var
 
 def run_variant(
     *, variant: Variant, scenarios: list[Scenario], model: str, out_dir: Path,
-    search_only: bool = False,
+    search_only: bool = False, version: str = io.DEFAULT_VERSION,
 ) -> None:
     search_fn = _dispatch(variant)
-    ids_map = search_ids.load_id_to_path() if variant == "ids" else {}
+    ids_map = search_ids.load_id_to_path(version) if variant == "ids" else {}
     mode = "search-only" if search_only else "full"
-    print(f"variant={variant} model={model} mode={mode} scenarios={len(scenarios)} out={out_dir}",
+    print(f"variant={variant} version=v{version} model={model} mode={mode} "
+          f"scenarios={len(scenarios)} out={out_dir}",
           file=sys.stderr)
     summary_rows: list[dict] = []
     for i, sc in enumerate(scenarios, 1):
         scen = io.scen_dir(out_dir, sc.id)
         print(f"[{i}/{len(scenarios)}] {sc.id} ...", file=sys.stderr, flush=True)
-        extra_kwargs: dict = {}
+        extra_kwargs: dict = {"version": version}
         if variant == "ids":
             extra_kwargs["id_to_path"] = ids_map
             extra_kwargs["skip_answer"] = search_only
@@ -54,7 +55,8 @@ def run_variant(
             _print_search_row(sc.id, search)
             summary_rows.append(_search_summary_row(sc.id, search))
             continue
-        jr = judge.run(scenario=sc, search=search, model=model, scen_dir=scen)
+        jr = judge.run(scenario=sc, search=search, model=model,
+                       scen_dir=scen, version=version)
         io.write_judge(scen, jr)
         _print_row(sc.id, search, jr)
         summary_rows.append(_summary_row(sc.id, search, jr))
@@ -65,7 +67,8 @@ def run_variant(
         _write_summary(out_dir, summary_rows)
 
 
-def rejudge(*, results_dir: Path, model: str, scenarios: list[Scenario]) -> None:
+def rejudge(*, results_dir: Path, model: str, scenarios: list[Scenario],
+            version: str = io.DEFAULT_VERSION) -> None:
     print(f"rejudge model={model} results_dir={results_dir}", file=sys.stderr)
     summary_rows: list[dict] = []
     for i, sc in enumerate(scenarios, 1):
@@ -81,7 +84,8 @@ def rejudge(*, results_dir: Path, model: str, scenarios: list[Scenario]) -> None
         print(f"[{i}/{len(scenarios)}] {sc.id} ...", file=sys.stderr, flush=True)
         # Keep stream/ subdir isolated per rejudge call.
         (scen / "stream").mkdir(exist_ok=True)
-        jr = judge.run(scenario=sc, search=search, model=model, scen_dir=scen)
+        jr = judge.run(scenario=sc, search=search, model=model,
+                       scen_dir=scen, version=version)
         io.write_judge(scen, jr)
         _print_row(sc.id, search, jr)
         summary_rows.append(_summary_row(sc.id, search, jr))
@@ -227,8 +231,10 @@ def main() -> int:
                     help="(rejudge) path to .results/{ts}-... to re-score")
     ap.add_argument("--scenario", help="run only this scenario id")
     ap.add_argument("--limit", type=int, help="run only the first N scenarios")
-    ap.add_argument("--scenarios-file", default=str(io.SCENARIOS_PATH),
-                    help=f"scenarios JSON path (default: {io.SCENARIOS_PATH})")
+    ap.add_argument("--version", default=io.DEFAULT_VERSION,
+                    help="nabledge skill version (6, 5, 1.4, 1.3, 1.2)")
+    ap.add_argument("--scenarios-file", default=None,
+                    help="scenarios JSON path (default: scenarios/qa-v{version}.json)")
     ap.add_argument("--model", default="sonnet",
                     help="claude model id or alias (sonnet, haiku, opus, or exact id)")
     ap.add_argument("--out", help="output directory (default: .results/{ts}-{variant}-{model})")
@@ -236,7 +242,8 @@ def main() -> int:
                     help="run only the AI-1 search stage; skip AI-3 answer and judge")
     args = ap.parse_args()
 
-    scenarios = io.load_scenarios(Path(args.scenarios_file))
+    scenarios_file = Path(args.scenarios_file) if args.scenarios_file else None
+    scenarios = io.load_scenarios(scenarios_file, version=args.version)
     if args.scenario:
         scenarios = [s for s in scenarios if s.id == args.scenario]
         if not scenarios:
@@ -253,16 +260,20 @@ def main() -> int:
         if not rd.is_dir():
             print(f"results dir not found: {rd}", file=sys.stderr)
             return 2
-        rejudge(results_dir=rd, model=args.model, scenarios=scenarios)
+        rejudge(results_dir=rd, model=args.model, scenarios=scenarios,
+                version=args.version)
         return 0
 
     if not args.variant:
         print("--variant is required (ids|current) unless --rejudge", file=sys.stderr)
         return 2
 
-    out_dir = Path(args.out) if args.out else io.new_results_dir(args.variant, args.model)
+    out_dir = Path(args.out) if args.out else io.new_results_dir(
+        args.variant, args.model, version=args.version,
+    )
     run_variant(variant=args.variant, scenarios=scenarios, model=args.model,
-                out_dir=out_dir, search_only=args.search_only)
+                out_dir=out_dir, search_only=args.search_only,
+                version=args.version)
     return 0
 
 

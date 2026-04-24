@@ -67,15 +67,26 @@ def load_path_to_id(index_script_path: Path) -> dict[str, str]:
 
 
 def main() -> int:
+    repo_root = Path(__file__).resolve().parents[2]
+    bench_dir = Path(__file__).resolve().parent
     ap = argparse.ArgumentParser()
     ap.add_argument("results_dir", type=Path)
-    ap.add_argument("--scenarios", type=Path, default=Path(
-        "/home/tie303177/work/nabledge/work1/tools/benchmark/scenarios/qa-v6.json"))
-    ap.add_argument("--answers", type=Path, default=Path(
-        "/home/tie303177/work/nabledge/work1/tools/benchmark/scenarios/qa-v6-answers"))
-    ap.add_argument("--index", type=Path, default=Path(
-        "/home/tie303177/work/nabledge/work1/.claude/skills/nabledge-6/knowledge/index-script.json"))
+    ap.add_argument("--version", default="6",
+                    help="nabledge skill version (6, 5, 1.4, 1.3, 1.2)")
+    ap.add_argument("--scenarios", type=Path, default=None,
+                    help="scenarios JSON (default: scenarios/qa-v{version}.json)")
+    ap.add_argument("--answers", type=Path, default=None,
+                    help="answers dir (default: scenarios/qa-v{version}-answers)")
+    ap.add_argument("--index", type=Path, default=None,
+                    help="index-script.json path (default: skills/nabledge-{version}/knowledge/)")
     args = ap.parse_args()
+
+    if args.scenarios is None:
+        args.scenarios = bench_dir / "scenarios" / f"qa-v{args.version}.json"
+    if args.answers is None:
+        args.answers = bench_dir / "scenarios" / f"qa-v{args.version}-answers"
+    if args.index is None:
+        args.index = repo_root / ".claude" / "skills" / f"nabledge-{args.version}" / "knowledge" / "index-script.json"
 
     path_to_id = load_path_to_id(args.index)
     scenarios = json.loads(args.scenarios.read_text(encoding="utf-8"))

@@ -11,9 +11,13 @@ from .search_ids import SCHEMA_ANSWER
 from .types import SearchResult
 
 
-def run(*, question: str, model: str, scen_dir: Path) -> SearchResult:
-    prompt = (io.PROMPTS_DIR / "search_current.md").read_text(encoding="utf-8").replace(
-        "{{question}}", question
+def run(*, question: str, model: str, scen_dir: Path,
+        version: str = io.DEFAULT_VERSION) -> SearchResult:
+    skill_rel = f".claude/skills/nabledge-{version}"
+    prompt = (
+        (io.PROMPTS_DIR / "search_current.md").read_text(encoding="utf-8")
+        .replace("{{question}}", question)
+        .replace("{{skill_root}}", skill_rel)
     )
     result = invoke(
         prompt=prompt,
