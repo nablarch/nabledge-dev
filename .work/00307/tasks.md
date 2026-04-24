@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-24 (Step 2/3 done)
+**Updated**: 2026-04-24 (Step 4 partial, pivot to Read-based AI-1)
 
 ## ゴール
 
@@ -59,14 +59,64 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
 - [x] index-llm.md 生成 — 1411 sections / 3196 placements (`c75a99c71`)
 - [x] TDD: `tests/test_build_index.py` 更新 (10 tests GREEN)
 
-#### Step 4: 計測
+#### Step 4: 初回計測 (完了、悪化 3 件判明)
 
-- [ ] 10 件 search-only (失敗 9 + 成功 1)
-- [ ] `search_coverage.py` で旧 vs 新 index 比較
-- [ ] L1 件数の変化を記録 (現状 12 件)
-- [ ] パラメータは動かさない (出来レース回避)
+- [x] 10 件 search-only 実施 (`$4.10`, 4 分)
+- [x] `search_coverage.py` で旧 vs 新 index 比較
+- [x] 結果: expected_full 3/10 → 5/10、ref_full 2/10 → 4/10 (ネット改善)
+- [x] ただし **悪化 3 件** 判明:
+  - `req-05`: satisficing。`libraries-message` で満足し `libraries-code|s3` (タイトルに「多言語化」) を取らず
+  - `review-01 s2`: タイトル「リクエストパス指定」だが本文は DataReader カタログ → title のみでは救えない
+  - `review-08 s8`: タイトル「例外振る舞い」だが本文に DBCM ハンドラ/排他に直結 → title のみでは救えない
+- [x] パラメータは動かさない (凍結維持、出来レース回避)
+- [x] エキスパート再評価: 2/3 が Read 必須 → **4 ステップ Read 方式へ pivot**
 
-#### Step 5: 結論と Phase 2 移行
+#### Step 5: 4 ステップ Read-based AI-1 実装 (新規・最優先)
+
+**設計合意 (`.work/00307/review-by-prompt-engineer-*` 系 PE 相談で確定)**:
+
+- 4 ステップ手続き:
+  1. intent 抽出 (質問から内容語と意図)
+  2. index sweep → ファイル単位で候補列挙
+  3. 各候補を Read → セクション本文で判断、evidence 引用
+  4. 最終セクション選定 (10-15)
+- `allowed_tools=["Read"]`、knowledge ディレクトリ限定
+- `max_turns=8`
+- schema は `intent` / `candidate_files` / `read_notes` / `selections` を全部返す
+- evidence は **verbatim substring** (本文コピペ) 必須、事後に部分文字列一致検証
+- `selections[].matched_on` enum (`title`/`keyword`/`body`) で分析用シグナル
+
+**合格基準** (`review-by-prompt-engineer-*` 最新):
+- 全体精度 ≥ baseline
+- `review-01 s2` / `mth s8` 回復
+- evidence 不一致率 ≤ 5%
+- schema 検証失敗 ≤ 2%
+- 中央値 wall time が 2 倍以内
+
+**実装タスク**:
+- [ ] `build_index.py`: index-llm.md のヘッダ行にファイルパスを埋め込む
+- [ ] `search_ids.py`: `allowed_tools=["Read"]`、`max_turns=8`、evidence 事後検証
+- [ ] `prompts/search_ids.md`: 4 ステップ手続き型に書き換え、verbatim 引用ルール追記
+- [ ] schema 差し替え (intent/candidate_files/read_notes/selections)
+- [ ] `search_coverage.py`: matched_on 集計 / evidence 不一致レポート
+- [ ] **まず 1 件で試走** (低コストで挙動確認、悪化 3 件から 1 件選ぶ)
+- [ ] 1 件で挙動が安定したら **3 件で試走** (悪化 3 件)
+- [ ] 悪化 3 件が全て回復 + 安定 7 件が回帰しなければ 10 件、次に 30 件へ
+
+**コスト予測**:
+- 現状: $0.40/Q × 30 = $12/run
+- Read 方式: $1.2-$2.0/Q × 30 = $36-$60/run (3-5 倍)
+
+#### Step 6: 検索が安定したら回答統合の検討 (条件付き次期)
+
+検索が安定して evidence も取れているなら、**本文は既に読んでいる**。
+AI-3 を別呼び出しにせず、AI-1 に回答生成まで含める案を検討。
+
+- [ ] 安定後、AI-1 プロンプトに回答生成ステップ追加を評価
+- [ ] ファイル出力 (answer.md / search.json 等) は**呼び出し側のスクリプト**で実施 (AI-1 は JSON 返却のみ)
+- [ ] 呼び出し側分離の意図: AI-1 の責務を「探す+答える」に閉じ、保存形式は外で決める
+
+#### Step 7: 結論と Phase 2 移行
 
 - [ ] 結果を文書化
 - [ ] 検索改善が十分 or 不十分でも Phase 2 へ進む
@@ -93,7 +143,8 @@ L1=0 到達には検索改善だけでは不十分。`l1-root-cause-analysis.md`
 | 旧 search + 旧 a_facts | 2.10 | 16 | 13+1 | 初回 30 件 |
 | 旧 current | 2.17 | 18 | 11+1 | 比較用 |
 | 新 search + 新 a_facts (30 件) | 2.20 | 18 | 12 | 前回 baseline |
-| **新 index 10 件 search-only** | — | — | — | **Step 4 で測定** |
+| 新 index 10 件 search-only | — | — | — | exp_full 3/10→5/10, ref_full 2/10→4/10、悪化 3 件 (req-05/review-01 s2/mth s8) |
+| **4-step Read AI-1 1 件試走** | — | — | — | **Step 5 で測定予定** |
 
 ## スコープ外
 
