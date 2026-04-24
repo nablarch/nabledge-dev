@@ -75,7 +75,16 @@ claim about to be tagged C:
   - Not found anywhere → `UNSUPPORTED_KB_VERIFIED`.
 
 Cap: read at most 3 files per C-claim. Do not read the same file
-twice.
+twice. If a Read returns "File content exceeds maximum allowed
+tokens", use `offset`/`limit` parameters on Read (e.g.
+`{"offset": 0, "limit": 500}`) or use `Grep` with
+`-n` `-A 3` to extract the relevant region instead. Do not retry
+the bare Read — it will fail again.
+
+**Budget**: across all C-claim verification, use at most 10 tool
+calls total (Grep + Read combined). If you are near the budget,
+mark the remaining provisional C-claims as `UNSUPPORTED_KB_VERIFIED`
+and move on.
 
 **Step 4. Score.** Populate `level` with your best estimate. The
 runtime overrides it from the final verdict using this rule:

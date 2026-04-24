@@ -223,11 +223,11 @@ def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path,
         prompt=prompt,
         schema=SCHEMA_JUDGE,
         model=model,
-        max_turns=8,
+        max_turns=15,
         log_path=scen_dir / "stream" / "judge.jsonl",
         cwd=io.REPO_ROOT,
         allowed_tools=["Grep", "Read"],
-        timeout_s=300,
+        timeout_s=420,
     )
     structured = call.structured or {}
     # Post-verify every SUPPORTED_BY_KB claim; downgrade any with a quote that
