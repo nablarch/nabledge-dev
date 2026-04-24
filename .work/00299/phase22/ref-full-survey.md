@@ -1,0 +1,118 @@
+# RST :ref: / label full survey
+
+## v6
+- corpus rst files: 334
+- RBKC-input rst files: 334
+- corpus refs: 2921 (labels: 810)
+- RBKC refs: 2921 (labels: 810)
+- class counts (RBKC refs):
+  - A_resolvable: 2315
+  - C_true_dangling: 606
+- examples:
+  - A_resolvable:
+    - `system_development_guide` @ index.rst:63
+    - `development_standards` @ index.rst:64
+    - `waitt-to-jetty` @ index.rst:75
+    - `update-ntf-jetty` @ index.rst:75
+    - `java_ee_jakarta_ee_comparation` @ index.rst:133
+  - C_true_dangling:
+    - `doma_dependency` @ index.rst:445
+    - `migration_doma2.44.0` @ index.rst:448
+    - `versionup_policy-backward_compatibility_policy` @ index.rst:19
+    - `versionup_policy-backward_compatibility_is_not_maintained` @ versionup_policy.rst:126
+    - `versionup_policy-backward_compatibility_contents` @ versionup_policy.rst:127
+
+## v5
+- corpus rst files: 431
+- RBKC-input rst files: 431
+- corpus refs: 3155 (labels: 913)
+- RBKC refs: 3155 (labels: 913)
+- class counts (RBKC refs):
+  - A_resolvable: 2557
+  - C_true_dangling: 598
+- examples:
+  - A_resolvable:
+    - `system_development_guide` @ index.rst:73
+    - `development_standards` @ index.rst:74
+    - `api-analysis` @ versionup_policy.rst:154
+    - `beforefirstStepSpecityNablarchVer` @ versionup_policy.rst:192
+    - `release-notes` @ versionup_policy.rst:204
+  - C_true_dangling:
+    - `versionup_policy-backward_compatibility_is_not_maintained` @ versionup_policy.rst:128
+    - `versionup_policy-backward_compatibility_contents` @ versionup_policy.rst:129
+    - `maven` @ index.rst:24
+    - `getting_started` @ index.rst:52
+    - `rest_getting_started` @ index.rst:59
+
+## v1.4
+- corpus rst files: 464
+- RBKC-input rst files: 127
+- corpus refs: 1509 (labels: 557)
+- RBKC refs: 284 (labels: 111)
+- class counts (RBKC refs):
+  - A_resolvable: 235
+  - B_outside_rbkc: 15
+  - C_true_dangling: 34
+- examples:
+  - A_resolvable:
+    - `telNum_fields_code` @ 02_ExtendedValidation.rst:231
+    - `CaptchaGenerateAction-settings-label` @ 06_Captcha.rst:190
+    - `passwordAuth-settings-label` @ 01_Authentication.rst:264
+    - `ListSearchResult_Setting` @ 03_ListSearchResult.rst:105
+    - `ListSearchResult_Tag` @ 03_ListSearchResult.rst:234
+  - B_outside_rbkc:
+    - `fw-bussiness-component-label` @ glossary.rst:24
+    - `fw-bussiness-component-label` @ glossary.rst:26
+    - `fw-bussiness-component-label` @ glossary.rst:32
+    - `fw-bussiness-component-label` @ glossary.rst:63
+    - `WebFrontController` @ glossary.rst:65
+  - C_true_dangling:
+    - `class_unit_test` @ glossary.rst:109
+    - `code_manager` @ glossary.rst:111
+    - `static_data_cache` @ glossary.rst:136
+    - `deal_unit_test` @ glossary.rst:151
+    - `request_unit_test` @ glossary.rst:212
+
+## v1.3
+- corpus rst files: 380
+- RBKC-input rst files: 309
+- corpus refs: 1209 (labels: 451)
+- RBKC refs: 1202 (labels: 440)
+- class counts (RBKC refs):
+  - A_resolvable: 940
+  - C_true_dangling: 262
+- examples:
+  - A_resolvable:
+    - `telNum_fields_code` @ 02_ExtendedValidation.rst:231
+    - `ListSearchResult_Setting` @ 03_ListSearchResult.rst:105
+    - `ListSearchResult_Tag` @ 03_ListSearchResult.rst:234
+    - `ListSearchResult_Tag` @ 03_ListSearchResult.rst:244
+    - `ListSearchResult_TableElement` @ 03_ListSearchResult.rst:270
+  - C_true_dangling:
+    - `entity_generator` @ index.rst:24
+    - `jsp_generator` @ index.rst:25
+    - `config_generator` @ index.rst:26
+    - `search` @ index.rst:5
+    - `class_unit_test` @ glossary.rst:109
+
+## v1.2
+- corpus rst files: 298
+- RBKC-input rst files: 297
+- corpus refs: 1282 (labels: 430)
+- RBKC refs: 1282 (labels: 430)
+- class counts (RBKC refs):
+  - C_true_dangling: 263
+  - A_resolvable: 1019
+- examples:
+  - C_true_dangling:
+    - `entity_generator` @ index.rst:24
+    - `jsp_generator` @ index.rst:25
+    - `config_generator` @ index.rst:26
+    - `search` @ index.rst:5
+    - `class_unit_test` @ glossary.rst:109
+  - A_resolvable:
+    - `shell_generator` @ index.rst:33
+    - `implementing_action_handler` @ determining_stereotypes.rst:6
+    - `logging` @ overview_of_NAF.rst:20
+    - `db-summary-label` @ overview_of_NAF.rst:20
+    - `permission` @ overview_of_NAF.rst:28

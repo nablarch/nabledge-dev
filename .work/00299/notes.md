@@ -259,3 +259,41 @@ docutils AST は全バージョンの実データで **converter の入力とし
 1. **Y-2 開始可否**: この probe 結果で AST 方式の実現可能性確認が取れたと判断してよいか
 2. **Include の扱い**: Y-2 対応表に「converter が include を事前展開して doctree に渡す」と明記する方針で OK か
 3. **Cross-ref の扱い**: `targets` 辞書経由の解決を Visitor の post-processing として実装する方針で OK か
+
+---
+
+## 2026-04-24 (session 63) — Phase 22-B-12 全量調査と設計決定
+
+### 全量調査結果
+
+`.work/00299/phase22/full-survey-summary.md` に詳細。要点:
+
+- Excel 212 sheet: 95 P1 (90% が preamble あり、1 シートのみ真の 2 行ヘッダ、span-inherit 合成で duplicate 0)
+- RST :ref: 全バージョン: corpus-wide label_map が真性 dangling 1,763 件を分離、v1.4 glossary.rst の 15 件は corpus に定義有・RBKC scope 外 (意図的 27% 採用)
+- Sphinx 公式ビルドで glossary.rst を単独 build すると同じ 15 件 WARNING + `<span class="xref">` display fallback を出力 → RBKC create の挙動は Sphinx と一致
+- literalinclude 43 件は `:language:` 以外の option 0 件 (corpus 全量) — shim は閉集合で網羅可能
+
+### 設計決定 (Phase 22-B-12)
+
+| # | 決定 | 根拠 |
+|---|---|---|
+| D1 | Excel preamble は既存 top-level `content` フィールドに格納 | format 非依存の semantic 不変。docs.py 改変なし。90/95 シートで活用 |
+| D2 | multi-row header は span-inherit 合成 + `" / "` 区切り | 95/95 duplicate 0、corpus 全ヘッダで ` / ` 衝突 0、unique 性は合成アルゴリズムで担保 (区切り文字は cosmetic) |
+| D3 | QL1 を corpus-wide 5 象限判定に変更 | Sphinx parity: mapping scope 外の label は Sphinx 公式と同じく display fallback で PASS。mapping 採用範囲内の resolve 失敗のみ FAIL |
+| D4 | `literalinclude` を `_LITERAL_DIRECTIVES` に追加 | corpus 43 件全てが `:language:` のみ、shim は body → literal_block で網羅 |
+
+いずれも対処療法ではなく、spec + corpus 全量事実 + Sphinx 仕様から導出した**あるべき姿**。
+
+v1.4 glossary.rst の 15 件は:
+- mapping 変更なし (scope 維持)
+- glossary.rst 知識ファイル価値を保持
+- Sphinx 公式ビルド挙動と一致する verify 5 象限判定で PASS
+
+設計書への反映箇所:
+- `rbkc-verify-quality-design.md` §3-1 Excel 節 (preamble + span-inherit + SEP 明記)
+- `rbkc-verify-quality-design.md` §3-2-2 QL1 dangling (5 象限判定テーブル)
+- `rbkc-verify-quality-design.md` §3-4 QP (列名 unique 性の前提)
+- `rbkc-converter-design.md` §4-4 literalinclude shim 言及
+- `rbkc-converter-design.md` §5-1 QL1 5 象限判定の参照
+- `rbkc-converter-design.md` §8-3 span-inherit + SEP、§8-3a preamble 新設、§8-4/§8-5 P1 content 仕様
+- `rbkc-json-schema-design.md` §3-4 xlsx P1/P2 スキーマ全面差し替え
