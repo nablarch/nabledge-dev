@@ -7,6 +7,20 @@
 - Do not mix multiple topics in one message — separate concerns clearly
 - When reporting status, always anchor to the task file so the user knows where things stand
 
+### Concise first, details on request
+
+Default to the shortest answer that conveys the conclusion and a supporting
+example. Do not preemptively dump analysis tables, per-case breakdowns, or
+multi-section explanations — wait until the user asks a follow-up.
+
+- **Bad**: first-response includes 3 large tables covering every case and a
+  "root cause" section the user never asked for
+- **Good**: first-response is 2-4 lines stating the conclusion + one concrete
+  example; offer to expand if needed
+
+When the user says "分からない" / "詳しく" / asks a specific follow-up, then
+provide the targeted detail for that specific question — not the whole dump.
+
 ## Proposing, not asking for permission
 
 When a decision needs to be made, propose the "should-be" state derived from the goal,
