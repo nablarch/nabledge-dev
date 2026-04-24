@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 69 — 全 5 バージョン CHANGELOG 追記)
+**Updated**: 2026-04-24 (session 70 — 配信物クリーン化 + ドキュメント整備完了)
 
 ---
 
@@ -143,11 +143,12 @@ kc 検索 → RBKC 検索で構造変更は 3 箇所: (1) Step 5 section search 
 
 ## Not Started
 
-### 配信物クリーン化 + ドキュメント整備
+(なし)
 
-全バージョン baseline 取得後:
-- setup スクリプト (`tools/setup/setup-cc.sh` / `setup-ghc.sh`): vup 時に旧 `.claude/skills/nabledge-${v}/` を完全削除してから `cp -r`
-- ~~各バージョン CHANGELOG `[Unreleased]` への「ルールベース化」追記~~ — session 69 完了 commit `fac51b221`
-- `tools/rbkc/README.md` を現状構成に書き直し
-- `.work/00299/notes.md` を Phase 21-Y〜22 要約に圧縮
+## Done — session 69-70 (配信物クリーン化 + ドキュメント整備)
+
+- [x] 各バージョン CHANGELOG `[Unreleased]` への「ルールベース化」追記 — session 69 commit `fac51b221`
+- [x] setup スクリプト (`tools/setup/setup-cc.sh` / `setup-ghc.sh`): vup 時に旧 skill dir を完全削除してから `cp -r` — session 70
+- [x] `tools/rbkc/README.md` を現状構成 (docutils AST / verify gate / hints スコープ外) に書き直し — session 70
+- [x] `.work/00299/notes.md` を Phase 21-Y/22-B-12 要約に圧縮 (299→74 行) — session 70
 
