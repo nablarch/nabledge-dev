@@ -196,7 +196,8 @@ print_status info "Installing Python libraries..."
 if uv pip install --python "$VENV_DIR/bin/python" \
     pdfplumber reportlab pypdf pymupdf \
     python-pptx Pillow markitdown \
-    openpyxl python-docx lxml pandas; then
+    openpyxl python-docx lxml pandas \
+    scikit-learn; then
     print_status ok "Python libraries installed"
 else
     print_status error "Failed to install Python libraries"
@@ -217,7 +218,7 @@ fi
 # Verify document tools installation
 print_header "6. Verifying Document Tools"
 
-if "$VENV_DIR/bin/python" -c "import pdfplumber, reportlab, pptx, openpyxl, docx; print('OK')" 2>/dev/null; then
+if "$VENV_DIR/bin/python" -c "import pdfplumber, reportlab, pptx, openpyxl, docx, sklearn; print('OK')" 2>/dev/null; then
     print_status ok "Python libraries verified"
 else
     print_status error "Python library verification failed"
