@@ -2,17 +2,18 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 61 — 22-B-14 完了 (`fe7a34a0c`): nabledge-6 skill を RBKC V4 schema に追従。22-B-13 の無効 baseline 関連ファイル全削除 (`ee1330ae8`)。latest シンボリックリンクを前回 valid baseline `20260331-152005` に復帰。次は 22-B-13b (v6 baseline 再取得))
+**Updated**: 2026-04-24 (session 61 終 — 22-B-14 完了。22-B-15 (runner agent 化 + grader 昇格) 途中で中断。セッション再起動待ち)
 
 ---
 
 ## 現状サマリー
 
 - v6 verify: **FAIL 0**。362 unit tests GREEN
-- 22-B-16b/c (cross-doc MD link emission + asset + QL1 two-sided) 完了。256/353 JSON files に cross-doc MD links、`:download:` xlsx/csv assets もリンク化
-- **22-B-13 完了**: v6 baseline `20260424-080424` — overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 100% (前回 97.3% → +2.7pp 有意改善)
-- 次のタスク: **Phase 22-B-12** (他バージョン create/verify)
-- その後: Phase 19 (他バージョン baseline) → Phase 21-Z Z-4/Z-3 (setup ゴミ / CHANGELOG / README)
+- 22-B-16b/c (cross-doc MD link emission + asset + QL1 two-sided) 完了
+- 22-B-14 完了 (`fe7a34a0c`): nabledge-6 skill を RBKC V4 schema に追従 (6 箇所修正)。無効だった 20260424-080424 baseline は削除済
+- 22-B-15 進行中: nabledge-test の agent/skill 境界ゼロベース再設計。Step 1 (runner agent 作成) まで済 (`14e2796a2`)、Step 0 (smoke test) 以降はセッション再起動後に継続
+- **次のタスク (次セッション)**: `/agents` で nabledge-test-runner 認識確認 → Step 0 smoke test (`Skill` tool が custom subagent から動作するか)
+- その後: Step 2-6 → 22-B-13b (v6 baseline 再取得) → 22-B-12 (他バージョン create/verify) → Phase 19 → Phase 21-Z
 
 ---
 
@@ -137,7 +138,16 @@
   - [x] **Step 1: 影響範囲調査** — nabledge-6 で 6 箇所 (full-text-search.sh / get-hints.sh / _section-search.md / _section-judgement.md Step 0 / _knowledge-search.md Step 5 / SKILL.md)、nabledge-test は影響なし、他バージョン (v5/v1.x) は旧 schema のまま整合しているため影響なし
   - [x] **Step 2: 修正実施** — (1) full-text-search.sh jq を `.sections[]` + title+content で list 対応、(2) get-hints.sh 削除 (hints スコープアウト済)、(3) _section-search.md 削除、(4) _section-judgement.md Step 0 削除、(5) _knowledge-search.md Step 5 / _index-based-search.md Step 2 を「全 section 列挙」に書き換え、(6) SKILL.md の「with search hints」記述を現行の index.toon 実態に修正
   - [x] **Step 3: smoke test** — full-text-search.sh で qa-002/qa-004 の期待キーワードが `libraries-tag.json#s21`、`biz-samples-03.json#s17`、`project-search.json#s1` 等に正しくヒット、残存 schema 依存ゼロを grep で確認
-- [ ] 22-B-13b: 22-B-14 完了後に v6 baseline を再取得 (前回分は削除済)
+- [ ] **22-B-15**: nabledge-test の agent / skill 境界をゼロベース再設計 (Prompt Engineer 相談済み結論を反映)
+  - 背景: 前回 baseline 実行で (a) 親エージェント (Opus) と子の model 不一致で比較ノイズ、(b) 私が擬似コードから grade_v6.py を書き起こした際に検出ロジックが drift、の 2 問題が発生。案 C (軽量) でモデル固定 + grader スクリプト昇格
+  - [x] Step 1: `.claude/agents/nabledge-test-runner.md` 作成 (`14e2796a2`)。frontmatter `model: sonnet` 固定、`tools: Read, Write, Bash, Skill, Grep, Glob`、I/O 契約 (`NABLEDGE_TEST_RESPONSE/METRICS/OUTPUT_FILES/STATUS` デリミタ) を定義
+  - [BLOCKED: セッション再起動待ち] Step 0: smoke test — `Agent(subagent_type: "nabledge-test-runner", ...)` で 1 シナリオ実行し、`Skill` tool が custom subagent から動作するか確認 (最大リスク)
+  - [ ] Step 2: `nabledge-test/SKILL.md` の Step 4 (scenario 起動) を `Agent(subagent_type: "nabledge-test-runner", ...)` 呼び出しに書き換え。discipline rules / I/O 契約の記述を削除 (runner agent に集約済み)
+  - [ ] Step 3: `scripts/grade.py` を新規作成。SKILL.md Step 6 の擬似コードを実装に昇格。heading 厳密判定、section 抽出 regex (`(?=\n#{1,N}[^#])` パターン済バグ回避) を含む。unit test 付き
+  - [ ] Step 4: SKILL.md Step 6 を `python3 scripts/grade.py <workspace>/<scenario_id>` 呼び出しに差し替え、擬似コード削除
+  - [ ] Step 5: meta.json に `model_used: "sonnet"` と `runner_agent: "nabledge-test-runner"` フィールド追加 (将来比較用)
+  - [ ] Step 6: e2e smoke test — `/nabledge-test 6 qa-001` で coverage 1 シナリオ、grading、レポート生成まで通るか確認
+- [ ] 22-B-13b: 22-B-15 完了後に v6 baseline を再取得 (前回分は削除済)
 - [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
 
 **備考**:
