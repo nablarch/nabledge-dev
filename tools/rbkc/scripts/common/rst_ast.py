@@ -189,11 +189,18 @@ def parse(source: str, source_path: Path | None = None) -> tuple[nodes.document,
         "file_insertion_enabled": True,  # expand .. include:: / literalinclude
         "raw_enabled": True,
     }
-    if source_path is not None:
-        overrides["source"] = str(source_path)
 
     full_source = _substitution_prolog() + source
-    doctree = publish_doctree(full_source, settings_overrides=overrides)
+    # Pass source_path as a real argument (not via settings overrides).
+    # docutils uses it to resolve relative `.. include::` / literalinclude
+    # paths against the document's own directory; a settings-level "source"
+    # key does not drive include resolution.  Missing this caused v1.3/v1.2
+    # includes to fail with InputError (see 22-B-12-v1.3-include).
+    doctree = publish_doctree(
+        full_source,
+        source_path=str(source_path) if source_path is not None else None,
+        settings_overrides=overrides,
+    )
     return doctree, warning_stream.getvalue()
 
 
