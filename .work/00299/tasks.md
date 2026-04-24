@@ -2,260 +2,63 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 64 — v1.4 spacer + v1.3 include fix 適用済 (未 commit)、v1.3 verify で resolver の include 非追従 class of bug が可視化、resolver AST 化決定)
+**Updated**: 2026-04-24 (session 64)
 
 ---
 
-## 現状サマリー
+## 現状
 
-- **v6 verify: FAIL 0** (353 files) / **v5 verify: FAIL 0** (533 files) / **v1.4 verify: FAIL 0** (161 files、spacer fix 適用済)
-- v1.3: create 成功 (327 files)、verify で 120 FAIL (118 QL1 asset / 1 QO2 / 1 QC1)
+- v6 / v5 / v1.4: verify FAIL 0 (v1.4 は未 regen、次セッション冒頭で再生成 → ベースライン確定)
+- v1.3: create 成功、verify 120 FAIL (118 QL1 asset / 1 QO2 / 1 QC1)
 - v1.2: 未実行
-- 372 tests GREEN (unit + e2e)
-- 設計書 3 本 (verify-quality / converter / json-schema) を 22-B-12 決定で更新済 (`91cb46603`)
-- 実装: Excel span-inherit + preamble in content + QL1 5-quadrant + literalinclude shim (`7e1ac1fa3`)
+- 372 tests GREEN
 
-## セッション判明事項 (2026-04-24 session 64)
+## 22-B-12 残件 (In Progress)
 
-- **resolver.py が Phase 21-Y の AST 化対象から取り残されていた**: Phase 4 (`4d0517910`) で正規表現実装、その後 converter/verify は 21-Y で AST 化されたが resolver は未対応。22-B-16c (`86549073d`) で image URI rewrite は AST 化されたが asset 物理コピー列挙は正規表現のまま
-- **v1.3 で初顕在化**: 58 RST が `.. include:: ../api/link.rst` を介して link.rst 内の `.. image::` を参照、resolver が include 先を追わず asset copy 不発
-- **ルール追記** (`.claude/rules/rbkc.md`): 「RBKC / verify 変更時は 5 バージョン全量 pre/post verify 必須」を明文化 (今セッションのいたちごっこ防止)
+完了条件: 全 5 バージョン (v6/v5/v1.4/v1.3/v1.2) で verify FAIL 0。post baseline を `.work/00299/baseline-22-B-12-final/` に保存。
 
-## 次の作業方針 (SE 相談済)
+### ws1: 5 バージョン post-fix ベースライン取得
 
-SE 推奨の 4 段階ワークフロー:
+現在の working tree (2 fix 適用・commit 済) のまま 5 バージョン全量 `create && verify` を実行し、FAIL 件数を `.work/00299/baseline-22-B-12-post-fix/` に記録する。これが以降の変更の比較起点になる。
 
-1. **ベースライン取得**: 現状 2 fix を `git stash -u` → 5 バージョン verify 取得 (**pre baseline A**) → stash pop → 5 バージョン verify (**post-fix baseline B**) → A/B diff で fix 効果を立証
-2. **commit 粒度**: fix ごと独立 commit。5 バージョン pre/post diff を commit message に記載。残 FAIL は「次 commit でゼロ化」が明示される場合のみ許容
-3. **横展開調査**: resolver 着手前に v1.3 の QO2/QC1 根本原因を 5 バージョンで grep、発生件数を fact 化
-4. **完了条件**: 5 バージョン全てで verify FAIL 0。post baseline を `.work/00299/` に保存して PR に link
+### ws2: v1.3 QO2 / QC1 の根本原因横展開調査
 
----
+v1.3 の残 FAIL のうち resolver 以外の 2 件:
+- QO2 × 1: `nablarch-ライブラリ-1.3.0-releasenote-detail` の URL reserved chars `｜;｜/｜#｜?｜:｜space｜` を含む値が docs MD に見つからない → MD table escape 周り
+- QC1 × 1: `07_BasicRules.rst` Unknown target name "nablarch" → target 重複 or include での衝突
 
-## 方針転換（session 38 合意）— 保持
+それぞれ root cause を特定し、5 バージョンで同パターンを grep して発生件数を fact 化してから fix 方針を確定する。
 
-**RBKC は "ルールベースで content のみ生成" に責務を限定する。**
+### ws3: resolver.py を docutils AST walk に書き換え
 
-- RBKC は JSON / docs MD / 索引を content（タイトル + 本文）のみで生成
-- JSON の `hints` フィールドは出力しない、docs MD の `<details><summary>keywords</summary>` ブロックも出さない
-- AI 生成 hints は別 Issue #309 管轄 (資産は `.work/00299/handoff-hints/`)
+Phase 21-Y で converter/verify は docutils AST 化されたが resolver だけ正規表現のまま残っていた (初期実装は `4d0517910`、22-B-16c `86549073d` で URI rewrite は AST 化済だが物理コピー列挙は取り残し)。
 
----
+v1.3 で 58 RST が `.. include:: ../api/link.rst` を介して link.rst 内の `.. image::` を参照、resolver が include 先を追わず asset copy 不発 → QL1 asset missing 118 件。
 
-## verify 実装ルール（絶対遵守）
+方針: `scripts/create/resolver.py` を `rst_ast.parse(source, source_path)` 経由で doctree を取得し、`nodes.image` / `nodes.reference[refuri]` / figure を walk。include は docutils が展開するので自動追従。
 
-- **設計書通りに実装する**: `tools/rbkc/docs/rbkc-verify-quality-design.md` が唯一の実装仕様。問題・疑問が生じたらユーザーに相談し、勝手に判断して実装を変更しない
-- **設計書 → 実装の順序**: ユーザーと合意して verify の内容を見直す場合は、必ず設計書を更新してから実装を進める。設計書と実装の整合は常に維持する
-- **マトリクスの ✅ 条件**: 実装が完了し、かつ実際の RBKC 出力に対して動作を確認した時点で初めて ✅ にする
-- **verify 変更は事前ユーザー承認**: `.claude/rules/rbkc.md` 参照。設計書に既に記載済の変更はこの限りでない
-- **TDD 厳守**: verify テスト作成 → RED → verify 実装 → GREEN → RBKC 実装 → verify GREEN → SE + QA expert review
+SE/QA 相談済: AST-only 原則一致、create-side unit test は作らず (rule 順守)、5 バージョン post-change verify 差分で合否判定。
 
----
+### ws4: ws2/ws3 fix 後の最終 5 バージョン verify
 
-## In Progress
-
-### Phase 22-B-5: Excel converter 書き直し (sheet-level 分割 + P1/P2)
-
-**背景** (session 55 合意、保持): Excel 系 (リリースノート / セキュリティ対応チェックリスト) は現状 1 ファイル = 1 JSON (全シート / 全行を空白連結) で、ユーザーが期待する「1 sheet = 1 JSON = 1 MD、1 行 = 1 section、MD はテーブル」に従っていない。
-
-#### 設計合意 (session 55) — 保持
-
-| | JSON | docs MD | verify の一致ルール |
-|---|---|---|---|
-| **22-A (RST / MD)** ✅ | きれいな MD (不要な `>` blockquote を剥がす、RST `list-table` は table のまま) | JSON と同じ | QO2 完全一致を維持 |
-| **22-B (Excel)** 着手中 | 1 sheet = 1 JSON、1 行 = 1 section、section.content は `列名: 値\n...` の列挙 | 先頭に `# タイトル` + 全行 MD テーブル (全列網羅) | QO2 は JSON ⊂ MD の一方向のみ。spec §3-3 更新済 |
-
-**Excel 対象**: `*-releasenote.xlsx` (57)、`*-releasenote-detail.xls` (17、v1.2/v1.3)、`Nablarch機能のセキュリティ対応表.xlsx` (v5/v6 各 1)、合計 **76 ファイル / 212 シート**。
-
-**ファイル分割**:
-- 1 `.xlsx` → 各シートごとに 1 `.json` + 1 `.md`
-- シート数 = 1: ファイル基底名のまま (sheet_slug 付加せず)
-- シート数 ≥ 2: `{基底名}-{シート名}.json` (シート名は日本語そのまま)
-
-**シート分類 (P1 / P2)**:
-- P1 (データ表): ヘッダ行 (連続非空セル ≥ 3) + 同構造データ行 ≥ 2。ただし列数 ≤ 2 のシートは P2
-- P2 (段落主体): ヘッダ検出失敗、または列数 ≤ 2
-
-**判定メタ情報**:
-- 各 JSON に `sheet_type: "P1" | "P2"` を出力
-- 初回生成後に `.work/00299/phase22/sheet-classification.md` を出力、ユーザーが override 必要性判断
-
-**複数行ヘッダ**:
-- 2 段以上のヘッダは副列がある列のみ `メイン/副` 合成、副列なし列はメインのみ
-- 例: `不具合の起因バージョン/モジュール/Nablarch` / `修正後のバージョン`
-
-**JSON スキーマ**:
-- P1: `title` = row 1 の `■...` (なければシート名)、`content` = 空 or タイトル直下前書き、`sections` = 1 データ行 = 1 section、`section.title` = 「タイトル」列の値 (なければ先頭非 No. 列)、`section.content` = 全列を `{列名}: {値}\n` で列挙
-- P2: `title` = row 1 の `■...` (なければシート名)、`content` = シート全体テキスト、`sections` = 空
-
-**docs MD**:
-- P1: `# {title}` + 全列 MD table (元 Excel を復元)
-- P2: `# {title}` + シート全体テキストをそのまま
-
-**Baseline 再取得**:
-- Excel ファイル分割で file ID が変わる → 旧 v6 baseline 97.3% と直接比較不能
-- Phase 22-B 完了後に再取得、旧 baseline は履歴として保持
-
-#### Steps
-
-- [x] 22-B-1: 全バージョン Excel 調査 (76 ファイル / 212 シート)、構造表を `.work/00299/phase22/excel-structure.md` に出力
-- [x] 22-B-2: 設計案ユーザー承認 (session 55)
-- [x] 22-B-3: `rbkc-verify-quality-design.md` §3-3 QO2 Excel 例外 + §3-1 sheet-level 分割 を仕様化 (`f5aa6a0e3`)
-- [x] 22-B-4: `rbkc-converter-design.md` §8 Excel 対応表新設 (`5a7cacf03`)
-- [x] 22-B-5a: **verify 層 TDD** (`bd678e4aa`) — `_xlsx_source_tokens(sheet_name=...)` / `sheet_type == "P1"` 一方向 containment / P2 strict verbatim fallthrough。edge cases (URL 内 `:` / blank 値 / no-sheet_type regression guard) 含む 7 + 3 tests。SE + QA expert review 済 (QA 2 Findings を同コミットで修正)
-- [x] 22-B-5a-r2: **設計書更新** (session 58) — §3-1 Excel 節に P1 header 展開仕様、§3-4 QP 新設、§4 マトリクス更新 (`03974a0ea`)
-- [x] 22-B-5a-r3: **verify TDD** — RED (`a491488bb`) → GREEN (`eb0c47a77`) → QA 7 Findings 対応 (`45fd37de1` `04bdf74fa`)。274 tests GREEN
-- [x] 22-B-5b: **xlsx converter 書き直し** — `xlsx_common.py` 新規、`xlsx_releasenote.py` / `xlsx_security.py` / `classify.py` / `run.py` / `docs.py` 更新 (`dabc57274`)。スキーマ sheet-level split + sheet_type + P1 table / P2 text。spec §3-3 QO1 P1 例外追加 (`023d53248`)
-- [x] 22-B-5c: scan/classify/run sheet-level 対応 (22-B-5b に統合済)
-- [x] 22-B-6: docs.py Excel P1/P2 分岐 (22-B-5b に統合済)
-- [x] 22-B-7: index.py sheet 分割増加に対応 (353 files で動作確認)
-- [x] 22-B-10: `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → 353 files, All files verified OK
-- [x] 22-B-5b-review: SE + QA expert review for commits `dabc57274` + `023d53248` 実施済 — SE 1 Finding (`columns`/`data_rows` JSON 未記載) + QA 3 Findings (P1 #title check / flatten edge cases / sheet_name_fallback 陽性ケース) 全件対応 (`d1e4a314a`)。282 tests GREEN
-- [x] 22-B-9: 判定結果一覧 `.work/00299/phase22/sheet-classification.md` 出力 (`ca3bf744f`)。現状維持で確定、見た目改善は Issue #311 に切り出し
-- [ ] 22-B-11: 生成された docs MD を GitHub Web で実地確認 (ユーザー) — FB ①NULL混入 (修正済 `f67969f8a`)、②RST h3→## 潰れ、③内部リンク/画像リンクがdocs MDに反映されない → 22-B-16 で対応
-- [x] 22-B-11: 生成された docs MD を GitHub Web で実地確認 (ユーザー) — FB ①NULL混入 (修正済 `f67969f8a`)、②RST h3→## 潰れ、③内部リンク/画像リンクがdocs MDに反映されない → 22-B-16 で対応
-- [x] 22-B-16: **RST section 階層 + 内部リンク / 画像 / literalinclude を docs MD と JSON に適切反映** (16a/16b/16c 全 complete)
-
-  **expert review 結果** (SE + QA): circular test / silent skip 4 箇所 / QO2 完全一致保持 / scope-split の要請を反映。詳細は `.work/00299/review-22-b-16-se.md` / `review-22-b-16-qa.md` (上記エキスパートレビュー全文).
-
-  **設計合意**:
-  - JSON content と docs MD は **完全に同一文字列のリンクを出力** (QO2 完全一致を維持)
-  - リンクは CommonMark `[text](../category/file_id.md#github_slug)` / `![alt](assets/file_id/foo.png)` 形式
-  - anchor は target section title の GitHub slug (`scripts/common/github_slug.py` 新設、GitHub 公式仕様由来の独立 fixture で pin)
-  - `labels.py` を `label -> (title, file_id, section_title)` に拡張、`doc_map` (`rst_relpath -> (title, file_id)`) を新設
-  - docs.py は `assets/` 先頭 path のみ docs MD 位置基準に rewrite (既存拡張)
-  - silent skip horizontal class 4 箇所 (verify.py 1526-1529 / 1592-1598 / labels.py drop / test_pass_rst_ref_unknown_label_skipped) を一括修正
-  - 各 slice で TDD RED → GREEN → v6 verify FAIL 0 → SE/QA review → commit
-
-  - [x] **22-B-16-spec**: 設計書 3 本更新 (verify §3-2 QL1 / §3-3 QO1 level / §4 マトリクス、converter §3-2-1 Section.level / §4 reference / §4-6 image+figure / §5-1 role shim リンク化 / §7-5 MD 相対リンク・画像、json-schema §2 sections[].level / §4-2 level-based heading 出力) `bdc97f077`
-  - [x] **22-B-16a**: Section.level + docs.py `##`/`###`/`####` + QO1 level check + silent skip horizontal class 4 箇所修正 `a469b0c8b` + QA F1/F2 fix `7841dd5cb` + v6 再生成 `4ab9fded9`
-    1. TDD RED: `TestCheckJsonDocsMdConsistency_QO1_Level` (6 ケース: 正 / level mismatch / level 欠落 / 空 section / top-only / regression guard)
-    2. TDD RED: silent skip → FAIL テスト (旧 `test_pass_rst_ref_unknown_label_skipped` を反転、labels.py drop を FAIL 化)
-    3. `Section` dataclass に `level: int`、`_walk_section` で level 記録、`md_ast_visitor` heading_open で level 記録
-    4. JSON schema 出力に `sections[].level` 追加
-    5. `docs.py._render_full` を level 別 heading 出力に変更
-    6. silent skip 4 箇所を FAIL に変更
-    7. v6 再生成 → verify FAIL 0 を確認
-    8. SE + QA expert review → Findings 全件対応
-  - [x] **22-B-16b-slug**: `scripts/common/github_slug.py` 新規 (GitHub 公式仕様で独立 pin) `27fe72376`。12 unit tests GREEN
-  - [x] **22-B-16b-prep**: file_id 算出を `scripts/common/file_id.py` に集約 (refactor のみ) — `c99d9992b`。v6 create output md5 `5c652df3...` 不変、verify FAIL 0、326 unit tests GREEN。SE 1 Finding (tautological test) 同コミットで修正済
-  - [x] **22-B-16b-main**: labels.py 拡張 + `:ref:`/`:doc:`/`:numref:` MD リンク化 + QL1 両側強化 (4 steps 全完了)
-    1. [x] **step 1** (`46bd4578c`): labels.py に `LabelTarget` + `UNRESOLVED` singleton + `build_label_doc_map`
-    2. [x] **step 2a** (`5f0695d95`): enclosing-section 解決 + visitor plumbing
-    2. [x] **step 2b** (`e47859b6c` + F1F2 fix `7941b46fc`): Sphinx-parity dangling ref handling (WARNING + display-text fallback)、`LabelTarget.anchor`、MD link emission
-    3. [x] **step 3** (`5e70d5c83`): `md_ast_visitor` relative link → cross-doc MD link
-    4. [x] **step 4** (`6b828cd01`): QL1 two-sided + cross-type link path `../../{type}/{category}/{file_id}.md`
-  - [x] **22-B-16c** (`86549073d`): image/figure asset URI rewrite + `:download:` link + QL1 asset-exists
-  - [x] **F1-F4 fix** (`cb620f73d`): common/ 階層遵守 + AST-based link extraction + nested-block warning 伝播 + `scripts/common/linkfmt.py` 単一ソース
-  - [x] **v6 regen** (`3bd1fe3c4`): 353 files, 256 contain cross-doc MD links, verify FAIL 0
-- [~] 22-B-13: nabledge-test v6 baseline 再取得 — `20260424-080424` は schema 追従漏れ状態で取得したため **削除** (`ee1330ae8`)。22-B-14 完了後に 22-B-13b で再取得
-- [x] **22-B-14**: nabledge-6 と nabledge-test を新しい知識ベース schema (RBKC V4: `sections` が list、`.index`/`hints` 削除) に追従させる (`fe7a34a0c`)
-  - [x] **Step 1: 影響範囲調査** — nabledge-6 で 6 箇所 (full-text-search.sh / get-hints.sh / _section-search.md / _section-judgement.md Step 0 / _knowledge-search.md Step 5 / SKILL.md)、nabledge-test は影響なし、他バージョン (v5/v1.x) は旧 schema のまま整合しているため影響なし
-  - [x] **Step 2: 修正実施** — (1) full-text-search.sh jq を `.sections[]` + title+content で list 対応、(2) get-hints.sh 削除 (hints スコープアウト済)、(3) _section-search.md 削除、(4) _section-judgement.md Step 0 削除、(5) _knowledge-search.md Step 5 / _index-based-search.md Step 2 を「全 section 列挙」に書き換え、(6) SKILL.md の「with search hints」記述を現行の index.toon 実態に修正
-  - [x] **Step 3: smoke test** — full-text-search.sh で qa-002/qa-004 の期待キーワードが `libraries-tag.json#s21`、`biz-samples-03.json#s17`、`project-search.json#s1` 等に正しくヒット、残存 schema 依存ゼロを grep で確認
-- [x] **22-B-15 完了**: nabledge-test の agent / skill 境界をゼロベース再設計 (Prompt Engineer 相談済み結論を反映)
-  - 背景: 前回 baseline 実行で (a) 親エージェント (Opus) と子の model 不一致で比較ノイズ、(b) 私が擬似コードから grade_v6.py を書き起こした際に検出ロジックが drift、の 2 問題が発生。案 C (軽量) でモデル固定 + grader スクリプト昇格
-  - [x] Step 1: `.claude/agents/nabledge-test-runner.md` 作成 (`14e2796a2`)。frontmatter `model: sonnet` 固定、`tools: Read, Write, Bash, Skill, Grep, Glob`、I/O 契約 (`NABLEDGE_TEST_RESPONSE/METRICS/OUTPUT_FILES/STATUS` デリミタ) を定義
-  - [x] Step 0: smoke test — qa-001 を Sonnet runner で実行、`Skill` tool が custom subagent から動作することを確認 (19 秒 / 61.3K tok / 4 デリミタ全て正常、tool_calls.Skill=1)
-  - [x] Step 2 (`9a4acaa15`): SKILL.md Step 4/5 を runner agent 呼び出しに書き換え + 新デリミタ対応
-  - [x] Step 3 (`377f0e0df`): `scripts/grade.py` + `test_grade.py` 新規作成、18 tests GREEN。heading 厳密判定 + 先頭 `\n` 欠如バグ回避の regression tests 含む
-  - [x] Step 4 (`337c16348`): SKILL.md Step 6 を `scripts/grade.py` 呼び出しに差し替え、擬似コード削除
-  - [x] Step 5 (`337c16348`): meta.json に `runner_agent` / `model_used` 追加仕様化
-  - [x] Step 6: e2e smoke test — qa-001 (Sonnet 26 秒、grade 5/8) と ca-001 (185 秒、grade 35/37) で全フロー動作確認。runner agent 起動 → Skill tool → 4 デリミタ返却 → response/output 保存 → grade.py 実行まで通った
-- [x] **22-B-13b 完了** (`90061007d`): v6 baseline `20260424-103200` 取得。Sonnet + strict grader の新パイプラインでの初回 baseline。QA 90.0% / CA 98.1%、ca-001 37/37 到達、qa-001 benchmark 75.0% ±21.6% (trial 1/2 62.5%、trial 3 100%、汎用 select 系への言及有無で揺らぐ)。前回 baseline (Opus + pseudocode grading) と model/grading 両方が異なるため直接比較不能、新起点として確定。並列実行で stall 2 件 (retry で解消)
-- [~] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
-
-  **完了部分** (session 63):
-  - [x] **22-B-12-common-1** `assets/*.json` exclusion bug (commit `fbd35a252`、3 tests 追加)
-  - [x] **全量調査 4 件** (Excel 212 sheet / RST :ref: 突合 / literalinclude 使用 / content 実態) → `.work/00299/phase22/full-survey-summary.md`
-  - [x] **設計書 3 本更新** (commit `91cb46603`)
-  - [x] **実装リファクタリング** (commit `7e1ac1fa3`): Excel span-inherit + preamble、QL1 5-quadrant、literalinclude shim
-  - [x] **v6 FAIL 0** (353 files)
-  - [x] **v5 FAIL 0** (533 files)
-
-  **残件** (session 64 更新):
-  - [x] **22-B-12-v1.4-spacer** (未 commit): `xlsx_common.py:460` section_title fallback で `_first_non_empty(cells)` に `_flatten_ws` が掛かっていなかった (horizontal class 漏れ、他 5 箇所は適用済)。C16 `'UI開発基盤\n※…'` が flatten されず verify と mismatch。1 行 fix で v1.4 FAIL 6→0
-  - [x] **22-B-12-v1.3-include** (未 commit): `rst_ast.py:parse()` で docutils `source_path` を `settings_overrides["source"]` 経由で渡していたが、これは include 解決に使われない。`publish_doctree(source_path=...)` の位置/キーワード引数として正しく渡す fix で v1.3 create 成功 (327 files)。v1.2 も同 fix で解消見込み
-  - [ ] **22-B-12-ws1 ベースライン取得**: 2 fix を stash → 5 バージョン pre baseline A → pop → 5 バージョン post baseline B
-  - [ ] **22-B-12-ws2 fix commit**: A/B diff を commit message に記載、2 fix を独立 commit
-  - [ ] **22-B-12-ws3 横展開調査**: v1.3 QO2 (releasenote detail `｜;｜/｜#｜?｜:｜space｜` 含む値) と QC1 (`07_BasicRules.rst` Unknown target name "nablarch") の根本原因を特定し 5 バージョンで grep
-  - [ ] **22-B-12-resolver-AST**: `scripts/create/resolver.py` を正規表現から docutils AST walk (`nodes.image` / `nodes.reference[refuri]` / figure) に書き換え。include 経由 asset を自動追従。Phase 21-Y の AST 化遅延 cleanup
-  - [ ] **22-B-12-v1.3-QO2-QC1**: 横展開調査の結果に応じて個別 fix
-  - [ ] **22-B-12-final-baseline**: 5 バージョン全て FAIL 0 達成、post baseline を `.work/00299/baseline-22-B-12-final/` に保存し PR に link
-
-  **完了条件**: 全バージョン (v6/v5/v1.4/v1.3/v1.2) で verify FAIL 0
-
-**備考**:
-- Phase 21-C (旧番 — リリースノート行粒度) は 22-B に統合済。xlsx converter 書き直しで包括する
-- 22-B-8 (verify 例外分岐) は 22-B-5a にリネームして先行実施済 — TDD 順序が verify → create となるため
+FAIL 0 を全バージョンで確認、baseline を保存、22-B-12 完了。
 
 ---
 
 ## Not Started
 
-### Phase 21-Z Z-5: nabledge-test v6 baseline (Phase 22-B-5 完了後)
+### Phase 21-Z Z-5: nabledge-test v6 baseline 再取得 (22-B-13b の後継)
 
-**目的**: 確定した土台 (Z-2 / Z-6) と記述 (Z-1) + Phase 22 での Excel 分割変更を反映した baseline で、v6 の品質を数値ベースで固定。以降の他バージョン展開はここを基準に「劣化なし」ゲート。
+22-B-12 完了 (Excel + resolver 変更が出力に与える影響が確定) 後に再取得。file ID 変化を踏まえた評価。
 
-- [ ] `nabledge-test 6` を実行してベースラインを取得
-- [ ] 旧 baseline (memory 記録の 97.3%) と比較し、Excel 分割由来の file ID 変化を踏まえた評価
-- [ ] ベースラインスナップショットを `baseline/v6/<timestamp>/` に保存してコミット
+### Phase 19: 他バージョン展開 (v5 / v1.4 / v1.3 / v1.2)
 
-### Phase 19 (改称): 他バージョン展開 — v5 / v1.4 / v1.3 / v1.2
+22-B-12 完了後、各バージョンで nabledge-test ベースライン取得 → 劣化なしゲート。
 
-**前提**: Phase 22-B + Z-5 完了後。各バージョン単位で nabledge-test ベースラインを取りながら進める。
+### Phase 21-Z Z-4 / Z-3: 配信物クリーン化 + ドキュメント整備
 
-**展開順** (実装影響が小さい順): v5 → v1.4 → v1.3 → v1.2
-
-各バージョン共通 Steps:
-- [ ] `bash rbkc.sh create <v> && bash rbkc.sh verify <v>` → FAIL 分類と件数を記録
-- [ ] バージョン固有 directive / role / substitution が Visitor の閉集合にない場合は設計書更新 + ユーザー承認 → 対応表追加
-- [ ] verify FAIL 0 確認
-- [ ] `nabledge-test <v>` で現行ベースラインと比較、劣化なしを確認
-- [ ] コミット
-
-### Phase 21-Z (続): 配信物クリーン化 → ドキュメント整備
-
-Phase 19 完了後に実施。
-
-**Z-4: setup スクリプトのゴミ残り対策**
-- [ ] `tools/setup/setup-cc.sh` を vup 時に旧 `.claude/skills/nabledge-${v}/` を完全削除してから `cp -r` する形に修正 (現状は上書きのみで残留あり)
-- [ ] `tools/setup/setup-ghc.sh` も同様
-- [ ] 削除範囲はユーザー資産に影響しないよう skills plugin 配下のみに限定
-- [ ] 手動テスト: 模擬 vup でゴミが残らないことを確認
-
-**Z-3: CHANGELOG / README / 過去経緯要約**
-- [ ] `.claude/skills/nabledge-6/plugin/CHANGELOG.md` の `[Unreleased]` に追記: 「知識ファイル生成を AI ベースからルールベースに変更しました。ハルシネーションが発生しない構造になり、公式ドキュメントの内容が正確に反映されるようになりました」
-- [ ] nabledge-5 / 1.4 / 1.3 / 1.2 の CHANGELOG も同様
-- [ ] `tools/rbkc/README.md` を現状構成に合わせて書き直し。動作確認手順記載
-- [ ] `.work/00299/notes.md` を「Phase 21-Y〜22 で何をどう変えたか」に簡潔要約、不要中間ログは削除または集約
-- [ ] GitHub Issue #309 への引き継ぎメモが現状と合っているか確認
-
----
-
-## Done
-
-- [x] **Phase 22-A**: RST/MD 側 docs MD 可読性改善 — attribution なし `block_quote` の `>` 剥がし。v6 bq_table 270 → 4 (残 4 は admonition 内正当)。commit `a203853ee`
-- [x] **Phase 22-B-5a** (22-B-8 から先行): verify 層 TDD — `_xlsx_source_tokens(sheet_name=...)` / QO2 P1 一方向 containment / P2 strict verbatim fallthrough。7 + 3 tests GREEN。SE + QA review 済。commit `bd678e4aa`
-- [x] **Phase 21-Z Z-1**: 設計書 §4 品質マトリクス ✅ 復元 — r2〜r9 bias-avoidance QA 反復レビューで critical 全解消。248 unit tests GREEN、v6 verify FAIL 0。commits `55bebe0cf` `1e46d6eb6` ほか
-- [x] **Phase 21-Z Z-2**: 設計書・ソース・テストの MECE 化 — 設計書 2 本の重複/矛盾解消、MD を AST 経由に統一、QO3 双方向化、tolerance list 全廃、テスト/設計書対応表追加。commits `c8934ffc4` `c53cb19e3` `eee6129a8` `1f5954d23` `be604f880` `f013cd94e`
-- [x] **Phase 21-Z Z-6**: 未使用コード削除 — commit `6c06b24c8`
-- [x] **Phase 21-Y**: RST 処理を docutils AST + 共通 Visitor に全面書き直し — v6 verify FAIL 53→0、unit test 120 PASS。zero-exception / no-drop / AST-only 原則を設計書と実装に適用。commits `cf57a1718` `4ae3ada3b` `6ee04b9c4` ほか
-- [x] **Phase 21-X** (SUPERSEDED by 21-Y): 調査 → 設計書更新 → tokenizer 方式で verify 実装。v6 FAIL 4812→56 まで削減した段階で、自前 tokenizer/converter が密結合のため docutils AST に全面切替 (Y)。調査成果 (`.work/00299/phase21x/`) は AST 方式に寄与
-- [x] **Phase 21-W / 21-V** (SUPERSEDED by 21-X): 「原文のまま削除」方式 → converter のラベル解決/記法変換により substring 一致不能と判明、tokenizer 方式 (X) に移行
-- [x] **Phase 21-K**: hints スコープアウト — 設計書とコードを "content のみ" に整備。Issue #309 を別 Issue として起票、資産 `.work/00299/handoff-hints/` に保全。commits `28fdef842` `b21197d73` `f7cff23a1` `983ae8301`
-- [x] **Phase 21-A**: docs/README.md 生成 — `c238dc8f`
-- [x] **Phase 21-B / 21-D / 21-E / 21-F / 21-H / 21-I / 21-J** (hints 時代の一連): Phase 21-K で hints を別 Issue に分離したため実質クローズ
-- [x] **Phase V 系 (V-skip / V-hints / V2-* / V4 / V0 / V1 / V2-1〜3 / 17-R)**: verify の初期実装・再構築。`86dd660e` 他
-- [x] **Phase 1〜16**: RST/MD/Excel converter 初期実装、CLI、v1.x 対応、各種バグ修正 — commits `f78304b4`〜`008e8420`
-
----
-
-## 参考履歴: 前 session (session 56) の失敗
-
-Phase 22-B-5 着手時に以下を破ったため全 revert された:
-- TDD 順: verify テスト → RED → verify 実装 → GREEN → RBKC 実装 の順序を守らなかった
-- verify 変更の事前承認を取らなかった (本来は設計書既定ならスキップ可だが、当時は逸脱)
-- expert review の逐次実行を怠った
-
-session 57 では上記を遵守して 22-B-5a (verify 層) を TDD + SE/QA review 付きで完了 (`bd678e4aa`)。以降も同じ順序で進める。
+Phase 19 完了後:
+- setup スクリプトのゴミ残り対策 (`tools/setup/setup-cc.sh` / `setup-ghc.sh`)
+- 各バージョン CHANGELOG への「ルールベース化」追記
+- `tools/rbkc/README.md` の現状合わせ
+- `.work/00299/notes.md` を Phase 21-Y〜22 要約に圧縮
