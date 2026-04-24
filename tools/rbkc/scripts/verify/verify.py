@@ -1051,43 +1051,135 @@ def _run_length(row: list[str]) -> int:
     return best
 
 
-def _looks_like_sub_header(row_h: list[str], row_h1: list[str]) -> bool:
-    """Mirror converter-design §8-3 sub-header rule (independently derived).
+#: Separator for span-inherit composed column names (spec §8-3).  Corpus
+#: survey shows zero existing header cells contain this sequence, so
+#: column uniqueness is carried by the composition algorithm itself, not
+#: by the separator.  Imported by both verify and converter so the two
+#: cannot drift.
+SEP = " / "
 
-    Conditions: row_h1 strictly narrower than row_h AND every non-empty
-    sub cell has a non-empty parent at column ≤ its own.
+
+def _looks_like_header_cell(v: str) -> bool:
+    """Heuristic: a header cell is a short, non-numeric label.
+
+    Applied to reject rows where cells are obviously data (numeric
+    identifiers, long prose) from being mis-classified as headers.
+    Spec §8-3 does not formalise this, but the corpus consistently shows
+    headers are short (≤ 40 chars) non-numeric strings.
     """
-    h_non_empty = sum(1 for v in row_h if v)
-    h1_cols = [cx for cx, v in enumerate(row_h1) if v]
-    if not h1_cols:
+    if not v:
         return False
-    if len(h1_cols) >= h_non_empty:
+    s = v.strip()
+    if not s or len(s) > 40:
         return False
-    for cx in h1_cols:
-        px = cx
-        while px >= 0 and not row_h[px]:
-            px -= 1
-        if px < 0 or not row_h[px]:
-            return False
+    # Pure integer / decimal → data cell
+    try:
+        float(s.replace(",", ""))
+        return False
+    except ValueError:
+        pass
     return True
 
 
-def _merge_header(row_h: list[str], row_h1: list[str]) -> list[str]:
-    """Combine main + sub header rows into a single column-name list."""
-    merged = list(row_h)
-    for cx, sub in enumerate(row_h1):
-        if not sub:
-            continue
-        parent_cx = cx
-        while parent_cx >= 0 and not row_h[parent_cx]:
-            parent_cx -= 1
-        if parent_cx >= 0 and row_h[parent_cx]:
-            merged[cx] = f"{row_h[parent_cx]}/{sub}"
+def _looks_like_sub_header(row_h: list[str], row_h1: list[str]) -> bool:
+    """Spec §8-3 span-inherit parent/leaf detection (Phase 22-B-12).
+
+    Given row_h (candidate parent, upper) and row_h1 (candidate leaf, lower):
+    a multi-row header is recognised iff **some parent cell genuinely spans
+    multiple leaf cells** — i.e. there is a parent column p such that
+    the leaf row has ≥ 2 non-empty cells in the half-open range
+    [p, next_parent_column).
+
+    Additionally, all non-empty leaf cells must look like header labels
+    (short non-numeric strings) — this rejects rows of data values that
+    happen to span multiple columns.
+    """
+    h_non_empty_cols = [cx for cx, v in enumerate(row_h) if v]
+    h1_non_empty_cols = [cx for cx, v in enumerate(row_h1) if v]
+    if not h_non_empty_cols or not h1_non_empty_cols:
+        return False
+    # Every non-empty leaf cell must look like a header label (not data).
+    if not all(_looks_like_header_cell(row_h1[c]) for c in h1_non_empty_cols):
+        return False
+    # Every non-empty parent cell must look like a header label (reject
+    # long free-text preamble rows from being treated as parents).
+    if not all(_looks_like_header_cell(row_h[c]) for c in h_non_empty_cols):
+        return False
+    h1_col_set = set(h1_non_empty_cols)
+    max_c = max(len(row_h), len(row_h1))
+    for i, p_col in enumerate(h_non_empty_cols):
+        next_p = h_non_empty_cols[i + 1] if i + 1 < len(h_non_empty_cols) else max_c
+        leaf_in_span = sum(1 for lc in h1_col_set if p_col <= lc < next_p)
+        if leaf_in_span >= 2:
+            return True
+    return False
+
+
+def _compose_header_columns(header_rows: list[list[str]], col_count: int) -> list[str]:
+    """Span-inherit composition (spec §8-3 Phase 22-B-12).
+
+    Two roles:
+
+    * **Top row** is the primary header.  A non-empty cell at column t
+      covers columns [t, next_top_col) and inherits to every column in
+      that span ONLY when ≥ 2 sub-row cells exist in the span (i.e.
+      the top cell genuinely spans over sub-cells).  Otherwise the top
+      cell stands alone at column t.
+    * **Sub rows** attach their non-empty cell at column c to the
+      primary label covering column c.
+
+    Composed column = SEP.join([primary_c, sub1_c, sub2_c, ...]) with
+    empties dropped and consecutive duplicates dedup'd.
+    """
+    if not header_rows:
+        return [""] * col_count
+
+    top_row = header_rows[0]
+    sub_rows = header_rows[1:]
+
+    top_cols = [c for c in range(col_count) if c < len(top_row) and top_row[c]]
+    sub_cols = set()
+    for sr in sub_rows:
+        for c in range(min(col_count, len(sr))):
+            if sr[c]:
+                sub_cols.add(c)
+
+    primary: list[str] = [""] * col_count
+    for i, t in enumerate(top_cols):
+        next_t = top_cols[i + 1] if i + 1 < len(top_cols) else col_count
+        label = " ".join(top_row[t].split())
+        sub_in_span = [c for c in sub_cols if t <= c < next_t]
+        if len(sub_in_span) >= 2:
+            for c in range(t, next_t):
+                primary[c] = label
         else:
-            merged[cx] = sub
-    # Normalise embedded whitespace/newlines so column names compare cleanly
-    # with their JSON-side form (§8-4 uses flattened names).
-    return [" ".join(c.split()) for c in merged]
+            primary[t] = label
+
+    composed: list[str] = []
+    for c in range(col_count):
+        parts: list[str] = []
+        if primary[c]:
+            parts.append(primary[c])
+        for sr in sub_rows:
+            v = " ".join(sr[c].split()) if c < len(sr) and sr[c] else ""
+            if v:
+                parts.append(v)
+        dedup: list[str] = []
+        for p in parts:
+            if not dedup or dedup[-1] != p:
+                dedup.append(p)
+        composed.append(SEP.join(dedup))
+    return composed
+
+
+def _merge_header(row_h: list[str], row_h1: list[str]) -> list[str]:
+    """Back-compat wrapper over :func:`_compose_header_columns` for the
+    two-row case (parent + leaf).  Kept so the existing
+    ``_detect_header_row`` call site can remain unchanged while the
+    underlying algorithm is generalised.
+    """
+    col_count = max(len(row_h), len(row_h1))
+    return _compose_header_columns([row_h, row_h1], col_count)
 
 
 def _find_body_start(rows: list[list[str]]) -> int:
@@ -1126,6 +1218,13 @@ def _detect_header_row(rows: list[list[str]]) -> tuple[int, int, list[str]] | No
 
     Returns ``(header_start, data_start, columns)`` or None if the sheet
     does not qualify as P1.  Also enforces the ≤ 2 column P2 cap (§8-2).
+
+    Algorithm (spec §8-3 Phase 22-B-12, span-inherit):
+      1. Find the first "dense" row below ``body_start`` (leaf, run_length ≥ 3).
+      2. Walk upward from leaf while predecessor rows qualify as parents
+         (``_looks_like_sub_header(parent, leaf_so_far)``) — collecting
+         header rows top-down.
+      3. Compose column names via :func:`_compose_header_columns`.
     """
     body_start = _find_body_start(rows)
     if _useful_width(rows, body_start) <= 2:
@@ -1135,19 +1234,32 @@ def _detect_header_row(rows: list[list[str]]) -> tuple[int, int, list[str]] | No
         row_h = rows[h]
         if _run_length(row_h) < 3:
             continue
-        # Sub-header at h+1?
-        data_start = h + 1
-        columns = list(row_h)
-        if h + 1 < n and _looks_like_sub_header(row_h, rows[h + 1]):
-            columns = _merge_header(row_h, rows[h + 1])
-            data_start = h + 2
-        else:
-            columns = [" ".join(c.split()) for c in columns]
+        # Walk downward: while the next row is a valid child (span-inherit)
+        # of the current header_rows_idx's leaf, extend the header.
+        header_rows_idx = [h]
+        while (
+            header_rows_idx[-1] + 1 < n
+            and _looks_like_sub_header(rows[header_rows_idx[-1]], rows[header_rows_idx[-1] + 1])
+        ):
+            header_rows_idx.append(header_rows_idx[-1] + 1)
+        # Also walk upward: some corpus sheets have sparse parent rows
+        # above the first run_length≥3 row (e.g. v5 bessatsu where the
+        # parent row has only 2 non-empty cells).
+        while (
+            header_rows_idx[0] - 1 >= body_start
+            and _looks_like_sub_header(rows[header_rows_idx[0] - 1], rows[header_rows_idx[0]])
+        ):
+            header_rows_idx.insert(0, header_rows_idx[0] - 1)
+        data_start = header_rows_idx[-1] + 1
+        col_count = max((len(rows[r]) for r in header_rows_idx), default=0)
+        header_matrix = [rows[r] for r in header_rows_idx]
+        columns = _compose_header_columns(header_matrix, col_count)
         # Need at least 2 data rows
         data_rows = [r for r in rows[data_start:] if any(c for c in r)]
         if len(data_rows) < 2:
             continue
-        return h, data_start, columns
+        header_start = header_rows_idx[0]
+        return header_start, data_start, columns
     return None
 
 
@@ -1275,16 +1387,21 @@ def _xlsx_source_tokens(
             return tokens
 
     # Raw 1:1 (non-P1 or all-sheet legacy caller).
+    #
+    # Cell values are flattened (embedded whitespace / newlines collapsed
+    # to single spaces) so tokens match the converter's cell-flatten
+    # step.  Excel cells wrap text with newlines for visual width; the
+    # JSON output (converter) collapses that to single spaces so
+    # verify's forward-scan must compare against the same flattened
+    # form.  See spec §3-1 Excel 節 (Phase 22-B-12).
     tokens: list[str] = []
     if sheet_name_fallback:
-        # JSON title (= sheet name fallback) appears first in JSON text;
-        # emit it first so forward-scan finds it.
         tokens.append(sheet_name_fallback)
     for rows in sheets_rows:
         for r in rows:
             for v in r:
                 if v:
-                    tokens.append(v)
+                    tokens.append(" ".join(v.split()))
     return tokens
 
 
@@ -1805,12 +1922,24 @@ def check_source_links(
     data: dict,
     label_map: dict,
     source_path=None,
+    corpus_label_map: dict | None = None,
 ) -> list[str]:
     """QL1: Internal links in source must be reflected in JSON.
 
     Per rbkc-verify-quality-design.md §3-2: extract link candidates from the
     docutils AST (no regex-based source scanning).
+
+    ``label_map``: labels resolvable within the RBKC-adopted source set
+    (what create used to emit links).
+
+    ``corpus_label_map``: labels defined anywhere in the source corpus,
+    including files outside the RBKC mapping scope.  Used for §3-2-2
+    5-quadrant dangling classification.  When ``None``, corpus is assumed
+    identical to ``label_map`` (back-compat for callers that have not yet
+    been wired up).
     """
+    if corpus_label_map is None:
+        corpus_label_map = label_map
     if fmt == "xlsx" or _no_knowledge(data):
         return []
 
@@ -1889,23 +2018,35 @@ def check_source_links(
                 issues.append(
                     f"[QL1] :ref: display text missing from JSON: {display!r}"
                 )
-            # Bare label form: the resolved target title must appear.
-            # Phase 22-B-16a (spec §3-2-2 zero-exception): a label that
-            # neither docutils nor label_map can resolve is a dangling
-            # reference — FAIL.  Silent skip is the horizontal-class bug
-            # we are fixing.
+            # Bare label form: Phase 22-B-12 five-quadrant classification
+            # (spec §3-2-2).  The quadrants:
+            #   - Q1: label in label_map → resolved title must appear (PASS/FAIL)
+            #   - Q2: label in label_map, title missing from JSON → FAIL
+            #   - Q3: label NOT in label_map, IS in corpus → PASS (mapping
+            #         scope gap, Sphinx parity)
+            #   - Q4: label NOT in corpus → PASS (Sphinx-parity dangling)
+            #   - Q5: display text absent from JSON entirely → FAIL
+            # Bare refs emit ``label`` as the display text, so the label
+            # name itself is the reader-visible fallback (Sphinx emits
+            # ``<span class="xref">label</span>``).  Verify treats the
+            # label string as the required display text for Q3/Q4.
             if not display and label not in seen_labels:
                 seen_labels.add(label)
                 target = label_map.get(label)
                 from scripts.common.labels import UNRESOLVED
                 if target is None or target is UNRESOLVED:
-                    issues.append(
-                        f"[QL1] :ref:`{label}` unresolved (label not in label_map or orphan label): dangling reference"
-                    )
+                    # Q3 / Q4 — label not resolvable within RBKC scope.
+                    # Under Sphinx parity, create emits display text only;
+                    # verify requires the display text (= label name) is in
+                    # JSON, otherwise Q5 (data loss) applies.
+                    if label not in json_full:
+                        issues.append(
+                            f"[QL1] :ref:`{label}` dangling and display text missing from JSON"
+                        )
                     continue
-                # Support both legacy str (title only) and the upcoming
-                # Phase 22-B-16b LabelTarget dataclass.  The dataclass case
-                # is a future-proof no-op here — we only read the title.
+                # Q1 / Q2 — resolvable within RBKC scope.  Title must
+                # appear in JSON; otherwise create failed to emit the link
+                # properly (Q2, real RBKC bug).
                 title = target if isinstance(target, str) else getattr(target, "title", str(target))
                 if title and title not in json_full:
                     issues.append(

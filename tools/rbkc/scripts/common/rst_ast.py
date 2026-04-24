@@ -59,6 +59,12 @@ _SPHINX_INLINE_ROLES: tuple[str, ...] = (
 # (the argument is usually a language spec, the body is raw text).
 _LITERAL_DIRECTIVES: tuple[str, ...] = (
     "code-block",
+    # Phase 22-B-12: Sphinx ``literalinclude`` directive.  v1.x corpus
+    # uses it with only the ``:language:`` option (43 occurrences, no
+    # other options) — the shim reads the body docutils already
+    # expanded (``file_insertion_enabled=True``) and renders it as a
+    # ``literal_block``.  See .work/00299/phase22/literalinclude-survey.md.
+    "literalinclude",
 )
 
 # Non-docutils / custom directives whose body is RST prose; we nested_parse

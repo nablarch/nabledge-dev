@@ -2016,9 +2016,13 @@ class TestCheckJsonDocsMdConsistency_QO2_ExcelP1:
 class TestCheckSourceLinks:
     """QL1: Internal links in source must be reflected in JSON."""
 
-    def _check(self, source_text, fmt, data, label_map=None):
+    def _check(self, source_text, fmt, data, label_map=None, corpus_label_map=None):
         from scripts.verify.verify import check_source_links
-        return check_source_links(source_text, fmt, data, label_map or {})
+        return check_source_links(
+            source_text, fmt, data,
+            label_map or {},
+            corpus_label_map=corpus_label_map if corpus_label_map is not None else None,
+        )
 
     def _data(self, content="", sections=None):
         return {
@@ -2051,20 +2055,70 @@ class TestCheckSourceLinks:
         issues = self._check(src, "rst", data, label_map)
         assert any("QL1" in i and "usage" in i for i in issues)
 
-    def test_fail_rst_ref_unknown_label_is_dangling(self):
-        """Phase 22-B-16: unknown label is a dangling reference, not a skip.
+    def test_pass_rst_ref_sphinx_parity_dangling(self):
+        """Phase 22-B-12: 5-quadrant QL1 (spec §3-2-2).
 
-        Spec §3-1 手順0 exception-ban forbids silent text fallback. A label
-        that neither docutils nor label_map can resolve must FAIL (QC1 or
-        QL1 dangling link) rather than silently pass.
+        Quadrant 4 — corpus に label 未定義 + display text が JSON に残る
+        → PASS + WARNING.  Sphinx も `<span class="xref">text</span>` の
+        fallback を出し build は成功する.  RBKC はこれに追従する.
+
+        Quadrant 3 — corpus 有 + RBKC mapping scope 外 も同様に PASS.
+        Quadrant 2 — corpus 有 + mapping 採用 + display text のみ → FAIL.
         """
+        # Bare label (no display text): display text == label name itself.
+        # With corpus_label_map={} AND label_map={}, label is absent from
+        # corpus — Sphinx-parity dangling (quadrant 4) → PASS.
         src = ":ref:`cross-file-label`\n"
-        data = self._data(content="内容")
-        issues = self._check(src, "rst", data, {})
-        # Either QC1 (unresolved reference) or QL1 (dangling link) — both are
-        # FAIL signals; silent PASS (empty issues list) is the bug we fix.
-        assert issues, "unknown :ref: label must not pass silently"
-        assert any(("QC1" in i or "QL1" in i) and "cross-file-label" in i for i in issues), issues
+        data = self._data(content="cross-file-label を参照")
+        # corpus_label_map = {} means label is absent from the corpus-wide
+        # scan, so Sphinx parity dictates display-text fallback is the
+        # correct behaviour, not a FAIL.
+        issues = self._check(src, "rst", data, label_map={}, corpus_label_map={})
+        assert issues == [], f"Sphinx-parity dangling must PASS, got: {issues}"
+
+    def test_pass_rst_ref_mapping_excluded(self):
+        """Quadrant 3: corpus に label 定義有、RBKC mapping scope 外 →
+        PASS.  create は display text fallback、verify はユーザの
+        mapping scope 決定を尊重する.
+        """
+        src = ":ref:`outside-label`\n"
+        # Display text form used so a value lives in JSON regardless of
+        # whether corpus resolution succeeds.
+        data = self._data(content="outside-label を参照")
+        # label is in corpus but NOT in the RBKC-adopted label_map.
+        issues = self._check(
+            src, "rst", data,
+            label_map={},  # RBKC adopted set: missing
+            corpus_label_map={"outside-label": "外部ページ"},  # corpus-wide: present
+        )
+        assert issues == [], f"mapping-excluded ref must PASS, got: {issues}"
+
+    def test_fail_rst_ref_resolvable_but_missing(self):
+        """Quadrant 2: corpus に定義有 + RBKC 採用 + display text のみ
+        (JSON に link が無い) → FAIL.  create の解決失敗バグ."""
+        src = ":ref:`usage`\n"
+        # The resolved title does NOT appear in JSON — this is the real bug
+        # we must surface, regardless of Sphinx parity.
+        data = self._data(content="別の内容")
+        issues = self._check(
+            src, "rst", data,
+            label_map={"usage": "使い方セクション"},
+            corpus_label_map={"usage": "使い方セクション"},
+        )
+        assert any("QL1" in i and "usage" in i for i in issues), issues
+
+    def test_fail_rst_ref_display_absent_entirely(self):
+        """Quadrant 5: display text すら JSON に無い → FAIL (データ損失).
+        Sphinx-parity dangling でも display text は残らないといけない."""
+        src = ":ref:`vanished`\n"
+        data = self._data(content="ここには何もない")
+        issues = self._check(
+            src, "rst", data,
+            label_map={},
+            corpus_label_map={},
+        )
+        assert issues, "display-text absent must FAIL"
+        assert any(("QL1" in i or "QC1" in i) and "vanished" in i for i in issues), issues
 
     # MD internal links
     def test_pass_md_internal_link_text_in_json(self):
@@ -2471,19 +2525,23 @@ class TestVerifyFileExcelP1HeaderExpansion:
         assert any("[QC3]" in i or "[QC2]" in i for i in issues), issues
 
     def test_pass_p1_multi_row_header_merged(self, tmp_path):
-        """§8-3 multi-row header: sub-header rows merge as 'メイン/副'.
-        verify must detect the merge using the same rule as converter
-        (§8-2), then expand merged-column names by data-row count."""
+        """§8-3 multi-row header (Phase 22-B-12): span-inherit composition
+        with SEP = ' / '.  Parent row has empty cells under sub-columns,
+        which the span-inherit algorithm must populate by carrying the
+        most recent non-empty parent value rightward.
+        """
         import openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Sheet1"
-        # Main header (5 contiguous non-empty to satisfy run-length ≥ 3)
+        # Main header row — 'バージョン' parent covers C+D, empty at D
+        # even though openpyxl has not merged the cells (corpus reality).
         ws["A1"] = "No."
         ws["B1"] = "タイトル"
-        ws["C1"] = "バージョン"  # parent with two subs
+        ws["C1"] = "バージョン"
+        # D1 is left blank; span-inherit must fill it from C1
         ws["E1"] = "備考"
-        # Sub-header (strict subset of main, narrower)
+        # Sub-header row (leaf)
         ws["C2"] = "モジュール"
         ws["D2"] = "Nablarch"
         # Data rows
@@ -2501,19 +2559,17 @@ class TestVerifyFileExcelP1HeaderExpansion:
         wb.save(xlsx_path)
         data = {
             "id": "mh",
-            # Title = sheet name per spec §8-4 fallback.
             "title": "Sheet1",
             "content": "",
             "sheet_type": "P1",
             "sections": [
                 {
-                    # section.title = タイトル column value (§8-4 rule)
                     "id": "s1", "title": "初回対応",
-                    "content": "No.: 1\nタイトル: 初回対応\nバージョン/モジュール: 1.0\nバージョン/Nablarch: 5\n備考: 初回",
+                    "content": "No.: 1\nタイトル: 初回対応\nバージョン / モジュール: 1.0\nバージョン / Nablarch: 5\n備考: 初回",
                 },
                 {
                     "id": "s2", "title": "二回目",
-                    "content": "No.: 2\nタイトル: 二回目\nバージョン/モジュール: 2.0\nバージョン/Nablarch: 6\n備考: 追加対応",
+                    "content": "No.: 2\nタイトル: 二回目\nバージョン / モジュール: 2.0\nバージョン / Nablarch: 6\n備考: 追加対応",
                 },
             ],
         }
@@ -3706,3 +3762,219 @@ class TestCheckQL1LinkTargets:
         }
         issues = check_ql1_link_targets(data, kn)
         assert len(issues) == 1
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-12: Excel preamble + span-inherit header composition
+# ---------------------------------------------------------------------------
+
+
+class TestVerifyP1PreambleInContent:
+    """Phase 22-B-12 (spec §3-1 Excel 節 preamble の扱い):
+
+    P1 シートでは title 行とヘッダ行の間の非空セル (preamble) を JSON の
+    top-level ``content`` に join して格納する.  verify は preamble セル
+    も通常のソーストークンとして sequential-delete にかける — content に
+    含まれていれば PASS, 欠落していれば QC1 FAIL.
+    """
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def _sheet_with_preamble(self, tmp_path):
+        """Build a sheet modelled after v5 releasenote row 0/1/3 structure:
+          row 0: ■Nablarch 5u6 リリースノート (title)
+          row 1: several preamble cells scattered across columns
+          row 2: blank
+          row 3: header
+          row 4+: data
+        """
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "5u6"
+        ws["A1"] = "■Nablarch 5u6 リリースノート"
+        ws["A2"] = "5u5からの変更点を記載しています。"
+        ws["H2"] = "※1 Nablarch 5u5からNablarch 5u6にバージョンアップする手順は、本書「バージョンアップ手順」シートを参照ください。"
+        ws["J2"] = "※2 変更点により、Nablarchの動作に変更がある場合に「あり」とします。"
+        ws["L2"] = "※3 チケット番号がないものはNablarch開発チーム内部検知したものです。"
+        ws["A4"] = "コンテンツ"
+        ws["C4"] = "No."
+        ws["D4"] = "分類"
+        ws["E4"] = "タイトル"
+        ws["A5"] = "アプリ"
+        ws["C5"] = "1"
+        ws["D5"] = "ログ"
+        ws["E5"] = "改善"
+        ws["A6"] = "アプリ"
+        ws["C6"] = "2"
+        ws["D6"] = "API"
+        ws["E6"] = "追加"
+        xlsx_path = tmp_path / "preamble.xlsx"
+        wb.save(xlsx_path)
+        return xlsx_path
+
+    def test_pass_preamble_in_content(self, tmp_path):
+        """Preamble cells appear in top-level ``content`` — PASS."""
+        xlsx = self._sheet_with_preamble(tmp_path)
+        preamble = "\n".join([
+            "5u5からの変更点を記載しています。",
+            "※1 Nablarch 5u5からNablarch 5u6にバージョンアップする手順は、本書「バージョンアップ手順」シートを参照ください。",
+            "※2 変更点により、Nablarchの動作に変更がある場合に「あり」とします。",
+            "※3 チケット番号がないものはNablarch開発チーム内部検知したものです。",
+        ])
+        data = {
+            "id": "x",
+            "title": "■Nablarch 5u6 リリースノート",
+            "content": preamble,
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "改善",
+                 "content": "コンテンツ: アプリ\nNo.: 1\n分類: ログ\nタイトル: 改善"},
+                {"id": "s2", "title": "追加",
+                 "content": "コンテンツ: アプリ\nNo.: 2\n分類: API\nタイトル: 追加"},
+            ],
+        }
+        issues = self._check(str(xlsx), data, sheet_name="5u6")
+        assert issues == [], f"preamble-in-content must PASS, got: {issues}"
+
+    def test_fail_preamble_dropped(self, tmp_path):
+        """Preamble missing from JSON → QC1 residue FAIL."""
+        xlsx = self._sheet_with_preamble(tmp_path)
+        data = {
+            "id": "x",
+            "title": "■Nablarch 5u6 リリースノート",
+            "content": "",  # preamble dropped
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "改善",
+                 "content": "コンテンツ: アプリ\nNo.: 1\n分類: ログ\nタイトル: 改善"},
+                {"id": "s2", "title": "追加",
+                 "content": "コンテンツ: アプリ\nNo.: 2\n分類: API\nタイトル: 追加"},
+            ],
+        }
+        issues = self._check(str(xlsx), data, sheet_name="5u6")
+        assert any("QC1" in i and "からの変更点" in i for i in issues), issues
+
+
+class TestVerifyP1SpanInheritComposition:
+    """Phase 22-B-12: span-inherit header composition for multi-row headers.
+
+    Algorithm (spec §3-1 & converter §8-3):
+      - For parent (non-leaf) rows, a non-empty cell's value spans
+        rightward until the next non-empty cell in the same row.
+      - Leaf row is used verbatim.
+      - Composed column = SEP.join(non-empty [inherited parents..., leaf]).
+      - SEP = ' / ' (space-slash-space).
+    """
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def test_pass_span_inherit_fills_blank_parent_cells(self, tmp_path):
+        """Corpus reality (v5 bessatsu sheet): parent row 3 has blank cells
+        between non-empty parent labels.  span-inherit must carry the
+        parent value rightward.
+        """
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # Parent row (row 1): col 2 = parent1, col 4 = parent2; col 3 is blank
+        ws["B1"] = "親1"  # parent1
+        ws["D1"] = "親2"  # parent2
+        # Leaf row (row 2): all 4 columns
+        ws["A2"] = "No"
+        ws["B2"] = "子A"
+        ws["C2"] = "子B"
+        ws["D2"] = "子A"
+        ws["E2"] = "子B"
+        # Data rows
+        ws["A3"] = "1"; ws["B3"] = "v1a"; ws["C3"] = "v1b"; ws["D3"] = "v2a"; ws["E3"] = "v2b"
+        ws["A4"] = "2"; ws["B4"] = "w1a"; ws["C4"] = "w1b"; ws["D4"] = "w2a"; ws["E4"] = "w2b"
+        xlsx_path = tmp_path / "span.xlsx"
+        wb.save(xlsx_path)
+        # Expected composed columns (span-inherit):
+        #   A: 'No' (leaf only, no parent)
+        #   B: '親1 / 子A'
+        #   C: '親1 / 子B'  (parent1 inherited across blank cell)
+        #   D: '親2 / 子A'
+        #   E: '親2 / 子B'
+        data = {
+            "id": "sp", "title": "Sheet1", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "v1a",
+                 "content": (
+                     "No: 1\n"
+                     "親1 / 子A: v1a\n親1 / 子B: v1b\n"
+                     "親2 / 子A: v2a\n親2 / 子B: v2b"
+                 )},
+                {"id": "s2", "title": "w1a",
+                 "content": (
+                     "No: 2\n"
+                     "親1 / 子A: w1a\n親1 / 子B: w1b\n"
+                     "親2 / 子A: w2a\n親2 / 子B: w2b"
+                 )},
+            ],
+        }
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert issues == [], f"span-inherit composition must PASS, got: {issues}"
+
+    def test_fail_span_inherit_not_applied(self, tmp_path):
+        """If the converter omits the parent for the span-inherited column,
+        verify's QP detects the missing `親1 / 子B` pairing."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["B1"] = "親1"
+        ws["D1"] = "親2"
+        ws["A2"] = "No"
+        ws["B2"] = "子A"
+        ws["C2"] = "子B"
+        ws["D2"] = "子A"
+        ws["E2"] = "子B"
+        ws["A3"] = "1"; ws["B3"] = "v1a"; ws["C3"] = "v1b"; ws["D3"] = "v2a"; ws["E3"] = "v2b"
+        ws["A4"] = "2"; ws["B4"] = "w1a"; ws["C4"] = "w1b"; ws["D4"] = "w2a"; ws["E4"] = "w2b"
+        xlsx_path = tmp_path / "span_bad.xlsx"
+        wb.save(xlsx_path)
+        # Bug reproduction: section.content omits the "親1 / " prefix for
+        # the column C that should inherit from B, yielding duplicate "子B".
+        data = {
+            "id": "sp", "title": "Sheet1", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "v1a",
+                 "content": (
+                     "No: 1\n"
+                     "親1 / 子A: v1a\n子B: v1b\n"  # missing 親1 / prefix
+                     "親2 / 子A: v2a\n親2 / 子B: v2b"
+                 )},
+                {"id": "s2", "title": "w1a",
+                 "content": (
+                     "No: 2\n"
+                     "親1 / 子A: w1a\n子B: w1b\n"
+                     "親2 / 子A: w2a\n親2 / 子B: w2b"
+                 )},
+            ],
+        }
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert issues, "span-inherit omission must FAIL"
+        assert any("QP" in i or "QC" in i for i in issues), issues

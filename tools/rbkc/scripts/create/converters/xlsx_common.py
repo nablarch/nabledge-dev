@@ -94,44 +94,54 @@ def read_sheet(path: Path, sheet_name: str) -> RawSheet:
 # Title / preamble extraction
 # ---------------------------------------------------------------------------
 
-def _extract_title_and_preamble(sheet: RawSheet) -> tuple[str, str, int]:
-    """Return (title, preamble, body_start_row_idx).
+def _collect_preamble(
+    rows: list[list[str]],
+    start: int,
+    header_row_idx: int,
+    title_row_extras: list[str] | None = None,
+) -> str:
+    """Collect preamble text from rows[start:header_row_idx] (P1 only).
 
-    * title  : row-1 ``■...`` text if present, else sheet name.
-    * preamble: contiguous paragraph-like rows (single non-empty cell, first
-                column) following the title, joined by newline.
-    * body_start_row_idx: row index where the body (tables / data) begins.
+    Every non-empty cell in the range becomes one preamble line
+    (flattened).  Empty rows are skipped.  Callers use this only when a
+    header row was actually located (P1); for P2 there is no preamble.
+
+    ``title_row_extras``: optional non-title cells from the title row
+    (row 0) that are prepended to the preamble.  The v5/v6 releasenote
+    pattern keeps the ``■…`` title in col 0 and scatters ※-annotations
+    in cols 7/9/11/… within the same row — these must be captured.
+    """
+    lines: list[str] = []
+    if title_row_extras:
+        for c in title_row_extras:
+            lines.append(" ".join(c.split()))
+    for i in range(start, header_row_idx):
+        for c in rows[i]:
+            if c:
+                lines.append(" ".join(c.split()))
+    return "\n".join(lines)
+
+
+def _extract_title(sheet: RawSheet) -> tuple[str, int, list[str]]:
+    """Return (title, next_row_index, title_row_extras).
+
+    * title: row-1 ``■...`` text if present, else sheet name.
+    * next_row_index: 1 when a ``■…`` row is consumed, else 0.
+    * title_row_extras: when a ``■…`` row is consumed, every OTHER
+      non-empty cell on that row (annotations scattered alongside the
+      title in corpus releasenotes).
     """
     rows = sheet.rows
     title = sheet.name
-    i = 0
-    if rows:
-        first_non_empty = next(
-            (v for v in rows[0] if v),
-            "",
-        )
-        if first_non_empty.startswith("■"):
-            # Keep `■` prefix verbatim so verify's 1:1 source-cell match
-            # succeeds (spec §8-4: "title = row 1 の `■...`").  Flatten
-            # embedded newlines so the title stays single-line.
-            title = " ".join(first_non_empty.split())
-            i = 1
-
-    preamble_lines: list[str] = []
-    while i < len(rows):
-        row = rows[i]
-        non_empty = [c for c in row if c]
-        if not non_empty:
-            i += 1
-            continue
-        # A preamble row is a single text cell (paragraph).  Two or more
-        # non-empty cells start the body (usually a header row).
-        if len(non_empty) == 1:
-            preamble_lines.append(" ".join(non_empty[0].split()))
-            i += 1
-            continue
-        break
-    return title, "\n".join(preamble_lines), i
+    if not rows:
+        return title, 0, []
+    row0 = rows[0]
+    first_idx = next((i for i, v in enumerate(row0) if v), -1)
+    if first_idx < 0 or not row0[first_idx].startswith("■"):
+        return title, 0, []
+    title = " ".join(row0[first_idx].split())
+    extras = [v for i, v in enumerate(row0) if v and i != first_idx]
+    return title, 1, extras
 
 
 # ---------------------------------------------------------------------------
@@ -150,15 +160,151 @@ def _run_length(row: list[str]) -> int:
     return best
 
 
+#: Separator for span-inherit composed column names (spec §8-3, Phase
+#: 22-B-12).  Kept in sync with ``scripts/verify/verify.SEP`` — both sides
+#: derive independently from the same spec constant.
+SEP = " / "
+
+
+def _looks_like_header_cell(v: str) -> bool:
+    """Heuristic mirror of ``scripts.verify.verify._looks_like_header_cell``.
+
+    A header cell is a short (≤ 40 chars), non-numeric label.  Applied
+    to reject data rows (numeric IDs, long prose) from being mis-picked
+    as header rows.
+    """
+    if not v:
+        return False
+    s = v.strip()
+    if not s or len(s) > 40:
+        return False
+    try:
+        float(s.replace(",", ""))
+        return False
+    except ValueError:
+        pass
+    return True
+
+
+def _looks_like_sub_header(row_h: list[str], row_h1: list[str]) -> bool:
+    """Spec §8-3 span-inherit parent/leaf detection (Phase 22-B-12).
+
+    Independently derived from the spec, identical semantics to the
+    verify-side helper.  A multi-row header is recognised iff some
+    parent cell genuinely spans ≥ 2 leaf cells (i.e. there is a parent
+    column p such that the leaf row has ≥ 2 non-empty cells in
+    [p, next_parent_column)).  Additionally:
+      - all non-empty leaf cells must look like header labels
+      - all non-empty parent cells must look like header labels (long
+        free-text cells are preamble, not parents)
+    """
+    h_non_empty_cols = [cx for cx, v in enumerate(row_h) if v]
+    h1_non_empty_cols = [cx for cx, v in enumerate(row_h1) if v]
+    if not h_non_empty_cols or not h1_non_empty_cols:
+        return False
+    if not all(_looks_like_header_cell(row_h1[c]) for c in h1_non_empty_cols):
+        return False
+    if not all(_looks_like_header_cell(row_h[c]) for c in h_non_empty_cols):
+        return False
+    h1_col_set = set(h1_non_empty_cols)
+    max_c = max(len(row_h), len(row_h1))
+    for i, p_col in enumerate(h_non_empty_cols):
+        next_p = h_non_empty_cols[i + 1] if i + 1 < len(h_non_empty_cols) else max_c
+        leaf_in_span = sum(1 for lc in h1_col_set if p_col <= lc < next_p)
+        if leaf_in_span >= 2:
+            return True
+    return False
+
+
+def _compose_header_columns(header_rows: list[list[str]], col_count: int) -> list[str]:
+    """Span-inherit composition (spec §8-3, Phase 22-B-12).
+
+    Two distinct roles:
+
+    * **The top row** (``header_rows[0]``) is the primary header.  Each
+      non-empty cell spans rightward until the next non-empty cell in
+      the same row — but only over columns that have no value in their
+      own top-row cell.  This handles the v5 bessatsu pattern where the
+      top row has only scattered parent labels and the bottom row
+      carries the per-column leaves.
+    * **Rows below the top** are sub-headers that split specific
+      top-row spans.  A sub-header cell at column ``c`` appends to the
+      top-row label that covers column ``c``.
+
+    Composed column = ``SEP.join([top_label, sub_label_1, sub_label_2, ...])``
+    with empty parts dropped.  A column where the top row is empty AND
+    no sub-header covers it yields "".
+    """
+    if not header_rows:
+        return [""] * col_count
+    top_row = header_rows[0]
+    sub_rows = header_rows[1:]
+
+    # Step 1: compute the primary label per column.
+    #
+    # A top-row value V at column t covers columns [t, next_top_col).
+    # Within that span, we inherit V to column c ONLY IF at least one
+    # sub-header cell exists in [t, next_top_col) — i.e. V genuinely
+    # spans over sub-cells.  Otherwise V stays at column t only (it's
+    # a standalone single-row header cell with an empty neighbour, not
+    # a span parent).
+    top_cols = [c for c in range(col_count)
+                if c < len(top_row) and top_row[c]]
+    # Columns that any sub row has a value at.
+    sub_cols = set()
+    for sr in sub_rows:
+        for c in range(min(col_count, len(sr))):
+            if sr[c]:
+                sub_cols.add(c)
+
+    primary: list[str] = [""] * col_count
+    for i, t in enumerate(top_cols):
+        next_t = top_cols[i + 1] if i + 1 < len(top_cols) else col_count
+        label = _flatten_ws(top_row[t])
+        # Does this top cell span over ≥ 2 sub-cells?  If not, it stays
+        # at column t alone (no inherit).
+        sub_in_span = [c for c in sub_cols if t <= c < next_t]
+        if len(sub_in_span) >= 2:
+            for c in range(t, next_t):
+                primary[c] = label
+        else:
+            primary[t] = label
+
+    # Step 2: attach sub-header labels per column.  A sub-header value
+    # at column c becomes a part appended after the primary label for
+    # column c.
+    composed: list[str] = []
+    for c in range(col_count):
+        parts: list[str] = []
+        if primary[c]:
+            parts.append(primary[c])
+        for sr in sub_rows:
+            v = _flatten_ws(sr[c]) if c < len(sr) and sr[c] else ""
+            if v:
+                parts.append(v)
+        # Dedup consecutive identical parts (e.g. single-row header
+        # where top == sub would duplicate).
+        dedup: list[str] = []
+        for p in parts:
+            if not dedup or dedup[-1] != p:
+                dedup.append(p)
+        composed.append(SEP.join(dedup))
+    return composed
+
+
 def _detect_header(sheet: RawSheet, body_start: int) -> tuple[int, list[str]] | None:
-    """Find a header row at ``body_start`` onwards.
+    """Find the (possibly multi-row) header starting at/around ``body_start``.
 
-    A header is a row whose longest contiguous run of non-empty cells is
-    ≥ 3 and which is followed by at least 2 data rows.  If row ``h+1`` is a
-    sub-header (strictly narrower than ``h`` and every non-empty cell has
-    a parent-to-the-left in ``h``), merge via ``メイン/副``.
+    Algorithm (spec §8-3 Phase 22-B-12):
+    1. Scan downward for the first row with ``_run_length ≥ 3`` — this
+       is the primary header candidate.
+    2. Walk downward while the next row qualifies as a span-inherit child.
+    3. Walk upward while the previous row qualifies as a span-inherit
+       parent (corpus: v5 bessatsu has a sparse parent row above a
+       dense leaf row, not detected by the downward scan alone).
+    4. Compose column names via :func:`_compose_header_columns`.
 
-    Returns ``(data_start, column_names)`` or ``None`` if no header found.
+    Returns ``(data_start, column_names)`` or ``None``.
     """
     rows = sheet.rows
     n = len(rows)
@@ -166,25 +312,24 @@ def _detect_header(sheet: RawSheet, body_start: int) -> tuple[int, list[str]] | 
         row_h = rows[h]
         if _run_length(row_h) < 3:
             continue
-        merged: list[str] = list(row_h)
-        data_start = h + 1
-        if h + 1 < n:
-            row_h1 = rows[h + 1]
-            if _looks_like_sub_header(row_h, row_h1):
-                # Merge: for every sub-col, attach to the nearest non-empty
-                # parent header at cx' <= cx.  Sub-cell with no parent on its
-                # left keeps its own label.
-                for cx, sub in enumerate(row_h1):
-                    if not sub:
-                        continue
-                    parent_cx = cx
-                    while parent_cx >= 0 and not row_h[parent_cx]:
-                        parent_cx -= 1
-                    if parent_cx >= 0 and row_h[parent_cx]:
-                        merged[cx] = f"{row_h[parent_cx]}/{sub}"
-                    else:
-                        merged[cx] = sub
-                data_start = h + 2
+        header_rows_idx = [h]
+        # Walk downward: extend with leaf-ier rows.
+        while (
+            header_rows_idx[-1] + 1 < n
+            and _looks_like_sub_header(
+                rows[header_rows_idx[-1]], rows[header_rows_idx[-1] + 1]
+            )
+        ):
+            header_rows_idx.append(header_rows_idx[-1] + 1)
+        # Walk upward: insert sparse parent rows above the current top.
+        while (
+            header_rows_idx[0] - 1 >= body_start
+            and _looks_like_sub_header(
+                rows[header_rows_idx[0] - 1], rows[header_rows_idx[0]]
+            )
+        ):
+            header_rows_idx.insert(0, header_rows_idx[0] - 1)
+        data_start = header_rows_idx[-1] + 1
         # Need ≥ 2 data rows
         data_rows_available = 0
         for r in rows[data_start:]:
@@ -194,38 +339,11 @@ def _detect_header(sheet: RawSheet, body_start: int) -> tuple[int, list[str]] | 
                     break
         if data_rows_available < 2:
             continue
-        # Normalise column names: flatten whitespace (Excel cells often
-        # contain embedded newlines for wrapping).
-        columns = [_flatten_ws(c) for c in merged]
+        col_count = max((len(rows[r]) for r in header_rows_idx), default=0)
+        header_matrix = [rows[r] for r in header_rows_idx]
+        columns = _compose_header_columns(header_matrix, col_count)
         return data_start, columns
     return None
-
-
-def _looks_like_sub_header(row_h: list[str], row_h1: list[str]) -> bool:
-    """True when ``row_h1`` is a sub-header attached to ``row_h``.
-
-    Conditions (all must hold):
-
-    * ``row_h1`` is non-empty and has strictly fewer non-empty cells than
-      ``row_h`` (a sub-header is *narrower* than the parent; this rules
-      out data rows which typically match or exceed the header width).
-    * Every non-empty cell of ``row_h1`` has a non-empty parent in
-      ``row_h`` at the same column or to its left (the parent "span").
-    """
-    h_non_empty = sum(1 for v in row_h if v)
-    h1_non_empty_cols = [cx for cx, v in enumerate(row_h1) if v]
-    if not h1_non_empty_cols:
-        return False
-    if len(h1_non_empty_cols) >= h_non_empty:
-        return False
-    for cx in h1_non_empty_cols:
-        # Find nearest non-empty parent at cx' <= cx.
-        px = cx
-        while px >= 0 and not row_h[px]:
-            px -= 1
-        if px < 0 or not row_h[px]:
-            return False
-    return True
 
 
 def _flatten_ws(s: str) -> str:
@@ -245,17 +363,18 @@ def sheet_to_result(sheet: RawSheet) -> tuple[RSTResult, dict]:
     needed by docs.py to restore a MD table.  ``meta`` is serialised onto
     the output JSON verbatim via ``run._convert_and_write``.
     """
-    title, preamble, body_start = _extract_title_and_preamble(sheet)
+    title, body_start, title_row_extras = _extract_title(sheet)
 
-    # Column-count ≤ 2 is forced P2 per spec §8-2.
+    # Column-count ≤ 2 anywhere below the title is forced P2 (§8-2).
     useful_width = _useful_width(sheet, body_start)
-    if useful_width > 2:
-        header = _detect_header(sheet, body_start)
-    else:
-        header = None
+    header = _detect_header(sheet, body_start) if useful_width > 2 else None
 
     if header is not None:
         data_start, columns = header
+        header_start = _find_header_start(sheet.rows, body_start, data_start)
+        preamble = _collect_preamble(
+            sheet.rows, body_start, header_start, title_row_extras
+        )
         sections, data_rows = _build_p1_sections(sheet, data_start, columns)
         result = RSTResult(
             title=title,
@@ -270,8 +389,9 @@ def sheet_to_result(sheet: RawSheet) -> tuple[RSTResult, dict]:
         }
         return result, meta
 
-    # P2: single section-less content body.
-    content = _build_p2_content(sheet, body_start, preamble)
+    # P2: keep every body row verbatim (no flatten) so verify's raw-token
+    # match succeeds.
+    content = _build_p2_content(sheet, body_start, "")
     result = RSTResult(
         title=title,
         no_knowledge_content=False,
@@ -280,6 +400,25 @@ def sheet_to_result(sheet: RawSheet) -> tuple[RSTResult, dict]:
     )
     meta = {"sheet_type": "P2"}
     return result, meta
+
+
+def _find_header_start(rows: list[list[str]], body_start: int, data_start: int) -> int:
+    """Locate the first row of the header block within [body_start, data_start).
+
+    The header block ends at data_start - 1 (the leaf row).  Walking
+    upward from that row, a predecessor qualifies as part of the header
+    iff ``_looks_like_sub_header(pred, successor)`` — same span-inherit
+    rule ``_detect_header`` uses to extend the header upward.  Rows
+    above the header block are preamble.
+    """
+    if data_start <= body_start:
+        return body_start
+    header_top = data_start - 1
+    while header_top - 1 >= body_start and _looks_like_sub_header(
+        rows[header_top - 1], rows[header_top]
+    ):
+        header_top -= 1
+    return header_top
 
 
 def _useful_width(sheet: RawSheet, body_start: int) -> int:
@@ -364,12 +503,19 @@ def _first_non_empty(cells: list[str]) -> str:
 
 
 def _build_p2_content(sheet: RawSheet, body_start: int, preamble: str) -> str:
-    """Flatten all body rows to text.  Preamble is prepended (blank-line sep)."""
+    """Flatten all body rows to text.
+
+    Cell values are whitespace-flattened (embedded newlines / repeated
+    spaces collapsed to single spaces) to match the verify-side token
+    flatten.  Excel cells routinely carry display-only newlines that
+    have no semantic meaning — collapsing them keeps JSON/source
+    comparable.
+    """
     lines: list[str] = []
     if preamble:
         lines.append(preamble)
     for r in sheet.rows[body_start:]:
-        non_empty = [c for c in r if c]
+        non_empty = [_flatten_ws(c) for c in r if c]
         if not non_empty:
             continue
         lines.append("  ".join(non_empty))
