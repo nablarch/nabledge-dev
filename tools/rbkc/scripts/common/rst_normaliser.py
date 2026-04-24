@@ -61,6 +61,20 @@ def normalise_rst(
     if strict_unknown and warnings:
         for line in warnings.splitlines():
             if "(ERROR/3)" in line or "(SEVERE/4)" in line:
+                # Spec §3-2-3 Sphinx 追従原則: "Unknown target name" is a
+                # WARNING in Sphinx (docutils raises it as ERROR/3 when
+                # a trailing-underscore name appears in prose, e.g.
+                # Japanese 「nablarch_」).  docutils still produces a
+                # valid doctree with the text preserved in a
+                # `problematic` node; the visitor emits it verbatim.
+                # Treat this as a WARNING (surfaced via warnings_out),
+                # not QC1 FAIL.  Narrow filter to ERROR/3 only because
+                # SEVERE/4 never carries this message class (structural
+                # failures where the doctree is unreliable).
+                if "(ERROR/3)" in line and "Unknown target name:" in line:
+                    if warnings_out is not None:
+                        warnings_out.append(line.strip())
+                    continue
                 raise UnknownSyntaxError(f"docutils parse error: {line.strip()}")
 
     try:

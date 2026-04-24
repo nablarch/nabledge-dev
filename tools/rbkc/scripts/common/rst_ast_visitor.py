@@ -183,6 +183,14 @@ class _MDVisitor:
         line = node.get("line", "?")
         text = node.astext()[:120]
         if level >= 3:
+            # Spec §3-2-3 Sphinx 追従原則: "Unknown target name" is a
+            # WARNING in Sphinx (trailing-underscore prose like
+            # 「nablarch_」).  The problematic-node visitor preserves
+            # the text verbatim, so QC1 must not FAIL here — downgrade
+            # to a warning entry.
+            if "Unknown target name" in text:
+                self.warnings.append(f"level={level} line={line} {text}")
+                return None
             raise VisitorError(f"RST parse error (level={level}) at line {line}: {text}")
         if level >= 2:
             self.warnings.append(f"level={level} line={line} {text}")

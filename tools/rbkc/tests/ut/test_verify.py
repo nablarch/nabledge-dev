@@ -1406,6 +1406,42 @@ class TestCheckContentCompleteness:
         issues = self._check(src, data)
         assert any("[QC1]" in i and "RST parse/visitor error" in i for i in issues)
 
+    def test_pass_qc1_rst_unknown_target_name_not_promoted_to_fail(self):
+        """Phase 22-B-12 Finding C: Japanese prose containing a trailing
+        underscore name in brackets (e.g. 「nablarch_」) is interpreted
+        by docutils as a named hyperlink reference and emits
+        `(ERROR/3) Unknown target name: "nablarch"` in the warning
+        stream.  Sphinx itself emits a WARNING for the same input and
+        still produces HTML (spec §3-2-3 Sphinx 追従原則: WARNING は
+        ビルドを止めない).  docutils also yields a valid doctree with
+        the text preserved in a `problematic` node, which the visitor
+        emits verbatim.
+
+        Therefore rst_normaliser must NOT promote "Unknown target name"
+        errors to UnknownSyntaxError / QC1 FAIL.  Other ERROR/3 classes
+        (unknown directive, unknown role, unresolved substitution) MUST
+        still FAIL — they are covered by the tests above.
+        """
+        # Reproduction of .lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_BasicRules.rst:4-6
+        src = (
+            "命名ルール\n==============================\n\n"
+            "フレームワークでは、プレフィックス「nablarch_」を使用する。\n"
+        )
+        data = self._data(
+            title="命名ルール",
+            sections=[],
+            content="フレームワークでは、プレフィックス「nablarch_」を使用する。",
+        )
+        issues = self._check(src, data)
+        # No QC1 RST parse/visitor error for Unknown target name.
+        assert not any(
+            "[QC1]" in i and "Unknown target name" in i for i in issues
+        ), f"Unknown target name must not be QC1 FAIL (Sphinx 追従): {issues}"
+        # And the content-completeness check must succeed — the
+        # problematic-node display-text fallback preserves "nablarch_"
+        # verbatim, so the JSON content is found in the source.
+        assert issues == [], f"expected no FAILs, got: {issues}"
+
     # --- QC2 Z-1 gap fill: multiple fabrications + top-level + near-miss ---
 
     def test_fail_qc2_multiple_fabricated_contents(self):
