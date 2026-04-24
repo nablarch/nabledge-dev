@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 68 — skill v6 同期完了)
+**Updated**: 2026-04-24 (session 69 — 全 5 バージョン CHANGELOG 追記)
 
 ---
 
@@ -147,7 +147,7 @@ kc 検索 → RBKC 検索で構造変更は 3 箇所: (1) Step 5 section search 
 
 全バージョン baseline 取得後:
 - setup スクリプト (`tools/setup/setup-cc.sh` / `setup-ghc.sh`): vup 時に旧 `.claude/skills/nabledge-${v}/` を完全削除してから `cp -r`
-- 各バージョン CHANGELOG `[Unreleased]` への「ルールベース化」追記
+- ~~各バージョン CHANGELOG `[Unreleased]` への「ルールベース化」追記~~ — session 69 完了 commit `fac51b221`
 - `tools/rbkc/README.md` を現状構成に書き直し
 - `.work/00299/notes.md` を Phase 21-Y〜22 要約に圧縮
 
