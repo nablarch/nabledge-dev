@@ -2,7 +2,7 @@
 
 6からの変更点を記載しています。
 
-| コンテンツ |  | No. | 分類 | リリース 区分 | タイトル | 概要 | 修正後のバージョン （※1） | 不具合の起因バージョン （※2）/モジュール | 不具合の起因バージョン （※2）/Nablarch | システムへの 影響の可能性 （※3） | システムへの影響の可能性の内容と対処 | 参照先 | JIRA issue (※4) |
+| コンテンツ |  | No. | 分類 | リリース 区分 | タイトル | 概要 | 修正後のバージョン （※1） | 不具合の起因バージョン （※2） / モジュール | 不具合の起因バージョン （※2） / Nablarch | システムへの 影響の可能性 （※3） | システムへの影響の可能性の内容と対処 | 参照先 | JIRA issue (※4) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | アプリケーションフレームワーク |  |  |  |  |  |  |  |  |  |  |  |  |  |
 |  | オブジェクトコード、ソースコード | 1 | システム日時 | 変更 | システム日時をLocalDateTime型で取得できる機能を追加 | SystemTimeUtilを用いたシステム日時の取得で、従来の Date 型に加え、Java 8から標準化されたDate and Time APIの LocalDateTime型での取得に対応しました。 | nablarch-core 2.1.0 | - | - | なし | - | https://nablarch.github.io/docs/6u1/publishedApi/nablarch-all/publishedApiDoc/programmer/nablarch/core/date/SystemTimeUtil.html | NAB-553 |

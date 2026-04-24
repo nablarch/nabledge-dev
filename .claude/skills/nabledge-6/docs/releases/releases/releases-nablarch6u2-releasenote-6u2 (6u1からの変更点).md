@@ -2,7 +2,7 @@
 
 6u1からの変更点を記載しています。 6u1から移行する場合は、本シートをご参照ください。 5u25から移行する場合は、6・6u1で案内済みの変更点も含んだ「6u2（5u25からの変更点）」シートをご参照ください。
 
-| コンテンツ |  | No. | 分類 | リリース 区分 | タイトル | 概要 | 修正後のバージョン | 不具合の起因バージョン/モジュール | 不具合の起因バージョン/Nablarch | システムへの 影響の可能性 | システムへの影響の可能性の内容と対処 | 参照先 | JIRA issue |
+| コンテンツ |  | No. | 分類 | リリース 区分 | タイトル | 概要 | 修正後のバージョン | 不具合の起因バージョン / モジュール | 不具合の起因バージョン / Nablarch | システムへの 影響の可能性 | システムへの影響の可能性の内容と対処 | 参照先 | JIRA issue |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | アプリケーションフレームワーク |  |  |  |  |  |  |  |  |  |  |  |  |  |
 |  | オブジェクトコード、ソースコード | 1 | 公開API | 変更 | 公開APIの追加 | 解説書で案内しているAPIの中で公開APIになっていないものがあったため、公開APIを追加しました。 | nablarch-core 2.2.0 nablarch-core-beans 2.2.0 nablarch-core-jdbc 2.2.0 nablarch-core-message 2.1.0 nablarch-core-transaction 2.1.0 nablarch-fw-jaxrs 2.2.0 nablarch-fw-messaging 2.1.0 nablarch-testing 2.2.0 nablarch-jackson-adaptor 2.1.0 nablarch-lettuce-adaptor 2.2.0 nablarch-micrometer-adaptor 2.1.0 nablarch-router-adaptor 2.1.0 | - | - | なし | - | - | NAB-579 |

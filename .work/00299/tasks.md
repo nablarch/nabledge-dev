@@ -2,19 +2,19 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 63 中 — 22-B-12 大規模リファクタリング完了。v6/v5 FAIL 0、v1.4 残 6 (spacer col 特殊ケース)、v1.3/v1.2 は include 解決問題。372 tests GREEN。commit `7e1ac1fa3` push 済)
+**Updated**: 2026-04-24 (session 63 終 — 22-B-12 大規模リファクタリング完了。v6/v5 FAIL 0、v1.4 残 6、v1.3/v1.2 include 解決問題。372 tests GREEN)
 
 ---
 
 ## 現状サマリー
 
-- v6 verify: **FAIL 0**。362 unit tests GREEN
-- 22-B-16b/c (cross-doc MD link emission + asset + QL1 two-sided) 完了
-- 22-B-14 完了 (`fe7a34a0c`): nabledge-6 skill を RBKC V4 schema に追従 (6 箇所修正)。無効だった 20260424-080424 baseline は削除済
-- 22-B-15 完了: nabledge-test を agent/skill 境界ゼロベース再設計。runner agent (Sonnet 固定) + grade.py (18 tests) + meta.json `runner_agent`/`model_used` + e2e smoke test 通過
-- 22-B-13b 完了: v6 baseline `20260424-103200` (Sonnet + strict grader) 取得、QA 90.0% / CA 98.1%
-- **次のタスク**: 22-B-12 (他バージョン v5/v1.4/v1.3/v1.2 の create → verify FAIL 0 確認)
-- その後: Phase 19 (他バージョン baseline) → Phase 21-Z
+- **v6 verify: FAIL 0** (353 files) / **v5 verify: FAIL 0** (533 files)
+- v1.4 残 6 FAIL (`nablarch-1.4.3-releasenote.xlsx` 1 シートの spacer col 特殊構造)
+- v1.3/v1.2 は `.. include:: links.lst` 解決失敗で create 途中 crash (docutils 相対パス問題)
+- 372 tests GREEN (unit + e2e)
+- 設計書 3 本 (verify-quality / converter / json-schema) を 22-B-12 決定で更新済 (`91cb46603`)
+- 実装: Excel span-inherit + preamble in content + QL1 5-quadrant + literalinclude shim (`7e1ac1fa3`)
+- **次のタスク**: 22-B-12 残件 — v1.4 spacer col ケース + v1.3/v1.2 include 解決。その後 Phase 19 (他バージョン baseline)
 
 ---
 
@@ -150,26 +150,19 @@
   - [x] Step 6: e2e smoke test — qa-001 (Sonnet 26 秒、grade 5/8) と ca-001 (185 秒、grade 35/37) で全フロー動作確認。runner agent 起動 → Skill tool → 4 デリミタ返却 → response/output 保存 → grade.py 実行まで通った
 - [x] **22-B-13b 完了** (`90061007d`): v6 baseline `20260424-103200` 取得。Sonnet + strict grader の新パイプラインでの初回 baseline。QA 90.0% / CA 98.1%、ca-001 37/37 到達、qa-001 benchmark 75.0% ±21.6% (trial 1/2 62.5%、trial 3 100%、汎用 select 系への言及有無で揺らぐ)。前回 baseline (Opus + pseudocode grading) と model/grading 両方が異なるため直接比較不能、新起点として確定。並列実行で stall 2 件 (retry で解消)
 - [~] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
-  - **v6 / v5 は FAIL 0 達成** (session 63、commit `7e1ac1fa3`)
-  - **v1.4 残 6 件**: `nablarch-1.4.3-releasenote.xlsx` 1 シートで spacer col (header name 空) に cell value `UI開発基盤\n※...` が入っている corpus 構造。P1 schema `{col}: {val}` 表現不能 — 別タスク (P1 の spacer 列意味論検討)
-  - **v1.3 / v1.2**: `.. include:: links.lst` が docutils `file_insertion_enabled=True` で source_path 相対として解決失敗 — docutils 制約
 
-  **共通先行 fix**:
-  - [x] **22-B-12-common-1** assets/*.json exclusion bug — `docs.py` / `verify.py` (QO3/QO4) が `knowledge/assets/` 配下の literalinclude コピー JSON を content JSON として読んでクラッシュしていた。v5 で表面化 (v6 には該当 asset が無かった)。TDD で 3 tests 追加、assets/ を rglob 結果から除外。365 tests GREEN
+  **完了部分** (session 63):
+  - [x] **22-B-12-common-1** `assets/*.json` exclusion bug (commit `fbd35a252`、3 tests 追加)
+  - [x] **全量調査 4 件** (Excel 212 sheet / RST :ref: 突合 / literalinclude 使用 / content 実態) → `.work/00299/phase22/full-survey-summary.md`
+  - [x] **設計書 3 本更新** (commit `91cb46603`)
+  - [x] **実装リファクタリング** (commit `7e1ac1fa3`): Excel span-inherit + preamble、QL1 5-quadrant、literalinclude shim
+  - [x] **v6 FAIL 0** (353 files)
+  - [x] **v5 FAIL 0** (533 files)
 
-  **v5 (create 533 files、verify 57 FAIL)**:
-  - [ ] **22-B-12-v5-qp** Excel multi-row header 合成未実装 → duplicate column name FAIL 6 件。SE 推奨 Option A: span 解析で `親/副` 合成 (`nablarch5u1-releasenote.xlsx` 別紙シート — 行3 親 `nablarch-fw-webから移動したAPI` / `nablarch-testingの対応するAPI`、行4 子 `クラス` / `API` x2)
-  - [ ] **22-B-12-v5-qc1** releasenote 前書き行 (タイトル row0 と ヘッダ row3 の間にある `5u6からの変更点を記載しています。` / `※1 ...` / `※2 ...` / `※3 ...` セル) が JSON に含まれず QC1 FAIL 35 件。SE 推奨: P1 シート先頭に「preamble section」を出力 (content = preamble テキスト join、MD docs 側はテーブル上の段落として表示)
-  - [ ] **22-B-12-v5-qc2** 同上 (Java コードサンプル等トークン欠落) 16 件 → preamble fix と同時解消見込み
-
-  **v1.4 (create 161 files、verify 49 FAIL)**:
-  - [ ] **22-B-12-v1.4-ql1** `glossary.rst` の `:ref:` が 17 件 dangling。v1.4 では該当ラベルが他ドキュメントに定義されていない可能性 → 調査必要
-  - [ ] **22-B-12-v1.4-excel** QC1/QC2 32 件 → v5-qc1/qc2 fix で同時解消見込み
-
-  **v1.3 / v1.2 (create CRASH)**:
-  - [ ] **22-B-12-v1.3-crash** `literalinclude` directive が docutils で unknown (level=3 ERROR)。`rst_ast.py` の shim 未登録が原因 — v5/v6 では使われていなかっただけ。`_LiteralDirective` として `literalinclude` を登録すれば解消 (resolver.py 側は既に認識済み)
-  - [ ] **22-B-12-v1.2-crash** v1.3 と同じ root cause
-  - [ ] **22-B-12-v1.3-v1.2-verify** crash 解消後に verify 実行、残課題を追記
+  **残件**:
+  - [ ] **22-B-12-v1.4-spacer**: `nablarch-1.4.3-releasenote.xlsx` 1 シートで spacer col (header 名空) に `UI開発基盤\n※…` 注釈が入っている。P1 schema `{col}: {val}` では表現不能。対応方針: P1 スキーマの spacer 列意味論を見直す (カテゴリラベル行として別 section 化 or preamble 拡張)。残 6 FAIL
+  - [ ] **22-B-12-v1.3-include**: v1.3 の `.. include:: links.lst` で docutils `file_insertion_enabled=True` が source_path 相対として解決失敗し create crash。対応方針: `rst_ast.py` の `parse()` に source_path からの相対解決を docutils に正しく伝える (現状も `source` 設定しているが include resolve が機能していない)。要調査
+  - [ ] **22-B-12-v1.2-include**: v1.2 同じ root cause。v1.3 fix で解消見込み
 
   **完了条件**: 全バージョンで verify FAIL 0
 

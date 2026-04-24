@@ -42,7 +42,7 @@
     {
       "id": "s8",
       "title": "JSONの読み取りに失敗する問題を修正",
-      "content": "No.: 6\n分類: 汎用データフォーマット\nリリース 区分: 不具合\nタイトル: JSONの読み取りに失敗する問題を修正\n概要: JSON内に含まれる値（\"\"で囲われた項目）がJSON構文で意味を持つ区切り文字（:、[、{、, の4つ）のみで、かつその後にデータが続く場合、値とJSON構文の区切り文字の区別ができずに失敗していました。 ①NGになる例（\":\"の後にデータが続く）： {\"key1\": \":\", \"key2\": \"value2\"} ②OKになる例（\":\"の後にデータが続かない）： {\"key1\": \":\"} NGになっていた例も、正常に値として解析できるように修正しました。\n修正後のバージョン （※1）: nablarch-core-dataformat 2.0.3\n不具合の起因バージョン （※2）/モジュール: 1.3.1\n不具合の起因バージョン （※2）/Nablarch: 5u19\nシステムへの 影響の可能性 （※3）: あり(本番)\nシステムへの影響の可能性の内容と対処: 概要の①のようにJSONの区切り文字のみが値になるデータを解析できるようになります。 本来は値として解析できることが正しい挙動であるため影響が無い想定ですが、もしこのようなJSONを読み込めるようになることでシステム影響がある場合、値の確認をして受け入れないようにするなどの修正を行ってください。\n参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/data_io/data_format.html\nJIRA issue (※4): NAB-639"
+      "content": "No.: 6\n分類: 汎用データフォーマット\nリリース 区分: 不具合\nタイトル: JSONの読み取りに失敗する問題を修正\n概要: JSON内に含まれる値（\"\"で囲われた項目）がJSON構文で意味を持つ区切り文字（:、[、{、, の4つ）のみで、かつその後にデータが続く場合、値とJSON構文の区切り文字の区別ができずに失敗していました。 ①NGになる例（\":\"の後にデータが続く）： {\"key1\": \":\", \"key2\": \"value2\"} ②OKになる例（\":\"の後にデータが続かない）： {\"key1\": \":\"} NGになっていた例も、正常に値として解析できるように修正しました。\n修正後のバージョン （※1）: nablarch-core-dataformat 2.0.3\n不具合の起因バージョン （※2） / モジュール: 1.3.1\n不具合の起因バージョン （※2） / Nablarch: 5u19\nシステムへの 影響の可能性 （※3）: あり(本番)\nシステムへの影響の可能性の内容と対処: 概要の①のようにJSONの区切り文字のみが値になるデータを解析できるようになります。 本来は値として解析できることが正しい挙動であるため影響が無い想定ですが、もしこのようなJSONを読み込めるようになることでシステム影響がある場合、値の確認をして受け入れないようにするなどの修正を行ってください。\n参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/data_io/data_format.html\nJIRA issue (※4): NAB-639"
     },
     {
       "id": "s9",
@@ -127,7 +127,7 @@
     {
       "id": "s25",
       "title": "jQuery、Bootstrapのバージョンアップ",
-      "content": "No.: 20\n分類: ウェブアプリケーション (JSP)\nリリース 区分: 変更\nタイトル: jQuery、Bootstrapのバージョンアップ\n概要: jQueryおよびjQeuryに依存していたライブラリのバージョンを以下の通り更新しました。 ・jQuery 3.7.1 ・jQuery UI 1.14 ・Bootstrap 5.3.3 また、Bootstrapのバージョンアップに伴ってMaterial Design for Bootstrapの使用を廃止し、画面デザインを調整しました。\n修正後のバージョン （※1）: nablarch-example-web 6u3\n不具合の起因バージョン （※2）/モジュール: -\n不具合の起因バージョン （※2）/Nablarch: -\nシステムへの 影響の可能性 （※3）: なし\nシステムへの影響の可能性の内容と対処: -\n参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web/index.html\nJIRA issue (※4): NAB-616"
+      "content": "No.: 20\n分類: ウェブアプリケーション (JSP)\nリリース 区分: 変更\nタイトル: jQuery、Bootstrapのバージョンアップ\n概要: jQueryおよびjQeuryに依存していたライブラリのバージョンを以下の通り更新しました。 ・jQuery 3.7.1 ・jQuery UI 1.14 ・Bootstrap 5.3.3 また、Bootstrapのバージョンアップに伴ってMaterial Design for Bootstrapの使用を廃止し、画面デザインを調整しました。\n修正後のバージョン （※1）: nablarch-example-web 6u3\n不具合の起因バージョン （※2） / モジュール: -\n不具合の起因バージョン （※2） / Nablarch: -\nシステムへの 影響の可能性 （※3）: なし\nシステムへの影響の可能性の内容と対処: -\n参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web/index.html\nJIRA issue (※4): NAB-616"
     },
     {
       "id": "s26",
@@ -147,7 +147,7 @@
     {
       "id": "s29",
       "title": "タグファイルのスタイル適用設定修正",
-      "content": "No.: 23\n分類: 検索結果の一覧表示\nリリース 区分: 変更\nタイトル: タグファイルのスタイル適用設定修正\n概要: ページングの現在表示中のページ番号部分に対して、カスタムタグで指定したスタイルが適用されていなかったため、表示中かどうかに関わらず設定したCSSが適用されるように修正しました。\n修正後のバージョン （※1）: nablarch-biz-sample-all 3.1.0\n不具合の起因バージョン （※2）/モジュール: -\n不具合の起因バージョン （※2）/Nablarch: -\nシステムへの 影響の可能性 （※3）: なし\nシステムへの影響の可能性の内容と対処: -\n参照先: https://nablarch.github.io/docs/6u3/doc/biz_samples/03/index.html\nJIRA issue (※4): NAB-616"
+      "content": "No.: 23\n分類: 検索結果の一覧表示\nリリース 区分: 変更\nタイトル: タグファイルのスタイル適用設定修正\n概要: ページングの現在表示中のページ番号部分に対して、カスタムタグで指定したスタイルが適用されていなかったため、表示中かどうかに関わらず設定したCSSが適用されるように修正しました。\n修正後のバージョン （※1）: nablarch-biz-sample-all 3.1.0\n不具合の起因バージョン （※2） / モジュール: -\n不具合の起因バージョン （※2） / Nablarch: -\nシステムへの 影響の可能性 （※3）: なし\nシステムへの影響の可能性の内容と対処: -\n参照先: https://nablarch.github.io/docs/6u3/doc/biz_samples/03/index.html\nJIRA issue (※4): NAB-616"
     },
     {
       "id": "s30",
@@ -157,17 +157,17 @@
     {
       "id": "s31",
       "title": "Nablarch OpenAPI Generatorのリリース",
-      "content": "No.: 24\n分類: Nablarch OpenAPI Generator\nリリース 区分: 追加\nタイトル: Nablarch OpenAPI Generatorのリリース\n概要: OpenAPIドキュメントからアプリケーションのコード生成をサポートするツールである Nablarch OpenAPI Generator をリリースしました。\n修正後のバージョン （※1）: nablarch-openapi-generator 1.0.0\n不具合の起因バージョン （※2）/モジュール: -\n不具合の起因バージョン （※2）/Nablarch: -\nシステムへの 影響の可能性 （※3）: なし\nシステムへの影響の可能性の内容と対処: -\n参照先: https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.html\nJIRA issue (※4): NAB-624"
+      "content": "No.: 24\n分類: Nablarch OpenAPI Generator\nリリース 区分: 追加\nタイトル: Nablarch OpenAPI Generatorのリリース\n概要: OpenAPIドキュメントからアプリケーションのコード生成をサポートするツールである Nablarch OpenAPI Generator をリリースしました。\n修正後のバージョン （※1）: nablarch-openapi-generator 1.0.0\n不具合の起因バージョン （※2） / モジュール: -\n不具合の起因バージョン （※2） / Nablarch: -\nシステムへの 影響の可能性 （※3）: なし\nシステムへの影響の可能性の内容と対処: -\n参照先: https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.html\nJIRA issue (※4): NAB-624"
     },
     {
       "id": "s32",
       "title": "解説書の手順と実際のモジュールの構成差異を修正",
-      "content": "No.: 25\n分類: SQL Executor\nリリース 区分: 変更\nタイトル: 解説書の手順と実際のモジュールの構成差異を修正\n概要: ツールの提供状態として設定すべき項目に不足があり、また解説書で案内している設定ファイル名と実際のファイル名に乖離がありました。 このため解説書どおりに実行しても起動できないという問題が発生しており、解説書記載の手順で実行できるように設定ファイルの見直しを行いました。\n修正後のバージョン （※1）: sql-executor 1.3.1\n不具合の起因バージョン （※2）/モジュール: -\n不具合の起因バージョン （※2）/Nablarch: -\nシステムへの 影響の可能性 （※3）: なし\nシステムへの影響の可能性の内容と対処: -\n参照先: https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/SqlExecutor/SqlExecutor.html\nJIRA issue (※4): NAB-637"
+      "content": "No.: 25\n分類: SQL Executor\nリリース 区分: 変更\nタイトル: 解説書の手順と実際のモジュールの構成差異を修正\n概要: ツールの提供状態として設定すべき項目に不足があり、また解説書で案内している設定ファイル名と実際のファイル名に乖離がありました。 このため解説書どおりに実行しても起動できないという問題が発生しており、解説書記載の手順で実行できるように設定ファイルの見直しを行いました。\n修正後のバージョン （※1）: sql-executor 1.3.1\n不具合の起因バージョン （※2） / モジュール: -\n不具合の起因バージョン （※2） / Nablarch: -\nシステムへの 影響の可能性 （※3）: なし\nシステムへの影響の可能性の内容と対処: -\n参照先: https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/SqlExecutor/SqlExecutor.html\nJIRA issue (※4): NAB-637"
     },
     {
       "id": "s33",
       "title": "Java21でjava.lang.Objectのメソッドが許可できない場合がある問題に対応",
-      "content": "No.: 26\n分類: 使用不許可APIチェックツール\nリリース 区分: 不具合\nタイトル: Java21でjava.lang.Objectのメソッドが許可できない場合がある問題に対応\n概要: Java21でバイトコードが変わったことにより、インタフェースからjava.lang.Objectのメソッドを呼んでいる場合、設定ファイルで指定しても許可されないという不具合があったため対応しました。 例) ■使用不許可APIツールの設定ファイル java.lang.Object ■解析対象のjavaファイル // toStringメソッドは本来許可されるはずだが不許可になる Map<String, String> headers = request.headers(); headers.toString();\n修正後のバージョン （※1）: nablarch-unpublished-api-checker 1.0.1\n不具合の起因バージョン （※2）/モジュール: 1.0.0\n不具合の起因バージョン （※2）/Nablarch: -\nシステムへの 影響の可能性 （※3）: なし\nシステムへの影響の可能性の内容と対処: -\n参照先: https://nablarch.github.io/docs/LATEST/doc/development_tools/java_static_analysis/index.html#id6\nJIRA issue (※4): NAB-630"
+      "content": "No.: 26\n分類: 使用不許可APIチェックツール\nリリース 区分: 不具合\nタイトル: Java21でjava.lang.Objectのメソッドが許可できない場合がある問題に対応\n概要: Java21でバイトコードが変わったことにより、インタフェースからjava.lang.Objectのメソッドを呼んでいる場合、設定ファイルで指定しても許可されないという不具合があったため対応しました。 例) ■使用不許可APIツールの設定ファイル java.lang.Object ■解析対象のjavaファイル // toStringメソッドは本来許可されるはずだが不許可になる Map<String, String> headers = request.headers(); headers.toString();\n修正後のバージョン （※1）: nablarch-unpublished-api-checker 1.0.1\n不具合の起因バージョン （※2） / モジュール: 1.0.0\n不具合の起因バージョン （※2） / Nablarch: -\nシステムへの 影響の可能性 （※3）: なし\nシステムへの影響の可能性の内容と対処: -\n参照先: https://nablarch.github.io/docs/LATEST/doc/development_tools/java_static_analysis/index.html#id6\nJIRA issue (※4): NAB-630"
     }
   ],
   "sheet_type": "P1",
@@ -180,8 +180,8 @@
     "タイトル",
     "概要",
     "修正後のバージョン （※1）",
-    "不具合の起因バージョン （※2）/モジュール",
-    "不具合の起因バージョン （※2）/Nablarch",
+    "不具合の起因バージョン （※2） / モジュール",
+    "不具合の起因バージョン （※2） / Nablarch",
     "システムへの 影響の可能性 （※3）",
     "システムへの影響の可能性の内容と対処",
     "参照先",
