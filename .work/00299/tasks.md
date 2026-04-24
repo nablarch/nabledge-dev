@@ -47,18 +47,14 @@ FAIL 0 を全バージョンで確認、baseline を保存、22-B-12 完了。
 
 ## Not Started
 
-### Phase 21-Z Z-5: nabledge-test v6 baseline 再取得 (22-B-13b の後継)
+### nabledge-test ベースライン再取得 (v6 + 他バージョン)
 
-22-B-12 完了 (Excel + resolver 変更が出力に与える影響が確定) 後に再取得。file ID 変化を踏まえた評価。
+22-B-12 完了後に実施。resolver 書き換え等で出力が変わるため、22-B-13b の v6 baseline (`20260424-103200`) を再取得し、v5 / v1.4 / v1.3 / v1.2 も順次取得する。各バージョンで直近 baseline と比較して劣化なしを確認。
 
-### Phase 19: 他バージョン展開 (v5 / v1.4 / v1.3 / v1.2)
+### 配信物クリーン化 + ドキュメント整備
 
-22-B-12 完了後、各バージョンで nabledge-test ベースライン取得 → 劣化なしゲート。
-
-### Phase 21-Z Z-4 / Z-3: 配信物クリーン化 + ドキュメント整備
-
-Phase 19 完了後:
-- setup スクリプトのゴミ残り対策 (`tools/setup/setup-cc.sh` / `setup-ghc.sh`)
-- 各バージョン CHANGELOG への「ルールベース化」追記
-- `tools/rbkc/README.md` の現状合わせ
+全バージョン baseline 取得後:
+- setup スクリプトのゴミ残り対策 (`tools/setup/setup-cc.sh` / `setup-ghc.sh`): vup 時に旧 `.claude/skills/nabledge-${v}/` を完全削除してから `cp -r`
+- 各バージョン CHANGELOG `[Unreleased]` への「ルールベース化」追記
+- `tools/rbkc/README.md` を現状構成に書き直し
 - `.work/00299/notes.md` を Phase 21-Y〜22 要約に圧縮
