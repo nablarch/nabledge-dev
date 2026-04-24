@@ -34,13 +34,60 @@
 
 ## 総合評価
 
-v6 配信物 (knowledge / docs / assets) の byte 差分はゼロのため、今回の RBKC 修正群が v6 の検出精度に与える直接的な影響はない。それでも全体検出率は 95.9% → 94.5% (-1.4pp) と低下、CA 検出率は 98.1% → 96.2% (-1.9pp)。これは配信物の変化ではなく LLM サンプリング分散の範疇にある。
+**補足**: 本セクションの比較元は同じ 299 ブランチ上の途中 baseline (20260424-103200, commit 7ce2dc10c)。**RBKC 導入前の main 系 baseline (20260331-152005, kc + AI-selected hints 時代) との比較は別途下記「main (kc 時代) baseline との比較」セクションに記載**。
 
-ベンチマーク 2 シナリオは CI 重複の「誤差範囲内」: qa-001 75.0% ±21.6% → 70.8% ±7.2% (CI [52.9%, 88.8%])、ca-003 97.3% → 97.3% (SD 0.0)。ca-003 は 3 試行とも完全に同じ not_detected 項目 (Overview 内の BusinessDateUtil 言及不足) で、構造的欠落と判定できるが今回の変更で改善されたわけではない (前回も同じ 36/37)。
+同じ 299 ブランチ内 2 世代目の比較 (20260424-103200 → 20260424-172654):
 
-広域チェックで劣化マークが付いた qa-002 / ca-001 はいずれも 1 項目欠落で LLM 揺らぎの範疇。qa-002 は「pageNumber」リテラル欠落 (検索条件の `page(searchCondition.getPageNumber())` 引用はしているが `getPageNumber` で detect できる文字列にはならず)、ca-001 は ProjectAction の Overview 節と class diagram / Component Summary で `SessionUtil` / `ProjectDto` の明示欠落。v6 知識ファイルは前回から変わっていないため、サンプリングで表出しただけ。
+- 検出率 95.9% → 94.5% (-1.4pp)、CA 98.1% → 96.2% (-1.9pp)
+- ベンチマーク qa-001 75.0% ±21.6% → 70.8% ±7.2% (CI [52.9, 88.8])、ca-003 97.3% → 97.3% (SD 0.0)。両者とも CI 重複、統計的に有意な変化なし
+- 広域の qa-002 / ca-001 は各 1 項目欠落 (後述のとおり retrieval は成功、生成選択の揺らぎ)
 
-結論: ゼロトレランス基準に照らすと今回の -1.4pp は構造的劣化ではない。22-B-12 の修正は v1.3/v1.2 の品質を上げ、v6 は byte identical を維持している。
+結論: 299 ブランチ内 2 世代目比較では構造的劣化なし。
+
+## main (kc 時代) baseline との比較
+
+比較元: 20260331-152005 (commit e55c25c3、kc + AI-selected hints 時代、PR #277 以前)
+比較先: 20260424-172654 (commit bb48f21d8、RBKC)
+
+| 項目 | kc 時代 | RBKC | 差 |
+|------|--------|------|-----|
+| 総検出 | 142/146 (97.3%) | 138/146 (94.5%) | -2.8pp (4 項目) |
+| 合計実行時間 | 1182 秒 | 944 秒 | **-238 秒 (-20%)** |
+| 出力トークン合計 (response_chars/4 推定) | 18,382 | 10,356 | **-8,026 (-44%)** |
+
+シナリオ別差分:
+- qa-001: 8/8 → 6/8 (-2、`listName` / `element*Property` 欠落)
+- qa-002: 8/8 → 7/8 (-1、`pageNumber` 欠落)
+- ca-001: 36/37 → 34/37 (-2、Overview `SessionUtil` / class-diagram `ProjectDto`)
+- ca-002: 31/32 → 32/32 (+1)
+- qa-003/004/005/ca-003: 同値
+
+### 欠落 5 項目の事実確認 (retrieval vs 生成)
+
+| 項目 | 該当 file | RBKC で引いた | kc hints にあった | 分類 |
+|------|----------|--------------|------------------|------|
+| qa-001 `listName` | libraries-tag.json, -tag-reference.json | ✅ citation あり | ✅ | 生成選択の揺らぎ (codeSelect 偏重で n:select 汎用例を省略) |
+| qa-001 `element*Property` | 同上 | ✅ | ✅ | 同上 |
+| qa-002 `pageNumber` | web-application-getting-started-project-search.json | ✅ citation あり | ❌ **kc hints に含まれず** | 生成文字列の揺らぎ + grader の case sensitivity (AI は `getPageNumber()` を記述、期待値は `pageNumber`) |
+| ca-001 Overview `SessionUtil` | (ソース解析) | N/A (全文解析済、他節に 19 回言及) | N/A | 生成選択の揺らぎ (Overview 段落でクラス名を動詞化) |
+| ca-001 `ProjectDto` | (ソース解析) | N/A (本文言及あり) | N/A | 生成選択の揺らぎ (class diagram / Component Summary に格上げしなかった) |
+
+### 処理フローの違い
+
+「kc 検索と RBKC 検索の差は hints だけか?」の事実確認:
+
+- **No**: 構造変更が 3 箇所ある
+  1. Step 5 (section search) のサブワークフロー削除: kc 時代は `_section-search.md` が `index[].hints` で section をスコアリング。RBKC は候補 file 内の全 section を jq で列挙するだけ (スコアリング廃止)
+  2. Section judgement Step 0 (hints 事前フィルタ) 削除: RBKC は Step A「候補 section の本文一括読み込み」から開始
+  3. full-text-search.sh の jq 式変更: kc は `.sections | to_entries[] | (.value | count)`、RBKC は `.sections[] | ((.title + " " + .content) | count)`
+- **共通**: index.toon の列構造 (title/type/category/processing_patterns/path)、keyword-only retrieval という方式
+
+### 結論
+
+- 時間 -20% / 出力トークン -44% は明確な改善。hints 2 段ゲート廃止で過剰読み込みが減ったのが効いている可能性が高い
+- 精度 -2.8pp (4 項目) はいずれも retrieval 成功・生成選択の揺らぎ。hints を復活させても直接救えるものは qa-001 の 2 項目に限られ (kc hints に該当キーワードあり & retrieval 自体は成功していた)、qa-002 は grader 厳密性の問題、ca-001 は workflow テンプレート側の問題
+- **AI 生成のゆらぎを含めて厳密に判定する方法は存在しない**。3 試行の CI 重複で「統計的に有意な劣化ではない」とは言えるが、1 試行広域のサンプルで 100% 再現性を要求するのは不可能
+- 本 baseline は合格とみなし、以降の比較の固定点として採用する
 
 ---
 
