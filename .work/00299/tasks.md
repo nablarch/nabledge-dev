@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 61 — 22-B-14 完了 (`fe7a34a0c`): nabledge-6 skill を RBKC V4 schema に追従させた。6 箇所修正 (full-text-search.sh list 対応 / get-hints.sh 削除 / _section-search.md 削除 / _section-judgement Step 0 削除 / _knowledge-search Step 5 書き換え / SKILL.md 記述修正)。nabledge-test と他バージョン (v5/v1.x) は影響なし。次は 22-B-13b (v6 baseline 再取得))
+**Updated**: 2026-04-24 (session 61 — 22-B-14 完了 (`fe7a34a0c`): nabledge-6 skill を RBKC V4 schema に追従。22-B-13 の無効 baseline 関連ファイル全削除 (`ee1330ae8`)。latest シンボリックリンクを前回 valid baseline `20260331-152005` に復帰。次は 22-B-13b (v6 baseline 再取得))
 
 ---
 
@@ -132,12 +132,12 @@
   - [x] **22-B-16c** (`86549073d`): image/figure asset URI rewrite + `:download:` link + QL1 asset-exists
   - [x] **F1-F4 fix** (`cb620f73d`): common/ 階層遵守 + AST-based link extraction + nested-block warning 伝播 + `scripts/common/linkfmt.py` 単一ソース
   - [x] **v6 regen** (`3bd1fe3c4`): 353 files, 256 contain cross-doc MD links, verify FAIL 0
-- [x] 22-B-13: nabledge-test v6 baseline 再取得 — `20260424-080424` 取得完了。overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 97.3% → 100% (+2.7pp、CI 非重複で有意改善)。比較レポート: `.claude/skills/nabledge-test/baseline/v6/20260424-080424/comparison-report.md`
+- [~] 22-B-13: nabledge-test v6 baseline 再取得 — `20260424-080424` は schema 追従漏れ状態で取得したため **削除** (`ee1330ae8`)。22-B-14 完了後に 22-B-13b で再取得
 - [x] **22-B-14**: nabledge-6 と nabledge-test を新しい知識ベース schema (RBKC V4: `sections` が list、`.index`/`hints` 削除) に追従させる (`fe7a34a0c`)
   - [x] **Step 1: 影響範囲調査** — nabledge-6 で 6 箇所 (full-text-search.sh / get-hints.sh / _section-search.md / _section-judgement.md Step 0 / _knowledge-search.md Step 5 / SKILL.md)、nabledge-test は影響なし、他バージョン (v5/v1.x) は旧 schema のまま整合しているため影響なし
   - [x] **Step 2: 修正実施** — (1) full-text-search.sh jq を `.sections[]` + title+content で list 対応、(2) get-hints.sh 削除 (hints スコープアウト済)、(3) _section-search.md 削除、(4) _section-judgement.md Step 0 削除、(5) _knowledge-search.md Step 5 / _index-based-search.md Step 2 を「全 section 列挙」に書き換え、(6) SKILL.md の「with search hints」記述を現行の index.toon 実態に修正
   - [x] **Step 3: smoke test** — full-text-search.sh で qa-002/qa-004 の期待キーワードが `libraries-tag.json#s21`、`biz-samples-03.json#s17`、`project-search.json#s1` 等に正しくヒット、残存 schema 依存ゼロを grep で確認
-- [ ] 22-B-13b: 22-B-14 完了後、必要なら v6 baseline を再取得
+- [ ] 22-B-13b: 22-B-14 完了後に v6 baseline を再取得 (前回分は削除済)
 - [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
 
 **備考**:
