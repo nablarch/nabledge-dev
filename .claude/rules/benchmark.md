@@ -25,3 +25,19 @@ This does **not** generalize to all `claude -p` usage. Other tools that invoke
 `claude -p` (e.g. `tools/knowledge-creator`, `nabledge-test`) are known to work
 in parallel. The rule is specific to `tools/benchmark/run.py` because each
 scenario is long (60-70s) and a single `run.py` already saturates one API slot.
+
+## Simulate before measuring
+
+30件フル計測は $8 / 20分かかる。改善案を思いついたら即計測ではなく、まず
+スクリプトで手元シミュレーションして手応えを確認してから本計測に進む。
+
+**Why:** 改善案を試しては 20分待ち、結果を見て別案を試す、を繰り返すと時間もコストも
+膨らむ。LLM を呼ばずに再現できる部分 (キーワード抽出、grep ヒット、index 変更後の
+見え方、候補タイトルに対する人間判定) はローカルで先に確認できる。期待できる改善幅を
+目視で掴めてから計測に進むと、1 回の計測で判断が付く。
+
+**How to apply:**
+- 改善案を出したら、まず LLM を呼ばない形で再現する小スクリプトを書く
+- 数件〜30件に対してドライランし、想定どおり変化するかユーザーに見せる
+- ユーザーと合意が取れてから `run.py` での本計測へ進む
+- 計測した結果だけで判断せず、計測前のシミュレーション結果と照らし合わせる
