@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 61 終 — 22-B-14 完了。22-B-15 (runner agent 化 + grader 昇格) 途中で中断。セッション再起動待ち)
+**Updated**: 2026-04-24 (session 62 — 22-B-15 Step 0 smoke test 成功: Skill tool が custom subagent から使えることを確認。次は Step 2 (SKILL.md 書き換え))
 
 ---
 
@@ -141,7 +141,7 @@
 - [ ] **22-B-15**: nabledge-test の agent / skill 境界をゼロベース再設計 (Prompt Engineer 相談済み結論を反映)
   - 背景: 前回 baseline 実行で (a) 親エージェント (Opus) と子の model 不一致で比較ノイズ、(b) 私が擬似コードから grade_v6.py を書き起こした際に検出ロジックが drift、の 2 問題が発生。案 C (軽量) でモデル固定 + grader スクリプト昇格
   - [x] Step 1: `.claude/agents/nabledge-test-runner.md` 作成 (`14e2796a2`)。frontmatter `model: sonnet` 固定、`tools: Read, Write, Bash, Skill, Grep, Glob`、I/O 契約 (`NABLEDGE_TEST_RESPONSE/METRICS/OUTPUT_FILES/STATUS` デリミタ) を定義
-  - [BLOCKED: セッション再起動待ち] Step 0: smoke test — `Agent(subagent_type: "nabledge-test-runner", ...)` で 1 シナリオ実行し、`Skill` tool が custom subagent から動作するか確認 (最大リスク)
+  - [x] Step 0: smoke test — qa-001 を Sonnet runner で実行、`Skill` tool が custom subagent から動作することを確認 (19 秒 / 61.3K tok / 4 デリミタ全て正常、tool_calls.Skill=1)
   - [ ] Step 2: `nabledge-test/SKILL.md` の Step 4 (scenario 起動) を `Agent(subagent_type: "nabledge-test-runner", ...)` 呼び出しに書き換え。discipline rules / I/O 契約の記述を削除 (runner agent に集約済み)
   - [ ] Step 3: `scripts/grade.py` を新規作成。SKILL.md Step 6 の擬似コードを実装に昇格。heading 厳密判定、section 抽出 regex (`(?=\n#{1,N}[^#])` パターン済バグ回避) を含む。unit test 付き
   - [ ] Step 4: SKILL.md Step 6 を `python3 scripts/grade.py <workspace>/<scenario_id>` 呼び出しに差し替え、擬似コード削除
