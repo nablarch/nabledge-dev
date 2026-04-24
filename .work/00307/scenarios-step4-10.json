@@ -1,0 +1,339 @@
+[
+  {
+    "id": "review-01",
+    "review_perspective": "アーキテクチャ",
+    "context": "ファイルからDBへの都度起動バッチ",
+    "a_facts": [
+      "都度起動バッチを採用する（常駐バッチは新規開発では非推奨）",
+      "BatchAction を継承したアクションクラスを実装する",
+      "Form / Entity / Action の3層構成で組む",
+      "DB 接続ありの標準ハンドラキュー構成を使う",
+      "DataReader を実装してレコードを1件ずつ供給する"
+    ],
+    "expected_question": "ファイルの明細レコードを読み込んで DB テーブルに取り込む夜間バッチを作りたい。Nablarch でこういうバッチを実装するときの推奨構成を知りたい",
+    "expected_keywords": [
+      "バッチ",
+      "ファイル入出力",
+      "都度起動バッチ",
+      "データバインド",
+      "データベースアクセス"
+    ],
+    "expected_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json|s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json|s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json|s1"
+    ],
+    "notes": "architecture#s1 に推奨ハンドラキュー構成。s3 は処理の流れ。feature_details#s1 で都度起動/常駐の使い分け。質問からクラス名・ハンドラ名を除去",
+    "main": [
+      "バッチ",
+      "ファイル入出力"
+    ],
+    "sub": [
+      "都度起動バッチ",
+      "データバインド",
+      "データベースアクセス"
+    ]
+  },
+  {
+    "id": "review-08",
+    "review_perspective": "並行制御",
+    "context": "常駐バッチの並列化",
+    "a_facts": [
+      "後続ハンドラ・バッチアクションはスレッドセーフである必要がある",
+      "サブスレッドで DB アクセスする場合、サブスレッド用ハンドラ構成に `DatabaseConnectionManagementHandler` と `TransactionManagementHandler` を配置する",
+      "DB 接続はサブスレッド数分(親が DB アクセスするなら＋1)が追加で必要",
+      "サブスレッドで例外発生時は他スレッドをデータ処理完了後に安全に終了させる",
+      "`InterruptedException` を捕捉している場合は例外送出などで処理を異常終了させる"
+    ],
+    "expected_question": "常駐バッチの処理が遅いので並列実行で速くしたい。複数スレッドで同時に DB を更新することになるが、接続や排他の扱いで注意することは？",
+    "expected_keywords": [
+      "マルチスレッド",
+      "並列実行",
+      "常駐バッチ",
+      "排他制御",
+      "データベースアクセス"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-multi_thread_execution_handler.json|s7",
+      "component/handlers/handlers-multi_thread_execution_handler.json|s5",
+      "component/handlers/handlers-multi_thread_execution_handler.json|s8"
+    ],
+    "notes": "ハンドラ名 (MultiThreadExecutionHandler) を質問から排除。「並列実行」「複数スレッド」という業務語で代替",
+    "main": [
+      "マルチスレッド",
+      "並列実行"
+    ],
+    "sub": [
+      "常駐バッチ",
+      "排他制御",
+      "データベースアクセス"
+    ]
+  },
+  {
+    "id": "impact-01",
+    "impact_perspective": "ハンドラ間",
+    "context": "トランザクション境界とDB接続管理",
+    "a_facts": [
+      "トランザクション境界は `TransactionManagementHandler` が決定する",
+      "往路でトランザクション開始、復路でコミット、例外時にロールバックする",
+      "`DatabaseConnectionManagementHandler` より後ろに配置する必要がある",
+      "制御対象は `transactionFactory` プロパティに指定した `TransactionFactory` 実装で取得しスレッド上で管理する",
+      "複数トランザクション使用時は `transactionName` の設定が必須(`DbConnectionManagementHandler#connectionName` と同じ値を指定)"
+    ],
+    "expected_question": "バッチで DB を更新しているんだけど、コミットのタイミングやトランザクションの区切りがどこで決まっているのかよく分からない。Nablarch でトランザクションの境界って何で決まる？",
+    "expected_keywords": [
+      "トランザクション",
+      "コミット",
+      "バッチ",
+      "ロールバック",
+      "トランザクション制御"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-transaction_management_handler.json|s3",
+      "component/handlers/handlers-transaction_management_handler.json|s4",
+      "component/handlers/handlers-database_connection_management_handler.json|s3"
+    ],
+    "notes": "実装クラス名 (TransactionManagementHandler, DbConnectionManagementHandler) を質問から排除。「コミットのタイミング」「境界」という業務語で代替",
+    "main": [
+      "トランザクション",
+      "コミット"
+    ],
+    "sub": [
+      "バッチ",
+      "ロールバック",
+      "トランザクション制御"
+    ]
+  },
+  {
+    "id": "impact-03",
+    "impact_perspective": "ハンドラ間",
+    "context": "バッチの並列化",
+    "a_facts": [
+      "`MultiThreadExecutionHandler` の `concurrentNumber` プロパティで並列数を指定する",
+      "サブスレッドで DB アクセスする場合、サブスレッド用ハンドラ構成に `DatabaseConnectionManagementHandler` と `TransactionManagementHandler` を配置する",
+      "親・サブ両方で DB アクセスするとサブスレッド数＋1 のコネクションが必要",
+      "サブスレッドで例外発生時はそのスレッドがロールバックされ、親スレッドが他スレッドに停止要求を出して安全に終了させる"
+    ],
+    "expected_question": "常駐バッチが遅いので複数スレッドで並列実行して速くしたい。各スレッドで DB 更新したいんだけど、接続はどう持つ？ スレッドの 1 つで例外が出たら他はどうなる？",
+    "expected_keywords": [
+      "マルチスレッド",
+      "並列実行",
+      "常駐バッチ",
+      "データベースアクセス",
+      "例外"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-multi_thread_execution_handler.json|s7",
+      "component/handlers/handlers-multi_thread_execution_handler.json|s8",
+      "component/handlers/handlers-transaction_management_handler.json|s3"
+    ],
+    "notes": "実装クラス名 (MultiThreadExecutionHandler) を排除。「並列実行」「複数スレッド」で代替",
+    "main": [
+      "マルチスレッド",
+      "並列実行"
+    ],
+    "sub": [
+      "常駐バッチ",
+      "データベースアクセス",
+      "例外"
+    ]
+  },
+  {
+    "id": "impact-07",
+    "impact_perspective": "ハンドラ×ライブラリ",
+    "context": "認可チェックと画面遷移",
+    "a_facts": [
+      "`PermissionCheckHandler` でリクエスト認可を行う",
+      "権限があれば `Permission` をスレッドローカルに設定し、なければ 403 を返す",
+      "内部フォワード先のリクエスト ID を認可対象にするには `setUsesInternalRequestId` を `true` に設定する",
+      "併せて `ThreadContextHandler` の `attributes` に `InternalRequestIdAttribute` を追加する",
+      "`ForwardingHandler` より後に配置する(内部フォワード先で認可する場合)"
+    ],
+    "expected_question": "ログイン済みユーザーの権限で画面アクセスを制限したい。ただ画面の中で内部フォワードしているところがあって、フォワード先のアクションも認可対象にしたい。Nablarch でできる？",
+    "expected_keywords": [
+      "認可",
+      "Permission",
+      "フォワード",
+      "アクション",
+      "アクセス制限"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-permission_check_handler.json|s3",
+      "component/handlers/handlers-permission_check_handler.json|s4",
+      "component/libraries/libraries-permission_check.json|s1"
+    ],
+    "notes": "実装クラス名 (PermissionCheckHandler, ThreadContextHandler) を排除。「権限で画面アクセスを制限」「内部フォワード」という業務語で代替",
+    "main": [
+      "認可",
+      "Permission"
+    ],
+    "sub": [
+      "フォワード",
+      "アクション",
+      "アクセス制限"
+    ]
+  },
+  {
+    "id": "impact-08",
+    "impact_perspective": "ライブラリ間",
+    "context": "入力値のDB相関チェック",
+    "a_facts": [
+      "Bean Validation で DB アクセスを行うのはセキュリティ上の問題がある(未バリデーションの不正値で SQL 問合せするため SQL インジェクションにつながる可能性がある)",
+      "DB との相関バリデーション(重複チェックなど)は Bean Validation 通過後のビジネスアクション側で実施する",
+      "フィールド同士の相関チェック(DB 不要)は `@AssertTrue` で Bean Validation 内に書いてよい"
+    ],
+    "expected_question": "フォームで入力されたメールアドレスが DB 上ですでに登録済みでないかチェックしたい。入力チェックのところでこれを書きたいんだけど、セキュリティ的に問題ない？",
+    "expected_keywords": [
+      "バリデーション",
+      "Bean Validation",
+      "データベースアクセス",
+      "重複チェック",
+      "セキュリティ"
+    ],
+    "expected_sections": [
+      "component/libraries/libraries-bean_validation.json|s9",
+      "component/libraries/libraries-bean_validation.json|s8"
+    ],
+    "notes": "「Bean Validation」「カスタムバリデータ」という実装用語を排除。「入力チェックのところで」という業務表現で代替",
+    "main": [
+      "バリデーション",
+      "Bean Validation"
+    ],
+    "sub": [
+      "データベースアクセス",
+      "重複チェック",
+      "セキュリティ"
+    ]
+  },
+  {
+    "id": "impact-10",
+    "impact_perspective": "ライブラリ間",
+    "context": "ログインユーザー情報の保持",
+    "a_facts": [
+      "認証情報はセッションストアの DB ストアに持つのが推奨",
+      "`SessionUtil` で保存・破棄する",
+      "認可チェックは `PermissionCheckHandler` が設定した情報を業務ロジックから参照する"
+    ],
+    "expected_question": "ログインしたユーザーの情報 (ID、名前、権限) を画面遷移中も保持して、認可チェックのときに参照したい。Nablarch ではどこに持つのが推奨？",
+    "expected_keywords": [
+      "セッションストア",
+      "認可",
+      "ログイン",
+      "Permission",
+      "ユーザ情報"
+    ],
+    "expected_sections": [
+      "component/libraries/libraries-session_store.json|s6",
+      "component/libraries/libraries-session_store.json|s4",
+      "component/libraries/libraries-permission_check.json|s1"
+    ],
+    "notes": "「セッションストア」を質問から排除。「画面遷移中も保持」「どこに持つのが推奨」という問題意識ベースで書く",
+    "main": [
+      "セッションストア",
+      "認可"
+    ],
+    "sub": [
+      "ログイン",
+      "Permission",
+      "ユーザ情報"
+    ]
+  },
+  {
+    "id": "req-04",
+    "requirements_perspective": "二重サブミット防止",
+    "context": "登録ボタン連打防止",
+    "a_facts": [
+      "Nablarch はトークンベースの2重サブミット防止機能をビルトインで提供している",
+      "JSP の場合は `form` タグの `useToken` 属性でトークン生成と hidden 埋め込みが自動で行われる",
+      "JSP 以外のテンプレートエンジンでは `@UseToken` インターセプタでアクションに明示的に付与する",
+      "後続のアクションに `@OnDoubleSubmission` インターセプタを付けてトークンをチェックする"
+    ],
+    "builtin": true,
+    "expected_question": "登録ボタンを連打されると二重に登録されてしまう。ボタンの連打を防止する仕組みは Nablarch にある？",
+    "expected_keywords": [
+      "二重サブミット",
+      "useToken",
+      "トークン",
+      "サブミット",
+      "連打"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s8"
+    ],
+    "notes": "feature_details#s8 が 2 重サブミット防止 (トークンベース)",
+    "main": [
+      "二重サブミット",
+      "useToken"
+    ],
+    "sub": [
+      "トークン",
+      "サブミット",
+      "連打"
+    ]
+  },
+  {
+    "id": "req-05",
+    "requirements_perspective": "国際化",
+    "context": "画面多言語対応",
+    "a_facts": [
+      "Nablarch は多言語対応をビルトインで提供している",
+      "メッセージは言語ごとのプロパティファイルで管理する",
+      "コード名称も言語別データを持たせロケール指定で取得する",
+      "`PropertiesStringResourceLoader.defaultLocale` を必ず明示設定する(未設定だと OS 設定依存で障害の原因になる)"
+    ],
+    "builtin": true,
+    "expected_question": "画面の文言を日本語と英語で切り替えたい。メッセージやラベルの多言語対応は Nablarch でできる？",
+    "expected_keywords": [
+      "多言語",
+      "メッセージ",
+      "国際化",
+      "ラベル",
+      "言語切り替え"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s12",
+      "component/libraries/libraries-message.json|s5",
+      "component/libraries/libraries-code.json|s3"
+    ],
+    "notes": "feature_details#s12 がパターン側 (静的リソース多言語化)。libraries-message#s5 がメッセージ多言語化。libraries-code#s3 がコード名称多言語化",
+    "main": [
+      "多言語",
+      "メッセージ"
+    ],
+    "sub": [
+      "国際化",
+      "ラベル",
+      "言語切り替え"
+    ]
+  },
+  {
+    "id": "req-10",
+    "requirements_perspective": "監査ログ",
+    "context": "操作証跡",
+    "a_facts": [
+      "Nablarch は操作監査ログ専用機能をビルトイン提供していない",
+      "最も近い機能は `HttpAccessLogHandler` で、リクエスト処理開始時・完了時にユーザ ID/リクエスト ID などを含むアクセスログを出力できる",
+      "業務操作の内容(何をしたか)は自動では残らないため、業務ログはプロジェクト側で実装する必要がある"
+    ],
+    "builtin": false,
+    "expected_question": "誰がいつ何をしたか操作の証跡を残したい。いわゆる監査ログを出す仕組みは Nablarch にビルトインである？",
+    "expected_keywords": [
+      "監査ログ",
+      "ログ",
+      "操作履歴",
+      "証跡",
+      "アクセスログ"
+    ],
+    "expected_sections": [],
+    "notes": "知識ファイルに監査ログの記載なし。正しい回答は「ビルトインなし」。検索結果が空になることが正解。なお Nablarch にはアクセスログやSQLログ等はあるが、操作監査ログは未提供",
+    "main": [
+      "監査ログ",
+      "ログ"
+    ],
+    "sub": [
+      "操作履歴",
+      "証跡",
+      "アクセスログ"
+    ]
+  }
+]
