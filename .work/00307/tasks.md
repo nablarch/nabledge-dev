@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-24 (Step 4 partial, pivot to Read-based AI-1)
+**Updated**: 2026-04-24 (Step 5 merged done, Step 6 pending — review-08 under-cite)
 
 ## ゴール
 
@@ -93,19 +93,59 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
 - schema 検証失敗 ≤ 2%
 - 中央値 wall time が 2 倍以内
 
-**実装タスク**:
-- [ ] `build_index.py`: index-llm.md のヘッダ行にファイルパスを埋め込む
-- [ ] `search_ids.py`: `allowed_tools=["Read"]`、`max_turns=8`、evidence 事後検証
-- [ ] `prompts/search_ids.md`: 4 ステップ手続き型に書き換え、verbatim 引用ルール追記
-- [ ] schema 差し替え (intent/candidate_files/read_notes/selections)
-- [ ] `search_coverage.py`: matched_on 集計 / evidence 不一致レポート
-- [ ] **まず 1 件で試走** (低コストで挙動確認、悪化 3 件から 1 件選ぶ)
-- [ ] 1 件で挙動が安定したら **3 件で試走** (悪化 3 件)
-- [ ] 悪化 3 件が全て回復 + 安定 7 件が回帰しなければ 10 件、次に 30 件へ
+**実装タスク (完了)**:
+- [x] `build_index.py`: index-llm.md のヘッダ行にファイルパス埋め込み (`26f0af9a0`)
+- [x] `search_ids.py`: `allowed_tools=["Read"]`、`max_turns=10`、evidence 事後検証
+  - evidence 検証は Read-attestation 方針: verbatim / 正規化 / 30 字 prefix のいずれか
+- [x] `prompts/search_ids.md`: 4 ステップ手続き型 + Step 5 回答生成マージ
+- [x] schema 差し替え (intent/candidate_files/read_notes/selections/conclusion/evidence/caveats/cited)
+- [x] AI-1 + AI-3 をマージ (回答もこの 1 コールで返す)
+- [x] 呼び出し側で Markdown レンダリング (ファイル保存は caller 責務)
+- [x] benchmark ツール全体を `--version` 対応 (v5/v1.x も共通経路で実行可, `301178566`)
+- [x] judge に KB 検証追加: Grep/Read で C-claim を KB 全体で確認
+- [x] judge 新 reason `SUPPORTED_BY_KB` (減点なし) + `kb_evidence.quote` verbatim 検証 (`36ae333ba`)
+- [x] judge `max_turns=15` / `timeout=420` / 予算 10 tool call ルール (`72f62aa88`)
+- [x] 1 件試走 (req-05): $0.83 / 110 秒
+- [x] 3 件試走 (req-05/review-01/review-08, merged + KB-verify judge):
+  - req-05: L3 (完全)
+  - review-01: L3 (judge 側 SUPPORTED_BY_KB で救済、旧 L1)
+  - review-08: L1 のまま (AI-1 が mth|s8 を selections に入れたが evidence で cite せず、A-fact 4 MISSING)
+  - mean_level: 2.33, cost $3.64
+
+**合格基準**:
+- [x] `review-01 s2` 回復
+- [x] evidence 不一致率 ≤ 5% (緩和後はほぼ 0%)
+- [x] schema 検証失敗 ≤ 2%
+- [ ] `mth s8` 回復 ← **Step 6 で対応**
+- [ ] 10 件で安定 7 件が回帰しないこと
+- [ ] 30 件での mean_level 計測
+
+**コスト実績**:
+- 現状: $0.40/Q × 30 = $12/run
+- Read + マージ: 平均 $1.09/Q × 30 ≈ $32/run (3 件平均 $1.21)
+
+#### Step 6: review-08 under-cite 解消 (次の優先タスク)
+
+**症状**: AI-1 が `mth|s8` を selections に入れて Read 済みだが、
+Step 5 で evidence に含めず、A-fact 4 (ThreadPoolExecutor#shutdownNow
+で他スレッド安全終了) が回答に出ない。
+
+**試行: aspects 列挙 + cover-or-justify 追加 (trial4)** → **悪化**
+- aspects を Step 1 に追加し、Step 5 を「全 aspect を cover、drop は
+  justify」に書き換えた
+- 結果: req-05 が L3→L0 (回答からコード名称ロケール部分が欠落)、
+  review-08 は L1 のまま → net 悪化 (2.33 → 1.67)
+- → revert (実質 `72f62aa88` の judge 調整だけ残した)
+
+**次の案 (未着手)**:
+- 別アプローチの検討: Step 5 に「selections に入れた sections は
+  必ず conclusion で触れる」を直接ルール化
+- もしくは AI-3 を再度分離 (retrieved = selections 全部を渡す)
+- どちらも PE 相談前提
 
 **コスト予測**:
 - 現状: $0.40/Q × 30 = $12/run
-- Read 方式: $1.2-$2.0/Q × 30 = $36-$60/run (3-5 倍)
+- Read + マージ: 平均 $1.09/Q × 30 ≈ $32/run
 
 #### Step 6: 検索が安定したら回答統合の検討 (条件付き次期)
 
@@ -144,7 +184,8 @@ L1=0 到達には検索改善だけでは不十分。`l1-root-cause-analysis.md`
 | 旧 current | 2.17 | 18 | 11+1 | 比較用 |
 | 新 search + 新 a_facts (30 件) | 2.20 | 18 | 12 | 前回 baseline |
 | 新 index 10 件 search-only | — | — | — | exp_full 3/10→5/10, ref_full 2/10→4/10、悪化 3 件 (req-05/review-01 s2/mth s8) |
-| **4-step Read AI-1 1 件試走** | — | — | — | **Step 5 で測定予定** |
+| 4-step Read AI-1 merged 3 件 | 2.33 | — | 1 | req-05 L3 / review-01 L3 / review-08 L1 ($3.64) |
+| (trial4 aspects 追加) | 1.67 | — | 2 | **revert 済** — req-05 L0 / review-01 L3 / review-08 L1 |
 
 ## スコープ外
 
