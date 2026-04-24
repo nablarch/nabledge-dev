@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-24 (セクション単位 TF のみ + stoplist に方針確定)
+**Updated**: 2026-04-24 (Step 0 縮小: docs 書き換えのみ、コード rename は Step 2/3 で同時実施)
 
 ## ゴール (この PR の本質)
 
@@ -93,14 +93,14 @@ Phase 1 が 100% に届いたら着手。
 
 ## 次ステップ: セクション単位 TF-IDF でゼロベースやり直し
 
-### Step 0: 用語・ドキュメントの整理
+### Step 0: ドキュメントの書き換え
 
-- [ ] allowlist → 採用キーワード / INDEX_KEYWORDS_JA にリネーム
-  - `manual-allowlist-ja-*.json` → `index-keywords-ja.json`
-  - `classify_terms.py` 内の `MANUAL_ALLOWLIST_JA` 定数名・注釈更新
-  - `build_index.py` `--allowlist` → `--keywords`
+コードの allowlist → keywords リネームは Step 2/3 の書き直しで同時に
+達成するため、ここでは docs のみを対象にする。
+
 - [ ] `docs/index-enrichment.md` をセクション単位 TF ベースに書き換え
   - 「ページ単位 TF-IDF」→「セクション単位 TF (IDF なし)」
+  - 用語統一: 採用キーワード / INDEX_KEYWORDS_JA / index-keywords-ja.json
   - 配置ルール: セクションごとに TF を計算、自セクションの上位語を stoplist
     除外後にそのセクション行末に配置
   - ノイズ定義: 複数セクションにまたがる汎用語のみ (section_df で判定)
