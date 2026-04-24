@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-24
+**Updated**: 2026-04-24 (Step 2/3 done)
 
 ## ゴール
 
@@ -42,21 +42,22 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
 
 ### Phase 1 残タスク
 
-#### Step 2: classify_terms.py 書き直し (セクション単位 TF)
+#### Step 2: classify_terms.py 書き直し (セクション単位 TF) ✅
 
-- [ ] 入力: knowledge JSON + stoplist
-- [ ] 各セクションで tokenize → TF 計算 → stoplist / ページ・セクションタイトル重複 / 識別子パターン除外
-- [ ] tf≥2 上位 5 語、候補 0 なら fallback tf=1 df≤20 で上位 3 語
-- [ ] 出力: `tools/benchmark/data/index-keywords-ja.json`
-- [ ] 既存 `classify_terms.py` のページ単位 TF-IDF ロジックを完全置き換え
-- [ ] TDD: `tests/test_classify_terms.py` 書き直し
+- [x] 入力: knowledge JSON + stoplist
+- [x] 各セクションで tokenize → TF 計算 → stoplist / ページ・セクションタイトル重複除外
+  - 識別子パターンは日本語 tokenizer が 4+ 字 JP のみを拾うため明示除外不要
+- [x] tf≥2 上位 5 語、候補 0 なら fallback tf=1 df≤20 で上位 3 語
+- [x] 出力: `tools/benchmark/data/index-keywords-ja.json` (生成は Step 4 で)
+- [x] 既存 `classify_terms.py` のページ単位 TF-IDF ロジックを完全置き換え
+- [x] TDD: `tests/test_classify_terms.py` 書き直し (22 tests GREEN)
 
-#### Step 3: build_index.py 書き直し
+#### Step 3: build_index.py 書き直し ✅
 
-- [ ] 入力: `--allowlist` → `--keywords`、`index-keywords-ja.json` を読む
-- [ ] 各セクション行末に ` — keyword / keyword / ...` 形式で付記
-- [ ] index-llm.md 生成
-- [ ] TDD: `tests/test_build_index.py` 更新
+- [x] 入力: `--allowlist` → `--keywords`、`index-keywords-ja.json` を読む
+- [x] 各セクション行末に ` — keyword / keyword / ...` 形式で付記
+- [x] index-llm.md 生成 (dry-run 確認済み — 1411 sections / 3196 placements)
+- [x] TDD: `tests/test_build_index.py` 更新 (10 tests GREEN)
 
 #### Step 4: 計測
 
