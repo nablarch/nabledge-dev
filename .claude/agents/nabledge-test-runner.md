@@ -27,7 +27,8 @@ SCENARIO_ID: <e.g. qa-001>
 TARGET_SKILL: <e.g. nabledge-6>
 SCENARIO_TYPE: qa | code-analysis
 QUESTION: <natural-language question or instruction>
-WORKSPACE_DIR: <absolute path to this scenario's workspace dir>
+WORKSPACE_DIR: <absolute path to this trial's workspace dir>
+NABLEDGE_OUTPUT_ROOT: <absolute path to this trial's isolated output dir>
 ```
 
 Additional fields may appear (e.g. `TARGET_FILE:` for code-analysis). Parse them from the prompt.
@@ -35,10 +36,18 @@ Additional fields may appear (e.g. `TARGET_FILE:` for code-analysis). Parse them
 ## Execution steps
 
 1. **Record start time**: `date '+%Y-%m-%dT%H:%M:%S'` and remember it.
-2. **Invoke the target skill**: use the `Skill` tool with `skill: "<TARGET_SKILL>"` and pass `<QUESTION>` as the arguments. Follow whatever workflow the target skill defines — do not second-guess it.
-3. **Capture the response**: collect the complete natural-language answer the target skill produces.
-4. **Capture artifacts** (code-analysis only): note any files the target skill created under `.nabledge/` or equivalent output directories.
-5. **Record end time** and compute duration.
+2. **Remember the output root**: parse `NABLEDGE_OUTPUT_ROOT` from the input. Every Bash tool invocation that runs a target-skill script which resolves an output path (for v5/v6: `record-start.sh`, `finalize-output.sh`, `prefill-template.sh`; for v1.x: equivalents) MUST be prefixed with `NABLEDGE_OUTPUT_ROOT="<that absolute path>"`. Each Bash tool call is a fresh shell, so the prefix is required on *every* such invocation. Example:
+
+   ```bash
+   NABLEDGE_OUTPUT_ROOT=/abs/path/trials/2/output bash .claude/skills/nabledge-6/scripts/record-start.sh
+   ```
+
+   This is what isolates this trial's output from other parallel trials. Without it, 3 parallel trials race on the same `.nabledge/YYYYMMDD/` path and 2/3 outputs are lost. Any deviation from this prefix invalidates the measurement.
+
+3. **Invoke the target skill**: use the `Skill` tool with `skill: "<TARGET_SKILL>"` and pass `<QUESTION>` as the arguments. Follow whatever workflow the target skill defines — do not second-guess it. When the workflow tells you to run one of the scripts listed in step 2, prepend the `NABLEDGE_OUTPUT_ROOT=...` assignment.
+4. **Capture the response**: collect the complete natural-language answer the target skill produces.
+5. **Capture artifacts** (code-analysis only): note any files the target skill created under the `NABLEDGE_OUTPUT_ROOT` directory. Emit their absolute paths in the `NABLEDGE_TEST_OUTPUT_FILES` block.
+6. **Record end time** and compute duration.
 
 ## Output contract
 

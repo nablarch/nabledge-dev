@@ -227,13 +227,24 @@ SCENARIO_ID: <scenario.id>
 TARGET_SKILL: nabledge-<version>
 SCENARIO_TYPE: <qa | code-analysis>
 QUESTION: <scenario.question>
-WORKSPACE_DIR: <absolute path of $WORKSPACE>/<scenario.id>
+WORKSPACE_DIR: <absolute path of this trial's workspace dir>
+NABLEDGE_OUTPUT_ROOT: <absolute path of this trial's output dir>
 ```
 
 For code-analysis scenarios, also include:
 ```
 TARGET_FILE: <scenario.target_file>
 ```
+
+**Per-trial paths (required for measurement integrity)**:
+
+- Coverage run (1 trial): `WORKSPACE_DIR = $WORKSPACE/<scenario.id>`, `NABLEDGE_OUTPUT_ROOT = $WORKSPACE/<scenario.id>/output`
+- Benchmark run (3 trials): `WORKSPACE_DIR = $WORKSPACE/<scenario.id>/trials/<N>`, `NABLEDGE_OUTPUT_ROOT = $WORKSPACE/<scenario.id>/trials/<N>/output`
+
+The runner exports `NABLEDGE_OUTPUT_ROOT` before invoking the target skill.
+The target skill's `record-start.sh` / `finalize-output.sh` / `prefill-template.sh` honour this variable and write their output / session files under that root instead of the shared `.nabledge/YYYYMMDD/` directory. This is the only mechanism that guarantees trial independence when 3 benchmark trials run in parallel — without it, all 3 trials race on the same default path and 2 of 3 outputs are lost before grading.
+
+Create both directories (`WORKSPACE_DIR` and `NABLEDGE_OUTPUT_ROOT`) with `mkdir -p` before launching the runner.
 
 The runner enforces measurement discipline (see `.claude/agents/nabledge-test-runner.md`) and returns four delimited blocks in its final message:
 
@@ -296,7 +307,7 @@ For each completed scenario:
 
 **Check status**: Parse JSON from between `<<<NABLEDGE_TEST_STATUS` and `NABLEDGE_TEST_STATUS>>>`. If `status != "ok"`, record the error and skip grading for this scenario (still save response.md and metrics.json for inspection).
 
-**Save output files** (ca-* scenarios only): From the `<<<NABLEDGE_TEST_OUTPUT_FILES ... NABLEDGE_TEST_OUTPUT_FILES>>>` block, copy each listed absolute path into `output/` directory. For benchmark trials, also copy to `trials/<N>/output/` directory. If the block contains only the token `none`, skip.
+**Output files** (ca-* scenarios only): Because Step 4 passes `NABLEDGE_OUTPUT_ROOT = $WORKSPACE/<sid>[/trials/<N>]/output` to the runner, the target skill writes its output directly into that directory — no copy step is needed. The `<<<NABLEDGE_TEST_OUTPUT_FILES ... NABLEDGE_TEST_OUTPUT_FILES>>>` block is for verification only: confirm each listed path lives under the expected `output/` dir. If any listed path lies outside that dir, flag it (runner didn't honour the override — treat the trial as invalid).
 
 **For benchmark scenarios** (in `--baseline` mode): After saving the canonical grading.json and metrics.json (trial 1):
 

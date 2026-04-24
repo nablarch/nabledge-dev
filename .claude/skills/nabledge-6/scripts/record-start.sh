@@ -14,7 +14,11 @@
 #   Creates .nabledge/YYYYMMDD/.nabledge-code-analysis-start-{UNIQUE_ID}  (epoch seconds)
 
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-OUTPUT_DIR="$REPO_ROOT/.nabledge/$(date '+%Y%m%d')"
+# NABLEDGE_OUTPUT_ROOT override: used by the nabledge-test benchmark harness
+# so that each parallel trial writes to an isolated directory (otherwise
+# 3 parallel trials race on the same .nabledge/YYYYMMDD/ path and 2 of 3
+# outputs are lost). End users leave it unset and get the default behaviour.
+OUTPUT_DIR="${NABLEDGE_OUTPUT_ROOT:-$REPO_ROOT/.nabledge/$(date '+%Y%m%d')}"
 mkdir -p "$OUTPUT_DIR"
 
 UNIQUE_ID="$(date '+%s%3N')-$$"
