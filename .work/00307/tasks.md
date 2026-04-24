@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-24 (Step 0 縮小: docs 書き換えのみ、コード rename は Step 2/3 で同時実施)
+**Updated**: 2026-04-24 (Step 0, Step 1 完了 — stoplist 51 語確定、次 Step 2 へ)
 
 ## ゴール (この PR の本質)
 
@@ -109,17 +109,16 @@ Phase 1 が 100% に届いたら着手。
 
 ### Step 1: stoplist の決定
 
-- [ ] `build_term_stopset.py` をセクション単位 df ベースに書き直し
-  - 出力: 日本語 4+ 字語の section_df ランキング
+- [x] `section_df_ja.py` 新規作成 (section_df 集計スクリプト) — committed `254816140`
   - 識別子 (@Annotation/CamelCase/camelCase) は term_queries 経路担当なので
     stopset の対象外
-- [ ] section_df の高い順に帯で区切って人間判定 (前回と同じ方式):
-  - section_df ≥ 100 (~14 語): 明確に汎用 → 全員 stoplist 入り
-  - section_df 50〜99 (~31 語): 境界帯、中核用語 (トランザクション等) を残す判定
-  - section_df 30〜49 (~43 語): 大半は固有用語、例外のみ stoplist
-  - section_df < 30: 残す (固有性が高い)
-- [ ] 判定結果を `.work/00307/stoplist-judgment.md` に残す
-- [ ] 最終 stoplist: `tools/benchmark/data/index-stoplist-ja-v6.json`
+- [x] section_df の高い順に帯で区切って判定 — committed `8959cb76d`
+  - section_df ≥ 100 (14 語): 全員 stoplist 入り
+  - section_df 50〜99 (31 語): 19 stoplist / 12 残す
+  - section_df 30〜49 (43 語): 18 stoplist / 25 残す
+  - section_df < 30 (6565 語): 全員残す
+- [x] 判定結果を `.work/00307/stoplist-judgment.md` に記録
+- [x] 最終 stoplist: `tools/benchmark/data/index-stoplist-ja-v6.json` (51 語)
 
 ### Step 2: classify_terms.py 書き直し (セクション単位 TF)
 
