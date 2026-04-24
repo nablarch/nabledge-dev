@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 61 — 22-B-13 nabledge-test v6 baseline 取得完了 `20260424-080424`。overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 100% (前回 97.3% から +2.7pp 改善、CI 非重複)。qa-001 benchmark mean 87.5% (trial 間揺らぎ)。ca-002 / ca-003 は 100%。QA 劣化は `full-text-search.sh` のバグと JSP タグサンプル不足に起因し RBKC 実力ではない。詳細 `.claude/skills/nabledge-test/baseline/v6/20260424-080424/comparison-report.md`。次は 22-B-12 (他バージョン create/verify 確認)。)
+**Updated**: 2026-04-24 (session 61 — 22-B-13 v6 baseline `20260424-080424` 取得完了。次は 22-B-14 (nabledge-6 / nabledge-test を新 schema = RBKC V4 に追従させる))
 
 ---
 
@@ -133,7 +133,12 @@
   - [x] **F1-F4 fix** (`cb620f73d`): common/ 階層遵守 + AST-based link extraction + nested-block warning 伝播 + `scripts/common/linkfmt.py` 単一ソース
   - [x] **v6 regen** (`3bd1fe3c4`): 353 files, 256 contain cross-doc MD links, verify FAIL 0
 - [x] 22-B-13: nabledge-test v6 baseline 再取得 — `20260424-080424` 取得完了。overall 94.5% (QA 85.0% / CA 98.1%)。ca-003 benchmark 97.3% → 100% (+2.7pp、CI 非重複で有意改善)。比較レポート: `.claude/skills/nabledge-test/baseline/v6/20260424-080424/comparison-report.md`
-- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 (次のタスク)
+- [ ] **22-B-14**: nabledge-6 と nabledge-test を新しい知識ベース schema (RBKC V4: `sections` が list、`.index`/`hints` 削除) に追従させる
+  - [ ] **Step 1: 影響範囲調査** — nabledge-6 と nabledge-test の scripts/workflows/SKILL.md を新 schema と突き合わせて、修正必要箇所を網羅リスト化。ユーザー確認
+  - [ ] **Step 2: 修正実施** — 承認された箇所を修正
+  - [ ] **Step 3: smoke test** — 各 script / workflow が新 schema で期待通り動作することを確認
+- [ ] 22-B-13b: 22-B-14 完了後、必要なら v6 baseline を再取得
+- [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
 
 **備考**:
 - Phase 21-C (旧番 — リリースノート行粒度) は 22-B に統合済。xlsx converter 書き直しで包括する
