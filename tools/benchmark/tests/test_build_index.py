@@ -102,7 +102,7 @@ def test_llm_index_renders_keywords_with_separator(tmp_path):
     }
     entries = collect(str(root), keyword_map)
     out = build_llm_index(entries, version="6")
-    assert "[secure_handler] セキュアハンドラ" in out
+    assert "[secure_handler] セキュアハンドラ  (a.json)" in out
     assert "  s6:CSP対応 — ポリシー設定 / 違反レポート" in out
     # Section with no keywords: no trailing separator.
     assert "  s8:nonce生成\n" in out
@@ -115,7 +115,7 @@ def test_llm_index_handles_sectionless_file(tmp_path):
     ])
     entries = collect(str(root), {})
     out = build_llm_index(entries, version="6")
-    assert "[solo] 単独" in out
+    assert "[solo] 単独  (a.json)" in out
     lines = [ln for ln in out.splitlines() if ln.startswith("  s")]
     assert not lines
 
@@ -177,6 +177,23 @@ def test_collect_skips_bad_index_entries(tmp_path):
     ])
     entries = collect(str(root), {})
     assert [s["id"] for s in entries[0]["sections"]] == ["s1"]
+
+
+def test_llm_index_header_carries_relative_path(tmp_path):
+    """AI-1 needs the file path on the header line to call Read directly."""
+    root = _make_knowledge(tmp_path, [
+        {"rel": "component/handlers/secure_handler.json", "data": {
+            "id": "secure_handler", "title": "セキュアハンドラ",
+            "index": [{"id": "s1", "title": "概要"}],
+        }},
+    ])
+    entries = collect(str(root), {})
+    out = build_llm_index(entries, version="6")
+    assert "(component/handlers/secure_handler.json)" in out
+    # Path comes after title on the same header line, not on its own line.
+    header = [ln for ln in out.splitlines() if ln.startswith("[secure_handler]")]
+    assert len(header) == 1
+    assert "component/handlers/secure_handler.json" in header[0]
 
 
 def test_collect_preserves_keyword_order(tmp_path):

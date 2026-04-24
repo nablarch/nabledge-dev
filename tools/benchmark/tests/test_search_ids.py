@@ -9,9 +9,11 @@ import pytest
 
 from tools.benchmark.bench import io, search_ids
 from tools.benchmark.bench.search_ids import (
+    _render_answer_markdown,
     grep_term_hits,
     merge_term_hits_into_selections,
     resolve_selections,
+    verify_read_notes,
 )
 
 
@@ -166,6 +168,149 @@ def test_grep_term_hits_excludes_sample_guide(tmp_path, monkeypatch):
     hits = grep_term_hits(["AAA"], id_to_path)
     # biz-samples is excluded; only the handler body hit remains.
     assert [(h["file_id"], h["sid"]) for h in hits] == [("handlers-tmh", "s1")]
+
+
+def test_verify_read_notes_detects_verbatim_and_paraphrase(fake_knowledge):
+    id_to_path = {
+        "handlers-tmh": {
+            "path": "component/handlers/handlers-tmh.json",
+            "sections": ["s1", "s2", "s3"],
+        },
+    }
+    read_notes = [{
+        "file_id": "handlers-tmh",
+        "relevant_sections": [
+            {"sid": "s2", "evidence": "body mentions concurrentNumber"},
+            # paraphrase — not a substring
+            {"sid": "s3", "evidence": "talks about concurrency settings"},
+        ],
+    }]
+    result = verify_read_notes(read_notes, id_to_path)
+    verdicts = {(r["file_id"], r["sid"]): r["verdict"] for r in result["per_section"]}
+    assert verdicts[("handlers-tmh", "s2")] == "match"
+    assert verdicts[("handlers-tmh", "s3")] == "mismatch"
+    assert result["mismatches"] == 1
+    assert result["total"] == 2
+
+
+def test_verify_read_notes_flags_unknown_file(fake_knowledge):
+    id_to_path = {}  # no files registered
+    read_notes = [{
+        "file_id": "ghost",
+        "relevant_sections": [{"sid": "s1", "evidence": "anything"}],
+    }]
+    result = verify_read_notes(read_notes, id_to_path)
+    assert result["per_section"][0]["verdict"] == "file-missing"
+
+
+def test_verify_read_notes_flags_unknown_sid(fake_knowledge):
+    id_to_path = {
+        "handlers-tmh": {
+            "path": "component/handlers/handlers-tmh.json",
+            "sections": ["s1", "s2", "s3"],
+        },
+    }
+    read_notes = [{
+        "file_id": "handlers-tmh",
+        "relevant_sections": [{"sid": "s99", "evidence": "anything"}],
+    }]
+    result = verify_read_notes(read_notes, id_to_path)
+    assert result["per_section"][0]["verdict"] == "section-missing"
+
+
+def test_verify_read_notes_accepts_normalized_paraphrase(tmp_path, monkeypatch):
+    """Whitespace collapse + markdown header strip should count as match.
+
+    AI-1 legitimately trims leading `## ` and joins adjacent lines; those
+    benign rewrites must not register as fabrication.
+    """
+    root = tmp_path / "knowledge"
+    (root / "c").mkdir(parents=True)
+    body = "## セクション見出し\n\n本文の一文目。\n\n本文の二文目。"
+    (root / "c/f.json").write_text(json.dumps({
+        "id": "f", "title": "F",
+        "index": [{"id": "s1", "title": "t"}],
+        "sections": {"s1": body},
+    }), encoding="utf-8")
+    monkeypatch.setattr(io, "KNOWLEDGE_ROOT", root)
+    id_to_path = {"f": {"path": "c/f.json", "sections": ["s1"]}}
+    read_notes = [{
+        "file_id": "f",
+        "relevant_sections": [
+            # header stripped, whitespace collapsed — still a match
+            {"sid": "s1", "evidence": "本文の一文目。 本文の二文目。"},
+        ],
+    }]
+    result = verify_read_notes(read_notes, id_to_path)
+    assert result["per_section"][0]["verdict"] == "match"
+
+
+def test_verify_read_notes_rejects_real_fabrication(fake_knowledge):
+    """Content that doesn't appear in the body in any form must mismatch."""
+    id_to_path = {
+        "handlers-tmh": {
+            "path": "component/handlers/handlers-tmh.json",
+            "sections": ["s1", "s2", "s3"],
+        },
+    }
+    read_notes = [{
+        "file_id": "handlers-tmh",
+        "relevant_sections": [
+            {"sid": "s1", "evidence": "TMH has a Kafka integration"},
+        ],
+    }]
+    result = verify_read_notes(read_notes, id_to_path)
+    assert result["per_section"][0]["verdict"] == "mismatch"
+
+
+def test_verify_read_notes_empty_input():
+    result = verify_read_notes([], {})
+    assert result == {
+        "per_section": [], "total": 0, "mismatches": 0, "mismatch_rate": 0.0,
+    }
+
+
+def test_render_answer_markdown_shape():
+    id_to_path = {
+        "handlers-tmh": {
+            "path": "component/handlers/handlers-tmh.json",
+            "sections": ["s1", "s3"],
+        },
+    }
+    md = _render_answer_markdown(
+        conclusion="結論の一文。",
+        evidence=[
+            {"quote": "本文の引用", "cited": "handlers-tmh|s1"},
+            {"quote": "別の引用", "cited": "handlers-tmh|s3"},
+        ],
+        caveats=["注意点 1"],
+        cited_refs=["handlers-tmh|s1", "handlers-tmh|s3"],
+        id_to_path=id_to_path,
+    )
+    assert "**結論**: 結論の一文。" in md
+    assert "**根拠**:" in md
+    # ref is resolved to path:sid form
+    assert "(component/handlers/handlers-tmh.json:s1)" in md
+    assert "(component/handlers/handlers-tmh.json:s3)" in md
+    assert "**注意点**:\n- 注意点 1" in md
+    assert md.rstrip().endswith(
+        "参照: component/handlers/handlers-tmh.json:s1, "
+        "component/handlers/handlers-tmh.json:s3"
+    )
+
+
+def test_render_answer_markdown_skips_empty_sections():
+    md = _render_answer_markdown(
+        conclusion="結論のみ",
+        evidence=[],
+        caveats=[],
+        cited_refs=[],
+        id_to_path={},
+    )
+    assert md.startswith("**結論**: 結論のみ")
+    assert "**根拠**" not in md
+    assert "**注意点**" not in md
+    assert "参照:" not in md
 
 
 def test_merge_term_hits_respects_cap():

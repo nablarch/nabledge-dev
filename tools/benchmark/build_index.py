@@ -98,15 +98,16 @@ def build_llm_index(entries: list[dict], version: str) -> str:
         "",
         f"{len(entries)} files / {n_sections} sections",
         "",
-        "Format: `[file_id] page_title` followed by one line per section:",
-        "`  sid:section_title` optionally ending with ` — keyword / keyword / ...`",
-        "when keywords are available from the page body.",
-        "Return `file_id|sid` that best matches the question. Match the user query",
-        "against the title, section titles, and keywords.",
+        "Format: `[file_id] page_title  (relative_path)` followed by one line",
+        "per section: `  sid:section_title` optionally ending with",
+        "` — keyword / keyword / ...` when keywords are available from the body.",
+        "The relative_path is resolved against the knowledge root",
+        f"(`.claude/skills/nabledge-{version}/knowledge/`) and can be passed to",
+        "the Read tool when the caller needs to inspect a section's body.",
         "",
     ]
     for e in entries:
-        lines.append(f"[{e['id']}] {e['title']}")
+        lines.append(f"[{e['id']}] {e['title']}  ({e['path']})")
         for s in e["sections"]:
             line = f"  {s['id']}:{s['title']}"
             if s["keywords"]:

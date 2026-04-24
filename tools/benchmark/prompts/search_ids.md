@@ -1,133 +1,208 @@
-# Stage 1 (IDs variant): Direct knowledge selection
+# AI-1 Procedural Selection (Read-enabled, 4 steps)
 
-Given a user question and the complete knowledge index for Nablarch 6,
-identify the sections that are likely to answer the question.
-
-Output ONLY the JSON defined by the schema — no tools, no prose, no markdown.
+You are selecting knowledge sections that can answer a Japanese Nablarch
+developer question. You have the complete file/section index and the
+Read tool on knowledge JSON files. Produce one JSON object matching the
+output schema — no prose outside it.
 
 ## How to read the index
 
 Each entry starts with a header line, then one indented line per section:
 
 ```
-[file_id] Page title
+[file_id] Page title  (relative_path)
   sid:section title — keyword / keyword / ...
   sid:section title
   ...
 ```
 
 - `file_id` is the stable identifier of a knowledge file.
-- Each `sid` (e.g., `s1`, `s2`) is a section inside that file.
-- The `— keyword / ...` suffix, when present, lists extra terms that
-  appear in the section body. Treat them as equal-weight hints alongside
-  the section title — a section can match because of a keyword even when
-  its title does not mention the concept.
-- A keyword match counts the same as a title match, both for picking a
-  section and for triggering the foundational-section rule below.
-- The separator between section title and keywords is an em-dash (`—`),
-  not a hyphen.
+- `relative_path` is relative to `{{knowledge_root}}/`.
+  Pass the **absolute path** (prepend that prefix) to the Read tool.
+- `sid` (e.g. `s1`, `s2`) is a section inside that file.
+- The `— keyword / ...` suffix, when present, lists content terms
+  extracted from the section body. Treat them as equal-weight hints
+  alongside the section title — a section can match because of a
+  keyword even when its title does not mention the concept.
+- The separator between section title and keywords is an em-dash (`—`).
 - A file with no sections has only the header line.
 
-## Selection task — recall-first
+## Procedure
 
-Return a list of `file_id|sid` strings that point to the sections that
-could contain the answer.
+Do the following in order. Do not collapse steps.
 
-**Your job is to maximize recall, not precision.** A downstream stage
-will read the section bodies and drop the irrelevant ones. Missing a
-required section is far worse than including an extra on-scope section.
+### Step 1 — Intent
 
-- Pick up to 10 sections. Err on the side of including a plausibly
-  relevant section rather than dropping it.
-- Always emit the full `file_id|sid` form. Do NOT emit bare `file_id`.
-  If a file has no sections in the index, do not select it.
-- Each `file_id|sid` must appear at most once.
-- When you identify a file that matches the question topic, do not pick
-  only the section whose title or keyword most directly restates the
-  question. **Also include that file's foundational sections** — the
-  overview / concept / class-name section (usually `s1`) and any section
-  whose title signals constraints, placement, or prerequisites
-  (e.g. "制約", "前提", "ハンドラ配置"). These sections carry the
-  core facts even when their titles look generic.
-  - Apply this rule only to files you already picked a match (via title
-    or keyword) from. Do not add foundational sections from adjacent
-    files you did not otherwise select.
-  - Cap: at most 2 foundational sections per file (typically `s1` plus
-    one structural section). Do not pull 3+ structural sections from a
-    single file at the expense of crowding out another relevant file.
-  - If a keyword-matched section you picked already carries the specific
-    fact the question asks about, you do not need to add an additional
-    foundational section from the same file just to satisfy the rule.
-- **Cap precedence** when you hit the 10-item limit: drop the
-  weakest literal-match section before dropping any file's `s1`. The
-  foundational section is what tells the downstream reader whether the
-  file is truly on-topic.
-- When multiple files look equally relevant, include sections from
-  each of them rather than picking one file.
-- The `feature_details` page of a processing pattern often has a
-  per-concern section table of contents. Those sections frequently
-  serve as the correct entry-point for pattern-specific questions.
-- If the question covers multiple distinct topics, include 1–3 sections
-  per topic (still within the 10-item cap).
-- If no section in the index plausibly answers the question (e.g., a
-  Spring Boot configuration question, a general Java question), return
-  `{"selections": []}`. Do NOT return a best-guess consolation pick —
-  an empty list is the correct answer for out-of-scope questions.
+Read the question and identify the **content terms** a human would key
+on: concrete nouns, concern names, Nablarch-specific terms (e.g.
+「多言語」「並列実行」「接続」「排他」「二重サブミット」).
+Keep to 2–5 terms. Also note the main intent in one short phrase
+(e.g. "マルチスレッドバッチで DB 接続と排他に関する注意点").
 
-### Why foundational sections matter
+### Step 2 — Index sweep (file-level, recall-first)
 
-Section titles in this index often describe **document structure**
-("制約", "ハンドラクラス名", "前提") rather than content. The body of
-`s3` titled "制約" typically contains the handler's placement rules
-against other handlers — information that is essential for any
-question about that handler's behavior or configuration. Do not skip
-such sections just because their titles look abstract.
+Scan the entire index. Enumerate every file whose
+**page title / any section title / any section keyword** literally
+contains one of the Step 1 content terms, OR is semantically
+adjacent to the intent.
+
+- Work at **file granularity** here, not section granularity. Listing
+  the file lets Step 3 examine every subsection.
+- **Max 20 files.** Prioritize files with the most and strongest
+  matches. Do not list everything — overly generic matches are noise.
+- For each candidate, record a short `reason` citing what matched
+  (e.g. "title 多言語化対応", "keyword 並列実行 in s5", "file name
+  handlers-multi_thread_execution_handler").
+
+### Step 3 — Body confirmation via Read
+
+For **every file** you listed in Step 2, call the **Read tool** on the
+absolute path (`{{knowledge_root}}/` + `relative_path`
+from the header). Inspect the `sections` dict. For each section whose
+body discusses the question intent, record:
+
+- `sid`: the section id (`s1`, `s2`, ...).
+- `evidence`: a **verbatim substring** copied directly from that
+  section's body (10–200 characters). Do NOT paraphrase. Do NOT
+  summarize. The substring must appear literally in the body text
+  so a post-hoc substring check can verify it.
+
+If a file turns out to be irrelevant after reading, emit an empty
+`relevant_sections: []` for it. That is a valid answer — it confirms
+you did read and discarded.
+
+**Max 6 relevant sections per file.** **Max 20 file entries total.**
+
+### Step 4 — Final selection
+
+From the `relevant_sections` across all files, pick the sections that
+actually answer the question. Output them in `selections`.
+
+- Up to **15** entries. Prefer sections with body-confirmed evidence.
+- Each entry is an object with `ref` (`file_id|sid`) and
+  `matched_on` (`"title"` / `"keyword"` / `"body"`):
+  - `title` — the section title directly mentions a Step 1 term.
+  - `keyword` — only a keyword on the section line matched.
+  - `body` — the relevance was confirmed only by reading the body.
+- When a file is clearly on-topic, also include its overview
+  (usually `s1`) and any `制約` / `前提` / `ハンドラ配置` section —
+  these carry load-bearing framework rules that are easy to miss.
+- Do not emit a `ref` whose `file_id` is absent from `read_notes`.
+- If no section plausibly answers the question, return
+  `"selections": []`. Do not force a consolation pick.
+
+### Step 5 — Compose the answer
+
+Now switch from retrieval to answering. Restate the question's core
+ask in one sentence to anchor your focus, then produce the final
+answer using **only** the sections you already Read in Step 3.
+
+- `conclusion`: one-sentence direct answer (≤600 chars). Write in the
+  **same language as the question** (Japanese question → Japanese
+  answer).
+- `evidence`: up to 8 entries, each `{quote, cited}` where:
+  - `quote` is a short excerpt **copied from the section body** that
+    supports a specific fact in the conclusion. Prefer 1-2 sentences
+    (≤400 chars). Copy characters verbatim — keep whitespace and
+    markdown as-is, do not paraphrase, do not concatenate disjoint
+    sentences.
+  - `cited` is the `file_id|sid` the quote came from. It MUST be in
+    your `selections`.
+- `caveats`: up to 5 short notes on constraints / pitfalls / edge
+  cases — only if the sections you used actually mention them. Skip
+  the field (empty array) if nothing applies.
+- `cited`: the deduplicated set of `file_id|sid` values that appear in
+  `evidence[].cited`. No extras; no omissions.
+- **Narrow from selections.** Step 4 was recall-first; Step 5 is
+  precision. Do not cite a section merely to demonstrate coverage. If
+  the conclusion is complete without a section, drop that citation.
+- Do NOT pad with training-data knowledge that is not in the sections.
+- If the sections show Nablarch has no standard feature for what was
+  asked, write `conclusion: "Nablarch には標準機能はない。最も近い代替は ..."`
+  and cite the closest-neighbor sections.
 
 ## Output schema
+
+The runtime enforces a strict schema. Every field is required.
 
 ```json
 {
   "type": "object",
-  "required": ["selections"],
   "additionalProperties": false,
+  "required": ["intent", "candidate_files", "read_notes", "selections",
+               "conclusion", "evidence", "caveats", "cited"],
   "properties": {
-    "selections": {
-      "type": "array",
-      "maxItems": 10,
-      "uniqueItems": true,
+    "intent": {"type": "string"},
+    "candidate_files": {
+      "type": "array", "maxItems": 20,
       "items": {
-        "type": "string",
-        "pattern": "^[a-zA-Z0-9_-]+\\|[a-zA-Z0-9_-]+$"
+        "type": "object", "required": ["file_id", "reason"],
+        "properties": {
+          "file_id": {"type": "string"},
+          "reason": {"type": "string"}
+        }
       }
+    },
+    "read_notes": {
+      "type": "array", "maxItems": 20,
+      "items": {
+        "type": "object", "required": ["file_id", "relevant_sections"],
+        "properties": {
+          "file_id": {"type": "string"},
+          "relevant_sections": {
+            "type": "array", "maxItems": 6,
+            "items": {
+              "type": "object", "required": ["sid", "evidence"],
+              "properties": {
+                "sid": {"type": "string"},
+                "evidence": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "selections": {
+      "type": "array", "maxItems": 15,
+      "items": {
+        "type": "object", "required": ["ref", "matched_on"],
+        "properties": {
+          "ref": {"type": "string", "pattern": "^[a-zA-Z0-9_-]+\\|[a-zA-Z0-9_-]+$"},
+          "matched_on": {"type": "string", "enum": ["title", "keyword", "body"]}
+        }
+      }
+    },
+    "conclusion": {"type": "string", "maxLength": 600},
+    "evidence": {
+      "type": "array", "maxItems": 8,
+      "items": {
+        "type": "object", "required": ["quote", "cited"],
+        "properties": {
+          "quote": {"type": "string", "maxLength": 400},
+          "cited": {"type": "string", "pattern": "^[a-zA-Z0-9_-]+\\|[a-zA-Z0-9_-]+$"}
+        }
+      }
+    },
+    "caveats": {
+      "type": "array", "maxItems": 5,
+      "items": {"type": "string", "maxLength": 300}
+    },
+    "cited": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[a-zA-Z0-9_-]+\\|[a-zA-Z0-9_-]+$"}
     }
   }
 }
 ```
 
-Each `selections` entry must be of the form `file_id|sid` using the
-exact `file_id` and `sid` strings from the index. Do not invent values.
+## Constraints
 
-## Examples
-
-Question: "ファイルの明細レコードを読み込んで DB テーブルに取り込む夜間バッチを作りたい。Nablarch での推奨構成を知りたい"
-→ `{"selections": ["nablarch-batch-architecture|s1", "nablarch-batch-architecture|s3", "nablarch-batch-feature_details|s1", "nablarch-batch-feature_details|s2"]}`
-
-Question: "画面の入力値チェックの書き方を知りたい"
-→ `{"selections": ["web-application-feature_details|s2", "libraries-bean_validation|s1", "libraries-bean_validation|s8", "libraries-bean_validation|s13"]}`
-(include foundational `s1` plus the specific sections whose titles name the concern.)
-
-Question: "Nablarch のトランザクション境界はどこで決まる？"
-→ `{"selections": ["handlers-transaction_management_handler|s1", "handlers-transaction_management_handler|s3", "handlers-transaction_management_handler|s4"]}`
-(Even when one section title looks like the direct answer, pull in
-s1 (handler overview — contains the actual boundary definition) and
-s3 "制約" (placement rule) from the same file.)
-
-Question: "DbConnectionManagementHandler との並び順は？"
-→ `{"selections": ["handlers-transaction_management_handler|s1", "handlers-transaction_management_handler|s3"]}`
-(`s3`'s keyword `DbConnectionManagementHandler` matches even though its title is just "制約". A keyword match counts the same as a title match.)
-
-Question: "Spring Boot の設定ファイルはどこに置く？"
-→ `{"selections": []}`
+- Call Read only on knowledge JSON files under
+  `{{knowledge_root}}/`. No other tools.
+- `evidence` must be a **verbatim substring** of the Read body. A
+  substring check will fail your output if you paraphrase.
+- Do not invent `file_id` or `sid` values. Every `file_id` must appear
+  in the index; every `sid` must appear in that file's `sections`.
 
 ## Index
 
@@ -139,6 +214,5 @@ Question: "Spring Boot の設定ファイルはどこに置く？"
 
 ## Output
 
-Return exactly one JSON object matching the schema. The only key is
-`selections`. No code fences, no commentary. The response must start with
-`{` and end with `}`.
+Return exactly one JSON object matching the schema. No code fences, no
+prose. Start with `{` and end with `}`.
