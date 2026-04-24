@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 63 中 — 22-B-12 で全バージョン create/verify を実行し課題洗い出し完了。v5/v1.4 は verify FAIL (Excel 複数行ヘッダ未合成、前書き行欠落、QL1)、v1.3/v1.2 は create crash (`literalinclude` shim 未登録)。assets/*.json exclusion bug は先行 TDD 修正済 (365 tests GREEN、未コミット))
+**Updated**: 2026-04-24 (session 63 中 — 22-B-12 大規模リファクタリング完了。v6/v5 FAIL 0、v1.4 残 6 (spacer col 特殊ケース)、v1.3/v1.2 は include 解決問題。372 tests GREEN。commit `7e1ac1fa3` push 済)
 
 ---
 
@@ -149,7 +149,10 @@
   - [x] Step 5 (`337c16348`): meta.json に `runner_agent` / `model_used` 追加仕様化
   - [x] Step 6: e2e smoke test — qa-001 (Sonnet 26 秒、grade 5/8) と ca-001 (185 秒、grade 35/37) で全フロー動作確認。runner agent 起動 → Skill tool → 4 デリミタ返却 → response/output 保存 → grade.py 実行まで通った
 - [x] **22-B-13b 完了** (`90061007d`): v6 baseline `20260424-103200` 取得。Sonnet + strict grader の新パイプラインでの初回 baseline。QA 90.0% / CA 98.1%、ca-001 37/37 到達、qa-001 benchmark 75.0% ±21.6% (trial 1/2 62.5%、trial 3 100%、汎用 select 系への言及有無で揺らぐ)。前回 baseline (Opus + pseudocode grading) と model/grading 両方が異なるため直接比較不能、新起点として確定。並列実行で stall 2 件 (retry で解消)
-- [~] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認 — **session 63 で全バージョン実行し課題洗い出し完了**
+- [~] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
+  - **v6 / v5 は FAIL 0 達成** (session 63、commit `7e1ac1fa3`)
+  - **v1.4 残 6 件**: `nablarch-1.4.3-releasenote.xlsx` 1 シートで spacer col (header name 空) に cell value `UI開発基盤\n※...` が入っている corpus 構造。P1 schema `{col}: {val}` 表現不能 — 別タスク (P1 の spacer 列意味論検討)
+  - **v1.3 / v1.2**: `.. include:: links.lst` が docutils `file_insertion_enabled=True` で source_path 相対として解決失敗 — docutils 制約
 
   **共通先行 fix**:
   - [x] **22-B-12-common-1** assets/*.json exclusion bug — `docs.py` / `verify.py` (QO3/QO4) が `knowledge/assets/` 配下の literalinclude コピー JSON を content JSON として読んでクラッシュしていた。v5 で表面化 (v6 には該当 asset が無かった)。TDD で 3 tests 追加、assets/ を rglob 結果から除外。365 tests GREEN
