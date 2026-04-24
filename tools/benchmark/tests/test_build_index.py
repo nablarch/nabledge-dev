@@ -25,7 +25,7 @@ def test_collect_skips_no_knowledge_content(tmp_path):
         {"rel": "a/x.json", "data": {"id": "x", "title": "X", "index": []}},
         {"rel": "a/y.json", "data": {"id": "y", "title": "Y", "no_knowledge_content": True}},
     ])
-    entries = collect(str(root))
+    entries, _ = collect(str(root), [])
     ids = [e["id"] for e in entries]
     assert ids == ["x"]
 
@@ -41,11 +41,11 @@ def test_collect_preserves_sections_order(tmp_path):
             ],
         }},
     ])
-    entries = collect(str(root))
+    entries, _ = collect(str(root), [])
     assert entries[0]["sections"] == [
-        {"id": "s1", "title": "First"},
-        {"id": "s2", "title": "Second"},
-        {"id": "s3", "title": "Third"},
+        {"id": "s1", "title": "First", "keywords": []},
+        {"id": "s2", "title": "Second", "keywords": []},
+        {"id": "s3", "title": "Third", "keywords": []},
     ]
 
 
@@ -59,20 +59,21 @@ def test_llm_index_format_has_header_and_sections(tmp_path):
             ],
         }},
     ])
-    entries = collect(str(root))
+    entries, _ = collect(str(root), [])
     out = build_llm_index(entries, version="6")
     assert "[secure_handler] セキュアハンドラ" in out
     assert "s6:Content Security Policy(CSP)対応" in out
     assert "s8:nonce生成" in out
-    # Sections are joined with " / " on one indented line.
-    assert "  s6:Content Security Policy(CSP)対応 / s8:nonce生成" in out
+    # Each section is rendered on its own indented line.
+    assert "  s6:Content Security Policy(CSP)対応" in out
+    assert "  s8:nonce生成" in out
 
 
 def test_llm_index_handles_sectionless_file(tmp_path):
     root = _make_knowledge(tmp_path, [
         {"rel": "a.json", "data": {"id": "solo", "title": "単独", "index": []}},
     ])
-    entries = collect(str(root))
+    entries, _ = collect(str(root), [])
     out = build_llm_index(entries, version="6")
     assert "[solo] 単独" in out
     # No indented section line when no sections exist.
@@ -90,7 +91,7 @@ def test_script_index_maps_id_to_path_and_sections(tmp_path):
             ],
         }},
     ])
-    entries = collect(str(root))
+    entries, _ = collect(str(root), [])
     s = json.loads(build_script_index(entries))
     assert s["secure_handler"]["path"] == "component/handlers/secure_handler.json"
     assert s["secure_handler"]["sections"] == ["s1", "s6"]
@@ -102,5 +103,5 @@ def test_collect_ignores_files_without_id_or_title(tmp_path):
         {"rel": "bad2.json", "data": {"id": "no-title"}},
         {"rel": "ok.json", "data": {"id": "ok", "title": "OK", "index": []}},
     ])
-    entries = collect(str(root))
+    entries, _ = collect(str(root), [])
     assert [e["id"] for e in entries] == ["ok"]
