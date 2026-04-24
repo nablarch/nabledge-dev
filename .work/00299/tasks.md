@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-24 (session 62 — 22-B-15 Step 0 smoke test 成功: Skill tool が custom subagent から使えることを確認。次は Step 2 (SKILL.md 書き換え))
+**Updated**: 2026-04-24 (session 62 — 22-B-15 完了。nabledge-test を agent/skill ゼロベース再設計 (runner agent 化 + grader 昇格 + model pin)。e2e smoke test 通過。次は 22-B-13b (v6 baseline 再取得))
 
 ---
 
@@ -11,9 +11,9 @@
 - v6 verify: **FAIL 0**。362 unit tests GREEN
 - 22-B-16b/c (cross-doc MD link emission + asset + QL1 two-sided) 完了
 - 22-B-14 完了 (`fe7a34a0c`): nabledge-6 skill を RBKC V4 schema に追従 (6 箇所修正)。無効だった 20260424-080424 baseline は削除済
-- 22-B-15 進行中: nabledge-test の agent/skill 境界ゼロベース再設計。Step 1 (runner agent 作成) まで済 (`14e2796a2`)、Step 0 (smoke test) 以降はセッション再起動後に継続
-- **次のタスク (次セッション)**: `/agents` で nabledge-test-runner 認識確認 → Step 0 smoke test (`Skill` tool が custom subagent から動作するか)
-- その後: Step 2-6 → 22-B-13b (v6 baseline 再取得) → 22-B-12 (他バージョン create/verify) → Phase 19 → Phase 21-Z
+- 22-B-15 完了: nabledge-test を agent/skill 境界ゼロベース再設計。runner agent (Sonnet 固定) + grade.py (18 tests) + meta.json `runner_agent`/`model_used` + e2e smoke test 通過
+- **次のタスク**: 22-B-13b (v6 baseline 再取得) — 修正済み nabledge-6 + 新しい runner/grader パイプラインで取得
+- その後: 22-B-12 (他バージョン create/verify) → Phase 19 → Phase 21-Z
 
 ---
 
@@ -138,15 +138,15 @@
   - [x] **Step 1: 影響範囲調査** — nabledge-6 で 6 箇所 (full-text-search.sh / get-hints.sh / _section-search.md / _section-judgement.md Step 0 / _knowledge-search.md Step 5 / SKILL.md)、nabledge-test は影響なし、他バージョン (v5/v1.x) は旧 schema のまま整合しているため影響なし
   - [x] **Step 2: 修正実施** — (1) full-text-search.sh jq を `.sections[]` + title+content で list 対応、(2) get-hints.sh 削除 (hints スコープアウト済)、(3) _section-search.md 削除、(4) _section-judgement.md Step 0 削除、(5) _knowledge-search.md Step 5 / _index-based-search.md Step 2 を「全 section 列挙」に書き換え、(6) SKILL.md の「with search hints」記述を現行の index.toon 実態に修正
   - [x] **Step 3: smoke test** — full-text-search.sh で qa-002/qa-004 の期待キーワードが `libraries-tag.json#s21`、`biz-samples-03.json#s17`、`project-search.json#s1` 等に正しくヒット、残存 schema 依存ゼロを grep で確認
-- [ ] **22-B-15**: nabledge-test の agent / skill 境界をゼロベース再設計 (Prompt Engineer 相談済み結論を反映)
+- [x] **22-B-15 完了**: nabledge-test の agent / skill 境界をゼロベース再設計 (Prompt Engineer 相談済み結論を反映)
   - 背景: 前回 baseline 実行で (a) 親エージェント (Opus) と子の model 不一致で比較ノイズ、(b) 私が擬似コードから grade_v6.py を書き起こした際に検出ロジックが drift、の 2 問題が発生。案 C (軽量) でモデル固定 + grader スクリプト昇格
   - [x] Step 1: `.claude/agents/nabledge-test-runner.md` 作成 (`14e2796a2`)。frontmatter `model: sonnet` 固定、`tools: Read, Write, Bash, Skill, Grep, Glob`、I/O 契約 (`NABLEDGE_TEST_RESPONSE/METRICS/OUTPUT_FILES/STATUS` デリミタ) を定義
   - [x] Step 0: smoke test — qa-001 を Sonnet runner で実行、`Skill` tool が custom subagent から動作することを確認 (19 秒 / 61.3K tok / 4 デリミタ全て正常、tool_calls.Skill=1)
-  - [ ] Step 2: `nabledge-test/SKILL.md` の Step 4 (scenario 起動) を `Agent(subagent_type: "nabledge-test-runner", ...)` 呼び出しに書き換え。discipline rules / I/O 契約の記述を削除 (runner agent に集約済み)
-  - [ ] Step 3: `scripts/grade.py` を新規作成。SKILL.md Step 6 の擬似コードを実装に昇格。heading 厳密判定、section 抽出 regex (`(?=\n#{1,N}[^#])` パターン済バグ回避) を含む。unit test 付き
-  - [ ] Step 4: SKILL.md Step 6 を `python3 scripts/grade.py <workspace>/<scenario_id>` 呼び出しに差し替え、擬似コード削除
-  - [ ] Step 5: meta.json に `model_used: "sonnet"` と `runner_agent: "nabledge-test-runner"` フィールド追加 (将来比較用)
-  - [ ] Step 6: e2e smoke test — `/nabledge-test 6 qa-001` で coverage 1 シナリオ、grading、レポート生成まで通るか確認
+  - [x] Step 2 (`9a4acaa15`): SKILL.md Step 4/5 を runner agent 呼び出しに書き換え + 新デリミタ対応
+  - [x] Step 3 (`377f0e0df`): `scripts/grade.py` + `test_grade.py` 新規作成、18 tests GREEN。heading 厳密判定 + 先頭 `\n` 欠如バグ回避の regression tests 含む
+  - [x] Step 4 (`337c16348`): SKILL.md Step 6 を `scripts/grade.py` 呼び出しに差し替え、擬似コード削除
+  - [x] Step 5 (`337c16348`): meta.json に `runner_agent` / `model_used` 追加仕様化
+  - [x] Step 6: e2e smoke test — qa-001 (Sonnet 26 秒、grade 5/8) と ca-001 (185 秒、grade 35/37) で全フロー動作確認。runner agent 起動 → Skill tool → 4 デリミタ返却 → response/output 保存 → grade.py 実行まで通った
 - [ ] 22-B-13b: 22-B-15 完了後に v6 baseline を再取得 (前回分は削除済)
 - [ ] 22-B-12: 他バージョン (v5 / v1.4 / v1.3 / v1.2) で create → verify FAIL 0 を確認
 
