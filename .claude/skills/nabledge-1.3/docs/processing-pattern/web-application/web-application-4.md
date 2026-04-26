@@ -1,15 +1,12 @@
 # 子画面を開く際に画面サイズや、属性を指定する事は出来ますか?
 
-> **question:**
-> 以下のタグを使用して子画面（サブウィンドウ）を開く際に、画面サイズを指定したり任意の属性を指定したりすることは可能ですか?
+## 子画面（サブウィンドウ）の画面サイズ・属性指定
 
-> * >   popupSubmit
-> * >   popupButton
-> * >   popupLink
+`popupSubmit`、`popupButton`、`popupLink` タグで子画面（サブウィンドウ）を開く際、`popupOption` 属性を指定することで画面サイズや任意の属性を変更できる。
 
-> **answer:**
-> popupOption属性を指定することにより、変更可能です。
+<details>
+<summary>keywords</summary>
 
-> popupOption属性の詳細は、以下のドキュメントを参照してください。
+popupOption, popupSubmit, popupButton, popupLink, 子画面, サブウィンドウ, 画面サイズ指定, ウィンドウ属性変更
 
-> * >   **[Nablarch プログラミング・単体テストガイド]** -> **[アプリケーション実装例集]** -> **[画面オンライン処理の実装例集]** -> **[複数ウィンドウを立ち上げたい場合]**
+</details>

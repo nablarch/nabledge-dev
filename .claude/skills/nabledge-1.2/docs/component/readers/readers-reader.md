@@ -1,8 +1,1 @@
 # データリーダリファレンス
-
-DatabaseRecordReader
-FileDataReader
-ValidatableFileDataReader
-ResumeDataReader
-MessageReader
-FwHeaderReader

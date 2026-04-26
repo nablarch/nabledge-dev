@@ -1,116 +1,69 @@
 # DB2やSQLServerでのバイナリ型のカラムへのアクセス方法を教えてください
 
-> **question:**
-> DB2のBLOB型のデータへアクセスすると「操作が無効です: Lob はクローズされています。」エラーが発生します。
-> このエラーを回避する方法はありますか？
+## DB2およびSQLServerでのバイナリ型カラムアクセス方法
 
-> SQLServerのLONGVARBINARY(VARBINARY(max)で定義されたカラム)にアクセスすると、
-> ヒープが大量に消費されますが、回避方法はありますか？
+DB2およびSQLServerでバイナリ型カラムへアクセスする際の問題と対処方法。
 
-> **answer:**
-> * >   DB2の場合
+> **注意**: DB2の情報はバージョン10.1、SQLServerの情報はバージョン2008R2のドキュメントを元にしています。他のバージョンでは動作が異なる場合があります。必ずベンダーのマニュアルを参照してください。
 
->   **回答内容は、バージョン10.1のドキュメントを元に作成しています。
->   他のバージョンでは、異なる動作となることも考えられますので、必ずベンダーから提供されるマニュアルを元に
->   設定及び実装を行うようにしてください。**
+## DB2 BLOB型へのアクセス
 
->   BLOB型に格納されるサイズにより、以下の2通りの対応方法があります。
->   それぞれに対して対応案を例示しますので、アーキテクトの方はどちらがプロジェクトに適しているかを判断し、対応を行なってください。
+「Lobはクローズされています。」エラーの回避方法はBLOBサイズにより異なる。
 
->   1. >     BLOBに格納される値のサイズが小さい場合（ヒープに展開されても問題ない場合）
->   2. >     BLOBに格納される値のサイズが大きい場合（ヒープに展開されるとメモリが不足する可能性がある場合）
+### BLOBサイズが小さい場合（ヒープに展開しても問題ない場合）
 
->   * >     BLOBに格納されるサイズが小さい場合
+`com.ibm.db2.jcc.DB2SimpleDataSource`の`progressiveStreaming`プロパティに`2`を設定する。この設定はアーキテクトが行うものであり、各開発者が行う必要はない。
 
->   BLOB型のカラムに格納されるデータサイズが小さい(ヒープサイズから見てメモリ上に展開されても問題ないサイズ)場合は、
->   DB2のDataSourceのプロパティへの設定でバイナリデータをヒープに展開されるようにしてください。
->   これにより、「Lobはクローズされています。」エラーを回避することができます。
+```xml
+<component class="com.ibm.db2.jcc.DB2SimpleDataSource">
+  <property name="progressiveStreaming" value="2" />
+</component>
+```
 
->   なお、この設定はアーキテクトが行うものであり、各開発者が行う必要はありません。
+### BLOBサイズが大きい場合（ヒープ展開するとメモリ不足の可能性がある場合）
 
->   以下に設定例を示します。
+ロケータを使用してアクセスする必要がある。設定ファイルと実装の両方に影響がある。
 
->   ```xml
->   <component class="com.ibm.db2.jcc.DB2SimpleDataSource">
->     <!-- 接続先情報などは省略 -->
->   
->     <!-- progressiveStreamingには、「2」を設定する。 -->
->     <property name="progressiveStreaming" value="2" />
->   </component>
->   ```
+**設定**:
+```xml
+<component class="com.ibm.db2.jcc.DB2SimpleDataSource">
+  <property name="progressiveStreaming" value="1" />
+</component>
+```
 
->   * >     BLOBに格納されるサイズが大きい場合
+> **重要**: `retrieve`ではなく`executeQuery`を使用すること。`retrieve`を使用すると「Lobはクローズされています。」エラーが発生する。`java.sql.ResultSet`がカレントレコードの場合のみBLOBデータにアクセス可能。
 
->   BLOB型のカラムに格納されるデータサイズが大きい(ヒープサイズから見てメモリ上に展開されることが好ましくない)場合は、
->   ロケータを使用してアクセスする必要があります。
->   なお、この場合は設定ファイルと実装の両方へ影響があります。
+**実装例**:
+```java
+ResultSetIterator rows = statement.executeQuery();
+if (rows.next()) {
+    SqlRow row = rows.getRow();
+    Blob blobColumn = (Blob) row.get("blob_column");
+}
+```
 
->   * >     設定ファイルの例
+## SQLServer LONGVARBINARY（VARBINARY(max)）へのアクセス
 
->     ```xml
->     <component class="com.ibm.db2.jcc.DB2SimpleDataSource">
->       <!-- 接続先情報などは省略 -->
->     
->       <!-- progressiveStreamingには、「1」を設定する。 -->
->       <property name="progressiveStreaming" value="1" />
->     </component>
->     ```
->   * >     実装例
+VARBINARY(max)で定義されたカラムはストリーム経由でアクセスすることを推奨する。VARBINARY(max)以外（上限8000）はヒープ展開でも問題ない。
 
->     java.sql.ResultSetがカレントレコードの場合のみBLOBのデータにアクセスできます。
->     このため、retrieveではなくexecuteQueryを使用してカレントレコードのBLOBデータへアクセスする必要があります。
+> **重要**: `retrieve`ではなく`executeQuery`を使用すること。`retrieve`を使用すると「ストリームは閉じられています。」エラーが発生する。`java.sql.ResultSet`がカレントレコードの場合のみLONGVARBINARYデータにアクセス可能。
 
->     ```java
->     // retrieveではなく、executeQueryを使用する。
->     // retrieveを使用すると、「Lobはクローズされています。」エラーが発生します。
->     ResultSetIterator rows = statement.executeQuery();
->     
->     // ResultSetIterator#nextを使って次のレコードへカレントを進めてからBLOBのデータにアクセスします。
->     if (rows.next()) {
->         // データが取得できている場合は、BLOBのデータを取得する。
->         SqlRow row = rows.getRow();
->         Blob blobColumn = (Blob) row.get("blob_column");
->     
->         // Blobのデータにアクセスする処理は省略
->     }
->     ```
-> * >   SQLServerの場合
+> **重要**: LONGVARBINARYと同時に他のバイナリ型（BINARYやVARBINARY）カラムを取得することはできない。LONGVARBINARY取得時はSELECT句に他のバイナリ型カラムを含めないこと。
 
->   **回答内容は、バージョン2008R2のドキュメントを元に作成しています。
->   他のバージョンでは、異なる動作となることも考えられますので、必ずベンダーから提供されるマニュアルを元に
->   設定及び実装を行うようにしてください。**
+ストリーム経由で取得するには`ResultSetConvertor`の実装クラスを作成してストリームオブジェクトを返却する。実装サンプル: `nablarch.core.db.statement.SqlServerResultSetConvertor`。ResultSetConvertorの実装はアーキテクトが行うものであり、各開発者が行う必要はない。
 
->   LONGVARBINARY(VARBINARY(max)と定義したカラム)の場合には、ストリーム経由でデータへアクセスすることを推奨します。
->   VARBINARY(max)以外の場合は、指定できる上限が8000であることからストリーム経由ではなく、ヒープ上にデータを展開する実装でも問題ないでしょう。
+**実装例**:
+```java
+ResultSetIterator rows = statement.executeQuery();
+if (rows.next()) {
+    SqlRow row = rows.getRow();
+    InputStream binaryColumn = (InputStream) row.get("binary_column");
+}
+```
 
->   LONGVARBINARYをストリーム経由で取得するためには、ResultSetConvertorの実装クラスを作成しストリームオブジェクトを返却する必要があります。
->   アプリケーションプログラムでは、ストリームオブジェクトからデータを読み込む必要があります。
+<details>
+<summary>keywords</summary>
 
->   * >     ResultSetConvertorの実装
+DB2, SQLServer, BLOB, LONGVARBINARY, VARBINARY, バイナリ型, progressiveStreaming, DB2SimpleDataSource, ResultSetConvertor, SqlServerResultSetConvertor, executeQuery, ResultSetIterator, Lob, InputStream, バイナリ型カラムアクセス, LOBエラー回避, ストリームアクセス, SqlRow, Blob
 
->     実装サンプルとして提供される、nablarch.core.db.statement.SqlServerResultSetConvertorを参考にしてください。
->     必要に応じてパッケージの変更や実装変更を行ってください。
-
->     なお、ResultSetConvertorの実装はアーキテクトが行うものであり、各開発者が行う必要はありません。
->   * >     アプリケーション実装
-
->     java.sql.ResultSetがカレントレコードの場合のみLONGVARBINARYのデータにアクセスできます。
->     このため、retrieveではなくexecuteQueryを使用してカレントレコードのLONGVARBINARYデータへアクセスする必要があります。
-
->     また、LONGVARBINARYと同時にその他のバイナリ型(BINARYやVARBINARY)のカラムを取得することはできないので、
->     LONGVARBINARY型のカラムを取得する際は、その他のバイナリ型のカラムをSELECT句に含めないようにしてください。
-
->     ```java
->     // retrieveではなく、executeQueryを使用する。
->     // retrieveを使用すると、「ストリームは閉じられています。」エラーが発生します。
->     ResultSetIterator rows = statement.executeQuery();
->     
->     // ResultSetIterator#nextを使って次のレコードへカレントを進めてからLONGVARBINARYのデータにアクセスします。
->     if (rows.next()) {
->         // データが取得できている場合は、BLOBのデータを取得する。
->         SqlRow row = rows.getRow();
->         InputStream binaryColumn = (InputStream) row.get("binary_column");
->     
->         // InputStreamにアクセスする処理は省略
->     }
->     ```
+</details>

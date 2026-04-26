@@ -1,15 +1,22 @@
 # アプリケーション開発時に使える便利なツール
 
-JspStaticAnalysis/index.rst
-SqlExecutor/SqlExecutor
-JspVerifier/JspVerifier
+**公式ドキュメント**: [アプリケーション開発時に使える便利なツール](https://nablarch.github.io/docs/LATEST/doc/development_tools/toolbox/index.html)
 
-本書では、アプリケーション開発時に使える便利なツールを紹介する。
+## アプリケーション開発ツール一覧
 
-[ソースコード](https://github.com/nablarch/nablarch-toolbox)
+## アプリケーション開発ツール一覧
 
 | ツール | 概要 |
 |---|---|
-| [JSP静的解析ツール](../../development-tools/toolbox/toolbox-JspStaticAnalysis.md) | JSPで使用を許可する構文とタグを規定し、許可する構文とタグのみを使用していることをチェックするツール。 |
-| [Nablarch SQL Executor](../../development-tools/toolbox/toolbox-SqlExecutor.md) | SQL文を対話的に実行するツール。 |
-| [業務画面JSP検証ツール](../../development-tools/toolbox/toolbox-JspVerifier.md) | 業務画面JSPを検証するツール。 |
+| [JspStaticAnalysis/index](toolbox-JspStaticAnalysis.md) | JSPで使用を許可する構文とタグを規定し、許可する構文とタグのみを使用していることをチェックするツール。 |
+| [SqlExecutor/SqlExecutor](toolbox-SqlExecutor.md) | SQL文を対話的に実行するツール。 |
+| [JspVerifier/JspVerifier](toolbox-JspVerifier.md) | 業務画面JSPを検証するツール。 |
+
+[ソースコード](https://github.com/nablarch/nablarch-toolbox)
+
+<details>
+<summary>keywords</summary>
+
+JspStaticAnalysis, SqlExecutor, JspVerifier, JSP静的解析, SQL対話実行, JSP検証, 開発ツール, ツールボックス
+
+</details>

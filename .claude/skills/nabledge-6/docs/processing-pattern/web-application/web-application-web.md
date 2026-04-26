@@ -1,8 +1,3 @@
 # ウェブアプリケーション編
 
-本章ではNablarchアプリケーションフレームワークを使用してウェブアプリケーションを開発するために必要となる情報を提供する。
-
-architecture
-application_design
-getting_started/index
-feature_details
+**公式ドキュメント**: [ウェブアプリケーション編](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/index.html)

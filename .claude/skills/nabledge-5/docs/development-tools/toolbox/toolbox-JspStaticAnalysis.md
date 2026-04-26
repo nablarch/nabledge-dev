@@ -1,4 +1,3 @@
 # JSP静的解析ツール
 
-01_JspStaticAnalysis
-02_JspStaticAnalysisInstall
+**公式ドキュメント**: [JSP静的解析ツール](https://nablarch.github.io/docs/LATEST/doc/development_tools/toolbox/JspStaticAnalysis/index.html)
