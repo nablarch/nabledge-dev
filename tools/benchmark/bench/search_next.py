@@ -367,7 +367,7 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
     # AI-1 — select file_id|sid from the index.
     knowledge_rel = f".claude/skills/nabledge-{version}/knowledge"
     select_prompt = (
-        (io.PROMPTS_DIR / "search_ids.md").read_text(encoding="utf-8")
+        (io.PROMPTS_DIR / "search_next.md").read_text(encoding="utf-8")
         .replace("{{index}}", io.index_llm_path(version).read_text(encoding="utf-8"))
         .replace("{{question}}", question)
         .replace("{{knowledge_root}}", knowledge_rel)
@@ -461,7 +461,7 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
         cited_refs=cited_refs, id_to_path=id_to_path,
     )
     return SearchResult(
-        variant="ids",
+        variant="next",
         answer=answer_md,
         cited=cited_paths,
         cost_usd=select.cost_usd,
