@@ -29,19 +29,19 @@ PATTERNS = {
         ".claude/skills/nabledge-6/workflows/**/*.md",
         ".claude/commands/n6.md",
     ],
-    "kc_prod": [
-        "tools/knowledge-creator/scripts/**/*.py",
-        "tools/knowledge-creator/scripts/**/*.sh",
+    "rbkc_prod": [
+        "tools/rbkc/scripts/**/*.py",
+        "tools/rbkc/rbkc.sh",
     ],
-    "kc_test": [
-        "tools/knowledge-creator/tests/**/*.py",
+    "rbkc_test": [
+        "tools/rbkc/tests/**/*.py",
     ],
-    "kc_prompts": [
-        "tools/knowledge-creator/**/*.md",
+    "rbkc_prompts": [
+        "tools/rbkc/docs/**/*.md",
     ],
 }
 
-KC_PROMPT_EXCLUDE = ["/reports/", "README.md", "readme.md"]
+RBKC_PROMPT_EXCLUDE = ["/evaluation/", "README.md", "readme.md"]
 
 
 def run(cmd: list[str], repo_root: str) -> str:
@@ -115,10 +115,8 @@ def collect_sloc_at(repo_root: str, commit: str) -> dict:
             basename = f.split("/")[-1]
             if basename == "__init__.py":
                 continue
-            if category == "kc_prod" and basename.startswith("migrate_"):
-                continue
-            if category == "kc_prompts":
-                if any(ex in f for ex in KC_PROMPT_EXCLUDE):
+            if category == "rbkc_prompts":
+                if any(ex in f for ex in RBKC_PROMPT_EXCLUDE):
                     continue
             content = get_file_content(repo_root, commit, f)
             total += count_sloc(content, is_prompt=is_prompt)
@@ -126,17 +124,17 @@ def collect_sloc_at(repo_root: str, commit: str) -> dict:
 
     ns = sum_for("nabledge_scripts", False)
     np_ = sum_for("nabledge_prompts", True)
-    kp = sum_for("kc_prod", False)
-    kt = sum_for("kc_test", False)
-    kpr = sum_for("kc_prompts", True)
+    rp = sum_for("rbkc_prod", False)
+    rt = sum_for("rbkc_test", False)
+    rpr = sum_for("rbkc_prompts", True)
 
     return {
         "nabledge_scripts": ns,
         "nabledge_prompts": np_,
-        "kc_prod": kp,
-        "kc_test": kt,
-        "kc_prompts": kpr,
-        "total": ns + np_ + kp + kt + kpr,
+        "rbkc_prod": rp,
+        "rbkc_test": rt,
+        "rbkc_prompts": rpr,
+        "total": ns + np_ + rp + rt + rpr,
     }
 
 
@@ -195,7 +193,7 @@ def main() -> None:
         entry = collect_sloc_at(repo_root, commit)
         entry["date"] = monday.strftime("%Y-%m-%d")
         history.append(entry)
-        print(f"       total={entry['total']:,}  ns={entry['nabledge_scripts']}  np={entry['nabledge_prompts']}  kp={entry['kc_prod']}  kt={entry['kc_test']}  kpr={entry['kc_prompts']}", file=sys.stderr)
+        print(f"       total={entry['total']:,}  ns={entry['nabledge_scripts']}  np={entry['nabledge_prompts']}  rp={entry['rbkc_prod']}  rt={entry['rbkc_test']}  rpr={entry['rbkc_prompts']}", file=sys.stderr)
 
     if dry_run:
         print("\n[dry-run] Would write history:")

@@ -421,40 +421,39 @@ def collect_sloc(repo_root: str) -> dict:
     ])
     nabledge_prompts = sum(count_sloc(f, is_prompt=True) for f in nabledge_prompt_files)
 
-    # --- KC scripts (production) ---
-    kc_prod_files = [
-        f for f in _glob_files(repo_root, ["tools/knowledge-creator/scripts/**/*.py",
-                                             "tools/knowledge-creator/scripts/**/*.sh"])
-        if "__pycache__" not in f
-        and os.path.basename(f) != "__init__.py"
-        and not os.path.basename(f).startswith("migrate_")
-    ]
-    kc_scripts_prod = _sloc_by_ext(kc_prod_files, is_prompt=False)
-
-    # --- KC scripts (test) ---
-    kc_test_files = [
-        f for f in _glob_files(repo_root, ["tools/knowledge-creator/tests/**/*.py"])
+    # --- RBKC scripts (production) ---
+    rbkc_prod_files = [
+        f for f in _glob_files(repo_root, ["tools/rbkc/scripts/**/*.py",
+                                            "tools/rbkc/rbkc.sh"])
         if "__pycache__" not in f
         and os.path.basename(f) != "__init__.py"
     ]
-    kc_scripts_test = _sloc_by_ext(kc_test_files, is_prompt=False)
+    rbkc_scripts_prod = _sloc_by_ext(rbkc_prod_files, is_prompt=False)
 
-    # --- KC prompts (.md files, excluding reports/ and README.md) ---
-    kc_md_files = [
-        f for f in _glob_files(repo_root, ["tools/knowledge-creator/**/*.md"])
-        if "/reports/" not in f and os.path.basename(f).upper() != "README.MD"
+    # --- RBKC scripts (test) ---
+    rbkc_test_files = [
+        f for f in _glob_files(repo_root, ["tools/rbkc/tests/**/*.py"])
+        if "__pycache__" not in f
+        and os.path.basename(f) != "__init__.py"
     ]
-    kc_prompts = sum(count_sloc(f, is_prompt=True) for f in kc_md_files)
+    rbkc_scripts_test = _sloc_by_ext(rbkc_test_files, is_prompt=False)
+
+    # --- RBKC prompts (.md files, excluding docs/ evaluation subdirs and README) ---
+    rbkc_md_files = [
+        f for f in _glob_files(repo_root, ["tools/rbkc/docs/**/*.md"])
+        if "/evaluation/" not in f and os.path.basename(f).upper() != "README.MD"
+    ]
+    rbkc_prompts = sum(count_sloc(f, is_prompt=True) for f in rbkc_md_files)
 
     return {
         "nabledge": {
             "scripts": nabledge_scripts,
             "prompts": nabledge_prompts,
         },
-        "kc": {
-            "scripts_prod": kc_scripts_prod,
-            "scripts_test": kc_scripts_test,
-            "prompts": kc_prompts,
+        "rbkc": {
+            "scripts_prod": rbkc_scripts_prod,
+            "scripts_test": rbkc_scripts_test,
+            "prompts": rbkc_prompts,
         },
     }
 
@@ -518,12 +517,12 @@ def sloc_flat(s: dict, date: str) -> dict:
         return sum(d.values()) if isinstance(d, dict) else (d or 0)
     ns = t(s["nabledge"]["scripts"])
     np_ = s["nabledge"]["prompts"]
-    kp = t(s["kc"]["scripts_prod"])
-    kt = t(s["kc"]["scripts_test"])
-    kpr = s["kc"]["prompts"]
+    rp = t(s.get("rbkc", {}).get("scripts_prod", 0))
+    rt = t(s.get("rbkc", {}).get("scripts_test", 0))
+    rpr = s.get("rbkc", {}).get("prompts", 0)
     return {"date": date, "nabledge_scripts": ns, "nabledge_prompts": np_,
-            "kc_prod": kp, "kc_test": kt, "kc_prompts": kpr,
-            "total": ns + np_ + kp + kt + kpr}
+            "rbkc_prod": rp, "rbkc_test": rt, "rbkc_prompts": rpr,
+            "total": ns + np_ + rp + rt + rpr}
 
 
 def _delta_str(current: int, previous: int) -> str:
@@ -574,9 +573,9 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
 
     cur_ns = total(current["nabledge"]["scripts"])
     cur_np = current["nabledge"]["prompts"]
-    cur_kp = total(current["kc"]["scripts_prod"])
-    cur_kt = total(current["kc"]["scripts_test"])
-    cur_kpr = current["kc"]["prompts"]
+    cur_rp = total(current.get("rbkc", {}).get("scripts_prod", 0))
+    cur_rt = total(current.get("rbkc", {}).get("scripts_test", 0))
+    cur_rpr = current.get("rbkc", {}).get("prompts", 0)
 
     # Normalize x-axis to ISO week Monday (MM/DD) for consistency with DORA/Activity charts (JST).
     # Deduplicate by week label, keeping the latest entry per week (handles legacy non-Monday dates).
@@ -598,26 +597,26 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
     ], colors={"Prompts (.md)": PROMPTS_COLOR}))
     lines.append("")
 
-    lines.append(_pie_chart("Knowledge Creator SLOC", [
-        ("Production (.py)", cur_kp),
-        ("Test (.py)", cur_kt),
-        ("Prompts (.md)", cur_kpr),
+    lines.append(_pie_chart("RBKC SLOC", [
+        ("Production (.py)", cur_rp),
+        ("Test (.py)", cur_rt),
+        ("Prompts (.md)", cur_rpr),
     ], colors={"Prompts (.md)": PROMPTS_COLOR}))
     lines.append("")
 
-    # KC trend (prod vs test)
+    # RBKC trend (prod vs test)
     if len(history) >= 2:
-        kc_prod_hist = [h["kc_prod"] for h in history]
-        kc_test_hist = [h["kc_test"] for h in history]
-        ymax = y_axis_max(kc_prod_hist + kc_test_hist)
+        rbkc_prod_hist = [h.get("rbkc_prod", 0) for h in history]
+        rbkc_test_hist = [h.get("rbkc_test", 0) for h in history]
+        ymax = y_axis_max(rbkc_prod_hist + rbkc_test_hist)
         x_str = "[" + ", ".join(f'"{l}"' for l in hist_labels) + "]"
         lines.append("```mermaid")
         lines.append("xychart-beta")
-        lines.append('  title "KC Scripts Trend (upper=Production  lower=Test)"')
+        lines.append('  title "RBKC Scripts Trend (upper=Production  lower=Test)"')
         lines.append(f"  x-axis {x_str}")
         lines.append(f'  y-axis "Lines" 0 --> {ymax}')
-        lines.append(f"  line {kc_prod_hist}")
-        lines.append(f"  line {kc_test_hist}")
+        lines.append(f"  line {rbkc_prod_hist}")
+        lines.append(f"  line {rbkc_test_hist}")
         lines.append("```")
         lines.append("")
 
