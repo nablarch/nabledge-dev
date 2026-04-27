@@ -13,12 +13,14 @@ completed and committed in a single work unit.
 
 ## Run /sv automatically after each commit
 
-After completing a commit, immediately run the `/sv` skill without waiting
-for the user to ask. The user does not need to type `/sv` manually.
+**STOP after every commit. Do not continue to the next step.**
 
-After `/sv` completes, tell the user:
+After completing a commit:
 
-> 「{step name} 完了 (`{short_hash}`)。`/re` でコンテキストをリセットして次のステップへ進んでください。」
+1. Immediately run the `/sv` skill — do not wait for the user to ask.
+2. Tell the user:
+   > 「{step name} 完了 (`{short_hash}`)。`/re` でコンテキストをリセットして次のステップへ進んでください。」
+3. Wait for the user to run `/re`. Do not proceed on your own.
 
-Do not proceed to the next step automatically — wait for the user to `/re`.
-This keeps each session focused on one commit and avoids context window growth.
+**Why stop here**: each commit = one session boundary. Crossing that boundary
+without a `/re` accumulates context and defeats the purpose of this rule.
