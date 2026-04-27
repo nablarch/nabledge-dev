@@ -277,13 +277,14 @@ def test_render_answer_markdown_shape():
             "sections": ["s1", "s3"],
         },
     }
+    # caveats are now {note, cited} dicts
     md = _render_answer_markdown(
         conclusion="結論の一文。",
         evidence=[
             {"quote": "本文の引用", "cited": "handlers-tmh|s1"},
             {"quote": "別の引用", "cited": "handlers-tmh|s3"},
         ],
-        caveats=["注意点 1"],
+        caveats=[{"note": "注意点 1", "cited": "handlers-tmh|s1"}],
         cited_refs=["handlers-tmh|s1", "handlers-tmh|s3"],
         id_to_path=id_to_path,
     )
@@ -297,6 +298,24 @@ def test_render_answer_markdown_shape():
         "参照: component/handlers/handlers-tmh.json:s1, "
         "component/handlers/handlers-tmh.json:s3"
     )
+
+
+def test_render_answer_markdown_caveat_with_citation():
+    """Caveat cited ref is rendered in parentheses after the note."""
+    id_to_path = {
+        "handlers-tmh": {
+            "path": "component/handlers/handlers-tmh.json",
+            "sections": ["s1"],
+        },
+    }
+    md = _render_answer_markdown(
+        conclusion="結論",
+        evidence=[],
+        caveats=[{"note": "スレッドセーフが必要", "cited": "handlers-tmh|s1"}],
+        cited_refs=[],
+        id_to_path=id_to_path,
+    )
+    assert "- スレッドセーフが必要 (component/handlers/handlers-tmh.json:s1)" in md
 
 
 def test_render_answer_markdown_skips_empty_sections():

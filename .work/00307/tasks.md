@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-27 (Step 6 改訂中 — review-08 安定化作業継続中)
+**Updated**: 2026-04-27 (Step 6 — PE レビュー完了、H1〜L2 実装着手中)
 
 ## ゴール
 
@@ -152,8 +152,18 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
     - C-claim hallucination: caveats に KB 未確認事実を追加する問題 → 「section 本文根拠必須」で対処中
     - multi-process セクション誤適用 → scope check 指示追加で対処中
   - **最新状態**: `caveats MUST be grounded` 指示を追加した版（コミット未）で試走中断
-  - [DECISION: review-08 の安定化に向け、さらにプロンプト改訂を続けますか？それとも現状で3件計測して結果を見ますか？]
-- [ ] 手応えあれば 3 件試走（req-05 / review-01 / review-08）で測定
+  - [x] DECISION 解消 — PE エキスパートレビュー実施 (2026-04-27)、H1〜L2 の 9 件修正を全対応する方針をユーザーが承認
+- [ ] **H-1**: `caveats` schema を `{note, cited}[]` に変更 (search_ids.py + テスト + プロンプト) ← **TDD: テスト RED 追加済み、実装未着手**
+- [ ] **H-2**: scope_note を Step 3 (read_notes) へ前出し (search_ids.py schema + プロンプト)
+- [ ] **H-3**: 自己検証サブステップ追加 (プロンプトのみ)
+- [ ] **M-1**: 候補ファイル上限 20→12 (search_ids.py schema maxItems + プロンプト)
+- [ ] **M-2**: precision 優先の明示 (プロンプトのみ)
+- [ ] **M-3**: Step 3 内部表記 `evidence` → `body_excerpt` (プロンプトのみ)
+- [ ] **M-4**: 実行モデル明確化 (プロンプトのみ)
+- [ ] **L-1**: matched_on タイブレーク追記 (プロンプトのみ)
+- [ ] **L-2**: Read エラー処理 (search_ids.py schema + プロンプト)
+- [ ] PE レビューファイル保存 (`.work/00307/review-by-prompt-engineer-step6-h1l2.md`)
+- [ ] 3 件試走（req-05 / review-01 / review-08）で効果測定
 - [ ] 結果が 3 件 mean ≥ 2.33 かつ review-08 L3 なら次へ
 
 #### Step 6: 検索が安定したら回答統合の検討 (条件付き次期)
