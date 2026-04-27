@@ -1,17 +1,14 @@
 # Jakarta Batchに準拠したバッチアプリケーション
 
-本章ではJakarta Batchに準拠したバッチアプリケーションフレームワークを使用して
-バッチアプリケーションを開発するために必要となる情報を提供する。
+**公式ドキュメント**: [Jakarta Batchに準拠したバッチアプリケーション](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/jsr352/index.html)
 
-architecture
-application_design
-getting_started/getting_started
-feature_details
+## 概要
 
-> **Tip:**
-> 本機能は、Nablarch5までは「JSR352に準拠したバッチアプリケーション」という名称だった。
-> しかし、Java EEがEclipse Foundationに移管され仕様名が変わったことに伴い「Jakarta Batchに準拠したバッチアプリケーション」という名称に変更された。
+> **補足**: 本機能はNablarch5まで「JSR352に準拠したバッチアプリケーション」と呼ばれていた。Java EEのEclipse Foundation移管に伴い仕様名が変わり「Jakarta Batchに準拠したバッチアプリケーション」に名称変更された。変更されたのは名称のみで機能的な差はない。Nablarch6で名称変更された他の機能については [renamed_features_in_nablarch_6](../../about/about-nablarch/about-nablarch-jakarta_ee.md) を参照。
 
-> 変更されたのは名称のみで、機能的な差は無い。
+<details>
+<summary>keywords</summary>
 
-> その他、Nablarch6で名称が変更された機能については [Nablarch5と6で名称が変更になった機能について](../../about/about-nablarch/about-nablarch-jakarta-ee.md#renamed-features-in-nablarch-6) を参照のこと。
+Jakarta Batch, JSR352, バッチアプリケーション, 名称変更, Nablarch5, Nablarch6移行, renamed_features_in_nablarch_6
+
+</details>

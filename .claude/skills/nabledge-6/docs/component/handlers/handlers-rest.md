@@ -1,7 +1,3 @@
 # RESTfulウェブサービス専用ハンドラ
 
-body_convert_handler
-jaxrs_bean_validation_handler
-jaxrs_response_handler
-cors_preflight_request_handler
-jaxrs_access_log_handler
+**公式ドキュメント**: [RESTfulウェブサービス専用ハンドラ](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/rest/index.html)

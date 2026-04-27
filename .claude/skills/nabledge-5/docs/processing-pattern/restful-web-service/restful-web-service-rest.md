@@ -1,8 +1,3 @@
 # RESTfulウェブサービス編
 
-本章ではNablarchアプリケーションフレームワークを使用してRESTfulウェブサービスを開発するために必要となる情報を提供する。
-
-architecture
-application_design
-getting_started/index
-feature_details
+**公式ドキュメント**: [RESTfulウェブサービス編](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web_service/rest/index.html)

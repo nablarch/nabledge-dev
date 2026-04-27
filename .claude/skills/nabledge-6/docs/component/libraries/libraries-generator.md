@@ -1,31 +1,12 @@
 # サロゲートキーの採番
 
-**目次**
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/libraries/database/generator.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/BasicDaoContextFactory.html) [3](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/idgenerator/IdGenerator.html)
 
-* 機能概要
+## 機能概要
 
-  * シーケンスを使った値の採番が出来る
-  * テーブルを使った値の採番が出来る
-* モジュール一覧
-* 使用方法
+[universal_dao](libraries-universal_dao.md) でサロゲートキーを採番する際に使用する機能。[universal_dao](libraries-universal_dao.md) 以外での使用は推奨しない。
 
-  * ユニバーサルDAO用に採番を設定する
-* 拡張例
-
-  * テーブル採番やシーケンス採番を置き換える
-
-データベースのサロゲートキー(代理キー)の値を採番するための機能を提供する。
-
-この機能は、 [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#universal-dao) でサロゲートキーを採番(単純な連番を採番)する際に使用する。
-
-なお、 [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#universal-dao) 以外でも使用できるが、
-以下の理由によりアプリケーション側で対応することを推奨する。
-
-理由
-サロゲートキーの採番処理は、 [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#universal-dao) が行うためアプリケーション側で直接採番機能を使用する必要が無い。
-それ以外の用途で値を採番する場合には、採番ルールが複雑であったり、採番した値を編集することが想定される。
-このような場合は、単純な連番を採番する本機能を使用できないため、アプリケーション側で設計、実装する必要がある。
-(本機能でも実現可能だが、設計及び実装(設定)が必要となるため、本機能を使うメリットは無い)
+**理由**: 採番処理はuniversal_daoが行うためアプリケーション側で直接採番機能を使用する必要がない。複雑な採番ルールや値の編集が必要な場合は本機能を使用できないため、アプリケーション側で設計・実装する必要がある。(本機能でも実現可能だが、設計及び実装(設定)が必要となるため、本機能を使うメリットは無い)
 
 例えば、親キーの中での連番を採番するケースでは、以下の手順にて値を採番できる。
 
@@ -33,40 +14,35 @@
 2. アプリケーションでは、親のキーが登録されたタイミングで専用テーブルにレコードを登録する。
 3. 採番が必要なタイミングで親キーに対応する採番済みの値をインクリメントすることで、親キー内での連番を採番できる。
 
-## 機能概要
+## シーケンスを使った採番
 
-### シーケンスを使った値の採番が出来る
+データベース上に作成されたシーケンスオブジェクトを使って一意の値を採番できる。シーケンスの次の値取得SQL文は[ダイアレクト](libraries-database.md) を使用して構築する。
 
-データベース上に作成されたシーケンスオブジェクトを使って、一意の値を採番出来る。
+## テーブルを使った採番
 
-なお、シーケンスを使って次の値を取得するためのSQL文は、
-データベースアクセス機能のダイアレクトを使用して構築する。
+テーブルのレコード単位に現在値を管理し、一意の値を採番できる。
 
-ダイアレクト機能については、 [ダイアレクト](../../component/libraries/libraries-database.md#database-dialect) を参照。
+**テーブルレイアウト:**
 
-### テーブルを使った値の採番が出来る
-
-テーブルのレコード単位に現在値を管理し、一意の値を採番出来る。
-
-テーブルのレイアウトは以下のものを想定する。
-
-| 採番識別名(PK) | 採番対象を識別するための値 |
+| カラム | 説明 |
 |---|---|
-| 現在値 | 現在の値(採番を行うとこの値に1を加算したものが取得できる) |
+| 採番識別名 (PK) | 採番対象を識別するための値 |
+| 現在値 | 現在の値（採番実行時に1加算した値が取得される） |
 
-> **Important:**
-> 必要なレコードは予めセットアップしておくこと。
-> 採番実行時に、指定した採番識別名(PK)に対応するレコードが存在しない場合、
-> 新規にレコードを追加するのではなく、異常終了(例外を送出)する。
+> **重要**: 必要なレコードは予めセットアップしておくこと。採番実行時に指定した採番識別名(PK)に対応するレコードが存在しない場合、新規レコードを追加するのではなく例外を送出する。
 
-> **Important:**
-> テーブルを使った採番は、大量にデータを処理するようなバッチ処理ではボトルネックとなることが多い。
-> このため、テーブルを使った採番を使うのではなく、データベース側の採番カラムやシーケンスを用いた採番を使うことを強く推奨する。
+> **重要**: テーブル採番は大量データを処理するバッチ処理でボトルネックになることが多い。データベース側の採番カラムやシーケンスを使うことを強く推奨する。データベース機能として採番カラム・シーケンスが使用できない場合のみ、テーブル採番を使用すること。
 
-> データベースの機能として、採番カラム及びシーケンスオブジェクトが使用できない場合のみ、テーブルを使った採番機能を使用すること。
+<details>
+<summary>keywords</summary>
+
+シーケンス採番, テーブル採番, サロゲートキー採番, 採番識別名, テーブル採番レイアウト, SequenceIdGenerator, TableIdGenerator, universal_dao以外での使用, 採番ボトルネック, 親キー連番, 専用テーブル採番
+
+</details>
 
 ## モジュール一覧
 
+**モジュール**:
 ```xml
 <dependency>
   <groupId>com.nablarch.framework</groupId>
@@ -78,16 +54,19 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-common-idgenerator, nablarch-common-idgenerator-jdbc, 採番モジュール, Maven依存関係
+
+</details>
+
 ## 使用方法
 
-### ユニバーサルDAO用に採番を設定する
+[universal_dao](libraries-universal_dao.md) で本機能を使用するには、`BasicDaoContextFactory` への設定が必要。
 
-[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#universal-dao) で本機能を使用するためには、 BasicDaoContextFactory に対する設定が必要となる。
-
-この例では、シーケンス採番とテーブル採番の両方を設定しているが、使用しない採番の設定はしなくてよい。
-テーブル採番は推奨しないため、サロゲートキーの採番でシーケンス採番を使用する場合に sequenceIdGenerator を設定すれば良い。
-
-もし、シーケンス採番を使用せずにデータベース側の採番機能(自動採番カラム)を使う場合には、採番の設定自体が不要となる。
+- テーブル採番は推奨しない。シーケンス採番を使用する場合は `sequenceIdGenerator` プロパティを設定する。
+- データベース側の自動採番カラムを使う場合は採番設定自体が不要。
 
 ```xml
 <!-- テーブル採番モジュールの設定 -->
@@ -105,8 +84,6 @@
 
   <!-- テーブル採番の設定 -->
   <property name="tableIdGenerator" ref="tableIdGenerator" />
-
-  <!-- 採番に関係のない設定は省略 -->
 </component>
 
 <component name="initializer"
@@ -120,11 +97,20 @@
 </component>
 ```
 
+<details>
+<summary>keywords</summary>
+
+BasicDaoContextFactory, TableIdGenerator, SequenceIdGenerator, BasicApplicationInitializer, sequenceIdGenerator, tableIdGenerator, tableName, idColumnName, noColumnName, ユニバーサルDAO採番設定, シーケンス採番設定, テーブル採番設定, 自動採番カラム
+
+</details>
+
 ## 拡張例
 
-### テーブル採番やシーケンス採番を置き換える
+テーブルやシーケンスを使った採番の実装を置き換えるには、`IdGenerator` を実装したクラスを作成する。作成したクラスは [generator_dao_setting](#s3) に従いコンポーネント設定ファイルに定義することで使用可能となる。
 
-テーブルやシーケンスを使った採番の実装を新しいものに置き換える場合には、
-IdGenerator を実装したクラスを作成することで対応できる。
+<details>
+<summary>keywords</summary>
 
-作成したクラスは、 ユニバーサルDAO用に採番を設定する に従いコンポーネント設定ファイルに定義することで使用可能となる。
+IdGenerator, 採番拡張, カスタム採番実装, IdGenerator実装, 採番置き換え
+
+</details>

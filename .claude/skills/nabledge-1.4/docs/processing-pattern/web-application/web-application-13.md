@@ -1,45 +1,37 @@
 # テストケース毎に言語を設定する方法を教えてください
 
-> **question:**
-> ケースごとに言語を変更してリクエスト単体テストを実施したいです。
-> 言語の変更（設定）方法を教えてください。
+## テストケース毎に言語を設定する方法
 
-> **answer:**
-> Cookieに設定される言語を変更することにより、ケースごとに変更することが可能となります。
+リクエスト単体テストでケースごとに言語を変更するには、Cookieに設定される言語を変更する。テストデータシートにCookieに設定する値を準備し、Cookie名称は設定ファイルの `cookieName` プロパティのvalue値を使用すること。
 
-> Cookieに言語を設定する方法:
+> **注意**: Cookieから言語を設定するためのハンドラーがリポジトリに設定されている必要がある（各プロジェクトのアーキテクトが実施）。
 
-> ```
-> リクエスト単体テスト用のテストデータシートに、Cookieに設定する値を準備することができます。
-> この機能を使用して、Cookieに言語を設定してテストを実施してください。
-> 
-> Cookieに設定する際のCookie名称は、下記の設定ファイル例のCookie名称(プロパティ名がcookieNameのvalue値)を設定してください。
-> ```
+**クラス**: `nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie`
 
-> ※Cookieから言語を設定するためのハンドラーがリポジトリに設定されている必要があります。
-> 以下に設定例を示します。（本設定は、各プロジェクトのアーキテクトが実施するものなので、個々の開発者が実施する必要はありません。)
+```xml
+<component name="threadContextHandler"
+    class="nablarch.common.handler.threadcontext.ThreadContextHandler">
+  <property name="attributes">
+    <list>
+      <component name="languageAttribute"
+          class="nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie">
+        <property name="cookieName" value="lang" />
+        <property name="defaultLanguage" value="ja" />
+        <property name="supportedLanguages" value="ja,en" />
+        <property name="cookieMaxAge" value="7776000" />
+      </component>
+    </list>
+  </property>
+</component>
+```
 
-> ```xml
-> <!-- 見やすさの問題で、ThreadContextHandlerへのその他の設定は省略しています。 -->
-> 
-> <component name="threadContextHandler"
->     class="nablarch.common.handler.threadcontext.ThreadContextHandler">
->   <property name="attributes">
->     <list>
->       <!-- 言語 -->
->       <component name="languageAttribute"
->           class="nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie">
->         <!-- 言語を保持しているCookie名称 -->
->         <property name="cookieName" value="lang" />
->         <property name="defaultLanguage" value="ja" />
->         <property name="supportedLanguages" value="ja,en" />
->         <property name="cookieMaxAge" value="7776000" />
->       </component>
->     </list>
->   </property>
-> </component>
-> ```
+| プロパティ名 | 説明 |
+|---|---|
+| cookieName | 言語を保持しているCookie名称 |
 
-> Excelへの準備データの設定方法等は、以下のドキュメントを参照してください。
+<details>
+<summary>keywords</summary>
 
-> * >   **[プログラミング・単体テストガイド]** -> **[単体テスト実施方法]** -> **[リクエスト単体テストの実施方法]**
+LanguageAttributeInHttpCookie, ThreadContextHandler, cookieName, defaultLanguage, supportedLanguages, cookieMaxAge, リクエスト単体テスト言語設定, Cookie言語変更, テストケース言語切り替え, 多言語テスト
+
+</details>

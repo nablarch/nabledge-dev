@@ -1,5 +1,3 @@
 # MOMメッセージング専用ハンドラ
 
-messaging_context_handler
-message_resend_handler
-message_reply_handler
+**公式ドキュメント**: [MOMメッセージング専用ハンドラ](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/handlers/mom_messaging/index.html)

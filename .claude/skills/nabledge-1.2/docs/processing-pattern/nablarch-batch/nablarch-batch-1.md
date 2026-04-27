@@ -1,80 +1,54 @@
 # バッチの処理対象件数をログに出力する方法はありますか？
 
-> **question:**
-> バッチの処理対象件数をバッチの処理前（事前処理）でログに出力したいと考えています。
+## バッチの処理対象件数取得とログ出力
 
-> 具体的には、インプットデータの種類に応じて以下の値をログ出力したいのですが、
-> インプットデータの取得方法、及びログ出力はどのように実装したらいいでしょうか？
+## DBをインプットとするバッチの場合
 
-> * >   データベースをインプットとするバッチの場合は、データベースの処理対象のレコードのレコード数
-> * >   ファイルをインプットとするバッチの場合は、ファイルの総レコード数とデータレコードのレコード数
+**クラス**: `nablarch.core.db.support.DbAccessSupport`
 
-> **answer:**
-> * >   データベースをインプットとする場合
+`countByParameterizedSql` メソッドで処理対象レコード数を取得する。件数取得は `createReader` 内で行う。NablarchはSELECT文をCOUNT取得用のSQL文に書き換えて件数を返す。
 
->   *nablarch.core.db.support.DbAccessSupport* が提供する件数取得機能を使用して処理対象レコード数を取得します。
+```sql
+GET_DELETE_USER_LIST =
+SELECT
+    USER_ID
+FROM
+    SYSTEM_ACCOUNT
+WHERE
+    EFFECTIVE_DATE_TO <= :effectiveDateTo
+ORDER BY
+    USER_ID
+```
 
->   実装例を以下に示します。
+```java
+public DataReader<SqlRow> createReader(ExecutionContext ctx) {
 
->   ```sql
->   --------------------------------------------------------------------------------
->   -- 削除対象のユーザ一覧を取得する。
->   --------------------------------------------------------------------------------
->   GET_DELETE_USER_LIST =
->   SELECT
->       USER_ID
->   FROM
->       SYSTEM_ACCOUNT
->   WHERE
->       EFFECTIVE_DATE_TO <= :effectiveDateTo
->   ORDER BY
->       USER_ID
->   ```
+    // オブジェクトを条件とする場合
+    SystemAccountEntity condition = new SystemAccountEntity();
+    condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));
+    int count = countByParameterizedSql("GET_DELETE_USER_LIST", condition);
 
->   ```java
->   //*****************************************
->   // 件数取得処理は、createReaderで行う。
->   //*****************************************
->   public DataReader<SqlRow> createReader(ExecutionContext ctx) {
->   
->       //*****************************************
->       // オブジェクトを条件とする場合の実装例
->       //*****************************************
->       // SQLのバインド変数に値を埋め込むための条件オブジェクトを生成する。
->       SystemAccountEntity condition = new SystemAccountEntity();
->       condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));
->   
->       // 処理対象件数の取得時には、処理対象データを取得すためのSQL文のSQL_IDを指定する。
->       // Nablarchでは、処理対象データを取得するSQL文を件数取得用のSQL文に書き換え件数を取得して返却します。
->       int count = countByParameterizedSql("GET_DELETE_USER_LIST", condition);
->   
->       //*****************************************
->       // Mapを条件とする場合の実装例
->       //*****************************************
->       Map<String, Object> condition = new HashMap<String, Object>();
->       condition.put("effectiveDateTo", ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));
->   
->       int count = countByParameterizedSql("GET_DELETE_USER_LIST", condition);
->   
->       //*****************************************
->       // 条件を必要としないSQL文の場合の実装例
->       //*****************************************
->       // SQL_IDは便宜上使い回しているが、本来は可変の条件がないSQL文を指定する。
->       int count = countByParameterizedSql("GET_DELETE_USER_LIST");
->   }
->   ```
-> * >   ファイルをインプットとする場合
+    // Mapを条件とする場合
+    Map<String, Object> condition = new HashMap<String, Object>();
+    condition.put("effectiveDateTo", ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));
+    int count = countByParameterizedSql("GET_DELETE_USER_LIST", condition);
 
->   本処理の前に行うファイルのレイアウト構成精査時にファイルレコード数やデータレコードのレコード数をカウントすることにより、
->   ログ出力対象のレコード数を取得します。
+    // 条件なしの場合
+    int count = countByParameterizedSql("GET_DELETE_USER_LIST");
+}
+```
 
->   詳細は、以下のガイドを参照してください。
+## ファイルをインプットとするバッチの場合
 
->   * >     **[Nablarch プログラミング・単体テストガイド]** -> **[業務アプリケーションの実装方法 (バッチ処理編)]** -> **[ファイルを入力とするバッチ]** -> **[ファイルバリデータ生成]**
-> * >   ログ出力方法
+本処理の前に行うファイルレイアウト構成精査時に、ファイルレコード数・データレコード数をカウントして取得する。
 
->   バッチアクションの親クラスが提供する *writeLog* メソッドを使用することによりログ出力を行えます。
+## ログ出力方法
 
->   詳細は、以下のガイドを参照してください。
+バッチアクションの親クラスが提供する `writeLog` メソッドを使用する。
 
->   * >     **[Nablarch プログラミング・単体テストガイド]** -> **[業務アプリケーションの実装方法 (バッチ処理編)]** -> **[データベースを入力とするバッチ]** -> **[ログ出力]**
+<details>
+<summary>keywords</summary>
+
+DbAccessSupport, countByParameterizedSql, writeLog, createReader, DataReader, SqlRow, ExecutionContext, バッチ処理対象件数取得, レコード数ログ出力, データベース入力バッチ, ファイル入力バッチ
+
+</details>

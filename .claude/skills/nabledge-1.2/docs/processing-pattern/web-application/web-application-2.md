@@ -1,12 +1,12 @@
 # 一覧画面で表示する検索結果件数の表示フォーマットを変更することはできますか？
 
-> **question:**
-> 一覧検索画面で表示する検索結果件数の文言を変更する方法が分かりません。
-> どのように実装したらいいのでしょうか？
+## 検索結果件数の表示フォーマット変更
 
-> **answer:**
-> *listSearchResult* タグの *resultCountFragment* 属性を使用して、変更することができます。
+`listSearchResult` タグの `resultCountFragment` 属性を使用して、検索結果件数の文言（表示フォーマット）を変更できる。
 
-> *resultCountFragment* 属性の詳細は、以下ドキュメントを参照してください。
+<details>
+<summary>keywords</summary>
 
-> * >   **[Nablarch Application Framework解説書]** -> **[NAF共通コンポーネント]** -> **[JSPカスタムタグライブラリ]** -> **[JSPカスタムタグライブラリの使用方法]** -> **[検索結果の一覧表示]**
+listSearchResult, resultCountFragment, 検索結果件数, 一覧画面, 表示フォーマット変更, 件数文言変更
+
+</details>

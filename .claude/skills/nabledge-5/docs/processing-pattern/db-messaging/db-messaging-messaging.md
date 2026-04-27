@@ -1,8 +1,3 @@
 # メッセージング編
 
-本章ではNablarchアプリケーションフレームワークを使用してメッセージングを開発するために必要となる情報を提供する。
-
-Nablarchでは、以下2種類のメッセージングのフレームワークを提供している。
-
-mom/index
-db/index
+**公式ドキュメント**: [メッセージング編](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/messaging/index.html)

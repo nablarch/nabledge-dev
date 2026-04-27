@@ -1,9 +1,14 @@
 # コード値精査時に指定するパターンには何を指定するのでしょうか？
 
-> **question:**
-> コード値精査( *CodeValue* )でパターンを指定して精査を実施したいのですが、パターンには何を指定したらいいのでしょうか?
+## コード値精査（CodeValue）のpattern属性
 
-> パターン2を使用して精査を行いたいので、 *pattern* 属性には **2** を指定してみましたがパターンが存在しないとのエラーが発生してしまいます。
+`CodeValue` の `pattern` 属性に存在しないパターン番号を指定するとエラーが発生する。
 
-> **answer:**
-> [コード名称やコード存在チェック時に指定するパターンには、何を指定したらいいのでしょうか？](../../about/about-nablarch/about-nablarch-3.md) を参照してください。
+使用可能なパターンの詳細は [../all/3](../../about/about-nablarch/about-nablarch-3.md) を参照。
+
+<details>
+<summary>keywords</summary>
+
+CodeValue, pattern, コード値精査, パターン番号, バリデーション
+
+</details>

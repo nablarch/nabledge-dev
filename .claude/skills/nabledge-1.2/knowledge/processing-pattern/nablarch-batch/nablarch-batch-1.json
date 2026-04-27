@@ -1,7 +1,28 @@
 {
   "id": "nablarch-batch-1",
   "title": "バッチの処理対象件数をログに出力する方法はありますか？",
-  "content": "> **question:**\n> バッチの処理対象件数をバッチの処理前（事前処理）でログに出力したいと考えています。\n\n> 具体的には、インプットデータの種類に応じて以下の値をログ出力したいのですが、\n> インプットデータの取得方法、及びログ出力はどのように実装したらいいでしょうか？\n\n> * >   データベースをインプットとするバッチの場合は、データベースの処理対象のレコードのレコード数\n> * >   ファイルをインプットとするバッチの場合は、ファイルの総レコード数とデータレコードのレコード数\n\n> **answer:**\n> * >   データベースをインプットとする場合\n\n>   *nablarch.core.db.support.DbAccessSupport* が提供する件数取得機能を使用して処理対象レコード数を取得します。\n\n>   実装例を以下に示します。\n\n>   ```sql\n>   --------------------------------------------------------------------------------\n>   -- 削除対象のユーザ一覧を取得する。\n>   --------------------------------------------------------------------------------\n>   GET_DELETE_USER_LIST =\n>   SELECT\n>       USER_ID\n>   FROM\n>       SYSTEM_ACCOUNT\n>   WHERE\n>       EFFECTIVE_DATE_TO <= :effectiveDateTo\n>   ORDER BY\n>       USER_ID\n>   ```\n\n>   ```java\n>   //*****************************************\n>   // 件数取得処理は、createReaderで行う。\n>   //*****************************************\n>   public DataReader<SqlRow> createReader(ExecutionContext ctx) {\n>   \n>       //*****************************************\n>       // オブジェクトを条件とする場合の実装例\n>       //*****************************************\n>       // SQLのバインド変数に値を埋め込むための条件オブジェクトを生成する。\n>       SystemAccountEntity condition = new SystemAccountEntity();\n>       condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n>   \n>       // 処理対象件数の取得時には、処理対象データを取得すためのSQL文のSQL_IDを指定する。\n>       // Nablarchでは、処理対象データを取得するSQL文を件数取得用のSQL文に書き換え件数を取得して返却します。\n>       int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n>   \n>       //*****************************************\n>       // Mapを条件とする場合の実装例\n>       //*****************************************\n>       Map<String, Object> condition = new HashMap<String, Object>();\n>       condition.put(\"effectiveDateTo\", ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n>   \n>       int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n>   \n>       //*****************************************\n>       // 条件を必要としないSQL文の場合の実装例\n>       //*****************************************\n>       // SQL_IDは便宜上使い回しているが、本来は可変の条件がないSQL文を指定する。\n>       int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\");\n>   }\n>   ```\n> * >   ファイルをインプットとする場合\n\n>   本処理の前に行うファイルのレイアウト構成精査時にファイルレコード数やデータレコードのレコード数をカウントすることにより、\n>   ログ出力対象のレコード数を取得します。\n\n>   詳細は、以下のガイドを参照してください。\n\n>   * >     **[Nablarch プログラミング・単体テストガイド]** -> **[業務アプリケーションの実装方法 (バッチ処理編)]** -> **[ファイルを入力とするバッチ]** -> **[ファイルバリデータ生成]**\n> * >   ログ出力方法\n\n>   バッチアクションの親クラスが提供する *writeLog* メソッドを使用することによりログ出力を行えます。\n\n>   詳細は、以下のガイドを参照してください。\n\n>   * >     **[Nablarch プログラミング・単体テストガイド]** -> **[業務アプリケーションの実装方法 (バッチ処理編)]** -> **[データベースを入力とするバッチ]** -> **[ログ出力]**",
   "no_knowledge_content": false,
-  "sections": []
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バッチの処理対象件数取得とログ出力",
+      "hints": [
+        "DbAccessSupport",
+        "countByParameterizedSql",
+        "writeLog",
+        "createReader",
+        "DataReader",
+        "SqlRow",
+        "ExecutionContext",
+        "バッチ処理対象件数取得",
+        "レコード数ログ出力",
+        "データベース入力バッチ",
+        "ファイル入力バッチ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## DBをインプットとするバッチの場合\n\n**クラス**: `nablarch.core.db.support.DbAccessSupport`\n\n`countByParameterizedSql` メソッドで処理対象レコード数を取得する。件数取得は `createReader` 内で行う。NablarchはSELECT文をCOUNT取得用のSQL文に書き換えて件数を返す。\n\n```sql\nGET_DELETE_USER_LIST =\nSELECT\n    USER_ID\nFROM\n    SYSTEM_ACCOUNT\nWHERE\n    EFFECTIVE_DATE_TO <= :effectiveDateTo\nORDER BY\n    USER_ID\n```\n\n```java\npublic DataReader<SqlRow> createReader(ExecutionContext ctx) {\n\n    // オブジェクトを条件とする場合\n    SystemAccountEntity condition = new SystemAccountEntity();\n    condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n\n    // Mapを条件とする場合\n    Map<String, Object> condition = new HashMap<String, Object>();\n    condition.put(\"effectiveDateTo\", ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n\n    // 条件なしの場合\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\");\n}\n```\n\n## ファイルをインプットとするバッチの場合\n\n本処理の前に行うファイルレイアウト構成精査時に、ファイルレコード数・データレコード数をカウントして取得する。\n\n## ログ出力方法\n\nバッチアクションの親クラスが提供する `writeLog` メソッドを使用する。"
+  }
 }

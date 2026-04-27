@@ -1,16 +1,17 @@
 # JavaScriptから操作できるようにHTMLのinput(type="hidden")タグを出力することはできますか？
 
-> **question:**
-> JavaScriptから操作できるようにHTMLのinput(type="hidden")タグを出力することはできますか？
+## n:plainHiddenタグによるinput(type="hidden")出力
 
-> n:hiddenタグを使用するとHTMLにinput(type="hidden")タグが出力されません。
+`n:hidden` タグはHTMLの `input(type="hidden")` タグを出力せず、ウィンドウスコープに値を出力する。JavaScriptから操作できる `input(type="hidden")` タグを出力するには `n:hidden` ではなく `n:plainHidden` タグを使用する。
 
-> **answer:**
-> n:hiddenタグはHTMLのタグを出力せずに、ウィンドウスコープに値を出力します。
+```jsp
+<%-- n:plainHiddenタグの使用例 --%>
+<n:plainHidden name="user.id" />
+```
 
-> HTMLのinput(type="hidden")タグを出力する場合は、n:plainHiddenタグを使用します。
+<details>
+<summary>keywords</summary>
 
-> ```jsp
-> <%-- n:plainHiddenタグの使用例 --%>
-> <n:plainHidden name="user.id" />
-> ```
+n:plainHidden, n:hidden, input type hidden, HTMLタグ出力, JavaScriptアクセス, ウィンドウスコープ
+
+</details>
