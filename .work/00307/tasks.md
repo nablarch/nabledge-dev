@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-27 (M-2〜L-2 + PE レビューファイル完了、次は 3 件試走)
+**Updated**: 2026-04-27 (3 件試走実施、全件 L1/L0 — 劣化確認、原因調査タスク追加)
 
 ## ゴール
 
@@ -163,8 +163,76 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
 - [x] **L-1**: matched_on タイブレーク追記 (プロンプトのみ) — `8d7d67ae9`
 - [x] **L-2**: Read エラー処理 (search_ids.py schema + プロンプト) — `8d7d67ae9`
 - [x] PE レビューファイル保存 (`.work/00307/review-by-prompt-engineer-step6-h1l2.md`) — `c5f63c0fa`
-- [ ] 3 件試走（req-05 / review-01 / review-08）で効果測定
-- [ ] 結果が 3 件 mean ≥ 2.33 かつ review-08 L3 なら次へ
+- [x] 3 件試走（req-05 / review-01 / review-08）で効果測定 — **全件 L1/L0、前回 Step5 比で劣化確認**
+  - req-05: L1（前回 Step5 では L3）
+  - review-01: L1（前回 Step5 では L3）
+  - review-08: L0（judge timeout 420s）
+  - mean_level: 0.67（前回 2.33 から大幅劣化）
+
+#### Step 6-B: 劣化原因の1件ずつ詳細調査（最優先）
+
+**背景**:
+- Step5 (`220fd9f1c`) では req-05 L3 / review-01 L3 / review-08 L1 だった
+- Step6 改訂（H1〜L2、`8d7d67ae9`）後に req-05/review-01 が L1 に劣化
+- 3 件それぞれで「何が想定と違うか」を stream ログ・search.json・judge.json で1件ずつ確認する
+
+**調査タスク（1件ずつ実施してユーザーに報告）**:
+
+##### 調査-1: req-05 の詳細調査
+
+- [ ] `tools/benchmark/.results/20260427-135249-v6-ids-sonnet/req-05/` の全ファイルを確認
+  - stream/search.jsonl: AI-1 が何回 Read を呼んだか、どのファイルを read したか
+  - search.json の `steps.read_notes`: evidence の長さと内容
+  - search.json の `steps.selections`: 選択されたセクション
+  - search.json の `answer`: 最終回答（どこが A-fact をカバーし損ねているか）
+  - judge.json の `c_claims`: UNSUPPORTED_KB_VERIFIED になった claim の詳細
+- [ ] `verify_kb_evidence` のダウングレード実態を確認
+  - 対象 claim の `kb_evidence.file + sid + quote` を確認
+  - そのファイルの実際の body に quote が含まれるか確認
+  - **想定とのずれ**: judge が正しい claim を UNSUPPORTED_KB_VERIFIED にしているのか、AI-1 が本当に hallucination しているのかを区別
+- [ ] 以下を特定してユーザーに報告:
+  - AI-1 の回答自体の正確さ（A-facts は正しくカバーできているか）
+  - judge の判定の正確さ（C-claim 判定が適切か）
+  - Step5 → Step6 のどのプロンプト変更が原因か
+
+##### 調査-2: review-01 の詳細調査
+
+- [ ] `tools/benchmark/.results/20260427-135610-v6-ids-sonnet/review-01/` の全ファイルを確認
+  - stream/search.jsonl: AI-1 の Read 呼び出し回数・対象ファイル
+  - search.json の `steps.read_notes['nablarch-batch-architecture']['s1']`: evidence の内容と長さ
+  - judge.json の `a_facts`: MISSING になった A-fact の特定
+- [ ] nablarch-batch-architecture.json:s1 の body 全文と evidence の差分を確認
+  - body 長: 8373 chars
+  - evidence で取れた部分: 冒頭 ~339 chars（`> **重要**:` ブロック終端で打ち切り）
+  - answer に含まれなかった情報: 「都度起動バッチの最小ハンドラ構成（DB接続有り）」テーブル
+- [ ] Step5 時点の search.json と比較（`20260423-113626-ids-sonnet/review-01/` は存在するか確認）
+  - Step5 では s1 の何をもとに answer を生成していたか
+  - **想定とのずれ**: evidence 450-char truncation が A-fact に必要な情報をカットしている
+- [ ] 以下を特定してユーザーに報告:
+  - evidence truncation の設計的限界（8373 chars の s1 から必要部分を取れない）
+  - Step5 が L3 だった理由（旧プロンプトでは AI が full body を参照できていたか）
+  - 修正候補: evidence truncation を廃止して AI が read した full body から answer を生成する設計に戻すか
+
+##### 調査-3: review-08 の詳細調査
+
+- [ ] `tools/benchmark/.results/20260427-140236-v6-ids-sonnet/review-08/` を確認
+  - summary.csv: `judge_s=420.03, error=timeout after 420s` — judge timeout
+  - search.json: AI-1 の回答内容（answer は生成できているか）
+  - stream/search.jsonl: Read 呼び出しのパターン（どのファイルを何回 read したか）
+- [ ] 過去の review-08 試走（今日の 10:47 run `20260427-104712`）と比較
+  - 10:47 run では L3 だった（Step6 改訂前のプロンプトで実行）
+  - judge stream ログが timeout する前にどこまで処理できていたか確認
+- [ ] judge timeout の原因を特定:
+  - H-1 の caveats schema 変更（`{note, cited}[]`）が judge の tool call 数を増やしているか
+  - 今日の他の run での judge 実行時間を比較
+- [ ] 以下を特定してユーザーに報告:
+  - judge timeout の再現条件
+  - Step6 改訂のどの変更が judge 実行時間に影響しているか（H-1 caveats schema か、他か）
+  - 10:47 run（L3）と今回（timeout）の違い
+
+**調査完了後の判断基準**:
+- 調査結果を元にユーザーと「Step6 改訂の何を戻すか / 何を修正するか」を合意してから次の実装に進む
+- [ ] 結果が 3 件 mean ≥ 2.33 かつ review-08 L3 なら次へ（この基準は調査後に再評価）
 
 #### Step 6: 検索が安定したら回答統合の検討 (条件付き次期)
 
