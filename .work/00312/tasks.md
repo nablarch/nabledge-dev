@@ -31,15 +31,24 @@
 - verify は Handler.js を独立ロードしない（§2-2 独立性原則: common モジュール経由でよい）
 - `handler_js.py` のユニットテスト: 文字列連結、`<br/>`変換、`-`値、callbackあり/なし、サフィックス付きキー
 
-### 2. Implement (after design doc approval)
+### 2. Prototype: verify output with 3 complex handlers (after design approval)
+
+対象: MessageResendHandler (5), RetryHandler (4), RequestThreadLoopHandler (3) — HandlerQueue 数が多い上位3ファイル
+
 **Steps:**
 - [ ] TDD: write unit tests for `handler_js.py` (RED)
 - [ ] Implement `handler_js.py` (GREEN)
 - [ ] Write converter unit tests for `visit_raw` 3-block state machine (RED)
 - [ ] Implement `visit_raw` fix (GREEN)
+- [ ] Fix ハンドラ処理フロー blank-line loss in `visit_definition_list`
+- [ ] Run `bash rbkc.sh create v1.4` for v1.4 only (prototype scope)
+- [ ] Output 3 target docs files to `.tmp/handler-prototype/` for user review
+- [ ] [DECISION: ユーザー確認] 生成 MD の内容・フォーマットを確認 → OK なら Task 3 へ
+
+### 3. Full implementation (after prototype approval)
+**Steps:**
 - [ ] Write verify normalizer tests for `raw` node handling (RED)
 - [ ] Implement verify normalizer change (GREEN)
-- [ ] Fix ハンドラ処理フロー blank-line loss in `visit_definition_list`
 - [ ] Run `bash rbkc.sh create <v> && bash rbkc.sh verify <v>` for all 5 versions (before/after)
 - [ ] Confirm FAIL count diff is as expected
 - [ ] Horizontal check: `.. raw:: html` + `:file:` across all 5 versions
@@ -47,7 +56,7 @@
 
 ## Not Started
 
-### 3. PR
+### 4. PR
 **Steps:**
 - [ ] Expert review
 - [ ] Create PR
