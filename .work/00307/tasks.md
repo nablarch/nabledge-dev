@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-27 (H-3 完了、次は M-1)
+**Updated**: 2026-04-27 (M-1 完了、次は M-2)
 
 ## ゴール
 
@@ -156,7 +156,7 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
 - [x] **H-1**: `caveats` schema を `{note, cited}[]` に変更 (search_ids.py + テスト + プロンプト) — `22d866850`
 - [x] **H-2**: scope_note を Step 3 (read_notes) へ前出し (search_ids.py schema + プロンプト) — `3f5b0f6dc`
 - [x] **H-3**: 自己検証サブステップ追加 (プロンプトのみ)
-- [ ] **M-1**: 候補ファイル上限 20→12 (search_ids.py schema maxItems + プロンプト)
+- [x] **M-1**: 候補ファイル上限 20→12 (search_ids.py schema maxItems + プロンプト) — `22704ce47`
 - [ ] **M-2**: precision 優先の明示 (プロンプトのみ)
 - [ ] **M-3**: Step 3 内部表記 `evidence` → `body_excerpt` (プロンプトのみ)
 - [ ] **M-4**: 実行モデル明確化 (プロンプトのみ)
