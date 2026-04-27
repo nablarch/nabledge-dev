@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-27 (session end)
+**Updated**: 2026-04-27
 
 ---
 
@@ -12,36 +12,22 @@
 - **全 5 バージョン verify FAIL 0** 確認済
 - 377 tests GREEN
 - nabledge-test runner は model: sonnet 固定 (`nabledge-test-runner.md` frontmatter)
-- PR #304 push 済 (`7a035e6b3`) — **388 ファイル差分** (knowledge/docs は main と同じ状態)
+- PR #304 push 済 — **v6/v5 knowledge/docs 再生成済み** (`93fa83ea2`, `0d013db6e`)
 
 ---
 
 ## In Progress
 
-### PR レビュー
+### knowledge/docs 再生成
 
-全 10 件のレビューコメント対応済み。再レビュー待ち。
-
-**Steps:**
-- [x] 差分ファイルの原因特定 — 前回 revert (`7b42539a2`) が不完全 (README ヘッダー誤り + 1.4 余分ファイル)
-- [x] 追加 revert & push — `22043625e` (20ファイル)
-- [x] origin/main にリベース (`918f2f12d`) & force push
-- [x] /fb で全 9 コメント対応 — `01c27ef2a`, `920816cf7`, `2f676a7b3`
-- [x] README の update/delete コマンド削除 — `0711104d8`
-- [x] comparison-report を kc era baseline (20260331-152005) 基準に修正 — `0cfd1e104`
-- [x] /fb で追加 5 コメント対応 — ベースライン削除 `a04f6763d`, comparison-report 修正 `8721a3699`
-- [ ] 再レビュー通過待ち → レビューOK確認済 (セッション終了時点)
-
-## Not Started
-
-### knowledge/docs 再生成 (レビュー承認済み → 次セッションで実施)
-
-レビューOK確認済み。全 5 バージョンを `rbkc create` で再生成し、差分が想定通り（RBKC 生成物のみ）かチェックしてからマージ。
+v6/v5 完了。残り v1.4/v1.3/v1.2 を 1 バージョンずつ実施。
 
 **Steps:**
-- [ ] 全 5 バージョン `rbkc create` 実行
-- [ ] `git diff main HEAD` で差分が意図通りか確認 → ユーザー報告（想定: RBKC 生成物のみ、余分な差分なし）
-- [ ] ユーザー承認後 push & merge
+- [x] v6 create (353ファイル) + verify OK + commit/push — `93fa83ea2`
+- [x] v5 create (533ファイル) + verify OK + commit/push — `0d013db6e`
+- [ ] v1.4 create + verify OK + 差分チェック(knowledge/docs のみ) + commit/push
+- [ ] v1.3 create + verify OK + 差分チェック(knowledge/docs のみ) + commit/push
+- [ ] v1.2 create + verify OK + 差分チェック(knowledge/docs のみ) + commit/push
 
 ## Not Started
 
