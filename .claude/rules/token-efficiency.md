@@ -19,8 +19,8 @@ After completing a commit:
 
 1. Immediately run the `/sv` skill — do not wait for the user to ask.
 2. Tell the user:
-   > 「{step name} 完了 (`{short_hash}`)。`/re` でコンテキストをリセットして次のステップへ進んでください。」
-3. Wait for the user to run `/re`. Do not proceed on your own.
+   > 「{step name} 完了 (`{short_hash}`)。`/clear` → `/re` でコンテキストをリセットして次のステップへ進んでください。」
+3. Wait for the user to run `/clear` → `/re`. Do not proceed on your own.
 
 **Why stop here**: each commit = one session boundary. Crossing that boundary
 without a `/re` accumulates context and defeats the purpose of this rule.
