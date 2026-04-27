@@ -173,14 +173,19 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
 
 **方針**: 推測なし。ログをそのまま読んで事実を積み上げ、報告する。
 
-##### 調査-1: req-05
+##### 調査-1: req-05 ✅ 完了
 
-- [ ] `tools/benchmark/.results/20260427-135249-v6-ids-sonnet/req-05/` の各ファイルを読む
-  - stream/select.jsonl: AI-1 の実際のツール呼び出し（何を何回呼んだか）
-  - search.json: intent / candidate_files / read_notes / selections / answer / files_read_count
-  - judge.json: a_facts の各ステータス、b_claims、c_claims（reason/why/kb_evidence）、level
-- [ ] KB の実物を読む: c_claims に出てくる kb_evidence の file+sid の body を実際に開いて quote が含まれるかを確認
-- [ ] 事実を並べてユーザーに報告する（判断・推測は含めない）
+**事実**: A-facts 4件全 COVERED、B-claims 7件、C-claim（Thymeleaf）の quote "ThymeleafResponseWriter" は
+s1 body に存在せず s2 に存在 → verify_kb_evidence が UNSUPPORTED_KB_VERIFIED に書き換えて L1。
+judge の reasoning は「SUPPORTED_BY_KB でペナルティなし」と書いており、正しい判断をしていた。
+**結論**: このシナリオは全問正解。judge の sid 指定ミス（s1/s2）を verify_kb_evidence が fabrication と誤判定。
+
+**fix: judge の出力前に kb_evidence を検証するステップを追加**
+- [ ] judge プロンプトに「`SUPPORTED_BY_KB` と判定したら、StructuredOutput を出す前に
+  kb_evidence の quote が指定 sid の body に存在するか Read で確認し、なければ sid を修正するか
+  別の sid を探すステップ」を追加
+- [ ] 最大3回まで修正を試みる（3回 NG で UNSUPPORTED_KB_VERIFIED に確定）
+- [ ] 実装後に req-05 で動作確認
 
 ##### 調査-2: review-01
 
