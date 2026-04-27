@@ -123,31 +123,31 @@ xychart-beta
   title "Total SLOC Trend (all categories)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23", "03/30", "04/13", "04/20", "04/27"]
   y-axis "Lines" 0 --> 16359
-  line [0, 789, 1503, 1293, 10339, 11613, 11613, 11704, 12523, 12553, 13632, 13632]
+  line [0, 789, 1503, 1293, 10339, 11613, 11613, 11704, 12523, 12553, 13632, 13619]
 ```
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'pie2': '#FF9800'}}}%%
 pie title Nabledge v6 SLOC
-  "Scripts (.sh)" : 1066
-  "Prompts (.md)" : 967
+  "Scripts (.sh)" : 1056
+  "Prompts (.md)" : 922
 ```
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'pie3': '#FF9800'}}}%%
-pie title Knowledge Creator SLOC
-  "Production (.py)" : 4703
-  "Test (.py)" : 6294
-  "Prompts (.md)" : 602
+pie title RBKC SLOC
+  "Production (.py)" : 5494
+  "Test (.py)" : 4837
+  "Prompts (.md)" : 1310
 ```
 
 ```mermaid
 xychart-beta
-  title "KC Scripts Trend (upper=Production  lower=Test)"
+  title "RBKC Scripts Trend (upper=Production  lower=Test)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23", "03/30", "04/13", "04/20", "04/27"]
-  y-axis "Lines" 0 --> 7553
-  line [0, 0, 0, 0, 3183, 4109, 4109, 4119, 4347, 4347, 4703, 4703]
-  line [0, 0, 0, 0, 4802, 5064, 5064, 5145, 5736, 5736, 6294, 6294]
+  y-axis "Lines" 0 --> 6593
+  line [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5494]
+  line [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4837]
 ```
 
 ## Nabledge Adoption (nablarch/nabledge)
