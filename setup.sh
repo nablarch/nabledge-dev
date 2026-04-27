@@ -196,11 +196,22 @@ print_status info "Installing Python libraries..."
 if uv pip install --python "$VENV_DIR/bin/python" \
     pdfplumber reportlab pypdf pymupdf \
     python-pptx Pillow markitdown \
-    openpyxl xlrd xlwt python-docx lxml pandas docutils markdown-it-py; then
+    openpyxl xlrd xlwt python-docx lxml pandas; then
     print_status ok "Python libraries installed"
 else
     print_status error "Failed to install Python libraries"
     exit 1
+fi
+
+# Install RBKC dependencies
+if [ -f "tools/rbkc/requirements.txt" ]; then
+    print_status info "Installing RBKC dependencies..."
+    if uv pip install --python "$VENV_DIR/bin/python" -r tools/rbkc/requirements.txt; then
+        print_status ok "RBKC dependencies installed"
+    else
+        print_status error "Failed to install RBKC dependencies"
+        exit 1
+    fi
 fi
 
 # Verify document tools installation
@@ -211,6 +222,15 @@ if "$VENV_DIR/bin/python" -c "import pdfplumber, reportlab, pptx, openpyxl, docx
 else
     print_status error "Python library verification failed"
     exit 1
+fi
+
+if [ -f "tools/rbkc/requirements.txt" ]; then
+    if "$VENV_DIR/bin/python" -c "import docutils, markdown_it, openpyxl, xlrd, xlwt, pytest; print('OK')" 2>/dev/null; then
+        print_status ok "RBKC dependencies verified"
+    else
+        print_status error "RBKC dependency verification failed"
+        exit 1
+    fi
 fi
 
 if soffice --version &>/dev/null && pdftoppm -v &>/dev/null && pandoc --version &>/dev/null && jq --version &>/dev/null; then
@@ -332,6 +352,15 @@ clone_or_update_repo() {
         print_status ok "$repo_name: push protection enabled"
     fi
 }
+
+# Clone Nablarch official documentation repositories (RBKC source)
+print_status info "Cloning Nablarch official documentation repositories..."
+
+clone_or_update_repo "https://github.com/nablarch/nablarch-document.git"                       "$NAB_OFFICIAL_V6_DIR" "main"
+clone_or_update_repo "https://github.com/Fintan-contents/nablarch-system-development-guide.git" "$NAB_OFFICIAL_V6_DIR" "main"
+
+clone_or_update_repo "https://github.com/nablarch/nablarch-document.git"                       "$NAB_OFFICIAL_V5_DIR" "v5-main"
+clone_or_update_repo "https://github.com/Fintan-contents/nablarch-system-development-guide.git" "$NAB_OFFICIAL_V5_DIR" "main"
 
 # Clone example repositories for code-analysis scenarios
 print_status info "Cloning example repositories for code-analysis scenarios..."
