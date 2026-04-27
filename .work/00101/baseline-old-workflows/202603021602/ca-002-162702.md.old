@@ -1,0 +1,86 @@
+# Test: ca-002
+
+**Date**: 2026-03-02 16:27:02
+**Question**: LoginActionの実装を理解したい
+
+## Scenario
+- **Target File**: .lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/Source_Code/proman-project/proman-web/src/main/java/com/nablarch/example/proman/web/login/LoginAction.java
+- **Type**: Code Analysis (Web Action with authentication flow)
+- **Expected Components**: 14 items (methods, annotations, security components, diagrams, output format)
+
+## Detection Results
+
+**Detection Rate**: 14/14 (100%)
+
+### Detection Items
+- ✓ Finds target file LoginAction.java
+  Evidence: File successfully read and analyzed at Line 29-108
+- ✓ Identifies index method for login screen display
+  Evidence: Found in Components section: 'index() [:38-40] - ログイン画面表示'
+- ✓ Identifies login method with authentication logic
+  Evidence: Found in Components section: 'login() [:49-71] - ログイン認証処理（@OnError, @InjectForm使用）'
+- ✓ Identifies logout method
+  Evidence: Found in Components section: 'logout() [:102-106] - ログアウト処理'
+- ✓ Identifies @OnError annotation usage
+  Evidence: Found in Architecture diagram, Flow section, and Nablarch Usage section with detailed explanation
+- ✓ Identifies @InjectForm annotation usage
+  Evidence: Found in Architecture diagram, Flow section, and Nablarch Usage section with detailed explanation
+- ✓ Identifies UniversalDao usage
+  Evidence: Found in Architecture diagram, Component Summary table, and Nablarch Usage section with usage examples
+- ✓ Identifies AuthenticationUtil usage
+  Evidence: Found in Architecture diagram, Component Summary table, Flow section, and Components section
+- ✓ Identifies CsrfTokenUtil usage
+  Evidence: Found in Architecture diagram, Component Summary table, Flow section, and Nablarch Usage section
+- ✓ Identifies SessionUtil usage
+  Evidence: Found in Architecture diagram, Component Summary table, Flow section, and Nablarch Usage section
+- ✓ Creates dependency diagram
+  Evidence: Found complete Mermaid classDiagram in Architecture section
+- ✓ Creates sequence diagram for authentication flow
+  Evidence: Found complete Mermaid sequenceDiagram with alt/else branches
+- ✓ Output includes component summary table
+  Evidence: Found '### Component Summary' table with 6 components
+- ✓ Output includes Nablarch usage section
+  Evidence: Found '## Nablarch Framework Usage' section with 5 components detailed
+
+## Metrics (Measured Values)
+- **Duration**: 158s (約2分38秒)
+- **Tool Calls**: 18 (Read: 5, Bash: 12, Write: 1)
+- **Response Length**: 12,850 chars
+- **Tokens**: 14,400 (IN: 4,050 / OUT: 10,350)
+
+### Token Usage by Step
+| Step | Name | IN Tokens | OUT Tokens | Total | Duration |
+|------|------|-----------|------------|-------|----------|
+| 1 | Load skill workflows | 0 | 2,500 | 2,500 | 11s |
+| 2 | Record start time | 50 | 100 | 150 | 2s |
+| 3 | Identify target and analyze dependencies | 100 | 800 | 900 | 18s |
+| 4 | Search Nablarch knowledge | 300 | 1,200 | 1,500 | 15s |
+| 5 | Read template and guide | 100 | 1,500 | 1,600 | 5s |
+| 6 | Pre-fill deterministic placeholders | 200 | 300 | 500 | 5s |
+| 7 | Generate Mermaid diagram skeletons | 200 | 400 | 600 | 5s |
+| 8 | Build content and write complete file | 3,000 | 3,500 | 6,500 | 79s |
+| 9 | Calculate duration and update placeholder | 100 | 50 | 150 | 5s |
+
+## Analysis
+
+### Workflow Execution
+This test executed the **OLD code-analysis workflow** that internally calls keyword-search.md. The workflow completed successfully with all 14 detection items found.
+
+### Key Observations
+1. **Complete detection**: All expected components (methods, annotations, security utilities) were identified
+2. **Comprehensive documentation**: Generated output includes overview, architecture diagrams, flow descriptions, component details, and Nablarch usage patterns
+3. **Diagram generation**: Both classDiagram and sequenceDiagram were created with appropriate relationships and flow logic
+4. **Knowledge integration**: Successfully searched and integrated UniversalDao knowledge from knowledge base
+
+### Performance Notes
+- Total execution time: 158 seconds (約2分38秒)
+- Longest step: Step 8 (Build content and write) took 79 seconds (50% of total time)
+- Token usage concentrated in later steps (6,500 tokens in Step 8)
+- Knowledge search (Step 4) completed in 15 seconds with keyword-search workflow
+
+## Files
+- **Output**: .nabledge/20260302/code-analysis-login-action.md (12,850 chars)
+- **Transcript**: .tmp/nabledge-test/eval-ca-002-162303/with_skill/outputs/transcript.md
+- **Grading**: .tmp/nabledge-test/eval-ca-002-162303/with_skill/grading.json
+- **Metrics**: .tmp/nabledge-test/eval-ca-002-162303/with_skill/outputs/metrics.json
+- **Timing**: .tmp/nabledge-test/eval-ca-002-162303/with_skill/timing.json
