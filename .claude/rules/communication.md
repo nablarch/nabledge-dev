@@ -2,10 +2,11 @@
 
 ## Explaining and Reporting
 
-- Lead with a concise summary and concrete examples only
-- Do not include details unless the user asks
+- **First message is the point only** — return conclusion, judgment, and next action in 1–3 sentences; do not include background, rationale, comparison tables, or citations
+- Details (code snippets, citations, comparison tables, AST dumps, spec sections, option trade-offs, etc.) are provided **only when the user explicitly asks** ("詳細を" / "なぜ" / "根拠" / "詳しく" or equivalent)
 - Do not mix multiple topics in one message — separate concerns clearly
 - When reporting status, always anchor to the task file so the user knows where things stand
+- If a question can be answered with YES/NO, lead with YES/NO; provide the reason only if the user asks
 
 ## Proposing, not asking for permission
 
@@ -25,6 +26,21 @@ Required shape of a proposal:
 4. **Proposed action**: what you will do to reach that state
 5. **Points the user may want to override**: only the genuinely ambiguous parts — not "is this OK?"
 
+### Scope-out / defer-to-another-issue proposals
+
+When proposing to treat something as out-of-scope or defer it to a separate issue,
+the proposal must be **fact-based, not inference-based**. Before making such a proposal:
+
+1. **Investigate exhaustively** — enumerate every file, function, and call site that
+   would be affected by doing the work now vs deferring it. Do not sample or guess.
+2. **Quantify the impact** — report concrete numbers: lines of code to change, number
+   of files, number of tests to add/update, dependencies on other in-progress work.
+3. **State facts, not assumptions** — "md.py is 139 lines and has no AST layer" is a fact;
+   "the effort is about the same as Phase 21-Y" without measurement is inference and is not acceptable.
+4. **Derive the recommendation from the measured numbers**, not from intuition about cost.
+
+A scope-out proposal without measured numbers will be rejected. Re-investigate and resubmit.
+
 Only ask open questions when:
 - Facts are insufficient and more investigation won't resolve the ambiguity
 - The choice depends on user preference/values that cannot be derived from the goal
@@ -32,5 +48,16 @@ Only ask open questions when:
 
 In those cases, still present a **recommended option first** with reasoning, and list alternatives.
 
-Never ask "いいですか？" / "進めてよいですか？" as the primary form of confirmation.
+Never ask "Is that OK?" / "Can I proceed?" as the primary form of confirmation.
 State the plan, state why it is the should-be, and proceed unless the user objects.
+
+## Implementation Details
+
+Do not present code-level details (regex patterns, function signatures, data structures, etc.) unless the user asks.
+
+When blocked on a decision that could affect verify's quality gate role or requires changing design docs, stop and report only:
+
+1. **Why** a decision is needed (what constraint or ambiguity was found)
+2. **What** the options are (one sentence each, no implementation details)
+
+Let the user make the call, then implement.

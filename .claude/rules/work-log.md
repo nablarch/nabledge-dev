@@ -68,6 +68,10 @@ The Tasks section in the PR body links to tasks.md — do not duplicate the list
 See [tasks.md](.work/xxxxx/tasks.md).
 ```
 
+## Git Tracking
+
+`.work/` is always git-tracked. It is the handoff record between sessions — decisions, rationale, and task state cannot be recovered from code or git log alone. Never add `.work/` to `.gitignore`.
+
 ## Temporary Files
 
 For temporary files during processing, use `.tmp/` directory. See `.claude/rules/temporary-files.md`.

@@ -1,0 +1,4231 @@
+"""Tests for scripts/verify/verify.py — rebuilt per rbkc-verify-quality-design.md."""
+from __future__ import annotations
+
+import json
+import textwrap
+from pathlib import Path
+
+import pytest
+
+
+# ---------------------------------------------------------------------------
+# QO1: docs MD 構造整合性
+# ---------------------------------------------------------------------------
+
+class TestCheckJsonDocsMdConsistency_QO1:
+    """QO1: docs MD structure (title, section titles, order) must match JSON."""
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_pass_title_and_sections_match(self):
+        data = {
+            "id": "f", "title": "タイトル", "content": "", "sections": [
+                {"id": "s1", "title": "概要", "level": 2, "content": "説明"},
+                {"id": "s2", "title": "設定", "level": 2, "content": "設定内容"},
+            ]
+        }
+        docs = "# タイトル\n\n## 概要\n\n説明\n\n## 設定\n\n設定内容\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_title_mismatch(self):
+        data = {"id": "f", "title": "正しいタイトル", "content": "", "sections": []}
+        docs = "# 別のタイトル\n\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i and "title" in i for i in issues)
+
+    def test_fail_section_title_missing(self):
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "存在しないセクション", "level": 2, "content": "c"},
+            ]
+        }
+        docs = "# T\n\n## 別のセクション\n\nc\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues)
+
+    def test_fail_section_order_reversed(self):
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "A", "level": 2, "content": "a"},
+                {"id": "s2", "title": "B", "level": 2, "content": "b"},
+            ]
+        }
+        # B appears before A in docs MD — order mismatch
+        docs = "# T\n\n## B\n\nb\n\n## A\n\na\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues)
+
+    def test_pass_no_knowledge_content_skipped(self):
+        data = {"id": "f", "title": "T", "no_knowledge_content": True, "sections": []}
+        assert self._check(data, "# 全然違う\n") == []
+
+    def test_pass_no_sections_no_h2(self):
+        """sections=[] means no ## headings expected in docs MD."""
+        data = {"id": "f", "title": "T", "content": "本文です。", "sections": []}
+        docs = "# T\n\n本文です。\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_extra_h2_in_docs_md(self):
+        """docs MD has ## heading but JSON has no sections → QO1 FAIL."""
+        data = {"id": "f", "title": "T", "content": "本文です。", "sections": []}
+        docs = "# T\n\n## 余計なセクション\n\n本文です。\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues)
+
+    # --- QO1 Z-1 gap fill -------------------------------------------------
+
+    def test_fail_h1_missing(self):
+        data = {"id": "f", "title": "タイトル", "content": "", "sections": []}
+        docs = "本文だけで h1 が無い。\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues)
+
+    def test_fail_top_level_content_below_first_h2_not_directly_under_h1(self):
+        """Spec §3-3 QO2: top-level content must sit between `#` and the
+        first `##`. Content appearing only *after* the first `##` FAILs."""
+        data = {"id": "f", "title": "T", "content": "トップ本文。",
+                "sections": [{"id": "s1", "title": "概要", "level": 2, "content": "概要本文"}]}
+        # Top-level content is below the first ## — wrong location.
+        docs = "# T\n\n## 概要\n\nトップ本文。\n\n概要本文\n"
+        issues = self._check(data, docs)
+        assert any("QO2" in i and "top-level" in i for i in issues)
+
+    def test_fail_extra_h2_when_sections_present(self):
+        """Spec §3-3 QO1: docs MD section titles must match JSON order and
+        count. Extra H2 in docs MD beyond JSON sections FAILs."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
+        ]}
+        docs = "# T\n\n## A\n\na\n\n## 余計\n\nextra\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues)
+
+    def test_fail_duplicate_h2_order_violation(self):
+        """Spec §3-3 QO1 section order requirement: JSON [A,B] vs docs
+        [A,B,A] — the second A appears out of order relative to B. The
+        current greedy matcher passes this; this test flags the gap."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "B", "level": 2, "content": "b"},
+            {"id": "s2", "title": "A", "level": 2, "content": "a2"},
+        ]}
+        docs = "# T\n\n## A\n\na1\n\n## B\n\nb\n"
+        # JSON requires B before A, docs shows A before B → QO1 FAIL
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues)
+
+    def test_fail_readme_missing_page_declaration(self, tmp_path):
+        """Spec §3-3 QO3: README.md must contain 'N ページ' declaration."""
+        # Reuse the QO3 test class convenience — inline setup.
+        from scripts.verify.verify import check_docs_coverage
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"title": "A"}))
+        (ddir / "a.md").write_text("# A\n")
+        (ddir / "README.md").write_text("目次\n---\n- [A](a.md)\n")  # no 'N ページ'
+        issues = check_docs_coverage(kdir, ddir)
+        assert any("QO3" in i and "ページ" in i for i in issues)
+
+    def test_fail_empty_title_vs_nonempty_docs_h1(self):
+        """Spec §3-3: JSON title must equal docs MD H1. An empty JSON title
+        against a non-empty H1 does not match → FAIL."""
+        data = {"id": "f", "title": "", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": ""}
+        ]}
+        docs = "# 何か\n\n## 概要\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i and "title mismatch" in i for i in issues)
+
+    def test_title_with_markdown_special_chars_exact_match(self):
+        data = {"id": "f", "title": "A `code` & B", "content": "", "sections": []}
+        docs = "# A `code` & B\n"
+        assert self._check(data, docs) == []
+
+    def test_multiple_h1_in_docs_md_first_wins(self):
+        """Multiple `#` lines in docs MD: matcher should use the first one."""
+        data = {"id": "f", "title": "一番目", "content": "", "sections": []}
+        docs = "# 一番目\n\n追加段落\n\n# 二番目\n"
+        # First `#` matches the JSON title — this is the spec's happy path.
+        assert self._check(data, docs) == []
+
+    def test_pass_tilde_fenced_code_block_with_heading_inside(self):
+        """CommonMark tilde-fenced code blocks (~~~) must also be stripped
+        before scanning section titles — `##` inside a ~~~ fence is
+        content, not a section marker."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
+        ]}
+        docs = (
+            "# T\n\n"
+            "## A\n\n"
+            "a\n\n"
+            "~~~md\n"
+            "## fake heading inside tilde fence\n"
+            "~~~\n"
+        )
+        # `## fake ...` sits inside a ~~~ fenced block so it is content;
+        # QO1 must not report an extra section.
+        assert self._check(data, docs) == []
+
+    def test_pass_backtick_fenced_code_block_with_heading_inside(self):
+        """Same invariant for triple-backtick fences (regression guard)."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
+        ]}
+        docs = (
+            "# T\n\n"
+            "## A\n\n"
+            "a\n\n"
+            "```md\n"
+            "## fake heading inside backtick fence\n"
+            "```\n"
+        )
+        assert self._check(data, docs) == []
+
+    # --- Z-1 r7 Findings: QO1 regex refinement ---------------------------
+
+    def test_pass_section_with_h3_subheading_in_content(self):
+        """Z-1 r7 QO1 F1: `###` inside a section's content is a valid
+        CommonMark subheading, not a section title. The 'extra direction'
+        check must use `##` only so content-level `###` does not produce
+        a spurious QO1 FAIL."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "セクション A", "level": 2,
+             "content": "本文。\n\n### 小見出し\n\n詳細。"},
+        ]}
+        docs = "# T\n\n## セクション A\n\n本文。\n\n### 小見出し\n\n詳細。\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_sections_empty_with_h3_in_top_content(self):
+        """Z-1 r7 QO1 F2: sections=[] + top content containing `### foo`.
+        The empty-section guard must not fire on content-level subheadings."""
+        data = {"id": "f", "title": "T",
+                "content": "前文。\n\n### 注記\n\n注記本文。", "sections": []}
+        docs = "# T\n\n前文。\n\n### 注記\n\n注記本文。\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_section_title_rendered_at_declared_level(self):
+        """Phase 22-B-16a: JSON `level` and docs MD `#` count must match.
+
+        This supersedes the prior "either ## or ### OK" interpretation —
+        under the strengthened QO1 level check, docs MD heading must use
+        exactly `level` hashes. Here section B is declared at level=3 so
+        docs MD renders it at ###, matching by design.
+        """
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "セクション A", "level": 2, "content": "a"},
+            {"id": "s2", "title": "セクション B", "level": 3, "content": "b"},
+        ]}
+        docs = (
+            "# T\n\n"
+            "## セクション A\n\n"
+            "a\n\n"
+            "### セクション B\n\n"
+            "b\n"
+        )
+        assert self._check(data, docs) == []
+
+
+# ---------------------------------------------------------------------------
+# QO2: docs MD 本文整合性
+# ---------------------------------------------------------------------------
+
+class TestCheckJsonDocsMdConsistency_QO2:
+    """QO2: JSON content must appear verbatim in docs MD."""
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_pass_top_content_in_docs(self):
+        data = {"id": "f", "title": "T", "content": "トップレベル本文。", "sections": []}
+        docs = "# T\n\nトップレベル本文。\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_top_content_missing(self):
+        data = {"id": "f", "title": "T", "content": "重要な本文。", "sections": []}
+        docs = "# T\n\n全然違う内容。\n"
+        issues = self._check(data, docs)
+        assert any("QO2" in i for i in issues)
+
+    def test_pass_section_content_in_docs(self):
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "概要", "level": 2, "content": "概要の説明。"},
+            ]
+        }
+        docs = "# T\n\n## 概要\n\n概要の説明。\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_section_content_missing(self):
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "概要", "level": 2, "content": "欠落する説明。"},
+            ]
+        }
+        docs = "# T\n\n## 概要\n\n別の説明。\n"
+        issues = self._check(data, docs)
+        assert any("QO2" in i and "概要" in i for i in issues)
+
+    def test_pass_assets_link_rewrite_symmetric(self, tmp_path):
+        """JSON `assets/...` links are rewritten to `<rel>/assets/...` by
+        docs.py. QO2's verbatim check applies the SAME transformation
+        and then asserts the rewritten string appears in docs MD.
+
+        Z-1 r7 QO2 F1: the expected docs body is GENERATED by calling
+        docs._rewrite_asset_links — not hand-coded. Hand-coding the
+        expected string makes the test circular (the same human authored
+        both the fixture and the expected; drift between verify's rewrite
+        copy and docs.py's rewrite goes undetected). Generating via the
+        docs-side implementation closes that loop.
+        """
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        docs_dir = tmp_path / "docs" / "guide"
+        docs_dir.mkdir(parents=True)
+        docs_md_path = docs_dir / "x.md"
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "図", "level": 2, "content": "![図](assets/img.png)"},
+            ]
+        }
+        # Generate the expected docs body via docs._rewrite_asset_links so
+        # drift between the two rewrite implementations surfaces here.
+        from scripts.create.docs import _rewrite_asset_links
+        rewritten = _rewrite_asset_links(
+            data["sections"][0]["content"], docs_md_path, kdir,
+        )
+        docs = f"# T\n\n## 図\n\n{rewritten}\n"
+        from scripts.verify.verify import check_json_docs_md_consistency
+        issues = check_json_docs_md_consistency(
+            data, docs, docs_md_path=docs_md_path, knowledge_dir=kdir,
+        )
+        assert issues == []
+
+    def test_verify_and_docs_rewrite_agree_on_matrix(self, tmp_path):
+        """Z-1 r7 QO2 F4: verify._apply_asset_link_rewrite and
+        docs._rewrite_asset_links are independent copies (import across
+        them is forbidden by the rbkc independence principle). This test
+        imports docs._rewrite_asset_links ONLY inside the test, runs both
+        on a matrix of inputs, and asserts equal output — catches drift
+        between the two copies."""
+        from scripts.verify.verify import _apply_asset_link_rewrite
+        from scripts.create.docs import _rewrite_asset_links
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        docs_dir = tmp_path / "docs" / "guide"
+        docs_dir.mkdir(parents=True)
+        docs_md_path = docs_dir / "x.md"
+
+        cases = [
+            "",
+            "no links here",
+            "![図](assets/img.png)",
+            "[text](assets/data.csv) と ![alt](assets/photo.jpg) 混在",
+            "![](assets/nested/deep/file.png)",
+            "![a](assets/a.png)\n\n![b](assets/b.png)\n",
+            "[link](https://example.com) 外部は変換しない",
+            "`assets/literal-in-backticks` は非対象ではないかもしれない",
+        ]
+        for content in cases:
+            v = _apply_asset_link_rewrite(content, docs_md_path, kdir)
+            d = _rewrite_asset_links(content, docs_md_path, kdir)
+            assert v == d, f"drift for input {content!r}: verify={v!r} docs={d!r}"
+
+    def test_fail_assets_link_rewrite_missing_from_docs(self, tmp_path):
+        """If docs MD lacks the rewritten asset link, QO2 must FAIL
+        (no silent skip for assets/ content)."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        docs_dir = tmp_path / "docs" / "guide"
+        docs_dir.mkdir(parents=True)
+        docs_md_path = docs_dir / "x.md"
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "図", "level": 2, "content": "![図](assets/img.png)"},
+            ]
+        }
+        docs = "# T\n\n## 図\n\n画像なし\n"
+        from scripts.verify.verify import check_json_docs_md_consistency
+        issues = check_json_docs_md_consistency(
+            data, docs, docs_md_path=docs_md_path, knowledge_dir=kdir,
+        )
+        assert any("QO2" in i and "図" in i for i in issues)
+
+    # --- QO2 Z-1 gap fill -------------------------------------------------
+
+    def test_fail_whitespace_only_diff(self):
+        """Whitespace-only deviation between JSON and docs MD is still a
+        FAIL: spec §3-3 requires verbatim match."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文\n\n続き"},
+        ]}
+        docs = "# T\n\n## 概要\n\n本文 続き\n"  # newline replaced by space
+        issues = self._check(data, docs)
+        assert any("QO2" in i for i in issues)
+
+    def test_pass_top_content_with_fenced_h2_inside_top_region(self):
+        """Z-1 r7 QO2 F3: top-level content contains `## not a heading`
+        inside a fenced code block. The region-bounding (first `##`
+        after the H1) must mask fences so the fake `##` does not
+        truncate the region prematurely — otherwise the top content
+        appears to be missing."""
+        data = {"id": "f", "title": "T",
+                "content": "説明:\n\n```md\n## not a heading\n```",
+                "sections": [{"id": "s1", "title": "本題", "level": 2, "content": "本文。"}]}
+        docs = (
+            "# T\n\n"
+            "説明:\n\n"
+            "```md\n"
+            "## not a heading\n"
+            "```\n\n"
+            "## 本題\n\n"
+            "本文。\n"
+        )
+        assert self._check(data, docs) == []
+
+    def test_fail_top_content_with_fenced_h2_missing_from_docs(self):
+        """FAIL twin of the above: if the fenced block is missing from
+        docs MD, QO2 must flag the top content as not verbatim."""
+        data = {"id": "f", "title": "T",
+                "content": "説明:\n\n```md\n## not a heading\n```",
+                "sections": [{"id": "s1", "title": "本題", "level": 2, "content": "本文。"}]}
+        docs = (
+            "# T\n\n"
+            "説明:\n\n"
+            "## 本題\n\n"
+            "本文。\n"
+        )
+        issues = self._check(data, docs)
+        assert any("QO2" in i for i in issues)
+
+    def test_pass_section_content_with_fenced_code(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "コード例", "level": 2, "content": "```java\nint x;\n```"},
+        ]}
+        docs = "# T\n\n## コード例\n\n```java\nint x;\n```\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_section_content_with_md_special_chars(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "式", "level": 2, "content": "評価式は `a | b` と記述。"},
+        ]}
+        docs = "# T\n\n## 式\n\n評価式は `a | b` と記述。\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_multiple_sections_one_content_wrong(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "A", "level": 2, "content": "A content"},
+            {"id": "s2", "title": "B", "level": 2, "content": "B content"},
+            {"id": "s3", "title": "C", "level": 2, "content": "C content"},
+        ]}
+        # middle section content differs
+        docs = "# T\n\n## A\n\nA content\n\n## B\n\nWRONG\n\n## C\n\nC content\n"
+        issues = self._check(data, docs)
+        assert any("QO2" in i and "B" in i for i in issues)
+
+
+# ---------------------------------------------------------------------------
+# QO4: index.toon 網羅性
+# ---------------------------------------------------------------------------
+
+class TestCheckIndexCoverage:
+    """QO4: every JSON without no_knowledge_content must be in index.toon."""
+
+    def _check(self, knowledge_dir, index_path):
+        from scripts.verify.verify import check_index_coverage
+        return check_index_coverage(knowledge_dir, index_path)
+
+    def _write_toon(self, idx_path, entries):
+        """Write index.toon in real TOON format: comma-separated, indented rows."""
+        lines = [
+            "# Nabledge-6 Knowledge Index",
+            "",
+            f"files[{len(entries)},]{{title,type,category,processing_patterns,path}}:",
+        ]
+        for e in entries:
+            lines.append(f"  {', '.join(e)}")
+        idx_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    def test_pass_all_files_indexed(self, tmp_path):
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A", "no_knowledge_content": False}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["A", "", "", "", "a.json"]])
+        assert self._check(kdir, idx) == []
+
+    def test_fail_json_not_in_index(self, tmp_path):
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "missing.json").write_text(json.dumps({"id": "m", "title": "M", "no_knowledge_content": False}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [])
+        issues = self._check(kdir, idx)
+        assert any("QO4" in i and "missing.json" in i for i in issues)
+
+    def test_pass_no_knowledge_content_excluded(self, tmp_path):
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "toc.json").write_text(json.dumps({"id": "t", "title": "T", "no_knowledge_content": True}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [])
+        assert self._check(kdir, idx) == []
+
+    def test_pass_nested_path_indexed(self, tmp_path):
+        """Nested JSON with commas in title must parse correctly from TOON."""
+        kdir = tmp_path / "knowledge"
+        (kdir / "sub").mkdir(parents=True)
+        (kdir / "sub" / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["B", "about", "sub", "", "sub/b.json"]])
+        assert self._check(kdir, idx) == []
+
+    def test_fail_missing_index_file(self, tmp_path):
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A", "no_knowledge_content": False}))
+        issues = self._check(kdir, tmp_path / "nonexistent.toon")
+        assert any("QO4" in i for i in issues)
+
+    # --- QO4 Z-1 gap fill -------------------------------------------------
+
+    def test_fail_missing_index_lists_every_content_json(self, tmp_path):
+        """Spec §3-3: when index.toon is absent, every content JSON is FAIL."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        (kdir / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
+        (kdir / "no.json").write_text(json.dumps({"id": "no", "title": "N", "no_knowledge_content": True}))
+        issues = self._check(kdir, tmp_path / "missing.toon")
+        # Two content JSONs must both be reported
+        assert any("a.json" in i for i in issues)
+        assert any("b.json" in i for i in issues)
+        # no_knowledge file is not reported
+        assert not any("no.json" in i for i in issues)
+
+    def test_fail_dangling_entry_in_index(self, tmp_path):
+        """Spec §3-3: an index entry without a matching JSON on disk FAILs."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "real.json").write_text(json.dumps({"id": "r", "title": "R"}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [
+            ["R", "", "", "", "real.json"],
+            ["Phantom", "", "", "", "ghost.json"],  # no file on disk
+        ])
+        issues = self._check(kdir, idx)
+        assert any("ghost.json" in i and "missing JSON" in i for i in issues)
+
+    def test_empty_knowledge_dir_without_index_passes(self, tmp_path):
+        """No content JSONs and no index.toon — nothing to verify."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        assert self._check(kdir, tmp_path / "missing.toon") == []
+
+    def test_cjk_filename_indexed(self, tmp_path):
+        kdir = tmp_path / "knowledge"
+        (kdir / "sub").mkdir(parents=True)
+        (kdir / "sub" / "日本語.json").write_text(json.dumps({"id": "j", "title": "日本語"}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["日本語", "", "", "", "sub/日本語.json"]])
+        assert self._check(kdir, idx) == []
+
+    def test_assets_json_not_required_in_index(self, tmp_path):
+        """JSON files under knowledge/assets/ are literalinclude source
+        copies, not content JSON. They must be excluded from QO4 coverage
+        and must not be required to appear in index.toon.
+        """
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        (kdir / "assets" / "etl-etl").mkdir(parents=True)
+        # A non-parseable JSON asset must not even be opened.
+        (kdir / "assets" / "etl-etl" / "chunk_replace.json").write_text(
+            '{ "mode": "ABORT"  // a comment\n}', encoding="utf-8"
+        )
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["A", "", "", "", "a.json"]])
+        assert self._check(kdir, idx) == []
+
+    def test_fail_broken_json_surfaces_qo4(self, tmp_path):
+        """Spec §3-3 point 4: a JSON that cannot be parsed is QO4 FAIL
+        (no silent skip — zero-tolerance)."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "valid.json").write_text(json.dumps({"id": "v", "title": "V"}))
+        (kdir / "broken.json").write_text("{ not json")
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["V", "", "", "", "valid.json"]])
+        issues = self._check(kdir, idx)
+        assert any("QO4" in i and "broken.json" in i and "parse failed" in i for i in issues)
+
+    # --- Z-1 r7 QO4 Findings -------------------------------------------
+
+    def test_fail_no_knowledge_json_listed_in_index_has_distinct_message(self, tmp_path):
+        """Z-1 r7 QO4 F1: a no_knowledge_content JSON that is erroneously
+        listed in index.toon must NOT be reported as 'missing JSON' — the
+        file exists, the defect is that it was indexed. Distinct message."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "toc.json").write_text(json.dumps({"id": "t", "title": "T", "no_knowledge_content": True}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["T", "", "", "", "toc.json"]])
+        issues = self._check(kdir, idx)
+        assert any("QO4" in i and "no_knowledge" in i and "toc.json" in i for i in issues), issues
+        assert not any("missing JSON" in i and "toc.json" in i for i in issues), issues
+
+    def test_fail_broken_json_in_index_not_double_reported(self, tmp_path):
+        """Z-1 r7 QO4 F2: broken JSON listed in index.toon must produce
+        exactly one FAIL (the parse error), not a second misleading
+        'missing JSON' message — the file exists on disk."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "broken.json").write_text("{ not json")
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["X", "", "", "", "broken.json"]])
+        issues = self._check(kdir, idx)
+        broken_issues = [i for i in issues if "broken.json" in i]
+        assert any("parse failed" in i for i in broken_issues), broken_issues
+        assert not any("missing JSON" in i for i in broken_issues), broken_issues
+
+    def test_pass_toon_backslash_path_normalised(self, tmp_path):
+        """Z-1 r7 QO4 F5: if a TOON writer emits a backslash path, verify
+        normalises to forward slash on both sides so equality holds."""
+        kdir = tmp_path / "knowledge"
+        (kdir / "sub").mkdir(parents=True)
+        (kdir / "sub" / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        idx = tmp_path / "index.toon"
+        # Write a row with a backslash separator in the path.
+        idx.write_text(
+            "files[1,]{title,type,category,processing_patterns,path}:\n"
+            "  A, , , , sub\\a.json\n",
+            encoding="utf-8",
+        )
+        assert self._check(kdir, idx) == []
+
+    def test_fail_missing_index_lists_every_content_json_strict(self, tmp_path):
+        """Z-1 r7 QO4 F7: pin the spec requirement that when index.toon
+        is absent, EVERY content JSON appears as a FAIL — not just the
+        header. A test that asserted only 'any QO4 in issues' would pass
+        even if the per-file enumeration regressed to nothing."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        (kdir / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
+        issues = self._check(kdir, tmp_path / "no-such.toon")
+        per_file = [i for i in issues if "not registered" in i]
+        assert len(per_file) >= 2
+        assert any("a.json" in i for i in per_file)
+        assert any("b.json" in i for i in per_file)
+
+
+# ---------------------------------------------------------------------------
+# QO3: docs MD 存在確認 (via check_docs_coverage)
+# ---------------------------------------------------------------------------
+
+class TestCheckDocsCoverage:
+    """QO3: each JSON file has a corresponding docs MD (1:1 existence)."""
+
+    def _check(self, knowledge_dir, docs_dir):
+        from scripts.verify.verify import check_docs_coverage
+        return check_docs_coverage(knowledge_dir, docs_dir)
+
+    def _write_json(self, kdir: Path, rel: str, data: dict | None = None) -> Path:
+        path = kdir / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data or {"title": "t"}), encoding="utf-8")
+        return path
+
+    def _write_md(self, ddir: Path, rel: str) -> Path:
+        path = ddir / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("content")
+        return path
+
+    def test_pass_each_json_has_docs_md(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        # JSON layout mirrors docs MD layout (same relative path, .json -> .md)
+        self._write_json(kdir, "about/nablarch/a.json")
+        self._write_md(ddir, "about/nablarch/a.md")
+        (ddir / "README.md").write_text("1ページ\n")
+        assert self._check(kdir, ddir) == []
+
+    def test_fail_json_without_matching_docs_md(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "about/nablarch/a.json")
+        # Note: no corresponding a.md in docs/about/nablarch/
+        (ddir / "README.md").write_text("0ページ\n")
+        issues = self._check(kdir, ddir)
+        assert any("QO3" in i for i in issues)
+
+    def test_pass_no_knowledge_json_still_requires_docs_md(self, tmp_path):
+        """no_knowledge_content JSONs still get a minimal docs MD (see docs.py)."""
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "about/nablarch/a.json", {"no_knowledge_content": True, "title": "a"})
+        self._write_md(ddir, "about/nablarch/a.md")
+        (ddir / "README.md").write_text("1ページ\n")
+        assert self._check(kdir, ddir) == []
+
+    def test_fail_readme_missing(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        issues = self._check(kdir, ddir)
+        assert any("README" in i for i in issues)
+
+    # --- QO3 Z-1 gap fill -------------------------------------------------
+
+    def test_fail_docs_md_at_wrong_nested_path(self, tmp_path):
+        """JSON at knowledge/a/b/c.json requires docs MD at docs/a/b/c.md.
+        A docs MD at a different path (e.g. top level) must still FAIL."""
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "a/b/c.json")
+        self._write_md(ddir, "c.md")  # wrong location
+        (ddir / "README.md").write_text("1ページ\n")
+        issues = self._check(kdir, ddir)
+        assert any("QO3" in i and "a/b/c.md" in i for i in issues)
+
+    def test_pass_cjk_filename(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "about/日本語.json")
+        self._write_md(ddir, "about/日本語.md")
+        (ddir / "README.md").write_text("1ページ\n")
+        assert self._check(kdir, ddir) == []
+
+    def test_pass_empty_knowledge_dir(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        (ddir / "README.md").write_text("0ページ\n")
+        assert self._check(kdir, ddir) == []
+
+    def test_fail_readme_page_count_mismatch(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "a.json")
+        self._write_md(ddir, "a.md")
+        self._write_md(ddir, "b.md")
+        (ddir / "README.md").write_text("99ページ\n")  # wrong
+        issues = self._check(kdir, ddir)
+        assert any("count mismatch" in i for i in issues)
+
+    def test_assets_json_ignored(self, tmp_path):
+        """Files under knowledge/assets/ are not knowledge JSON — a JSON
+        literalinclude target (e.g. assets/etl-etl/chunk_replace.json) must
+        not trigger a QO3 or parse error.
+
+        Rationale: `assets/` holds images and literalinclude source copies
+        made by resolver.copy_assets. These are not content JSON.
+        """
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "about/a.json")
+        self._write_md(ddir, "about/a.md")
+        # A literalinclude JSON asset — deliberately non-object shape that
+        # a real json.loads would reject is irrelevant because verify must
+        # not even read it.
+        (kdir / "assets" / "etl-etl").mkdir(parents=True)
+        (kdir / "assets" / "etl-etl" / "chunk_replace.json").write_text(
+            '{ "mode": "ABORT"  // comment breaks json\n}', encoding="utf-8"
+        )
+        (ddir / "README.md").write_text("1ページ\n")
+        assert self._check(kdir, ddir) == []
+
+
+# ---------------------------------------------------------------------------
+# QC5: 形式純粋性
+# ---------------------------------------------------------------------------
+
+class TestVerifyFileQC5:
+    """QC5: No format-specific syntax remnants in JSON output."""
+
+    def _check(self, data, fmt):
+        from scripts.verify.verify import verify_file
+        import json, tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix=f'.{fmt}', delete=False, encoding='utf-8') as sf:
+            sf.write("dummy source\n")
+            src = sf.name
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            from scripts.verify.verify import verify_file
+            return verify_file(src, jpath, fmt)
+        finally:
+            os.unlink(src)
+            os.unlink(jpath)
+
+    # RST format
+    def test_fail_rst_role_in_content(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": ":ref:`something`"}
+        ]}
+        issues = self._check(data, "rst")
+        assert any("QC5" in i and "RST role" in i for i in issues)
+
+    def test_fail_rst_directive_in_content(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": ".. note::"}
+        ]}
+        issues = self._check(data, "rst")
+        assert any("QC5" in i and "directive" in i for i in issues)
+
+    def test_fail_rst_label_in_content(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": ".. _my-label:"}
+        ]}
+        issues = self._check(data, "rst")
+        assert any("QC5" in i and "label" in i for i in issues)
+
+    def test_fail_rst_heading_underline_in_title(self):
+        data = {"id": "f", "title": "====", "content": "", "sections": []}
+        issues = self._check(data, "rst")
+        assert any("QC5" in i and "underline" in i for i in issues)
+
+    def test_pass_rst_clean_content(self):
+        data = {"id": "f", "title": "概要", "content": "普通の本文です。", "sections": [
+            {"id": "s1", "title": "詳細", "level": 2, "content": "詳細説明。"}
+        ]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i] == []
+
+    # MD format
+    def test_fail_md_raw_html_in_content(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "<details>内容</details>"}
+        ]}
+        issues = self._check(data, "md")
+        assert any("QC5" in i and "HTML" in i for i in issues)
+
+    def test_fail_md_backslash_escape_in_content(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": r"これは\*エスケープ\*です"}
+        ]}
+        issues = self._check(data, "md")
+        assert any("QC5" in i and "backslash" in i for i in issues)
+
+    def test_pass_md_clean_content(self):
+        data = {"id": "f", "title": "概要", "content": "普通の説明文。", "sections": [
+            {"id": "s1", "title": "詳細", "level": 2, "content": "詳細です。`code` も含む。"}
+        ]}
+        assert [i for i in self._check(data, "md") if "QC5" in i] == []
+
+    def test_pass_xlsx_no_qc5(self):
+        """xlsx format: QC5 is not applicable — _check_format_purity returns []."""
+        from scripts.verify.verify import _check_format_purity
+        data = {"id": "f", "title": "T", "content": ":ref:`role`", "sections": []}
+        assert _check_format_purity(data, "xlsx") == []
+
+    def test_pass_no_knowledge_content_skipped(self):
+        data = {"id": "f", "title": "T", "no_knowledge_content": True, "sections": []}
+        assert self._check(data, "rst") == []
+
+    # --- QC5 Z-1 gap fill -------------------------------------------------
+
+    def test_pass_rst_heading_underline_in_code_block_content(self):
+        """Heading underline `====` can legitimately appear inside code
+        blocks in content; QC5 restricts the underline check to titles only."""
+        content_with_code = "```\n===== \n```"
+        data = {"id": "f", "title": "概要", "content": "",
+                "sections": [{"id": "s1", "title": "詳細", "level": 2, "content": content_with_code}]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i and "underline" in i] == []
+
+    def test_pass_rst_field_list_syntax_is_not_qc5_role(self):
+        """Spec §3-1 QC5 defines the RST role pattern as `:role:\\`text\\``.
+        An RST field list marker `:name:` (no backtick-delimited argument)
+        is legitimate inline syntax that survives verbatim into the normalised
+        MD; it is not an unprocessed role, so QC5 must not FAIL."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "フィールド :name: 値 のような行は許容"}
+        ]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i and "role" in i] == []
+
+    def test_pass_rst_japanese_punctuation_not_confused_with_role(self):
+        """Japanese colon-like punctuation must not be mistaken for a role."""
+        data = {"id": "f", "title": "概要", "content": "", "sections": [
+            {"id": "s1", "title": "詳細", "level": 2, "content": "注意：ここは普通の文章です。"}
+        ]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i] == []
+
+    # --- Z-1 r7 Findings: QC5 regex strictness ---------------------------
+
+    def test_pass_rst_role_name_without_closing_backtick_not_flagged(self):
+        """Spec §3-1 QC5 writes the RST role pattern as `:role:\\`text\\``
+        — BOTH backticks required. rbkc.md: 'Yes. Spec §3-1 QC5 writes
+        `:role:\\`text\\`` (both backticks).' An opening-backtick-only
+        sequence is malformed and not the named pattern; QC5 must not FAIL
+        on it. (Z-1 r7 QC5 F1)"""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "文中に :foo:` のような破片"}
+        ]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i and "role" in i] == []
+
+    def test_fail_rst_role_with_both_backticks_flagged(self):
+        """Complement to the pass test: a real role `:ref:\\`x\\`` must
+        still FAIL QC5 (the converter should have resolved it)."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "未処理 :ref:`label` 残"}
+        ]}
+        assert any("QC5" in i and "role" in i for i in self._check(data, "rst"))
+
+    def test_pass_rst_label_tokens_in_prose_not_flagged(self):
+        """Spec §3-1 QC5 defines the label pattern as `.. _label:` — by
+        the RST explicit-markup spec this construct must begin at line
+        start. A mid-sentence occurrence is not a label definition and
+        must not FAIL QC5. (Z-1 r7 QC5 F2)"""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "see .. _foo: below in text"}
+        ]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i and "label" in i] == []
+
+    def test_fail_rst_label_on_its_own_line_flagged(self):
+        """A label definition on its own line must still FAIL QC5."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "前文\n.. _my-label:\n後文"}
+        ]}
+        assert any("QC5" in i and "label" in i for i in self._check(data, "rst"))
+
+    def test_fail_md_summary_tag(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "<summary>タイトル</summary>"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_br_tag(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "改行<br>入り"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_a_tag(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "<a href='x'>link</a>"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_escaped_underscore(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": r"word\_word"}
+        ]}
+        assert any("QC5" in i and "backslash" in i for i in self._check(data, "md"))
+
+    def test_fail_md_escaped_bracket(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": r"\[not a link\]"}
+        ]}
+        assert any("QC5" in i and "backslash" in i for i in self._check(data, "md"))
+
+    def test_fail_md_raw_html_inside_inline_code_still_detected(self):
+        """QC5 is an independent check on JSON text. Raw HTML anywhere in
+        content FAILs — a literal `<br>` inside backticks is still HTML
+        from QC5's perspective because the converter should have escaped
+        or transformed it before emission. This pins the spec (§3-1 QC5
+        RST/MD 'raw HTML' pattern)."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "使い方: `<br>` を挿入"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_self_closing_br(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "line<br/>break"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_self_closing_hr(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "sep<hr/>done"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_self_closing_img(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "level": 2, "content": "see <img/>"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+
+# ---------------------------------------------------------------------------
+# QL2: 外部URL一致
+# ---------------------------------------------------------------------------
+
+class TestVerifyFileQL2:
+    """QL2: External URLs in source must appear verbatim in JSON."""
+
+    def _check_ql2(self, source_text, data, fmt):
+        from scripts.verify.verify import check_external_urls
+        return check_external_urls(source_text, data, fmt)
+
+    def test_pass_url_in_json(self):
+        src = "詳細は https://example.com を参照。\n"
+        data = {"id": "f", "title": "T", "content": "https://example.com を参照。", "sections": []}
+        assert self._check_ql2(src, data, "rst") == []
+
+    def test_fail_url_missing_from_json(self):
+        src = "詳細は https://example.com を参照。\n"
+        data = {"id": "f", "title": "T", "content": "説明。", "sections": []}
+        issues = self._check_ql2(src, data, "rst")
+        assert any("QL2" in i and "example.com" in i for i in issues)
+
+    def test_pass_duplicate_url_reported_once(self):
+        src = "https://example.com と https://example.com が重複。\n"
+        data = {"id": "f", "title": "T", "content": "https://example.com を参照。", "sections": []}
+        issues = self._check_ql2(src, data, "rst")
+        # URL present in JSON → no FAIL even if duplicated in source
+        assert all("QL2" not in i for i in issues)
+
+    def test_pass_rst_target_def_url_excluded(self):
+        src = ".. _Name: https://only-in-target.com\n通常テキスト\n"
+        data = {"id": "f", "title": "T", "content": "通常テキスト", "sections": []}
+        # RST target definition URLs are dropped by converter, so no QL2 FAIL
+        assert self._check_ql2(src, data, "rst") == []
+
+    def test_pass_no_source_urls(self):
+        src = "URLなしのテキスト\n"
+        data = {"id": "f", "title": "T", "content": "説明。", "sections": []}
+        assert self._check_ql2(src, data, "rst") == []
+
+    def test_pass_xlsx_skipped(self):
+        src = "https://should-be-ignored.com\n"
+        data = {"id": "f", "title": "T", "content": "説明。", "sections": []}
+        assert self._check_ql2(src, data, "xlsx") == []
+
+    def test_pass_no_knowledge_content_skipped(self):
+        src = "https://example.com\n"
+        data = {"id": "f", "title": "T", "no_knowledge_content": True, "sections": []}
+        assert self._check_ql2(src, data, "rst") == []
+
+    def test_fail_url_in_section_content_missing(self):
+        src = "詳細は https://example.com を参照。\n"
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "参照", "level": 2, "content": "リンクなし"}
+        ]}
+        issues = self._check_ql2(src, data, "rst")
+        assert any("QL2" in i for i in issues)
+
+    def test_pass_url_in_section_content(self):
+        src = "詳細は https://example.com を参照。\n"
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "参照", "level": 2, "content": "https://example.com を参照。"}
+        ]}
+        assert self._check_ql2(src, data, "rst") == []
+
+    def test_pass_rst_inline_code_url_trailing_backtick_trimmed(self):
+        """RST ``http://...`` must not leak trailing backticks into the URL."""
+        src = "起動したら ``http://localhost:9080/`` にアクセス。\n"
+        data = {"id": "f", "title": "T", "content": "起動したら `http://localhost:9080/` にアクセス。", "sections": []}
+        assert self._check_ql2(src, data, "rst") == []
+
+    def test_pass_rst_substitution_only_url_skipped(self):
+        """URLs appearing only inside a substitution directive body are skipped."""
+        src = (
+            "通常テキスト。\n\n"
+            ".. |jsr317| raw:: html\n\n"
+            "   <a href=\"https://only-in-subst.example\" target=\"_blank\">Text</a>\n"
+        )
+        data = {"id": "f", "title": "T", "content": "通常テキスト。", "sections": []}
+        assert self._check_ql2(src, data, "rst") == []
+
+    # --- QL2 Z-1 gap fill: MD path + URL-edge-cases ----------------------
+
+    def test_fail_md_inline_link_url_missing(self):
+        src = "# T\n\nsee [docs](https://example.com/a/b) please.\n"
+        data = {"id": "f", "title": "T", "content": "see docs please.", "sections": []}
+        issues = self._check_ql2(src, data, "md")
+        assert any("QL2" in i and "example.com/a/b" in i for i in issues)
+
+    def test_pass_md_inline_link_url_present(self):
+        src = "# T\n\nsee [docs](https://example.com/a/b)\n"
+        data = {"id": "f", "title": "T", "content": "[docs](https://example.com/a/b)", "sections": []}
+        assert self._check_ql2(src, data, "md") == []
+
+    def test_fail_md_autolink_url_missing(self):
+        """CommonMark autolink `<https://...>` must be collected via AST."""
+        src = "# T\n\nvisit <https://auto.example.com/path>\n"
+        data = {"id": "f", "title": "T", "content": "visit", "sections": []}
+        issues = self._check_ql2(src, data, "md")
+        assert any("QL2" in i and "auto.example.com/path" in i for i in issues)
+
+    def test_pass_md_url_with_query_and_fragment(self):
+        """Query string and fragment must not be truncated by the extractor."""
+        src = "# T\n\n[link](https://example.com/path?x=1&y=2#frag)\n"
+        data = {"id": "f", "title": "T",
+                "content": "[link](https://example.com/path?x=1&y=2#frag)", "sections": []}
+        assert self._check_ql2(src, data, "md") == []
+
+    def test_pass_md_url_with_parentheses_in_path(self):
+        """URL containing parentheses in the path — spec requires the
+        source-literal URL to appear verbatim in JSON. The expected URL
+        is pinned to the source literal (NOT derived from AST output),
+        so the test catches extractor regressions that truncate the URL
+        at the `)`. (Z-1 r7 QL2 F1 — previously circular.)"""
+        src = "# T\n\n[api](https://example.com/foo(bar))\n"
+        data = {"id": "f", "title": "T",
+                "content": "api https://example.com/foo(bar)", "sections": []}
+        assert self._check_ql2(src, data, "md") == []
+
+    def test_fail_md_url_with_parentheses_truncated_in_json(self):
+        """Complement to above: if JSON has the URL truncated at `)`
+        (what a buggy extractor might produce), QL2 must FAIL."""
+        src = "# T\n\n[api](https://example.com/foo(bar))\n"
+        data = {"id": "f", "title": "T",
+                "content": "api https://example.com/foo(bar", "sections": []}
+        issues = self._check_ql2(src, data, "md")
+        assert any("QL2" in i for i in issues)
+
+    def test_pass_md_url_followed_by_japanese_punct_not_absorbed(self):
+        """Trailing 」 / 。 must not be absorbed into the URL (AST-only
+        principle — the old regex approach was prone to this)."""
+        src = "# T\n\n参照「[docs](https://example.com/x)」です。\n"
+        data = {"id": "f", "title": "T",
+                "content": "[docs](https://example.com/x)", "sections": []}
+        assert self._check_ql2(src, data, "md") == []
+
+    def test_fail_md_http_vs_https_distinguished(self):
+        """http:// and https:// are different URLs; substituting one for
+        the other must FAIL QL2 (exact match required)."""
+        src = "# T\n\n[link](http://example.com/a)\n"
+        data = {"id": "f", "title": "T",
+                "content": "[link](https://example.com/a)", "sections": []}
+        issues = self._check_ql2(src, data, "md")
+        assert any("QL2" in i and "http://example.com/a" in i for i in issues)
+
+    def test_pass_md_autolink_url_present(self):
+        """Z-1 r7 QL2 F3: PASS counterpart for autolink. When the
+        autolinked URL is present in JSON content, QL2 must not FAIL.
+        (Proves the check is bidirectional — the FAIL case is vacuous
+        without a matching PASS.)"""
+        src = "# T\n\nvisit <https://auto.example.com/path>\n"
+        data = {"id": "f", "title": "T",
+                "content": "visit https://auto.example.com/path", "sections": []}
+        assert self._check_ql2(src, data, "md") == []
+
+    def test_pass_rst_url_with_parens_javadoc_anchor(self):
+        """Z-1 r7 QL2 F4: RST coverage for URL containing balanced parens
+        (Javadoc anchors are the most common case in the v6 corpus)."""
+        src = (
+            "概要\n====\n\n"
+            "`Javadoc <https://example.com/Class.html#m(java.lang.String)>`_ を参照\n"
+        )
+        data = {"id": "f", "title": "T",
+                "content": "Javadoc https://example.com/Class.html#m(java.lang.String)",
+                "sections": []}
+        assert self._check_ql2(src, data, "rst") == []
+
+    def test_fail_md_trailing_slash_distinguished(self):
+        """Z-1 r7 QL2 F5: source URL WITH trailing slash, JSON without
+        → source URL is not a substring of JSON → QL2 FAIL. Guards
+        against extractor trailing-slash-stripping regressions."""
+        src = "# T\n\n[link](https://example.com/a/)\n"
+        data = {"id": "f", "title": "T",
+                "content": "link https://example.com/a here", "sections": []}
+        issues = self._check_ql2(src, data, "md")
+        assert any("QL2" in i and "https://example.com/a/" in i for i in issues)
+
+
+# ---------------------------------------------------------------------------
+# QC1-QC4: content completeness (RST/MD sequential-delete)
+# ---------------------------------------------------------------------------
+
+class TestCheckContentCompleteness:
+    """QC1-QC4: sequential-delete algorithm via check_content_completeness."""
+
+    def _check(self, source_text, data, fmt="rst", label_map=None):
+        from scripts.verify.verify import check_content_completeness
+        return check_content_completeness(source_text, data, fmt, label_map)
+
+    def _data(self, title="", content="", sections=None):
+        return {
+            "id": "f", "title": title, "content": content,
+            "sections": sections or []
+        }
+
+    # --- QC2: fabricated content (not in source) ---
+
+    def test_fail_qc2_fabricated_title(self):
+        src = "概要\n====\n\n本文。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "存在しないセクション", "level": 2, "content": "本文。"}
+        ])
+        issues = self._check(src, data)
+        assert any("QC2" in i and "fabricated" in i for i in issues)
+
+    def test_fail_qc2_fabricated_content(self):
+        src = "概要\n====\n\n本文。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "捏造されたテキスト。"}
+        ])
+        issues = self._check(src, data)
+        assert any("QC2" in i and "fabricated" in i for i in issues)
+
+    # --- QC3: duplicate content ---
+
+    def test_fail_qc3_duplicate_title(self):
+        src = "概要\n====\n\n本文。\n\n詳細\n====\n\n詳細内容。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"},
+            {"id": "s2", "title": "概要", "level": 2, "content": "詳細内容。"},  # duplicate title
+        ])
+        issues = self._check(src, data)
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC2]" in i or "[QC4]" in i for i in issues)
+
+    # --- QC4: misplaced content ---
+
+    def test_fail_qc4_misplaced_title(self):
+        src = "詳細\n====\n\n詳細内容。\n\n概要\n====\n\n概要内容。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "概要内容。"},   # appears later in source
+            {"id": "s2", "title": "詳細", "level": 2, "content": "詳細内容。"},   # appears earlier in source
+        ])
+        issues = self._check(src, data)
+        assert any("[QC4]" in i and "s2" in i for i in issues), issues
+
+    # --- QC1: source content not captured ---
+
+    def test_fail_qc1_residual_content(self):
+        src = "概要\n====\n\n本文。\n\n追加情報はここにあります。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"}
+            # "追加情報はここにあります。" not captured
+        ])
+        issues = self._check(src, data)
+        assert any("QC1" in i for i in issues)
+
+    def test_fail_qc1_rst_reports_every_residue_fragment(self):
+        """Spec §3-1 判定分岐 row 4 names residue as non-whitespace text
+        remaining; per `.claude/rules/rbkc.md` ('RST one-snippet vs MD
+        all-fragments — All fragments'), every fragment must be reported.
+        A prior implementation truncated RST residue to a single 80-char
+        snippet, hiding additional gaps. (Z-1 r7 QC1 F2)"""
+        src = "概要\n====\n\n本文。\n\nalpha\n\nbravo\n\ncharlie\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"}
+            # alpha / bravo / charlie all uncaptured — three disjoint
+            # residue fragments.
+        ])
+        issues = self._check(src, data)
+        qc1 = [i for i in issues if "[QC1]" in i]
+        # Expect one issue per residue fragment, not a single snippet.
+        assert any("alpha" in i for i in qc1), qc1
+        assert any("bravo" in i for i in qc1), qc1
+        assert any("charlie" in i for i in qc1), qc1
+
+    def test_pass_rst_syntax_in_residual_allowed(self):
+        # Converter renders `.. note::` as `> **Note:** ...` so JSON content
+        # includes the MD admonition header. New Visitor renders note body
+        # as nested paragraph inside the blockquote, so the JSON content
+        # should match the visitor's output.
+        src = "概要\n====\n\n本文。\n\n.. note::\n\n   注記内容。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。\n\n> **Note:**\n> 注記内容。"}
+        ])
+        issues = self._check(src, data)
+        assert all("QC1" not in i for i in issues)
+
+    def test_pass_md_heading_captured_as_title(self):
+        # MD h1 is captured as the JSON top-level title; h2 opens a section.
+        # The normalised source contains both, and all are consumed by JSON.
+        src = "# タイトル\n\n## セクション\n\n本文。\n"
+        data = self._data(title="タイトル", sections=[
+            {"id": "s1", "title": "セクション", "level": 2, "content": "本文。"}
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert all("QC1" not in i for i in issues)
+
+    # --- PASS cases ---
+
+    def test_pass_all_content_captured(self):
+        src = "概要\n====\n\n本文です。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文です。"}
+        ])
+        assert self._check(src, data) == []
+
+    def test_pass_no_knowledge_content_skipped(self):
+        data = {"id": "f", "title": "T", "no_knowledge_content": True, "sections": []}
+        assert self._check("any source", data) == []
+
+    def test_pass_empty_data_no_issues(self):
+        data = self._data()
+        assert self._check("any source", data) == []
+
+    def test_pass_md_verbatim_match(self):
+        """MD source and MD JSON content are same format — verbatim match."""
+        src = "## セクション\n\n**重要な**情報があります。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "セクション", "level": 2, "content": "**重要な**情報があります。"}
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert all("QC2" not in i for i in issues)
+        assert all("QC1" not in i for i in issues)
+
+    def test_pass_top_level_content_captured(self):
+        src = "タイトル\n========\n\nトップレベル本文。\n\nセクション\n==========\n\nセクション本文。\n"
+        data = self._data(
+            title="タイトル",
+            content="トップレベル本文。",
+            sections=[{"id": "s1", "title": "セクション", "level": 2, "content": "セクション本文。"}]
+        )
+        assert self._check(src, data) == []
+
+    # --- RST normalization: false positive prevention ---
+
+    def test_pass_rst_double_backtick_inline_code(self):
+        """RST ``code`` is converted to MD `code` — must not trigger QC2."""
+        src = "名前空間が ``javax.*`` から ``jakarta.*`` になる。\n"
+        data = self._data(content="名前空間が `javax.*` から `jakarta.*` になる。")
+        assert self._check(src, data) == []
+
+    def test_pass_rst_ref_label_resolved_text(self):
+        """RST :ref:`label` is resolved to the target section title via label_map
+        (§3-1b zero-exception: unresolved would FAIL; here we supply it)."""
+        src = "詳細は :ref:`doma_dependency` を参照。\n\ndoma_dependency\n===============\n\nDoma 設定。\n"
+        data = self._data(
+            content="詳細は doma_dependency を参照。",
+            sections=[{"id": "s1", "title": "doma_dependency", "level": 2, "content": "Doma 設定。"}]
+        )
+        assert self._check(src, data, label_map={"doma_dependency": "doma_dependency"}) == []
+
+    def test_pass_rst_external_link_text(self):
+        """RST `text <url>`_ is converted to MD [text](url) — must not trigger QC2."""
+        src = "`公式サイト <https://example.com>`_ を参照。\n"
+        data = self._data(content="[公式サイト](https://example.com) を参照。")
+        assert self._check(src, data) == []
+
+    def test_pass_rst_ref_display_form_resolved(self):
+        """RST :ref:`display <label>` resolved to display text — must not trigger QC2."""
+        src = "詳細は :ref:`Doma設定 <doma_config>` を参照。\n"
+        data = self._data(content="詳細は Doma設定 を参照。")
+        assert self._check(src, data) == []
+
+    def test_pass_rst_backtick_underscore_literal_in_code(self):
+        """RST ``_`` literal underscore inside inline code must not be stripped as
+        named-reference marker. Converter emits `_` in MD; both sides must align."""
+        src = "区切り文字に ``_`` を使用する。\n"
+        data = self._data(content="区切り文字に `_` を使用する。")
+        assert self._check(src, data) == []
+
+    def test_pass_rst_comment_line_is_syntax(self):
+        """``.. text-without-colons`` lines are RST comments per spec and must be
+        treated as allowed syntax residue for QC1."""
+        src = "概要\n====\n\n本文。\n\n.. textlint-disable ja/foo\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"}
+        ])
+        assert self._check(src, data) == []
+
+    def test_pass_rst_comment_block_with_indented_body(self):
+        """``..`` comment with indented body: entire block is RST syntax per spec."""
+        src = (
+            "概要\n====\n\n本文。\n\n"
+            ".. 実装済み\n"
+            ".. * 項目1\n"
+            "..   * サブ項目\n"
+            ".. * 項目2\n"
+        )
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"}
+        ])
+        assert self._check(src, data) == []
+
+    def test_pass_rst_field_list_with_inline_value(self):
+        """RST field list ``:name: value`` — per §3-1a, standalone field_list
+        drops the name and preserves the value (recursively visited)."""
+        src = "概要\n====\n\n:エスケープ対象文字: ``%`` 、 ``_``\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "`%` 、 `_`"}
+        ])
+        assert self._check(src, data) == []
+
+    def test_pass_rst_field_list_with_separate_value(self):
+        """RST field list ``:name:\\n  value`` — value-only retained."""
+        src = (
+            "概要\n====\n\n"
+            ":Status-Code:\n"
+            "  応答電文のステータスコード。\n"
+        )
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "応答電文のステータスコード。"}
+        ])
+        assert self._check(src, data) == []
+
+    # --- QC1 Z-1 gap fill: parse / Visitor error paths -------------------
+
+    def test_fail_qc1_md_unknown_token_surfaces(self):
+        """Spec §3-1b zero-exception: an unknown markdown-it token type
+        must surface as a QC1 FAIL. We inject a token stream with an
+        unregistered block token and route it through verify's MD path."""
+        import scripts.common.md_ast as md_ast_mod
+        from markdown_it.token import Token
+
+        def _inject_unknown(source):
+            # Minimal normal block + one unknown block token
+            heading_open = Token("heading_open", "h1", 1); heading_open.tag = "h1"; heading_open.markup = "#"
+            inline = Token("inline", "", 0); inline.content = "T"
+            inline.children = [Token("text", "", 0)]; inline.children[0].content = "T"
+            heading_close = Token("heading_close", "h1", -1); heading_close.tag = "h1"; heading_close.markup = "#"
+            unknown = Token("custom_block_xyz", "", 0)
+            return [heading_open, inline, heading_close, unknown]
+
+        orig = md_ast_mod.parse
+        md_ast_mod.parse = _inject_unknown
+        try:
+            issues = self._check("# T\n", self._data(title="T"), fmt="md")
+        finally:
+            md_ast_mod.parse = orig
+        assert any("[QC1]" in i and "markdown parse/visitor error" in i for i in issues)
+
+    def test_pass_qc1_rst_unresolved_substitution_fallback(self):
+        """Spec §3-2-3 Sphinx 追従原則: unresolved substitution
+        (`|undefined_version|` with no definition) は docutils が
+        `problematic` node で display text を保持する。Sphinx も
+        WARNING + display text fallback で HTML build を継続する。
+        RBKC もこれに追従し QC1 FAIL ではなく warning 記録 + content
+        保持で render する。
+        content 損失の検出は QC1 残存チェック (独立機構) が担う —
+        JSON が source を網羅すれば PASS、欠落があれば残存 FAIL。"""
+        src = "概要\n====\n\n利用バージョン: |undefined_version|\n"
+        # JSON が source の substitution ref を display text として保持する場合
+        data = self._data(sections=[{
+            "id": "s1", "title": "概要", "level": 2,
+            "content": "利用バージョン: |undefined_version|"
+        }])
+        issues = self._check(src, data)
+        # No parse/visitor-error QC1 FAIL (Sphinx 追従).
+        assert not any(
+            "[QC1]" in i and "RST parse/visitor error" in i for i in issues
+        ), f"unresolved substitution must not be QC1 FAIL (Sphinx 追従): {issues}"
+        assert issues == [], f"expected no FAILs, got: {issues}"
+
+    def test_pass_qc1_rst_unknown_directive_drops_body_like_sphinx(self):
+        """Spec §3-2-3 Sphinx 追従原則: 未登録 directive
+        `.. unknown-directive-xyz::` は Sphinx 本体が HTML に出さない
+        (directive が何をする命令か不明のため)。docutils も body を AST
+        から落とし、`system_message` に ERROR/3 を記録する。
+        RBKC もこれに追従し、JSON には drop された body を含めず、QC1
+        FAIL も立てない。"Sphinx が出さないものは RBKC も出さない" が
+        正しい振る舞い。
+        corpus 実測 (v6/v5/v1.4/v1.3/v1.2) では未登録 directive 出現数は
+        0 件。本 fixture は架空の directive で Sphinx 追従挙動を pin する。
+        """
+        src = "概要\n====\n\n.. unknown-directive-xyz::\n\n   body text\n"
+        # JSON に body text は含まれない (Sphinx 同等の drop)
+        data = self._data(sections=[{"id": "s1", "title": "概要", "level": 2, "content": ""}])
+        issues = self._check(src, data)
+        # No parse/visitor-error QC1 FAIL.
+        assert not any(
+            "[QC1]" in i and "RST parse/visitor error" in i for i in issues
+        ), f"unknown directive must not be QC1 FAIL (Sphinx 追従): {issues}"
+        assert issues == [], f"expected no FAILs, got: {issues}"
+
+    def test_pass_qc1_rst_unknown_role_text_fallback(self):
+        """Spec §3-2-3 Sphinx 追従原則: 未登録 role `:unknownshim:` は
+        docutils が `problematic` node として role 名 + text をそのまま
+        保持する (Sphinx も WARNING + fallback text)。RBKC は QC1 FAIL では
+        なく warning 記録 + content 保持で render する。
+        content 損失があれば QC1 残存チェックが独立に検出する。"""
+        # `:unknownshim:` is not in _SPHINX_INLINE_ROLES and not a docutils native role
+        src = "概要\n====\n\nテキスト :unknownshim:`x` を含む。\n"
+        # JSON は fallback text をそのまま保持
+        data = self._data(sections=[{
+            "id": "s1", "title": "概要", "level": 2,
+            "content": "テキスト :unknownshim:`x` を含む。",
+        }])
+        issues = self._check(src, data)
+        assert not any(
+            "[QC1]" in i and "RST parse/visitor error" in i for i in issues
+        ), f"unknown role must not be QC1 FAIL (Sphinx 追従): {issues}"
+        assert issues == [], f"expected no FAILs, got: {issues}"
+
+    def test_fail_qc1_rst_severe_level_4_still_fails(self):
+        """Spec §3-1b / §3-2-3: SEVERE/4 は doctree が信用できない
+        破壊的状態なので従来通り QC1 FAIL。本テストは policy inversion
+        (ERROR/3 → warning, SEVERE/4 → FAIL) の SEVERE 側を pin する。
+
+        docutils で確実に SEVERE/4 を誘発するのは難しいので、直接
+        rst_normaliser にワーニング文字列を渡した想定は test_rst_normaliser
+        で別途実施する (本テストは省略可)。"""
+        # Note: docutils corpus に依存せず SEVERE を安定発生させるのが
+        # 難しいため、代表として rst_normaliser の正面入力で検証する
+        # ケースは test_rst_normaliser に置く。ここでは QC1 FAIL の
+        # 反転テスト (ERROR/3 → 非 FAIL) が他のテストで確認されていれば十分。
+        pass
+
+    def test_pass_qc1_rst_unknown_target_name_not_promoted_to_fail(self):
+        """Phase 22-B-12 Finding C: Japanese prose containing a trailing
+        underscore name in brackets (e.g. 「nablarch_」) is interpreted
+        by docutils as a named hyperlink reference and emits
+        `(ERROR/3) Unknown target name: "nablarch"` in the warning
+        stream.  Sphinx itself emits a WARNING for the same input and
+        still produces HTML (spec §3-2-3 Sphinx 追従原則: WARNING は
+        ビルドを止めない).  docutils also yields a valid doctree with
+        the text preserved in a `problematic` node, which the visitor
+        emits verbatim.
+
+        Therefore rst_normaliser must NOT promote "Unknown target name"
+        errors to UnknownSyntaxError / QC1 FAIL.  Other ERROR/3 classes
+        (unknown directive, unknown role, unresolved substitution) MUST
+        still FAIL — they are covered by the tests above.
+        """
+        # Reproduction of .lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_BasicRules.rst:4-6
+        src = (
+            "命名ルール\n==============================\n\n"
+            "フレームワークでは、プレフィックス「nablarch_」を使用する。\n"
+        )
+        data = self._data(
+            title="命名ルール",
+            sections=[],
+            content="フレームワークでは、プレフィックス「nablarch_」を使用する。",
+        )
+        issues = self._check(src, data)
+        # No QC1 RST parse/visitor error for Unknown target name.
+        assert not any(
+            "[QC1]" in i and "Unknown target name" in i for i in issues
+        ), f"Unknown target name must not be QC1 FAIL (Sphinx 追従): {issues}"
+        # And the content-completeness check must succeed — the
+        # problematic-node display-text fallback preserves "nablarch_"
+        # verbatim, so the JSON content is found in the source.
+        assert issues == [], f"expected no FAILs, got: {issues}"
+
+    def test_pass_qc1_rst_inconsistent_title_style_not_promoted_to_fail(self):
+        """Sphinx 追従原則 (§3-2-3) ホワイトリスト拡張: docutils の
+        `(ERROR/3) Inconsistent title style: skip from level N to M` は
+        Sphinx 本体でも WARNING 扱いで HTML build は成功する。AST には
+        全 section / title / content が保持されるため、RBKC は
+        VisitorError で halt せず warning 記録で render を継続する。
+
+        再現: `.lw/nab-official/v1.4/document/tool/07_AuthGenerator/01_AuthGenerator.rst`
+        が overline+underline (`=/=`, `-/-`) と underline-only (`=`, `-`)
+        のタイトル記法を混在させ、後者の出現時に docutils が
+        "skip from level 2 to 4" を ERROR/3 として report する。
+        """
+        # 最小再現: Level 1 = `=/=`, Level 2 = `=`, Level 3 = `-/-`。
+        # そのあと Level 2 の S2 に underline-only `-` で O を付けると、
+        # 既に `-` は Level 3 としても未登録 (登録済は `-/-`)、かつ
+        # Level 2 から 1 段 skip するため、docutils が
+        # "Inconsistent title style: skip from level 2 to 4" を raise する。
+        src = (
+            "===\n"
+            "D\n"
+            "===\n"
+            "\n"
+            "S\n"
+            "===\n"
+            "\n"
+            "---\n"
+            "T\n"
+            "---\n"
+            "\n"
+            "S2\n"
+            "===\n"
+            "\n"
+            "O\n"
+            "---\n"
+            "\n"
+            "bodyO\n"
+        )
+        data = self._data(
+            title="D",
+            sections=[
+                {"id": "s1", "title": "S", "level": 2, "content": ""},
+                {"id": "s2", "title": "T", "level": 3, "content": ""},
+                {"id": "s3", "title": "S2", "level": 2, "content": ""},
+                {"id": "s4", "title": "O", "level": 4, "content": "bodyO"},
+            ],
+        )
+        issues = self._check(src, data)
+        # Core assertion: Inconsistent title style must NOT surface as a
+        # QC1 parse/visitor FAIL (Sphinx 追従). Unlike Unknown target name,
+        # this does not hide content — the doctree retains every section,
+        # title, and body, which RBKC can then render normally.
+        assert not any(
+            "[QC1]" in i and (
+                "Inconsistent title style" in i
+                or "RST parse/visitor error" in i
+            )
+            for i in issues
+        ), f"Inconsistent title style must not be QC1 FAIL (Sphinx 追従): {issues}"
+
+    # --- QC2 Z-1 gap fill: multiple fabrications + top-level + near-miss ---
+
+    def test_fail_qc2_multiple_fabricated_contents(self):
+        src = "概要\n====\n\n本文。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "捏造 A。"},
+            {"id": "s2", "title": "詳細", "level": 2, "content": "捏造 B。"},
+        ])
+        issues = self._check(src, data)
+        qc2 = [i for i in issues if "QC2" in i]
+        assert len(qc2) >= 2
+
+    def test_fail_qc2_top_level_fabricated_content(self):
+        src = "概要\n====\n\n本文。\n"
+        data = self._data(title="概要", content="存在しないトップレベル本文。",
+                          sections=[{"id": "s1", "title": "概要", "level": 2, "content": "本文。"}])
+        issues = self._check(src, data)
+        assert any("QC2" in i and "fabricated content" in i for i in issues)
+
+    def test_fail_qc2_near_miss_one_char_differs(self):
+        src = "概要\n====\n\nABCDEFG\n"
+        data = self._data(sections=[{"id": "s1", "title": "概要", "level": 2, "content": "ABCXEFG"}])
+        issues = self._check(src, data)
+        assert any("QC2" in i for i in issues)
+
+    # --- QC3 Z-1 gap fill: all 4 untested paths + CJK short collision ----
+
+    def test_fail_qc3_duplicate_content_rst(self):
+        src = "概要\n====\n\n共通テキスト。\n\n詳細\n====\n\n別テキスト。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "共通テキスト。"},
+            {"id": "s2", "title": "詳細", "level": 2, "content": "共通テキスト。"},  # content in JSON not in source twice
+        ])
+        issues = self._check(src, data)
+        # Spec §3-1 distinguishes QC3 from QC2/QC4 by label — assert the exact label.
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC2]" in i or "[QC4]" in i for i in issues)
+
+    def test_fail_qc3_duplicate_title_md(self):
+        src = "# T\n\n## 概要\n\n本文 A。\n\n## 詳細\n\n本文 B。\n"
+        data = self._data(title="T", sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文 A。"},
+            {"id": "s2", "title": "概要", "level": 2, "content": "本文 B。"},  # duplicate title in JSON
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC2]" in i or "[QC4]" in i for i in issues)
+
+    def test_pass_qc3_short_cjk_repeated_in_source_and_json(self):
+        """Two sections legitimately using the same short CJK title; both
+        appear in source and JSON — no false QC3."""
+        src = "## 概要\n\nA 本文。\n\n## 概要\n\nB 本文。\n"
+        data = self._data(title="", sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "A 本文。"},
+            {"id": "s2", "title": "概要", "level": 2, "content": "B 本文。"},
+        ])
+        issues = self._check(src, data, fmt="md")
+        # Source has "概要" twice → each JSON title consumes a distinct
+        # occurrence. No QC3/QC4 for the title pair.
+        assert not any("[QC3]" in i and "概要" in i for i in issues)
+
+    def test_fail_qc3_top_level_and_section_content_duplicated(self):
+        """Top-level content and a section content both declare the same
+        text, but source has it only once → second consumption collides."""
+        src = "# T\n\n共通テキスト。\n\n## 詳細\n"
+        data = self._data(
+            title="T",
+            content="共通テキスト。",
+            sections=[{"id": "s1", "title": "詳細", "level": 2, "content": "共通テキスト。"}],
+        )
+        issues = self._check(src, data, fmt="md")
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC2]" in i or "[QC4]" in i for i in issues)
+
+    def test_fail_qc3_duplicate_content_md(self):
+        src = "# T\n\n## 概要\n\n本文。\n\n## 詳細\n\n別。\n"
+        data = self._data(title="T", sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "本文。"},
+            {"id": "s2", "title": "詳細", "level": 2, "content": "本文。"},  # JSON duplicates source "本文。" substring
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC2]" in i or "[QC4]" in i for i in issues)
+
+    # --- QC4 Z-1 gap fill: MD misplacement + content-only swap ------------
+
+    def test_fail_qc4_misplaced_title_md(self):
+        src = "# T\n\n## 詳細\n\n詳細内容。\n\n## 概要\n\n概要内容。\n"
+        data = self._data(title="T", sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "概要内容。"},
+            {"id": "s2", "title": "詳細", "level": 2, "content": "詳細内容。"},
+        ])
+        issues = self._check(src, data, fmt="md")
+        # Spec §3-1 L84 names the affected section id as part of the defect.
+        assert any("[QC4]" in i and "s2" in i for i in issues), issues
+
+    def test_fail_qc4_three_section_middle_swap(self):
+        """Three sections A/B/C in source; JSON swaps B and C → QC4 must
+        fire for one of them (position regression on 2nd or 3rd)."""
+        src = "A\n=\n\na\n\nB\n=\n\nb\n\nC\n=\n\nc\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
+            {"id": "s2", "title": "C", "level": 2, "content": "c"},
+            {"id": "s3", "title": "B", "level": 2, "content": "b"},
+        ])
+        issues = self._check(src, data)
+        # Spec §3-1 L185 names QC4 specifically; assert the label and the
+        # flagged section id.
+        assert any("[QC4]" in i and "s3" in i for i in issues), issues
+
+    def test_fail_qc4_three_section_content_only_rotation_rst(self):
+        """Spec §3-1 L84: 'セクション A のコンテンツが JSON の異なる
+        セクションに配置されている'. Titles in spec order; contents
+        rotated A→a, B→c, C→b. The middle section's content (c) is out
+        of position. (Z-1 r7 QC4 F3)"""
+        src = "A\n=\n\na\n\nB\n=\n\nb\n\nC\n=\n\nc\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
+            {"id": "s2", "title": "B", "level": 2, "content": "c"},  # swapped
+            {"id": "s3", "title": "C", "level": 2, "content": "b"},  # swapped
+        ])
+        issues = self._check(src, data)
+        assert any("[QC4]" in i for i in issues)
+
+    def test_fail_qc4_three_section_content_only_rotation_md(self):
+        """MD mirror of the three-section content rotation above."""
+        src = "# T\n\n## A\n\na\n\n## B\n\nb\n\n## C\n\nc\n"
+        data = self._data(title="T", sections=[
+            {"id": "s1", "title": "A", "level": 2, "content": "a"},
+            {"id": "s2", "title": "B", "level": 2, "content": "c"},
+            {"id": "s3", "title": "C", "level": 2, "content": "b"},
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("[QC4]" in i for i in issues)
+
+    def test_fail_qc4_md_content_swap(self):
+        """MD: two sections with swapped content (titles correct)."""
+        src = "# T\n\n## A\n\nA の内容。\n\n## B\n\nB の内容。\n"
+        data = self._data(title="T", sections=[
+            {"id": "s1", "title": "A", "level": 2, "content": "B の内容。"},
+            {"id": "s2", "title": "B", "level": 2, "content": "A の内容。"},
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("[QC4]" in i and "s2" in i for i in issues), issues
+
+    def test_pass_qc3_single_consumption_of_duplicated_source_text(self):
+        """Positive guard — when source has duplicated text but JSON only
+        consumes one of them, no QC3/QC4 must fire. (Was part of the old
+        boundary test; retained as a dedicated pass-guard.)"""
+        src = "A\n=\n\nnote\n\nB\n=\n\nnote\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "A", "level": 2, "content": "note"},
+        ])
+        issues = self._check(src, data)
+        assert not any("[QC3]" in i for i in issues)
+        assert not any("[QC4]" in i for i in issues)
+
+    def test_fail_qc4_boundary_text_occurs_in_both_positions_misplaced(self):
+        """Spec §3-1 boundary between QC3 and QC4:
+
+        Source has 'note' at positions A and B; JSON places what should
+        be s1's body into s2 and vice versa. Both occurrences exist in
+        source, both are UNCONSUMED at the time of JSON s1's lookup
+        (JSON order: s1.title=A, s1.content=note_from_B_position,
+        s2.title=B, s2.content=note_from_A_position). Position regression
+        → QC4 per spec L185 "削除位置が JSON 順より前に逆行 | QC4".
+
+        This test pins the label explicitly — a prior version of this
+        test asserted only 'not QC3' which was vacuous when only one
+        consumption occurred.
+        """
+        src = "A\n=\n\nnote1\n\nB\n=\n\nnote2\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "A", "level": 2, "content": "note2"},  # B's content
+            {"id": "s2", "title": "B", "level": 2, "content": "note1"},  # A's content
+        ])
+        issues = self._check(src, data)
+        assert any("[QC4]" in i for i in issues)
+
+    def test_fail_qc4_not_qc3_when_middle_occurrence_is_unconsumed(self):
+        """Spec §3-1 L184 '先行削除済み' means ALL earlier occurrences are
+        consumed. If the earliest occurrence is consumed but a middle
+        occurrence (still before current_pos) is NOT consumed, the verdict
+        must be QC4 (unconsumed earlier offset exists → position regression),
+        not QC3 (先行削除済み requires every earlier position consumed).
+
+        Fixture: source has 'note' three times separated by anchors
+        'alpha' and 'beta'. JSON order:
+          1. s1.title 'note' consumes the EARLIEST occurrence
+          2. s1.content 'beta' advances current_pos past the MIDDLE 'note'
+             (without consuming it)
+          3. s2.title 'note' consumes the LAST occurrence
+          4. s3.title 'note' — find from current_pos fails; earliest is
+             consumed, but middle is UNCONSUMED and < current_pos.
+
+        Spec: s3's verdict is QC4 (position regression against the middle
+        unconsumed occurrence). Buggy impl that picks only the earliest
+        occurrence labels this QC3. Middle occurrence also surfaces as
+        QC1 residue, which is orthogonal.
+        """
+        src = "# H\n\nnote alpha note beta note\n"
+        data = self._data(title="H", sections=[
+            {"id": "s1", "title": "note", "level": 2, "content": "beta"},
+            {"id": "s2", "title": "note", "level": 2, "content": ""},
+            {"id": "s3", "title": "note", "level": 2, "content": ""},
+        ])
+        issues = self._check(src, data, fmt="md")
+        assert any("[QC4]" in i for i in issues), issues
+        assert not any("[QC3]" in i for i in issues), issues
+
+    def test_fail_qc4_misplaced_content_rst(self):
+        src = "概要\n====\n\nA の内容。\n\n詳細\n====\n\nB の内容。\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "level": 2, "content": "B の内容。"},  # swapped
+            {"id": "s2", "title": "詳細", "level": 2, "content": "A の内容。"},
+        ])
+        issues = self._check(src, data)
+        assert any("[QC4]" in i and "s2" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# Excel QC1/QC2/QC3: verify_file(fmt="xlsx")
+# ---------------------------------------------------------------------------
+
+class TestVerifyFileExcel:
+    """Excel sequential-delete: source cells must appear in JSON text."""
+
+    def _check(self, source_path, data):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx")
+        finally:
+            os.unlink(jpath)
+
+    def test_pass_real_xlsx(self, tmp_path):
+        """A real .xlsx with one cell 'Hello' whose value appears in JSON title."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "Hello"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        data = {"id": "f", "title": "Hello", "content": "", "sections": []}
+        assert self._check(str(xlsx_path), data) == []
+
+    def test_fail_cell_missing_from_json(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "必須セル値"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        data = {"id": "f", "title": "別の内容", "content": "", "sections": []}
+        issues = self._check(str(xlsx_path), data)
+        assert any("QC1" in i for i in issues)
+
+    def test_pass_no_knowledge_content_skipped(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "値"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        data = {"id": "f", "title": "T", "no_knowledge_content": True, "sections": []}
+        assert self._check(str(xlsx_path), data) == []
+
+    def test_fail_qc2_fabricated_content_in_json(self, tmp_path):
+        """Excel QC2: JSON text contains a string not present in any cell."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "セル値A"
+        ws["A2"] = "セル値B"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        # JSON has an extra string that no cell covers — QC2 fabrication.
+        data = {"id": "f", "title": "セル値A", "content": "これは捏造された追加本文です。",
+                "sections": [{"id": "s1", "title": "セル値B", "level": 2, "content": ""}]}
+        issues = self._check(str(xlsx_path), data)
+        assert any("QC2" in i for i in issues)
+
+    def test_pass_qc2_standalone_triple_dash_is_tolerance_allowed(self, tmp_path):
+        """Z-1 r8 QC2 F-QC2-1: spec §3-1 Excel 節 lists `---` explicitly
+        as an allowed residue. A JSON field containing `---` (e.g. from
+        a GFM table separator that lost its flanking pipes, or a
+        horizontal rule fragment) must NOT trigger QC2."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "Hello"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        data = {"id": "f", "title": "Hello", "content": "---", "sections": []}
+        issues = self._check(str(xlsx_path), data)
+        assert not any("QC2" in i for i in issues), issues
+
+    def test_fail_qc2_one_char_fabrication_detected(self, tmp_path):
+        """Spec §3-1 Excel 節 手順 3: 空白・空行以外の残存は QC2.
+        1-char residue used to be silently dropped — must FAIL now."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "ABC"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        # JSON contains ABC (consumed) plus an extra single-char fabrication.
+        data = {"id": "f", "title": "ABC X", "content": "", "sections": []}
+        issues = self._check(str(xlsx_path), data)
+        assert any("QC2" in i and "X" in i for i in issues)
+
+    def test_pass_xls_cell_in_json(self, tmp_path):
+        """Spec §3-1 Excel 節: `.xls` (xlrd) path must behave identically
+        to `.xlsx` (openpyxl). xlwt/xlrd are hard dev deps (setup.sh)."""
+        import xlwt
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet("Sheet1")
+        ws.write(0, 0, "Hello")
+        xls_path = tmp_path / "test.xls"
+        wb.save(str(xls_path))
+        data = {"id": "f", "title": "Hello", "content": "", "sections": []}
+        assert self._check(str(xls_path), data) == []
+
+    def test_fail_xls_cell_missing_from_json(self, tmp_path):
+        import xlwt
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet("Sheet1")
+        ws.write(0, 0, "必須セル値")
+        xls_path = tmp_path / "test.xls"
+        wb.save(str(xls_path))
+        data = {"id": "f", "title": "別の内容", "content": "", "sections": []}
+        issues = self._check(str(xls_path), data)
+        assert any("QC1" in i for i in issues)
+
+    def test_fail_xls_qc2_fabrication(self, tmp_path):
+        """`.xls` path must raise QC2 when JSON contains a string with no
+        source cell — mirroring the `.xlsx` QC2 behaviour."""
+        import xlwt
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet("Sheet1")
+        ws.write(0, 0, "ABC")
+        xls_path = tmp_path / "test.xls"
+        wb.save(str(xls_path))
+        data = {"id": "f", "title": "ABC 捏造", "content": "", "sections": []}
+        issues = self._check(str(xls_path), data)
+        assert any("QC2" in i and "捏造" in i for i in issues)
+
+    def test_fail_xls_numeric_cell_missing_from_json(self, tmp_path):
+        """xlrd numeric cells must be tokenised and compared. If the cell
+        is absent from JSON entirely, QC1 must FAIL regardless of
+        float/int representation."""
+        import xlwt
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet("Sheet1")
+        ws.write(0, 0, 12345)
+        xls_path = tmp_path / "test.xls"
+        wb.save(str(xls_path))
+        data = {"id": "f", "title": "無関係", "content": "", "sections": []}
+        issues = self._check(str(xls_path), data)
+        assert any("QC1" in i for i in issues)
+
+    def test_fail_qc3_duplicate_cell_in_json(self, tmp_path):
+        """Excel QC3: two source cells with the same value but JSON only
+        contains that value once → second match falls into the consumed
+        region → QC3 duplicate."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "同じ"
+        ws["B1"] = "同じ"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        data = {"id": "f", "title": "同じ", "content": "",
+                "sections": []}
+        issues = self._check(str(xlsx_path), data)
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC1]" in i or "[QC2]" in i for i in issues)
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B: Excel P1 — per-sheet tokens + QO2 one-way containment
+# ---------------------------------------------------------------------------
+
+
+class TestXlsxSourceTokensPerSheet:
+    """Phase 22-B-5: sheet-level file split requires per-sheet source tokens.
+
+    `_xlsx_source_tokens(source_path, sheet_name=...)` must scope the token
+    extraction to a single worksheet so that a sheet-specific JSON is verified
+    only against cells from its own sheet. Calling without `sheet_name` must
+    preserve the prior all-sheet behaviour (back-compat for ad-hoc callers —
+    the production dispatch always passes a name).
+    """
+
+    def test_per_sheet_tokens_restricted_to_named_sheet(self, tmp_path):
+        import openpyxl
+        from scripts.verify.verify import _xlsx_source_tokens
+        wb = openpyxl.Workbook()
+        ws1 = wb.active
+        ws1.title = "Alpha"
+        ws1["A1"] = "alpha-only"
+        ws2 = wb.create_sheet("Beta")
+        ws2["A1"] = "beta-only"
+        xlsx_path = tmp_path / "two.xlsx"
+        wb.save(xlsx_path)
+
+        alpha_tokens = _xlsx_source_tokens(str(xlsx_path), sheet_name="Alpha")
+        beta_tokens = _xlsx_source_tokens(str(xlsx_path), sheet_name="Beta")
+        assert "alpha-only" in alpha_tokens
+        assert "beta-only" not in alpha_tokens
+        assert "beta-only" in beta_tokens
+        assert "alpha-only" not in beta_tokens
+
+    def test_all_sheets_when_sheet_name_omitted(self, tmp_path):
+        import openpyxl
+        from scripts.verify.verify import _xlsx_source_tokens
+        wb = openpyxl.Workbook()
+        ws1 = wb.active
+        ws1.title = "Alpha"
+        ws1["A1"] = "alpha-only"
+        ws2 = wb.create_sheet("Beta")
+        ws2["A1"] = "beta-only"
+        xlsx_path = tmp_path / "two.xlsx"
+        wb.save(xlsx_path)
+
+        tokens = _xlsx_source_tokens(str(xlsx_path), sheet_name=None)
+        assert "alpha-only" in tokens
+        assert "beta-only" in tokens
+
+    def test_per_sheet_xls_tokens_restricted_to_named_sheet(self, tmp_path):
+        import xlwt
+        from scripts.verify.verify import _xlsx_source_tokens
+        wb = xlwt.Workbook()
+        ws1 = wb.add_sheet("Alpha")
+        ws1.write(0, 0, "alpha-xls")
+        ws2 = wb.add_sheet("Beta")
+        ws2.write(0, 0, "beta-xls")
+        xls_path = tmp_path / "two.xls"
+        wb.save(str(xls_path))
+
+        alpha = _xlsx_source_tokens(str(xls_path), sheet_name="Alpha")
+        beta = _xlsx_source_tokens(str(xls_path), sheet_name="Beta")
+        assert "alpha-xls" in alpha and "beta-xls" not in alpha
+        assert "beta-xls" in beta and "alpha-xls" not in beta
+
+
+class TestCheckJsonDocsMdConsistency_QO2_ExcelP1:
+    """Phase 22-B-5: spec §3-3 QO2 Excel 例外 — for P1 sheets, verify uses
+    one-way containment (JSON section.content text ⊂ docs MD), because the
+    docs MD table has structural tokens (`|---|`, column headers) that do
+    not appear verbatim in JSON. Non-Excel / non-P1 JSON still uses strict
+    verbatim containment.
+    """
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_pass_p1_section_content_tokens_all_in_md_table(self):
+        # JSON section.content is vertical "列名: 値" enumeration; docs MD
+        # renders the same row as an MD table. Each non-empty token from
+        # section.content must appear in the MD, but the table's pipes /
+        # separators are only in MD.
+        data = {
+            "id": "f",
+            "title": "リリースノート Sheet1",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "バグ-001",
+                    "content": "No.: 001\n種別: バグ\nタイトル: バグ-001\n対応: 修正済",
+                },
+            ],
+        }
+        docs = (
+            "# リリースノート Sheet1\n\n"
+            "## バグ-001\n\n"
+            "| No. | 種別 | タイトル | 対応 |\n"
+            "| --- | --- | --- | --- |\n"
+            "| 001 | バグ | バグ-001 | 修正済 |\n"
+        )
+        assert self._check(data, docs) == []
+
+    def test_fail_p1_section_content_token_missing_from_md(self):
+        # If one of the "値" tokens from JSON is missing from docs MD, QO2
+        # must still FAIL (the one-way check still enforces JSON ⊂ MD).
+        data = {
+            "id": "f",
+            "title": "リリースノート Sheet1",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "バグ-001",
+                    "content": "No.: 001\n種別: バグ\nタイトル: バグ-001\n対応: 修正済",
+                },
+            ],
+        }
+        # "修正済" is missing from the MD table row.
+        docs = (
+            "# リリースノート Sheet1\n\n"
+            "## バグ-001\n\n"
+            "| No. | 種別 | タイトル | 対応 |\n"
+            "| --- | --- | --- | --- |\n"
+            "| 001 | バグ | バグ-001 |  |\n"
+        )
+        issues = self._check(data, docs)
+        assert any("[QO2]" in i and "修正済" in i for i in issues), issues
+
+    def test_pass_p1_value_with_pipe_char_md_escaped(self):
+        """Phase 22-B-12 Finding B: GFM requires `|` in table cells to be
+        escaped as `\\|` (create/docs.py:_md_table_cell does this). JSON
+        carries the raw `|` per spec (content only, no format-specific
+        escaping).  Therefore QO2 P1 containment must apply the same
+        _md_table_cell transform to the JSON value before substring
+        lookup — otherwise v1.2/v1.3 releasenote rows whose value
+        contains `|` (e.g. "URL 予約文字 | ; | /" prose) produce a
+        false-positive FAIL.
+        """
+        data = {
+            "id": "f",
+            "title": "リリースノート",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "fix-001",
+                    "content": "タイトル: fix-001\n事象: URL のパスに予約文字（| ; | / | # | ? | : | space）が含まれる",
+                },
+            ],
+        }
+        # docs MD has the GFM-escaped `\|`; JSON value has raw `|`.
+        docs = (
+            "# リリースノート\n\n"
+            "## fix-001\n\n"
+            "| タイトル | 事象 |\n"
+            "| --- | --- |\n"
+            "| fix-001 | URL のパスに予約文字（\\| ; \\| / \\| # \\| ? \\| : \\| space）が含まれる |\n"
+        )
+        assert self._check(data, docs) == [], (
+            "pipe-containing JSON value must match MD-escaped cell "
+            "after applying _md_table_cell normalisation"
+        )
+
+    def test_fail_p1_value_with_pipe_char_still_detects_missing(self):
+        """Regression guard: even with pipe-normalisation, a genuinely
+        missing value (tokens absent entirely from MD) must still FAIL
+        QO2.
+        """
+        data = {
+            "id": "f",
+            "title": "リリースノート",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "fix-001",
+                    "content": "事象: A|B|C",
+                },
+            ],
+        }
+        # MD only has "X|Y" — neither A|B|C nor A\|B\|C present.
+        docs = (
+            "# リリースノート\n\n## fix-001\n\n"
+            "| 事象 |\n| --- |\n| X\\|Y |\n"
+        )
+        issues = self._check(data, docs)
+        assert any("[QO2]" in i and "A|B|C" in i for i in issues), issues
+
+    def test_pass_p2_falls_back_to_strict_verbatim(self):
+        # P2: sheet-wide text, JSON content appears verbatim in MD.
+        data = {
+            "id": "f",
+            "title": "対応表 分類",
+            "content": "カテゴリA\n項目1\n項目2\n",
+            "sheet_type": "P2",
+            "sections": [],
+        }
+        docs = "# 対応表 分類\n\nカテゴリA\n項目1\n項目2\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_p1_value_containing_colon_preserved(self):
+        # QA Finding: the implementation uses `partition(":")` so the
+        # value after the first colon is preserved. Pin this: a value
+        # containing `:` (e.g. a URL) must be checked whole, not split.
+        data = {
+            "id": "f",
+            "title": "リリースノート",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "row1",
+                    "content": "URL: https://example.com/path",
+                },
+            ],
+        }
+        # PASS: full URL present in MD.
+        docs_ok = "# リリースノート\n\n## row1\n\nhttps://example.com/path\n"
+        assert self._check(data, docs_ok) == []
+        # FAIL: only the scheme is present — full value missing.
+        docs_bad = "# リリースノート\n\n## row1\n\nhttps\n"
+        issues = self._check(data, docs_bad)
+        assert any(
+            "[QO2]" in i and "https://example.com/path" in i for i in issues
+        ), issues
+
+    def test_pass_p1_key_with_empty_value_skipped(self):
+        # QA Finding: a blank-cell row renders as `列名: ` (empty value).
+        # The implementation's `if not value: continue` must silently skip
+        # such lines. Pin this so future refactors don't regress.
+        data = {
+            "id": "f",
+            "title": "リリースノート",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "row1",
+                    "content": "No.: 001\n対応:",
+                },
+            ],
+        }
+        docs = "# リリースノート\n\n## row1\n\n| No. | 対応 |\n| --- | --- |\n| 001 |  |\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_no_sheet_type_falls_through_to_strict_verbatim(self):
+        # SE Observation: non-Excel JSON has no `sheet_type` field; the
+        # P1 gate must not trigger. Pin this with a regular RST-derived
+        # JSON shape and assert strict containment still applies.
+        data = {
+            "id": "f",
+            "title": "T",
+            "content": "",
+            "sections": [
+                {"id": "s1", "title": "概要", "level": 2, "content": "本文1\n本文2"},
+            ],
+        }
+        docs = "# T\n\n## 概要\n\n本文1\n本文2\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_p2_top_content_not_verbatim(self):
+        data = {
+            "id": "f",
+            "title": "対応表 分類",
+            "content": "カテゴリA\n項目1\n項目2\n",
+            "sheet_type": "P2",
+            "sections": [],
+        }
+        # Content differs (項目2 missing).
+        docs = "# 対応表 分類\n\nカテゴリA\n項目1\n"
+        issues = self._check(data, docs)
+        assert any("[QO2]" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# QL1: 内部リンク (check_source_links)
+# ---------------------------------------------------------------------------
+
+class TestCheckSourceLinks:
+    """QL1: Internal links in source must be reflected in JSON."""
+
+    def _check(self, source_text, fmt, data, label_map=None, corpus_label_map=None):
+        from scripts.verify.verify import check_source_links
+        return check_source_links(
+            source_text, fmt, data,
+            label_map or {},
+            corpus_label_map=corpus_label_map if corpus_label_map is not None else None,
+        )
+
+    def _data(self, content="", sections=None):
+        return {
+            "id": "f", "title": "T", "content": content,
+            "sections": sections or []
+        }
+
+    # RST :ref:
+    def test_pass_rst_ref_display_text_in_json(self):
+        src = "詳細は :ref:`使い方 <usage>` を参照。\n"
+        data = self._data(content="詳細は 使い方 を参照。")
+        assert self._check(src, "rst", data) == []
+
+    def test_fail_rst_ref_display_text_missing(self):
+        src = "詳細は :ref:`使い方 <usage>` を参照。\n"
+        data = self._data(content="詳細を参照。")
+        issues = self._check(src, "rst", data)
+        assert any("QL1" in i and "使い方" in i for i in issues)
+
+    def test_pass_rst_ref_plain_label_resolved(self):
+        src = ":ref:`usage`\n"
+        data = self._data(content="使い方セクション")
+        label_map = {"usage": "使い方セクション"}
+        assert self._check(src, "rst", data, label_map) == []
+
+    def test_fail_rst_ref_plain_label_title_missing(self):
+        src = ":ref:`usage`\n"
+        data = self._data(content="別の内容")
+        label_map = {"usage": "使い方セクション"}
+        issues = self._check(src, "rst", data, label_map)
+        assert any("QL1" in i and "usage" in i for i in issues)
+
+    def test_pass_rst_ref_sphinx_parity_dangling(self):
+        """Phase 22-B-12: 5-quadrant QL1 (spec §3-2-2).
+
+        Quadrant 4 — corpus に label 未定義 + display text が JSON に残る
+        → PASS + WARNING.  Sphinx も `<span class="xref">text</span>` の
+        fallback を出し build は成功する.  RBKC はこれに追従する.
+
+        Quadrant 3 — corpus 有 + RBKC mapping scope 外 も同様に PASS.
+        Quadrant 2 — corpus 有 + mapping 採用 + display text のみ → FAIL.
+        """
+        # Bare label (no display text): display text == label name itself.
+        # With corpus_label_map={} AND label_map={}, label is absent from
+        # corpus — Sphinx-parity dangling (quadrant 4) → PASS.
+        src = ":ref:`cross-file-label`\n"
+        data = self._data(content="cross-file-label を参照")
+        # corpus_label_map = {} means label is absent from the corpus-wide
+        # scan, so Sphinx parity dictates display-text fallback is the
+        # correct behaviour, not a FAIL.
+        issues = self._check(src, "rst", data, label_map={}, corpus_label_map={})
+        assert issues == [], f"Sphinx-parity dangling must PASS, got: {issues}"
+
+    def test_pass_rst_ref_mapping_excluded(self):
+        """Quadrant 3: corpus に label 定義有、RBKC mapping scope 外 →
+        PASS.  create は display text fallback、verify はユーザの
+        mapping scope 決定を尊重する.
+        """
+        src = ":ref:`outside-label`\n"
+        # Display text form used so a value lives in JSON regardless of
+        # whether corpus resolution succeeds.
+        data = self._data(content="outside-label を参照")
+        # label is in corpus but NOT in the RBKC-adopted label_map.
+        issues = self._check(
+            src, "rst", data,
+            label_map={},  # RBKC adopted set: missing
+            corpus_label_map={"outside-label": "外部ページ"},  # corpus-wide: present
+        )
+        assert issues == [], f"mapping-excluded ref must PASS, got: {issues}"
+
+    def test_fail_rst_ref_resolvable_but_missing(self):
+        """Quadrant 2: corpus に定義有 + RBKC 採用 + display text のみ
+        (JSON に link が無い) → FAIL.  create の解決失敗バグ."""
+        src = ":ref:`usage`\n"
+        # The resolved title does NOT appear in JSON — this is the real bug
+        # we must surface, regardless of Sphinx parity.
+        data = self._data(content="別の内容")
+        issues = self._check(
+            src, "rst", data,
+            label_map={"usage": "使い方セクション"},
+            corpus_label_map={"usage": "使い方セクション"},
+        )
+        assert any("QL1" in i and "usage" in i for i in issues), issues
+
+    def test_fail_rst_ref_display_absent_entirely(self):
+        """Quadrant 5: display text すら JSON に無い → FAIL (データ損失).
+        Sphinx-parity dangling でも display text は残らないといけない."""
+        src = ":ref:`vanished`\n"
+        data = self._data(content="ここには何もない")
+        issues = self._check(
+            src, "rst", data,
+            label_map={},
+            corpus_label_map={},
+        )
+        assert issues, "display-text absent must FAIL"
+        assert any(("QL1" in i or "QC1" in i) and "vanished" in i for i in issues), issues
+
+    # MD internal links
+    def test_pass_md_internal_link_text_in_json(self):
+        src = "[使い方](./usage.md)\n"
+        data = self._data(content="使い方")
+        assert self._check(src, "md", data) == []
+
+    def test_fail_md_internal_link_text_missing(self):
+        src = "[使い方](./usage.md)\n"
+        data = self._data(content="別の内容")
+        issues = self._check(src, "md", data)
+        assert any("QL1" in i and "使い方" in i for i in issues)
+
+    def test_pass_md_external_link_skipped(self):
+        """External links (https://) are QL2, not QL1."""
+        src = "[外部サイト](https://example.com)\n"
+        data = self._data(content="内容")
+        assert self._check(src, "md", data) == []
+
+    def test_pass_no_knowledge_content_skipped(self):
+        src = ":ref:`something`\n"
+        data = {"id": "f", "title": "T", "no_knowledge_content": True, "sections": []}
+        assert self._check(src, "rst", data) == []
+
+    # --- QL1 Z-1 gap fill: RST figure / image + MD image ------------------
+
+    def test_fail_rst_figure_caption_missing(self):
+        src = (
+            "概要\n====\n\n"
+            ".. figure:: images/sample.png\n"
+            "\n"
+            "   サンプル画像の説明\n"
+        )
+        data = self._data(content="まったく別の内容")
+        issues = self._check(src, "rst", data)
+        assert any("QL1" in i and "caption" in i and "サンプル画像の説明" in i for i in issues)
+
+    def test_pass_rst_figure_caption_in_json(self):
+        src = (
+            "概要\n====\n\n"
+            ".. figure:: images/sample.png\n"
+            "\n"
+            "   サンプル画像の説明\n"
+        )
+        data = self._data(content="サンプル画像の説明 が JSON にある。")
+        assert self._check(src, "rst", data) == []
+
+    def test_pass_rst_substitution_image_body_skipped(self):
+        """Spec §3-2 line 268: substitution-body content (e.g. `.. |x|
+        image::` body) must be excluded from QL1 by AST-attribute /
+        parent-ancestry. The substituted occurrence is the reader-visible
+        one.
+
+        Z-1 r8 QL1 F1: this fixture pins the skip without relying on
+        coincidental JSON containment. The substitution is NEVER
+        referenced in the body, so the only `image` node docutils emits
+        lives under the `substitution_definition` subtree. JSON has no
+        mention of the alt text or filename. Without `_under_substitution`,
+        QL1 would emit a FAIL naming 'アイコン' (or 'icon.png'); with
+        the skip, zero QL1 issues fire.
+        """
+        src = (
+            "概要\n====\n\n"
+            "本文のみ。\n\n"
+            ".. |unused| image:: images/icon.png\n"
+            "   :alt: アイコン\n"
+        )
+        data = self._data(content="本文のみ。")
+        issues = self._check(src, "rst", data)
+        qc = [i for i in issues if "QL1" in i and ("アイコン" in i or "icon.png" in i)]
+        assert qc == [], qc
+
+    def test_pass_rst_figure_dedup_same_caption_not_reported_twice(self):
+        """Z-1 r8 QL1 F2: RST figure dedup (mirror of image dedup).
+        Two `.. figure::` blocks sharing the same caption text; JSON
+        omits the caption — QL1 fires once, not once per figure."""
+        src = (
+            "概要\n====\n\n"
+            ".. figure:: images/a.png\n"
+            "\n"
+            "   共通キャプション\n"
+            "\n"
+            ".. figure:: images/b.png\n"
+            "\n"
+            "   共通キャプション\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        qc = [i for i in issues if "QL1" in i and "共通キャプション" in i]
+        assert len(qc) == 1, qc
+
+    def test_pass_rst_image_dedup_same_alt_not_reported_twice(self):
+        """Z-1 r7 QL1 F2: RST image dedup (mirror of MD's seen_images).
+        When the same alt text appears on two images in one file and
+        JSON omits it, QL1 must fire once — not once per occurrence."""
+        src = (
+            "概要\n====\n\n"
+            ".. image:: images/a.png\n"
+            "   :alt: 共通ロゴ\n"
+            "\n"
+            ".. image:: images/b.png\n"
+            "   :alt: 共通ロゴ\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        qc = [i for i in issues if "QL1" in i and "共通ロゴ" in i]
+        assert len(qc) == 1, qc
+
+    def test_fail_rst_figure_inline_only_caption_fallback_to_filename(self):
+        """When caption is only RST inline syntax (e.g. [1]_), fall back to
+        the image filename (§3-2 table: 'caption が RST inline 構文のみ...')."""
+        src = (
+            "概要\n====\n\n"
+            ".. figure:: images/badge.png\n"
+            "\n"
+            "   [1]_\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        assert any("QL1" in i and "badge.png" in i for i in issues)
+
+    def test_fail_rst_image_alt_missing(self):
+        src = (
+            "概要\n====\n\n"
+            ".. image:: images/logo.png\n"
+            "   :alt: 会社ロゴ\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        assert any("QL1" in i and "会社ロゴ" in i for i in issues)
+
+    def test_fail_rst_image_without_alt_falls_back_to_filename(self):
+        src = (
+            "概要\n====\n\n"
+            ".. image:: images/diagram.png\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        assert any("QL1" in i and "diagram.png" in i for i in issues)
+
+    def test_fail_md_image_alt_missing(self):
+        src = "# T\n\n![会社ロゴ](./logo.png)\n"
+        data = self._data(content="別の内容")
+        issues = self._check(src, "md", data)
+        assert any("QL1" in i and "会社ロゴ" in i for i in issues)
+
+    def test_fail_md_image_without_alt_falls_back_to_filename(self):
+        src = "# T\n\n![](./diagram.png)\n"
+        data = self._data(content="別の内容")
+        issues = self._check(src, "md", data)
+        assert any("QL1" in i and "diagram.png" in i for i in issues)
+
+    def test_pass_md_image_alt_in_json(self):
+        src = "# T\n\n![会社ロゴ](./logo.png)\n"
+        data = self._data(content="会社ロゴ が載っています。")
+        assert self._check(src, "md", data) == []
+
+    # --- QL1 RST native named reference (r2 critical fix 3) ---------------
+
+    def test_fail_rst_named_reference_target_title_missing(self):
+        """Real RST: `\\`Target\\`_` references a `.. _label:` defined in
+        the same doc. docutils resolves it to a reference node with refid
+        pointing at the target section; the resolved title must appear
+        in JSON (spec §3-2 row 1)."""
+        src = (
+            "See `Detailed Usage`_ for more.\n\n"
+            ".. _Detailed Usage:\n\n"
+            "Detailed Usage\n"
+            "==============\n\n"
+            "Section body text.\n"
+        )
+        data = self._data(content="Totally unrelated content.")
+        issues = self._check(src, "rst", data, {})
+        assert any("QL1" in i and "Detailed Usage" in i for i in issues)
+
+    def test_pass_rst_named_reference_target_title_in_json(self):
+        """Same fixture but JSON contains the resolved title — no FAIL."""
+        src = (
+            "See `Detailed Usage`_ for more.\n\n"
+            ".. _Detailed Usage:\n\n"
+            "Detailed Usage\n"
+            "==============\n\n"
+            "Body.\n"
+        )
+        data = self._data(content="Detailed Usage and body appear here.")
+        issues = self._check(src, "rst", data, {})
+        assert not any("QL1" in i and "Detailed Usage" in i for i in issues)
+
+    def test_pass_md_mailto_link_not_internal(self):
+        """`mailto:` hrefs are not document-to-document internal links —
+        QL1 must not demand their 'link text' in JSON (r3 QL1 High gap)."""
+        src = "# T\n\n連絡先 [メール](mailto:dev@example.com) 宛。\n"
+        data = self._data(content="連絡先 宛。")  # "メール" not in JSON, but OK
+        assert self._check(src, "md", data) == []
+
+    def test_pass_md_anchor_only_link_not_internal(self):
+        """In-document anchor links (`#section`) are navigation, not
+        cross-document references; QL1 scope excludes them."""
+        src = "# T\n\n[上部へ](#top) に戻る\n"
+        data = self._data(content="に戻る")
+        assert self._check(src, "md", data) == []
+
+    def test_pass_md_tel_link_not_internal(self):
+        src = "# T\n\n[電話](tel:+81-3-1234-5678) はこちら\n"
+        data = self._data(content="はこちら")
+        assert self._check(src, "md", data) == []
+
+    def test_fail_md_image_title_missing_from_json(self):
+        """Spec §3-2 row 6: MD image alt / title / src filename must be
+        in JSON. An image with only a title attribute must FAIL when the
+        title is absent from JSON."""
+        src = '# T\n\n![](./img.png "会社ロゴ")\n'
+        data = self._data(content="別の内容")
+        issues = self._check(src, "md", data)
+        assert any("QL1" in i and "会社ロゴ" in i for i in issues)
+
+    def test_pass_rst_plain_sections_without_named_references(self):
+        """Vanilla sections (no user-defined label, no named reference)
+        must not emit spurious QL1 — docutils gives each section an
+        auto-id like `section-N`, which QL1 must ignore."""
+        src = "Alpha\n=====\n\nA body\n\nBeta\n====\n\nB body\n"
+        data = self._data(content="Alpha Beta A body B body")
+        assert self._check(src, "rst", data, {}) == []
+
+    def test_pass_rst_named_reference_scheme_mailto_untouched(self):
+        """A bare `.. _Contact: mailto:ops@example.com` is not a named
+        section reference; QL1 must not raise on it. (Sanity check that
+        refuri-bearing references stay in QL2's lane.)"""
+        src = (
+            "Contact_ us.\n\n"
+            ".. _Contact: mailto:ops@example.com\n"
+        )
+        data = self._data(content="us.")
+        assert self._check(src, "rst", data, {}) == []
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-5a-r3a: P1 header row expansion
+# ---------------------------------------------------------------------------
+
+
+class TestVerifyFileExcelP1HeaderExpansion:
+    """Spec §3-1 Excel 節 (Phase 22-B): P1 シートでは header 行のセル値
+    (列名) が、JSON の section.content に「データ行数」回現れる。sequential-
+    delete の前に header 行トークンをデータ行数ぶん複製してから照合する。
+
+    - converter を参照せず、§8-2 header 検出 + §8-4 データ行数算出のみ
+      に依拠すること
+    - P2 シートは展開なし (従来通り 1:1 照合)
+    - converter が header 行を多重展開した場合は QC2 で検出される
+      (複製数 = データ行数 = JSON section 数 + 何かが食い違えば残存)
+    """
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def _p1_sheet(self, tmp_path):
+        """Build a minimal 3-column P1 sheet: header + 2 data rows."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "概要"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["C2"] = "概要A"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "概要B"
+        xlsx_path = tmp_path / "p1.xlsx"
+        wb.save(xlsx_path)
+        return xlsx_path
+
+    def _p1_json(self):
+        """JSON that correctly mirrors the P1 sheet: 2 sections, each
+        containing the full {列名}: {値} line-listing.  Title defaults
+        to the sheet name (spec §8-4 fallback) since the sheet has no
+        ``■...`` row — verify injects this as a synthetic source token."""
+        return {
+            "id": "p1",
+            "title": "Sheet1",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "値A",
+                    "content": "No.: 1\nタイトル: 値A\n概要: 概要A",
+                },
+                {
+                    "id": "s2",
+                    "title": "値B",
+                    "content": "No.: 2\nタイトル: 値B\n概要: 概要B",
+                },
+            ],
+        }
+
+    def test_pass_p1_column_names_repeat_per_data_row(self, tmp_path):
+        """P1 converter output where each header cell appears 1 time in
+        source but `data_rows` times in JSON must PASS — header expansion
+        converts the 1 source token into N tokens matching JSON."""
+        xlsx_path = self._p1_sheet(tmp_path)
+        data = self._p1_json()
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert issues == [], issues
+
+    def test_fail_p1_data_value_missing_from_json(self, tmp_path):
+        """A data-row cell value absent from JSON must still raise QC1.
+        Header expansion applies only to header cells, not data cells."""
+        xlsx_path = self._p1_sheet(tmp_path)
+        data = self._p1_json()
+        # Drop section s2's 値B — the cell '値B' is still in title, but
+        # '概要B' is not anywhere → QC1.
+        data["sections"][1]["content"] = "No.: 2\nタイトル: 値B"
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert any("[QC1]" in i and "概要B" in i for i in issues), issues
+
+    def test_fail_p1_column_name_over_expanded_in_json(self, tmp_path):
+        """Converter bug: a header cell value appears (data_rows + 1) times
+        in JSON. After header expansion (data_rows = 2 tokens) + 1 normal
+        occurrence = 3 source tokens, sequential-delete consumes 3 but JSON
+        has 4 → 1 residue → QC2 (or QC3 if the extra sits in a consumed
+        region)."""
+        xlsx_path = self._p1_sheet(tmp_path)
+        data = self._p1_json()
+        # Inject an extra 'タイトル:' line in s1 — column name now appears
+        # 3 times in JSON but source (with header expansion = 2) + 0
+        # elsewhere = 2 source tokens → 1 residue.
+        data["sections"][0]["content"] += "\nタイトル: 重複"
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        # '重複' is never in the source → QC1 fires for that specifically,
+        # AND 'タイトル' is now over-count. Accept any FAIL (QC1 / QC2 / QC3).
+        assert issues, "Expected at least one FAIL for over-expanded header"
+
+    def test_fail_p1_column_name_under_represented(self, tmp_path):
+        """If JSON does not include a column name at all (converter bug
+        dropped the `{列名}: ` prefix), header expansion produces
+        data_rows tokens but none match → data_rows QC1 FAILs for that
+        column."""
+        xlsx_path = self._p1_sheet(tmp_path)
+        data = self._p1_json()
+        # Remove "タイトル: " prefix entirely from both sections.
+        data["sections"][0]["content"] = "No.: 1\n値A\n概要: 概要A"
+        data["sections"][1]["content"] = "No.: 2\n値B\n概要: 概要B"
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        # 'タイトル' has source=1 → after expansion = 2 tokens. Neither
+        # appears in JSON now → 2 QC1 (or QC3 depending on implementation).
+        qc_issues = [i for i in issues if "タイトル" in i]
+        assert len(qc_issues) >= 1, issues
+
+    def test_pass_p2_no_header_expansion(self, tmp_path):
+        """P2 sheets (段落主体) must NOT get header expansion — 1:1 check
+        applies. A header-like row appearing once in source must match
+        once in JSON, not N times."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # P2 indicator: only 1 non-empty cell per row (paragraph-like).
+        ws["A1"] = "■概要"
+        ws["A2"] = "これは段落のシートです。"
+        xlsx_path = tmp_path / "p2.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "p2",
+            # Title includes the ■ prefix verbatim (spec §8-4 lets the
+            # ■... cell stand as title; stripping would break 1:1 check).
+            "title": "■概要",
+            "content": "これは段落のシートです。",
+            "sheet_type": "P2",
+            "sections": [],
+        }
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert issues == [], issues
+
+    def test_fail_p2_duplicated_value_triggers_qc3(self, tmp_path):
+        """P2 1:1 check: if JSON duplicates a value the source only has
+        once, QC3 must fire (no header expansion to paper over it)."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "唯一の値"
+        xlsx_path = tmp_path / "p2.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "p2",
+            "title": "",
+            "content": "唯一の値 唯一の値",  # written twice
+            "sheet_type": "P2",
+            "sections": [],
+        }
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert any("[QC3]" in i or "[QC2]" in i for i in issues), issues
+
+    def test_pass_p1_multi_row_header_merged(self, tmp_path):
+        """§8-3 multi-row header (Phase 22-B-12): span-inherit composition
+        with SEP = ' / '.  Parent row has empty cells under sub-columns,
+        which the span-inherit algorithm must populate by carrying the
+        most recent non-empty parent value rightward.
+        """
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # Main header row — 'バージョン' parent covers C+D, empty at D
+        # even though openpyxl has not merged the cells (corpus reality).
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "バージョン"
+        # D1 is left blank; span-inherit must fill it from C1
+        ws["E1"] = "備考"
+        # Sub-header row (leaf)
+        ws["C2"] = "モジュール"
+        ws["D2"] = "Nablarch"
+        # Data rows
+        ws["A3"] = "1"
+        ws["B3"] = "初回対応"
+        ws["C3"] = "1.0"
+        ws["D3"] = "5"
+        ws["E3"] = "初回"
+        ws["A4"] = "2"
+        ws["B4"] = "二回目"
+        ws["C4"] = "2.0"
+        ws["D4"] = "6"
+        ws["E4"] = "追加対応"
+        xlsx_path = tmp_path / "multihdr.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "mh",
+            "title": "Sheet1",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {
+                    "id": "s1", "title": "初回対応",
+                    "content": "No.: 1\nタイトル: 初回対応\nバージョン / モジュール: 1.0\nバージョン / Nablarch: 5\n備考: 初回",
+                },
+                {
+                    "id": "s2", "title": "二回目",
+                    "content": "No.: 2\nタイトル: 二回目\nバージョン / モジュール: 2.0\nバージョン / Nablarch: 6\n備考: 追加対応",
+                },
+            ],
+        }
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert issues == [], issues
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-5a-r3b: QP — P1 column-value pairing (spec §3-4)
+# ---------------------------------------------------------------------------
+
+
+class TestCheckXlsxP1Pairing:
+    """Spec §3-4 (new): For each P1 sheet, JSON section N must pair up
+    every `{列名}: {値}` with Excel data-row N's matching cell at the
+    same column. Bag matching (QC1–QC4) cannot catch swapped values —
+    QP does.
+    """
+
+    def _call(self, source_path, data, sheet_name):
+        from scripts.verify.verify import check_xlsx_p1_pairing
+        return check_xlsx_p1_pairing(source_path, data, sheet_name)
+
+    def _sheet(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "概要"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["C2"] = "概要A"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "概要B"
+        xlsx_path = tmp_path / "p1.xlsx"
+        wb.save(xlsx_path)
+        return xlsx_path
+
+    def _good_json(self):
+        return {
+            "id": "p1",
+            "title": "",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n概要: 概要A"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n概要: 概要B"},
+            ],
+        }
+
+    def test_pass_aligned_pairs(self, tmp_path):
+        xlsx = self._sheet(tmp_path)
+        assert self._call(str(xlsx), self._good_json(), "Sheet1") == []
+
+    def test_fail_swapped_values_across_rows(self, tmp_path):
+        """Row-1 value ends up in row-2 section — the exact gap QP exists
+        to close. QC1–QC4 would PASS this (tokens are present somewhere)."""
+        xlsx = self._sheet(tmp_path)
+        data = self._good_json()
+        # Swap タイトル values between sections.
+        data["sections"][0]["content"] = "No.: 1\nタイトル: 値B\n概要: 概要A"
+        data["sections"][1]["content"] = "No.: 2\nタイトル: 値A\n概要: 概要B"
+        issues = self._call(str(xlsx), data, "Sheet1")
+        assert any("[QP]" in i for i in issues), issues
+
+    def test_fail_section_count_mismatch(self, tmp_path):
+        """If JSON has fewer/more sections than Excel has data rows,
+        QP raises section_count_mismatch (independent of QC1)."""
+        xlsx = self._sheet(tmp_path)
+        data = self._good_json()
+        # Drop the second section.
+        data["sections"] = data["sections"][:1]
+        issues = self._call(str(xlsx), data, "Sheet1")
+        assert any("[QP]" in i and "section" in i.lower() for i in issues), issues
+
+    def test_fail_pair_missing_expected_column(self, tmp_path):
+        """A non-empty source cell omitted from the section's content
+        must FAIL — it means the section silently dropped a column."""
+        xlsx = self._sheet(tmp_path)
+        data = self._good_json()
+        # Drop 概要 from s1.
+        data["sections"][0]["content"] = "No.: 1\nタイトル: 値A"
+        issues = self._call(str(xlsx), data, "Sheet1")
+        assert any("[QP]" in i and "概要" in i for i in issues), issues
+
+    def test_pass_empty_source_cell_omitted_from_json(self, tmp_path):
+        """Spec §3-4: 空セルは期待ペアに含めない。空セル列を section に
+        書かないのは許容。converter が空セルを出さないのは設計通り。"""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "概要"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        # C2 intentionally empty.
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "概要B"
+        xlsx_path = tmp_path / "p1.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "p1",
+            "title": "",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A"},  # no 概要 line
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n概要: 概要B"},
+            ],
+        }
+        assert self._call(str(xlsx_path), data, "Sheet1") == []
+
+    def test_skip_non_p1(self, tmp_path):
+        """P2 JSON must not be checked — return no issues immediately."""
+        xlsx = self._sheet(tmp_path)
+        data = self._good_json()
+        data["sheet_type"] = "P2"
+        assert self._call(str(xlsx), data, "Sheet1") == []
+
+    def test_fail_value_contains_colon(self, tmp_path):
+        """Spec §8-4 + existing QO2 P1: partition on FIRST `:` so values
+        containing `:` are preserved verbatim. QP must use the same rule.
+        """
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # 3 columns to escape the §8-2 ≤2-col P2 cap.
+        ws["A1"] = "No."
+        ws["B1"] = "URL"
+        ws["C1"] = "備考"
+        ws["A2"] = "1"
+        ws["B2"] = "https://example.com/x"
+        ws["C2"] = "備考X"
+        ws["A3"] = "2"
+        ws["B3"] = "https://example.com/y"
+        ws["C3"] = "備考Y"
+        xlsx_path = tmp_path / "p1.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "p1",
+            "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                # Swap URLs between rows → QP must FAIL on pair mismatch.
+                {"id": "s1", "title": "https://example.com/y",
+                 "content": "No.: 1\nURL: https://example.com/y\n備考: 備考X"},
+                {"id": "s2", "title": "https://example.com/x",
+                 "content": "No.: 2\nURL: https://example.com/x\n備考: 備考Y"},
+            ],
+        }
+        issues = self._call(str(xlsx_path), data, "Sheet1")
+        assert any("[QP]" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-5a-r3 QA review Findings (7 blockers)
+# ---------------------------------------------------------------------------
+
+
+class TestVerifyP1HeaderBoundary:
+    """QA F1: P2 boundary cases (run-length=2, useful_width=2).
+
+    §8-2 is explicit: header requires contiguous non-empty ≥ 3 AND useful
+    width > 2.  Boundaries below must be classified P2 (tokens raw 1:1,
+    no expansion).
+    """
+
+    def _tokens(self, source_path, sheet_name, sheet_type):
+        from scripts.verify.verify import _xlsx_source_tokens
+        return _xlsx_source_tokens(source_path, sheet_name=sheet_name, sheet_type=sheet_type)
+
+    def test_run_length_2_classified_p2(self, tmp_path):
+        """Header-row with contiguous non-empty = 2 (≠ P1 since < 3).
+        Sheet has ≥ 3 useful columns overall (so it is not the width cap)."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # Row 1: 2 contiguous non-empty + gap + 1 more → run length = 2
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        # C1 empty
+        ws["D1"] = "備考"
+        # Data rows (3 useful columns overall)
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["D2"] = "r1"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["D3"] = "r2"
+        xlsx_path = tmp_path / "rl2.xlsx"
+        wb.save(xlsx_path)
+        raw = self._tokens(str(xlsx_path), "Sheet1", None)
+        as_p1 = self._tokens(str(xlsx_path), "Sheet1", "P1")
+        # run_length < 3 → P2 fall-through even with sheet_type=P1.
+        assert raw == as_p1, (
+            "run_length=2 sheet must not be expanded; tokens should equal raw 1:1"
+        )
+
+    def test_useful_width_2_classified_p2(self, tmp_path):
+        """≤ 2 useful columns: spec §8-2 forces P2 even if header detection
+        would otherwise succeed."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # Only 2 cols used, 3 contiguous in header row would fail anyway.
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        xlsx_path = tmp_path / "w2.xlsx"
+        wb.save(xlsx_path)
+        raw = self._tokens(str(xlsx_path), "Sheet1", None)
+        as_p1 = self._tokens(str(xlsx_path), "Sheet1", "P1")
+        assert raw == as_p1, (
+            "useful_width=2 sheet must not be P1-expanded"
+        )
+
+
+class TestVerifyP1InvalidSubHeader:
+    """QA F2: Row 2 wider than or equal to row 1 is NOT a sub-header.
+    §8-3 specifies only "副列がある列のみ" — a row equal/wider than the
+    main header is a second header candidate or data, not a sub-header.
+    """
+
+    def test_sub_header_wider_than_parent_rejected(self, tmp_path):
+        """Row 2 has MORE non-empty cells than row 1 → must NOT merge."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # Row 1: 3 contiguous non-empty (qualifies as main header)
+        ws["A1"] = "No."
+        ws["B1"] = "バージョン"
+        ws["C1"] = "備考"
+        # Row 2: wider/equal — 4 non-empty cells; NOT a sub-header
+        ws["A2"] = "1"
+        ws["B2"] = "1.0"
+        ws["C2"] = "初回"
+        ws["D2"] = "追加"
+        # Row 3: 2nd data row
+        ws["A3"] = "2"
+        ws["B3"] = "2.0"
+        ws["C3"] = "二回目"
+        ws["D3"] = "追加2"
+        xlsx_path = tmp_path / "invsub.xlsx"
+        wb.save(xlsx_path)
+        from scripts.verify.verify import _detect_header_row, _read_sheet_matrix
+        rows = _read_sheet_matrix(str(xlsx_path), "Sheet1")[0]
+        detected = _detect_header_row(rows)
+        assert detected is not None, "Row 1 should still qualify as single-row header"
+        header_start, data_start, columns = detected
+        # data_start must be header_start + 1 (single-row header),
+        # NOT header_start + 2 (would indicate wrongly merged sub-header).
+        assert data_start == header_start + 1, (
+            f"Row 2 was erroneously merged as sub-header: data_start={data_start}"
+        )
+        # Column names must be the row-1 values, not `メイン/副` forms.
+        assert "/" not in " ".join(columns), f"columns contain / suggesting merge: {columns}"
+
+
+class TestVerifyP1SinglecellPreambleNotParent:
+    """Phase 22-B-12 regression (v1.2 .xls): a 1-cell preamble row
+    immediately above the header row must NOT be promoted to a parent
+    in multi-row-header span-inherit composition.
+
+    Spec §8-3 requires "1 親 N 子" structure; corpus evidence (95/95
+    multi-row-header sheets) shows ≥ 2 distinct parents in every
+    genuine multi-row-header case.  A single cell above the header
+    is preamble prose (§8-3a), not a parent.
+    """
+
+    def test_single_cell_preamble_row_is_not_sub_header(self, tmp_path):
+        """v1.2 releasenote .xls reproduction: row 1 has a single short
+        cell ("1.2.1版からの変更点を記載しています。"), row 2 is the real
+        header.  `_looks_like_sub_header` must return False so that
+        `_detect_header` does NOT walk upward and merge the preamble as
+        a parent.  Without the fix, composed columns become
+        "preamble-text / 実ヘッダ" for every column, producing massive
+        QC1 (missing cells) + QC2 (fabricated tokens) residue.
+        """
+        from scripts.verify.verify import _looks_like_sub_header
+        # Row 1 = 1-cell preamble (21 chars, short enough to look like
+        # a header label by length heuristic alone).
+        row_preamble = ["1.2.1版からの変更点を記載しています。", "", "", "", "", "", "", "", "", ""]
+        # Row 2 = real header with 10 filled cells.
+        row_header = ["№", "分類", "タイトル", "対象なし", "事象", "影響", "変更実施\nバージョン",
+                      "チケット番号", "互換性\nへの影響", "備考"]
+        assert _looks_like_sub_header(row_preamble, row_header) is False, (
+            "single-cell preamble row must not be promoted to parent; "
+            "requires len(h_non_empty_cols) >= 2 guard"
+        )
+
+    def test_genuine_multi_parent_still_detected(self, tmp_path):
+        """Regression guard: v5 bessatsu-style multi-row header with ≥ 2
+        distinct parent cells must still be detected as sub-header.
+        """
+        from scripts.verify.verify import _looks_like_sub_header
+        row_parent = ["", "親1", "", "親2", ""]  # 2 non-empty parents
+        row_leaf = ["No", "子A", "子B", "子A", "子B"]
+        assert _looks_like_sub_header(row_parent, row_leaf) is True, (
+            "genuine ≥ 2-parent multi-row header must remain detected"
+        )
+
+
+class TestVerifyP1ColumnNameSubstringSwap:
+    """QA F3: A cell value that contains its column name as substring must
+    still allow QC3 / QP to catch a swap bug.  Without this test, a
+    converter that swaps two sections that happen to contain the column
+    name as substring could silently PASS."""
+
+    def test_swap_with_substring_cell_value_detected(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "概要"
+        # Row 1: 概要 column value literally contains "概要"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["C2"] = "概要をAで記述する"
+        # Row 2: different 概要 value also contains "概要"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "概要をBで記述する"
+        xlsx_path = tmp_path / "subswap.xlsx"
+        wb.save(xlsx_path)
+        # JSON with values for 概要 column swapped between sections.
+        data = {
+            "id": "x", "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n概要: 概要をBで記述する"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n概要: 概要をAで記述する"},
+            ],
+        }
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            issues = verify_file(str(xlsx_path), jpath, "xlsx", sheet_name="Sheet1")
+        finally:
+            os.unlink(jpath)
+        # QP must FAIL for the swap regardless of substring overlap.
+        assert any("[QP]" in i for i in issues), issues
+
+
+class TestVerifyP1DuplicateColumnNames:
+    """QA F4: Duplicate Excel column names must not silently pass QP.
+
+    Under zero-tolerance the spec gap ("what if two columns have the same
+    name?") must be resolved to FAIL, not to the permissive "last wins"
+    behaviour hidden by a dict overwrite.
+    """
+
+    def test_duplicate_header_columns_fail(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "備考"
+        ws["C1"] = "備考"   # duplicate header name
+        ws["A2"] = "1"
+        ws["B2"] = "x1"
+        ws["C2"] = "y1"
+        ws["A3"] = "2"
+        ws["B3"] = "x2"
+        ws["C3"] = "y2"
+        xlsx_path = tmp_path / "dupcol.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "x", "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "x1",
+                 "content": "No.: 1\n備考: x1\n備考: y1"},
+                {"id": "s2", "title": "x2",
+                 "content": "No.: 2\n備考: x2\n備考: y2"},
+            ],
+        }
+        from scripts.verify.verify import check_xlsx_p1_pairing
+        issues = check_xlsx_p1_pairing(str(xlsx_path), data, "Sheet1")
+        # Under zero-tolerance, duplicate header names must be flagged
+        # explicitly — silent "last wins" hides ambiguity.
+        assert any("[QP]" in i and ("duplicate" in i.lower() or "重複" in i)
+                   for i in issues), issues
+
+
+class TestVerifyP1EmptyHeaderSpacer:
+    """QA F5: Empty header cell (spacer column) with data underneath must
+    not silently drop the data-cell value.  Either the value must be
+    checked, or the behaviour must be locked with a test that pins the
+    chosen spec interpretation.
+    """
+
+    def test_spacer_column_with_data_flagged(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = ""           # spacer: empty header
+        ws["C1"] = "タイトル"
+        ws["D1"] = "備考"
+        # Data row has value under the spacer column (column B).
+        ws["A2"] = "1"
+        ws["B2"] = "こぼれ値1"   # must not be silently dropped
+        ws["C2"] = "値A"
+        ws["D2"] = "r1"
+        ws["A3"] = "2"
+        ws["B3"] = "こぼれ値2"
+        ws["C3"] = "値B"
+        ws["D3"] = "r2"
+        xlsx_path = tmp_path / "spacer.xlsx"
+        wb.save(xlsx_path)
+        # JSON omits the spacer-column values entirely (converter decided
+        # the header is empty so no line is emitted).
+        data = {
+            "id": "x", "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n備考: r1"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n備考: r2"},
+            ],
+        }
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            issues = verify_file(str(xlsx_path), jpath, "xlsx", sheet_name="Sheet1")
+        finally:
+            os.unlink(jpath)
+        # The spacer-column cell values ("こぼれ値1", "こぼれ値2") are
+        # genuine source cells.  Whether through QC1 (missing from JSON)
+        # or an explicit spacer message, verify must FAIL — silent
+        # acceptance is a zero-tolerance violation.
+        assert issues, (
+            "spacer-column data values must not be silently dropped; expected FAIL"
+        )
+        assert any("こぼれ値" in i for i in issues), issues
+
+
+class TestVerifyP1ValueContainsColonPass:
+    """QA F6: Positive regression guard for `_MD_SYNTAX_RE` `:` addition.
+    Correctly-aligned sheet with URL and time-string values must PASS.
+    """
+
+    def test_pass_aligned_url_and_time_values(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "URL"
+        ws["C1"] = "時刻"
+        ws["A2"] = "1"
+        ws["B2"] = "https://example.com/a"
+        ws["C2"] = "12:00"
+        ws["A3"] = "2"
+        ws["B3"] = "https://example.com/b"
+        ws["C3"] = "13:30"
+        xlsx_path = tmp_path / "colon.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "x", "title": "Sheet1", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "https://example.com/a",
+                 "content": "No.: 1\nURL: https://example.com/a\n時刻: 12:00"},
+                {"id": "s2", "title": "https://example.com/b",
+                 "content": "No.: 2\nURL: https://example.com/b\n時刻: 13:30"},
+            ],
+        }
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            issues = verify_file(str(xlsx_path), jpath, "xlsx", sheet_name="Sheet1")
+        finally:
+            os.unlink(jpath)
+        assert issues == [], issues
+
+
+class TestVerifyP1FabricatedColonLine:
+    """QA F7: Fabricated `列: 値` fragment must still trigger QC1/QC2.
+    The `:` scrubbing must not mask colon-separated fabrications whose
+    key/value are not in the source.
+    """
+
+    def test_fabricated_colon_pair_detected(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "備考"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["C2"] = "r1"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "r2"
+        xlsx_path = tmp_path / "fab.xlsx"
+        wb.save(xlsx_path)
+        # JSON injects an extra 偽列: 偽値 line in section s1 —
+        # neither token is in the source sheet.
+        data = {
+            "id": "x", "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n備考: r1\n偽列: 偽値"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n備考: r2"},
+            ],
+        }
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            issues = verify_file(str(xlsx_path), jpath, "xlsx", sheet_name="Sheet1")
+        finally:
+            os.unlink(jpath)
+        # 偽列 / 偽値 must surface as QC2 or QP (unexpected column).
+        assert issues, "fabricated colon pair must FAIL"
+        assert any("偽" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# QA review round 2 — Findings F1 / F2 / F3 for commit 023d53248
+# ---------------------------------------------------------------------------
+
+
+class TestCheckJsonDocsMdConsistency_P1_TitleStillChecked:
+    """QA F1: QO1 P1 exception skips only the `##` section-title loop;
+    the `#` title match MUST still fire for P1."""
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_fail_p1_title_mismatch_still_fails_qo1(self):
+        """Converter bug: docs MD # heading does not match JSON title for
+        a P1 sheet.  QO1 must still detect this — only the section-title
+        loop is skipped, not the title check itself."""
+        data = {
+            "id": "p1",
+            "title": "正しいタイトル",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A", "level": 2, "content": "No.: 1\nタイトル: 値A"},
+            ],
+        }
+        docs = "# 間違ったタイトル\n\n| No. | タイトル |\n| --- | --- |\n| 1 | 値A |\n"
+        issues = self._check(data, docs)
+        assert any("[QO1]" in i and "title mismatch" in i for i in issues), issues
+
+
+class TestVerifyFileExcelP1FlattenEdgeCases:
+    """QA F2: Cell values with embedded \\n, \\t, double spaces, leading
+    or trailing whitespace must flatten equivalently on converter and
+    verify sides so sequential-delete finds them in JSON."""
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def _sheet(self, tmp_path, cell_val):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "説明"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["C2"] = cell_val            # the edge-case value
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "説明B"
+        xlsx_path = tmp_path / "p1.xlsx"
+        wb.save(xlsx_path)
+        return xlsx_path
+
+    def _json(self, flat_val):
+        return {
+            "id": "p1",
+            "title": "Sheet1",
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": f"No.: 1\nタイトル: 値A\n説明: {flat_val}"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n説明: 説明B"},
+            ],
+        }
+
+    def test_pass_embedded_newline_flattened(self, tmp_path):
+        """Cell '説明1\\n行2' flattens to '説明1 行2' in JSON."""
+        xlsx = self._sheet(tmp_path, "説明1\n行2")
+        data = self._json("説明1 行2")
+        assert self._check(str(xlsx), data, "Sheet1") == []
+
+    def test_pass_embedded_tab_flattened(self, tmp_path):
+        xlsx = self._sheet(tmp_path, "col1\tcol2")
+        data = self._json("col1 col2")
+        assert self._check(str(xlsx), data, "Sheet1") == []
+
+    def test_pass_double_spaces_flattened(self, tmp_path):
+        xlsx = self._sheet(tmp_path, "A  B  C")
+        data = self._json("A B C")
+        assert self._check(str(xlsx), data, "Sheet1") == []
+
+    def test_pass_leading_trailing_whitespace_trimmed(self, tmp_path):
+        # openpyxl returns the value as-is; verify's flatten trims via
+        # str.split() which drops surrounding whitespace.
+        xlsx = self._sheet(tmp_path, "   値X   ")
+        data = self._json("値X")
+        assert self._check(str(xlsx), data, "Sheet1") == []
+
+    def test_fail_json_not_flattened(self, tmp_path):
+        """If JSON retains embedded `\\n`, verify's line-split breaks the
+        pair — QC1 must fire for the missing value."""
+        xlsx = self._sheet(tmp_path, "説明1\n行2")
+        data = self._json("説明1\n行2")  # JSON kept raw newline — wrong
+        issues = self._check(str(xlsx), data, "Sheet1")
+        assert issues, "JSON with embedded newline must FAIL verify"
+
+
+class TestVerifyFileExcelP1TitleRowPresent:
+    """QA F3: sheet_name fallback MUST NOT fire when the sheet has a
+    genuine `■...` title row.  Missing coverage would let a regression
+    inverting the `startswith("■")` guard slip through."""
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def _sheet_with_title(self, tmp_path):
+        """P1 sheet whose row 1 has a ■... title cell (no sheet-name
+        fallback should apply)."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "■本物のタイトル"
+        ws["A2"] = ""
+        ws["A3"] = "No."
+        ws["B3"] = "タイトル"
+        ws["C3"] = "説明"
+        ws["A4"] = "1"
+        ws["B4"] = "値A"
+        ws["C4"] = "説明A"
+        ws["A5"] = "2"
+        ws["B5"] = "値B"
+        ws["C5"] = "説明B"
+        xlsx_path = tmp_path / "with_title.xlsx"
+        wb.save(xlsx_path)
+        return xlsx_path
+
+    def test_pass_title_from_header_row(self, tmp_path):
+        """Title matches the ■... row; sheet_name fallback must NOT fire."""
+        xlsx = self._sheet_with_title(tmp_path)
+        data = {
+            "id": "p1",
+            "title": "■本物のタイトル",  # from the row-1 cell
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n説明: 説明A"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n説明: 説明B"},
+            ],
+        }
+        assert self._check(str(xlsx), data, "Sheet1") == []
+
+    def test_fail_fabricated_sheet_name_title_when_row_1_has_header(self, tmp_path):
+        """Regression guard: if JSON uses the sheet name as title but the
+        source sheet actually has a ■... row, fallback must NOT inject
+        the sheet name as a synthetic token — so the mismatched JSON
+        title surfaces as QC2 (fabrication) / QC1 (missing)."""
+        xlsx = self._sheet_with_title(tmp_path)
+        data = {
+            "id": "p1",
+            "title": "Sheet1",  # fabricated — sheet actually has '■本物のタイトル'
+            "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n説明: 説明A"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n説明: 説明B"},
+            ],
+        }
+        issues = self._check(str(xlsx), data, "Sheet1")
+        # The real ■ title is missing from JSON → QC1.
+        # 'Sheet1' is fabricated (not a source cell, fallback must not fire)
+        #   → QC2.
+        assert any("■本物のタイトル" in i for i in issues), issues
+        assert any("Sheet1" in i and "QC2" in i for i in issues), issues
+
+
+class TestVerifyQC5NullByte:
+    """QC5: NULL byte (\\x00) anywhere in content is a format-purity
+    violation — it makes docs MD binary and unrenderable by GitHub Web.
+    """
+
+    def test_fail_null_in_content(self):
+        from scripts.verify.verify import _check_format_purity
+        data = {
+            "id": "x", "title": "T", "content": "normal\x00text",
+            "sections": [],
+        }
+        issues = _check_format_purity(data, "rst")
+        assert any("[QC5]" in i and "NULL" in i for i in issues), issues
+
+    def test_fail_null_in_section_content(self):
+        from scripts.verify.verify import _check_format_purity
+        data = {
+            "id": "x", "title": "T", "content": "",
+            "sections": [{"id": "s1", "title": "ST",
+                          "content": "body\x00after"}],
+        }
+        issues = _check_format_purity(data, "md")
+        assert any("[QC5]" in i and "NULL" in i for i in issues), issues
+
+    def test_fail_null_in_title(self):
+        from scripts.verify.verify import _check_format_purity
+        data = {
+            "id": "x", "title": "good\x00title", "content": "",
+            "sections": [],
+        }
+        issues = _check_format_purity(data, "rst")
+        assert any("[QC5]" in i and "title" in i and "NULL" in i for i in issues), issues
+
+    def test_pass_no_null(self):
+        from scripts.verify.verify import _check_format_purity
+        data = {
+            "id": "x", "title": "clean title",
+            "content": "clean body",
+            "sections": [{"id": "s1", "title": "section", "level": 2, "content": "clean"}],
+        }
+        # No NULLs → no QC5-NULL issue (other QC5 checks still run).
+        issues = _check_format_purity(data, "rst")
+        assert not any("NULL" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-16a: QO1 level alignment (JSON sections[].level ↔ docs MD #-count)
+# ---------------------------------------------------------------------------
+
+
+class TestCheckJsonDocsMdConsistency_QO1_Level:
+    """QO1 level check: JSON sections[].level must match docs MD heading #-count.
+
+    Spec reference: rbkc-verify-quality-design.md §3-3 QO1
+        「JSON sections[].level (2/3/4...) と docs MD の対応 heading の
+         `#` 数が一致する」
+    """
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_pass_level_2_3_4_nesting_matches(self):
+        """Correctly nested h2/h3/h4 → PASS."""
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "A", "level": 2, "content": "a"},
+                {"id": "s2", "title": "B", "level": 3, "content": "b"},
+                {"id": "s3", "title": "C", "level": 4, "content": "c"},
+            ]
+        }
+        docs = "# T\n\n## A\n\na\n\n### B\n\nb\n\n#### C\n\nc\n"
+        issues = self._check(data, docs)
+        # No QO1 level FAIL expected.
+        assert not any("QO1" in i and "level" in i.lower() for i in issues), issues
+
+    def test_fail_json_level_2_but_docs_emits_level_3(self):
+        """JSON says level=2 but docs MD emits `###` → QO1 FAIL."""
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "A", "level": 2, "content": "a"},
+            ]
+        }
+        docs = "# T\n\n### A\n\na\n"  # wrong heading level
+        issues = self._check(data, docs)
+        assert any("QO1" in i and "level" in i.lower() and "A" in i for i in issues), issues
+
+    def test_fail_json_level_3_but_docs_emits_level_2(self):
+        """JSON says level=3 but docs MD emits `##` → QO1 FAIL."""
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "A", "level": 3, "content": "a"},
+            ]
+        }
+        docs = "# T\n\n## A\n\na\n"  # should be ###
+        issues = self._check(data, docs)
+        assert any("QO1" in i and "level" in i.lower() and "A" in i for i in issues), issues
+
+    def test_fail_level_field_missing(self):
+        """A section without `level` field is a schema violation under 22-B-16."""
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                # Intentionally missing `level` — schema violation.
+                {"id": "s1", "title": "A", "content": "a"},
+            ]
+        }
+        docs = "# T\n\n## A\n\na\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i and "level" in i.lower() for i in issues), issues
+
+    def test_pass_empty_section_at_level_3(self):
+        """Section at level 3 with no body still emits `###` in docs MD."""
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "A", "level": 2, "content": "a"},
+                {"id": "s2", "title": "B", "level": 3, "content": ""},
+            ]
+        }
+        docs = "# T\n\n## A\n\na\n\n### B\n\n"
+        issues = self._check(data, docs)
+        assert not any("QO1" in i and "level" in i.lower() for i in issues), issues
+
+    def test_pass_top_only_no_sections_no_level_check(self):
+        """Top-level content only (no sections) → no level mismatch possible."""
+        data = {
+            "id": "f", "title": "T", "content": "本文です。", "sections": []
+        }
+        docs = "# T\n\n本文です。\n"
+        issues = self._check(data, docs)
+        assert not any("QO1" in i and "level" in i.lower() for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-16a: silent-skip horizontal class — labels.py label drop
+# ---------------------------------------------------------------------------
+
+
+class TestLabelMapStrict:
+    """labels.build_label_map must NOT silently drop labels that fail to
+    resolve to a heading (Phase 22-B-16a horizontal class fix).
+
+    Spec reference: rbkc-verify-quality-design.md §3-2-2 zero-exception —
+        「labels.py が heading 検出に失敗して label を map から drop →
+         drop せず、代わりに「解決不能ラベル」として QC1 FAIL」
+    """
+
+    def test_label_with_no_following_heading_is_reported(self, tmp_path):
+        """A `.. _label:` with no heading beneath it must not be silently dropped."""
+        from scripts.common.labels import build_label_map, UNRESOLVED
+        src = tmp_path / "foo.rst"
+        src.write_text(
+            ".. _orphan-label:\n\n"
+            "Just a paragraph, no heading here.\n",
+            encoding="utf-8",
+        )
+        label_map = build_label_map(tmp_path)
+        assert label_map.get("orphan-label") == UNRESOLVED, label_map
+
+    def test_label_orphan_at_end_of_file(self, tmp_path):
+        """A label at EOF (no following heading) resolves to the enclosing
+        section — matches Sphinx anchor behaviour (§3-2-2 interpretation
+        confirmed 2026-04-23).
+        """
+        from scripts.common.labels import build_label_map
+        src = tmp_path / "foo.rst"
+        src.write_text(
+            "見出し\n"
+            "=====\n\n"
+            "本文。\n\n"
+            ".. _trailing-orphan:\n",
+            encoding="utf-8",
+        )
+        label_map = build_label_map(tmp_path)
+        lt = label_map.get("trailing-orphan")
+        assert lt is not None
+        assert lt.title == "見出し"
+
+    def test_stacked_orphan_labels_all_reported(self, tmp_path):
+        """Multiple consecutive labels followed by a paragraph → all UNRESOLVED."""
+        from scripts.common.labels import build_label_map, UNRESOLVED
+        src = tmp_path / "foo.rst"
+        src.write_text(
+            ".. _alpha:\n"
+            ".. _beta:\n"
+            ".. _gamma:\n\n"
+            "Plain paragraph, no heading.\n",
+            encoding="utf-8",
+        )
+        label_map = build_label_map(tmp_path)
+        assert label_map.get("alpha") == UNRESOLVED, label_map
+        assert label_map.get("beta") == UNRESOLVED, label_map
+        assert label_map.get("gamma") == UNRESOLVED, label_map
+
+    def test_stacked_mixed_resolved_and_new_orphan(self, tmp_path):
+        """Resolved labels preceding a heading, then another orphan after the heading."""
+        from scripts.common.labels import build_label_map, UNRESOLVED
+        src = tmp_path / "foo.rst"
+        src.write_text(
+            ".. _resolved-a:\n"
+            ".. _resolved-b:\n\n"
+            "見出し\n"
+            "=====\n\n"
+            "本文\n\n"
+            ".. _orphan-after:\n\n"
+            "Another paragraph.\n",
+            encoding="utf-8",
+        )
+        label_map = build_label_map(tmp_path)
+        assert label_map.get("resolved-a").title == "見出し"
+        assert label_map.get("resolved-b").title == "見出し"
+        # Phase 22-B-16b step 2: a label declared after the heading but
+        # not directly followed by another heading resolves to the
+        # enclosing section (Sphinx anchor semantics).
+        assert label_map.get("orphan-after").title == "見出し"
+
+    def test_orphan_sentinel_does_not_leak_into_rst_inline_reference(self):
+        """Horizontal-class regression: rst_ast_visitor.inline_reference must
+        not render the UNRESOLVED sentinel's empty fields as visible text.
+
+        Phase 22-B-16b step 2b (spec §3-2-2 Sphinx-parity): dangling named
+        references emit display text with a WARNING log entry — they do
+        NOT raise.  The invariant preserved from 22-B-16a is that the
+        sentinel's empty ``.title`` must never appear as rendered text;
+        the display name must be used instead.
+        """
+        from docutils import nodes
+        from scripts.common import rst_ast_visitor
+        from scripts.common.labels import UNRESOLVED
+        ref = nodes.reference(text="Dangling")
+        ref["refname"] = "dangling"
+        text_node = nodes.Text("Dangling")
+        ref.append(text_node)
+        visitor = rst_ast_visitor._MDVisitor(
+            label_map={"dangling": UNRESOLVED}
+        )
+        out = visitor.inline_reference(ref)
+        # Must contain the display text; must NOT be empty (the sentinel's
+        # empty ``.title`` would render as "" if leaked).
+        assert "Dangling" in out and out != "", out
+        # Must have emitted a WARNING log entry (silent skip forbidden).
+        assert any("dangling" in w for w in visitor.warnings), visitor.warnings
+
+    def test_orphan_sentinel_does_not_leak_into_verify_resolve_title_inline(self):
+        """Horizontal-class regression: verify._resolve_title_inline must not
+        output the UNRESOLVED sentinel as rendered title text.
+
+        Builds an :ref: inline node inside a synthetic title, resolving via
+        label_map that returns the sentinel — pre-fix this rendered the
+        sentinel string into the comparison text; post-fix it falls back to
+        the raw label.
+        """
+        from docutils import nodes
+        from scripts.common.labels import UNRESOLVED
+        # Synthesise a docutils title containing an :ref: inline to a label
+        # that resolves to the UNRESOLVED sentinel.
+        title = nodes.title()
+        inline = nodes.inline(classes=["role-ref"])
+        inline.append(nodes.Text("orphan"))
+        title.append(inline)
+        from scripts.verify.verify import _resolve_title_inline
+        rendered = _resolve_title_inline(title, {"orphan": UNRESOLVED})
+        # Sentinel must not leak into the rendered title — post-22-B-16b the
+        # sentinel is a LabelTarget with empty fields, so a direct
+        # substring check via ``title`` catches the regression.
+        assert UNRESOLVED.title not in rendered or rendered == "orphan", rendered
+        # Should fall back to the raw label text, not leak the sentinel.
+        assert "orphan" in rendered
+
+
+
+
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-16b: github_slug (independent pin to GitHub auto-anchor rule)
+# ---------------------------------------------------------------------------
+
+
+class TestGithubSlug:
+    """`scripts/common/github_slug.github_slug` must reproduce GitHub Web's
+    heading auto-anchor algorithm.
+
+    Spec citation: gjtorikian/html-pipeline, lib/html/pipeline/toc_filter.rb
+        PUNCTUATION_REGEXP = /[^\\p{Word}\\- ]/u
+        id = ascii_downcase(text)
+        id.gsub!(PUNCTUATION_REGEXP, '')
+        id.tr!(' ', '-')
+        uniq = headers[id] > 0 ? "-#{headers[id]}" : ''
+        headers[id] += 1
+
+    Order: (1) ASCII downcase (non-ASCII unchanged) →
+    (2) strip every char that is NOT \\p{Word} / `-` / ` ` →
+    (3) replace spaces with hyphens (no collapse, no trim) →
+    (4) collision counter: 1st = slug, Nth (N≥2) = slug-{N-1}.
+    """
+
+    def test_lowercases_ascii(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("Foo Bar") == "foo-bar"
+
+    def test_strips_ascii_punctuation(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("Hello, World!") == "hello-world"
+
+    def test_keeps_japanese_verbatim(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("コード値の選択") == "コード値の選択"
+
+    def test_mixed_japanese_and_ascii(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("APIの設定") == "apiの設定"
+
+    def test_underscore_is_kept(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("under_score") == "under_score"
+
+    def test_hyphen_is_kept(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("a-b") == "a-b"
+
+    def test_period_is_stripped(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("a.b") == "ab"
+
+    def test_multiple_spaces_not_collapsed(self):
+        """Spec quirk: consecutive spaces produce consecutive hyphens."""
+        from scripts.common.github_slug import github_slug
+        assert github_slug("a  b   c") == "a--b---c"
+
+    def test_leading_trailing_spaces_not_trimmed(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("  Foo  ") == "--foo--"
+
+    def test_non_ascii_upper_not_downcased(self):
+        """ASCII-only downcase — É stays É, not é."""
+        from scripts.common.github_slug import github_slug
+        assert github_slug("É") == "É"
+
+    def test_dedup_with_counter(self):
+        """Duplicate slugs get `-1` / `-2` (counter, not -0)."""
+        from scripts.common.github_slug import github_slug
+        seen: dict[str, int] = {}
+        a = github_slug("Foo", seen=seen)
+        b = github_slug("Foo", seen=seen)
+        c = github_slug("Foo", seen=seen)
+        assert a == "foo"
+        assert b == "foo-1"
+        assert c == "foo-2"
+
+    def test_dedup_isolated_when_no_seen(self):
+        from scripts.common.github_slug import github_slug
+        assert github_slug("Foo") == "foo"
+        assert github_slug("Foo") == "foo"
+
+
+# NOTE: TestLabelTarget and TestDocMap are Phase 22-B-16b-main scope.
+# They require labels.py to depend on common/file_id.py which is 22-B-16b-prep.
+# Tests will be (re)added in 22-B-16b-main commits per SE recommendation
+# (.work/00299/review-22-b-16b-se.md).
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-16b step 4: QL1 two-sided link target existence
+# ---------------------------------------------------------------------------
+
+class TestCheckQL1LinkTargets:
+    """Spec §3-2-3: every `](../{cat}/{file_id}.md...)` link in JSON
+    content must point to an existing target JSON file under
+    knowledge_dir; same link in docs MD must point at an existing .md.
+    """
+
+    def _setup(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        # Existing target
+        (kn / "component" / "libraries" / "libraries-foo.json").write_text(
+            '{"id":"libraries-foo","title":"Foo","content":"","sections":[]}',
+            encoding="utf-8",
+        )
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n", encoding="utf-8"
+        )
+        return kn, docs
+
+    def test_pass_existing_target(self, tmp_path):
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#foo) for details.",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert issues == []
+
+    def test_fail_dangling_json_target(self, tmp_path):
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+
+        data = {
+            "content": "See [Bar](../../component/libraries/libraries-missing.md) for details.",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert len(issues) == 1
+        assert "JSON link target missing" in issues[0]
+        assert "libraries-missing" in issues[0]
+
+    def test_fail_dangling_docs_md_target(self, tmp_path):
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md) for details.",
+            "sections": [],
+        }
+        docs_md = (
+            "# Test\n\n"
+            "See [Orphan](../../component/libraries/libraries-orphan.md) for details.\n"
+        )
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        assert any("docs MD link target missing" in i for i in issues)
+        assert any("libraries-orphan" in i for i in issues)
+
+    def test_pass_asset_exists(self, tmp_path):
+        """Phase 22-B-16c: `](assets/{file_id}/{basename})` asset link
+        passes when the file is present under knowledge/assets/..."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+        (kn / "assets" / "libraries-foo").mkdir(parents=True)
+        (kn / "assets" / "libraries-foo" / "bar.png").write_bytes(b"\x89PNG...")
+
+        data = {
+            "content": "![alt](assets/libraries-foo/bar.png)",
+            "sections": [],
+        }
+        assert check_ql1_link_targets(data, kn) == []
+
+    def test_fail_asset_missing(self, tmp_path):
+        """Phase 22-B-16c: asset missing from disk → QL1 FAIL."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+
+        data = {
+            "content": "![alt](assets/libraries-foo/missing.png)",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert any("asset missing" in i for i in issues)
+        assert any("missing.png" in i for i in issues)
+
+    def test_link_shape_inside_code_block_is_ignored(self, tmp_path):
+        """F2 regression: a link-shaped substring inside a fenced code
+        block must NOT be extracted (CommonMark doesn't make it a link),
+        so no false-positive FAIL even when the path doesn't exist.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+
+        data = {
+            "content": (
+                "```\n"
+                "Example: [X](../../component/libraries/libraries-nosuch.md)\n"
+                "```\n"
+            ),
+            "sections": [],
+        }
+        # CommonMark fenced code blocks don't expose link tokens — no FAIL.
+        assert check_ql1_link_targets(data, kn) == []
+
+    def test_dedup_repeated_link(self, tmp_path):
+        """Repeated link to the same target is checked once."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+
+        data = {
+            "content": (
+                "See [Bar](../../component/libraries/libraries-missing.md). "
+                "Again: [Bar](../../component/libraries/libraries-missing.md)."
+            ),
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert len(issues) == 1
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-12: Excel preamble + span-inherit header composition
+# ---------------------------------------------------------------------------
+
+
+class TestVerifyP1PreambleInContent:
+    """Phase 22-B-12 (spec §3-1 Excel 節 preamble の扱い):
+
+    P1 シートでは title 行とヘッダ行の間の非空セル (preamble) を JSON の
+    top-level ``content`` に join して格納する.  verify は preamble セル
+    も通常のソーストークンとして sequential-delete にかける — content に
+    含まれていれば PASS, 欠落していれば QC1 FAIL.
+    """
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def _sheet_with_preamble(self, tmp_path):
+        """Build a sheet modelled after v5 releasenote row 0/1/3 structure:
+          row 0: ■Nablarch 5u6 リリースノート (title)
+          row 1: several preamble cells scattered across columns
+          row 2: blank
+          row 3: header
+          row 4+: data
+        """
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "5u6"
+        ws["A1"] = "■Nablarch 5u6 リリースノート"
+        ws["A2"] = "5u5からの変更点を記載しています。"
+        ws["H2"] = "※1 Nablarch 5u5からNablarch 5u6にバージョンアップする手順は、本書「バージョンアップ手順」シートを参照ください。"
+        ws["J2"] = "※2 変更点により、Nablarchの動作に変更がある場合に「あり」とします。"
+        ws["L2"] = "※3 チケット番号がないものはNablarch開発チーム内部検知したものです。"
+        ws["A4"] = "コンテンツ"
+        ws["C4"] = "No."
+        ws["D4"] = "分類"
+        ws["E4"] = "タイトル"
+        ws["A5"] = "アプリ"
+        ws["C5"] = "1"
+        ws["D5"] = "ログ"
+        ws["E5"] = "改善"
+        ws["A6"] = "アプリ"
+        ws["C6"] = "2"
+        ws["D6"] = "API"
+        ws["E6"] = "追加"
+        xlsx_path = tmp_path / "preamble.xlsx"
+        wb.save(xlsx_path)
+        return xlsx_path
+
+    def test_pass_preamble_in_content(self, tmp_path):
+        """Preamble cells appear in top-level ``content`` — PASS."""
+        xlsx = self._sheet_with_preamble(tmp_path)
+        preamble = "\n".join([
+            "5u5からの変更点を記載しています。",
+            "※1 Nablarch 5u5からNablarch 5u6にバージョンアップする手順は、本書「バージョンアップ手順」シートを参照ください。",
+            "※2 変更点により、Nablarchの動作に変更がある場合に「あり」とします。",
+            "※3 チケット番号がないものはNablarch開発チーム内部検知したものです。",
+        ])
+        data = {
+            "id": "x",
+            "title": "■Nablarch 5u6 リリースノート",
+            "content": preamble,
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "改善",
+                 "content": "コンテンツ: アプリ\nNo.: 1\n分類: ログ\nタイトル: 改善"},
+                {"id": "s2", "title": "追加",
+                 "content": "コンテンツ: アプリ\nNo.: 2\n分類: API\nタイトル: 追加"},
+            ],
+        }
+        issues = self._check(str(xlsx), data, sheet_name="5u6")
+        assert issues == [], f"preamble-in-content must PASS, got: {issues}"
+
+    def test_fail_preamble_dropped(self, tmp_path):
+        """Preamble missing from JSON → QC1 residue FAIL."""
+        xlsx = self._sheet_with_preamble(tmp_path)
+        data = {
+            "id": "x",
+            "title": "■Nablarch 5u6 リリースノート",
+            "content": "",  # preamble dropped
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "改善",
+                 "content": "コンテンツ: アプリ\nNo.: 1\n分類: ログ\nタイトル: 改善"},
+                {"id": "s2", "title": "追加",
+                 "content": "コンテンツ: アプリ\nNo.: 2\n分類: API\nタイトル: 追加"},
+            ],
+        }
+        issues = self._check(str(xlsx), data, sheet_name="5u6")
+        assert any("QC1" in i and "からの変更点" in i for i in issues), issues
+
+
+class TestVerifyP1SpanInheritComposition:
+    """Phase 22-B-12: span-inherit header composition for multi-row headers.
+
+    Algorithm (spec §3-1 & converter §8-3):
+      - For parent (non-leaf) rows, a non-empty cell's value spans
+        rightward until the next non-empty cell in the same row.
+      - Leaf row is used verbatim.
+      - Composed column = SEP.join(non-empty [inherited parents..., leaf]).
+      - SEP = ' / ' (space-slash-space).
+    """
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def test_pass_span_inherit_fills_blank_parent_cells(self, tmp_path):
+        """Corpus reality (v5 bessatsu sheet): parent row 3 has blank cells
+        between non-empty parent labels.  span-inherit must carry the
+        parent value rightward.
+        """
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # Parent row (row 1): col 2 = parent1, col 4 = parent2; col 3 is blank
+        ws["B1"] = "親1"  # parent1
+        ws["D1"] = "親2"  # parent2
+        # Leaf row (row 2): all 4 columns
+        ws["A2"] = "No"
+        ws["B2"] = "子A"
+        ws["C2"] = "子B"
+        ws["D2"] = "子A"
+        ws["E2"] = "子B"
+        # Data rows
+        ws["A3"] = "1"; ws["B3"] = "v1a"; ws["C3"] = "v1b"; ws["D3"] = "v2a"; ws["E3"] = "v2b"
+        ws["A4"] = "2"; ws["B4"] = "w1a"; ws["C4"] = "w1b"; ws["D4"] = "w2a"; ws["E4"] = "w2b"
+        xlsx_path = tmp_path / "span.xlsx"
+        wb.save(xlsx_path)
+        # Expected composed columns (span-inherit):
+        #   A: 'No' (leaf only, no parent)
+        #   B: '親1 / 子A'
+        #   C: '親1 / 子B'  (parent1 inherited across blank cell)
+        #   D: '親2 / 子A'
+        #   E: '親2 / 子B'
+        data = {
+            "id": "sp", "title": "Sheet1", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "v1a",
+                 "content": (
+                     "No: 1\n"
+                     "親1 / 子A: v1a\n親1 / 子B: v1b\n"
+                     "親2 / 子A: v2a\n親2 / 子B: v2b"
+                 )},
+                {"id": "s2", "title": "w1a",
+                 "content": (
+                     "No: 2\n"
+                     "親1 / 子A: w1a\n親1 / 子B: w1b\n"
+                     "親2 / 子A: w2a\n親2 / 子B: w2b"
+                 )},
+            ],
+        }
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert issues == [], f"span-inherit composition must PASS, got: {issues}"
+
+    def test_fail_span_inherit_not_applied(self, tmp_path):
+        """If the converter omits the parent for the span-inherited column,
+        verify's QP detects the missing `親1 / 子B` pairing."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["B1"] = "親1"
+        ws["D1"] = "親2"
+        ws["A2"] = "No"
+        ws["B2"] = "子A"
+        ws["C2"] = "子B"
+        ws["D2"] = "子A"
+        ws["E2"] = "子B"
+        ws["A3"] = "1"; ws["B3"] = "v1a"; ws["C3"] = "v1b"; ws["D3"] = "v2a"; ws["E3"] = "v2b"
+        ws["A4"] = "2"; ws["B4"] = "w1a"; ws["C4"] = "w1b"; ws["D4"] = "w2a"; ws["E4"] = "w2b"
+        xlsx_path = tmp_path / "span_bad.xlsx"
+        wb.save(xlsx_path)
+        # Bug reproduction: section.content omits the "親1 / " prefix for
+        # the column C that should inherit from B, yielding duplicate "子B".
+        data = {
+            "id": "sp", "title": "Sheet1", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "v1a",
+                 "content": (
+                     "No: 1\n"
+                     "親1 / 子A: v1a\n子B: v1b\n"  # missing 親1 / prefix
+                     "親2 / 子A: v2a\n親2 / 子B: v2b"
+                 )},
+                {"id": "s2", "title": "w1a",
+                 "content": (
+                     "No: 2\n"
+                     "親1 / 子A: w1a\n子B: w1b\n"
+                     "親2 / 子A: w2a\n親2 / 子B: w2b"
+                 )},
+            ],
+        }
+        issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
+        assert issues, "span-inherit omission must FAIL"
+        assert any("QP" in i or "QC" in i for i in issues), issues

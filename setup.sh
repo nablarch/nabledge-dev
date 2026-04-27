@@ -196,20 +196,20 @@ print_status info "Installing Python libraries..."
 if uv pip install --python "$VENV_DIR/bin/python" \
     pdfplumber reportlab pypdf pymupdf \
     python-pptx Pillow markitdown \
-    openpyxl python-docx lxml pandas; then
+    openpyxl xlrd xlwt python-docx lxml pandas; then
     print_status ok "Python libraries installed"
 else
     print_status error "Failed to install Python libraries"
     exit 1
 fi
 
-# Install knowledge-creator dependencies
-if [ -f "tools/knowledge-creator/requirements.txt" ]; then
-    print_status info "Installing knowledge-creator dependencies..."
-    if uv pip install --python "$VENV_DIR/bin/python" -r tools/knowledge-creator/requirements.txt; then
-        print_status ok "knowledge-creator dependencies installed"
+# Install RBKC dependencies
+if [ -f "tools/rbkc/requirements.txt" ]; then
+    print_status info "Installing RBKC dependencies..."
+    if uv pip install --python "$VENV_DIR/bin/python" -r tools/rbkc/requirements.txt; then
+        print_status ok "RBKC dependencies installed"
     else
-        print_status error "Failed to install knowledge-creator dependencies"
+        print_status error "Failed to install RBKC dependencies"
         exit 1
     fi
 fi
@@ -224,12 +224,11 @@ else
     exit 1
 fi
 
-# Verify knowledge-creator dependencies
-if [ -f "tools/knowledge-creator/requirements.txt" ]; then
-    if "$VENV_DIR/bin/python" -c "import pytest, openpyxl; print('OK')" 2>/dev/null; then
-        print_status ok "knowledge-creator dependencies verified"
+if [ -f "tools/rbkc/requirements.txt" ]; then
+    if "$VENV_DIR/bin/python" -c "import docutils, markdown_it, openpyxl, xlrd, xlwt, pytest; print('OK')" 2>/dev/null; then
+        print_status ok "RBKC dependencies verified"
     else
-        print_status error "knowledge-creator dependency verification failed"
+        print_status error "RBKC dependency verification failed"
         exit 1
     fi
 fi
@@ -354,32 +353,14 @@ clone_or_update_repo() {
     fi
 }
 
-# Clone Nablarch official repositories from catalog.json (git)
-clone_repos_from_meta() {
-    local version="$1"
-    local target_dir="$2"
-    local meta_file="tools/knowledge-creator/.cache/v${version}/catalog.json"
+# Clone Nablarch official documentation repositories (RBKC source)
+print_status info "Cloning Nablarch official documentation repositories..."
 
-    if [ ! -f "$meta_file" ]; then
-        print_status warning "catalog.json not found: $meta_file (skip)"
-        return
-    fi
+clone_or_update_repo "https://github.com/nablarch/nablarch-document.git"                       "$NAB_OFFICIAL_V6_DIR" "main"
+clone_or_update_repo "https://github.com/Fintan-contents/nablarch-system-development-guide.git" "$NAB_OFFICIAL_V6_DIR" "main"
 
-    print_status info "Setting up Nablarch ${version} repositories from ${meta_file}..."
-
-    local count
-    count=$(jq '.sources | length' "$meta_file")
-
-    for i in $(seq 0 $((count - 1))); do
-        local repo_url branch
-        repo_url=$(jq -r ".sources[$i].repo" "$meta_file")
-        branch=$(jq -r ".sources[$i].branch" "$meta_file")
-        clone_or_update_repo "${repo_url%.git}.git" "$target_dir" "$branch"
-    done
-}
-
-clone_repos_from_meta "6" "$NAB_OFFICIAL_V6_DIR"
-clone_repos_from_meta "5" "$NAB_OFFICIAL_V5_DIR"
+clone_or_update_repo "https://github.com/nablarch/nablarch-document.git"                       "$NAB_OFFICIAL_V5_DIR" "v5-main"
+clone_or_update_repo "https://github.com/Fintan-contents/nablarch-system-development-guide.git" "$NAB_OFFICIAL_V5_DIR" "main"
 
 # Clone example repositories for code-analysis scenarios
 print_status info "Cloning example repositories for code-analysis scenarios..."

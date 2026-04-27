@@ -203,7 +203,7 @@ for item in scenario.expectations.output:
     detection_items.append(f"Output includes '{item}'")
 ```
 
-### Step 4: Execute scenarios via sub-agents
+### Step 4: Execute scenarios via the runner subagent
 
 **Before launching sub-agents**, capture the run timestamp once:
 
@@ -215,72 +215,41 @@ mkdir -p "${WORKSPACE}"
 
 Use `$RUN_TIMESTAMP` and `$WORKSPACE` consistently in all subsequent steps (Step 5, Step 9c).
 
-**CRITICAL**: Each scenario MUST run in a separate Task tool invocation. This ensures:
+**CRITICAL**: Each scenario MUST run in a separate `nabledge-test-runner` subagent invocation. This ensures:
 - No context bleeding between scenarios (bias elimination)
-- Each scenario starts from a clean state
+- Each scenario starts from a clean state under a model-pinned context (Sonnet per agent frontmatter)
 - Metrics reflect true isolated performance
 
-**For each scenario**, spawn a Task tool with the following prompt:
+**For each scenario**, spawn `Agent(subagent_type: "nabledge-test-runner", ...)` with a prompt containing only the structured input block below:
 
 ```
-You are a measurement instrument executing a nabledge skill test.
-
-## Rules
-- Follow target skill workflows EXACTLY — do NOT improvise
-- Record actual execution — do NOT fabricate steps
-- Let failures be failures — do NOT mask with workarounds
-- Complete all steps without stopping
-- No self-imposed limits on token usage or execution time
-
-## Task
-1. Read `.claude/skills/nabledge-<version>/SKILL.md` and follow its instructions
-2. Execute the following question: "<scenario.question>"
-3. Record timing for each step (use `date '+%Y-%m-%dT%H:%M:%S'`)
-
-## Output
-When complete, output the following clearly delimited sections:
-
-### RESPONSE_START
-<paste the complete response/answer from nabledge-<version> here>
-### RESPONSE_END
-
-### METRICS_START
-```json
-{
-  "total_duration_seconds": <number>,
-  "steps": [
-    {
-      "step": <number>,
-      "name": "<step name>",
-      "duration_seconds": <number>,
-      "in_tokens_estimate": <number>,
-      "out_tokens_estimate": <number>
-    }
-  ],
-  "tool_calls": {
-    "Read": <count>,
-    "Bash": <count>,
-    "Grep": <count>,
-    "Write": <count>
-  },
-  "total_tool_calls": <number>,
-  "response_chars": <number>
-}
+SCENARIO_ID: <scenario.id>
+TARGET_SKILL: nabledge-<version>
+SCENARIO_TYPE: <qa | code-analysis>
+QUESTION: <scenario.question>
+WORKSPACE_DIR: <absolute path of $WORKSPACE>/<scenario.id>
 ```
-### METRICS_END
 
-### OUTPUT_FILES_START
-<list any files created by the skill, with their full paths, one per line>
-<if no files created, write "none">
-### OUTPUT_FILES_END
+For code-analysis scenarios, also include:
 ```
+TARGET_FILE: <scenario.target_file>
+```
+
+The runner enforces measurement discipline (see `.claude/agents/nabledge-test-runner.md`) and returns four delimited blocks in its final message:
+
+- `<<<NABLEDGE_TEST_RESPONSE ... NABLEDGE_TEST_RESPONSE>>>` — complete answer text
+- `<<<NABLEDGE_TEST_METRICS ... NABLEDGE_TEST_METRICS>>>` — JSON with duration, tool_calls, response_chars
+- `<<<NABLEDGE_TEST_OUTPUT_FILES ... NABLEDGE_TEST_OUTPUT_FILES>>>` — absolute paths, one per line, or `none`
+- `<<<NABLEDGE_TEST_STATUS ... NABLEDGE_TEST_STATUS>>>` — `{"status": "ok"}` or `{"status": "error", "error": "..."}`
+
+Grading is NOT done by the runner; the skill extracts these blocks and grades in Step 6.
 
 **Execution strategy — parallel batches**:
 
 Run scenarios in two parallel batches to minimize total execution time:
 
 **Batch 1 — Coverage run** (all coverage scenarios in parallel):
-- Launch ALL coverage scenarios (`"benchmark": false/absent`) simultaneously as separate Task tools
+- Launch ALL coverage scenarios (`"benchmark": false/absent`) simultaneously as separate runner invocations
 - Wait for all to complete, then save results and run detection checks
 
 **Batch 2 — Benchmark run** (all benchmark trials in parallel):
@@ -297,12 +266,12 @@ Trial 1 of each benchmark scenario serves as the canonical result (grading.json 
 
 **For multiple trials** (`--trials N`):
 
-- Launch all N trials for a scenario simultaneously as separate Task tools
+- Launch all N trials for a scenario simultaneously as separate runner invocations
 - Wait for all to complete, then collect results
 
-**After all Tasks in a batch complete**:
+**After all runner invocations in a batch complete**:
 
-1. For each Task result: parse the delimited output sections (RESPONSE, METRICS, OUTPUT_FILES)
+1. For each runner result: parse the four `NABLEDGE_TEST_*` delimited blocks
 2. Save results to the workspace (see Step 5)
 3. Run detection check (see Step 6)
 
@@ -321,11 +290,13 @@ For each completed scenario:
     output/              # Output files (ca-* only, copied from paths in OUTPUT_FILES)
 ```
 
-**Save response.md**: Extract text between `### RESPONSE_START` and `### RESPONSE_END`.
+**Save response.md**: Extract text between `<<<NABLEDGE_TEST_RESPONSE` and `NABLEDGE_TEST_RESPONSE>>>`.
 
-**Save metrics.json**: Parse JSON from between `### METRICS_START` and `### METRICS_END`. If parsing fails (sub-agent didn't output clean JSON), extract what's available and note the error.
+**Save metrics.json**: Parse JSON from between `<<<NABLEDGE_TEST_METRICS` and `NABLEDGE_TEST_METRICS>>>`. If parsing fails (runner didn't output clean JSON), extract what's available and note the error.
 
-**Save output files** (ca-* scenarios only): Copy files listed in OUTPUT_FILES section to `output/` directory. For benchmark trials, also copy to `trials/<N>/output/` directory.
+**Check status**: Parse JSON from between `<<<NABLEDGE_TEST_STATUS` and `NABLEDGE_TEST_STATUS>>>`. If `status != "ok"`, record the error and skip grading for this scenario (still save response.md and metrics.json for inspection).
+
+**Save output files** (ca-* scenarios only): From the `<<<NABLEDGE_TEST_OUTPUT_FILES ... NABLEDGE_TEST_OUTPUT_FILES>>>` block, copy each listed absolute path into `output/` directory. For benchmark trials, also copy to `trials/<N>/output/` directory. If the block contains only the token `none`, skip.
 
 **For benchmark scenarios** (in `--baseline` mode): After saving the canonical grading.json and metrics.json (trial 1):
 
@@ -364,94 +335,44 @@ For each completed scenario:
 
 ### Step 6: Check detection items
 
-For each scenario, evaluate detection items against the response:
+Grading is performed by `scripts/grade.py`, which implements the spec-anchored strict rules (see that file for the authoritative detection logic and `scripts/test_grade.py` for regression coverage). Do NOT hand-roll grading — the ad-hoc variant in the 22-B-13 baseline relaxed the "Nablarch Framework Usage" heading rule to heading-or-text and inflated ca-002 by one item.
 
-**QA (qa-*)**:
+**Command** (per scenario, after Step 5 saved `response.md` and optional `output/`):
 
-```python
-for item in detection_items:
-    if "includes one of:" in item:
-        # OR condition: extract all quoted keywords, detected if any match
-        # Format: "Response includes one of: 'kw1', 'kw2'"
-        keywords = re.findall(r"'([^']+)'", item)
-        detected = any(k in response_text for k in keywords)
-    elif "includes" in item:
-        keyword = extract_keyword(item)  # e.g., "DataReadHandler"
-        detected = keyword in response_text
-    elif "references" in item:
-        section = extract_section(item)  # e.g., "request-path"
-        detected = section in response_text
+```bash
+python3 .claude/skills/nabledge-test/scripts/grade.py \
+  --workspace "${WORKSPACE}" \
+  --scenario-id "<scenario-id>" \
+  --scenarios ".claude/skills/nabledge-test/scenarios/nabledge-${VERSION}/scenarios.json"
 ```
 
-**Code-analysis (ca-*)**:
-
-Each detection item is checked by examining response text and output files. **CRITICAL**: For section-based checks, always read from the actual output Markdown files (e.g., `code-analysis-*.md`), NOT just `response.md`. This ensures accurate detection even when the agent writes to external files.
-
-Search order:
-1. Read all `.md` files in the output directory (e.g., `code-analysis-*.md`)
-2. Fall back to `response.md` only if output files don't exist
-3. Concatenate all sources before performing detection
-
-Detection logic:
-- "Overview includes 'X'" → check if keyword X appears within the `## Overview` section (read from output files first)
-- "Class diagram includes class 'X'" → check if class name X appears within a `classDiagram` block (read from output files first)
-- "Class diagram includes relationship 'X'" → check if relationship string X appears within a `classDiagram` block (read from output files first)
-- "Component Summary includes 'X'" → check if component name X appears within the `### Component Summary` section (read from output files first)
-- "Processing Flow includes 'X'" → check if keyword X appears within the `### Processing Flow` section (read from output files first)
-- "Sequence diagram includes object 'X'" → check if participant/object X appears within a `sequenceDiagram` block (read from output files first)
-- "Sequence diagram includes message 'X'" → check if message/method call X appears within a `sequenceDiagram` block (read from output files first)
-- "Nablarch Framework Usage includes 'X'" → check if class name X appears as a heading within the `## Nablarch Framework Usage` section (read from output files first)
-- "Output includes 'X'" → check output files or response for X
-
-**Implementation for Code-Analysis scenarios**:
-
-When checking CA detection items:
-1. List all files in the output directory (e.g., `output/code-analysis-*.md`)
-2. If output files exist, read them; otherwise fall back to `response.md`
-3. For section-based items (Overview, Class diagram, etc.), extract the relevant section and perform keyword search
-4. Example extraction:
-   ```python
-   # Read all .md files from output directory
-   output_dir = Path(workspace) / scenario_id / "output"
-   output_text = ""
-   if output_dir.exists():
-       for f in sorted(output_dir.glob("*.md")):
-           with open(f) as file:
-               output_text += file.read() + "\n"
-   else:
-       # Fall back to response.md
-       with open(Path(workspace) / scenario_id / "response.md") as f:
-           output_text = f.read()
-   
-   # Extract section and check for keyword
-   # Example: for "Overview includes 'X'", extract text between "## Overview" and next heading
-   ```
-
-**Write grading.json**:
+Writes `${WORKSPACE}/<scenario-id>/grading.json` with shape:
 
 ```json
 {
-  "scenario_id": "<id>",
+  "scenario_id": "...",
   "detection_items": [
-    {
-      "text": "Overview includes 'BusinessDateUtil'",
-      "detected": true,
-      "evidence": "Found in ## Overview section of code-analysis-*.md"
-    },
-    {
-      "text": "Nablarch Framework Usage includes 'ParameterizedSqlPStatement'",
-      "detected": false,
-      "evidence": "Not found as heading in ## Nablarch Framework Usage section"
-    }
+    {"text": "...", "detected": true|false, "evidence": "..."}
   ],
-  "summary": {
-    "detected": 5,
-    "not_detected": 1,
-    "total": 6,
-    "detection_rate": 0.833
-  }
+  "summary": {"detected": N, "not_detected": M, "total": T, "detection_rate": R}
 }
 ```
+
+**For benchmark trials**, add `--trial <N>` to grade each `trials/<N>/` independently:
+
+```bash
+python3 .claude/skills/nabledge-test/scripts/grade.py \
+  --workspace "${WORKSPACE}" --scenario-id qa-001 \
+  --scenarios ".claude/skills/nabledge-test/scenarios/nabledge-${VERSION}/scenarios.json" \
+  --trial 1
+```
+
+**Detection rules** (summary; authoritative source is `scripts/grade.py` docstring):
+- QA: each expectation string must appear as a substring of `response.md`; for nested arrays, any one must match (OR).
+- CA "Overview/Component Summary/Processing Flow includes 'X'": X is a substring of that section's body text.
+- CA "Class/Sequence diagram includes …": X is a substring of the corresponding `mermaid` fenced block.
+- CA "Nablarch Framework Usage includes 'X'" (strict): X must appear in a `###` or `####` heading within the `## Nablarch Framework Usage` section. Body mentions are rejected.
+- CA "Output includes 'X'": X anywhere in the concatenated output files + response.
 
 ### Step 7: Generate individual scenario reports and aggregate report
 
@@ -517,12 +438,20 @@ mkdir -p "${TARGET_DIR}"
   "commit_short": "<7-char_sha>",
   "scenarios_count": 10,
   "trials": 1,
+  "runner_agent": "nabledge-test-runner",
+  "model_used": "sonnet",
   "scenarios": {
     "qa": ["qa-001", "qa-002", "qa-003", "qa-004", "qa-005"],
     "code-analysis": ["ca-001", "ca-002", "ca-003", "ca-004", "ca-005"]
   }
 }
 ```
+
+**`runner_agent`**: name of the custom subagent that executed each scenario (from `.claude/agents/*.md`). Must match the agent used in Step 4.
+
+**`model_used`**: model pinned in the runner agent's frontmatter (`sonnet`, `opus`, or `haiku`). Read from `.claude/agents/<runner_agent>.md` frontmatter so the value is not hand-maintained. Record verbatim — do not resolve version suffixes.
+
+These two fields are mandatory from baseline format v2 onward. Baselines lacking them were taken under a variable-model execution path and are not directly comparable.
 
 #### 9c: Copy per-scenario data
 
