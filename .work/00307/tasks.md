@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-24 (Step 5 merged done, Step 6 pending — review-08 under-cite)
+**Updated**: 2026-04-27 (Step 6 方針確定 — search_ids.md 品質課題4点を修正)
 
 ## ゴール
 
@@ -124,28 +124,24 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
 - 現状: $0.40/Q × 30 = $12/run
 - Read + マージ: 平均 $1.09/Q × 30 ≈ $32/run (3 件平均 $1.21)
 
-#### Step 6: review-08 under-cite 解消 (次の優先タスク)
+#### Step 6: search_ids.md プロンプト品質改善 (最優先)
 
-**症状**: AI-1 が `mth|s8` を selections に入れて Read 済みだが、
-Step 5 で evidence に含めず、A-fact 4 (ThreadPoolExecutor#shutdownNow
-で他スレッド安全終了) が回答に出ない。
+**根本原因の特定 (2026-04-27)**:
+- AI-1 が Read を1回も呼ばずに StructuredOutput を直接返していた（stream ログ確認済み）
+- s5 はそもそも selections に入っていなかった（tasks.md の旧認識「s8 選定済みで evidence に入れず」は誤り）
+- 質問が純粋日本語のため grep_term_hits もゼロヒット
 
-**試行: aspects 列挙 + cover-or-justify 追加 (trial4)** → **悪化**
-- aspects を Step 1 に追加し、Step 5 を「全 aspect を cover、drop は
-  justify」に書き換えた
-- 結果: req-05 が L3→L0 (回答からコード名称ロケール部分が欠落)、
-  review-08 は L1 のまま → net 悪化 (2.33 → 1.67)
-- → revert (実質 `72f62aa88` の judge 調整だけ残した)
+**確認された課題 4点**:
+1. プロンプトのベストプラクティス違反 — ステップが肯定文の明確な命令になっていない。AIが迷わず実行できる状態でない
+2. 候補ファイル全量 Read → セクション選定 → 回答生成の徹底不足 — Read を強制する設計になっておらず、インデックスだけ見て返すことが許容されている
+3. 出来レース的ルールの混入 — Step 4 の「`制約`/`前提`/`ハンドラ配置` も含めよ」はハンドラ構造前提で削除すべき
+4. 各ステップの結果・判断理由がスキーマに記録されない — 性能改善に必要な情報が取れていない
 
-**次の案 (未着手)**:
-- 別アプローチの検討: Step 5 に「selections に入れた sections は
-  必ず conclusion で触れる」を直接ルール化
-- もしくは AI-3 を再度分離 (retrieved = selections 全部を渡す)
-- どちらも PE 相談前提
-
-**コスト予測**:
-- 現状: $0.40/Q × 30 = $12/run
-- Read + マージ: 平均 $1.09/Q × 30 ≈ $32/run
+**作業ステップ**:
+- [ ] search_ids.md を4点の課題に沿って書き直す（PE レビュー前に実行ログ1件取得必須）
+- [ ] シミュレーション（スクリプトで手元確認）でプロンプト改訂の手応えを確認
+- [ ] 手応えあれば 3 件試走（req-05 / review-01 / review-08）で測定
+- [ ] 結果が 3 件 mean ≥ 2.33 かつ review-08 L3 なら次へ
 
 #### Step 6: 検索が安定したら回答統合の検討 (条件付き次期)
 
