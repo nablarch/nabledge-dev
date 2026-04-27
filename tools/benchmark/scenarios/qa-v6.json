@@ -7,7 +7,6 @@
       "都度起動バッチを採用する（常駐バッチは新規開発では非推奨）",
       "BatchAction を継承したアクションクラスを実装する",
       "Form / Entity / Action の3層構成で組む",
-      "DB 接続ありの標準ハンドラキュー構成を使う",
       "DataReader を実装してレコードを1件ずつ供給する"
     ],
     "expected_question": "ファイルの明細レコードを読み込んで DB テーブルに取り込む夜間バッチを作りたい。Nablarch でこういうバッチを実装するときの推奨構成を知りたい",
@@ -39,11 +38,9 @@
     "review_perspective": "アーキテクチャ",
     "context": "ウェブアプリケーション",
     "a_facts": [
-      "Servlet API ベース(`NablarchServletContextListener` + `WebFrontController`)で組む",
       "`WebFrontController` がリクエストを受け、ハンドラキューに委譲する構成",
       "`DispatchHandler` が URI からアクションクラスを特定して呼び出す",
-      "アクションは `HttpResponse` を返し、`HttpResponseHandler` がレスポンスに変換する",
-      "プロジェクト要件に応じてハンドラキューを構築する(最小構成をベースに追加する)"
+      "アクションは `HttpResponse` を返し、`HttpResponseHandler` がレスポンスに変換する"
     ],
     "expected_question": "Nablarch でウェブアプリケーションを新規に立ち上げる。基本の処理構成ってどうやって組むのが推奨？",
     "expected_keywords": [
@@ -75,9 +72,7 @@
     "context": "RESTfulウェブサービス",
     "a_facts": [
       "Web アプリをベースに JAX-RS サポート (Jakarta RESTful Web Services) を組み合わせた構成を使う",
-      "リソースクラス(アクションクラス)に JAX-RS アノテーションを付与する",
-      "レスポンスは `JaxRsResponseHandler` が返す（フォームクラス返却時は `BodyConvertHandler` が変換する）",
-      "`router_adaptor` より後のハンドラは `router_adaptor` に設定する"
+      "リソースクラス(アクションクラス)に JAX-RS アノテーションを付与する"
     ],
     "expected_question": "Nablarch で REST API を提供するサービスを作りたい。処理のつなぎ方や構成パターンってどう組むのが推奨？",
     "expected_keywords": [
@@ -109,7 +104,6 @@
     "context": "ウェブアプリケーション",
     "a_facts": [
       "Nablarch は Bean Validation の使用を推奨する",
-      "Web アプリでは `BeanValidationStrategy` を登録して有効化する",
       "フォームクラスにアノテーションを付けて検証する"
     ],
     "expected_question": "ユーザーが入力する画面項目のチェックをどう書くのが Nablarch 流？ 必須・桁数・形式チェックをなるべく楽に書きたい",
@@ -142,7 +136,6 @@
     "context": "RESTfulウェブサービス",
     "a_facts": [
       "Bean Validation を推奨し、リソースメソッド引数に `@Valid` を付けて有効化する",
-      "エラー応答は `JaxRsResponseHandler` が `errorResponseBuilder` 経由で生成する",
       "バリデーションエラー時にボディへメッセージを入れるには `ErrorResponseBuilder` を継承したクラスを作成する"
     ],
     "expected_question": "REST API でクライアントから受け取る JSON の入力値を検証したい。不正な値のときにエラーをどう返すのが推奨？",
@@ -175,8 +168,7 @@
     "context": "ウェブアプリケーション",
     "a_facts": [
       "Nablarch は `CsrfTokenVerificationHandler` を標準提供する",
-      "ハンドラキューに追加し、セッションストアハンドラや Nablarch カスタムタグハンドラより後ろに配置する",
-      "POST/PUT など更新系を検証し、失敗時はデフォルトで 400 を返す"
+      "ハンドラキューに追加し、セッションストアハンドラや Nablarch カスタムタグハンドラより後ろに配置する"
     ],
     "expected_question": "Web アプリで外部サイトから不正に POST されるのを防ぎたい。Nablarch に対策の仕組みはある？ どう設定する？",
     "expected_keywords": [
@@ -209,8 +201,7 @@
     "a_facts": [
       "`SecureHandler` の `generateCspNonce` プロパティを `true` にして nonce 生成を有効化する",
       "`secureResponseHeaderList` に `ContentSecurityPolicyHeader` を追加しポリシーを設定する",
-      "`ContentSecurityPolicyHeader` の `policy` にプレースホルダー `$cspNonceSource$` を含める",
-      "Nablarch カスタムタグは nonce 生成が有効な場合に自動的に nonce 属性を埋め込む"
+      "`ContentSecurityPolicyHeader` の `policy` にプレースホルダー `$cspNonceSource$` を含める"
     ],
     "expected_question": "セキュリティ診断で Content Security Policy を入れろと言われた。Nablarch の Web 画面で CSP を有効にしたい。標準のやり方は？",
     "expected_keywords": [
@@ -245,8 +236,7 @@
       "後続ハンドラ・バッチアクションはスレッドセーフである必要がある",
       "サブスレッドで DB アクセスする場合、サブスレッド用ハンドラ構成に `DatabaseConnectionManagementHandler` と `TransactionManagementHandler` を配置する",
       "DB 接続はサブスレッド数分(親が DB アクセスするなら＋1)が追加で必要",
-      "サブスレッドで例外発生時は他スレッドをデータ処理完了後に安全に終了させる",
-      "`InterruptedException` を捕捉している場合は例外送出などで処理を異常終了させる"
+      "サブスレッドで例外発生時は他スレッドをデータ処理完了後に安全に終了させる"
     ],
     "expected_question": "常駐バッチの処理が遅いので並列実行で速くしたい。複数スレッドで同時に DB を更新することになるが、接続や排他の扱いで注意することは？",
     "expected_keywords": [
@@ -342,8 +332,7 @@
       "トランザクション境界は `TransactionManagementHandler` が決定する",
       "往路でトランザクション開始、復路でコミット、例外時にロールバックする",
       "`DatabaseConnectionManagementHandler` より後ろに配置する必要がある",
-      "制御対象は `transactionFactory` プロパティに指定した `TransactionFactory` 実装で取得しスレッド上で管理する",
-      "複数トランザクション使用時は `transactionName` の設定が必須(`DbConnectionManagementHandler#connectionName` と同じ値を指定)"
+      "制御対象は `transactionFactory` プロパティに指定した `TransactionFactory` 実装で取得しスレッド上で管理する"
     ],
     "expected_question": "バッチで DB を更新しているんだけど、コミットのタイミングやトランザクションの区切りがどこで決まっているのかよく分からない。Nablarch でトランザクションの境界って何で決まる？",
     "expected_keywords": [
@@ -376,8 +365,7 @@
     "a_facts": [
       "`CsrfTokenVerificationHandler` をハンドラキューに追加する",
       "セッションストア必須で、セッションストアハンドラより後に配置する",
-      "Nablarch カスタムタグ使用時はカスタムタグハンドラより後に配置する",
-      "`SessionStoreHandler` 自体の配置制約: `http_response_handler` より後、`forwarding_handler` より前に配置する"
+      "Nablarch カスタムタグ使用時はカスタムタグハンドラより後に配置する"
     ],
     "expected_question": "Web アプリで CSRF 対策を入れたい。セッションも使ってるし、JSP でカスタムタグも使ってるんだけど、何を追加すればいい？ 他との相性で気をつけることは？",
     "expected_keywords": [
@@ -408,7 +396,6 @@
     "impact_perspective": "ハンドラ間",
     "context": "バッチの並列化",
     "a_facts": [
-      "`MultiThreadExecutionHandler` の `concurrentNumber` プロパティで並列数を指定する",
       "サブスレッドで DB アクセスする場合、サブスレッド用ハンドラ構成に `DatabaseConnectionManagementHandler` と `TransactionManagementHandler` を配置する",
       "親・サブ両方で DB アクセスするとサブスレッド数＋1 のコネクションが必要",
       "サブスレッドで例外発生時はそのスレッドがロールバックされ、親スレッドが他スレッドに停止要求を出して安全に終了させる"
@@ -508,7 +495,6 @@
     "context": "CSP対応と既存画面の影響",
     "a_facts": [
       "Nablarch カスタムタグを使っていれば `SecureHandler` の nonce 生成を有効にするだけで JSP の書き換えは不要",
-      "`tag-form_tag` が `onclick` 属性の関数呼び出しを含めて script 要素にまとめ直し、nonce 属性が自動付与される",
       "カスタムタグを使っていない素の HTML 部分は `tag-csp_nonce_tag` で nonce 属性を手動付与するか、外部 JS に切り出す必要がある"
     ],
     "expected_question": "セキュリティ対策で Content Security Policy を有効にしたら、既存の JSP 画面で onclick= とか書いてるボタンが動かなくなった。JSP の書き方を変える必要がある？ 避けられない？",
@@ -542,10 +528,8 @@
     "context": "認可チェックと画面遷移",
     "a_facts": [
       "`PermissionCheckHandler` でリクエスト認可を行う",
-      "権限があれば `Permission` をスレッドローカルに設定し、なければ 403 を返す",
       "内部フォワード先のリクエスト ID を認可対象にするには `setUsesInternalRequestId` を `true` に設定する",
-      "併せて `ThreadContextHandler` の `attributes` に `InternalRequestIdAttribute` を追加する",
-      "`ForwardingHandler` より後に配置する(内部フォワード先で認可する場合)"
+      "併せて `ThreadContextHandler` の `attributes` に `InternalRequestIdAttribute` を追加する"
     ],
     "expected_question": "ログイン済みユーザーの権限で画面アクセスを制限したい。ただ画面の中で内部フォワードしているところがあって、フォワード先のアクションも認可対象にしたい。Nablarch でできる？",
     "expected_keywords": [
@@ -577,8 +561,7 @@
     "context": "入力値のDB相関チェック",
     "a_facts": [
       "Bean Validation で DB アクセスを行うのはセキュリティ上の問題がある(未バリデーションの不正値で SQL 問合せするため SQL インジェクションにつながる可能性がある)",
-      "DB との相関バリデーション(重複チェックなど)は Bean Validation 通過後のビジネスアクション側で実施する",
-      "フィールド同士の相関チェック(DB 不要)は `@AssertTrue` で Bean Validation 内に書いてよい"
+      "DB との相関バリデーション(重複チェックなど)は Bean Validation 通過後のビジネスアクション側で実施する"
     ],
     "expected_question": "フォームで入力されたメールアドレスが DB 上ですでに登録済みでないかチェックしたい。入力チェックのところでこれを書きたいんだけど、セキュリティ的に問題ない？",
     "expected_keywords": [
@@ -640,7 +623,6 @@
     "context": "ログインユーザー情報の保持",
     "a_facts": [
       "認証情報はセッションストアの DB ストアに持つのが推奨",
-      "`SessionUtil` で保存・破棄する",
       "認可チェックは `PermissionCheckHandler` が設定した情報を業務ロジックから参照する"
     ],
     "expected_question": "ログインしたユーザーの情報 (ID、名前、権限) を画面遷移中も保持して、認可チェックのときに参照したい。Nablarch ではどこに持つのが推奨？",
@@ -705,7 +687,6 @@
     "context": "画面アクセス制御",
     "a_facts": [
       "Nablarch は認可チェック機能をビルトインで提供している",
-      "リクエストレベルの認可は `PermissionCheckHandler` が担い、権限があれば `Permission` をスレッドローカルに設定、なければ 403 を返す",
       "認可ライブラリは `permission_check`(条件変更可)と `role_check`(条件固定)の2種類がある"
     ],
     "builtin": true,
@@ -773,7 +754,6 @@
     "a_facts": [
       "Nablarch はトークンベースの2重サブミット防止機能をビルトインで提供している",
       "JSP の場合は `form` タグの `useToken` 属性でトークン生成と hidden 埋め込みが自動で行われる",
-      "JSP 以外のテンプレートエンジンでは `@UseToken` インターセプタでアクションに明示的に付与する",
       "後続のアクションに `@OnDoubleSubmission` インターセプタを付けてトークンをチェックする"
     ],
     "builtin": true,
@@ -806,8 +786,7 @@
     "a_facts": [
       "Nablarch は多言語対応をビルトインで提供している",
       "メッセージは言語ごとのプロパティファイルで管理する",
-      "コード名称も言語別データを持たせロケール指定で取得する",
-      "`PropertiesStringResourceLoader.defaultLocale` を必ず明示設定する(未設定だと OS 設定依存で障害の原因になる)"
+      "コード名称も言語別データを持たせロケール指定で取得する"
     ],
     "builtin": true,
     "expected_question": "画面の文言を日本語と英語で切り替えたい。メッセージやラベルの多言語対応は Nablarch でできる？",
@@ -874,9 +853,7 @@
     "requirements_perspective": "CORS",
     "context": "REST API クロスオリジン",
     "a_facts": [
-      "Nablarch は RESTful ウェブサービス向けに CORS 対応をビルトインで提供している",
-      "プリフライトリクエストは `CorsPreflightRequestHandler` が処理する",
-      "実リクエストへの CORS ヘッダ付与は `CorsResponseFinisher` が行う"
+      "Nablarch は RESTful ウェブサービス向けに CORS 対応をビルトインで提供している"
     ],
     "builtin": true,
     "expected_question": "REST API を別ドメインのフロントエンドから呼び出す。ブラウザの CORS 制約に対応する仕組みは Nablarch にある？",
@@ -908,7 +885,6 @@
     "context": "巨大ファイルのDoS防止",
     "a_facts": [
       "Nablarch は `MultipartHandler` でアップロードサイズ上限を設ける仕組みを提供している",
-      "`contentLengthLimit` プロパティでサイズ上限を設定し、超過時は 413 を返す",
       "デフォルトは無制限であり、DoS 対策のため常に設定することが推奨される"
     ],
     "builtin": true,
