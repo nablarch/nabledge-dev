@@ -20,7 +20,7 @@
 
 ### PR レビュー
 
-全 9 件のレビューコメント対応済み。再レビュー待ち。
+全 10 件のレビューコメント対応済み。再レビュー待ち。
 
 **Steps:**
 - [x] 差分ファイルの原因特定 — 前回 revert (`7b42539a2`) が不完全 (README ヘッダー誤り + 1.4 余分ファイル)
@@ -28,6 +28,7 @@
 - [x] origin/main にリベース (`918f2f12d`) & force push
 - [x] /fb で全 9 コメント対応 — `01c27ef2a`, `920816cf7`, `2f676a7b3`
 - [x] README の update/delete コマンド削除 — `0711104d8`
+- [x] comparison-report を kc era baseline (20260331-152005) 基準に修正 — `0cfd1e104`
 
 ## Not Started
 
