@@ -40,4 +40,5 @@
 - [x] `work-log.md` に `.work/` は常に git 対象である旨追記
 - [x] kc 削除 + metrics kc→rbkc 置換 — `dae508c7f`, `0b7485008`
 - [x] setup.sh: RBKC requirements.txt 追加 + 公式ドキュメントclone修正 — `dce9adcbd`
-- [x] metrics RBKC SLOC: Production を Create/Verify/Common に内訳化、Test を total に戻す、Trend に凡例注釈追加 — `f44bc0f2a`〜`6cb277b41`
+- [x] metrics RBKC SLOC: Production を Create/Verify/Common に内訳化、Test を total に戻す、Trend に凡例注釈追加 — `f44bc0f2a`〜`b1c4392f6`
+- [x] docs/metrics.md と sloc-snapshot.json を main 状態に復元 — `616b39b24`
