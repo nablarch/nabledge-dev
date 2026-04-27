@@ -3,7 +3,7 @@
 
 **PR**: #315
 **Issue**: #312
-**Updated**: 2026-04-27
+**Updated**: 2026-04-28
 
 ## In Progress
 
@@ -17,8 +17,8 @@
 - [x] Study top 3 complex handlers: MessageResendHandler(5), RetryHandler(4), RequestThreadLoopHandler(3)
 - [x] Decide output approach: **Case A** — parse Handler.js, render Markdown table per HandlerQueue
 - [x] Agree on architecture: `scripts/common/handler_js.py` 共通モジュール (create + verify 両側から利用)
-- [ ] Create design doc at `tools/rbkc/docs/rbkc-handler-v1x-design.md`
-- [ ] Propose fix for ハンドラ処理フロー blank-line loss (definition_list間の改行)
+- [x] Create design doc at `tools/rbkc/docs/rbkc-handler-v1x-design.md`
+- [x] Propose fix for ハンドラ処理フロー blank-line loss (definition_list間の改行)
 - [ ] Present full design to user and get approval
 
 **Agreed design (this session):**
