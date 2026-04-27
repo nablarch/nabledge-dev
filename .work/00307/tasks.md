@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-27 (M-1 完了、次は M-2)
+**Updated**: 2026-04-27 (M-2〜L-2 + PE レビューファイル完了、次は 3 件試走)
 
 ## ゴール
 
@@ -157,12 +157,12 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
 - [x] **H-2**: scope_note を Step 3 (read_notes) へ前出し (search_ids.py schema + プロンプト) — `3f5b0f6dc`
 - [x] **H-3**: 自己検証サブステップ追加 (プロンプトのみ)
 - [x] **M-1**: 候補ファイル上限 20→12 (search_ids.py schema maxItems + プロンプト) — `22704ce47`
-- [ ] **M-2**: precision 優先の明示 (プロンプトのみ)
-- [ ] **M-3**: Step 3 内部表記 `evidence` → `body_excerpt` (プロンプトのみ)
-- [ ] **M-4**: 実行モデル明確化 (プロンプトのみ)
-- [ ] **L-1**: matched_on タイブレーク追記 (プロンプトのみ)
-- [ ] **L-2**: Read エラー処理 (search_ids.py schema + プロンプト)
-- [ ] PE レビューファイル保存 (`.work/00307/review-by-prompt-engineer-step6-h1l2.md`)
+- [x] **M-2**: precision 優先の明示 (プロンプトのみ) — `8d7d67ae9`
+- [x] **M-3**: Step 3 内部表記 `evidence` → `body_excerpt` (プロンプトのみ) — `8d7d67ae9`
+- [x] **M-4**: 実行モデル明確化 (プロンプトのみ) — `8d7d67ae9`
+- [x] **L-1**: matched_on タイブレーク追記 (プロンプトのみ) — `8d7d67ae9`
+- [x] **L-2**: Read エラー処理 (search_ids.py schema + プロンプト) — `8d7d67ae9`
+- [x] PE レビューファイル保存 (`.work/00307/review-by-prompt-engineer-step6-h1l2.md`) — `c5f63c0fa`
 - [ ] 3 件試走（req-05 / review-01 / review-08）で効果測定
 - [ ] 結果が 3 件 mean ≥ 2.33 かつ review-08 L3 なら次へ
 
