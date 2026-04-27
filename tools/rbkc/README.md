@@ -30,12 +30,6 @@ RBKC produces **content only** — titles and body text derived from source. Hin
 # Create — convert all sources, write JSON + docs MD + index
 bash tools/rbkc/rbkc.sh create 6
 
-# Update — detect source changes vs snapshot, re-convert only the changed files
-bash tools/rbkc/rbkc.sh update 6
-
-# Delete — remove knowledge/docs for sources that no longer exist
-bash tools/rbkc/rbkc.sh delete 6
-
 # Verify — check output against source for completeness and correctness
 bash tools/rbkc/rbkc.sh verify 6
 ```
@@ -44,9 +38,7 @@ Supported versions: `6`, `5`, `1.4`, `1.3`, `1.2`.
 
 | Command | Behavior |
 |---------|----------|
-| `create` | Convert every source file, generate JSON + browsable MD + `index.toon`, save snapshot |
-| `update` | Compare snapshot vs current sources, re-convert only changed/new files |
-| `delete` | Remove outputs whose source files have been deleted |
+| `create` | Convert every source file, generate JSON + browsable MD + `index.toon` |
 | `verify` | Independent quality gate — FAIL if any output diverges from source |
 
 ### Optional arguments
@@ -55,7 +47,6 @@ Supported versions: `6`, `5`, `1.4`, `1.3`, `1.2`.
 |----------|---------|
 | `--repo-root` | Repository root (default: auto-detected from script location) |
 | `--output-dir` | Output root (default: `.claude/skills/nabledge-{v}/`) |
-| `--state-dir` | Snapshot root for incremental updates (default: `tools/rbkc/.state/v{v}/`) |
 
 ### Output
 
@@ -65,7 +56,6 @@ Supported versions: `6`, `5`, `1.4`, `1.3`, `1.2`.
 | Browsable MD | `.claude/skills/nabledge-{v}/docs/{type}/{category}/{id}.md` | Human-readable preview |
 | Index | `.claude/skills/nabledge-{v}/knowledge/index.toon` | File list for skill retrieval |
 | Assets | `.claude/skills/nabledge-{v}/docs/{type}/{category}/assets/{id}/` | Images / downloads referenced by RST |
-| Snapshot | `tools/rbkc/.state/v{v}/snapshot.json` | SHA-256 hashes for incremental update |
 
 ## Output Schema
 
@@ -144,7 +134,7 @@ tools/rbkc/
 ├── README.md                # This file
 ├── rbkc.sh                  # CLI entry point
 ├── scripts/
-│   ├── run.py               # CLI dispatcher (create / update / delete / verify)
+│   ├── run.py               # CLI dispatcher (create / verify)
 │   ├── common/              # Shared utilities
 │   │   ├── file_id.py               # id generation
 │   │   ├── github_slug.py           # GitHub anchor slugifier
@@ -156,7 +146,6 @@ tools/rbkc/
 │   │   ├── scan.py                  # Source discovery
 │   │   ├── classify.py              # Type / category classification
 │   │   ├── resolver.py              # Cross-reference + asset resolution
-│   │   ├── differ.py                # Snapshot-based change detection
 │   │   ├── docs.py                  # Browsable MD generation
 │   │   ├── index.py                 # index.toon generation
 │   │   └── converters/
@@ -174,10 +163,8 @@ tools/rbkc/
 │   ├── v1.3.json
 │   └── v1.2.json
 ├── docs/                    # Design documents
-├── .state/                  # Snapshots (gitignored)
-│   └── v{v}/snapshot.json
 └── tests/
-    ├── e2e/test_cli.py      # CLI E2E (create / update / delete / verify)
+    ├── e2e/test_cli.py      # CLI E2E (create / verify)
     └── ut/                  # Unit tests (verify + CLI + normalisers)
 ```
 
