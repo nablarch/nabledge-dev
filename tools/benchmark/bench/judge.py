@@ -1,21 +1,26 @@
 """Judge flow: compare generated answer against reference answer + reference source text.
 
-The judge is Grep/Read-enabled so it can verify C-claims against the full
+The judge is Grep-enabled so it can verify C-claims against the full
 knowledge base, not just the retrieved subset. A claim that looks
 "unsupported by retrieved" may actually be a correct KB statement whose
 source section AI-1 happened not to select. Penalizing those is wrong —
 they reflect a retrieval miss, not an answer defect.
+
+The judge also uses verify_kb_evidence.py (in llm_tools/) via Bash to
+self-correct SUPPORTED_BY_KB citations before emitting StructuredOutput.
 """
 
 from __future__ import annotations
 
-import json
-import re
+import sys
 from pathlib import Path
 
 from . import io
 from .claude import invoke
 from .types import JudgeResult, Scenario, SearchResult
+
+_LLM_TOOLS_DIR = Path(__file__).resolve().parent.parent / "llm_tools"
+_VERIFY_SCRIPT = _LLM_TOOLS_DIR / "verify_kb_evidence.py"
 
 
 _FACT_ITEM = {
@@ -78,65 +83,6 @@ SCHEMA_JUDGE = {
         "reasoning": {"type": "string", "maxLength": 600},
     },
 }
-
-
-_NORM_WS_RE = re.compile(r"\s+")
-_NORM_MD_RE = re.compile(r"\*\*|__|^\s*#+\s+.*$", flags=re.M)
-
-
-def _normalize(s: str) -> str:
-    s = _NORM_MD_RE.sub("", s or "")
-    return _NORM_WS_RE.sub(" ", s).strip()
-
-
-def verify_kb_evidence(
-    c_claims: list[dict], *, version: str = io.DEFAULT_VERSION,
-) -> list[dict]:
-    """For every SUPPORTED_BY_KB claim, confirm that kb_evidence.quote appears
-    in the cited file/sid body (strict or normalized substring). If not,
-    downgrade the reason to UNSUPPORTED_KB_VERIFIED — the judge is
-    fabricating its citation.
-
-    Returns a new list with adjusted claims; does not mutate the input.
-    """
-    root = io.knowledge_root(version)
-    out: list[dict] = []
-    for claim in c_claims or []:
-        c = dict(claim)
-        if c.get("reason") != "SUPPORTED_BY_KB":
-            out.append(c)
-            continue
-        ev = c.get("kb_evidence") or {}
-        file_rel = ev.get("file") or ""
-        sid = ev.get("sid") or ""
-        quote = ev.get("quote") or ""
-        # kb_evidence is mandatory for SUPPORTED_BY_KB: missing or invalid →
-        # treat as fabrication.
-        try:
-            data = json.loads((root / file_rel).read_text(encoding="utf-8"))
-        except (FileNotFoundError, json.JSONDecodeError, OSError):
-            c["reason"] = "UNSUPPORTED_KB_VERIFIED"
-            c["why"] = (c.get("why") or "") + " [kb_evidence.file unreadable]"
-            out.append(c)
-            continue
-        secs = data.get("sections") or {}
-        body = secs.get(sid)
-        if isinstance(body, dict):
-            body = body.get("body") or ""
-        if not isinstance(body, str) or not body:
-            c["reason"] = "UNSUPPORTED_KB_VERIFIED"
-            c["why"] = (c.get("why") or "") + " [kb_evidence.sid missing]"
-            out.append(c)
-            continue
-        if quote and (
-            quote in body or _normalize(quote) in _normalize(body)
-        ):
-            out.append(c)
-        else:
-            c["reason"] = "UNSUPPORTED_KB_VERIFIED"
-            c["why"] = (c.get("why") or "") + " [quote not verbatim in section]"
-            out.append(c)
-    return out
 
 
 def compute_level(verdict: dict) -> int:
@@ -204,6 +150,7 @@ def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path,
     )
     retrieved_text = io.load_retrieved_sections(search.cited, version=version)
     a_facts_text = "\n".join(f"- {f}" for f in scenario.a_facts)
+    knowledge_root_abs = str(io.knowledge_root(version))
     knowledge_rel = f".claude/skills/nabledge-{version}/knowledge"
     prompt = (
         (io.PROMPTS_DIR / "judge.md").read_text(encoding="utf-8")
@@ -218,6 +165,9 @@ def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path,
             "\n".join(f"- {c}" for c in search.cited) if search.cited else "(none)",
         )
         .replace("{{knowledge_root}}", knowledge_rel)
+        .replace("{{knowledge_root_abs}}", knowledge_root_abs)
+        .replace("{{verify_script}}", str(_VERIFY_SCRIPT))
+        .replace("{{python}}", sys.executable)
     )
     call = invoke(
         prompt=prompt,
@@ -226,16 +176,11 @@ def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path,
         max_turns=15,
         log_path=scen_dir / "stream" / "judge.jsonl",
         cwd=io.REPO_ROOT,
-        allowed_tools=["Grep", "Read"],
+        allowed_tools=["Grep", "Bash"],
         timeout_s=420,
     )
     structured = call.structured or {}
-    # Post-verify every SUPPORTED_BY_KB claim; downgrade any with a quote that
-    # doesn't actually appear in the cited file. Then recompute level from the
-    # adjusted verdict so the level reflects verification results.
     if isinstance(structured, dict):
-        c_adjusted = verify_kb_evidence(structured.get("c_claims") or [], version=version)
-        structured["c_claims"] = c_adjusted
         structured["level"] = compute_level(structured)
     return JudgeResult(
         verdict=io.verdict_from_structured(structured),
