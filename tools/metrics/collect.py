@@ -597,7 +597,30 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
 
     # --- Total SLOC trend ---
     if len(history) >= 2:
-        lines.append(mermaid_xychart_line("Total SLOC Trend (all categories)", hist_labels, "Lines", [h["total"] for h in history]))
+        def h_nabledge(h: dict) -> int:
+            return h.get("nabledge_scripts", 0) + h.get("nabledge_prompts", 0)
+
+        def h_rbkc(h: dict) -> int:
+            # New keys (rbkc_*) or old keys (kc_*)
+            if "rbkc_create" in h:
+                return (h.get("rbkc_create", 0) + h.get("rbkc_verify", 0)
+                        + h.get("rbkc_common", 0) + h.get("rbkc_test", 0))
+            return (h.get("kc_prod", 0) + h.get("kc_test", 0) + h.get("kc_prompts", 0))
+
+        total_hist = [h["total"] for h in history]
+        nabledge_hist = [h_nabledge(h) for h in history]
+        rbkc_hist = [h_rbkc(h) for h in history]
+        ymax = y_axis_max(total_hist)
+        x_str = "[" + ", ".join(f'"{l}"' for l in hist_labels) + "]"
+        lines.append("```mermaid")
+        lines.append("xychart-beta")
+        lines.append('  title "Total SLOC Trend (Total / RBKC / Nabledge v6)"')
+        lines.append(f"  x-axis {x_str}")
+        lines.append(f'  y-axis "Lines" 0 --> {ymax}')
+        lines.append(f"  line {total_hist}")
+        lines.append(f"  line {rbkc_hist}")
+        lines.append(f"  line {nabledge_hist}")
+        lines.append("```")
         lines.append("")
 
     lines.append(_pie_chart("Nabledge v6 SLOC", [
