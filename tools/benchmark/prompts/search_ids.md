@@ -101,6 +101,16 @@ Maximum 6 relevant sections per file. Maximum 20 file entries total.
 - Record as `selections` and `files_read_count` (count of files you
   called Read on in Step 3).
 
+**Self-check before composing**: For each section in `selections`,
+re-read the `evidence` string you copied in Step 3 for that `file_id|sid`.
+For every factual claim you plan to include in the answer, locate the
+exact supporting sentence in one of those evidence strings. If you cannot
+point to a verbatim sentence in the evidence, that claim MUST be dropped —
+do not substitute from background knowledge. If the question asks for a
+fact that no selected section contains, state the gap explicitly in
+`conclusion` (e.g. "セクション中に記載なし") rather than filling it from
+inference.
+
 **Compose the answer** using only the sections you Read in Step 3.
 
 - `conclusion`: one-sentence direct answer (≤600 chars). Write in the
