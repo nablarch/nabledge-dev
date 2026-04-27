@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-27 (Step 6 — PE レビュー完了、H1〜L2 実装着手中)
+**Updated**: 2026-04-27 (Step 6 — PE レビュー完了、H1〜L2 実装待ち。token-efficiency ルール追加済み)
 
 ## ゴール
 
