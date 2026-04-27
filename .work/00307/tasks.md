@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-27 (Step 6 — PE レビュー完了、H1〜L2 実装待ち。token-efficiency ルール追加済み)
+**Updated**: 2026-04-27 (H-1 完了 `22d866850`、次は H-2)
 
 ## ゴール
 
@@ -153,7 +153,7 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
     - multi-process セクション誤適用 → scope check 指示追加で対処中
   - **最新状態**: `caveats MUST be grounded` 指示を追加した版（コミット未）で試走中断
   - [x] DECISION 解消 — PE エキスパートレビュー実施 (2026-04-27)、H1〜L2 の 9 件修正を全対応する方針をユーザーが承認
-- [ ] **H-1**: `caveats` schema を `{note, cited}[]` に変更 (search_ids.py + テスト + プロンプト) ← **TDD: テスト RED 追加済み、実装未着手**
+- [x] **H-1**: `caveats` schema を `{note, cited}[]` に変更 (search_ids.py + テスト + プロンプト) — `22d866850`
 - [ ] **H-2**: scope_note を Step 3 (read_notes) へ前出し (search_ids.py schema + プロンプト)
 - [ ] **H-3**: 自己検証サブステップ追加 (プロンプトのみ)
 - [ ] **M-1**: 候補ファイル上限 20→12 (search_ids.py schema maxItems + プロンプト)
