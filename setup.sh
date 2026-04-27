@@ -203,17 +203,6 @@ else
     exit 1
 fi
 
-# Install knowledge-creator dependencies
-if [ -f "tools/knowledge-creator/requirements.txt" ]; then
-    print_status info "Installing knowledge-creator dependencies..."
-    if uv pip install --python "$VENV_DIR/bin/python" -r tools/knowledge-creator/requirements.txt; then
-        print_status ok "knowledge-creator dependencies installed"
-    else
-        print_status error "Failed to install knowledge-creator dependencies"
-        exit 1
-    fi
-fi
-
 # Verify document tools installation
 print_header "6. Verifying Document Tools"
 
@@ -222,16 +211,6 @@ if "$VENV_DIR/bin/python" -c "import pdfplumber, reportlab, pptx, openpyxl, docx
 else
     print_status error "Python library verification failed"
     exit 1
-fi
-
-# Verify knowledge-creator dependencies
-if [ -f "tools/knowledge-creator/requirements.txt" ]; then
-    if "$VENV_DIR/bin/python" -c "import pytest, openpyxl; print('OK')" 2>/dev/null; then
-        print_status ok "knowledge-creator dependencies verified"
-    else
-        print_status error "knowledge-creator dependency verification failed"
-        exit 1
-    fi
 fi
 
 if soffice --version &>/dev/null && pdftoppm -v &>/dev/null && pandoc --version &>/dev/null && jq --version &>/dev/null; then
@@ -353,33 +332,6 @@ clone_or_update_repo() {
         print_status ok "$repo_name: push protection enabled"
     fi
 }
-
-# Clone Nablarch official repositories from catalog.json (git)
-clone_repos_from_meta() {
-    local version="$1"
-    local target_dir="$2"
-    local meta_file="tools/knowledge-creator/.cache/v${version}/catalog.json"
-
-    if [ ! -f "$meta_file" ]; then
-        print_status warning "catalog.json not found: $meta_file (skip)"
-        return
-    fi
-
-    print_status info "Setting up Nablarch ${version} repositories from ${meta_file}..."
-
-    local count
-    count=$(jq '.sources | length' "$meta_file")
-
-    for i in $(seq 0 $((count - 1))); do
-        local repo_url branch
-        repo_url=$(jq -r ".sources[$i].repo" "$meta_file")
-        branch=$(jq -r ".sources[$i].branch" "$meta_file")
-        clone_or_update_repo "${repo_url%.git}.git" "$target_dir" "$branch"
-    done
-}
-
-clone_repos_from_meta "6" "$NAB_OFFICIAL_V6_DIR"
-clone_repos_from_meta "5" "$NAB_OFFICIAL_V5_DIR"
 
 # Clone example repositories for code-analysis scenarios
 print_status info "Cloning example repositories for code-analysis scenarios..."
