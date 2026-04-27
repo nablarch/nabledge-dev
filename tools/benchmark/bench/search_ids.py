@@ -56,6 +56,7 @@ SCHEMA_SELECT = {
                             "properties": {
                                 "sid": {"type": "string"},
                                 "evidence": {"type": "string"},
+                                "scope_note": {"type": "string", "maxLength": 200},
                             },
                         },
                     },

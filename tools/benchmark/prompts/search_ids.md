@@ -72,6 +72,11 @@ For each file:
      450 characters, then append the full `> **重要**:` block if one
      exists in the section (even if that pushes past 500 characters).
      Do NOT paraphrase or summarize. Do NOT truncate mid-sentence.
+   - `scope_note` *(optional)*: if the section covers a pattern whose
+     scope differs from the question (e.g., section is about
+     multi-process configuration but the question is single-process /
+     single-thread), record that mismatch here in one sentence.
+     Leave this field absent when scope is fine.
 4. If a file turns out irrelevant after reading, record it with
    `relevant_sections: []` — this confirms you read and discarded it.
 
@@ -163,7 +168,8 @@ The runtime enforces a strict schema. Every field is required.
               "type": "object", "required": ["sid", "evidence"],
               "properties": {
                 "sid": {"type": "string"},
-                "evidence": {"type": "string"}
+                "evidence": {"type": "string"},
+                "scope_note": {"type": "string", "maxLength": 200}
               }
             }
           }

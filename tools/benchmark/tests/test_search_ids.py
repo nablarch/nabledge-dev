@@ -270,6 +270,42 @@ def test_verify_read_notes_empty_input():
     }
 
 
+def test_verify_read_notes_ignores_scope_note(fake_knowledge):
+    """scope_note is a diagnostic field — verify_read_notes must accept it and not penalize it."""
+    id_to_path = {
+        "handlers-tmh": {
+            "path": "component/handlers/handlers-tmh.json",
+            "sections": ["s1", "s2", "s3"],
+        },
+    }
+    read_notes = [{
+        "file_id": "handlers-tmh",
+        "relevant_sections": [
+            {
+                "sid": "s2",
+                "evidence": "body mentions concurrentNumber explicitly",
+                "scope_note": "multi-process pattern — may not apply to single-process scenario",
+            },
+        ],
+    }]
+    result = verify_read_notes(read_notes, id_to_path)
+    assert result["total"] == 1
+    assert result["mismatches"] == 0
+    assert result["per_section"][0]["verdict"] == "match"
+
+
+def test_schema_select_allows_scope_note():
+    """SCHEMA_SELECT must allow scope_note as an optional field in read_notes[].relevant_sections[]."""
+    rel_sec_schema = (
+        search_ids.SCHEMA_SELECT["properties"]["read_notes"]["items"]
+        ["properties"]["relevant_sections"]["items"]
+    )
+    # scope_note must be declared (additionalProperties is False)
+    assert "scope_note" in rel_sec_schema["properties"]
+    # scope_note is optional — not in required
+    assert "scope_note" not in rel_sec_schema.get("required", [])
+
+
 def test_render_answer_markdown_shape():
     id_to_path = {
         "handlers-tmh": {
