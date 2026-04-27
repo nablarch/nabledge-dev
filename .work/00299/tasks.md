@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-27
+**Updated**: 2026-04-28
 
 ---
 
@@ -20,11 +20,12 @@
 
 ### PR レビュー
 
-push 済み。GitHub PR 画面で v1.2/1.3/1.4/v5 の docs/knowledge 配下に数ファイルの差分が見えるとユーザーから報告あり。ローカルの `git diff main HEAD` では docs/knowledge 差分はゼロ確認済み。GitHub API 制限 (300ファイル上限) で `gh pr diff` も取得不可。
+レビューコメント対応済み。`22043625e` で v1.2/1.3/1.4/v5 の docs/knowledge を origin/main に完全一致させた。
+再レビュー待ち。
 
 **Steps:**
-- [DECISION: GitHub画面で見えているファイル名を教えてもらい、原因特定する] 差分ファイル名をユーザーに確認
-- [ ] 確認後、必要なら追加 revert & push
+- [x] 差分ファイルの原因特定 — 前回 revert (`7b42539a2`) が不完全 (README ヘッダー誤り + 1.4 余分ファイル)
+- [x] 追加 revert & push — `22043625e` (20ファイル)
 
 ## Not Started
 
