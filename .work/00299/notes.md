@@ -66,6 +66,12 @@ nabledge-5/1.4/1.3/1.2 を nabledge-6 と同一構造に揃えた (`.claude/rule
 
 v5/1.4/1.3/1.2 並列 Sonnet runner (run_id `20260424-201710`) で全バージョン検出率向上を確認。v6 は `baseline/v6/20260424-103200/` を確定 baseline として採用 (main kc baseline 20260331-152005 比で時間 -20% / 出力 -44%、精度 -2.8pp は生成ゆらぎ域内)。詳細は `.claude/skills/nabledge-test/baseline/` 各 report。
 
+## C3/C4/C6 — create/verify 安定確認 (Phase 22-B-12 後)
+
+- **C3** ("Unknown target name" silent skip): v1.3/v1.2 各 2 件は `07_BasicRules.rst:6` が verify の 2 経路から 2 回呼ばれるため。silent skip の兆候なし。想定通り。
+- **C4** (ws3 resolver 余分コピー確認): v6/v5/v1.4 は added=removed=differ=0。v1.3/v1.2 の +65/+64 は docs MD が参照している include 先の asset (pre-ws3 で拾えていなかったコピー漏れが ws3 AST 化で解消)。余分コピーではない。
+- **C6** (v6 byte-level diff): v6 knowledge 677 / docs 354 ファイルが 22-B-12 前後で完全一致。Finding A/B/C + ws3 の修正は v1.3/v1.2 のみに効き v6/v5/v1.4 への副作用ゼロ。
+
 ## Learnings
 
 - **全量実測 > サンプル推測**: Phase 21-W/X の失敗は推測ベースの regex 追加だった。21-Y 以降は 2,581 RST / 212 sheet / corpus-wide label_map といった全量調査を前提に設計。
