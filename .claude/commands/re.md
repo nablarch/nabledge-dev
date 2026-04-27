@@ -70,7 +70,14 @@ Proceed with the next task immediately. Work through the steps in tasks.md in or
 - Update `**Updated**` date when modifying tasks.md
 - If a step is ambiguous, resolve it from context (notes.md, code) before asking the user
 
-Continue through all remaining tasks unless a `[BLOCKED:]` or `[DECISION:]` marker is encountered.
+**Stop after each commit** — do not automatically continue to the next step.
+After committing, tell the user:
+> 「{step name} 完了 (`{short_hash}`)。`/sv` → `/re` でコンテキストをリセットして次のステップへ進むことを推奨します。」
+
+Continue to the next step only if the user explicitly requests it (e.g. "続けて" / "next").
+This keeps each session to one commit and prevents context window accumulation.
+
+If there is a step marked `[BLOCKED:]` or `[DECISION:]`, use AskUserQuestion to resolve it before proceeding.
 
 When all tasks are complete, notify the user and suggest `/sv` or `/pr create`.
 
