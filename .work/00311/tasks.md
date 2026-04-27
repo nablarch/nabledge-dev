@@ -1,6 +1,6 @@
 # Tasks: Excel-derived docs MD readability improvement
 
-**PR**: TBD
+**PR**: #314
 **Issue**: #311
 **Updated**: 2026-04-27
 
@@ -8,7 +8,7 @@
 
 ### [A] Excel table detection investigation
 **Steps:**
-- [ ] Review all P2 sheets in `.work/00299/phase22/sheet-classification.md` (or locate equivalent classification data)
+- [ ] Run RBKC create to generate sheet classification data (`.work/00299/phase22/sheet-classification.md` does not exist — generate via `bash rbkc.sh create v6`)
 - [ ] Categorize each P2 sheet as:
   - (a) Should be P1 but misclassified (e.g., `3.PCIDSS対応表` — 2-column table caught by §8-2 `useful_width ≤ 2 → P2`)
   - (b) Correctly P2 but readability is poor (in-cell line breaks / section headings collapsed)
@@ -51,3 +51,4 @@
 
 - [x] Created feature branch `311-excel-docs-md-readability`
 - [x] Created `.work/00311/tasks.md`
+- [x] Created PR #314
