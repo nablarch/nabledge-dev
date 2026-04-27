@@ -444,6 +444,13 @@ def collect_sloc(repo_root: str) -> dict:
     ]
     rbkc_scripts_common = _sloc_by_ext(rbkc_common_files, is_prompt=False)
 
+    # --- RBKC scripts: test ---
+    rbkc_test_files = [
+        f for f in _glob_files(repo_root, ["tools/rbkc/tests/**/*.py"])
+        if "__pycache__" not in f and os.path.basename(f) != "__init__.py"
+    ]
+    rbkc_scripts_test = _sloc_by_ext(rbkc_test_files, is_prompt=False)
+
     return {
         "nabledge": {
             "scripts": nabledge_scripts,
@@ -453,6 +460,7 @@ def collect_sloc(repo_root: str) -> dict:
             "scripts_create": rbkc_scripts_create,
             "scripts_verify": rbkc_scripts_verify,
             "scripts_common": rbkc_scripts_common,
+            "scripts_test": rbkc_scripts_test,
         },
     }
 
@@ -519,9 +527,11 @@ def sloc_flat(s: dict, date: str) -> dict:
     rc = t(s.get("rbkc", {}).get("scripts_create", 0))
     rv = t(s.get("rbkc", {}).get("scripts_verify", 0))
     rco = t(s.get("rbkc", {}).get("scripts_common", 0))
+    rt = t(s.get("rbkc", {}).get("scripts_test", 0))
     return {"date": date, "nabledge_scripts": ns, "nabledge_prompts": np_,
             "rbkc_create": rc, "rbkc_verify": rv, "rbkc_common": rco,
-            "total": ns + np_ + rc + rv + rco}
+            "rbkc_test": rt,
+            "total": ns + np_ + rc + rv + rco + rt}
 
 
 def _delta_str(current: int, previous: int) -> str:
