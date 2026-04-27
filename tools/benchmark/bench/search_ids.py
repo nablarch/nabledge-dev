@@ -46,6 +46,7 @@ SCHEMA_SELECT = {
                 "required": ["file_id", "relevant_sections"],
                 "properties": {
                     "file_id": {"type": "string"},
+                    "read_error": {"type": "boolean"},
                     "relevant_sections": {
                         "type": "array",
                         "maxItems": 6,

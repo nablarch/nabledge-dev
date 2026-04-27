@@ -34,8 +34,10 @@ Each entry starts with a header line, then one indented line per section:
 
 ## Procedure
 
-Complete each step fully before moving to the next. Do not output the
-JSON until all 4 steps are complete.
+Execute steps **one at a time, in order**. Complete each step in full
+before starting the next. Do not skip steps or jump ahead. Do not output
+the JSON until all 4 steps are complete and you have called Read on every
+candidate file.
 
 ### Step 1 — Extract intent
 
@@ -66,7 +68,7 @@ For each file:
 2. Inspect the `sections` dict.
 3. For each section whose body discusses the question intent, record:
    - `sid`: the section id (`s1`, `s2`, ...).
-   - `evidence`: copy characters verbatim from the section body.
+   - `evidence` (body excerpt): copy characters verbatim from the section body.
      **Copy the entire body** if it is ≤ 500 characters — do not stop
      early. If the body is longer than 500 characters, copy the first
      450 characters, then append the full `> **重要**:` block if one
@@ -79,6 +81,9 @@ For each file:
      Leave this field absent when scope is fine.
 4. If a file turns out irrelevant after reading, record it with
    `relevant_sections: []` — this confirms you read and discarded it.
+5. If Read returns an error for a file (file not found or unreadable),
+   record it with `relevant_sections: []` and set `read_error: true` —
+   this confirms you attempted the read. Do not skip the entry.
 
 **Structural requirement**: `read_notes` must contain exactly one entry
 for every file_id in `candidate_files`. Missing entries will fail
@@ -86,7 +91,12 @@ validation.
 
 Maximum 6 relevant sections per file. Maximum 12 file entries total.
 
-### Step 4 — Select sections and compose the answer
+### Step 4 — Select sections and compose the answer (precision-first)
+
+**Recall is complete; now apply precision.** Steps 2–3 cast a wide net on
+purpose. Step 4 is the filter: keep only the sections that *directly*
+answer the question. Drop sections included for coverage alone. Do not
+cite a section merely because it is loosely related.
 
 **Select sections** from the evidence gathered in Step 3.
 
@@ -96,16 +106,19 @@ Maximum 6 relevant sections per file. Maximum 12 file entries total.
   - `"title"` — the section title directly mentions a Step 1 term.
   - `"keyword"` — only a keyword on the section line matched.
   - `"body"` — relevance was confirmed only by reading the body.
+  When multiple values apply, use the highest-confidence one:
+  `"title"` > `"keyword"` > `"body"`.
 - Do not emit a `ref` whose `file_id` is absent from `read_notes`.
 - If no section plausibly answers the question, return `"selections": []`.
 - Record as `selections` and `files_read_count` (count of files you
   called Read on in Step 3).
 
 **Self-check before composing**: For each section in `selections`,
-re-read the `evidence` string you copied in Step 3 for that `file_id|sid`.
+re-read the body excerpt you copied into `read_notes[].relevant_sections[].evidence`
+in Step 3 for that `file_id|sid`.
 For every factual claim you plan to include in the answer, locate the
-exact supporting sentence in one of those evidence strings. If you cannot
-point to a verbatim sentence in the evidence, that claim MUST be dropped —
+exact supporting sentence in one of those body excerpts. If you cannot
+point to a verbatim sentence in the body excerpt, that claim MUST be dropped —
 do not substitute from background knowledge. If the question asks for a
 fact that no selected section contains, state the gap explicitly in
 `conclusion` (e.g. "セクション中に記載なし") rather than filling it from
@@ -130,9 +143,6 @@ inference.
   warnings from background knowledge. If the sections do not mention
   any caveats, return an empty array.
 - `cited`: deduplicated set of `file_id|sid` values from `evidence[].cited`.
-- **Narrow from selections.** Step 2–3 were recall-first; Step 4 answer
-  is precision. Do not cite a section merely for coverage. Drop sections
-  whose content is not needed to complete the answer.
 - **Scope check**: Before citing a section in the conclusion, verify that
   its scope matches the question. For example, a section about
   multi-process patterns (`db_messaging` / `multiple_process`) must NOT
@@ -172,6 +182,7 @@ The runtime enforces a strict schema. Every field is required.
         "type": "object", "required": ["file_id", "relevant_sections"],
         "properties": {
           "file_id": {"type": "string"},
+          "read_error": {"type": "boolean"},
           "relevant_sections": {
             "type": "array", "maxItems": 6,
             "items": {
