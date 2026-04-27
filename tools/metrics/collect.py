@@ -621,7 +621,11 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
         lines.append(f"  line {rbkc_hist}")
         lines.append(f"  line {nabledge_hist}")
         lines.append("```")
-        lines.append(f"> Lines (top to bottom): Total — RBKC (prod+test) — Nabledge v6")
+        legend_order = sorted(
+            [("Total", total_hist[-1]), ("RBKC (prod+test)", rbkc_hist[-1]), ("Nabledge v6", nabledge_hist[-1])],
+            key=lambda x: x[1], reverse=True,
+        )
+        lines.append("> Lines (top to bottom): " + " — ".join(name for name, _ in legend_order))
         lines.append("")
 
     lines.append(_pie_chart("Nabledge v6 SLOC", [
@@ -653,7 +657,11 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
         lines.append(f"  line {rbkc_verify_hist}")
         lines.append(f"  line {rbkc_common_hist}")
         lines.append("```")
-        lines.append(f"> Lines (top to bottom): Common — Verify — Create")
+        rbkc_legend_order = sorted(
+            [("Create", rbkc_create_hist[-1]), ("Verify", rbkc_verify_hist[-1]), ("Common", rbkc_common_hist[-1])],
+            key=lambda x: x[1], reverse=True,
+        )
+        lines.append("> Lines (top to bottom): " + " — ".join(name for name, _ in rbkc_legend_order))
         lines.append("")
 
     return lines
