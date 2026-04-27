@@ -44,7 +44,9 @@ def verify(knowledge_root: str, file_rel: str, sid: str, quote: str) -> str:
     if not isinstance(body, str) or not body:
         return f"mismatch: sid '{sid}' has empty body"
 
-    if quote in body or _normalize(quote) in _normalize(body):
+    norm_body = _normalize(body)
+    norm_quote = _NORM_WS.sub(" ", quote).strip()
+    if quote in body or norm_quote in norm_body:
         return "match"
 
     return f"mismatch: quote not found in {file_rel}:{sid}"

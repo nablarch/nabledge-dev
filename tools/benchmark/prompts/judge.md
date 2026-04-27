@@ -48,11 +48,18 @@ does not matter — "ビルトインなし" = "標準機能は存在しない"; 
 semantic claim counts. `PARTIAL` = the idea is present but incomplete
 in a way that loses the core point.
 
+Decision rule: if the answer conveys the semantic core of the A-fact
+fully, even if phrased differently, mark `COVERED`. Mark `PARTIAL`
+only when a key qualifier or condition stated in the A-fact is absent
+and its omission materially changes the guidance.
+
 Do not invent new A-facts. Use only the list given as input.
 
 **Step 2. Provisionally classify non-A substantive claims.** Split
 into B (supported by retrieved/reference) vs C (not supported by those
-pre-loaded sections). Provisional only — Step 3 revises C.
+pre-loaded sections). Both B and C are provisional — Step 3 revises C,
+and any B-claim you discover in Step 3 to be ungrounded in the KB
+should be reclassified as C and verified per Step 3.
 
 **Step 3. KB verification for every provisional C-claim.** For each
 claim about to be tagged C:
@@ -72,25 +79,32 @@ claim about to be tagged C:
   - Contradicts a KB fact → `CONTRADICTION`.
   - Not found anywhere → `UNSUPPORTED_KB_VERIFIED`.
 
-Cap: use at most 10 Grep calls total across all C-claim verification.
-If you are near the budget, mark the remaining provisional C-claims as
-`UNSUPPORTED_KB_VERIFIED` and move on.
+Cap: use at most 10 Grep calls total across all C-claim verification in
+this step. Step 4 Grep calls do NOT count against this budget.
 
 **Step 4. Self-verify every SUPPORTED_BY_KB citation (max 3 retries per
 claim).** Before emitting StructuredOutput, for each C-claim you intend
 to mark `SUPPORTED_BY_KB`, run the following Bash command to confirm
-the `quote` is actually present in the cited `file:sid`:
+the `quote` is actually present in the cited `file:sid`. All arguments
+must be double-quoted to handle spaces and non-ASCII characters:
 
 ```
-{{python}} {{verify_script}} {{knowledge_root_abs}} <file> <sid> <quote>
+"{{python}}" "{{verify_script}}" "{{knowledge_root_abs}}" "<file>" "<sid>" "<quote>"
 ```
 
 - If the output is `match` → the citation is confirmed. Proceed.
-- If the output starts with `mismatch` → the `sid` is wrong. Use Grep
-  to find the correct sid in the same file, update `kb_evidence.sid`
-  (and `quote` if needed), then re-run the verify command. Repeat up
-  to **3 times total**. If still `mismatch` after 3 tries, change the
-  reason to `UNSUPPORTED_KB_VERIFIED`.
+- If the output starts with `mismatch: sid` → the sid is wrong. Use
+  Grep to search for the quote within the same file, update
+  `kb_evidence.sid` (and `quote` if needed), then re-run the command.
+- If the output starts with `mismatch: quote not found` → the quote is
+  not in that file at all. Use Grep to search other files in
+  `{{knowledge_root}}` for the quote. If found, update both `file` and
+  `sid` and re-run.
+- Repeat up to **3 times total** per claim. If still `mismatch` after 3
+  tries, change the reason to `UNSUPPORTED_KB_VERIFIED`.
+
+Step 4 Grep calls are separate from the Step 3 budget (up to 3 Grep
+calls per claim here).
 
 **Step 5. Score.** Populate `level` with your best estimate. The
 runtime overrides it from the final verdict using this rule:
@@ -182,7 +196,9 @@ runtime overrides it from the final verdict using this rule:
 The `a_facts` array you output must echo the input A-facts, same order,
 with a `status` per item. Do not add or remove items.
 
-Write `reasoning` in the **same language as the question**.
+Write `reasoning` in the **same language as the question**. If the
+question mixes languages (e.g., Japanese prose with English identifiers),
+default to Japanese.
 
 ## Question
 

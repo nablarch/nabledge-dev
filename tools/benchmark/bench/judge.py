@@ -28,7 +28,7 @@ _FACT_ITEM = {
     "required": ["fact", "status"],
     "additionalProperties": False,
     "properties": {
-        "fact": {"type": "string", "maxLength": 200},
+        "fact": {"type": "string", "maxLength": 300},
         "status": {"enum": ["COVERED", "PARTIAL", "MISSING"]},
     },
 }
