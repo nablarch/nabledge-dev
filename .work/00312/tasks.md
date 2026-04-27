@@ -1,55 +1,60 @@
 ---
 # Tasks: fix handler docs raw HTML in nabledge-1.x
 
-**PR**: TBD
+**PR**: #315
 **Issue**: #312
 **Updated**: 2026-04-27
 
 ## In Progress
 
-### 1. Investigate current structure and propose readable state
+### 1. Investigate and design readable state
 **Steps:**
 - [x] Read affected MD file (e.g. handlers-PermissionCheckHandler.md) — confirmed `<script>` leak
 - [x] Read corresponding RST source — found 3x `.. raw:: html` blocks (Handler.js, inline script, handler_structure.html)
 - [x] Identify RBKC conversion code — `rst_ast_visitor.py visit_raw` → `normalise_raw_html` in `rst_ast.py`
-- [x] Read verify design spec (`rbkc-verify-quality-design.md`) — QC5 already covers `<[a-zA-Z]` raw HTML
-- [x] Analyze knowledge value in Handler.js (behavior.inbound/outbound/error/callback) — full table content confirmed
-- [x] Study top 3 complex handlers (MessageResendHandler/RetryHandler/RequestThreadLoopHandler) in depth
-- [DECISION: see below] Decide readable state approach for ハンドラ処理概要
-- [ ] Propose fix for ハンドラ処理フロー blank-line loss
+- [x] Read verify design spec (`rbkc-verify-quality-design.md`) — QC1-QC4 = sequential-delete, QC5 = regex
+- [x] Analyze knowledge value: Handler.js `behavior.inbound/outbound/error/callback` = 実データ（日本語説明文）
+- [x] Study top 3 complex handlers: MessageResendHandler(5), RetryHandler(4), RequestThreadLoopHandler(3)
+- [x] Decide output approach: **Case A** — parse Handler.js, render Markdown table per HandlerQueue
+- [x] Agree on architecture: `scripts/common/handler_js.py` 共通モジュール (create + verify 両側から利用)
 - [ ] Create design doc at `tools/rbkc/docs/rbkc-handler-v1x-design.md`
-- [ ] Present proposals to user and get approval
+- [ ] Propose fix for ハンドラ処理フロー blank-line loss (definition_list間の改行)
+- [ ] Present full design to user and get approval
 
-**Decision needed:** Handler.js behavior data (inbound/outbound/error per handler in queue)
+**Agreed design (this session):**
+- 共通モジュール `scripts/common/handler_js.py` に3関数:
+  - `parse_handler_dict(js_text)` → `{ HandlerName → {name, behavior: {inbound, outbound, error, callback}} }`
+  - `parse_handler_queue(script_text)` → `(Context, [HandlerName, ...])`
+  - `render_handler_table(handler_dict, context, queue)` → Markdown テーブル文字列
+- create の `visit_raw`: 3ブロック状態機械で呼ぶ
+- verify の normalizer: 同じ `raw` ノードで呼んで正規化ソースに含める → QC1-QC4 sequential-delete がそのまま機能
+- verify は Handler.js を独立ロードしない（§2-2 独立性原則: common モジュール経由でよい）
+- `handler_js.py` のユニットテスト: 文字列連結、`<br/>`変換、`-`値、callbackあり/なし、サフィックス付きキー
 
-- **Case A**: Parse Handler.js statically in Python → generate Markdown table per handler in HandlerQueue
-  - Preserves all behavior text as a table (往路/復路/例外 per row)
-  - Requires non-trivial JS-parsing logic in RBKC
-- **Case B**: Output HandlerQueue as a bullet list only; drop Handler.js behavior text
-  - Per-handler behavior is already covered by each handler's own RST (ハンドラ処理フロー section)
-  - Simple to implement, no JS parsing needed
-
-### 2. Propose conversion logic
+### 2. Implement (after design doc approval)
 **Steps:**
-- [ ] Design `visit_raw` fix based on approved approach
-- [ ] Design blank-line fix for ハンドラ処理フロー (block-quote / definition-list indent handling)
-- [ ] Consult Software Engineer expert on design
-- [ ] Present to user and get approval
-
-### 3. Implement (after approval)
-**Steps:**
-- [ ] Follow verify design spec (TDD): write failing verify tests first
-- [ ] Write unit tests for converter fix (RED)
-- [ ] Implement converter fix (GREEN)
-- [ ] Implement verify QC check for script residue
-- [ ] Run `bash rbkc.sh create <v> && bash rbkc.sh verify <v>` for all 5 versions
+- [ ] TDD: write unit tests for `handler_js.py` (RED)
+- [ ] Implement `handler_js.py` (GREEN)
+- [ ] Write converter unit tests for `visit_raw` 3-block state machine (RED)
+- [ ] Implement `visit_raw` fix (GREEN)
+- [ ] Write verify normalizer tests for `raw` node handling (RED)
+- [ ] Implement verify normalizer change (GREEN)
+- [ ] Fix ハンドラ処理フロー blank-line loss in `visit_definition_list`
+- [ ] Run `bash rbkc.sh create <v> && bash rbkc.sh verify <v>` for all 5 versions (before/after)
 - [ ] Confirm FAIL count diff is as expected
 - [ ] Horizontal check: `.. raw:: html` + `:file:` across all 5 versions
 - [ ] Write post-mortem at `.work/00312/postmortem-handler-raw-html.md`
+
+## Not Started
+
+### 3. PR
+**Steps:**
+- [ ] Expert review
+- [ ] Create PR
 
 ## Done
 
 - [x] Issue #312 fetched and branch `312-fix-handler-docs-raw-html` created
 - [x] RBKC conversion code identified: `rst_ast_visitor.py:visit_raw` + `rst_ast.py:normalise_raw_html`
 - [x] Verify QC5 pattern confirmed: `<[a-zA-Z][a-zA-Z0-9]*...>` already detects opening tags
-- [x] Blank-line loss root cause: block-quote/definition-list blank lines collapsed during conversion
+- [x] Blank-line loss root cause: `visit_definition_list` が全アイテムを `"\n".join` で結合している
