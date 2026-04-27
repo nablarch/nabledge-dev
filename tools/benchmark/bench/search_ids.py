@@ -102,7 +102,18 @@ SCHEMA_SELECT = {
         "caveats": {
             "type": "array",
             "maxItems": 5,
-            "items": {"type": "string", "maxLength": 300},
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["note", "cited"],
+                "properties": {
+                    "note": {"type": "string", "maxLength": 300},
+                    "cited": {
+                        "type": "string",
+                        "pattern": r"^[a-zA-Z0-9_-]+\|[a-zA-Z0-9_-]+$",
+                    },
+                },
+            },
         },
         "cited": {
             "type": "array",
@@ -459,7 +470,7 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
 
 
 def _render_answer_markdown(
-    *, conclusion: str, evidence: list[dict], caveats: list[str],
+    *, conclusion: str, evidence: list[dict], caveats: list[dict],
     cited_refs: list[str], id_to_path: dict[str, dict],
 ) -> str:
     """Render the merged AI-1 answer fields into the answer.md shape."""
@@ -486,7 +497,12 @@ def _render_answer_markdown(
     if caveats:
         lines.append("**注意点**:")
         for c in caveats:
-            lines.append(f"- {c}")
+            note = (c.get("note") or "").strip()
+            cited = ref_to_path(c.get("cited") or "")
+            if cited:
+                lines.append(f"- {note} ({cited})")
+            else:
+                lines.append(f"- {note}")
         lines.append("")
     if cited_refs:
         refs_str = ", ".join(ref_to_path(r) for r in cited_refs)

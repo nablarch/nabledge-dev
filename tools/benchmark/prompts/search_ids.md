@@ -108,11 +108,12 @@ Maximum 6 relevant sections per file. Maximum 20 file entries total.
     sentences.
   - `cited` is the `file_id|sid` the quote came from. It MUST be in
     `selections`.
-- `caveats`: up to 5 short notes on constraints / pitfalls / edge
-  cases. **Caveats MUST be grounded in the sections you Read.** Do not
-  add constraints or warnings from background knowledge — only what
-  you found in the section bodies. If the sections do not mention any
-  caveats, return an empty array.
+- `caveats`: up to 5 notes on constraints / pitfalls / edge cases.
+  Each caveat is `{"note": "...", "cited": "file_id|sid"}`.
+  **Caveats MUST be grounded in the sections you Read** — every note
+  must cite the section where you found it. Do not add constraints or
+  warnings from background knowledge. If the sections do not mention
+  any caveats, return an empty array.
 - `cited`: deduplicated set of `file_id|sid` values from `evidence[].cited`.
 - **Narrow from selections.** Step 2–3 were recall-first; Step 4 answer
   is precision. Do not cite a section merely for coverage. Drop sections
@@ -193,7 +194,15 @@ The runtime enforces a strict schema. Every field is required.
     },
     "caveats": {
       "type": "array", "maxItems": 5,
-      "items": {"type": "string", "maxLength": 300}
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["note", "cited"],
+        "properties": {
+          "note": {"type": "string", "maxLength": 300},
+          "cited": {"type": "string", "pattern": "^[a-zA-Z0-9_-]+\\|[a-zA-Z0-9_-]+$"}
+        }
+      }
     },
     "cited": {
       "type": "array",
