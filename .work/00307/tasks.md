@@ -206,32 +206,46 @@ judge が Grep → Read (ファイル全体) でKB検証するため処理が重
 「Read でファイル全体を読む」設計に起因する。judge の KB 検証を
 Grep (content モード) のみに変えれば Read 不要でピンポイント確認できる。
 
-**3 件の報告が揃ったら、ユーザーと事実をもとに次の対応を決める。**
+**3 件の調査完了。以下の 3 つの fix を実施後、同じ 3 件を再計測して効果確認する。**
 
-#### Step 6-C: judge KB 検証を Grep のみに変更
+#### Fix-1: judge の verify_kb_evidence sid 修正 (req-05 対応)
 
-**背景**: judge が C-claim 検証で `Grep (files_with_matches)` → `Read (ファイル全体)` を
-していたため処理が重く review-08 で 420s timeout が発生。
+**原因**: `SUPPORTED_BY_KB` の kb_evidence.quote が正しい内容でも sid 指定が隣のセクションにずれると
+verify_kb_evidence が fabrication と誤判定して L1 に落とす。
+
+- [ ] `prompts/judge.md`: SUPPORTED_BY_KB と判定したら StructuredOutput 出力前に
+  kb_evidence の quote が指定 sid の body に存在するか Grep で確認し、なければ
+  同ファイル内の別 sid を探して修正するステップを追加（最大 3 Grep まで）
+- [ ] 単件 req-05 で動作確認（L3 になること）
+
+#### Fix-2: judge KB 検証を Grep のみに変更 (review-08 対応)
+
+**原因**: judge が `Grep (files_with_matches)` → `Read (ファイル全体)` でKB検証していたため
+thinking が肥大化し review-08 で 420s timeout。
 Grep の `output_mode: content` ならマッチ行＋周辺テキストがその場で返るため Read 不要。
 
-**変更内容**:
 - [ ] `bench/judge.py`: `allowed_tools=["Grep", "Read"]` → `["Grep"]`
-- [ ] `prompts/judge.md`: Read 不要、Grep content モードでピンポイント確認する指示に書き換え
-- [ ] req-05 / review-08 で単件動作確認
+- [ ] `prompts/judge.md`: Grep content モードでピンポイント確認する指示に書き換え（Read 不要）
+- [ ] 単件 review-08 で動作確認（timeout しないこと）
 
-#### Step 6-C: a_facts 全量見直し
+#### Fix-3: a_facts 見直し (review-01 対応)
 
-**背景**: review-01 で「質問意図を限定した回答が正解なのに a_fact が広すぎて MISSING 判定になる」ケースが判明。
-30件全シナリオの a_facts を点検する。
+**原因**: review-01 の a_fact「DB接続ありの標準ハンドラキュー構成」が質問スコープ外。
+他のシナリオにも同様のスコープ外 a_fact が混在している可能性がある。
 
-**ステップ**:
-- [ ] 全30件シナリオを順に確認:
-  1. 質問文（expected_question）を読んで質問の意図・スコープを把握
-  2. 各 a_fact が「この質問に対する初回回答として当然含めるべき事実か」を判定
-  3. スコープ外 or 一段深い話に該当するものをリストアップ
-- [ ] リストアップした a_fact について knowledge file を確認し、削除 or 別シナリオへの移動を判断
+- [ ] 3 件（req-05 / review-01 / review-08）の a_facts を質問スコープと照合してリストアップ
 - [ ] ユーザーにリストを提示してレビュー・承認を得る
 - [ ] 承認後、qa-v6.json を更新してコミット
+
+#### Step 6-D: 3 件再計測＋1 件ずつ実行詳細確認
+
+Fix-1〜3 完了後に実施。
+
+- [ ] req-05 / review-01 / review-08 を再計測（逐次実行）
+- [ ] req-05 の実行ログを読んで事実確認（想定通り L3 か）
+- [ ] review-01 の実行ログを読んで事実確認（a_fact 修正後に L3 か）
+- [ ] review-08 の実行ログを読んで事実確認（timeout 解消・judge 判定は妥当か）
+- [ ] 3 件の結果をユーザーに報告して次の対応を決める
 
 #### Step 6: 検索が安定したら回答統合の検討 (条件付き次期)
 
