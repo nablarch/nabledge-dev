@@ -421,29 +421,28 @@ def collect_sloc(repo_root: str) -> dict:
     ])
     nabledge_prompts = sum(count_sloc(f, is_prompt=True) for f in nabledge_prompt_files)
 
-    # --- RBKC scripts (production) ---
-    rbkc_prod_files = [
-        f for f in _glob_files(repo_root, ["tools/rbkc/scripts/**/*.py",
+    # --- RBKC scripts: create ---
+    rbkc_create_files = [
+        f for f in _glob_files(repo_root, ["tools/rbkc/scripts/create/**/*.py"])
+        if "__pycache__" not in f and os.path.basename(f) != "__init__.py"
+    ]
+    rbkc_scripts_create = _sloc_by_ext(rbkc_create_files, is_prompt=False)
+
+    # --- RBKC scripts: verify ---
+    rbkc_verify_files = [
+        f for f in _glob_files(repo_root, ["tools/rbkc/scripts/verify/**/*.py"])
+        if "__pycache__" not in f and os.path.basename(f) != "__init__.py"
+    ]
+    rbkc_scripts_verify = _sloc_by_ext(rbkc_verify_files, is_prompt=False)
+
+    # --- RBKC scripts: common (scripts/common/ + run.py) ---
+    rbkc_common_files = [
+        f for f in _glob_files(repo_root, ["tools/rbkc/scripts/common/**/*.py",
+                                            "tools/rbkc/scripts/run.py",
                                             "tools/rbkc/rbkc.sh"])
-        if "__pycache__" not in f
-        and os.path.basename(f) != "__init__.py"
+        if "__pycache__" not in f and os.path.basename(f) != "__init__.py"
     ]
-    rbkc_scripts_prod = _sloc_by_ext(rbkc_prod_files, is_prompt=False)
-
-    # --- RBKC scripts (test) ---
-    rbkc_test_files = [
-        f for f in _glob_files(repo_root, ["tools/rbkc/tests/**/*.py"])
-        if "__pycache__" not in f
-        and os.path.basename(f) != "__init__.py"
-    ]
-    rbkc_scripts_test = _sloc_by_ext(rbkc_test_files, is_prompt=False)
-
-    # --- RBKC prompts (.md files, excluding docs/ evaluation subdirs and README) ---
-    rbkc_md_files = [
-        f for f in _glob_files(repo_root, ["tools/rbkc/docs/**/*.md"])
-        if "/evaluation/" not in f and os.path.basename(f).upper() != "README.MD"
-    ]
-    rbkc_prompts = sum(count_sloc(f, is_prompt=True) for f in rbkc_md_files)
+    rbkc_scripts_common = _sloc_by_ext(rbkc_common_files, is_prompt=False)
 
     return {
         "nabledge": {
@@ -451,9 +450,9 @@ def collect_sloc(repo_root: str) -> dict:
             "prompts": nabledge_prompts,
         },
         "rbkc": {
-            "scripts_prod": rbkc_scripts_prod,
-            "scripts_test": rbkc_scripts_test,
-            "prompts": rbkc_prompts,
+            "scripts_create": rbkc_scripts_create,
+            "scripts_verify": rbkc_scripts_verify,
+            "scripts_common": rbkc_scripts_common,
         },
     }
 
@@ -517,12 +516,12 @@ def sloc_flat(s: dict, date: str) -> dict:
         return sum(d.values()) if isinstance(d, dict) else (d or 0)
     ns = t(s["nabledge"]["scripts"])
     np_ = s["nabledge"]["prompts"]
-    rp = t(s.get("rbkc", {}).get("scripts_prod", 0))
-    rt = t(s.get("rbkc", {}).get("scripts_test", 0))
-    rpr = s.get("rbkc", {}).get("prompts", 0)
+    rc = t(s.get("rbkc", {}).get("scripts_create", 0))
+    rv = t(s.get("rbkc", {}).get("scripts_verify", 0))
+    rco = t(s.get("rbkc", {}).get("scripts_common", 0))
     return {"date": date, "nabledge_scripts": ns, "nabledge_prompts": np_,
-            "rbkc_prod": rp, "rbkc_test": rt, "rbkc_prompts": rpr,
-            "total": ns + np_ + rp + rt + rpr}
+            "rbkc_create": rc, "rbkc_verify": rv, "rbkc_common": rco,
+            "total": ns + np_ + rc + rv + rco}
 
 
 def _delta_str(current: int, previous: int) -> str:
@@ -573,9 +572,9 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
 
     cur_ns = total(current["nabledge"]["scripts"])
     cur_np = current["nabledge"]["prompts"]
-    cur_rp = total(current.get("rbkc", {}).get("scripts_prod", 0))
-    cur_rt = total(current.get("rbkc", {}).get("scripts_test", 0))
-    cur_rpr = current.get("rbkc", {}).get("prompts", 0)
+    cur_rc = total(current.get("rbkc", {}).get("scripts_create", 0))
+    cur_rv = total(current.get("rbkc", {}).get("scripts_verify", 0))
+    cur_rco = total(current.get("rbkc", {}).get("scripts_common", 0))
 
     # Normalize x-axis to ISO week Monday (MM/DD) for consistency with DORA/Activity charts (JST).
     # Deduplicate by week label, keeping the latest entry per week (handles legacy non-Monday dates).
@@ -598,25 +597,27 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
     lines.append("")
 
     lines.append(_pie_chart("RBKC SLOC", [
-        ("Production (.py)", cur_rp),
-        ("Test (.py)", cur_rt),
-        ("Prompts (.md)", cur_rpr),
-    ], colors={"Prompts (.md)": PROMPTS_COLOR}))
+        ("Create (.py)", cur_rc),
+        ("Verify (.py)", cur_rv),
+        ("Common (.py)", cur_rco),
+    ]))
     lines.append("")
 
-    # RBKC trend (prod vs test)
+    # RBKC trend (create / verify / common)
     if len(history) >= 2:
-        rbkc_prod_hist = [h.get("rbkc_prod", 0) for h in history]
-        rbkc_test_hist = [h.get("rbkc_test", 0) for h in history]
-        ymax = y_axis_max(rbkc_prod_hist + rbkc_test_hist)
+        rbkc_create_hist = [h.get("rbkc_create", 0) for h in history]
+        rbkc_verify_hist = [h.get("rbkc_verify", 0) for h in history]
+        rbkc_common_hist = [h.get("rbkc_common", 0) for h in history]
+        ymax = y_axis_max(rbkc_create_hist + rbkc_verify_hist + rbkc_common_hist)
         x_str = "[" + ", ".join(f'"{l}"' for l in hist_labels) + "]"
         lines.append("```mermaid")
         lines.append("xychart-beta")
-        lines.append('  title "RBKC Scripts Trend (upper=Production  lower=Test)"')
+        lines.append('  title "RBKC Production SLOC Trend (Create / Verify / Common)"')
         lines.append(f"  x-axis {x_str}")
         lines.append(f'  y-axis "Lines" 0 --> {ymax}')
-        lines.append(f"  line {rbkc_prod_hist}")
-        lines.append(f"  line {rbkc_test_hist}")
+        lines.append(f"  line {rbkc_create_hist}")
+        lines.append(f"  line {rbkc_verify_hist}")
+        lines.append(f"  line {rbkc_common_hist}")
         lines.append("```")
         lines.append("")
 
