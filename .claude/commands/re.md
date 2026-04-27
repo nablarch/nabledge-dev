@@ -30,7 +30,7 @@ If no PR found, guide user to create one first with `/hi`.
 ## 2. Load tasks.md
 
 ```bash
-cat .pr/$(printf '%05d' $issue_number)/tasks.md 2>/dev/null
+cat .work/$(printf '%05d' $issue_number)/tasks.md 2>/dev/null
 ```
 
 If tasks.md exists, trust it as the source of truth — do not re-assess from scratch.
@@ -39,7 +39,7 @@ If tasks.md does not exist, fall back to loading state from the PR:
 
 ```bash
 gh pr view $pr_number --json title,body,state
-cat .pr/$(printf '%05d' $issue_number)/notes.md 2>/dev/null
+cat .work/$(printf '%05d' $issue_number)/notes.md 2>/dev/null
 git status --short
 git diff --stat HEAD
 ```

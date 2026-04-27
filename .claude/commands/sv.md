@@ -25,7 +25,7 @@ issue_number=$(echo "$current_branch" | grep -oE '^[0-9]+')
 Read the current task file:
 
 ```bash
-cat .pr/$(printf '%05d' $issue_number)/tasks.md 2>/dev/null
+cat .work/$(printf '%05d' $issue_number)/tasks.md 2>/dev/null
 ```
 
 Update to reflect the exact state at end of this session:

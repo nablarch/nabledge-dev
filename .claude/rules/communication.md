@@ -2,11 +2,11 @@
 
 ## Explaining and Reporting
 
-- **First message is the point only** — 1〜3 文で結論・判断・次アクションだけを返す。背景・根拠・対照表・引用は書かない
-- 詳細 (コード片、引用、比較表、AST ダンプ、spec の該当節、選択肢の trade-off 等) は **ユーザーから "詳細を"/"なぜ"/"根拠"/"詳しく" 等の明示要求があってから** 出す
+- **First message is the point only** — return conclusion, judgment, and next action in 1–3 sentences; do not include background, rationale, comparison tables, or citations
+- Details (code snippets, citations, comparison tables, AST dumps, spec sections, option trade-offs, etc.) are provided **only when the user explicitly asks** ("詳細を" / "なぜ" / "根拠" / "詳しく" or equivalent)
 - Do not mix multiple topics in one message — separate concerns clearly
 - When reporting status, always anchor to the task file so the user knows where things stand
-- 質問に YES/NO で答えられる場合、まず YES/NO を返す。理由はユーザーが求めたら追加する
+- If a question can be answered with YES/NO, lead with YES/NO; provide the reason only if the user asks
 
 ## Proposing, not asking for permission
 
@@ -36,7 +36,7 @@ the proposal must be **fact-based, not inference-based**. Before making such a p
 2. **Quantify the impact** — report concrete numbers: lines of code to change, number
    of files, number of tests to add/update, dependencies on other in-progress work.
 3. **State facts, not assumptions** — "md.py is 139 lines and has no AST layer" is a fact;
-   "工事量は Phase 21-Y と同規模" without measurement is inference and is not acceptable.
+   "the effort is about the same as Phase 21-Y" without measurement is inference and is not acceptable.
 4. **Derive the recommendation from the measured numbers**, not from intuition about cost.
 
 A scope-out proposal without measured numbers will be rejected. Re-investigate and resubmit.
@@ -48,7 +48,7 @@ Only ask open questions when:
 
 In those cases, still present a **recommended option first** with reasoning, and list alternatives.
 
-Never ask "いいですか？" / "進めてよいですか？" as the primary form of confirmation.
+Never ask "Is that OK?" / "Can I proceed?" as the primary form of confirmation.
 State the plan, state why it is the should-be, and proceed unless the user objects.
 
 ## Implementation Details
