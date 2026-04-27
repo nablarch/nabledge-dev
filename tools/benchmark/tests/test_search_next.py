@@ -1,4 +1,4 @@
-"""Tests for ids variant selection resolution."""
+"""Tests for next variant selection resolution."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from tools.benchmark.bench import io, search_ids
-from tools.benchmark.bench.search_ids import (
+from tools.benchmark.bench import io, search_next
+from tools.benchmark.bench.search_next import (
     _render_answer_markdown,
     grep_term_hits,
     merge_term_hits_into_selections,
@@ -106,7 +106,7 @@ def test_grep_term_hits_finds_matching_sections(fake_knowledge):
 
 
 def test_grep_term_hits_respects_per_term_cap(fake_knowledge, monkeypatch):
-    monkeypatch.setattr(search_ids, "TERM_HITS_PER_TERM", 1)
+    monkeypatch.setattr(search_next, "TERM_HITS_PER_TERM", 1)
     id_to_path = {
         "handlers-tmh": {
             "path": "component/handlers/handlers-tmh.json",
@@ -297,7 +297,7 @@ def test_verify_read_notes_ignores_scope_note(fake_knowledge):
 def test_schema_select_allows_scope_note():
     """SCHEMA_SELECT must allow scope_note as an optional field in read_notes[].relevant_sections[]."""
     rel_sec_schema = (
-        search_ids.SCHEMA_SELECT["properties"]["read_notes"]["items"]
+        search_next.SCHEMA_SELECT["properties"]["read_notes"]["items"]
         ["properties"]["relevant_sections"]["items"]
     )
     # scope_note must be declared (additionalProperties is False)

@@ -10,9 +10,9 @@ against the reference.
 
 ```
 run.py                  CLI + orchestration
-bench/                  library: claude.py, search_ids.py, search_current.py, judge.py, io.py, types.py
+bench/                  library: claude.py, search_next.py, search_current.py, judge.py, io.py, types.py
 build_index.py          regenerates knowledge/index-llm.md + index-script.json from knowledge/**/*.json
-prompts/                search_ids.md, search_current.md, answer.md, judge.md
+prompts/                search_next.md, search_current.md, answer.md, judge.md
 scenarios/
   qa-v6.json            30 scenarios
   qa-v6-answers/*.md    per-scenario reference answer + citations
@@ -22,7 +22,7 @@ tests/                  unit tests (no CLI/claude calls)
 
 ## Flows
 
-- `ids` — AI-1 selects `file_id|sid` from `index-llm.md`, script resolves to `path:sid`, sections are fetched, AI-3 composes the answer from that content.
+- `next` — AI-1 selects `file_id|sid` from `index-llm.md`, script resolves to `path:sid`, sections are fetched, AI-3 composes the answer from that content.
 - `current` — single agent with Bash access to the production skill scripts (`full-text-search.sh` / `get-hints.sh` / `read-sections.sh`), reproduces the production behavior.
 
 Both flows emit `{answer, cited}`; both are scored by the same judge.
@@ -31,15 +31,15 @@ Both flows emit `{answer, cited}`; both are scored by the same judge.
 
 ```bash
 # Full run
-python3 run.py --variant ids
+python3 run.py --variant next
 python3 run.py --variant current
 
 # Subset
-python3 run.py --variant ids --scenario review-09
-python3 run.py --variant ids --limit 5
+python3 run.py --variant next --scenario review-09
+python3 run.py --variant next --limit 5
 
 # Re-score an existing run with the current judge prompt
-python3 run.py --rejudge --results-dir .results/20260423-120000-ids-sonnet
+python3 run.py --rejudge --results-dir .results/20260423-120000-next-sonnet
 ```
 
 Default model is `sonnet`. Override with `--model haiku` etc.

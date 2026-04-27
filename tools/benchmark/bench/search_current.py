@@ -7,7 +7,7 @@ from pathlib import Path
 
 from . import io
 from .claude import invoke
-from .search_ids import SCHEMA_ANSWER
+from .search_next import SCHEMA_ANSWER
 from .types import SearchResult
 
 

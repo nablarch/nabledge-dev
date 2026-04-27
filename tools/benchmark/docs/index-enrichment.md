@@ -86,7 +86,7 @@ stoplist で落とすので IDF の代わりになり、セクション固有に
 tools/benchmark/
   classify_terms.py           # セクション単位 TF 抽出
   build_index.py              # index-llm.md 生成
-  search_ids.py               # AI-1 検索 + term_queries 機械抽出
+  search_next.py              # AI-1 検索 + term_queries 機械抽出
   build_term_stopset.py       # term_queries 用 df ベース stopset (ASCII 識別子用)
   data/
     index-keywords-ja.json    # セクション × 採用キーワード配列 (生成物)
@@ -269,7 +269,7 @@ python3 tools/benchmark/build_index.py --version 6 \
 
 ```bash
 # 検索のみ実行 (AI-1 だけ回す、AI-3 / judge はスキップ)
-python3 tools/benchmark/run.py --variant ids --search-only
+python3 tools/benchmark/run.py --variant next --search-only
 
 # カバー率測定 (expected_sections との比較)
 python3 tools/benchmark/search_coverage.py --run-dir .tmp/search-only-XXXX
@@ -282,7 +282,7 @@ selections が通るようになること。
 
 ## term_queries (機械抽出、本文 grep 経路)
 
-`search_ids.py` は AI-1 の `selections` 応答に加え、質問文から機械抽出した
+`search_next.py` は AI-1 の `selections` 応答に加え、質問文から機械抽出した
 **識別子** で本文 grep を行う。抽出対象は ASCII のみ:
 
 | パターン | 例 |

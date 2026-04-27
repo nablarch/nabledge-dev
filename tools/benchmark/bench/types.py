@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 
-Variant = Literal["ids", "current"]
+Variant = Literal["next", "current"]
 
 
 @dataclass(frozen=True)
@@ -34,7 +34,7 @@ class ClaudeInvocation:
 
 @dataclass
 class SearchResult:
-    """Output of a search flow (ids or current)."""
+    """Output of a search flow (next or current)."""
 
     variant: Variant
     answer: str

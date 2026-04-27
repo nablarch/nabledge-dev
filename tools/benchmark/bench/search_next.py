@@ -1,4 +1,4 @@
-"""ids search variant: AI-1 picks file_id|sid from the LLM index, script resolves
+"""next search variant: AI-1 picks file_id|sid from the LLM index, script resolves
 to path:sid, read-sections fetches content, AI-3 composes the answer.
 
 Term queries (for grepping section bodies) are extracted deterministically
@@ -447,7 +447,7 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
     # skip_answer: return without rendering the answer markdown (Phase 1 flow).
     if skip_answer:
         return SearchResult(
-            variant="ids",
+            variant="next",
             answer="",
             cited=[],
             cost_usd=select.cost_usd,

@@ -1,7 +1,7 @@
-"""Tests for question-side term extraction used by the ids variant.
+"""Tests for question-side term extraction used by the next variant.
 
 term_extract provides the deterministic grep-term extractor that mirrors
-classify_terms.py's patterns. search_ids.py consumes this instead of asking
+classify_terms.py's patterns. search_next.py consumes this instead of asking
 AI-1 to generate term_queries.
 """
 from __future__ import annotations

@@ -2,7 +2,7 @@
 """Benchmark runner for the nabledge-6 search flows.
 
 Commands:
-  python3 run.py --variant {ids|current} [--scenario X] [--limit N] [--model sonnet]
+  python3 run.py --variant {next|current} [--scenario X] [--limit N] [--model sonnet]
       Run the full scenario set (or a subset) through one flow. Writes per-scenario
       artifacts under .results/{ts}-{variant}-{model}/.
   python3 run.py --rejudge --results-dir .results/...
@@ -25,7 +25,7 @@ from typing import Callable
 # Allow running as a script: `python3 tools/benchmark/run.py`.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from tools.benchmark.bench import io, judge, search_current, search_ids
+from tools.benchmark.bench import io, judge, search_current, search_next
 from tools.benchmark.bench.types import JudgeResult, Scenario, SearchResult, Variant
 
 
@@ -34,7 +34,7 @@ def run_variant(
     search_only: bool = False, version: str = io.DEFAULT_VERSION,
 ) -> None:
     search_fn = _dispatch(variant)
-    ids_map = search_ids.load_id_to_path(version) if variant == "ids" else {}
+    ids_map = search_next.load_id_to_path(version) if variant == "next" else {}
     mode = "search-only" if search_only else "full"
     print(f"variant={variant} version=v{version} model={model} mode={mode} "
           f"scenarios={len(scenarios)} out={out_dir}",
@@ -44,7 +44,7 @@ def run_variant(
         scen = io.scen_dir(out_dir, sc.id)
         print(f"[{i}/{len(scenarios)}] {sc.id} ...", file=sys.stderr, flush=True)
         extra_kwargs: dict = {"version": version}
-        if variant == "ids":
+        if variant == "next":
             extra_kwargs["id_to_path"] = ids_map
             extra_kwargs["skip_answer"] = search_only
         search: SearchResult = search_fn(
@@ -96,8 +96,8 @@ def rejudge(*, results_dir: Path, model: str, scenarios: list[Scenario],
 
 
 def _dispatch(variant: Variant) -> Callable[..., SearchResult]:
-    if variant == "ids":
-        return search_ids.run
+    if variant == "next":
+        return search_next.run
     if variant == "current":
         return search_current.run
     raise ValueError(f"unknown variant: {variant}")
@@ -223,7 +223,7 @@ def _write_summary(out_dir: Path, rows: list[dict]) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--variant", choices=["ids", "current"],
+    ap.add_argument("--variant", choices=["next", "current"],
                     help="search flow variant (required unless --rejudge)")
     ap.add_argument("--rejudge", action="store_true",
                     help="re-score an existing results dir using the current judge prompt")
@@ -265,7 +265,7 @@ def main() -> int:
         return 0
 
     if not args.variant:
-        print("--variant is required (ids|current) unless --rejudge", file=sys.stderr)
+        print("--variant is required (next|current) unless --rejudge", file=sys.stderr)
         return 2
 
     out_dir = Path(args.out) if args.out else io.new_results_dir(

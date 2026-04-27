@@ -1,4 +1,4 @@
-"""Question-side term extraction for the ids search variant.
+"""Question-side term extraction for the next search variant.
 
 Extracts identifier-only terms from the question for the body-grep path.
 Japanese concepts are handled by `index-llm.md` (section-level keywords),
