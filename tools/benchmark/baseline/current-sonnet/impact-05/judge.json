@@ -1,0 +1,52 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Nablarch のセッションストアに `HiddenStore` を登録すれば HIDDEN フィールドによるセッション保持が書ける",
+        "status": "COVERED"
+      },
+      {
+        "fact": "複数 AP サーバ構成では HiddenStore のデフォルト暗号化キーがサーバごとに自動生成されるため復号に失敗する問題がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "対策として `HiddenStore` の `encryptor` プロパティに明示的な暗号化キーと IV を設定して全サーバで揃える",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "HIDDENストアはクライアントサイド（hidden タグ）でセッション変数を引き回す方式で、複数タブ許容の入力→確認→完了画面間保持に適している"
+      },
+      {
+        "claim": "JSP の `<n:form>` 内に `<n:hiddenStore name=\"nablarch_hiddenStore\" />` を置くことでHIDDENストアを組み込める"
+      },
+      {
+        "claim": "セッションストアには Form ではなく Entity を格納すること（Formだと密結合・セキュリティリスク）"
+      },
+      {
+        "claim": "HIDDENストアの改竄を検知した場合はステータスコード 400 の HttpErrorResponse が送出される"
+      },
+      {
+        "claim": "ウィンドウスコープおよび hidden 暗号化機能は非推奨で、useHiddenEncryption には false を設定することが推奨される"
+      },
+      {
+        "claim": "セッション有効期間はデフォルトで HTTPセッションに保存されるが、DbManagedExpiration を設定することでデータベースに保存できる"
+      },
+      {
+        "claim": "SessionStoreHandler は multipart_handler より後ろ、forwarding_handler より前に配置する必要がある"
+      },
+      {
+        "claim": "鍵は KeyGenerator、IV は SecureRandom で生成し、base64 エンコードした値を設定する"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "3つのA-factすべてがカバーされている。HIDDENストアの登録方法（A-fact 1）、複数APサーバでのキー自動生成による復号失敗問題（A-fact 2）、encryptorプロパティへの明示的キー・IV設定による対策（A-fact 3）いずれも明確に記述されており、A-fact 3にはXML設定例も含まれる。さらに、JSPへの組み込み方法・Entity格納推奨・改竄検知の挙動・ウィンドウスコープ非推奨・有効期間管理・ハンドラ配置順序など多数のB-claimsが含まれる。C-claimsは見当たらない。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.25103790000000004,
+  "duration_s": 36.853970527648926,
+  "error": null
+}

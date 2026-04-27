@@ -1,0 +1,46 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch には `MultipartHandler` の `UploadSettings` を通じてアップロードサイズに上限を設ける仕組みがある。`contentLengthLimit` プロパティで1リクエスト全体のサイズ上限を設定でき、超過時は 413 (Payload Too Large) を返す。\n\n**根拠**:\n\n`MultipartHandler` の `UploadSettings` に `contentLengthLimit` プロパティを設定することで、アップロードサイズ（Content-Length）の上限をバイト数で指定できる。上限を超えた場合は 413 がクライアントに返却される。設定を省略すると無制限になるため、DoS攻撃防止のために**必ず設定すること**とされている。（`component/handlers/handlers-multipart_handler.json:s6`）\n\n```xml\n<component class=\"nablarch.fw.web.upload.MultipartHandler\" name=\"multipartHandler\">\n  <property name=\"uploadSettings\">\n    <component class=\"nablarch.fw.web.upload.UploadSettings\">\n      <property name=\"contentLengthLimit\" value=\"1000000\" />\n    </component>\n  </property>\n</component>\n```\n（`component/handlers/handlers-multipart_handler.json:s6`）\n\nまた、一度にアップロードできるファイル数の上限は `maxFileCount` で制御でき、上限超過時は 400 (Bad Request) を返す。未設定時のデフォルトは -1（無制限）で、0以上の値を設定するとその値が上限となる。（`component/handlers/handlers-multipart_handler.json:s7`）\n\n**注意点**:\n- `contentLengthLimit` はファイル単位ではなく **1リクエスト全体** のサイズ上限である。複数ファイルの場合はファイルサイズの合計値（Content-Length）でチェックされる。\n- ファイル1件ずつの個別サイズチェックが必要な場合は、アクション側で独自に実装する必要がある。\n- `contentLengthLimit` を省略すると無制限になるため、運用上は必ず値を設定すること。\n\n参照: component/handlers/handlers-multipart_handler.json:s6, component/handlers/handlers-multipart_handler.json:s7",
+  "cited": [
+    "component/handlers/handlers-multipart_handler.json:s6",
+    "component/handlers/handlers-multipart_handler.json:s7"
+  ],
+  "cost_usd": 0.362449,
+  "duration_s": 26.03020191192627,
+  "steps": {
+    "raw_selections": [
+      "handlers-multipart_handler|s6",
+      "handlers-multipart_handler|s7",
+      "web-application-feature_details|s5"
+    ],
+    "resolved": [
+      "component/handlers/handlers-multipart_handler.json:s6",
+      "component/handlers/handlers-multipart_handler.json:s7",
+      "processing-pattern/web-application/web-application-feature_details.json:s5"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/handlers/handlers-multipart_handler.json:s6",
+        "status": "ok",
+        "title": "巨大なファイルのアップロードを防ぐ",
+        "chars": 640
+      },
+      {
+        "selector": "component/handlers/handlers-multipart_handler.json:s7",
+        "status": "ok",
+        "title": "ファイルの大量アップロードを防ぐ",
+        "chars": 524
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s5",
+        "status": "ok",
+        "title": "ファイルアップロード",
+        "chars": 114
+      }
+    ],
+    "select_cost_usd": 0.24745875,
+    "answer_cost_usd": 0.11499025000000002
+  },
+  "error": null
+}

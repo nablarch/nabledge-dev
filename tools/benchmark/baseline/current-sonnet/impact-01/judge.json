@@ -1,0 +1,40 @@
+{
+  "verdict": {
+    "level": 0,
+    "a_facts": [
+      {
+        "fact": "トランザクション境界は `TransactionManagementHandler` が決定する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "往路でトランザクション開始、復路でコミット、例外時にロールバックする",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "`DatabaseConnectionManagementHandler` より後ろに配置する必要がある",
+        "status": "MISSING"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "`LoopHandler` がコミット間隔（commitInterval）件数ごとにトランザクションをコミットする"
+      },
+      {
+        "claim": "Jakarta EEバッチでは `ItemWriteTransactionManagementListener` が `ItemWriter#writeItems` 実行後にコミットする"
+      },
+      {
+        "claim": "`StepTransactionManagementListener` がステップ開始前にトランザクション開始・終了後にコミットまたはロールバックする"
+      },
+      {
+        "claim": "Chunkサイズはジョブ定義XMLの `item-count` で指定する"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-factの3つのうち2つがMISSING。生成された回答は `TransactionManagementHandler` を一切言及せず、スタンドアロンバッチのトランザクション制御主体として `LoopHandler` を挙げている。`LoopHandler` の記述はKBエビデンス（retrieved sections）に支持されており、C-claimではないが、質問に対する正答である `TransactionManagementHandler` の役割・往路/復路の動作・配置制約がすべて欠落している。MISSING 2/3 は多数派であるため Level 0。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.20621224999999999,
+  "duration_s": 37.260769844055176,
+  "error": null
+}

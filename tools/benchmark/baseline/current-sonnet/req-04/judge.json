@@ -1,0 +1,44 @@
+{
+  "verdict": {
+    "level": 1,
+    "a_facts": [
+      {
+        "fact": "Nablarch はトークンベースの2重サブミット防止機能をビルトインで提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "JSP の場合は `form` タグの `useToken` 属性でトークン生成と hidden 埋め込みが自動で行われる",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "JSP 以外のテンプレートエンジンでは `@UseToken` インターセプタでアクションに明示的に付与する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "後続のアクションに `@OnDoubleSubmission` インターセプタを付けてトークンをチェックする",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "クライアント側では `allowDoubleSubmission=\"false\"` 属性で初回クリック後にボタンを無効化する JavaScript が自動付加される"
+      },
+      {
+        "claim": "`BasicDoubleSubmissionHandler` をコンポーネント定義に追加することでアプリ全体のデフォルト遷移先・メッセージID・ステータスコードを設定できる"
+      },
+      {
+        "claim": "2回目以降のクリック時に独自処理を実行したい場合は JavaScript で `nablarch_handleDoubleSubmission(element)` 関数を実装する"
+      },
+      {
+        "claim": "サーバ側トークンはデフォルトで HTTP セッションに保存されるため、スケールアウト時はスティッキーセッションやDB保管実装の利用を検討する必要がある"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-fact「JSP の場合は form タグの useToken 属性でトークン生成と hidden 埋め込みが自動で行われる」は PARTIAL：生成回答は `useToken=\"true\"` の記述と「トークンが発行・検証される」という説明はあるが、hidden への自動埋め込みという核心的な動作メカニズムが明示されていない。A-fact「JSP 以外のテンプレートエンジンでは `@UseToken` インターセプタを明示的に付与する」は MISSING：生成回答は `@UseToken` に一切言及しておらず、この使い分けが完全に欠落している（なお `handlers-use_token.json` は参照ソースに含まれるが Retrieved sections には含まれていない）。PARTIAL + MISSING A-fact が存在するため、C-claim がなくともレベルは 1。"
+  },
+  "ref_sources_loaded": 5,
+  "ref_sources_total": 5,
+  "cost_usd": 0.23086215,
+  "duration_s": 43.1333794593811,
+  "error": null
+}

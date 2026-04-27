@@ -1,0 +1,21 @@
+{
+  "variant": "current",
+  "answer": "**結論**: 画面遷移間のフォーム入力を HIDDEN に持たせるには、Nablarch の **セッションストア（HIDDENストア）** を使うのが標準的なやり方です。ただし AP サーバ複数台構成では **暗号化キーをサーバ間で共通化しないとリクエストが別サーバに届いた際に復号失敗する** というハマりどころがあります。\n\n---\n\n**根拠**:\n\n1. **HIDDENストアの仕組み**  \n   `component/libraries/libraries-session_store.json:s1` によると、セッションストアには DBストア・HIDDENストア・HTTPセッションストアの 3 種類があります。HIDDENストアは「クライアントサイド（`hidden` タグ）を使って画面間でセッション変数を引き回す」方式で、入力→確認→完了画面間で入力情報を保持しかつ **複数タブでの画面操作を許容したい** 場合に使います。\n\n2. **JSP への組み込み方法**  \n   `component/libraries/libraries-session_store.json:s5` によると、入力・確認画面の JSP に `<n:hiddenStore name=\"nablarch_hiddenStore\" />` を `<n:form>` 内に置くだけで対応できます。Entityをセッションストアに格納することが推奨されており、Formを格納すると密結合・セキュリティリスクが高まると記載されています。\n\n3. **複数台構成でのハマりどころ（重要）**  \n   `component/libraries/libraries-session_store.json:s8` に明記されています：  \n   > 「アプリケーションサーバが冗長化されている場合、サーバごとに異なる（自動生成された）AESキーが生成されるため、別サーバで復号に失敗するケースがある。この場合、**明示的に暗号化/復号のキーを設定**する必要がある。」  \n   \n   対処法は `HiddenStore` の `encryptor` プロパティに `AesEncryptor` を設定し、`key` と `iv` を全サーバ共通の固定値（base64エンコード）にすることです：\n   ```xml\n   <component class=\"nablarch.common.web.session.store.HiddenStore\">\n     <property name=\"encryptor\">\n       <component class=\"nablarch.common.encryption.AesEncryptor\">\n         <property name=\"base64Key\">\n           <component class=\"nablarch.common.encryption.Base64Key\">\n             <property name=\"key\" value=\"（全サーバ共通のbase64エンコードAESキー）\" />\n             <property name=\"iv\" value=\"（全サーバ共通のbase64エンコードIV）\" />\n           </component>\n         </property>\n       </component>\n     </property>\n   </component>\n   ```\n\n4. **改竄検知の動作**  \n   `component/handlers/handlers-SessionStoreHandler.json:s7` によると、HIDDENストアの改竄を検知した場合はステータスコード 400 の `HttpErrorResponse` が送出されます。これはユーザーが hidden の内容を書き換えた場合だけでなく、キーが不一致の場合も同様に発生するため、複数台構成で設定漏れがあると本番で突然 400 エラーが多発します。\n\n5. **ウィンドウスコープ（旧来のhidden暗号化機能）は非推奨**  \n   `component/libraries/libraries-tag.json:s3` に「画面間での入力データ保持には `:ref:session_store` を使うこと。ウィンドウスコープは非推奨」と明記されています。また `component/libraries/libraries-tag.json:s4` でも hidden 暗号化機能自体が非推奨とされており、「特に理由がない限り `useHiddenEncryption` には `false` を設定すること」と記載されています。\n\n6. **セッション有効期間の保存先にも注意**  \n   `component/handlers/handlers-SessionStoreHandler.json:s9` によると、セッションの有効期間はデフォルトで HTTPセッションに保存されます。複数台構成でスティッキーセッションなしの場合は `DbManagedExpiration` を設定してデータベースに保存先を変更することが推奨されます（`component/handlers/handlers-SessionStoreHandler.json:s10`）。\n\n---\n\n**注意点**:\n- HIDDENストアを使う場合は `SessionStoreHandler` を `multipart_handler` より後ろ、`forwarding_handler` より前に配置する必要があります（`component/handlers/handlers-SessionStoreHandler.json:s4`）。\n- セッション変数には Form ではなく Entity を格納すること（`component/libraries/libraries-session_store.json:s5`）。\n- 鍵は `KeyGenerator` と `SecureRandom` で生成し、base64 エンコードした値を設定します（`component/libraries/libraries-session_store.json:s8`）。\n\n参照: component/libraries/libraries-session_store.json:s1, component/libraries/libraries-session_store.json:s5, component/libraries/libraries-session_store.json:s8, component/handlers/handlers-SessionStoreHandler.json:s4, component/handlers/handlers-SessionStoreHandler.json:s7, component/handlers/handlers-SessionStoreHandler.json:s9, component/handlers/handlers-SessionStoreHandler.json:s10, component/libraries/libraries-tag.json:s3, component/libraries/libraries-tag.json:s4",
+  "cited": [
+    "component/libraries/libraries-session_store.json:s1",
+    "component/libraries/libraries-session_store.json:s5",
+    "component/libraries/libraries-session_store.json:s8",
+    "component/handlers/handlers-SessionStoreHandler.json:s4",
+    "component/handlers/handlers-SessionStoreHandler.json:s7",
+    "component/handlers/handlers-SessionStoreHandler.json:s9",
+    "component/handlers/handlers-SessionStoreHandler.json:s10",
+    "component/libraries/libraries-tag.json:s3",
+    "component/libraries/libraries-tag.json:s4"
+  ],
+  "cost_usd": 0.39285424999999996,
+  "duration_s": 87.09388136863708,
+  "steps": {
+    "turns": 13
+  },
+  "error": null
+}

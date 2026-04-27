@@ -1,0 +1,52 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Bean Validation を推奨する（REST APIでの入力値検証）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リソースクラスのメソッド引数に @Valid アノテーションを設定して有効化する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "エラー応答は JaxRsResponseHandler の errorResponseBuilder プロパティに設定した ErrorResponseBuilder が生成する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "デフォルト実装では HttpErrorResponse がスローされた場合に HttpErrorResponse#getResponse() をそのまま返す",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "バリデーションエラー時にレスポンスボディへメッセージを含めるには ErrorResponseBuilder の継承クラスを作成して対応する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ApplicationException を検知して HTTP 400 + JSON ボディを返す実装例（ErrorResponseBuilder 継承）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "カスタム ErrorResponseBuilder を JaxRsResponseHandler の errorResponseBuilder プロパティに XML 設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "特定の例外（例: NoDataException）に対して個別のステータスコードやボディを返すことも ErrorResponseBuilder の継承で対応できる",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "@Valid をハンドラメソッド自体に付与するパターン（handlers-jaxrs_bean_validation_handler.json:s4 引用）",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに handlers-jaxrs_bean_validation_handler.json は含まれておらず、エビデンス境界外のソースからの主張"
+      }
+    ],
+    "reasoning": "主要な事実（Bean Validation推奨、@Validアノテーション、ErrorResponseBuilder継承によるエラーボディ生成、JaxRsResponseHandlerへの設定）はほぼ網羅されている。ただし参照回答が明示する「特定の例外（NoDataException → 404 など）に対して個別のステータスコード・ボディを返すパターン」（s8参照）が完全に欠落しており、少なくとも1つの必須事実がMISSINGとなる。加えて、参照ソースに含まれない handlers-jaxrs_bean_validation_handler.json:s4 を引用した追加パターンが含まれており、エビデンス境界外の情報（HALLUCINATION）に該当する。以上からLevel 1と判定する。"
+  },
+  "ref_sources_loaded": 6,
+  "ref_sources_total": 6,
+  "cost_usd": 0.18322595,
+  "duration_s": 61.10856294631958,
+  "error": null
+}

@@ -1,0 +1,52 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Nablarch は公開 API と非公開 API を `@Published` アノテーションで区別しており、`@Published` が付いていないものは非公開 API",
+        "status": "COVERED"
+      },
+      {
+        "fact": "自分のコードが非公開 API を使っていないか静的解析ツールでチェックできる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "チェックツールは nablarch-intellij-plugin と SpotBugs ベースの2種類が提供されている",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "後方互換ポリシーの対象は `Published` アノテーション付きの公開APIのみであり、非公開APIを使用するとバージョンアップ時に思わぬ不具合が発生する可能性がある"
+      },
+      {
+        "claim": "アダプタは後方互換ポリシーの対象外であり、アダプタの `Published` なしAPIも非公開APIと同様に使用しないこと"
+      },
+      {
+        "claim": "Nablarch 6 からは非公開APIも含む形でAPIドキュメントが提供されている（Nablarch 5 まではアーキテクト・アプリプログラマ向け公開APIのみ）"
+      },
+      {
+        "claim": "`BasicDaoContext#findAll` はクラスにもメソッドにも `@Published` がないため非公開APIの例として挙げられる"
+      },
+      {
+        "claim": "ログのレベル・文言変更や JDK バージョンアップ起因の対応など一部ケースでは公開APIでも後方互換が維持されない場合があり、リリースノートに移行方法が記載される"
+      },
+      {
+        "claim": "`@Deprecated` API は不具合・セキュリティ上の問題があるクラス・メソッドであり、新たな不具合が見つかっても対応は行われないため代替APIへ移行が必要"
+      },
+      {
+        "claim": "nablarch-intellij-plugin はブラックリストに登録した Java API 使用時にも警告する機能を持つ"
+      },
+      {
+        "claim": "使用不許可APIチェックツール（SpotBugsプラグイン）のブランクプロジェクトには Maven で実行するための設定があらかじめ含まれており、すぐにチェックを実施できる"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "3つのA-factすべてが COVERED。①`@Published` による公開/非公開APIの区別、②静的解析ツールでのチェック可能性、③nablarch-intellij-plugin と SpotBugs ベースの2種類のツール、いずれも生成回答に明確に記述されている。さらに、KB証拠（versionup_policy.json:s4/s5/s6、policy.json:s10/s12）に裏付けられたB-claimが多数存在する（後方互換ポリシーの詳細、アダプタの注意、@Deprecated API、Nablarch 6のJavadoc変更経緯など）。C-claimは存在しない。よってレベル3。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.18754740000000003,
+  "duration_s": 29.3098783493042,
+  "error": null
+}

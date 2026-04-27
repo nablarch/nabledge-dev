@@ -1,0 +1,74 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch にビルトインのログイン認証機能はない。ただし、公式ビジネスサンプルとしてユーザID・パスワード認証の参照実装が提供されており、それを修正して使用することが推奨されている。ログイン状態の保持にはセッションストア（DBストア）を使う。\n\n**根拠**:\n\n① **フレームワーク機能としては未提供**  \n「認証はプロジェクト要件により仕様が異なるため、フレームワークとしては提供していない。プロジェクト要件に合わせてPJで実装すること。」  \n`processing-pattern/web-application/web-application-feature_details.json:s13`\n\n② **ビジネスサンプルで参照実装あり**  \nDBに保存されたアカウント情報（ユーザID・パスワード）を使った認証サンプル実装が提供されている。パスワード暗号化にはデフォルトで PBKDF2 を使用。ただし「ログイン処理を実行する業務処理は提供しない」ため、ログイン処理そのものはプロジェクトで実装する必要がある。  \n`guide/biz-samples/biz-samples-01.json:s2`\n\n③ **SystemAccountAuthenticator の設定**  \n`SystemAccountAuthenticator` を XML コンポーネント設定で登録し、`passwordEncryptor`（PBKDF2）と `dbManager` を注入する。認証失敗によるアカウントロック回数（`failedCountToLock`）も設定可能。個別アプリケーションとは別トランザクションを使うことが重要。  \n`guide/biz-samples/biz-samples-01.json:s6`\n\n④ **AuthenticationUtil による呼び出し方**  \n```java\ntry {\n    AuthenticationUtil.authenticate(userId, password);\n} catch (AuthenticationFailedException e) { /* 認証失敗 */ }\n  catch (UserIdLockedException e)          { /* ロック   */ }\n  catch (PasswordExpiredException e)       { /* 有効期限 */ }\n```\n`guide/biz-samples/biz-samples-01.json:s7`\n\n⑤ **ログイン状態の保持にはDBストアを使用**  \n```java\n// セッションID変更 → CSRFトークン再生成 → ユーザ情報をDBストアに保存\nSessionUtil.changeId(ctx);\nCsrfTokenUtil.regenerateCsrfToken(ctx);\nSessionUtil.put(ctx, \"user\", user, \"db\");\n```\nログアウト時は `SessionUtil.invalidate(ctx)` でセッション全体を破棄する。  \n`component/libraries/libraries-session_store.json:s6`\n\n**注意点**:\n- ビジネスサンプルは「そのまま使う」ものではなく、プロジェクト要件に合わせて修正して使う前提。\n- PBKDF2 のストレッチング回数・ソルトはプロジェクトごとに設定が必要（`guide/biz-samples/biz-samples-0101_PBKDF2PasswordEncryptor.json:s2`）。\n- CSRFトークン検証ハンドラを使用している場合、ログイン時のセッションID変更後に `CsrfTokenUtil.regenerateCsrfToken` の呼び出しが必要。\n- `SystemAccountAuthenticator` のトランザクション名（例: `\"authenticator\"`）は個別アプリケーション側で使用しないこと。\n\n参照: processing-pattern/web-application/web-application-feature_details.json:s13, guide/biz-samples/biz-samples-01.json:s2, guide/biz-samples/biz-samples-01.json:s6, guide/biz-samples/biz-samples-01.json:s7, component/libraries/libraries-session_store.json:s6, guide/biz-samples/biz-samples-0101_PBKDF2PasswordEncryptor.json:s2",
+  "cited": [
+    "processing-pattern/web-application/web-application-feature_details.json:s13",
+    "guide/biz-samples/biz-samples-01.json:s2",
+    "guide/biz-samples/biz-samples-01.json:s6",
+    "guide/biz-samples/biz-samples-01.json:s7",
+    "component/libraries/libraries-session_store.json:s6",
+    "guide/biz-samples/biz-samples-0101_PBKDF2PasswordEncryptor.json:s2"
+  ],
+  "cost_usd": 0.38748365000000007,
+  "duration_s": 44.79004383087158,
+  "steps": {
+    "raw_selections": [
+      "biz-samples-01|s2",
+      "biz-samples-01|s6",
+      "biz-samples-01|s7",
+      "biz-samples-0101_PBKDF2PasswordEncryptor|s2",
+      "libraries-session_store|s6",
+      "web-application-feature_details|s13"
+    ],
+    "resolved": [
+      "guide/biz-samples/biz-samples-01.json:s2",
+      "guide/biz-samples/biz-samples-01.json:s6",
+      "guide/biz-samples/biz-samples-01.json:s7",
+      "guide/biz-samples/biz-samples-0101_PBKDF2PasswordEncryptor.json:s2",
+      "component/libraries/libraries-session_store.json:s6",
+      "processing-pattern/web-application/web-application-feature_details.json:s13"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "guide/biz-samples/biz-samples-01.json:s2",
+        "status": "ok",
+        "title": "概要",
+        "chars": 470
+      },
+      {
+        "selector": "guide/biz-samples/biz-samples-01.json:s6",
+        "status": "ok",
+        "title": "SystemAccountAuthenticatorの使用方法",
+        "chars": 1199
+      },
+      {
+        "selector": "guide/biz-samples/biz-samples-01.json:s7",
+        "status": "ok",
+        "title": "AuthenticationUtilの使用方法",
+        "chars": 914
+      },
+      {
+        "selector": "guide/biz-samples/biz-samples-0101_PBKDF2PasswordEncryptor.json:s2",
+        "status": "ok",
+        "title": "概要",
+        "chars": 72
+      },
+      {
+        "selector": "component/libraries/libraries-session_store.json:s6",
+        "status": "ok",
+        "title": "認証情報を保持する",
+        "chars": 628
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s13",
+        "status": "ok",
+        "title": "認証",
+        "chars": 116
+      }
+    ],
+    "select_cost_usd": 0.25531820000000005,
+    "answer_cost_usd": 0.13216545
+  },
+  "error": null
+}

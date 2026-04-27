@@ -1,0 +1,107 @@
+[
+  {
+    "id": "review-01",
+    "review_perspective": "アーキテクチャ",
+    "context": "ファイルからDBへの都度起動バッチ",
+    "a_facts": [
+      "都度起動バッチを採用する（常駐バッチは新規開発では非推奨）",
+      "BatchAction を継承したアクションクラスを実装する",
+      "Form / Entity / Action の3層構成で組む",
+      "DB 接続ありの標準ハンドラキュー構成を使う",
+      "DataReader を実装してレコードを1件ずつ供給する"
+    ],
+    "expected_question": "ファイルの明細レコードを読み込んで DB テーブルに取り込む夜間バッチを作りたい。Nablarch でこういうバッチを実装するときの推奨構成を知りたい",
+    "expected_keywords": [
+      "バッチ",
+      "ファイル入出力",
+      "都度起動バッチ",
+      "データバインド",
+      "データベースアクセス"
+    ],
+    "expected_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json|s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json|s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json|s1"
+    ],
+    "notes": "architecture#s1 に推奨ハンドラキュー構成。s3 は処理の流れ。feature_details#s1 で都度起動/常駐の使い分け。質問からクラス名・ハンドラ名を除去",
+    "main": [
+      "バッチ",
+      "ファイル入出力"
+    ],
+    "sub": [
+      "都度起動バッチ",
+      "データバインド",
+      "データベースアクセス"
+    ]
+  },
+  {
+    "id": "review-08",
+    "review_perspective": "並行制御",
+    "context": "常駐バッチの並列化",
+    "a_facts": [
+      "後続ハンドラ・バッチアクションはスレッドセーフである必要がある",
+      "サブスレッドで DB アクセスする場合、サブスレッド用ハンドラ構成に `DatabaseConnectionManagementHandler` と `TransactionManagementHandler` を配置する",
+      "DB 接続はサブスレッド数分(親が DB アクセスするなら＋1)が追加で必要",
+      "サブスレッドで例外発生時は他スレッドをデータ処理完了後に安全に終了させる",
+      "`InterruptedException` を捕捉している場合は例外送出などで処理を異常終了させる"
+    ],
+    "expected_question": "常駐バッチの処理が遅いので並列実行で速くしたい。複数スレッドで同時に DB を更新することになるが、接続や排他の扱いで注意することは？",
+    "expected_keywords": [
+      "マルチスレッド",
+      "並列実行",
+      "常駐バッチ",
+      "排他制御",
+      "データベースアクセス"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-multi_thread_execution_handler.json|s7",
+      "component/handlers/handlers-multi_thread_execution_handler.json|s5",
+      "component/handlers/handlers-multi_thread_execution_handler.json|s8"
+    ],
+    "notes": "ハンドラ名 (MultiThreadExecutionHandler) を質問から排除。「並列実行」「複数スレッド」という業務語で代替",
+    "main": [
+      "マルチスレッド",
+      "並列実行"
+    ],
+    "sub": [
+      "常駐バッチ",
+      "排他制御",
+      "データベースアクセス"
+    ]
+  },
+  {
+    "id": "req-05",
+    "requirements_perspective": "国際化",
+    "context": "画面多言語対応",
+    "a_facts": [
+      "Nablarch は多言語対応をビルトインで提供している",
+      "メッセージは言語ごとのプロパティファイルで管理する",
+      "コード名称も言語別データを持たせロケール指定で取得する",
+      "`PropertiesStringResourceLoader.defaultLocale` を必ず明示設定する(未設定だと OS 設定依存で障害の原因になる)"
+    ],
+    "builtin": true,
+    "expected_question": "画面の文言を日本語と英語で切り替えたい。メッセージやラベルの多言語対応は Nablarch でできる？",
+    "expected_keywords": [
+      "多言語",
+      "メッセージ",
+      "国際化",
+      "ラベル",
+      "言語切り替え"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s12",
+      "component/libraries/libraries-message.json|s5",
+      "component/libraries/libraries-code.json|s3"
+    ],
+    "notes": "feature_details#s12 がパターン側 (静的リソース多言語化)。libraries-message#s5 がメッセージ多言語化。libraries-code#s3 がコード名称多言語化",
+    "main": [
+      "多言語",
+      "メッセージ"
+    ],
+    "sub": [
+      "国際化",
+      "ラベル",
+      "言語切り替え"
+    ]
+  }
+]

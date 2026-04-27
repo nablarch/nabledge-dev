@@ -1,0 +1,43 @@
+{
+  "verdict": {
+    "level": 1,
+    "a_facts": [
+      {
+        "fact": "認証情報はセッションストアの DB ストアに持つのが推奨",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "`SessionUtil` で保存・破棄する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "認可チェックは `PermissionCheckHandler` が設定した情報を業務ロジックから参照する",
+        "status": "MISSING"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "ThreadContextHandler に UserIdAttributeInSessionStore を設定すると、リクエスト往路でセッションストアからユーザーIDを読み取り ThreadContext にセットされる"
+      },
+      {
+        "claim": "ログイン時に SessionUtil.changeId(ctx) でセッションIDを変更する"
+      },
+      {
+        "claim": "CsrfTokenUtil.regenerateCsrfToken(ctx) で CSRF トークンを再生成する条件がある"
+      },
+      {
+        "claim": "SessionStoreUserRoleUtil.save(userRoles, executionContext) でロールリストをセッションストアへ保存する"
+      },
+      {
+        "claim": "@CheckRole アノテーションや CheckRoleUtil.checkRole() で認可チェックを行える"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-fact①「DB ストアが推奨」について、生成回答は「DBストアまたはHTTPセッションストア」と並列提示し、DB ストアを「第一候補」とは述べているが KB の s1 に基づき HTTP セッションストアも同等の選択肢として示しているため PARTIAL。A-fact③「PermissionCheckHandler が設定した情報を業務ロジックから参照する」については、生成回答は role_check（@CheckRole / CheckRoleUtil / SessionStoreUserRoleResolver）を権限チェックの仕組みとして説明しており、PermissionCheckHandler への言及が一切なく MISSING。C-claim は検出されず、すべての実質的な主張は取得セクションで裏付けられている。A-fact に PARTIAL と MISSING が存在するため Level 1。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.21550294999999997,
+  "duration_s": 46.16094946861267,
+  "error": null
+}

@@ -1,0 +1,17 @@
+{
+  "variant": "current",
+  "answer": "**結論**: Nablarch の CSRF 対策には `CsrfTokenVerificationHandler` を使う。セッションストアとの連携が必須で、JSP カスタムタグを使う場合はハンドラの配置順に注意が必要。ログイン時のトークン再生成も必須。\n\n**根拠**:\n\n**① 追加する設定（最小構成）**\n\n`component/handlers/handlers-csrf_token_verification_handler.json:s1` より、クラス名は `nablarch.fw.web.handler.CsrfTokenVerificationHandler`。\n\n`component/handlers/handlers-csrf_token_verification_handler.json:s4` より、コンポーネント定義に追加し、ハンドラキューに組み込む：\n\n```xml\n<!-- コンポーネント定義 -->\n<component name=\"csrfTokenVerificationHandler\"\n           class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\" />\n\n<!-- ハンドラキュー（順序が重要） -->\n<component-ref name=\"sessionStoreHandler\" />\n<component-ref name=\"nablarchTagHandler\"/>\n<component-ref name=\"csrfTokenVerificationHandler\"/>\n```\n\nデフォルト動作：UUID v4 でトークン生成、セッションストア格納名 `nablarch_csrf-token`、`GET`/`HEAD`/`TRACE`/`OPTIONS` は検証対象外（`POST`/`PUT` 等は検証）、検証失敗時は BadRequest (400)。\n\n**② セッションとの相性（必須）**\n\n`component/handlers/handlers-csrf_token_verification_handler.json:s3` より、CSRFトークンはセッションストアに格納されるため **セッションストアの使用が必須**。ハンドラキュー内で **`session_store_handler` より後ろ** に配置すること。\n\n**③ JSP カスタムタグとの相性（必須）**\n\n同じく `s3` より、JSP カスタムタグ（`<n:form>` 等）はhidden暗号化（`tag-hidden_encryption`）を使ってCSRFトークンを出力する。そのため **`nablarch_tag_handler` より後ろ** に配置すること。つまりキューの順序は：`sessionStoreHandler` → `nablarchTagHandler` → `csrfTokenVerificationHandler`。\n\n**④ ログイン時のトークン再生成（重要）**\n\n`component/handlers/handlers-csrf_token_verification_handler.json:s5` および `component/libraries/libraries-session_store.json:s6` より、ログイン時にCSRFトークンを再生成しないとセッション固定攻撃に悪用される恐れがある。\n\n- セッションIDのみ変更する実装の場合 → **`CsrfTokenUtil.regenerateCsrfToken(ctx)` の呼び出しが必須**\n- セッションストア全体を破棄・再生成する実装の場合 → 不要（トークンも一緒に破棄される）\n\n```java\n// ログイン処理\nSessionUtil.changeId(ctx);                          // セッションID変更\nCsrfTokenUtil.regenerateCsrfToken(ctx);             // CSRFトークン再生成\nSessionUtil.put(ctx, \"user\", user, \"db\");           // ユーザ情報格納\n```\n\n**注意点**:\n\n- **テスト時は無効化が必要**: リクエスト単体テストは正しい画面遷移を経由しないため、CSRFトークン検証が失敗する。テスト環境では `csrfTokenVerificationHandler` を `NopHandler` に差し替えること（`component/handlers/handlers-csrf_token_verification_handler.json:s4`）：\n  ```xml\n  <component name=\"csrfTokenVerificationHandler\" class=\"nablarch.test.NopHandler\" />\n  ```\n- **ファイルアップロード時の考慮**: multipart_handler を使うファイルアップロードで、ファイル保存前にCSRF検証したい場合は `multipart_handler` の前に `session_store_handler` と `csrfTokenVerificationHandler` を配置すること（`s3`）。\n- **設定名のカスタマイズ**: `WebConfig` で `csrfTokenHeaderName`（デフォルト: `X-CSRF-TOKEN`）、`csrfTokenParameterName`（デフォルト: `csrf-token`）等を変更可能（`s4`）。\n\n参照: component/handlers/handlers-csrf_token_verification_handler.json:s1, component/handlers/handlers-csrf_token_verification_handler.json:s3, component/handlers/handlers-csrf_token_verification_handler.json:s4, component/handlers/handlers-csrf_token_verification_handler.json:s5, component/libraries/libraries-session_store.json:s6",
+  "cited": [
+    "component/handlers/handlers-csrf_token_verification_handler.json:s1",
+    "component/handlers/handlers-csrf_token_verification_handler.json:s3",
+    "component/handlers/handlers-csrf_token_verification_handler.json:s4",
+    "component/handlers/handlers-csrf_token_verification_handler.json:s5",
+    "component/libraries/libraries-session_store.json:s6"
+  ],
+  "cost_usd": 0.2580963,
+  "duration_s": 55.73882794380188,
+  "steps": {
+    "turns": 7
+  },
+  "error": null
+}

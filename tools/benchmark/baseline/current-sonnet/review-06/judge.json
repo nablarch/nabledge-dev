@@ -1,0 +1,55 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Nablarch は `CsrfTokenVerificationHandler` を標準提供する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ハンドラキューに追加し、セッションストアハンドラや Nablarch カスタムタグハンドラより後ろに配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "POST/PUT など更新系を検証し、失敗時はデフォルトで 400 を返す",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "トークン生成に UUID v4（UUIDv4CsrfTokenGenerator）を使用する"
+      },
+      {
+        "claim": "セッションストア格納名はデフォルト `nablarch_csrf-token`"
+      },
+      {
+        "claim": "トークンの受け取りは HTTPヘッダ `X-CSRF-TOKEN` または HTTPパラメータ `csrf-token`"
+      },
+      {
+        "claim": "multipart_handler より前に配置することでファイル保存前にCSRFトークン検証が可能"
+      },
+      {
+        "claim": "ログイン時にセッションIDのみ再生成する実装では `CsrfTokenUtil.regenerateCsrfToken` を呼び出してトークンも再生成すること"
+      },
+      {
+        "claim": "WebConfig で csrfTokenHeaderName / csrfTokenParameterName / csrfTokenSessionStoredVarName をカスタマイズ可能"
+      },
+      {
+        "claim": "リクエスト単体テスト時は `NopHandler` に差し替えてCSRF検証を無効化すること"
+      },
+      {
+        "claim": "RESTfulウェブサービスでは `CsrfTokenUtil` でトークンを取得しクライアントに渡す仕組みをプロジェクトで実装する必要がある"
+      },
+      {
+        "claim": "データベースを使った二重サブミット防止機能はCSRF対策に対応していないため、その場合は `CsrfTokenVerificationHandler` を必ず併用すること"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-factは3つ全て COVERED。①標準提供の `CsrfTokenVerificationHandler` は冒頭で明示。②ハンドラ配置順序（session_store_handler・nablarch_tag_handler より後ろ）は③に明確に記載。③POST/PUT等の検証対象と失敗時400レスポンスも②に記載。B-claimsはKB証拠（s3〜s5, security-check s1）で裏付けられた付加情報。C-claimはなし。→ Level 3。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.2061427,
+  "duration_s": 27.424083948135376,
+  "error": null
+}

@@ -1,0 +1,64 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "NablarchのセッションストアにHiddenStoreを登録すれば、HIDDENフィールドによるセッション保持が楽に書ける",
+        "status": "COVERED"
+      },
+      {
+        "fact": "HiddenStoreのデフォルト暗号化キーはサーバごとに自動生成されて異なる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "あるサーバで暗号化したHIDDEN値を別サーバが復号できない問題が発生する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "HiddenStoreのencryptorプロパティに明示的な暗号化キー・IVを設定して揃える必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "暗号化アルゴリズムはAES",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SessionManagerを'sessionManager'というコンポーネント名で登録する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "availableStoresリストにHiddenStore・DbStore・HttpSessionStoreなどを並べる",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "セッションストアに保存するオブジェクトはシリアライズ可能なJava Beansオブジェクトである必要がある",
+        "status": "MISSING"
+      },
+      {
+        "fact": "プロパティはJava基本型またはシリアライズ可能なJava Beans、配列・コレクションも可",
+        "status": "MISSING"
+      },
+      {
+        "fact": "鍵とIVはbase64エンコードした値を設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "鍵生成はKeyGenerator、IV生成はSecureRandom、base64はgetEncoder()のEncoderを使う",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "共通キー・IVは機密情報のため、ソースコードやリポジトリへの平文コミットは避け、環境変数や暗号化設定管理の仕組みで注入することを推奨",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s3/s4/s8）のいずれにも記載なし。AIが独自に追加したセキュリティアドバイスであり、Nablarchのリファレンスには基づかない"
+      }
+    ],
+    "reasoning": "生成回答はメインの問い（HiddenStoreの使い方・複数APサーバでの暗号化キー問題と対策）を正確かつ詳細に回答しており、AES暗号化・encryptorプロパティ設定・鍵生成方法など主要ファクトはすべてカバーされている。しかし、参照回答の「注意点」として明示されている「セッションストアに保存するオブジェクトはシリアライズ可能なJava Beansである必要がある（プロパティの型制約含む）」（s3）が完全にMISSINGである。加えて、暗号化キーを環境変数で注入すべきという推奨はどの参照ソースにも存在しないHALLUCINATIONである。ルール上、必須ファクトがMISSINGの場合はLevel 1に留まる。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.2040364,
+  "duration_s": 75.98925733566284,
+  "error": null
+}

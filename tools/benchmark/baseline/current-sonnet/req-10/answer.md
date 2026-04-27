@@ -1,0 +1,16 @@
+**結論**: Nablarch には **HTTPアクセスログ**（証跡ログ兼用）という形で監査ログに相当するビルトイン機能がある。「誰が・いつ・何をしたか」をログに残す仕組みは、ハンドラの設定のみで有効化できる。専用の「監査ログ機能」という名称ではないが、公式ドキュメントが「証跡ログの要件を満たせる場合はHTTPアクセスログと証跡ログを兼用できる」と明示している。
+
+**根拠**:
+
+1. **Web（サーブレット）向け**: `http_access_log_handler` をハンドラ構成に設定すると、リクエスト開始・終了時に `HTTP_ACCESS` ロガーへ INFO レベルで出力される。フォーマットに `$userId$`（誰が）、`$date$`（いつ）、`$url$`・`$method$`・`$requestId$`（何を）のプレースホルダが用意されており、設定だけで項目を制御できる。リクエストパラメータも `$parameters$` で出力可能。（`component/libraries/libraries-http_access_log.json:s1`）
+
+2. **RESTful Web サービス向け**: `jaxrs_access_log_handler` が同等の機能を提供する。`JaxRsAccessLogFormatter` で `beginFormat`・`endFormat` をカスタマイズでき、やはり `$requestId$`・`$userId$`・`$url$` 等が利用できる。「リクエストパラメータを含めたリクエスト情報を出力することで、個別アプリケーションの証跡ログの要件を満たせる場合は HTTPアクセスログと証跡ログを兼用することも想定している」と記載されている。（`component/libraries/libraries-jaxrs_access_log.json:s1`）
+
+3. **ユーザIDの取得元**: `ThreadContextHandler` に `UserIdAttribute`（または `UserIdAttributeInSessionStore`）を設定することで、セッションストアからユーザIDを取得してスレッドコンテキストに格納する。ログの `$userId$` プレースホルダはこの値を参照する。ログイン時に `SessionUtil.put(context, "user.id", userId)` でセッションに格納すれば自動的にログへ反映される。（`component/handlers/handlers-thread_context_handler.json:s5`）
+
+**注意点**:
+- `$userId$` を正しく出力するには、ハンドラ構成に `thread_context_handler` を含め、ログイン時にアプリケーション側でセッションへユーザIDをセットする実装が必要。フレームワーク側は自動設定しない。
+- パスワード等の機密情報をリクエストパラメータに含む場合は `httpAccessLogFormatter.maskingPatterns` でマスキング設定を行うこと。
+- DB への書き込みではなくファイルへのログ出力が基本形。DB 監査ログが必要な場合は独自実装が必要。
+
+参照: component/libraries/libraries-http_access_log.json:s1, component/libraries/libraries-jaxrs_access_log.json:s1, component/handlers/handlers-thread_context_handler.json:s5

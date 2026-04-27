@@ -1,0 +1,76 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "MultiThreadExecutionHandlerのconcurrentNumberプロパティで並列数を指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッド側のハンドラ構成にDatabaseConnectionManagementHandlerを組み込む",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッド側のハンドラ構成にTransactionManagementHandlerを組み込む",
+        "status": "COVERED"
+      },
+      {
+        "fact": "各スレッド独自のDB接続・トランザクションを持たせる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親スレッドでDBアクセスが必要な場合は本ハンドラより前にDatabaseConnectionManagementHandlerを配置する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "親・サブ両方でDBアクセスする場合、最低2コネクション必要。サブスレッド10なら合計11コネクション",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッドで予期せぬ例外が発生するとThreadPoolExecutor#shutdownNow()が呼ばれる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "例外発生スレッドは処理が中断されロールバックされる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親スレッドは各サブスレッドで使用されるデータリーダをクローズする",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親スレッドは全サブスレッドに対し停止要求を行う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "各サブスレッドはデータリーダがクローズされているため実行中の処理が終わったタイミングで正常終了する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "InterruptedExceptionを捕捉している場合は例外を送出するなどで処理を異常終了させる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "後続のハンドラやバッチアクションはスレッドセーフな実装が必要",
+        "status": "COVERED"
+      },
+      {
+        "fact": "TransactionManagementHandlerはDatabaseConnectionManagementHandlerより後ろに配置する必要がある",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "DatabaseConnectionManagementHandlerのconnectionNameとLoopHandlerのtransactionNameは値を合わせる必要がある",
+        "type": "HALLUCINATION",
+        "why": "handlers-loop_handler.json:s5はリファレンスソースに含まれておらず、この質問（マルチスレッドDB接続・例外処理）の回答根拠としてサポートされていない"
+      }
+    ],
+    "reasoning": "主要なファクトの大部分はカバーされているが、2つのMISSINGファクトがある。①「親スレッドでDBアクセスが必要な場合は本ハンドラより前にDatabaseConnectionManagementHandlerを配置する」という親スレッド側の設定が言及されていない。②「TransactionManagementHandlerはDatabaseConnectionManagementHandlerより後ろに配置する必要がある」という順序制約が省略されている。さらに、リファレンスソースに含まれないhandlers-loop_handler.json:s5を根拠とするHALLUCINATION（connectionName/transactionNameの一致）が1件ある。MISSINGが2件あるため、「All required facts COVERED or PARTIAL」を要件とするレベル2には達しない。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.18249385,
+  "duration_s": 49.04401350021362,
+  "error": null
+}

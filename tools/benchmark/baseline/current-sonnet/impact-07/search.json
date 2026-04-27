@@ -1,0 +1,19 @@
+{
+  "variant": "current",
+  "answer": "**結論**: Nablarchでできます。`permission_check_handler`（`PermissionCheckHandler`）を使えば、内部フォワード先のアクションに対しても認可チェックをかけられます。また、`role_check`（`@CheckRole` アノテーション）を使う場合はフォワード先のアクションメソッドにも同様にアノテーションを付けることで対応できます。\n\n---\n\n**根拠**:\n\n**① `PermissionCheckHandler` による認可チェック（ハンドラ方式）**\n\n`PermissionCheckHandler` はリクエストIDをキーに認可チェックを行うハンドラです。内部フォワード先のリクエストIDでチェックするには、`setUsesInternalRequestId` を `true` に設定します。\n(`component/handlers/handlers-permission_check_handler.json:s4`)\n\n> チェック対象のリクエストIDをフォーワード先のリクエストIDに変更する場合は、`PermissionCheckHandler.setUsesInternalRequestId` で `true` を指定する（デフォルト: `false`）。\n\nただし、これを有効にするためにはハンドラの配置順が重要です。\n(`component/handlers/handlers-permission_check_handler.json:s3`)\n\n> `forwarding_handler` より**後ろ**に配置すること。内部フォーワード先の内部リクエストIDをもとに認可チェックしたい場合。この場合、`thread_context_handler` の `attributes` に `InternalRequestIdAttribute` を追加すること。\n\n`InternalRequestIdAttribute` は内部フォワード時にフォワード先リクエストIDをスレッドコンテキストに保持するための設定です。\n(`component/handlers/handlers-forwarding_handler.json:s6`, `component/handlers/handlers-thread_context_handler.json:s5`)\n\n> 内部フォーワード時、フォーワード先のリクエストIDを内部リクエストIDとしてスレッドコンテキストに保持する。\n\n**② `@CheckRole` によるアノテーション方式**\n\nフォワード先のアクションメソッドにも `@CheckRole` アノテーションを付与することで、メソッド実行時に認可チェックが走ります。`@CheckRole` はNablarchのインターセプタ機構で動作するため、内部フォワード後に実行されるアクションでも有効です。\n(`component/libraries/libraries-role_check.json:s1`, `component/libraries/libraries-role_check.json:s4`)\n\n---\n\n**注意点**:\n\n- `PermissionCheckHandler` の内部リクエストID対応を使う場合、ハンドラキューの順序は次のようにする必要があります:\n  1. `thread_context_handler`（`InternalRequestIdAttribute` を `attributes` に追加する）\n  2. `forwarding_handler`\n  3. `permission_check_handler`（`usesInternalRequestId = true`）\n  （`component/handlers/handlers-permission_check_handler.json:s3`）\n\n- `@CheckRole` 方式は認可チェックのロジックがアノテーションにハードコーディングされるため、ロールと機能の組み合わせが頻繁に変わるシステムでは `permission_check`（`PermissionCheckHandler` + データ管理）の方が適しています。\n  （`component/libraries/libraries-role_check.json:s1`）\n\n- 認可チェックから除外したいリクエスト（ログイン前など）は `PermissionCheckHandler.ignoreRequestIds` で指定できます。\n  （`component/handlers/handlers-permission_check_handler.json:s6`）\n\n参照: component/handlers/handlers-permission_check_handler.json:s3, component/handlers/handlers-permission_check_handler.json:s4, component/handlers/handlers-permission_check_handler.json:s6, component/handlers/handlers-forwarding_handler.json:s6, component/handlers/handlers-thread_context_handler.json:s5, component/libraries/libraries-role_check.json:s1, component/libraries/libraries-role_check.json:s4",
+  "cited": [
+    "component/handlers/handlers-permission_check_handler.json:s3",
+    "component/handlers/handlers-permission_check_handler.json:s4",
+    "component/handlers/handlers-permission_check_handler.json:s6",
+    "component/handlers/handlers-forwarding_handler.json:s6",
+    "component/handlers/handlers-thread_context_handler.json:s5",
+    "component/libraries/libraries-role_check.json:s1",
+    "component/libraries/libraries-role_check.json:s4"
+  ],
+  "cost_usd": 0.3488664999999999,
+  "duration_s": 71.17058086395264,
+  "steps": {
+    "turns": 14
+  },
+  "error": null
+}

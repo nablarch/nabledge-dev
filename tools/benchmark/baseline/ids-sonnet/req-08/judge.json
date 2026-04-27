@@ -1,0 +1,62 @@
+{
+  "verdict": {
+    "level": 3,
+    "required_facts": [
+      {
+        "fact": "NablarchはMultipartHandlerにアップロードサイズ上限とファイル数上限を設ける仕組みを提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サイズ上限はcontentLengthLimitプロパティで設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "上限超過時は413 (Payload Too Large) を返す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "設定省略時は無制限となる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "DoS攻撃防止のため常に設定することが推奨されている",
+        "status": "COVERED"
+      },
+      {
+        "fact": "contentLengthLimitはファイル単位ではなく1リクエスト全体の上限",
+        "status": "COVERED"
+      },
+      {
+        "fact": "複数ファイルの場合はファイルサイズ合計値（Content-Length）でチェックされる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ファイル単位サイズチェックが必要な場合はアクション側で実装する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ファイル数上限はmaxFileCountプロパティで設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ファイル数上限超過時は400 (Bad Request) を返す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "maxFileCountのデフォルトは-1（無制限）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "0以上の値を設定するとその値が上限、負数は無制限",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [],
+    "reasoning": "生成された回答はリファレンス回答のすべての必須事実を完全にカバーしている。contentLengthLimitによるサイズ上限設定、413レスポンス、省略時無制限、DoS攻撃防止のための必須設定、リクエスト全体の上限であること、アクション側での個別サイズチェック、maxFileCountによるファイル数上限、400レスポンス、デフォルト-1（無制限）など、すべての事実が正確に記述されている。ハルシネーションやオーバーリーチも見当たらない。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.1341658,
+  "duration_s": 18.947842121124268,
+  "error": null
+}

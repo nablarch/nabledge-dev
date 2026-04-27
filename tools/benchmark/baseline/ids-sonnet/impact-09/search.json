@@ -1,0 +1,56 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: できる。Nablarchのコード管理機能（`BasicCodeManager`）と入力チェック機能は `@CodeValue` アノテーションで直接連携できる。性別や種別のような値と名称のマッピングをコード管理テーブルに定義し、フォームのフィールドに `@CodeValue(codeId = \"...\")` を付けるだけで、マスタ上の有効値かどうかのバリデーションが実現できる。\n\n**根拠**:\n\n1. **コード管理の仕組み** — `コードパターンテーブル` と `コード名称テーブル` の2テーブルで値・名称マッピングを管理する。`VALUE` カラムが実際のコード値（例: `male`, `female`）、`PATTERN` カラムが有効/無効を切り替えるフラグとして機能する。`BasicCodeManager` をコンポーネント名 `codeManager` で登録することが必須。（`component/libraries/libraries-code.json:s1`）\n\n2. **入力チェックとの連携** — Bean Validation を使う場合は `nablarch.common.code.validator.ee.CodeValue`、Nablarch Validation を使う場合は `nablarch.common.code.validator.CodeValue` を使用する。（`component/libraries/libraries-code.json:s6`）\n\n   ```java\n   // Bean Validation の例\n   @CodeValue(codeId = \"GENDER\")\n   private String gender;\n   ```\n\n3. **パターンによる絞り込み** — パターンで有効値を限定している場合は `pattern` 属性で指定する。バリデーション時もそのパターン内の有効値かチェックされる。（`component/libraries/libraries-code.json:s6`）\n\n   ```java\n   @CodeValue(codeId = \"GENDER\", pattern = \"PATTERN2\")\n   private String gender;\n   ```\n\n4. **ドメインバリデーションとの組み合わせ** — ドメインBeanの中で `@CodeValue` を定義すれば、複数のフォームで同一コードIDのバリデーションを再利用できる。複数パターンに対応する場合はパターンごとにドメインを定義する。（`component/libraries/libraries-bean_validation.json:s6`）\n\n5. **ウェブアプリ設定** — Bean Validation を使う場合は `BeanValidationStrategy` をコンポーネント名 `validationStrategy` で登録する。（`component/libraries/libraries-bean_validation.json:s13`）\n\n**注意点**:\n- コード管理テーブルに「参照整合性制約」は設定できない設計のため、入力チェックは必ず `@CodeValue` で行うこと。（`component/libraries/libraries-code.json:s1`）\n- 「商品コード」「企業コード」のように値に紐づく情報が動的に変化するものはコード管理機能の対象外。その場合はアプリケーション側でマスタテーブルを作成して対処する必要がある。（`component/libraries/libraries-code.json:s1`）\n- `BasicCodeLoader` および `BasicStaticDataCache` は初期化リストへの登録が必要。（`component/libraries/libraries-code.json:s1`）\n\n参照: component/libraries/libraries-code.json:s1, component/libraries/libraries-code.json:s6, component/libraries/libraries-bean_validation.json:s6, component/libraries/libraries-bean_validation.json:s13",
+  "cited": [
+    "component/libraries/libraries-code.json:s1",
+    "component/libraries/libraries-code.json:s6",
+    "component/libraries/libraries-bean_validation.json:s6",
+    "component/libraries/libraries-bean_validation.json:s13"
+  ],
+  "cost_usd": 0.387543,
+  "duration_s": 46.549782276153564,
+  "steps": {
+    "raw_selections": [
+      "libraries-code|s1",
+      "libraries-code|s6",
+      "libraries-bean_validation|s6",
+      "libraries-bean_validation|s13"
+    ],
+    "resolved": [
+      "component/libraries/libraries-code.json:s1",
+      "component/libraries/libraries-code.json:s6",
+      "component/libraries/libraries-bean_validation.json:s6",
+      "component/libraries/libraries-bean_validation.json:s13"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/libraries/libraries-code.json:s1",
+        "status": "ok",
+        "title": "機能概要",
+        "chars": 2598
+      },
+      {
+        "selector": "component/libraries/libraries-code.json:s6",
+        "status": "ok",
+        "title": "入力値が有効なコード値かチェックする",
+        "chars": 1038
+      },
+      {
+        "selector": "component/libraries/libraries-bean_validation.json:s6",
+        "status": "ok",
+        "title": "ドメインバリデーションを使う",
+        "chars": 1510
+      },
+      {
+        "selector": "component/libraries/libraries-bean_validation.json:s13",
+        "status": "ok",
+        "title": "ウェブアプリケーションのユーザ入力値のチェックを行う",
+        "chars": 354
+      }
+    ],
+    "select_cost_usd": 0.25303050000000005,
+    "answer_cost_usd": 0.13451249999999998
+  },
+  "error": null
+}

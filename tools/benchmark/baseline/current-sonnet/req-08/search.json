@@ -1,0 +1,16 @@
+{
+  "variant": "current",
+  "answer": "**結論**: Nablarch には `MultipartHandler`（マルチパートリクエストハンドラ）に `contentLengthLimit` プロパティが用意されており、アップロードサイズの上限を設定することで DoS 攻撃を防止できます。\n\n**根拠**:\n\n1. **`contentLengthLimit` — リクエスト全体のサイズ上限** (`component/handlers/handlers-multipart_handler.json:s6`)\n   - `UploadSettings` の `contentLengthLimit` プロパティ（単位: バイト）に上限値を設定します。上限を超過した場合、**HTTP 413 (Payload Too Large)** がクライアントに返却されます。**設定省略時は無制限**となるため、DoS 攻撃防止のため常に設定することが推奨されています。\n   - なお、チェックはファイル単位ではなく **1 リクエスト全体の Content-Length** に対して行われます。複数ファイル送信時はサイズの合計値で判定されます。ファイル単位でのサイズチェックが必要な場合はアクション側で実装してください。\n\n   ```xml\n   <component class=\"nablarch.fw.web.upload.MultipartHandler\" name=\"multipartHandler\">\n     <property name=\"uploadSettings\">\n       <component class=\"nablarch.fw.web.upload.UploadSettings\">\n         <property name=\"contentLengthLimit\" value=\"1000000\" />\n       </component>\n     </property>\n   </component>\n   ```\n\n2. **`maxFileCount` — 同時アップロードファイル数の上限** (`component/handlers/handlers-multipart_handler.json:s7`)\n   - `maxFileCount` プロパティに 0 以上の値を設定すると、1 リクエストで送れるファイル数の上限となります。超過時は **HTTP 400 (Bad Request)** が返却されます。デフォルトは -1（無制限）です。これも合わせて設定することで多数ファイルの同時投入を防止できます。\n\n   ```xml\n   <property name=\"maxFileCount\" value=\"10\" />\n   ```\n\n3. **ハンドラのデプロイ** (`component/handlers/handlers-multipart_handler.json:s4`)\n   - `MultipartHandler` はリクエストヘッダの `Content-Type` が `multipart/form-data` の場合のみリクエストボディを解析します。それ以外のリクエストは後続ハンドラに委譲されます。\n\n4. **RESTful Web サービスへの適用** (`releases/releases/releases-nablarch6u3-releasenote.json:s3`)\n   - RESTful Web サービスで使用する場合は `rest-component-configuration.xml` にファイルパス設定・アップロード機能設定をインポートし、ハンドラキュー（`webFrontController`）に `multipartHandler` を追加します。`common.properties` に `nablarch.uploadSettings.contentLengthLimit` を設定することも必要です。\n\n**注意点**:\n- `contentLengthLimit` はリクエスト全体 (Content-Length) に対する上限であり、個別ファイルサイズの上限ではありません。ファイルごとのサイズ検証はアクション側（業務ロジック）で実装が必要です。\n- 設定省略はデフォルト無制限になるため、必ず本番設定に含めてください。\n- ハンドラキューへの挿入位置は、セッション変数保存ハンドラおよび CSRF トークン検証ハンドラの制約事項を確認した上で決定してください。\n\n参照: component/handlers/handlers-multipart_handler.json:s6, component/handlers/handlers-multipart_handler.json:s7, component/handlers/handlers-multipart_handler.json:s4, releases/releases/releases-nablarch6u3-releasenote.json:s3",
+  "cited": [
+    "component/handlers/handlers-multipart_handler.json:s6",
+    "component/handlers/handlers-multipart_handler.json:s7",
+    "component/handlers/handlers-multipart_handler.json:s4",
+    "releases/releases/releases-nablarch6u3-releasenote.json:s3"
+  ],
+  "cost_usd": 0.27693175000000003,
+  "duration_s": 50.82119178771973,
+  "steps": {
+    "turns": 11
+  },
+  "error": null
+}

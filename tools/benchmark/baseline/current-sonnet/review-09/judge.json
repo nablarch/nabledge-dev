@@ -1,0 +1,36 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "UniversalDao の batchInsert/batchUpdate/batchDelete でバッチ実行できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "batchUpdate は排他制御を行わないため、排他が必要な処理では1レコード毎の更新を使う",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "batchInsert/batchUpdate/batchDelete を使うとAPサーバ〜DBサーバ間のラウンドトリップ回数を削減しパフォーマンス向上が期待できる（s11より）"
+      },
+      {
+        "claim": "batchUpdate では更新対象EntityとDBのバージョンが不一致でも正常終了し、更新漏れがサイレントに発生する（s11より）"
+      },
+      {
+        "claim": "楽観的ロックエラー（OptimisticLockException）のハンドリングには @OnError アノテーションで遷移先を設定できる（s12より）"
+      },
+      {
+        "claim": "一括更新サンプル（s1）では排他制御が必要なため batchUpdate でなく UniversalDao#update を採用している"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-fact1（batchInsert/batchUpdate/batchDeleteの3メソッド）はすべて明示されており COVERED。A-fact2（batchUpdateは排他制御なし、排他が必要なら1件ずつ）も「排他制御（楽観的ロック）は行われない」「排他制御が必要な場合は UniversalDao.update を1件ずつ」と明確に記述されており COVERED。C-claimはなし（s12の@OnError言及、s1のサンプル言及もすべて検索済みセクションに裏付けあり）。B-claimが複数存在するためレベル3。"
+  },
+  "ref_sources_loaded": 1,
+  "ref_sources_total": 1,
+  "cost_usd": 0.16580324999999999,
+  "duration_s": 22.221039533615112,
+  "error": null
+}

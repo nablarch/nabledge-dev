@@ -1,0 +1,77 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Nablarchのコード管理機能とBean Validationを@CodeValueアノテーションで連携できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@CodeValue(codeId = \"GENDER\")をフィールドに付与すれば、コード管理に登録された有効なコード値かを自動検証できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Bean Validationの場合はnablarch.common.code.validator.ee.CodeValueをフィールドに付与する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Nablarch Validationの場合はnablarch.common.code.validator.CodeValueをsetterに付与する",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "パターンを使って選択肢を絞る場合はpattern属性でパターン名を指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ドメインバリデーションを使う場合、1つのドメインに対して1つのパターンしか指定できない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "複数パターンに対応するにはパターンごとにドメインを定義する必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "BeanクラスのプロパティはすべてStringとして定義すること（Bean変換失敗による予期せぬ例外を避けるため）",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "BasicCodeManagerをコンポーネント名codeManagerで登録することが必須",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5, s6）には含まれない。libraries-code.json:s1由来の情報。"
+      },
+      {
+        "claim": "コードパターンテーブルとコード名称テーブルの2テーブルで値・名称マッピングを管理する",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5, s6）には含まれない。libraries-code.json:s1由来の情報。"
+      },
+      {
+        "claim": "BeanValidationStrategyをコンポーネント名validationStrategyで登録する",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5, s6）には含まれない。libraries-bean_validation.json:s13由来の情報。"
+      },
+      {
+        "claim": "コード管理テーブルに参照整合性制約は設定できない設計のため、入力チェックは必ず@CodeValueで行うこと",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5, s6）には含まれない。libraries-code.json:s1由来の情報。"
+      },
+      {
+        "claim": "商品コード・企業コードのように動的に変化するものはコード管理機能の対象外",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5, s6）には含まれない。libraries-code.json:s1由来の情報。"
+      },
+      {
+        "claim": "BasicCodeLoaderおよびBasicStaticDataCacheは初期化リストへの登録が必要",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s5, s6）には含まれない。libraries-code.json:s1由来の情報。"
+      }
+    ],
+    "reasoning": "必須ファクトのうち「BeanクラスのプロパティはすべてStringとして定義すること」（s5由来の注意点）がMISSING。また「Nablarch ValidationはsetterにアノテーションをつけてCodeValueを付与する」点についてはアノテーション名こそ正しいものの適用箇所（setter）の記述が欠落しておりPARTIAL。これらによりレベル2の条件（全ファクトがCOVEREDまたはPARTIAL）を満たさない。さらに、参照ソースに含まれないlibraries-code.json:s1およびlibraries-bean_validation.json:s13由来の情報（BasicCodeManager登録、テーブル構造、BeanValidationStrategy登録など）が複数のHALLUCINATIONとして存在する。これらは個々には大きく誤解を招くわけではないが、参照ソースの証拠境界を大きく超えた追加情報であり、少なくとも1つのMISSING必須ファクトと複数のHALLUCINATIONの組み合わせにより、レベル1と判定する。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.1968765,
+  "duration_s": 64.93050861358643,
+  "error": null
+}

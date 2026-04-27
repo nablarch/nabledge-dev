@@ -1,0 +1,80 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "夜間バッチには「都度起動バッチ」を選択する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "常駐バッチはマルチスレッド実行時に遅延問題があり、新規開発では db_messaging が推奨される",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "DB接続ありの標準ハンドラ構成を使う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "主要ハンドラ: StatusCodeConvertHandler, GlobalErrorHandler, DatabaseConnectionManagementHandler×2, TransactionManagementHandler, RequestPathJavaPackageMapping, MultiThreadExecutionHandler, LoopHandler, DataReadHandler",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッド側に LoopHandler → DataReadHandler を置き、1レコードずつ業務アクションに渡す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "フォームクラス: DataReader が読み込んだレコードをマッピング、プロパティは全て String 型",
+        "status": "COVERED"
+      },
+      {
+        "fact": "外部ファイル等安全でない入力には @Required / @Domain などバリデーションアノテーションを付与する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "エンティティクラス: テーブルと1対1対応",
+        "status": "COVERED"
+      },
+      {
+        "fact": "アクションクラス: BatchAction 継承、createReader でリーダ返却、handle で BeanUtil.createAndCopy → UniversalDao.insert → new Result.Success() 返却",
+        "status": "COVERED"
+      },
+      {
+        "fact": "DataReader 実装クラスを用意。CSV なら FilePathSetting.getInstance()・ObjectMapperFactory.create・ObjectMapperIterator で実装",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CSV フォームに @Csv(type=CsvType.CUSTOM)・@CsvFormat(quoteMode=QuoteMode.NORMAL)・@LineNumber を付与",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "処理の流れ: Main → DataReader → DispatchHandler(-requestPath でアクション特定) → アクション → Result → ループ → StatusCodeConvertHandler",
+        "status": "COVERED"
+      },
+      {
+        "fact": "FileBatchAction は data_bind と混在不可。data_bind 使用時は BatchAction を使う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@ValidateData インターセプタで handle に常にバリデーション済みデータが渡り、共通化できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "標準提供データリーダ: FileDataReader・ValidatableFileDataReader・ResumeDataReader が利用可",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "Jakarta Batchは2020年時点で情報・有識者が少なく学習コストが高い",
+        "type": "OVER-REACH",
+        "why": "reference sources 外の nablarch-batch-batch.json:s1 を出典としており、証拠境界外からの付加情報。"
+      }
+    ],
+    "reasoning": "必須ファクトの大部分は COVERED。PARTIAL が2件ある。①常駐バッチの代替として db_messaging が推奨されるという点は「新規開発では使用しないこと」とのみ述べられ、db_messaging への具体的言及がない。②CSV フォームの @Csv/@CsvFormat/@LineNumber の詳細属性（CsvType.CUSTOM、QuoteMode.NORMAL）が省略されている。CONTRADICTED は0件で、核心的な事実（都度起動バッチの選択、ハンドラ構成、3層クラス設計、実装パターン）はすべて正確に網羅されている。Jakarta Batch に関する追加情報は reference sources 外からの軽微な OVER-REACH だが、読者を誤った実装に誘導するものではない。PARTIAL 2件あるが全必須ファクトが COVERED または PARTIAL の範囲内であり、重大な OVER-REACH もないため Level 2 が適切。"
+  },
+  "ref_sources_loaded": 7,
+  "ref_sources_total": 7,
+  "cost_usd": 0.31168105,
+  "duration_s": 95.94618654251099,
+  "error": null
+}

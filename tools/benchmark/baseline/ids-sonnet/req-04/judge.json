@@ -1,0 +1,62 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Nablarch はトークンベースの二重サブミット防止機能をビルトインで提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "JSP を使う場合は form タグの useToken 属性でトークン生成と hidden への埋め込みが自動で行われる",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "JSP 以外のテンプレートエンジンを使う場合は @UseToken インターセプタをアクションメソッドに明示的に付与する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "後続のアクションに @OnDoubleSubmission インターセプタを付けてトークンをチェックする",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@OnDoubleSubmission の path 属性に二重サブミット判定時の遷移先を指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@OnDoubleSubmission を使うには form タグの useToken または @UseToken によるトークン設定が必要",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Thymeleaf での hidden input は name='nablarch_token'、value はリクエストスコープキー 'nablarch_request_token' から取得する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "name 属性とリクエストスコープから値を取得するキーは変更可能",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "DBにトークンを保存するライブラリを使うとスケールアウト構成で特別な設定なしに複数サーバ間でトークンを共有できる",
+        "type": "HALLUCINATION",
+        "why": "libraries-db_double_submit.json は reference sources に含まれない。本問の範囲外の仕組みを導入している"
+      },
+      {
+        "claim": "DBトークン方式はユーザを識別せずにトークンを格納するため CSRF 対策には使用できず、csrf_token_verification_handler を組み合わせる必要がある",
+        "type": "HALLUCINATION",
+        "why": "同上。reference sources 外の情報であり、質問の文脈と無関係な CSRF の注意事項を持ち込んでいる"
+      },
+      {
+        "claim": "ブラウザを閉じるなどの操作で DB にトークンが残るため期限切れトークンの定期削除が必要",
+        "type": "HALLUCINATION",
+        "why": "同上。reference sources に含まれない DB トークン方式固有の運用注意事項"
+      }
+    ],
+    "reasoning": "参照回答の核心要素である「JSP の form タグ useToken 属性によるトークン自動生成・hidden 埋め込み」の説明が PARTIAL（「JSP以外」という対比でのみ示唆され、useToken 属性自体の説明なし）。また name/キー変更可能という細部が MISSING。より大きな問題として、reference sources に含まれない libraries-db_double_submit.json を引用し、DBトークン保存・CSRF非対応・期限切れトークン削除という 3 つの HALLUCINATION を追加している。これらは実在する Nablarch 機能だが本問の回答範囲外であり、読者をシンプルな二重サブミット防止実装から逸らすおそれがある。Level 2 の条件は「HALLUCINATION が高々 1 件の軽微なもの」であるため、3 件の HALLUCINATION により Level 2 は満たさず Level 1 と判定する。"
+  },
+  "ref_sources_loaded": 5,
+  "ref_sources_total": 5,
+  "cost_usd": 0.19308055000000002,
+  "duration_s": 67.6614990234375,
+  "error": null
+}

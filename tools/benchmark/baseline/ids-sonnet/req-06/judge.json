@@ -1,0 +1,70 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "HTTP セッションは AP サーバで状態を持つためスケールアウトできない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Nablarch ではステートレスにするのが推奨の対処",
+        "status": "COVERED"
+      },
+      {
+        "fact": "HTTP セッション依存機能を非依存のものに切り替えることでステートレス化できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "スケールアウト設計として stateless_web_app が紹介されている",
+        "status": "COVERED"
+      },
+      {
+        "fact": "通常の対処方法は3つ: スティッキーセッション／セッションレプリケーション／NoSQL保存",
+        "status": "COVERED"
+      },
+      {
+        "fact": "1,2 は Twelve-Factor App の廃棄容易性の点で劣り、2,3 は AP サーバ依存となる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "HTTP セッションに依存するデフォルト機能は session_store／2重サブミット防止／thread_context_handler／http_rewrite_handler／hidden暗号化 の5つ",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ステートレス化のためセッションストアは DB ストアなどサーバ間共有できる保存先に切り替える",
+        "status": "COVERED"
+      },
+      {
+        "fact": "複数 AP サーバ構成で HIDDEN ストアを使う場合、サーバごとに暗号化キーが自動生成されるため復号失敗するケースがある",
+        "status": "MISSING"
+      },
+      {
+        "fact": "HiddenStore.encryptor に明示的な鍵・IV を設定して全サーバで揃える必要がある",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "各セッション依存機能の具体的な切り替え方法（db_double_submit、LanguageAttributeInHttpCookie 等）",
+        "type": "HALLUCINATION",
+        "why": "参照ソース外（s3）の情報。reference sources に含まれていない。"
+      },
+      {
+        "claim": "USER_SESSION テーブルの構造・SESSION_ID は VARCHAR で定義・期限切れセッション削除バッチが必要",
+        "type": "HALLUCINATION",
+        "why": "参照ソース外（session_store:s4）の情報。reference sources に含まれていない。"
+      },
+      {
+        "claim": "SessionManager を sessionManager コンポーネント名で登録が必要 / SessionStoreHandler にも設定が必要",
+        "type": "HALLUCINATION",
+        "why": "参照ソース外（session_store:s4、handlers-SessionStoreHandler:s5）の情報。reference sources に含まれていない。"
+      }
+    ],
+    "reasoning": "生成された回答は「HTTP セッションがステートフルであるためスケールアウトできない」「3つの一般的な対処法とその欠点」「Twelve-Factor App の廃棄容易性」「セッション依存の5機能」「DBストアへの切り替え推奨」といった主要な事実を正確にカバーしており、質問の大部分に答えている。しかし、参照回答で特に「セッションの扱いとか大丈夫？」という懸念に対応する重要事実 — 複数 AP サーバ構成で HIDDEN ストアを使用した場合にサーバごとに異なる暗号化キーが生成されて復号失敗するリスクと、HiddenStore.encryptor に明示的な鍵・IV を全サーバで揃える対策 — が完全に欠落している。このセクション（session_store:s8）は「セッションの扱い」に直接関係する具体的な落とし穴であり、スケールアウト時に必須の注意点である。また、参照ソースに含まれない s3/s4/s5 からの詳細（具体的クラス名、テーブル定義、バッチ要件等）が複数含まれており HALLUCINATION と判定されるが、内容自体は矛盾を生じさせない。以上から、必須事実の MISSING が存在するため Level 1 とする。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.19629080000000002,
+  "duration_s": 72.37713384628296,
+  "error": null
+}

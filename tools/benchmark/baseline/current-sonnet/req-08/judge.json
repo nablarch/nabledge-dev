@@ -1,0 +1,47 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Nablarch は `MultipartHandler` でアップロードサイズ上限を設ける仕組みを提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`contentLengthLimit` プロパティでサイズ上限を設定し、超過時は 413 を返す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "デフォルトは無制限であり、DoS 対策のため常に設定することが推奨される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`maxFileCount` でアップロードファイル数の上限も設定できる",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "サイズチェックはファイル単位ではなく1リクエスト全体のContent-Lengthに対して行われる（複数ファイル時はサイズ合計値で判定）"
+      },
+      {
+        "claim": "maxFileCount 超過時は HTTP 400 (Bad Request) が返却される"
+      },
+      {
+        "claim": "MultipartHandler は Content-Type が multipart/form-data の場合のみリクエストボディを解析し、それ以外は後続ハンドラに委譲する"
+      },
+      {
+        "claim": "RESTful Web サービスで使用する場合は rest-component-configuration.xml にファイルパス設定とアップロード機能設定をインポートし、ハンドラキューに multipartHandler を追加する必要がある"
+      },
+      {
+        "claim": "ファイル単位のサイズチェックが必要な場合はアクション側（業務ロジック）で実装が必要"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "4つのA-factすべてがCOVERED：MultipartHandlerによるサイズ上限機能、contentLengthLimitプロパティと413レスポンス、デフォルト無制限とDoS対策のための常時設定推奨、maxFileCountによるファイル数上限設定。C-claimはなく、すべての追加主張はKB証拠（s4, s6, s7, s3）に裏付けられている。Level 3。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.17143545,
+  "duration_s": 21.638360023498535,
+  "error": null
+}

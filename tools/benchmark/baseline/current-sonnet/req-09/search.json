@@ -1,0 +1,18 @@
+{
+  "variant": "current",
+  "answer": "**結論**: Nablarch にはリクエスト数を時間窓内でカウントして制限するいわゆるレート制限（rate limiting）の標準機能はない。最も近い代替として、エンドポイント単位でアクセスをオン/オフできる「サービス提供可否チェック」機能があるが、これは頻度制限ではなく二値制御である。真のレート制限が必要な場合はプロジェクト側でカスタムハンドラを実装する。\n\n---\n\n**根拠**:\n\n1. **REST API 機能比較表** (`processing-pattern/restful-web-service/restful-web-service-functional_comparison.json:s1`) の「サービス提供の可否チェック」列では、Jakarta RESTful Web Services サポートは `× [10]` と明記されている。注釈 [10] には「Nablarch にあるサービス提供可否チェックがアプリケーションの要件にマッチする場合はそれを使用する。マッチしない場合は、アプリケーションで設計/実装する。」と記載されている。同表の「リクエスト/レスポンスに対するフィルタ」も `× [3]` であり、注釈 [3] には「フィルタを作りたい場合はハンドラを作成する」とある。\n\n2. **ServiceAvailabilityCheckHandler** (`component/handlers/handlers-ServiceAvailabilityCheckHandler.json:s5`) は、DB テーブルのリクエスト ID ごとのフラグを見てサービス可否を判定し、不可の場合は 503 を返す。これはメンテナンス中断や機能 OFF のような二値制御であり、時間ウィンドウ内の呼び出し回数によるレート制限ではない (`component/libraries/libraries-service_availability.json:s1`, `component/libraries/libraries-service_availability.json:s3`)。\n\n3. **ハンドラキューによる横断的処理の拡張** (`about/about-nablarch/about-nablarch-architecture.json:s2`, `processing-pattern/web-application/web-application-architecture.json:s3`) として、「リクエストのフィルタリング（アクセス権限のあるリクエストのみ受け付ける処理など）」が例示されている。Nablarch の設計方針では、このような横断的処理はプロジェクト側でカスタムハンドラを実装してハンドラキューに追加することが推奨されている。\n\n---\n\n**注意点**:\n\n- `ServiceAvailabilityCheckHandler` を使うには `ServiceAvailability` の実装クラスを注入する必要があり、DB テーブルを用いたリクエスト単位の管理になる。登録フロー（初期表示/確認/戻る/登録など複数リクエスト構成）では細かいデータ設計が必要になるため、適用が難しいケースもある。\n- レート制限のカスタムハンドラを実装する場合、ハンドラキューの先頭寄りに配置する必要があり、ハンドラ間の前後関係に注意すること。\n- ウェブサーバ・アプリケーションサーバ側（例: Nginx、IIS、AWS API Gateway）にレート制限機能がある場合は、そちらで対処する方がシンプルである（機能比較表 注釈 [8] の「ウェブサーバやアプリケーションサーバにあるリクエストサイズをチェックする機能を使用する」という指針と同様の考え方）。\n\n参照: processing-pattern/restful-web-service/restful-web-service-functional_comparison.json:s1, component/handlers/handlers-ServiceAvailabilityCheckHandler.json:s5, component/libraries/libraries-service_availability.json:s1, component/libraries/libraries-service_availability.json:s3, about/about-nablarch/about-nablarch-architecture.json:s2, processing-pattern/web-application/web-application-architecture.json:s3",
+  "cited": [
+    "processing-pattern/restful-web-service/restful-web-service-functional_comparison.json:s1",
+    "component/handlers/handlers-ServiceAvailabilityCheckHandler.json:s5",
+    "component/libraries/libraries-service_availability.json:s1",
+    "component/libraries/libraries-service_availability.json:s3",
+    "about/about-nablarch/about-nablarch-architecture.json:s2",
+    "processing-pattern/web-application/web-application-architecture.json:s3"
+  ],
+  "cost_usd": 0.4734325000000001,
+  "duration_s": 106.03467035293579,
+  "steps": {
+    "turns": 19
+  },
+  "error": null
+}

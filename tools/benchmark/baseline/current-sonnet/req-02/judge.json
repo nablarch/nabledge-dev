@@ -1,0 +1,46 @@
+{
+  "verdict": {
+    "level": 1,
+    "a_facts": [
+      {
+        "fact": "Nablarch は認可チェック機能をビルトインで提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リクエストレベルの認可は `PermissionCheckHandler` が担い、権限があれば `Permission` をスレッドローカルに設定、なければ 403 を返す",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "認可ライブラリは `permission_check`(条件変更可)と `role_check`(条件固定)の2種類がある",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "`role_check` は `@CheckRole` アノテーションでアクションメソッドにロールを割り当てる方式である"
+      },
+      {
+        "claim": "ログイン時に `SessionStoreUserRoleUtil.save` でユーザのロールをセッションストアに保存する"
+      },
+      {
+        "claim": "@CheckRole で複数ロールの AND 条件・OR 条件（anyOf = true）が指定できる"
+      },
+      {
+        "claim": "JSP 用の認可チェックカスタムタグは提供されておらず、`CheckRoleUtil` でサーバ側判定しセッション経由で EL 式/JSTL に渡す"
+      },
+      {
+        "claim": "`PermissionCheckHandler` は `ThreadContextHandler` より後ろに配置する必要がある"
+      },
+      {
+        "claim": "Nablarch は認証機能（ログイン処理自体）を提供しておらず、Nablarch Example を参考にプロジェクトで実装する"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-fact 2 が PARTIAL。生成回答は `PermissionCheckHandler` による 403 送出（権限なし時）は記述しているが、権限がある場合に `Permission` をスレッドローカルに設定するという成功パスの動作が欠落している。この情報は KB（handlers-permission_check_handler.json:s4）に明示されており、A-fact の核心部分であるため PARTIAL とした。A-facts 1・3 は COVERED、C-claim なし。全 A-fact が COVERED でないため Level 1。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.2178075,
+  "duration_s": 32.23168992996216,
+  "error": null
+}

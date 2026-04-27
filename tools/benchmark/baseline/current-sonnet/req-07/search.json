@@ -1,0 +1,16 @@
+{
+  "variant": "current",
+  "answer": "**結論**: Nablarch には CORS 対応の標準機能がある。`CorsPreflightRequestHandler` と `CorsResponseFinisher`（`BasicCors` 実装）を組み合わせることで、別ドメインのフロントエンドからの REST API 呼び出しに対応できる。\n\n**根拠**:\n\n1. **仕組みの概要** (`component/handlers/handlers-cors_preflight_request_handler.json:s1`)\n   - `nablarch.fw.jaxrs.CorsPreflightRequestHandler` が CORS プリフライトリクエスト（OPTIONS メソッド）を処理する。\n   - 実際のリクエストに対する CORS レスポンスヘッダの付与は `CorsResponseFinisher` が担う。\n\n2. **設定方法** (`component/handlers/handlers-cors_preflight_request_handler.json:s4`)\n   - `BasicCors`（`nablarch.fw.jaxrs.cors.BasicCors`）を コンポーネントとして定義し、`allowOrigins` プロパティに許可する Origin を列挙する（この設定は必須）。\n   - `CorsPreflightRequestHandler` と `CorsResponseFinisher` の両方に同じ `BasicCors` コンポーネントを参照させる。\n\n   ```xml\n   <component name=\"cors\" class=\"nablarch.fw.jaxrs.cors.BasicCors\">\n     <property name=\"allowOrigins\">\n       <list>\n         <value>https://www.example.com</value>\n       </list>\n     </property>\n   </component>\n   ```\n\n3. **BasicCors のデフォルト動作** (`component/handlers/handlers-cors_preflight_request_handler.json:s4`)\n   - プリフライト判定条件: HTTPメソッドが OPTIONS、かつ `Origin` ヘッダと `Access-Control-Request-Method` ヘッダが存在する場合\n   - プリフライトレスポンス: ステータス 204、`Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT, DELETE, PATCH`、`Access-Control-Allow-Headers: Content-Type, X-CSRF-TOKEN`\n   - 実際のリクエスト: 許可 Origin に含まれる場合のみ `Access-Control-Allow-Origin` と `Vary: Origin` を付与、`Access-Control-Allow-Credentials: true` を設定\n\n4. **モジュール** (`component/handlers/handlers-cors_preflight_request_handler.json:s2`)\n   - `com.nablarch.framework:nablarch-fw-jaxrs` への依存を追加する。\n\n**注意点**:\n- ハンドラキューの配置順序に制約がある。`CorsPreflightRequestHandler` は `JaxRsResponseHandler` より **後ろ**（= ハンドラキューの後方）に配置する必要がある。これは、本ハンドラが生成した `HttpResponse` を `JaxRsResponseHandler` が処理するためである（`component/handlers/handlers-cors_preflight_request_handler.json:s3`）。\n- レスポンスヘッダの内容（許可メソッド、許可ヘッダ、Max-Age など）は設定で変更可能。\n- `allowOrigins` の設定は必須。未設定の場合は動作しない。\n\n参照: component/handlers/handlers-cors_preflight_request_handler.json:s1, component/handlers/handlers-cors_preflight_request_handler.json:s2, component/handlers/handlers-cors_preflight_request_handler.json:s3, component/handlers/handlers-cors_preflight_request_handler.json:s4",
+  "cited": [
+    "component/handlers/handlers-cors_preflight_request_handler.json:s1",
+    "component/handlers/handlers-cors_preflight_request_handler.json:s2",
+    "component/handlers/handlers-cors_preflight_request_handler.json:s3",
+    "component/handlers/handlers-cors_preflight_request_handler.json:s4"
+  ],
+  "cost_usd": 0.21086739999999998,
+  "duration_s": 37.753459215164185,
+  "steps": {
+    "turns": 8
+  },
+  "error": null
+}

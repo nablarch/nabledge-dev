@@ -1,0 +1,57 @@
+{
+  "verdict": {
+    "level": 1,
+    "a_facts": [
+      {
+        "fact": "都度起動バッチを採用する（常駐バッチは新規開発では非推奨）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "BatchAction を継承したアクションクラスを実装する",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "Form / Entity / Action の3層構成で組む",
+        "status": "COVERED"
+      },
+      {
+        "fact": "DB 接続ありの標準ハンドラキュー構成を使い、LoopHandler→DataReadHandler はサブスレッドに配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "DataReader を実装してレコードを1件ずつ供給する",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "FILE to DB パターンではファイルレイアウトと1対1のテンポラリテーブルにINSERTし、業務処理はできるだけ加えない"
+      },
+      {
+        "claim": "ファイルの移動・コピーは取り込みバッチとは別ジョブにすることで再実行が容易になる"
+      },
+      {
+        "claim": "FileDataReader / ValidatableFileDataReader は data_format 専用のため data_bind と混在不可"
+      },
+      {
+        "claim": "data_bind でCSVを扱う場合は ObjectMapperIterator ラッパーを使ったカスタム DataReader を自前実装する"
+      },
+      {
+        "claim": "ResumeDataReader により障害発生ポイントからの再実行が可能（ファイル入力限定）"
+      }
+    ],
+    "c_claims": [
+      {
+        "claim": "LoopHandler でコミット間隔を設定することで大量データのメモリ問題を回避できる",
+        "reason": "UNSUPPORTED",
+        "why": "KB は LoopHandler がコミット間隔ごとにトランザクションをコミットすると述べているが、メモリ問題の回避については一切言及していない。"
+      }
+    ],
+    "reasoning": "A-fact「BatchAction を継承したアクションクラスを実装する」が PARTIAL。生成回答はアクションクラスが DataReader を生成して Result を返すという特徴を述べ、FileBatchAction が data_format 専用であることを注意点として挙げているが、BatchAction クラスを継承すること自体は一度も明示されていない。他の4つの A-fact はすべてカバーされており、FILE to DB パターン・テンポラリテーブル設計・ファイル移動分離などの B-claim も KB に裏付けられた有益な情報として含まれている。ただし LoopHandler によるメモリ問題回避という KB 未記載の主張（C-claim）も存在するため、Level は 1 となる。"
+  },
+  "ref_sources_loaded": 7,
+  "ref_sources_total": 7,
+  "cost_usd": 0.2582592,
+  "duration_s": 60.01523685455322,
+  "error": null
+}

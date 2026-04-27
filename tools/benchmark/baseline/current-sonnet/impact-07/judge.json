@@ -1,0 +1,48 @@
+{
+  "verdict": {
+    "level": 1,
+    "a_facts": [
+      {
+        "fact": "PermissionCheckHandler でリクエスト認可を行う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "権限があれば Permission をスレッドローカルに設定し、なければ 403 を返す",
+        "status": "MISSING"
+      },
+      {
+        "fact": "内部フォワード先のリクエスト ID を認可対象にするには `setUsesInternalRequestId` を `true` に設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "併せて `ThreadContextHandler` の `attributes` に `InternalRequestIdAttribute` を追加する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`ForwardingHandler` より後に配置する(内部フォワード先で認可する場合)",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "`@CheckRole` アノテーション（role_check）を使う場合、フォワード先のアクションメソッドにアノテーションを付けることで内部フォワード後も認可チェックが有効になる"
+      },
+      {
+        "claim": "認可チェックから除外したいリクエストは `PermissionCheckHandler.ignoreRequestIds` で指定できる"
+      },
+      {
+        "claim": "ハンドラキューの順序は ThreadContextHandler → ForwardingHandler → PermissionCheckHandler の順にする必要がある"
+      },
+      {
+        "claim": "role_check は権限管理条件が変わらないシステム向けで、ロールと機能の組み合わせがハードコーディングされる"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-fact「権限があれば `Permission` をスレッドローカルに設定し、なければ 403 を返す」が生成回答に含まれていない。回答は `setUsesInternalRequestId`・ハンドラ配置・`InternalRequestIdAttribute` を正確に説明しているが、`PermissionCheckHandler` の基本動作（権限あり→Permission をスレッドローカルに設定、なし→403 送出）には触れていない。4/5 の A-fact は COVERED で C-claim もないが、この1件の MISSING により「A all COVERED」を満たさず Level 1 となる。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.3202056,
+  "duration_s": 48.417808055877686,
+  "error": null
+}

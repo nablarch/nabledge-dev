@@ -1,0 +1,79 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "Nablarchは@Publishedアノテーションで公開APIと非公開APIを区別している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "クラス・メソッドのいずれにも@Publishedがない場合は非公開API（将来変わる可能性がある）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "静的解析ツールで自分のコードが非公開APIを使っていないかチェックできる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "公開API判定はJavadoc上の@Published有無で判断する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "@Published(tag=\"architect\")はアーキテクト向け公開API（タグによる区別がある）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "例：DaoContextはクラスに@Published(tag=\"architect\")があるためアーキテクト向け公開API",
+        "status": "MISSING"
+      },
+      {
+        "fact": "例：BasicDaoContext#findAllはクラスにもメソッドにも@Publishedがないため非公開API",
+        "status": "MISSING"
+      },
+      {
+        "fact": "nablarch-intellij-plugin: IntelliJ IDEA用プラグイン、非公開API使用時とブラックリストJava API使用時に警告",
+        "status": "COVERED"
+      },
+      {
+        "fact": "使用不許可APIチェックツール（SpotBugsプラグイン）: IntelliJ IDEAに依存しない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ブランクプロジェクトにはMaven実行設定があらかじめ組み込まれてすぐにチェック可能",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Nablarch 6からは非公開APIも含めたJavadocを提供（Nablarch 5までは公開APIのみ）",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "@Deprecatedが付いているAPIも注意が必要で、不具合・セキュリティ問題が理由の非推奨は新たな問題が見つかっても対応されない",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（nablarch_api.json#s1、java_static_analysis.json#s3）には含まれない。policy.json:s12から追加された情報"
+      },
+      {
+        "claim": "アダプタは後方互換性ポリシーの対象外。@Publishedがあっても外部ライブラリの破壊的変更で壊れる場合がある",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに含まれない。versionup_policy.json:s4から追加された情報"
+      },
+      {
+        "claim": "致命的な不具合・脆弱性対応時は公開APIでも後方互換が維持できない場合がある",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに含まれない。policy.json:s10から追加された情報"
+      },
+      {
+        "claim": "ログのレベル・文言の変更、JDKバージョンアップ起因の問題対応なども後方互換の例外となりえる",
+        "type": "HALLUCINATION",
+        "why": "参照ソースに含まれない。versionup_policy.json:s6から追加された情報"
+      }
+    ],
+    "reasoning": "生成回答は中核となる情報（@Published アノテーションによる公開/非公開 API の区別、2 つのチェックツールの詳細）を正確にカバーしており、実用的な回答になっている。一方で参照回答に含まれる @Published(tag=\"architect\") のタグ区別と具体例（DaoContext、BasicDaoContext#findAll）、Nablarch 6 の Javadoc に関する補足が欠落している。加えて参照ソースに含まれない 4 件の追加情報（@Deprecated 注意点、アダプタ例外、致命的不具合例外、ログレベル例外）が HALLUCINATION として存在する。タグ区別の欠落は MISSING だが、非公開 API チェックの主要メカニズム（@Published なし ＝ 非公開）と 2 ツールの説明は完全にカバーされており、コア事実に矛盾・誤誘導はない。複数 HALLUCINATION があるため Level 3 は不可。ただし MISSING ファクトは補足的な詳細（タグ、例示）にとどまり、誤った機構を提案するような OVER-REACH もないため、Level 2 と判定する。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.2528675,
+  "duration_s": 131.88513565063477,
+  "error": null
+}

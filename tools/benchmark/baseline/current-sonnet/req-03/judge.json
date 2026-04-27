@@ -1,0 +1,46 @@
+{
+  "verdict": {
+    "level": 1,
+    "a_facts": [
+      {
+        "fact": "Nablarch は排他制御をビルトインで提供する(推奨は `UniversalDao`)",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`UniversalDao` は楽観排他と悲観排他の両方をサポートする",
+        "status": "MISSING"
+      },
+      {
+        "fact": "楽観排他は `@Version` アノテーションで有効化する",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "排他エラー発生時は `jakarta.persistence.OptimisticLockException` がスローされる"
+      },
+      {
+        "claim": "排他エラー時の画面遷移は `@OnError` アノテーションで設定できる"
+      },
+      {
+        "claim": "`@Version` は数値型のプロパティのみに指定可能で、文字列型では正しく動作しない"
+      },
+      {
+        "claim": "`batchUpdate`（一括更新）では楽観的ロックは使用できない"
+      },
+      {
+        "claim": "バージョンカラムをどのテーブルに定義するかは業務的観点で決め、競合が許容される最大の単位で定義する"
+      },
+      {
+        "claim": "旧来の排他制御ライブラリ（`BasicExclusiveControlManager` 等）は非推奨で Universal DAO を使用すること"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-fact「`UniversalDao` は楽観排他と悲観排他の両方をサポートする」がMISSING。生成回答は楽観的ロック（`@Version`）のみを説明しており、悲観的ロックについて一切言及していない。KBエビデンス（s4）には「楽観排他 / 悲観排他をサポート」と明記されているため、これは内容上の欠落である。他の2つのA-factは明確にカバーされており、C-claimもない。A-factが全てCOVEREDでないためLevel 2以上にはなれず、C-claimがないためLevel 0にもならない。結果としてLevel 1。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.1958831,
+  "duration_s": 36.39852833747864,
+  "error": null
+}

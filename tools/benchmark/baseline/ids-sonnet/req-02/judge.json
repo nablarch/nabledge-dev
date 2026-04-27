@@ -1,0 +1,79 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "Nablarch には認可チェック機能がビルトインで存在する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リクエストレベルの認可は PermissionCheckHandler（認可チェックハンドラ）が担う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "権限がある場合、Permission をスレッドローカルに設定し後続ハンドラを呼び出す（サーバサイドチェック・画面表示制御で参照可能）",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "権限がない場合、Forbidden(403) を送出する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "2種類の認可ライブラリ: permission_check と role_check がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "permission_check は権限管理の条件が変わり得るシステム向け（導入コスト高、データ管理しっかり）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "role_check は権限管理の条件が基本的に変わらないシステム向け（ハードコーディングで導入コスト低）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "PermissionCheckHandler は ThreadContextHandler より後に配置すること",
+        "status": "MISSING"
+      },
+      {
+        "fact": "PermissionCheckHandler は ForwardingHandler より後に配置すること（内部フォワード先リクエストIDで認可する場合）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "PermissionCheckHandler は HttpErrorHandler より後に配置すること（認可エラー時のエラーページ指定のため）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "内部フォワード先リクエストIDで認可する場合は setUsesInternalRequestId を true にする（デフォルト false）",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "@CheckRole アノテーションをアクションメソッドに付与してロールを指定する実装方式",
+        "type": "HALLUCINATION",
+        "why": "libraries-role_check.json:s1/s3 は参照ソース外。role_check の存在は参照ソースで支持されるが、アノテーション実装詳細は参照ソースに含まれない"
+      },
+      {
+        "claim": "SessionStoreUserRoleUtil.save() でログイン時にセッションへロールを保存する",
+        "type": "HALLUCINATION",
+        "why": "libraries-role_check.json:s3 は参照ソース外。この具体的なユーティリティクラスは参照ソースで言及されていない"
+      },
+      {
+        "claim": "CheckRoleUtil.checkRole() の結果をセッションに保存して JSP で EL式/JSTL で表示制御する",
+        "type": "HALLUCINATION",
+        "why": "libraries-role_check.json:s3 は参照ソース外。JSP表示制御の具体的実装方法は参照ソースに含まれない"
+      },
+      {
+        "claim": "ignoreRequestIds でチェック不要なパスを除外できる",
+        "type": "HALLUCINATION",
+        "why": "handlers-permission_check_handler.json:s6 は参照ソース外。追加の設定オプションであり参照ソースの証拠境界を超えている"
+      }
+    ],
+    "reasoning": "コアファクト（Nablarchにビルトイン認可機能あり、2種類の認可ライブラリの使い分け、PermissionCheckHandlerの権限あり/なし時の動作）は概ねCOVEREDまたはPARTIAL。ただし参照回答の③配置制約セクション（ThreadContextHandler・ForwardingHandler・HttpErrorHandlerより後）がすべてMISSINGであり、setUsesInternalRequestIdの詳細もMISSING。Permissionをスレッドローカルに設定するという重要な動作はPARTIAL（後続ハンドラ呼び出しは記述あるが、thread-local設定による画面表示制御との連携が欠落）。加えて、参照ソース外のlibraries-role_check.json:s1/s3から@CheckRoleアノテーション・SessionStoreUserRoleUtil・CheckRoleUtilの実装詳細を多数含む（HALLUCINATION）。複数の必須ファクトがMISSINGのため、Level 2の「全ファクトCOVERED/PARTIAL」条件を満たせずLevel 1が適切。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.22470915000000002,
+  "duration_s": 92.44509315490723,
+  "error": null
+}

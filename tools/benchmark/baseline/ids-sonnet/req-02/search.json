@@ -1,0 +1,82 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch には権限チェックの仕組みが標準で2種類用意されている。`permission_check`（ハンドラ方式）と `role_check`（アノテーション方式）で、システムの要件に応じて使い分ける。\n\n**根拠**:\n\n① **2種類の認可チェック機能**\nNablarch は以下の2つを提供している（`component/libraries/libraries-permission_check.json:s1`）:\n- `authorization/permission_check` — リクエストIDベースで、権限管理条件が変わる可能性のある複雑なシステム向け\n- `authorization/role_check` — ロール（役割）ベースで、権限条件が固定的な場合に素早く導入できる簡易版\n\n② **ハンドラ方式（permission_check）**\n`PermissionCheckHandler` をハンドラキューに組み込むと、ログイン中ユーザが現在のリクエストIDに対して権限を持つか自動チェックする。権限があれば後続ハンドラへ、権限がなければ `Forbidden(403)` を送出する（`component/handlers/handlers-permission_check_handler.json:s4`）。\n\nログイン前のリクエストなどチェック不要なパスは `ignoreRequestIds` で除外できる（`component/handlers/handlers-permission_check_handler.json:s6`）:\n```xml\n<property name=\"ignoreRequestIds\" value=\"/action/login,/action/logout\" />\n```\n\n③ **アノテーション方式（role_check）**\nアクションメソッドに `@CheckRole` を付与し、必要なロールを指定する。ユーザがそのロールを持たない場合は `Forbidden` がスローされる（`component/libraries/libraries-role_check.json:s1`）:\n```java\n@CheckRole(Roles.ROLE_ADMIN)\npublic HttpResponse index(HttpRequest request, ExecutionContext context) { ... }\n```\nログイン時にユーザのロールを解決して `SessionStoreUserRoleUtil.save()` でセッションに保存し、以降の認可チェックはセッション情報を使う（`component/libraries/libraries-role_check.json:s3`）。\n\n④ **JSPでの表示制御**\nJSP用カスタムタグは提供されていないが、サーバー側で `CheckRoleUtil.checkRole()` の結果をセッションに保存し、JSP側で EL式/JSTL（`c:if`）を使って表示・非表示を制御できる（`component/libraries/libraries-role_check.json:s3`）。\n\n**注意点**:\n- 権限管理条件が変わる可能性があるシステム（部署ごとに権限が異なるなど）では `permission_check` を推奨。`role_check` はロールと機能の組み合わせを変えるたびにアノテーションの書き換えが必要になる（`component/libraries/libraries-role_check.json:s1`）。\n- エラー時に表示するページは `HttpErrorHandler` で別途設定する（`component/handlers/handlers-permission_check_handler.json:s5`）。\n\n参照: component/libraries/libraries-permission_check.json:s1, component/handlers/handlers-permission_check_handler.json:s4, component/handlers/handlers-permission_check_handler.json:s5, component/handlers/handlers-permission_check_handler.json:s6, component/libraries/libraries-role_check.json:s1, component/libraries/libraries-role_check.json:s3",
+  "cited": [
+    "component/libraries/libraries-permission_check.json:s1",
+    "component/handlers/handlers-permission_check_handler.json:s4",
+    "component/handlers/handlers-permission_check_handler.json:s5",
+    "component/handlers/handlers-permission_check_handler.json:s6",
+    "component/libraries/libraries-role_check.json:s1",
+    "component/libraries/libraries-role_check.json:s3"
+  ],
+  "cost_usd": 0.3903168,
+  "duration_s": 43.96145176887512,
+  "steps": {
+    "raw_selections": [
+      "libraries-permission_check|s1",
+      "handlers-permission_check_handler|s4",
+      "handlers-permission_check_handler|s5",
+      "handlers-permission_check_handler|s6",
+      "libraries-role_check|s1",
+      "libraries-role_check|s3",
+      "web-application-feature_details|s14"
+    ],
+    "resolved": [
+      "component/libraries/libraries-permission_check.json:s1",
+      "component/handlers/handlers-permission_check_handler.json:s4",
+      "component/handlers/handlers-permission_check_handler.json:s5",
+      "component/handlers/handlers-permission_check_handler.json:s6",
+      "component/libraries/libraries-role_check.json:s1",
+      "component/libraries/libraries-role_check.json:s3",
+      "processing-pattern/web-application/web-application-feature_details.json:s14"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/libraries/libraries-permission_check.json:s1",
+        "status": "ok",
+        "title": "概要",
+        "chars": 518
+      },
+      {
+        "selector": "component/handlers/handlers-permission_check_handler.json:s4",
+        "status": "ok",
+        "title": "リクエストに対する認可チェック",
+        "chars": 384
+      },
+      {
+        "selector": "component/handlers/handlers-permission_check_handler.json:s5",
+        "status": "ok",
+        "title": "権限がない場合に表示するエラーページを指定する",
+        "chars": 142
+      },
+      {
+        "selector": "component/handlers/handlers-permission_check_handler.json:s6",
+        "status": "ok",
+        "title": "特定のリクエストを認可チェックから除外する",
+        "chars": 402
+      },
+      {
+        "selector": "component/libraries/libraries-role_check.json:s1",
+        "status": "ok",
+        "title": "機能概要",
+        "chars": 690
+      },
+      {
+        "selector": "component/libraries/libraries-role_check.json:s3",
+        "status": "ok",
+        "title": "使用方法",
+        "chars": 3962
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s14",
+        "status": "ok",
+        "title": "認可チェック",
+        "chars": 31
+      }
+    ],
+    "select_cost_usd": 0.25334255,
+    "answer_cost_usd": 0.13697425
+  },
+  "error": null
+}

@@ -1,0 +1,46 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "CsrfTokenVerificationHandler をハンドラキューに追加する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "セッションストア必須で、セッションストアハンドラより後に配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Nablarch カスタムタグ使用時はカスタムタグハンドラより後に配置する",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "デフォルトでUUID v4によるトークン生成、セッションストア格納名 `nablarch_csrf-token`、GET/HEAD/TRACE/OPTIONS は検証対象外、検証失敗時はBadRequest(400)"
+      },
+      {
+        "claim": "ログイン時にセッションIDのみ変更する実装の場合は CsrfTokenUtil.regenerateCsrfToken(ctx) の呼び出しが必須（セッション固定攻撃対策）"
+      },
+      {
+        "claim": "セッションストア全体を破棄・再生成する実装ならトークン再生成は不要"
+      },
+      {
+        "claim": "テスト時は csrfTokenVerificationHandler を NopHandler に差し替えてCSRF検証を無効化する必要がある"
+      },
+      {
+        "claim": "ファイルアップロードでファイル保存前にCSRF検証したい場合は multipart_handler の前に session_store_handler と csrfTokenVerificationHandler を配置する"
+      },
+      {
+        "claim": "WebConfig で csrfTokenHeaderName や csrfTokenParameterName 等をカスタマイズ可能"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "3つのA-factすべてがCOVERED。①ハンドラキューへの追加、②セッションストア必須＋session_store_handlerより後ろへの配置、③nablarch_tag_handlerより後ろへの配置、いずれも明確に記述されている。加えてKB証拠（s4, s5, s6）に基づくログイン時のトークン再生成、テスト時の無効化、ファイルアップロード時の考慮、WebConfigカスタマイズなど複数のB-claimsが含まれる。C-claimなし。よってLevel 3。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.18238645000000003,
+  "duration_s": 26.38008713722229,
+  "error": null
+}

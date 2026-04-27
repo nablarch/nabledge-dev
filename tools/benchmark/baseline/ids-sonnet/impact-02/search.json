@@ -1,0 +1,63 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: `CsrfTokenVerificationHandler` をハンドラキューに追加するだけで CSRF 対策が有効になる。セッションストアハンドラおよびカスタムタグハンドラとの**順序**が重要。\n\n**根拠**:\n\n① **ハンドラの追加と順序**\n\n以下の順序でハンドラキューに設定する必要がある。`sessionStoreHandler` → `nablarchTagHandler` → `csrfTokenVerificationHandler` の順が必須。\n\n```xml\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <component-ref name=\"sessionStoreHandler\" />\n      <component-ref name=\"nablarchTagHandler\"/>\n      <component-ref name=\"csrfTokenVerificationHandler\"/>\n    </list>\n  </property>\n</component>\n\n<component name=\"csrfTokenVerificationHandler\"\n           class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\" />\n```\n（`component/handlers/handlers-csrf_token_verification_handler.json:s4`）\n\n② **デフォルト動作**\n\n- トークンは UUID v4 で生成、セッションストアに `nablarch_csrf-token` という名前で格納される\n- `GET`/`HEAD`/`TRACE`/`OPTIONS` は検証対象外、`POST`/`PUT` 等が検証対象\n- クライアントからのトークン送信方法: HTTP ヘッダ `X-CSRF-TOKEN` またはパラメータ `csrf-token`\n- 検証失敗時は 400 Bad Request を返す\n（`component/handlers/handlers-csrf_token_verification_handler.json:s4`）\n\n③ **ログイン時のトークン再生成**\n\nログイン時にセッションストアを破棄して再生成しない実装（セッション ID 再生成のみ）の場合、`CsrfTokenUtil.regenerateCsrfToken` を呼ぶこと。これを怠ると、セッション固定攻撃と組み合わせてログイン後に攻撃リクエストを送り込まれる危険がある。（`component/handlers/handlers-csrf_token_verification_handler.json:s5`）\n\n**注意点**:\n\n- **テスト時**: テスティングフレームワークでリクエスト単体テストを実施すると正しい画面遷移を経由しないためトークン検証に失敗する。テスト環境では `csrfTokenVerificationHandler` を `NopHandler` に差し替えて無効化すること。（`component/handlers/handlers-csrf_token_verification_handler.json:s4`）\n- **カスタムタグとの相性**: `nablarchTagHandler` より後に `csrfTokenVerificationHandler` を配置すること。順序が逆になるとトークンがセッションに格納される前に検証が走り、正常動作しない。（`component/handlers/handlers-csrf_token_verification_handler.json:s4`）\n- **セッションストアとの相性**: セッションストアハンドラ（`SessionStoreHandler`）は `csrfTokenVerificationHandler` より先に配置する必要がある。CSRFトークンはセッションストアに保存されるため、セッションストアが初期化される前に検証ハンドラが動くと失敗する。（`component/handlers/handlers-csrf_token_verification_handler.json:s4`, `component/handlers/handlers-SessionStoreHandler.json:s5`）\n\n参照: component/handlers/handlers-csrf_token_verification_handler.json:s4, component/handlers/handlers-csrf_token_verification_handler.json:s5, component/handlers/handlers-SessionStoreHandler.json:s5",
+  "cited": [
+    "component/handlers/handlers-csrf_token_verification_handler.json:s4",
+    "component/handlers/handlers-csrf_token_verification_handler.json:s5",
+    "component/handlers/handlers-SessionStoreHandler.json:s5"
+  ],
+  "cost_usd": 0.3915229499999999,
+  "duration_s": 49.197368144989014,
+  "steps": {
+    "raw_selections": [
+      "web-application-feature_details|s19",
+      "handlers-csrf_token_verification_handler|s4",
+      "handlers-csrf_token_verification_handler|s5",
+      "handlers-SessionStoreHandler|s5",
+      "libraries-tag|s5"
+    ],
+    "resolved": [
+      "processing-pattern/web-application/web-application-feature_details.json:s19",
+      "component/handlers/handlers-csrf_token_verification_handler.json:s4",
+      "component/handlers/handlers-csrf_token_verification_handler.json:s5",
+      "component/handlers/handlers-SessionStoreHandler.json:s5",
+      "component/libraries/libraries-tag.json:s5"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s19",
+        "status": "ok",
+        "title": "CSRF対策",
+        "chars": 91
+      },
+      {
+        "selector": "component/handlers/handlers-csrf_token_verification_handler.json:s4",
+        "status": "ok",
+        "title": "CSRFトークンの生成と検証",
+        "chars": 1982
+      },
+      {
+        "selector": "component/handlers/handlers-csrf_token_verification_handler.json:s5",
+        "status": "ok",
+        "title": "CSRFトークンを再生成する",
+        "chars": 326
+      },
+      {
+        "selector": "component/handlers/handlers-SessionStoreHandler.json:s5",
+        "status": "ok",
+        "title": "セッションストアを使用するための設定",
+        "chars": 530
+      },
+      {
+        "selector": "component/libraries/libraries-tag.json:s5",
+        "status": "ok",
+        "title": "入力フォームを作る",
+        "chars": 2589
+      }
+    ],
+    "select_cost_usd": 0.25573724999999997,
+    "answer_cost_usd": 0.13578569999999998
+  },
+  "error": null
+}

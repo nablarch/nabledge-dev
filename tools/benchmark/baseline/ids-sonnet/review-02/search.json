@@ -1,0 +1,65 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch ウェブアプリケーションは「ServletAPI を前提とした 2 コンポーネント構成」＋「13 ハンドラからなる最小ハンドラキュー」を起点に組むのが推奨。\n\n**根拠**:\n\n**① 必須コンポーネント（2つ）**\nNablarch の初期化には次の 2 設定が必要。（`processing-pattern/web-application/web-application-feature_details.json:s1`）\n- `NablarchServletContextListener`：システムリポジトリ・ログの初期化を担うサーブレットコンテキストリスナー\n- `WebFrontController`：受信リクエストをハンドラキューへ委譲するサーブレットフィルタ\n（`processing-pattern/web-application/web-application-architecture.json:s1`）\n\n**② 処理の流れ（7ステップ）**\nWebFrontController がリクエストを受信 → ハンドラキューへ委譲 → `DispatchHandler` が URI からアクションクラスを特定 → アクションクラスがフォームクラス/エンティティクラスを使って業務ロジックを実行 → `HttpResponse` を返却 → `HttpResponseHandler` がレスポンス変換（JSP Servlet Forward 等） → クライアントへ返却。（`processing-pattern/web-application/web-application-architecture.json:s2`）\n\n**③ 最小ハンドラ構成（13本）**\n以下の順番でキューを組むのが推奨ベース。（`processing-pattern/web-application/web-application-architecture.json:s3`）\n\n| No. | ハンドラ | 主な役割 |\n|---|---|---|\n| 1 | HttpCharacterEncodingHandler | 文字エンコーディング設定 |\n| 2 | GlobalErrorHandler | 実行時例外のログ出力 |\n| 3 | HttpResponseHandler | フォーワード/リダイレクト/レスポンス書き込み |\n| 4 | SecureHandler | セキュリティ関連レスポンスヘッダ設定 |\n| 5 | MultipartHandler | マルチパート一時ファイル保存・削除 |\n| 6 | SessionStoreHandler | セッションストア読み書き |\n| 7 | NormalizeHandler | リクエストパラメータのノーマライズ |\n| 8 | ForwardingHandler | 内部フォーワード時の後続ハンドラ再実行 |\n| 9 | HttpErrorHandler | 例外種別に応じたログ出力とレスポンス生成 |\n| 10 | NablarchTagHandler | Nablarchカスタムタグの事前処理 |\n| 11 | DatabaseConnectionManagementHandler | DB接続の取得・解放 |\n| 12 | TransactionManagementHandler | トランザクション開始・コミット・ロールバック |\n| 13 | RouterAdaptor | リクエストパスからアクション決定 |\n\n**④ プロジェクト雛形**\nブランクプロジェクトは Maven 単一プロジェクト構成で、H2 DB 組み込み済み・ルーティングアダプタ（RouterAdaptor）設定済みの状態から始められる。（`setup/blank-project/blank-project-setup_Web.json:s2`）\n\n**注意点**: 上記 13 本はあくまで最小構成。サービス提供可否チェック（`service_availability`）、認可（`permission_check_handler`）、CSRF トークン検証（`CsrfTokenVerificationHandler`）、アクセスログ（`HttpAccessLogHandler`）などはプロジェクト要件に応じて追加する。カスタムハンドラが必要になる場合もある。（`processing-pattern/web-application/web-application-architecture.json:s3`）\n\n参照: processing-pattern/web-application/web-application-architecture.json:s1, processing-pattern/web-application/web-application-architecture.json:s2, processing-pattern/web-application/web-application-architecture.json:s3, processing-pattern/web-application/web-application-feature_details.json:s1, setup/blank-project/blank-project-setup_Web.json:s2",
+  "cited": [
+    "processing-pattern/web-application/web-application-architecture.json:s1",
+    "processing-pattern/web-application/web-application-architecture.json:s2",
+    "processing-pattern/web-application/web-application-architecture.json:s3",
+    "processing-pattern/web-application/web-application-feature_details.json:s1",
+    "setup/blank-project/blank-project-setup_Web.json:s2"
+  ],
+  "cost_usd": 0.39117650000000004,
+  "duration_s": 48.74132823944092,
+  "steps": {
+    "raw_selections": [
+      "web-application-architecture|s1",
+      "web-application-architecture|s2",
+      "web-application-architecture|s3",
+      "blank-project-setup_Web|s2",
+      "web-application-feature_details|s1"
+    ],
+    "resolved": [
+      "processing-pattern/web-application/web-application-architecture.json:s1",
+      "processing-pattern/web-application/web-application-architecture.json:s2",
+      "processing-pattern/web-application/web-application-architecture.json:s3",
+      "setup/blank-project/blank-project-setup_Web.json:s2",
+      "processing-pattern/web-application/web-application-feature_details.json:s1"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "processing-pattern/web-application/web-application-architecture.json:s1",
+        "status": "ok",
+        "title": "ウェブアプリケーションの構成",
+        "chars": 356
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-architecture.json:s2",
+        "status": "ok",
+        "title": "ウェブアプリケーションの処理の流れ",
+        "chars": 625
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-architecture.json:s3",
+        "status": "ok",
+        "title": "ウェブアプリケーションで使用するハンドラ",
+        "chars": 4061
+      },
+      {
+        "selector": "setup/blank-project/blank-project-setup_Web.json:s2",
+        "status": "ok",
+        "title": "生成するプロジェクトの概要",
+        "chars": 491
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s1",
+        "status": "ok",
+        "title": "Nablarchの初期化",
+        "chars": 176
+      }
+    ],
+    "select_cost_usd": 0.25348560000000003,
+    "answer_cost_usd": 0.1376909
+  },
+  "error": null
+}

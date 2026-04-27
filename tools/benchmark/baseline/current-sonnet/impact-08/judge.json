@@ -1,0 +1,34 @@
+{
+  "verdict": {
+    "level": 1,
+    "a_facts": [
+      {
+        "fact": "Bean Validation で DB アクセスを行うのはセキュリティ上の問題がある(未バリデーションの不正値で SQL 問合せするため SQL インジェクションにつながる可能性がある)",
+        "status": "COVERED"
+      },
+      {
+        "fact": "DB との相関バリデーション(重複チェックなど)は Bean Validation 通過後のビジネスアクション側で実施する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "フィールド同士の相関チェック(DB 不要)は `@AssertTrue` で Bean Validation 内に書いてよい",
+        "status": "MISSING"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "Jakarta Bean Validation はバリデーションの実行順序を保証しないため、他のバリデーションが先に終わっていると仮定することも危険"
+      },
+      {
+        "claim": "ビジネスアクションで DB 重複チェックを行う際も、UniversalDAO や JDBCラッパーを使い入力値を直接文字列連結しないことが推奨される"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-fact 1（SQLインジェクションリスク）とA-fact 2（ビジネスアクションでの実施）はいずれも明確にカバーされている。しかし A-fact 3（フィールド同士の相関チェックは @AssertTrue で Bean Validation 内に書いてよい）は生成回答に一切言及がなく MISSING。これにより「A all COVERED」の条件を満たせないため Level 1 となる。C-claim は見当たらない。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.21013284999999998,
+  "duration_s": 42.03376770019531,
+  "error": null
+}

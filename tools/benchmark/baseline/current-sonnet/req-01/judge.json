@@ -1,0 +1,48 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "認証ロジック自体はビルトイン提供されておらず、プロジェクト側で実装する必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "認証情報の保持には Nablarch のセッションストア(DB ストア)を使う",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "パスワード認証のビジネスサンプル（nablarch-password-authentication）が提供されており、これを元に実装できる"
+      },
+      {
+        "claim": "SystemAccountAuthenticator、PBKDF2PasswordEncryptor、AuthenticationUtil などの主要クラスが用意されている"
+      },
+      {
+        "claim": "AuthenticationUtil.authenticate を使って認証を呼び出し、AuthenticationFailedException / UserIdLockedException / PasswordExpiredException で例外処理できる"
+      },
+      {
+        "claim": "有効日チェック・パスワード有効期限チェック・連続失敗によるアカウントロック・PBKDF2暗号化・最終ログイン日時更新などの機能特徴がある"
+      },
+      {
+        "claim": "ログイン時に SessionUtil.changeId でセッション ID を変更し、CsrfTokenUtil.regenerateCsrfToken で CSRF トークンを再生成する"
+      },
+      {
+        "claim": "ログアウト時は SessionUtil.invalidate でセッションストア全体を破棄する"
+      },
+      {
+        "claim": "SystemAccountAuthenticator は個別アプリケーションとは別トランザクション（authenticator）で動かす必要がある"
+      },
+      {
+        "claim": "認証情報保持にはDBストアまたはHTTPセッションストアが推奨され、DBストアはAPサーバ停止時もセッションを復元できる点で優れている"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-fact①「認証ロジックはビルトイン提供されておらず PJ 側で実装」は、生成回答の冒頭と①節で明示的にカバーされている。A-fact②「認証情報の保持には DB ストアを使う」は、⑤節でDBストアを主要選択肢として示し、コード例でも `SessionUtil.put(ctx, \"user\", user, \"db\")` と DB ストア指定しており、COVERED。C-claim は存在しない（全主張は取得セクション biz-samples-01.json:s2-s7 および session_store.json:s1/s6 によって支持されている）。B-claim は多数あり、ビジネスサンプルの詳細なクラス構成・例外処理・セッション操作手順など有益な追加情報を含む。よって Level 3。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.20208175,
+  "duration_s": 39.699671506881714,
+  "error": null
+}

@@ -1,0 +1,49 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Nablarch は RESTful ウェブサービス向けに CORS 対応をビルトインで提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "プリフライトリクエストは `CorsPreflightRequestHandler` が処理する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "実リクエストへの CORS ヘッダ付与は `CorsResponseFinisher` が行う",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "CORSの処理は `Cors` インタフェースが行い、フレームワークの基本実装として `BasicCors` クラスが提供されている"
+      },
+      {
+        "claim": "`BasicCors` の `allowOrigins` プロパティに許可する Origin を列挙する設定が必須"
+      },
+      {
+        "claim": "プリフライト判定条件: HTTPメソッドが OPTIONS、かつ `Origin` ヘッダと `Access-Control-Request-Method` ヘッダが存在する場合"
+      },
+      {
+        "claim": "プリフライトレスポンスはステータス204、Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE,PATCH、Access-Control-Allow-Headers: Content-Type,X-CSRF-TOKEN"
+      },
+      {
+        "claim": "実際のリクエストには Access-Control-Allow-Origin、Vary: Origin（許可Origin時のみ）、Access-Control-Allow-Credentials: true を付与"
+      },
+      {
+        "claim": "`CorsPreflightRequestHandler` は `JaxRsResponseHandler` より後ろのハンドラキューに配置する必要がある"
+      },
+      {
+        "claim": "モジュールとして `com.nablarch.framework:nablarch-fw-jaxrs` への依存追加が必要"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "3つのA-factすべてがCOVERED。生成回答は「Nablarch には CORS 対応の標準機能がある」と明示し、`CorsPreflightRequestHandler` によるプリフライト処理と `CorsResponseFinisher` による実リクエストへのヘッダ付与を正確に記述している。さらに取得セクション（s2〜s4）から `BasicCors` の設定方法、デフォルト動作、モジュール依存、ハンドラ配置制約などの有用なB-claimsを追加しており、C-claimは存在しない。Level 3。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.16329605000000003,
+  "duration_s": 26.2027587890625,
+  "error": null
+}

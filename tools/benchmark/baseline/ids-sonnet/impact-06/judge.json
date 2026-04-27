@@ -1,0 +1,56 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "Nablarchカスタムタグ使用時は、SecureHandlerのnonce生成を有効にするだけでJSPの書き換えは不要",
+        "status": "COVERED"
+      },
+      {
+        "fact": "tag-form_tagがonclick属性の関数呼び出しを含むJSをnonce付きscript要素に自動変換する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "カスタムタグ外の手書きonclick=は、tag-csp_nonce_tagでnonce付与するか外部JSに切り出す必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SecureHandlerのgenerateCspNonceをtrueに設定し、ContentSecurityPolicyHeaderのpolicyに$cspNonceSource$プレースホルダーを含めることが前提",
+        "status": "COVERED"
+      },
+      {
+        "fact": "tag-script_tagが生成するscript要素のnonce属性にはハンドラ生成のnonceが自動設定される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "nonceはリクエストごとに生成されるためJSPから生成されるHTMLが毎回変化する（キャッシュ設計に注意）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "tag-csp_nonce_tagを使って既存インライン記述の要素（style等）にnonce属性を付与できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "script要素にnonce属性を付与したい場合はtag-csp_nonce_tagではなくtag-script_tagを使うことが推奨",
+        "status": "MISSING"
+      },
+      {
+        "fact": "Content-Security-Policyをmeta要素で設定する場合はtag-csp_nonce_tagのsourceFormat属性をtrueにするとnonce-XXXXフォーマットで出力される",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "`<script nonce=\"<n:cspNonce />\">...</script>` という例示でscript要素にtag-csp_nonce_tagを使うパターンを示している",
+        "type": "OVER-REACH",
+        "why": "参照ソースはscript要素へのnonce付与にはtag-csp_nonce_tagではなくtag-script_tagを使うことを明示的に推奨しており、この例示は推奨に反する"
+      }
+    ],
+    "reasoning": "主要な必須ファクトはほぼすべてカバーされている。「カスタムタグ使用時はJSP書き換え不要、手書きonclickは対応が必要」というコアの結論、SecureHandlerの設定方法、tag-form_tagの自動変換動作、リクエストごとのHTML変化によるキャッシュ注意点、tag-csp_nonce_tagの利用方法、meta要素時のsourceFormat設定がいずれも正確に説明されている。一方、「script要素へのnonce付与にはtag-csp_nonce_tagではなくtag-script_tagを推奨」という参照回答の補足事項がMISSINGであり、さらに生成回答の例示として`<script nonce=\"<n:cspNonce />\">` を使用しており、参照ソースの推奨に反するオーバーリーチがある。これはコアな誤りではなく実害も限定的だが、ベストプラクティスに反する例示という点でLevel 3には至らず、Level 2とする。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.23077675000000003,
+  "duration_s": 94.68832969665527,
+  "error": null
+}

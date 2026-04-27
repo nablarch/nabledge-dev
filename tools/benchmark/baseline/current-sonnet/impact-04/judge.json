@@ -1,0 +1,43 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Nablarch には `RetryHandler` が標準で用意されている",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リトライ上限の設定が必須で、回数ベースまたは経過時間ベースのファクトリを `retryContextFactory` に指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リトライ対象の例外を送出するハンドラは `RetryHandler` より後に配置する必要がある",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "`RetryHandler` は `Retryable` インタフェースを実装した実行時例外のみをリトライ可能とみなす（標準外の例外はそのままでは反応しない）"
+      },
+      {
+        "claim": "常駐バッチ・MOMメッセージング・DBメッセージングのハンドラ構成には `retry_handler` が標準で組み込まれているが、Webアプリケーションの最小ハンドラ構成には含まれていない"
+      },
+      {
+        "claim": "`process_resident_handler` が実行時例外を `RetryableException` でラップして再送出し、リトライ制御を `retry_handler` に委譲する"
+      },
+      {
+        "claim": "`retryIntervals` プロパティでリトライ実行までの待機時間（ミリ秒）を設定できる"
+      },
+      {
+        "claim": "複数例外をリトライする場合は最も復旧に時間のかかるものをベースに上限値を設定すること"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "3つのA-factはすべてCOVERED。①RetryHandlerの存在は冒頭で明示、②retryContextFactoryへの上限設定（必須・回数/経過時間の2種）はXML例と注意点で網羅、③リトライ対象例外を送出するハンドラをRetryHandlerより後に置く制約は常駐バッチの説明で言及されている。加えて、KBに裏付けられたBクレーム（Retryableインタフェース要件、Webアプリ非標準、process_resident_handlerのラップ動作、待機時間設定）が複数あり、Cクレームはない。Level 3。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.2439994,
+  "duration_s": 57.200297117233276,
+  "error": null
+}

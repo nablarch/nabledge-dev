@@ -1,0 +1,835 @@
+[
+  {
+    "id": "review-01",
+    "review_perspective": "アーキテクチャ",
+    "context": "ファイルからDBへの都度起動バッチ",
+    "expected_question": "ファイルの明細レコードを読み込んで DB テーブルに取り込む夜間バッチを作りたい。Nablarch でこういうバッチを実装するときの推奨構成を知りたい",
+    "expected_keywords": [
+      "バッチ",
+      "ファイル入出力",
+      "都度起動バッチ",
+      "データバインド",
+      "データベースアクセス"
+    ],
+    "expected_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json|s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json|s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json|s1"
+    ],
+    "notes": "architecture#s1 に推奨ハンドラキュー構成。s3 は処理の流れ。feature_details#s1 で都度起動/常駐の使い分け。質問からクラス名・ハンドラ名を除去",
+    "main": [
+      "バッチ",
+      "ファイル入出力"
+    ],
+    "sub": [
+      "都度起動バッチ",
+      "データバインド",
+      "データベースアクセス"
+    ]
+  },
+  {
+    "id": "review-02",
+    "review_perspective": "アーキテクチャ",
+    "context": "ウェブアプリケーション",
+    "expected_question": "Nablarch でウェブアプリケーションを新規に立ち上げる。基本の処理構成ってどうやって組むのが推奨？",
+    "expected_keywords": [
+      "ウェブアプリケーション",
+      "ハンドラ",
+      "ハンドラキュー",
+      "アクション",
+      "処理構成"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-architecture.json|s1",
+      "processing-pattern/web-application/web-application-architecture.json|s2",
+      "processing-pattern/web-application/web-application-architecture.json|s3"
+    ],
+    "notes": "architecture s1 (構成)、s2 (流れ)、s3 (使用するハンドラ) の 3 点セット",
+    "main": [
+      "ウェブアプリケーション",
+      "ハンドラ"
+    ],
+    "sub": [
+      "ハンドラキュー",
+      "アクション",
+      "処理構成"
+    ]
+  },
+  {
+    "id": "review-03",
+    "review_perspective": "アーキテクチャ",
+    "context": "RESTfulウェブサービス",
+    "expected_question": "Nablarch で REST API を提供するサービスを作りたい。処理のつなぎ方や構成パターンってどう組むのが推奨？",
+    "expected_keywords": [
+      "RESTfulウェブサービス",
+      "JAX-RS",
+      "REST",
+      "ハンドラ",
+      "リソース"
+    ],
+    "expected_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json|s1",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json|s2",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json|s3"
+    ],
+    "notes": "REST 版の architecture 3 セクション。Web アプリとの差分を確認できる",
+    "main": [
+      "RESTfulウェブサービス",
+      "JAX-RS"
+    ],
+    "sub": [
+      "REST",
+      "ハンドラ",
+      "リソース"
+    ]
+  },
+  {
+    "id": "review-04",
+    "review_perspective": "セキュリティ",
+    "context": "ウェブアプリケーション",
+    "expected_question": "ユーザーが入力する画面項目のチェックをどう書くのが Nablarch 流？ 必須・桁数・形式チェックをなるべく楽に書きたい",
+    "expected_keywords": [
+      "バリデーション",
+      "Bean Validation",
+      "必須",
+      "入力チェック",
+      "アノテーション"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s2",
+      "component/libraries/libraries-bean_validation.json|s13",
+      "component/libraries/libraries-validation.json|s1"
+    ],
+    "notes": "feature_details#s2 がパターン側エントリ。bean_validation#s13 が Web アプリ用。validation#s1 が全体像",
+    "main": [
+      "バリデーション",
+      "Bean Validation"
+    ],
+    "sub": [
+      "必須",
+      "入力チェック",
+      "アノテーション"
+    ]
+  },
+  {
+    "id": "review-05",
+    "review_perspective": "セキュリティ",
+    "context": "RESTfulウェブサービス",
+    "expected_question": "REST API でクライアントから受け取る JSON の入力値を検証したい。不正な値のときにエラーをどう返すのが推奨？",
+    "expected_keywords": [
+      "バリデーション",
+      "Bean Validation",
+      "RESTfulウェブサービス",
+      "エラーレスポンス",
+      "JSON"
+    ],
+    "expected_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-feature_details.json|s2",
+      "processing-pattern/restful-web-service/restful-web-service-feature_details.json|s11",
+      "component/libraries/libraries-bean_validation.json|s14"
+    ],
+    "notes": "feature_details#s2 が入力値チェック、s11 がエラー応答。bean_validation#s14 が REST 用",
+    "main": [
+      "バリデーション",
+      "Bean Validation"
+    ],
+    "sub": [
+      "RESTfulウェブサービス",
+      "エラーレスポンス",
+      "JSON"
+    ]
+  },
+  {
+    "id": "review-06",
+    "review_perspective": "セキュリティ",
+    "context": "ウェブアプリケーション",
+    "expected_question": "Web アプリで外部サイトから不正に POST されるのを防ぎたい。Nablarch に対策の仕組みはある？ どう設定する？",
+    "expected_keywords": [
+      "CSRF",
+      "CSRFトークン",
+      "クロスサイトリクエストフォージェリ",
+      "セキュリティ",
+      "トークン"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s19",
+      "component/handlers/handlers-csrf_token_verification_handler.json|s4",
+      "component/handlers/handlers-csrf_token_verification_handler.json|s3"
+    ],
+    "notes": "CSRF という一般用語は残す (ユーザーが知っている前提)。実装クラス名 (CsrfTokenVerificationHandler) は質問に出さない",
+    "main": [
+      "CSRF",
+      "CSRFトークン"
+    ],
+    "sub": [
+      "クロスサイトリクエストフォージェリ",
+      "セキュリティ",
+      "トークン"
+    ]
+  },
+  {
+    "id": "review-07",
+    "review_perspective": "セキュリティ",
+    "context": "ウェブアプリケーション",
+    "expected_question": "セキュリティ診断で Content Security Policy を入れろと言われた。Nablarch の Web 画面で CSP を有効にしたい。標準のやり方は？",
+    "expected_keywords": [
+      "CSP",
+      "Content-Security-Policy",
+      "セキュリティ",
+      "レスポンスヘッダ",
+      "ウェブアプリケーション"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s21",
+      "component/handlers/handlers-secure_handler.json|s6",
+      "component/handlers/handlers-secure_handler.json|s8",
+      "component/libraries/libraries-tag.json|s9"
+    ],
+    "notes": "CSP はセキュリティ診断の現場用語なので残す。実装クラス名 (SecureHandler) は出さない",
+    "main": [
+      "CSP",
+      "Content-Security-Policy"
+    ],
+    "sub": [
+      "セキュリティ",
+      "レスポンスヘッダ",
+      "ウェブアプリケーション"
+    ]
+  },
+  {
+    "id": "review-08",
+    "review_perspective": "並行制御",
+    "context": "常駐バッチの並列化",
+    "expected_question": "常駐バッチの処理が遅いので並列実行で速くしたい。複数スレッドで同時に DB を更新することになるが、接続や排他の扱いで注意することは？",
+    "expected_keywords": [
+      "マルチスレッド",
+      "並列実行",
+      "常駐バッチ",
+      "排他制御",
+      "データベースアクセス"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-multi_thread_execution_handler.json|s7",
+      "component/handlers/handlers-multi_thread_execution_handler.json|s5",
+      "component/handlers/handlers-multi_thread_execution_handler.json|s8"
+    ],
+    "notes": "ハンドラ名 (MultiThreadExecutionHandler) を質問から排除。「並列実行」「複数スレッド」という業務語で代替",
+    "main": [
+      "マルチスレッド",
+      "並列実行"
+    ],
+    "sub": [
+      "常駐バッチ",
+      "排他制御",
+      "データベースアクセス"
+    ]
+  },
+  {
+    "id": "review-09",
+    "review_perspective": "機能利用",
+    "context": "大量データ更新",
+    "expected_question": "for 文で 1 万件のレコードを 1 件ずつ更新する処理を書いている。遅いしレビューでも指摘された。Nablarch に一括で扱える仕組みはある？",
+    "expected_keywords": [
+      "ユニバーサルDAO",
+      "データベースアクセス",
+      "バッチ更新",
+      "一括",
+      "batchUpdate"
+    ],
+    "expected_sections": [
+      "component/libraries/libraries-universal_dao.json|s11"
+    ],
+    "notes": "クラス名 (UniversalDao) もメソッド名 (update) も質問から排除。「for 文で 1 件ずつ更新」という業務記述に置き換え。キーワード抽出で UniversalDao が出てくるかは検索側の腕の見せ所",
+    "main": [
+      "ユニバーサルDAO",
+      "データベースアクセス"
+    ],
+    "sub": [
+      "バッチ更新",
+      "一括",
+      "batchUpdate"
+    ]
+  },
+  {
+    "id": "review-10",
+    "review_perspective": "後方互換",
+    "context": "アプリケーション全般",
+    "expected_question": "Nablarch のバージョンアップで壊れにくいコードにしたい。将来変わるかもしれない部分を自分のコードで使っていないかチェックする方法はある？",
+    "expected_keywords": [
+      "公開API",
+      "互換性",
+      "バージョンアップ",
+      "非推奨",
+      "APIチェック"
+    ],
+    "expected_sections": [
+      "about/about-nablarch/about-nablarch-nablarch_api.json|s1",
+      "development-tools/java-static-analysis/java-static-analysis-java_static_analysis.json|s3"
+    ],
+    "notes": "「非公開 API」「Published」という内部用語を質問から排除。ユーザーの関心事「バージョンアップで壊れないか」で置き換え",
+    "main": [
+      "公開API",
+      "互換性"
+    ],
+    "sub": [
+      "バージョンアップ",
+      "非推奨",
+      "APIチェック"
+    ]
+  },
+  {
+    "id": "impact-01",
+    "impact_perspective": "ハンドラ間",
+    "context": "トランザクション境界とDB接続管理",
+    "expected_question": "バッチで DB を更新しているんだけど、コミットのタイミングやトランザクションの区切りがどこで決まっているのかよく分からない。Nablarch でトランザクションの境界って何で決まる？",
+    "expected_keywords": [
+      "トランザクション",
+      "コミット",
+      "バッチ",
+      "ロールバック",
+      "トランザクション制御"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-transaction_management_handler.json|s3",
+      "component/handlers/handlers-transaction_management_handler.json|s4",
+      "component/handlers/handlers-database_connection_management_handler.json|s3"
+    ],
+    "notes": "実装クラス名 (TransactionManagementHandler, DbConnectionManagementHandler) を質問から排除。「コミットのタイミング」「境界」という業務語で代替",
+    "main": [
+      "トランザクション",
+      "コミット"
+    ],
+    "sub": [
+      "バッチ",
+      "ロールバック",
+      "トランザクション制御"
+    ]
+  },
+  {
+    "id": "impact-02",
+    "impact_perspective": "ハンドラ間",
+    "context": "CSRF対策の導入",
+    "expected_question": "Web アプリで CSRF 対策を入れたい。セッションも使ってるし、JSP でカスタムタグも使ってるんだけど、何を追加すればいい？ 他との相性で気をつけることは？",
+    "expected_keywords": [
+      "CSRF",
+      "CSRFトークン",
+      "セッション",
+      "カスタムタグ",
+      "セキュリティ"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-csrf_token_verification_handler.json|s3",
+      "component/handlers/handlers-csrf_token_verification_handler.json|s4",
+      "component/handlers/handlers-SessionStoreHandler.json|s4"
+    ],
+    "notes": "CSRF は一般用語なので残す。実装クラス名 (CsrfTokenVerificationHandler, SessionStoreHandler, nablarch_tag_handler, multipart_handler) は一切出さない。「他との相性」という抽象表現で前提依存関係を問う",
+    "main": [
+      "CSRF",
+      "CSRFトークン"
+    ],
+    "sub": [
+      "セッション",
+      "カスタムタグ",
+      "セキュリティ"
+    ]
+  },
+  {
+    "id": "impact-03",
+    "impact_perspective": "ハンドラ間",
+    "context": "バッチの並列化",
+    "expected_question": "常駐バッチが遅いので複数スレッドで並列実行して速くしたい。各スレッドで DB 更新したいんだけど、接続はどう持つ？ スレッドの 1 つで例外が出たら他はどうなる？",
+    "expected_keywords": [
+      "マルチスレッド",
+      "並列実行",
+      "常駐バッチ",
+      "データベースアクセス",
+      "例外"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-multi_thread_execution_handler.json|s7",
+      "component/handlers/handlers-multi_thread_execution_handler.json|s8",
+      "component/handlers/handlers-transaction_management_handler.json|s3"
+    ],
+    "notes": "実装クラス名 (MultiThreadExecutionHandler) を排除。「並列実行」「複数スレッド」で代替",
+    "main": [
+      "マルチスレッド",
+      "並列実行"
+    ],
+    "sub": [
+      "常駐バッチ",
+      "データベースアクセス",
+      "例外"
+    ]
+  },
+  {
+    "id": "impact-04",
+    "impact_perspective": "ハンドラ間",
+    "context": "一時障害の自動リトライ",
+    "expected_question": "DB 接続が一瞬切れるような一時的な障害で失敗したとき、自動で再実行させたい。Nablarch にそういう仕組みある？ 使う場合の注意は？",
+    "expected_keywords": [
+      "リトライ",
+      "障害",
+      "バッチ",
+      "データベース接続",
+      "自動再実行"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-retry_handler.json|s3",
+      "component/handlers/handlers-retry_handler.json|s4"
+    ],
+    "notes": "実装クラス名 (RetryHandler) を排除。「自動で再実行」という業務語で代替",
+    "main": [
+      "リトライ",
+      "障害"
+    ],
+    "sub": [
+      "バッチ",
+      "データベース接続",
+      "自動再実行"
+    ]
+  },
+  {
+    "id": "impact-05",
+    "impact_perspective": "ハンドラ×ライブラリ",
+    "context": "セッション情報の保存と環境差",
+    "expected_question": "画面遷移中のフォーム入力を HIDDEN フィールドに持たせたい。Nablarch の機能で楽に書けると聞いた。本番が AP サーバ複数台構成なんだけど、何かハマりどころある？",
+    "expected_keywords": [
+      "HIDDENストア",
+      "セッションストア",
+      "hidden暗号化",
+      "AP サーバ",
+      "クラスタ"
+    ],
+    "expected_sections": [
+      "component/libraries/libraries-session_store.json|s8",
+      "component/libraries/libraries-session_store.json|s3",
+      "component/handlers/handlers-SessionStoreHandler.json|s4"
+    ],
+    "notes": "「HIDDEN」は画面の要素名として残す。「セッションストア」という Nablarch 固有語は質問から排除",
+    "main": [
+      "HIDDENストア",
+      "セッションストア"
+    ],
+    "sub": [
+      "hidden暗号化",
+      "AP サーバ",
+      "クラスタ"
+    ]
+  },
+  {
+    "id": "impact-06",
+    "impact_perspective": "ハンドラ×ライブラリ",
+    "context": "CSP対応と既存画面の影響",
+    "expected_question": "セキュリティ対策で Content Security Policy を有効にしたら、既存の JSP 画面で onclick= とか書いてるボタンが動かなくなった。JSP の書き方を変える必要がある？ 避けられない？",
+    "expected_keywords": [
+      "CSP",
+      "Content-Security-Policy",
+      "インラインスクリプト",
+      "JSP",
+      "セキュリティ"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-secure_handler.json|s6",
+      "component/handlers/handlers-secure_handler.json|s8",
+      "component/libraries/libraries-tag.json|s9",
+      "component/libraries/libraries-tag.json|s10"
+    ],
+    "notes": "CSP と JSP はユーザーの現場用語。実装クラス名 (SecureHandler, libraries-tag) は出さない。「画面が動かない」という症状で始めた",
+    "main": [
+      "CSP",
+      "Content-Security-Policy"
+    ],
+    "sub": [
+      "インラインスクリプト",
+      "JSP",
+      "セキュリティ"
+    ]
+  },
+  {
+    "id": "impact-07",
+    "impact_perspective": "ハンドラ×ライブラリ",
+    "context": "認可チェックと画面遷移",
+    "expected_question": "ログイン済みユーザーの権限で画面アクセスを制限したい。ただ画面の中で内部フォワードしているところがあって、フォワード先のアクションも認可対象にしたい。Nablarch でできる？",
+    "expected_keywords": [
+      "認可",
+      "Permission",
+      "フォワード",
+      "アクション",
+      "アクセス制限"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-permission_check_handler.json|s3",
+      "component/handlers/handlers-permission_check_handler.json|s4",
+      "component/libraries/libraries-permission_check.json|s1"
+    ],
+    "notes": "実装クラス名 (PermissionCheckHandler, ThreadContextHandler) を排除。「権限で画面アクセスを制限」「内部フォワード」という業務語で代替",
+    "main": [
+      "認可",
+      "Permission"
+    ],
+    "sub": [
+      "フォワード",
+      "アクション",
+      "アクセス制限"
+    ]
+  },
+  {
+    "id": "impact-08",
+    "impact_perspective": "ライブラリ間",
+    "context": "入力値のDB相関チェック",
+    "expected_question": "フォームで入力されたメールアドレスが DB 上ですでに登録済みでないかチェックしたい。入力チェックのところでこれを書きたいんだけど、セキュリティ的に問題ない？",
+    "expected_keywords": [
+      "バリデーション",
+      "Bean Validation",
+      "データベースアクセス",
+      "重複チェック",
+      "セキュリティ"
+    ],
+    "expected_sections": [
+      "component/libraries/libraries-bean_validation.json|s9",
+      "component/libraries/libraries-bean_validation.json|s8"
+    ],
+    "notes": "「Bean Validation」「カスタムバリデータ」という実装用語を排除。「入力チェックのところで」という業務表現で代替",
+    "main": [
+      "バリデーション",
+      "Bean Validation"
+    ],
+    "sub": [
+      "データベースアクセス",
+      "重複チェック",
+      "セキュリティ"
+    ]
+  },
+  {
+    "id": "impact-09",
+    "impact_perspective": "ライブラリ間",
+    "context": "コード値の入力検証",
+    "expected_question": "画面で選択する性別や種別が、マスタ上で定義されている有効な値かチェックしたい。マスタ管理の仕組みと入力チェックを連携できる？",
+    "expected_keywords": [
+      "バリデーション",
+      "コードバリュー",
+      "マスタ",
+      "入力チェック",
+      "コード値"
+    ],
+    "expected_sections": [
+      "component/libraries/libraries-code.json|s6",
+      "component/libraries/libraries-bean_validation.json|s5"
+    ],
+    "notes": "「Bean Validation」「コード管理」「@CodeValue」を排除。「マスタ管理」「有効な値」「入力チェック」という業務語で代替",
+    "main": [
+      "バリデーション",
+      "コードバリュー"
+    ],
+    "sub": [
+      "マスタ",
+      "入力チェック",
+      "コード値"
+    ]
+  },
+  {
+    "id": "impact-10",
+    "impact_perspective": "ライブラリ間",
+    "context": "ログインユーザー情報の保持",
+    "expected_question": "ログインしたユーザーの情報 (ID、名前、権限) を画面遷移中も保持して、認可チェックのときに参照したい。Nablarch ではどこに持つのが推奨？",
+    "expected_keywords": [
+      "セッションストア",
+      "認可",
+      "ログイン",
+      "Permission",
+      "ユーザ情報"
+    ],
+    "expected_sections": [
+      "component/libraries/libraries-session_store.json|s6",
+      "component/libraries/libraries-session_store.json|s4",
+      "component/libraries/libraries-permission_check.json|s1"
+    ],
+    "notes": "「セッションストア」を質問から排除。「画面遷移中も保持」「どこに持つのが推奨」という問題意識ベースで書く",
+    "main": [
+      "セッションストア",
+      "認可"
+    ],
+    "sub": [
+      "ログイン",
+      "Permission",
+      "ユーザ情報"
+    ]
+  },
+  {
+    "id": "req-01",
+    "requirements_perspective": "認証",
+    "context": "ログイン機能",
+    "builtin": false,
+    "expected_question": "ログイン認証の仕組みを作りたい。ユーザー名とパスワードで認証して、ログイン状態を保持する。Nablarch にビルトインのログイン機能はある？",
+    "expected_keywords": [
+      "認証",
+      "ログイン",
+      "セッション",
+      "パスワード",
+      "ログイン状態"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s13",
+      "component/libraries/libraries-session_store.json|s6"
+    ],
+    "notes": "feature_details#s13 に「認証はPJで実装すること」と明記 (not built-in)。ただし session_store#s6 に「認証情報の保持」があり、これがヒントになる",
+    "main": [
+      "認証",
+      "ログイン"
+    ],
+    "sub": [
+      "セッション",
+      "パスワード",
+      "ログイン状態"
+    ]
+  },
+  {
+    "id": "req-02",
+    "requirements_perspective": "認可",
+    "context": "画面アクセス制御",
+    "builtin": true,
+    "expected_question": "ログインしたユーザーの権限に応じて、アクセスできる画面を制限したい。Nablarch に権限チェックの仕組みはある？",
+    "expected_keywords": [
+      "認可",
+      "Permission",
+      "アクセス制限",
+      "権限",
+      "画面"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s14",
+      "component/handlers/handlers-permission_check_handler.json|s4",
+      "component/libraries/libraries-permission_check.json|s1"
+    ],
+    "notes": "feature_details#s14 がパターン側エントリ。handlers-permission_check s4 がリクエスト認可。libraries-permission_check s1 がライブラリ側概要",
+    "main": [
+      "認可",
+      "Permission"
+    ],
+    "sub": [
+      "アクセス制限",
+      "権限",
+      "画面"
+    ]
+  },
+  {
+    "id": "req-03",
+    "requirements_perspective": "排他制御",
+    "context": "同時編集防止",
+    "builtin": true,
+    "expected_question": "同じデータを複数人が同時に編集して後勝ちで消える問題を防ぎたい。Nablarch にそういう仕組みはある？",
+    "expected_keywords": [
+      "排他制御",
+      "楽観ロック",
+      "同時更新",
+      "競合",
+      "バージョン"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s4",
+      "component/libraries/libraries-universal_dao.json|s12",
+      "component/libraries/libraries-universal_dao.json|s14"
+    ],
+    "notes": "feature_details#s4 がパターン側 (楽観排他推奨)。universal_dao#s12 が楽観的ロック、s14 が排他制御の考え方",
+    "main": [
+      "排他制御",
+      "楽観ロック"
+    ],
+    "sub": [
+      "同時更新",
+      "競合",
+      "バージョン"
+    ]
+  },
+  {
+    "id": "req-04",
+    "requirements_perspective": "二重サブミット防止",
+    "context": "登録ボタン連打防止",
+    "builtin": true,
+    "expected_question": "登録ボタンを連打されると二重に登録されてしまう。ボタンの連打を防止する仕組みは Nablarch にある？",
+    "expected_keywords": [
+      "二重サブミット",
+      "useToken",
+      "トークン",
+      "サブミット",
+      "連打"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s8"
+    ],
+    "notes": "feature_details#s8 が 2 重サブミット防止 (トークンベース)",
+    "main": [
+      "二重サブミット",
+      "useToken"
+    ],
+    "sub": [
+      "トークン",
+      "サブミット",
+      "連打"
+    ]
+  },
+  {
+    "id": "req-05",
+    "requirements_perspective": "国際化",
+    "context": "画面多言語対応",
+    "builtin": true,
+    "expected_question": "画面の文言を日本語と英語で切り替えたい。メッセージやラベルの多言語対応は Nablarch でできる？",
+    "expected_keywords": [
+      "多言語",
+      "メッセージ",
+      "国際化",
+      "ラベル",
+      "言語切り替え"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s12",
+      "component/libraries/libraries-message.json|s5",
+      "component/libraries/libraries-code.json|s3"
+    ],
+    "notes": "feature_details#s12 がパターン側 (静的リソース多言語化)。libraries-message#s5 がメッセージ多言語化。libraries-code#s3 がコード名称多言語化",
+    "main": [
+      "多言語",
+      "メッセージ"
+    ],
+    "sub": [
+      "国際化",
+      "ラベル",
+      "言語切り替え"
+    ]
+  },
+  {
+    "id": "req-06",
+    "requirements_perspective": "スケールアウト",
+    "context": "APサーバ複数台構成",
+    "builtin": true,
+    "expected_question": "本番環境で AP サーバを複数台並べて負荷分散する予定。Nablarch アプリをスケールアウトさせるときに気をつけることは？ セッションの扱いとか大丈夫？",
+    "expected_keywords": [
+      "セッション",
+      "スケールアウト",
+      "AP サーバ",
+      "クラスタ",
+      "負荷分散"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s18",
+      "component/libraries/libraries-stateless_web_app.json|s1",
+      "component/libraries/libraries-stateless_web_app.json|s2"
+    ],
+    "notes": "feature_details#s18 がパターン側。stateless_web_app#s1 (基本的な考え方) と s2 (HTTPセッション依存の機能)",
+    "main": [
+      "セッション",
+      "スケールアウト"
+    ],
+    "sub": [
+      "AP サーバ",
+      "クラスタ",
+      "負荷分散"
+    ]
+  },
+  {
+    "id": "req-07",
+    "requirements_perspective": "CORS",
+    "context": "REST API クロスオリジン",
+    "builtin": true,
+    "expected_question": "REST API を別ドメインのフロントエンドから呼び出す。ブラウザの CORS 制約に対応する仕組みは Nablarch にある？",
+    "expected_keywords": [
+      "CORS",
+      "RESTfulウェブサービス",
+      "クロスオリジン",
+      "JAX-RS",
+      "レスポンスヘッダ"
+    ],
+    "expected_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-feature_details.json|s14",
+      "component/handlers/handlers-cors_preflight_request_handler.json|s1"
+    ],
+    "notes": "feature_details#s14 がパターン側。handlers-cors s1 がハンドラ詳細",
+    "main": [
+      "CORS",
+      "RESTfulウェブサービス"
+    ],
+    "sub": [
+      "クロスオリジン",
+      "JAX-RS",
+      "レスポンスヘッダ"
+    ]
+  },
+  {
+    "id": "req-08",
+    "requirements_perspective": "アップロード制限",
+    "context": "巨大ファイルのDoS防止",
+    "builtin": true,
+    "expected_question": "ファイルアップロード機能を作るが、巨大なファイルを送りつけてサーバを落とす攻撃を防ぎたい。アップロードサイズに上限を設ける仕組みは Nablarch にある？",
+    "expected_keywords": [
+      "ファイルアップロード",
+      "サイズ制限",
+      "セキュリティ",
+      "マルチパート",
+      "上限"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-multipart_handler.json|s6",
+      "component/handlers/handlers-multipart_handler.json|s7"
+    ],
+    "notes": "multipart_handler#s6 が巨大ファイル防止 (Content-Length 上限)。s7 が大量ファイル防止",
+    "main": [
+      "ファイルアップロード",
+      "サイズ制限"
+    ],
+    "sub": [
+      "セキュリティ",
+      "マルチパート",
+      "上限"
+    ]
+  },
+  {
+    "id": "req-09",
+    "requirements_perspective": "流量制御",
+    "context": "APIレート制限",
+    "builtin": false,
+    "expected_question": "REST API への呼び出し回数を制限して、サーバの過負荷を防ぎたい。いわゆるレート制限の仕組みは Nablarch にある？",
+    "expected_keywords": [
+      "レート制限",
+      "スロットリング",
+      "RESTfulウェブサービス",
+      "過負荷",
+      "アクセス制限"
+    ],
+    "expected_sections": [],
+    "notes": "知識ファイルにレート制限/流量制御の記載なし。正しい回答は「ビルトインなし」。検索結果が空になることが正解",
+    "main": [
+      "レート制限",
+      "スロットリング"
+    ],
+    "sub": [
+      "RESTfulウェブサービス",
+      "過負荷",
+      "アクセス制限"
+    ]
+  },
+  {
+    "id": "req-10",
+    "requirements_perspective": "監査ログ",
+    "context": "操作証跡",
+    "builtin": false,
+    "expected_question": "誰がいつ何をしたか操作の証跡を残したい。いわゆる監査ログを出す仕組みは Nablarch にビルトインである？",
+    "expected_keywords": [
+      "監査ログ",
+      "ログ",
+      "操作履歴",
+      "証跡",
+      "アクセスログ"
+    ],
+    "expected_sections": [],
+    "notes": "知識ファイルに監査ログの記載なし。正しい回答は「ビルトインなし」。検索結果が空になることが正解。なお Nablarch にはアクセスログやSQLログ等はあるが、操作監査ログは未提供",
+    "main": [
+      "監査ログ",
+      "ログ"
+    ],
+    "sub": [
+      "操作履歴",
+      "証跡",
+      "アクセスログ"
+    ]
+  }
+]

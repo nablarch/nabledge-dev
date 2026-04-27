@@ -1,0 +1,47 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "MultiThreadExecutionHandler の concurrentNumber プロパティで並列数を指定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッドで DB アクセスする場合、サブスレッド用ハンドラ構成に DatabaseConnectionManagementHandler と TransactionManagementHandler を配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "親・サブ両方で DB アクセスするとサブスレッド数＋1 のコネクションが必要",
+        "status": "COVERED"
+      },
+      {
+        "fact": "サブスレッドで例外発生時はそのスレッドがロールバックされ、親スレッドが他スレッドに停止要求を出して安全に終了させる",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "MultiThreadExecutionHandler 以降のハンドラおよびバッチアクションはスレッドセーフな実装が必要（スレッドセーフでない場合、予期せぬ例外やデータ不整合が発生する）"
+      },
+      {
+        "claim": "サブスレッド例外発生時に ThreadPoolExecutor#shutdownNow() が呼ばれ、親スレッドがデータリーダをクローズしてから全サブスレッドに停止要求を行う詳細な4ステップシーケンス"
+      },
+      {
+        "claim": "常駐バッチをマルチスレッドで動かすと、処理の遅いスレッドの終了を待つため次のデータ監視に遅延が生じる設計上の問題がある"
+      },
+      {
+        "claim": "新規開発プロジェクトでは常駐バッチより db_messaging（テーブルをキューとして使ったメッセージング）の使用が推奨される"
+      },
+      {
+        "claim": "業務コード内で InterruptedException を捕捉している場合は握りつぶさず例外を送出して処理を異常終了させること（スレッド停止シーケンスが正常動作しなくなるため）"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "全4つのA-factがCOVERDED。並列数設定（concurrentNumber）、サブスレッド用ハンドラ構成（DatabaseConnectionManagementHandler + TransactionManagementHandler）、コネクション数（スレッド数＋1）、例外時のロールバックと停止要求フローすべてが正確に記述されている。さらにKBに裏付けられたB-claimとして、スレッドセーフ要件、例外時の詳細4ステップシーケンス、db_messaging推奨、InterruptedException再送出の注意点を追加。C-claimは存在しない。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.2081595,
+  "duration_s": 28.15328574180603,
+  "error": null
+}

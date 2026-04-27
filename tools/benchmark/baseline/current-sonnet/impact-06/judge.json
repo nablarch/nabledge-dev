@@ -1,0 +1,46 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Nablarch カスタムタグを使っていれば `SecureHandler` の nonce 生成を有効にするだけで JSP の書き換えは不要",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`tag-form_tag` が `onclick` 属性の関数呼び出しを含めて script 要素にまとめ直し、nonce 属性が自動付与される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "カスタムタグを使っていない素の HTML 部分は `tag-csp_nonce_tag` で nonce 属性を手動付与するか、外部 JS に切り出す必要がある",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "`SecureHandler` の `generateCspNonce` プロパティを `true` に設定し、`ContentSecurityPolicyHeader` の `policy` に `$cspNonceSource$` プレースホルダーを含める必要がある（具体的な XML 設定例あり）"
+      },
+      {
+        "claim": "`$cspNonceSource$` はリクエスト毎に生成された nonce 値（例: `nonce-DhcnhD3khTMePgXwdayK9BsMqXjhguVV`）に自動置換される"
+      },
+      {
+        "claim": "`tag-script_tag` が生成する script 要素にも nonce が自動付与される"
+      },
+      {
+        "claim": "nonce はリクエスト毎に変わるため、CSP nonce を使う場合は HTML がキャッシュされないようにする必要がある"
+      },
+      {
+        "claim": "`unsafe-inline` や `unsafe-hashes` を CSP ポリシーに追加するとインラインスクリプトへの攻撃を許可することになり CSP の効果が失われるため避けるべき"
+      },
+      {
+        "claim": "`onchange` 等でサブミットボタンの `.click()` を呼び出す実装も同様に外部スクリプトへの移行が推奨される"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "3つの A-fact すべてが COVERED。①カスタムタグ使用時は SecureHandler の nonce 生成有効化のみで JSP 書き換え不要である点、②tag-form_tag（`<n:form>`）が onclick のコードを script 要素にまとめて nonce を自動付与する点、③素の HTML（独自インライン JavaScript）には tag-csp_nonce_tag での手動付与または外部 JS への切り出しが必要である点、いずれも明確に述べられている。加えて SecureHandler の具体的な XML 設定例、キャッシュ注意点、unsafe-inline 回避の推奨など、KB に裏付けられた有益な B-claims が複数含まれる。C-claim（根拠なし・オフトピック・矛盾）は検出されない。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.2370006,
+  "duration_s": 38.310994386672974,
+  "error": null
+}

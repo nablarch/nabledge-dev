@@ -1,0 +1,64 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: RESTfulウェブサービスでのJSON入力値検証には Bean Validation（`@Valid` アノテーション）を使用し、エラーレスポンスは `ErrorResponseBuilder` をカスタマイズして返すのが推奨パターン。\n\n**根拠**:\n\n1. **バリデーションの設定方法**: リソースクラスのメソッドまたはFormクラスを受け取るパラメータに `@Valid` アノテーションを付与することで、受信したJSONのBean Validationが自動実行される。\n   ```java\n   @Path(\"/sample\")\n   public class SampleResource {\n       @POST\n       public void register(@Valid SampleForm form) { ... }\n   }\n   ```\n   (`component/libraries/libraries-bean_validation.json:s14`)\n\n   ハンドラ側の設定では以下のように `@Valid` をメソッドに付与する場合もある。\n   ```java\n   @POST\n   @Consumes(MediaType.APPLICATION_JSON)\n   @Valid\n   public HttpResponse save(Person person) { ... }\n   ```\n   (`component/handlers/handlers-jaxrs_bean_validation_handler.json:s4`)\n\n2. **エラーレスポンスのカスタマイズ**: バリデーションエラー時にJSONボディ付きのエラーレスポンスを返すには、`ErrorResponseBuilder` を継承したクラスを作成し、`ApplicationException` を検知して HTTP 400 + JSONボディを返すよう実装する。(`component/handlers/handlers-jaxrs_response_handler.json:s7`)\n\n3. **ErrorResponseBuilder の登録**: 作成したカスタム実装は `JaxRsResponseHandler` の `errorResponseBuilder` プロパティに設定する。\n   ```xml\n   <component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n     <property name=\"errorResponseBuilder\">\n       <component class=\"sample.SampleErrorResponseBuilder\" />\n     </property>\n   </component>\n   ```\n   (`component/handlers/handlers-jaxrs_response_handler.json:s5`)\n\n**注意点**:\n- `ErrorResponseBuilder` のカスタマイズ実装内で例外が発生すると、クライアントにレスポンスを返せなくなる。実装中に例外が発生しないよう注意すること。フレームワークはこの場合 WARN ログを出力し、ステータスコード 500 のレスポンスを生成して継続する。(`component/handlers/handlers-jaxrs_response_handler.json:s5`)\n- デフォルトの `ErrorResponseBuilder` でプロジェクト要件を満たせない場合のみカスタマイズが必要。\n\n参照: component/libraries/libraries-bean_validation.json:s14, component/handlers/handlers-jaxrs_bean_validation_handler.json:s4, component/handlers/handlers-jaxrs_response_handler.json:s7, component/handlers/handlers-jaxrs_response_handler.json:s5",
+  "cited": [
+    "component/libraries/libraries-bean_validation.json:s14",
+    "component/handlers/handlers-jaxrs_bean_validation_handler.json:s4",
+    "component/handlers/handlers-jaxrs_response_handler.json:s7",
+    "component/handlers/handlers-jaxrs_response_handler.json:s5"
+  ],
+  "cost_usd": 0.41404465,
+  "duration_s": 41.34784173965454,
+  "steps": {
+    "raw_selections": [
+      "restful-web-service-feature_details|s2",
+      "libraries-bean_validation|s14",
+      "handlers-jaxrs_bean_validation_handler|s4",
+      "handlers-jaxrs_response_handler|s7",
+      "handlers-jaxrs_response_handler|s5"
+    ],
+    "resolved": [
+      "processing-pattern/restful-web-service/restful-web-service-feature_details.json:s2",
+      "component/libraries/libraries-bean_validation.json:s14",
+      "component/handlers/handlers-jaxrs_bean_validation_handler.json:s4",
+      "component/handlers/handlers-jaxrs_response_handler.json:s7",
+      "component/handlers/handlers-jaxrs_response_handler.json:s5"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "processing-pattern/restful-web-service/restful-web-service-feature_details.json:s2",
+        "status": "ok",
+        "title": "入力値のチェック",
+        "chars": 65
+      },
+      {
+        "selector": "component/libraries/libraries-bean_validation.json:s14",
+        "status": "ok",
+        "title": "RESTfulウェブサービスのユーザ入力値のチェックを行う",
+        "chars": 218
+      },
+      {
+        "selector": "component/handlers/handlers-jaxrs_bean_validation_handler.json:s4",
+        "status": "ok",
+        "title": "リソース(アクション)で受け取るForm(Bean)に対してバリデーションを実行する",
+        "chars": 224
+      },
+      {
+        "selector": "component/handlers/handlers-jaxrs_response_handler.json:s7",
+        "status": "ok",
+        "title": "エラー時のレスポンスにメッセージを設定する",
+        "chars": 1037
+      },
+      {
+        "selector": "component/handlers/handlers-jaxrs_response_handler.json:s5",
+        "status": "ok",
+        "title": "例外及びエラーに応じたレスポンスの生成",
+        "chars": 628
+      }
+    ],
+    "select_cost_usd": 0.2723424,
+    "answer_cost_usd": 0.14170225
+  },
+  "error": null
+}

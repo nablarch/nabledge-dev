@@ -1,0 +1,46 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Nablarch は多言語対応をビルトインで提供している",
+        "status": "COVERED"
+      },
+      {
+        "fact": "メッセージは言語ごとのプロパティファイルで管理する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "コード名称も言語別データを持たせロケール指定で取得する",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "JSPリソースパスを言語ごとに切り替える方法として DirectoryBasedResourcePathRule / FilenameBasedResourcePathRule が利用できる"
+      },
+      {
+        "claim": "n:message タグを使うと1つのJSPファイルで多言語対応できるが、画面レイアウトが崩れる可能性がある"
+      },
+      {
+        "claim": "LanguageAttributeInHttpCookie / LanguageAttributeInHttpSession と LanguageAttributeInHttpUtil.keepLanguage() を組み合わせることでユーザが言語を選択・保持できる"
+      },
+      {
+        "claim": "defaultLocale を未設定にすると OS 設定依存となり本番障害の原因になる"
+      },
+      {
+        "claim": "messages.properties（デフォルトロケール用）が存在しない場合はエラーになる"
+      },
+      {
+        "claim": "JSP カスタムタグライブラリでは言語指定によるコード名称の値取得はできない"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "3つのA-factはすべてCOVERED。①ビルトイン対応は冒頭の結論で明示。②プロパティファイル方式は PropertiesStringResourceLoader の設定例と共に詳述。③コード名称の多言語化は CodeUtil.getName(..., Locale) とLANGカラムの説明で網羅。C-claimはゼロ。追加でリソースパス切り替え・言語選択保持・defaultLocale警告など複数のB-claimが含まれ、いずれもKB証拠に裏付けられている。よってLevel 3。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.21509485,
+  "duration_s": 27.862025260925293,
+  "error": null
+}

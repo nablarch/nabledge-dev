@@ -1,0 +1,64 @@
+{
+  "verdict": {
+    "level": 1,
+    "required_facts": [
+      {
+        "fact": "CsrfTokenVerificationHandler を WebFrontController のハンドラキューに追加する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "本ハンドラはセッションストア（session_store）の使用が必須",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CsrfTokenVerificationHandler は session_store_handler より後に配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "カスタムタグ（tag）使用時は nablarch_tag_handler より後に配置する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "デフォルトのトークン生成は UUIDv4 ベース、セッションストアに格納",
+        "status": "COVERED"
+      },
+      {
+        "fact": "GET/HEAD/TRACE/OPTIONS は検証対象外、POST/PUT 等は検証対象",
+        "status": "COVERED"
+      },
+      {
+        "fact": "検証失敗時は 400 を返す",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SessionStoreHandler は http_response_handler より後に配置する（サーブレットフォワード時にセッション値へアクセスするため）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "HIDDEN ストア使用時は SessionStoreHandler を multipart_handler より後に配置する",
+        "status": "MISSING"
+      },
+      {
+        "fact": "SessionStoreHandler は forwarding_handler より前に配置する（内部フォワード時の HIDDEN ストア問題を避けるため）",
+        "status": "MISSING"
+      },
+      {
+        "fact": "ファイルアップロード時に保存前に CSRF 検証を行いたい場合は CsrfTokenVerificationHandler と session_store_handler を multipart_handler より前に配置する",
+        "status": "MISSING"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "ログイン時にセッションストアを破棄せず再生成のみの場合、CsrfTokenUtil.regenerateCsrfToken を呼ぶ必要がある",
+        "type": "HALLUCINATION",
+        "why": "参照ソース（s3, s4）に含まれない s5 を根拠にしており、提供されたリファレンスソースで裏付けられない"
+      }
+    ],
+    "reasoning": "生成回答は CsrfTokenVerificationHandler の追加・順序・デフォルト動作（UUIDv4、HTTP メソッド判定、400 返却）に関するコア事実をすべてカバーしており、設定例も正確。しかし、質問の「他との相性で気をつけることは？」に直接対応するリファレンス回答の③（SessionStoreHandler 自体の配置制約）が 4 件すべて欠落している：http_response_handler より後、HIDDEN ストア時は multipart_handler より後、forwarding_handler より前、ファイルアップロード時の multipart_handler 前配置。これらは相性上の重要注意点として明示された必須ファクトである。加えて、参照ソースに含まれない s5 を根拠に CsrfTokenUtil.regenerateCsrfToken のログイン時呼び出しを主張しており、これはハルシネーションと判定する。必須ファクト 4 件 MISSING かつ HALLUCINATION 1 件が存在するため level 1 が妥当。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.17817224999999998,
+  "duration_s": 55.514289140701294,
+  "error": null
+}

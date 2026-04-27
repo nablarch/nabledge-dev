@@ -1,0 +1,40 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Bean Validation を推奨し、リソースメソッド引数に `@Valid` を付けて有効化する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "エラー応答は `JaxRsResponseHandler` が `errorResponseBuilder` 経由で生成する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "バリデーションエラー時にボディへメッセージを入れるには `ErrorResponseBuilder` を継承したクラスを作成する",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "`JaxRsBeanValidationHandler`（クラス名: `nablarch.fw.jaxrs.JaxRsBeanValidationHandler`）がバリデーションを実行し、エラー時は `ApplicationException` を送出する"
+      },
+      {
+        "claim": "`jaxrs_bean_validation_handler` は `body_convert_handler` より後ろに設定する必要がある"
+      },
+      {
+        "claim": "`jaxrs_adaptor` を使用した場合、`body_convert_handler` と `jaxrs_bean_validation_handler` は自動追加される"
+      },
+      {
+        "claim": "`ErrorResponseBuilder` 実装内で例外が発生した場合、フレームワークはWARNログ出力後にステータスコード500を返す"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "3つのA-factすべてがCOVERED。①Bean Validation + @Valid の推奨は結論部および②で明示。②JaxRsResponseHandlerがerrorResponseBuilder経由でエラー応答を生成する旨は③で明確に説明。③ErrorResponseBuilderを継承したクラスの作成はコード例付きで説明。B-claimとして、JaxRsBeanValidationHandlerの動作詳細、ハンドラ設定順序の制約、jaxrs_adaptor使用時の自動追加、例外時の500返却などがKBに裏付けられた追加情報として提供されている。C-claimなし。"
+  },
+  "ref_sources_loaded": 6,
+  "ref_sources_total": 6,
+  "cost_usd": 0.18782180000000004,
+  "duration_s": 29.87641406059265,
+  "error": null
+}

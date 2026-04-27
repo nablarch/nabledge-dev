@@ -1,0 +1,51 @@
+{
+  "verdict": {
+    "level": 1,
+    "a_facts": [
+      {
+        "fact": "Servlet API ベース(`NablarchServletContextListener` + `WebFrontController`)で組む",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`WebFrontController` がリクエストを受け、ハンドラキューに委譲する構成",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`DispatchHandler` が URI からアクションクラスを特定して呼び出す",
+        "status": "MISSING"
+      },
+      {
+        "fact": "アクションは `HttpResponse` を返し、`HttpResponseHandler` がレスポンスに変換する",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "プロジェクト要件に応じてハンドラキューを構築する(最小構成をベースに追加する)",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "`RepositoryBasedWebFrontController` をサーブレットフィルタとして web.xml に登録し、`NablarchServletContextListener` をリスナーとして設定する具体的な web.xml 設定例"
+      },
+      {
+        "claim": "`NablarchServletContextListener` が起動時にシステムリポジトリとログを初期化し、これを web.xml に忘れると起動失敗する"
+      },
+      {
+        "claim": "ウェブアプリと RESTful ウェブサービスを併用する場合は `WebFrontController` を複数定義し `controllerName` で使い分ける"
+      },
+      {
+        "claim": "ルーティングには RouterAdaptor（XML 定義）または `@Path` アノテーション（`PathOptionsProviderRoutesMapping`）が選択でき、JBoss/Wildfly の VFS 環境では `@Path` 方式は使用不可"
+      },
+      {
+        "claim": "Nablarch 提供の Maven アーキタイプ（`nablarch-web-archetype`）からブランクプロジェクトを生成すると基本設定・ルーティングアダプタ・疎通確認用アプリが含まれた状態で始められる"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-fact「`DispatchHandler` が URI からアクションクラスを特定して呼び出す」が MISSING。生成回答は最小ハンドラ構成の No.13 に RouterAdaptor を挙げてディスパッチを説明しているが、`DispatchHandler` には一切言及していない（取得セクションに s2 が含まれなかった影響）。また A-fact「アクションは `HttpResponse` を返し、`HttpResponseHandler` がレスポンスに変換する」は PARTIAL：`HttpResponseHandler` の役割はハンドラ表に記載されているが、アクションが `HttpResponse` を返してそれを変換するという処理の流れは説明されていない。A-facts が全 COVERED ではないため Level 1。C-claim は検出されなかった。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.21088400000000002,
+  "duration_s": 41.37449550628662,
+  "error": null
+}

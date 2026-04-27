@@ -1,0 +1,82 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch では **Bean Validation（Jakarta Bean Validation）** を使うのが推奨スタイル。Formクラスにアノテーションを付与するだけで必須・桁数・形式チェックが書ける。さらに「ドメインバリデーション」を使うとルールを一元管理でき、メンテコストが下がる。\n\n---\n\n**根拠**:\n\n**① 推奨はBean Validation**\nNablarch は2種類のバリデーション機能を提供するが、Jakarta EE 準拠で情報が豊富な Bean Validation の使用を推奨している。\n(`component/libraries/libraries-validation.json:s1`)\n\n**② 基本の書き方：Formクラスにアノテーションを付ける**\n`@Required`（必須）、`@Length`（桁数）、`@SystemChar`（文字種）などのアノテーションをフィールドに並べるだけでチェックが完結する。\n\n```java\npublic class SampleForm {\n  @Required\n  @Length(max = 10)\n  @SystemChar(charsetDef = \"全角文字\")\n  private String userName;\n\n  @Length(min = 8, max = 8)\n  @SystemChar(charsetDef = \"半角数字\")\n  private String birthday;\n}\n```\n(`component/libraries/libraries-bean_validation.json:s5`)\n\n**③ ドメインバリデーションでさらに楽に**\nドメインBean にルールをまとめ、各Formでは `@Domain(\"ドメイン名\")` と書くだけにできる。ルール変更時もドメインBean だけ直せばよい。\n\n```java\n// ドメインBean（ルール定義）\npublic class SampleDomainBean {\n    @Length(max = 10) @SystemChar(charsetDef = \"全角文字\")\n    String name;\n}\n\n// 各Form（ドメイン名を指定するだけ）\npublic class SampleForm {\n    @Domain(\"name\") @Required\n    private String userName;\n}\n```\n`@Required` はドメインBean 側ではなく各Form側に書くこと（必須かどうかは機能設計による）。\n(`component/libraries/libraries-bean_validation.json:s6`)\n\n**④ Webアクション側の設定**\n業務アクションに `@InjectForm` を付けると、バリデーション実行とFormオブジェクトのリクエストスコープ格納が自動で行われる。\n\n```java\n@InjectForm(form = UserForm.class, prefix = \"form\", validate = \"register\")\n@OnError(type = ApplicationException.class, path = \"forward://registerForm.jsp\")\npublic HttpResponse handle(HttpRequest req, ExecutionContext ctx) {\n    UserForm form = ctx.getRequestScopedVar(\"form\");\n}\n```\n(`component/handlers/handlers-InjectForm.json:s3`)\n\nコンポーネント設定には `BeanValidationStrategy` の登録も必要：\n```xml\n<component name=\"validationStrategy\" class=\"nablarch.common.web.validator.BeanValidationStrategy\" />\n```\n(`component/libraries/libraries-bean_validation.json:s13`)\n\n---\n\n**注意点**:\n- FormクラスのプロパティはすべてStringで定義すること。String以外の型だと変換失敗で例外が起きる (`component/libraries/libraries-bean_validation.json:s5`)\n- Jakarta Bean Validation はバリデーション実行順序を保証しないため、相関バリデーションは単項目バリデーション未実行でも例外が出ないよう実装すること (`component/libraries/libraries-bean_validation.json:s1`)\n- ネストしたBeanが含まれる場合は `@Valid` と初期化を忘れると null でバリデーションがスキップされるので注意 (`component/libraries/libraries-bean_validation.json:s5`)\n\n参照: component/libraries/libraries-validation.json:s1, component/libraries/libraries-bean_validation.json:s1, component/libraries/libraries-bean_validation.json:s5, component/libraries/libraries-bean_validation.json:s6, component/libraries/libraries-bean_validation.json:s13, component/handlers/handlers-InjectForm.json:s3",
+  "cited": [
+    "component/libraries/libraries-validation.json:s1",
+    "component/libraries/libraries-bean_validation.json:s1",
+    "component/libraries/libraries-bean_validation.json:s5",
+    "component/libraries/libraries-bean_validation.json:s6",
+    "component/libraries/libraries-bean_validation.json:s13",
+    "component/handlers/handlers-InjectForm.json:s3"
+  ],
+  "cost_usd": 0.4382601,
+  "duration_s": 54.08220553398132,
+  "steps": {
+    "raw_selections": [
+      "libraries-validation|s1",
+      "web-application-feature_details|s2",
+      "libraries-bean_validation|s1",
+      "libraries-bean_validation|s5",
+      "libraries-bean_validation|s6",
+      "libraries-bean_validation|s13",
+      "handlers-InjectForm|s3"
+    ],
+    "resolved": [
+      "component/libraries/libraries-validation.json:s1",
+      "processing-pattern/web-application/web-application-feature_details.json:s2",
+      "component/libraries/libraries-bean_validation.json:s1",
+      "component/libraries/libraries-bean_validation.json:s5",
+      "component/libraries/libraries-bean_validation.json:s6",
+      "component/libraries/libraries-bean_validation.json:s13",
+      "component/handlers/handlers-InjectForm.json:s3"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/libraries/libraries-validation.json:s1",
+        "status": "ok",
+        "title": "入力値のチェック概要と推奨機能",
+        "chars": 859
+      },
+      {
+        "selector": "processing-pattern/web-application/web-application-feature_details.json:s2",
+        "status": "ok",
+        "title": "入力値のチェック",
+        "chars": 119
+      },
+      {
+        "selector": "component/libraries/libraries-bean_validation.json:s1",
+        "status": "ok",
+        "title": "機能概要",
+        "chars": 2422
+      },
+      {
+        "selector": "component/libraries/libraries-bean_validation.json:s5",
+        "status": "ok",
+        "title": "バリデーションルールの設定方法",
+        "chars": 1328
+      },
+      {
+        "selector": "component/libraries/libraries-bean_validation.json:s6",
+        "status": "ok",
+        "title": "ドメインバリデーションを使う",
+        "chars": 1510
+      },
+      {
+        "selector": "component/libraries/libraries-bean_validation.json:s13",
+        "status": "ok",
+        "title": "ウェブアプリケーションのユーザ入力値のチェックを行う",
+        "chars": 354
+      },
+      {
+        "selector": "component/handlers/handlers-InjectForm.json:s3",
+        "status": "ok",
+        "title": "InjectFormを使用する",
+        "chars": 1016
+      }
+    ],
+    "select_cost_usd": 0.27530925,
+    "answer_cost_usd": 0.16295084999999998
+  },
+  "error": null
+}

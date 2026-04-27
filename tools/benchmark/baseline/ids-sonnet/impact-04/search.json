@@ -1,0 +1,38 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch には `RetryHandler` という標準のリトライ機構がある。一時的なDB接続断などで発生する例外を対象に、指定回数または経過時間を上限として自動再実行できる。\n\n**根拠**:\n\n`RetryHandler` を使用する際は必ずリトライ上限を設定する必要がある。上限に達しても処理が成功しない場合は異常終了する。上限設定には「リトライ回数による上限」と「経過時間による上限」の2種類があり、プロジェクト要件に合わない場合はプロジェクト側で実装を追加できる。(`component/handlers/handlers-retry_handler.json:s4`)\n\nリトライ回数による設定例（最大3回、5秒待機）:\n```xml\n<component name=\"retryHandler\" class=\"nablarch.fw.handler.RetryHandler\">\n  <property name=\"retryContextFactory\">\n    <component class=\"nablarch.fw.handler.retry.CountingRetryContextFactory\">\n      <property name=\"retryCount\" value=\"3\" />\n      <property name=\"retryIntervals\" value=\"5000\" />\n    </component>\n  </property>\n</component>\n```\n(`component/handlers/handlers-retry_handler.json:s4`)\n\n**注意点**:\n\n1. **ハンドラの順序が重要**: リトライ対象の例外を送出するハンドラ（DBアクセスを行うハンドラなど）は、`RetryHandler` より**後ろ**に設定すること。`RetryHandler` より前に例外が発生した場合は、単に例外として処理されリトライされない。(`component/handlers/handlers-retry_handler.json:s3`)\n\n2. **上限値の設定指針**: 上限値は「想定する最大の復旧時間＋アルファ」に設定すること。例えばDBの切り替えに最大5分かかる場合は7分程度を設定する。複数の例外をリトライ対象とする場合は、最も復旧に時間を要するものをベースに上限値を決める。(`component/handlers/handlers-retry_handler.json:s4`)\n\n参照: component/handlers/handlers-retry_handler.json:s3, component/handlers/handlers-retry_handler.json:s4",
+  "cited": [
+    "component/handlers/handlers-retry_handler.json:s3",
+    "component/handlers/handlers-retry_handler.json:s4"
+  ],
+  "cost_usd": 0.3623804500000001,
+  "duration_s": 34.86515140533447,
+  "steps": {
+    "raw_selections": [
+      "handlers-retry_handler|s3",
+      "handlers-retry_handler|s4"
+    ],
+    "resolved": [
+      "component/handlers/handlers-retry_handler.json:s3",
+      "component/handlers/handlers-retry_handler.json:s4"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/handlers/handlers-retry_handler.json:s3",
+        "status": "ok",
+        "title": "制約",
+        "chars": 75
+      },
+      {
+        "selector": "component/handlers/handlers-retry_handler.json:s4",
+        "status": "ok",
+        "title": "リトライの上限を設定する",
+        "chars": 685
+      }
+    ],
+    "select_cost_usd": 0.25018070000000003,
+    "answer_cost_usd": 0.11219975000000001
+  },
+  "error": null
+}

@@ -1,0 +1,71 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "Nablarch にビルトインの認証機能は提供されていない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "認証はプロジェクト要件により仕様が異なるため、フレームワークとしては提供していない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "プロジェクト側で実装する必要がある",
+        "status": "COVERED"
+      },
+      {
+        "fact": "認証情報の保持には DB ストアを使用する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ログイン時に SessionUtil.changeId(ctx) でセッション ID を変更する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ログイン時に CsrfTokenUtil.regenerateCsrfToken(ctx) で CSRF トークンを再生成する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "SessionUtil.put(ctx, \"user\", user, \"db\") で認証情報をセッションストアに保存する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ログアウト時は SessionUtil.invalidate(ctx) でセッションストア全体を破棄する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "CSRF トークン再生成が必要な条件は CsrfTokenVerificationHandler 使用中かつセッション ID 変更のみを行う場合",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "公式ビジネスサンプルとしてユーザID・パスワード認証の参照実装が提供されており、修正して使用することが推奨されている",
+        "type": "HALLUCINATION",
+        "why": "biz-samples-01.json は参照ソース外。コア回答（認証は未提供・PJで実装）とは矛盾しないが、証拠境界外のソースに基づく"
+      },
+      {
+        "claim": "SystemAccountAuthenticator を XML で登録し passwordEncryptor と dbManager を注入する",
+        "type": "HALLUCINATION",
+        "why": "guide/biz-samples/biz-samples-01.json:s6 は参照ソース外"
+      },
+      {
+        "claim": "AuthenticationUtil.authenticate(userId, password) でアカウントロック・パスワード期限例外を処理する",
+        "type": "HALLUCINATION",
+        "why": "guide/biz-samples/biz-samples-01.json:s7 は参照ソース外"
+      },
+      {
+        "claim": "パスワード暗号化にはデフォルトで PBKDF2 を使用し、ストレッチング回数・ソルトを設定する",
+        "type": "HALLUCINATION",
+        "why": "guide/biz-samples/biz-samples-0101_PBKDF2PasswordEncryptor.json:s2 は参照ソース外"
+      }
+    ],
+    "reasoning": "必須ファクト（ビルトイン認証なし・PJ実装必須・DBストアによるセッション保持・SessionUtil.changeId / CsrfTokenUtil.regenerateCsrfToken / SessionUtil.put / SessionUtil.invalidate・CSRFトークン再生成条件）はすべて COVERED。コアファクトへの矛盾なし。ただし回答は参照ソース外（biz-samples-01）の情報を大量に追加しており、SystemAccountAuthenticator・AuthenticationUtil・PBKDF2 という 4 件の HALLUCINATION が存在する。これらは同一ソースクラスタ（biz-samples）からの一貫したトピック拡張であり、「認証はフレームワーク未提供」というコア回答を打ち消すものではないが、「one minor hallucination」の許容範囲を超えている。ただし Level 1 の要件（必須ファクトの欠落・矛盾、または読者を誤った方向に誘導する実質的 OVER-REACH）には該当しないため、Level 2 が妥当な評価。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.21414575000000002,
+  "duration_s": 86.43900799751282,
+  "error": null
+}

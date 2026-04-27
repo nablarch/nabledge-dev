@@ -1,0 +1,59 @@
+{
+  "verdict": {
+    "level": 1,
+    "a_facts": [
+      {
+        "fact": "Web アプリをベースに JAX-RS サポート (Jakarta RESTful Web Services) を組み合わせた構成を使う",
+        "status": "COVERED"
+      },
+      {
+        "fact": "リソースクラス(アクションクラス)に JAX-RS アノテーションを付与する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "レスポンスは `JaxRsResponseHandler` が返す（フォームクラス返却時は `BodyConvertHandler` が変換する）",
+        "status": "COVERED"
+      },
+      {
+        "fact": "`router_adaptor` より後のハンドラは `router_adaptor` に設定する",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "jaxrs_adaptor（JerseyまたはRESTEasy）を使うと BodyConvertHandler と JaxRsBeanValidationHandler が自動追加される"
+      },
+      {
+        "claim": "@Path アノテーションによるルーティングには PathOptionsProviderRoutesMapping をディスパッチハンドラとして使用する"
+      },
+      {
+        "claim": "JBoss/WildFly など vfs でクラスを管理する AP サーバでは @Path アノテーションによるクラス検索が動作しないため XML ルーティングを使う"
+      },
+      {
+        "claim": "JerseyJaxRsHandlerListFactory を使うと JSON(Jackson2)・XML(JAXB)・フォーム・マルチパートの4形式が自動サポートされる"
+      },
+      {
+        "claim": "PathOptionsProviderRoutesMapping コンポーネントは BasicApplicationInitializer の initializeList への追加が必須"
+      },
+      {
+        "claim": "@Context による Servlet リソースインジェクションおよび Jakarta CDI は使用不可"
+      },
+      {
+        "claim": "フィルタが必要な場合はハンドラを自作、インターセプタが必要な場合は BodyConverter 実装を自作する"
+      }
+    ],
+    "c_claims": [
+      {
+        "claim": "インターフェースに @Path を置き実装クラスでメソッドを提供するパターンは OpenAPI generator との組み合わせで有効",
+        "reason": "UNSUPPORTED",
+        "why": "KB証拠（参照ソース・取得セクション）のいずれにも OpenAPI generator への言及は存在しない。インターフェース @Path パターン自体は supported だが、OpenAPI generator との組み合わせという主張は KB に根拠がない。"
+      }
+    ],
+    "reasoning": "A-factは4件すべて COVERED。①ウェブアプリベース＋Jakarta RESTful Web Servicesサポートの構成、②リソースクラスへの JAX-RS アノテーション付与、③JaxRsResponseHandler のレスポンス返却・BodyConvertHandler のフォームクラス変換、④router_adaptor 以降のハンドラは router_adaptor に設定、いずれも生成回答で明示または実質的に述べられている。一方、「インターフェースに @Path を置くパターンは OpenAPI generator との組み合わせで有効」という主張は KB 証拠に一切根拠がなく UNSUPPORTED の C-claim となる。C-claim が存在するため、A-fact が全 COVERED であっても Level は強制的に 1。"
+  },
+  "ref_sources_loaded": 3,
+  "ref_sources_total": 3,
+  "cost_usd": 0.20818475000000003,
+  "duration_s": 40.95723915100098,
+  "error": null
+}

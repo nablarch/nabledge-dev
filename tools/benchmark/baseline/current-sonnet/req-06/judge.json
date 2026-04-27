@@ -1,0 +1,56 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "HTTP セッションは AP サーバで状態を持つためそのままではスケールアウトできない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "Nablarch では AP サーバをステートレス化するのが推奨 (`stateless_web_app`)",
+        "status": "COVERED"
+      },
+      {
+        "fact": "HTTP セッション依存機能を非依存機能に差し替える",
+        "status": "COVERED"
+      },
+      {
+        "fact": "セッションストアは DB ストアなどサーバ間で共有できる保存先に切り替える",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "スティッキーセッション・セッションレプリケーション・NoSQL保存の3つの回避策はいずれもTwelve-Factor App廃棄容易性に反するかAPサーバ依存となる問題がある"
+      },
+      {
+        "claim": "HTTPセッション依存機能として session_store, 二重サブミット防止, thread_context_handler, http_rewrite_handler, hidden暗号化 の5機能が対象"
+      },
+      {
+        "claim": "LanguageAttributeInHttpSession → LanguageAttributeInHttpCookie 等の具体的な代替コンポーネントへの切り替え方法"
+      },
+      {
+        "claim": "DBトークン方式（db_double_submit）はユーザを識別しないためCSRF対策に使用できず、csrf_token_verification_handlerを別途使用する必要がある"
+      },
+      {
+        "claim": "Redisストアを使うとセッション情報テーブルの事前準備・期限切れトークン削除バッチが不要になる"
+      },
+      {
+        "claim": "クラウドネイティブ環境ではステートレス化に加え、ログの標準出力化と環境変数での設定切り替えも推奨される"
+      },
+      {
+        "claim": "JSPを使用している場合、<%@ page session=\"false\" %>をJSP先頭に設定してHTTPセッションの自動作成を無効にすることを推奨"
+      },
+      {
+        "claim": "DBストアは同一セッションの処理が複数スレッドで実行された場合に後勝ちとなる点に注意が必要"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "A-factは4件すべてCOVERED。①HTTPセッションがAPサーバで状態を持ちスケールアウト不可、②stateless_web_appによるステートレス化推奨、③HTTPセッション依存機能を非依存に差し替え、④DBストア等サーバ間共有可能な保存先への切り替え、いずれも生成回答に明確に含まれている。さらに、3つの回避策の問題点・具体的な代替コンポーネント・db_double_submitのCSRF非対応・Redisストアの利点・クラウドネイティブ追加考慮点・JSPのsession=\"false\"推奨・DBストア後勝ち注意点など、KB証拠に裏付けられた有益なB-claimが複数含まれる。C-claimは存在しないためLevel 3。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.20676055000000002,
+  "duration_s": 49.71230363845825,
+  "error": null
+}

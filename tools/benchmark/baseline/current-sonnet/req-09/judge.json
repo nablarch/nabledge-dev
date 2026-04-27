@@ -1,0 +1,36 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Nablarch はレート制限(流量制御)機能をビルトイン提供していない",
+        "status": "COVERED"
+      },
+      {
+        "fact": "カスタムハンドラを追加する枠組みは存在するため、プロジェクト側で実装するか、Nablarch 外のレイヤで流量制御する",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "最も近い代替として ServiceAvailabilityCheckHandler があるが、これは時間窓内の呼び出し回数制限ではなくエンドポイント単位の二値制御（ON/OFF）である"
+      },
+      {
+        "claim": "ServiceAvailabilityCheckHandler を使うには DB テーブルを用いたリクエスト単位の管理が必要で、登録フローなど複数リクエスト構成では細かいデータ設計が必要になる"
+      },
+      {
+        "claim": "レート制限のカスタムハンドラを実装する場合、ハンドラキューの先頭寄りに配置する必要があり、ハンドラ間の前後関係に注意すること"
+      },
+      {
+        "claim": "REST API 機能比較表では「リクエスト/レスポンスに対するフィルタ」が × [3] であり、フィルタを作りたい場合はハンドラを作成するよう注釈されている"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "2つの A-fact はいずれも COVERED。「標準機能はない」は冒頭で明示され、「カスタムハンドラの枠組みでプロジェクト実装 or Nablarch 外のレイヤ」も本文・注意点の両方で述べられている。C-claim なし。ServiceAvailabilityCheckHandler の二値制御との対比、DB テーブル管理の注意点、ハンドラ配置の留意点など、KB 証跡（retrieved sections）に支持された有用な B-claim が複数あるため Level 3。"
+  },
+  "ref_sources_loaded": 1,
+  "ref_sources_total": 1,
+  "cost_usd": 0.19428174999999998,
+  "duration_s": 34.67607069015503,
+  "error": null
+}

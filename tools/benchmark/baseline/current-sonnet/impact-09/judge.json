@@ -1,0 +1,48 @@
+{
+  "verdict": {
+    "level": 3,
+    "a_facts": [
+      {
+        "fact": "Nablarch のコード管理と Bean Validation は `@CodeValue` アノテーションで連携できる",
+        "status": "COVERED"
+      },
+      {
+        "fact": "入力フィールドに付与するとコード管理に登録された有効値かを自動検証する",
+        "status": "COVERED"
+      }
+    ],
+    "b_claims": [
+      {
+        "claim": "Nablarch Validation 用のアノテーション `nablarch.common.code.validator.CodeValue` も存在し、setter に付与して使用する"
+      },
+      {
+        "claim": "パターン属性を指定することで、特定パターン内の有効値かどうかをバリデーション時にチェックできる"
+      },
+      {
+        "claim": "コード情報はコードパターンテーブルとコード名称テーブルの2テーブルで管理される"
+      },
+      {
+        "claim": "BasicCodeLoader → BasicStaticDataCache → BasicCodeManager の構成で起動時にDBからキャッシュへ読み込む"
+      },
+      {
+        "claim": "コード管理機能は静的なコード情報（値と名称のマッピング）が対象で、動的なマスタは対象外"
+      },
+      {
+        "claim": "RDBMS の参照整合性制約はコード管理機能と併用できず、制約チェックには @CodeValue を使用する"
+      },
+      {
+        "claim": "ドメインバリデーションと組み合わせる場合、1つのドメインに1つのパターンしか指定できないため、複数パターンにはパターンごとにドメインを定義する"
+      },
+      {
+        "claim": "JSP 側でも `<n:codeSelect pattern=\"PATTERN2\">` で同パターンを指定してプルダウンを絞り込める"
+      }
+    ],
+    "c_claims": [],
+    "reasoning": "2つのA-factはいずれも明示的にカバーされている。①コード管理とBean Validationが`@CodeValue`で連携できることを冒頭で明示、②フィールドに付与するだけで有効値を自動チェックする旨も具体的なコード例付きで説明されている。C-claimは存在しない（すべての主張はKBエビデンスで支持されている）。B-claimはKBのs1・s2・s6から引用された複数の付加情報（Nablarch Validation対応、パターン絞り込み、テーブル構成、動的マスタの除外、参照整合性制約の注意点など）が含まれており充実している。よってLevel 3。"
+  },
+  "ref_sources_loaded": 2,
+  "ref_sources_total": 2,
+  "cost_usd": 0.18250660000000002,
+  "duration_s": 25.771785736083984,
+  "error": null
+}

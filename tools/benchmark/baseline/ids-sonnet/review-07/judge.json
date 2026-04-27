@@ -1,0 +1,65 @@
+{
+  "verdict": {
+    "level": 2,
+    "required_facts": [
+      {
+        "fact": "SecureHandler の generateCspNonce プロパティを true に設定する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "secureResponseHeaderList に ContentSecurityPolicyHeader を追加する",
+        "status": "COVERED"
+      },
+      {
+        "fact": "ContentSecurityPolicyHeader の policy に $cspNonceSource$ プレースホルダーを含める",
+        "status": "COVERED"
+      },
+      {
+        "fact": "$cspNonceSource$ は nonce-[ハンドラで生成された nonce] に置換される",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "カスタムタグを使う場合、タグ側が自動的に nonce 属性を埋め込む",
+        "status": "COVERED"
+      },
+      {
+        "fact": "tag-form_tag が生成する JavaScript は script 要素にまとめられ nonce 属性が設定される",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "tag-script_tag が生成する script 要素の nonce 属性にハンドラ生成の nonce が設定される",
+        "status": "PARTIAL"
+      },
+      {
+        "fact": "tag-csp_nonce_tag により任意の要素へ nonce を出力可能",
+        "status": "MISSING"
+      },
+      {
+        "fact": "nonce はリクエスト都度生成され、リクエストスコープに格納される",
+        "status": "COVERED"
+      },
+      {
+        "fact": "nonce は HTML に埋め込まれるため JSP 生成の HTML はリクエスト都度変化する",
+        "status": "COVERED"
+      }
+    ],
+    "over_reach": [
+      {
+        "claim": "固定ポリシーを設定する場合（最もシンプルな方法）として nonce なしの ContentSecurityPolicyHeader 設定を提示",
+        "type": "OVER-REACH",
+        "why": "s7 はリファレンスソースに含まれず、リファレンス回答は nonce ベースアプローチのみを標準として提示している"
+      },
+      {
+        "claim": "reportOnly=true で Content-Security-Policy-Report-Only ヘッダにする方法とその導入手順を推奨",
+        "type": "OVER-REACH",
+        "why": "s9 はリファレンスソースに含まれない。この質問（CSP を有効にする標準のやり方）の回答範囲外の追加情報"
+      }
+    ],
+    "reasoning": "コアとなる必須ファクト（generateCspNonce=true、ContentSecurityPolicyHeaderの追加、$cspNonceSource$プレースホルダー、カスタムタグへの自動nonce埋め込み、リクエスト都度変化・生成）はすべてCOVERED。tag-csp_nonce_tagによる任意要素へのnonce出力がMISSINGだが補足的な詳細にとどまる。2件のOVER-REACH（固定ポリシーアプローチをリファレンスソース外のs7から「シンプルな方法」として提示・reportOnlyをs9から推奨）があるが、いずれも核心的なnonce実装手順の説明を歪めるほどではなく、標準アプローチ自体は正確かつ十分にカバーされている。$cspNonceSource$の置換後形式（nonce-[...]形式）が明示されていない点がPARTIALとなるが致命的ではない。総合的に「必須ファクトがCOVERED/PARTIAL、かつOVER-REACHが実質的な誤解を招くレベルでない」レベル2と判断。"
+  },
+  "ref_sources_loaded": 4,
+  "ref_sources_total": 4,
+  "cost_usd": 0.22017295,
+  "duration_s": 94.69339632987976,
+  "error": null
+}

@@ -74,7 +74,7 @@ Confirm working tree is clean and the latest commit reflects what was done.
 
 ## 5. Output Handoff Summary
 
-Print a concise summary for the next session:
+Print a concise summary for the next session. Keep it short — one line per item:
 
 ```
 ## Saved: #{pr_number} — {PR title}
@@ -82,17 +82,16 @@ Print a concise summary for the next session:
 **Branch**: {branch} (clean)
 **Latest commit**: {short_hash} {commit message}
 
-### What was done this session
-- {task or step completed}
-- {task or step completed}
+### Done this session
+- {step completed — one line}
 
-### Next task
-{first remaining task from tasks.md — be specific}
+### Next step
+{exact next step from tasks.md — one line, be specific}
 
-### Needs decision / blocked
-{anything requiring user input before work can continue, if any}
+### Blocked / needs decision
+{only if something requires user input; omit section if none}
 
-Resume with: /re
+/re で再開
 ```
 
 # Important
@@ -101,3 +100,4 @@ Resume with: /re
 - Never leave modified tracked files uncommitted
 - If a change is too incomplete to commit, use `git stash` and note it in the summary
 - Do not implement anything new — this command only records state
+- Keep the summary minimal — the goal is a clean handoff, not a progress report

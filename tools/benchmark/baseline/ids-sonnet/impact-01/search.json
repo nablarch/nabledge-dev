@@ -1,0 +1,64 @@
+{
+  "variant": "ids",
+  "answer": "**結論**: Nablarch バッチのトランザクション境界は、主に **`LoopHandler`** の設定によって決まる。コミットのタイミングは `commitInterval`（件数）で制御し、トランザクション制御対象は `transactionFactory` に設定した `TransactionFactory` 実装クラスで決まる。\n\n**根拠**:\n\n1. **トランザクション制御の仕組み**: `LoopHandler` の `transactionFactory` プロパティに `TransactionFactory` 実装クラス（例: `JdbcTransactionFactory`）を設定することで、トランザクション制御対象を取得してスレッド上で管理する。トランザクション識別名のデフォルトは `transaction` で、変更する場合は `transactionName` プロパティに設定する。(`component/handlers/handlers-loop_handler.json:s5`)\n\n2. **コミット間隔の設定**: `LoopHandler` の `commitInterval` プロパティにコミット間隔（件数）を設定する。例えば `value=\"1000\"` とすると 1000 件処理ごとにコミットされる。間隔を大きくするとスループットが向上する。(`component/handlers/handlers-loop_handler.json:s6`)\n\n3. **Web 等との違い**: バッチでなくリクエスト単位のトランザクション制御が必要な場合は `TransactionManagementHandler` を使用する。こちらも同様に `transactionFactory` と `transactionName` で制御対象を設定する。(`component/handlers/handlers-transaction_management_handler.json:s4`)\n\n4. **複数 DB のトランザクション**: 複数 DB を扱う場合は、`TransactionManagementHandler` をハンドラキューに複数設定し、それぞれ異なる `transactionName` を指定する。(`component/handlers/handlers-transaction_management_handler.json:s7`)\n\n**注意点**:\n- `DbConnectionManagementHandler` の `connectionName` と `LoopHandler`（または `TransactionManagementHandler`）の `transactionName` は **同じ値を設定する必要がある**。`connectionName` が未設定の場合は `transactionName` の設定も省略可。\n- バッチで `commitInterval` を大きくしすぎると、障害時の再処理範囲（ロールバック対象）が広がる点に注意。\n\n参照: component/handlers/handlers-loop_handler.json:s5, component/handlers/handlers-loop_handler.json:s6, component/handlers/handlers-transaction_management_handler.json:s4, component/handlers/handlers-transaction_management_handler.json:s7",
+  "cited": [
+    "component/handlers/handlers-loop_handler.json:s5",
+    "component/handlers/handlers-loop_handler.json:s6",
+    "component/handlers/handlers-transaction_management_handler.json:s4",
+    "component/handlers/handlers-transaction_management_handler.json:s7"
+  ],
+  "cost_usd": 0.37658109999999995,
+  "duration_s": 40.365927934646606,
+  "steps": {
+    "raw_selections": [
+      "handlers-loop_handler|s5",
+      "handlers-loop_handler|s6",
+      "handlers-transaction_management_handler|s4",
+      "handlers-transaction_management_handler|s7",
+      "nablarch-batch-feature_details|s4"
+    ],
+    "resolved": [
+      "component/handlers/handlers-loop_handler.json:s5",
+      "component/handlers/handlers-loop_handler.json:s6",
+      "component/handlers/handlers-transaction_management_handler.json:s4",
+      "component/handlers/handlers-transaction_management_handler.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json:s4"
+    ],
+    "unresolved": [],
+    "sections_read": [
+      {
+        "selector": "component/handlers/handlers-loop_handler.json:s5",
+        "status": "ok",
+        "title": "トランザクション制御対象を設定する",
+        "chars": 785
+      },
+      {
+        "selector": "component/handlers/handlers-loop_handler.json:s6",
+        "status": "ok",
+        "title": "コミット間隔を指定する",
+        "chars": 193
+      },
+      {
+        "selector": "component/handlers/handlers-transaction_management_handler.json:s4",
+        "status": "ok",
+        "title": "トランザクション制御対象を設定する",
+        "chars": 1065
+      },
+      {
+        "selector": "component/handlers/handlers-transaction_management_handler.json:s7",
+        "status": "ok",
+        "title": "アプリケーションで複数のトランザクションを使用する",
+        "chars": 1446
+      },
+      {
+        "selector": "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json:s4",
+        "status": "ok",
+        "title": "データベースアクセス",
+        "chars": 126
+      }
+    ],
+    "select_cost_usd": 0.25358854999999997,
+    "answer_cost_usd": 0.12299254999999999
+  },
+  "error": null
+}
