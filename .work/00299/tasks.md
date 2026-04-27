@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-27
+**Updated**: 2026-04-27 (session end)
 
 ---
 
@@ -29,16 +29,18 @@
 - [x] /fb で全 9 コメント対応 — `01c27ef2a`, `920816cf7`, `2f676a7b3`
 - [x] README の update/delete コマンド削除 — `0711104d8`
 - [x] comparison-report を kc era baseline (20260331-152005) 基準に修正 — `0cfd1e104`
+- [x] /fb で追加 5 コメント対応 — ベースライン削除 `a04f6763d`, comparison-report 修正 `8721a3699`
+- [ ] 再レビュー通過待ち → レビューOK確認済 (セッション終了時点)
 
 ## Not Started
 
-### knowledge/docs 再生成 (PR レビュー承認後)
+### knowledge/docs 再生成 (レビュー承認済み → 次セッションで実施)
 
-PR レビュー承認後に全 5 バージョンを `rbkc create` で再生成し、RBKC 生成物を追加して最終マージ。
+レビューOK確認済み。全 5 バージョンを `rbkc create` で再生成し、差分が想定通り（RBKC 生成物のみ）かチェックしてからマージ。
 
 **Steps:**
 - [ ] 全 5 バージョン `rbkc create` 実行
-- [ ] `git diff main HEAD` で差分が意図通りか確認 → ユーザー報告
+- [ ] `git diff main HEAD` で差分が意図通りか確認 → ユーザー報告（想定: RBKC 生成物のみ、余分な差分なし）
 - [ ] ユーザー承認後 push & merge
 
 ## Not Started
