@@ -621,6 +621,7 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
         lines.append(f"  line {rbkc_hist}")
         lines.append(f"  line {nabledge_hist}")
         lines.append("```")
+        lines.append(f"> Lines (top to bottom): Total — RBKC (prod+test) — Nabledge v6")
         lines.append("")
 
     lines.append(_pie_chart("Nabledge v6 SLOC", [
@@ -652,6 +653,7 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
         lines.append(f"  line {rbkc_verify_hist}")
         lines.append(f"  line {rbkc_common_hist}")
         lines.append("```")
+        lines.append(f"> Lines (top to bottom): Common — Verify — Create")
         lines.append("")
 
     return lines

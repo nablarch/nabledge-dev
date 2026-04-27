@@ -127,6 +127,7 @@ xychart-beta
   line [0, 0, 0, 0, 8533, 9682, 9682, 9773, 10592, 10592, 11599, 10331]
   line [0, 789, 1503, 1293, 1806, 1931, 1931, 1931, 1931, 1961, 2033, 1978]
 ```
+> Lines (top to bottom): Total — RBKC (prod+test) — Nabledge v6
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'pie2': '#FF9800'}}}%%
@@ -151,6 +152,7 @@ xychart-beta
   line [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1597]
   line [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2597]
 ```
+> Lines (top to bottom): Common — Verify — Create
 
 ## Nabledge Adoption (nablarch/nabledge)
 
