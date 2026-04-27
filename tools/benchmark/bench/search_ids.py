@@ -20,8 +20,8 @@ from .types import SearchResult
 SCHEMA_SELECT = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["intent", "candidate_files", "read_notes", "selections",
-                 "conclusion", "evidence", "caveats", "cited"],
+    "required": ["intent", "candidate_files", "read_notes", "files_read_count",
+                 "selections", "conclusion", "evidence", "caveats", "cited"],
     "properties": {
         "intent": {"type": "string"},
         "candidate_files": {
@@ -62,6 +62,7 @@ SCHEMA_SELECT = {
                 },
             },
         },
+        "files_read_count": {"type": "integer", "minimum": 0},
         "selections": {
             "type": "array",
             "maxItems": 15,
@@ -84,7 +85,7 @@ SCHEMA_SELECT = {
         "conclusion": {"type": "string", "maxLength": 600},
         "evidence": {
             "type": "array",
-            "maxItems": 8,
+            "maxItems": 10,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
@@ -366,12 +367,13 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
         log_path=scen_dir / "stream" / "select.jsonl",
         cwd=io.REPO_ROOT,
         allowed_tools=["Read"],
-        timeout_s=300,
+        timeout_s=420,
     )
     structured = select.structured or {}
     intent = structured.get("intent") or ""
     candidate_files = list(structured.get("candidate_files") or [])
     read_notes = list(structured.get("read_notes") or [])
+    files_read_count: int = structured.get("files_read_count") or 0
     selections_obj = list(structured.get("selections") or [])
     # Backwards compat: old prompt returned list[str]; new returns list[{ref, matched_on}]
     raw_selections: list[str] = []
@@ -403,6 +405,7 @@ def run(*, question: str, model: str, scen_dir: Path, id_to_path: dict[str, dict
         "intent": intent,
         "candidate_files": candidate_files,
         "read_notes": read_notes,
+        "files_read_count": files_read_count,
         "evidence_check": evidence_check,
         "matched_on": matched_on,
         "raw_selections": raw_selections,

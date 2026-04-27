@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-27 (Step 6 方針確定 — search_ids.md 品質課題4点を修正)
+**Updated**: 2026-04-27 (Step 6 改訂中 — review-08 安定化作業継続中)
 
 ## ゴール
 
@@ -138,8 +138,21 @@ ids flow の L1 以下を 0 にする (Nabledge 品質基準: 1% リスク排除
 4. 各ステップの結果・判断理由がスキーマに記録されない — 性能改善に必要な情報が取れていない
 
 **作業ステップ**:
-- [ ] search_ids.md を4点の課題に沿って書き直す（PE レビュー前に実行ログ1件取得必須）
-- [ ] シミュレーション（スクリプトで手元確認）でプロンプト改訂の手応えを確認
+- [x] search_ids.md を4点の課題に沿って書き直す（実行ログ取得済み）
+  - Read 強制 ("MANDATORY" + structural requirement)、「制約/前提/ハンドラ配置」削除、命令形明確化
+  - `files_read_count` フィールド追加（診断用）
+  - evidence 上限: 200→500 chars、「≤500 なら全文コピー」指示
+  - caveats を section 本文根拠必須に強化
+  - evidence maxItems: 8→10（スロット圧対策）
+  - scope check 指示追加（multi-process文脈の誤適用防止）
+  - search_ids.py: timeout 300→420s、schema 更新
+- [ ] review-08 を **3 回連続 L3** にする（現状: L3/L1/L1/L1/L1 = 1/5）
+  - **原因分析済み**:
+    - s8 evidence が切り取られる問題 → evidence full-body コピー指示で改善傾向
+    - C-claim hallucination: caveats に KB 未確認事実を追加する問題 → 「section 本文根拠必須」で対処中
+    - multi-process セクション誤適用 → scope check 指示追加で対処中
+  - **最新状態**: `caveats MUST be grounded` 指示を追加した版（コミット未）で試走中断
+  - [DECISION: review-08 の安定化に向け、さらにプロンプト改訂を続けますか？それとも現状で3件計測して結果を見ますか？]
 - [ ] 手応えあれば 3 件試走（req-05 / review-01 / review-08）で測定
 - [ ] 結果が 3 件 mean ≥ 2.33 かつ review-08 L3 なら次へ
 
@@ -182,6 +195,9 @@ L1=0 到達には検索改善だけでは不十分。`l1-root-cause-analysis.md`
 | 新 index 10 件 search-only | — | — | — | exp_full 3/10→5/10, ref_full 2/10→4/10、悪化 3 件 (req-05/review-01 s2/mth s8) |
 | 4-step Read AI-1 merged 3 件 | 2.33 | — | 1 | req-05 L3 / review-01 L3 / review-08 L1 ($3.64) |
 | (trial4 aspects 追加) | 1.67 | — | 2 | **revert 済** — req-05 L0 / review-01 L3 / review-08 L1 |
+| Step 6 改訂版 単件 | — | — | — | review-08: L3(1)/L1(4) — search は機能、answer 生成の C-claim/MISSING が原因 |
+| Step 6 改訂版 (今日) review-01 | 1.0 | 0 | 1 | C-claim hallucination (KB未裏付け "INSERT前TRUNCATE設計") |
+| Step 6 改訂版 (今日) req-05 | 1.0 | 0 | 1 | C-claim hallucination (ThreadContext自動取得 → libraries-code:s3 曲解) |
 
 ## スコープ外
 

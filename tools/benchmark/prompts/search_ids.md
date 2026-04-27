@@ -2,8 +2,13 @@
 
 You are selecting knowledge sections that can answer a Japanese Nablarch
 developer question. You have the complete file/section index and the
-Read tool on knowledge JSON files. Produce one JSON object matching the
-output schema — no prose outside it.
+Read tool on knowledge JSON files.
+
+**Critical rule**: You MUST call the Read tool on EVERY file you list in
+Step 2 before outputting any JSON. Outputting the schema without Read
+calls will be detected and marked as failure.
+
+Produce one JSON object matching the output schema — no prose outside it.
 
 ## How to read the index
 
@@ -29,96 +34,98 @@ Each entry starts with a header line, then one indented line per section:
 
 ## Procedure
 
-Do the following in order. Do not collapse steps.
+Complete each step fully before moving to the next. Do not output the
+JSON until all 4 steps are complete.
 
-### Step 1 — Intent
+### Step 1 — Extract intent
 
-Read the question and identify the **content terms** a human would key
-on: concrete nouns, concern names, Nablarch-specific terms (e.g.
-「多言語」「並列実行」「接続」「排他」「二重サブミット」).
-Keep to 2–5 terms. Also note the main intent in one short phrase
-(e.g. "マルチスレッドバッチで DB 接続と排他に関する注意点").
+Identify the **content terms** a human would key on: concrete nouns,
+concern names, Nablarch-specific terms (e.g. 「多言語」「並列実行」「接続」
+「排他」「二重サブミット」). Keep to 2–5 terms. Write the main intent in
+one short phrase. Record this as `intent`.
 
-### Step 2 — Index sweep (file-level, recall-first)
+### Step 2 — Enumerate candidate files (recall-first)
 
-Scan the entire index. Enumerate every file whose
-**page title / any section title / any section keyword** literally
-contains one of the Step 1 content terms, OR is semantically
-adjacent to the intent.
+Scan the entire index. List every file whose **page title / any section
+title / any section keyword** literally contains one of the Step 1 terms,
+OR is semantically adjacent to the intent.
 
-- Work at **file granularity** here, not section granularity. Listing
-  the file lets Step 3 examine every subsection.
-- **Max 20 files.** Prioritize files with the most and strongest
-  matches. Do not list everything — overly generic matches are noise.
+- Work at **file granularity** — listing the file lets Step 3 inspect
+  every subsection via Read.
+- **Max 20 files.** Include all plausible matches. When in doubt, include.
 - For each candidate, record a short `reason` citing what matched
-  (e.g. "title 多言語化対応", "keyword 並列実行 in s5", "file name
-  handlers-multi_thread_execution_handler").
+  (e.g. "title 多言語化対応", "keyword 排他 in s5").
+- Record the result as `candidate_files`.
 
-### Step 3 — Body confirmation via Read
+### Step 3 — Read every candidate file (MANDATORY)
 
-For **every file** you listed in Step 2, call the **Read tool** on the
-absolute path (`{{knowledge_root}}/` + `relative_path`
-from the header). Inspect the `sections` dict. For each section whose
-body discusses the question intent, record:
+**Call the Read tool on every file in `candidate_files`.**
 
-- `sid`: the section id (`s1`, `s2`, ...).
-- `evidence`: a **verbatim substring** copied directly from that
-  section's body (10–200 characters). Do NOT paraphrase. Do NOT
-  summarize. The substring must appear literally in the body text
-  so a post-hoc substring check can verify it.
+For each file:
+1. Call Read with the absolute path (`{{knowledge_root}}/` + `relative_path`).
+2. Inspect the `sections` dict.
+3. For each section whose body discusses the question intent, record:
+   - `sid`: the section id (`s1`, `s2`, ...).
+   - `evidence`: copy characters verbatim from the section body.
+     **Copy the entire body** if it is ≤ 500 characters — do not stop
+     early. If the body is longer than 500 characters, copy the first
+     450 characters, then append the full `> **重要**:` block if one
+     exists in the section (even if that pushes past 500 characters).
+     Do NOT paraphrase or summarize. Do NOT truncate mid-sentence.
+4. If a file turns out irrelevant after reading, record it with
+   `relevant_sections: []` — this confirms you read and discarded it.
 
-If a file turns out to be irrelevant after reading, emit an empty
-`relevant_sections: []` for it. That is a valid answer — it confirms
-you did read and discarded.
+**Structural requirement**: `read_notes` must contain exactly one entry
+for every file_id in `candidate_files`. Missing entries will fail
+validation.
 
-**Max 6 relevant sections per file.** **Max 20 file entries total.**
+Maximum 6 relevant sections per file. Maximum 20 file entries total.
 
-### Step 4 — Final selection
+### Step 4 — Select sections and compose the answer
 
-From the `relevant_sections` across all files, pick the sections that
-actually answer the question. Output them in `selections`.
+**Select sections** from the evidence gathered in Step 3.
 
-- Up to **15** entries. Prefer sections with body-confirmed evidence.
-- Each entry is an object with `ref` (`file_id|sid`) and
-  `matched_on` (`"title"` / `"keyword"` / `"body"`):
-  - `title` — the section title directly mentions a Step 1 term.
-  - `keyword` — only a keyword on the section line matched.
-  - `body` — the relevance was confirmed only by reading the body.
-- When a file is clearly on-topic, also include its overview
-  (usually `s1`) and any `制約` / `前提` / `ハンドラ配置` section —
-  these carry load-bearing framework rules that are easy to miss.
+- Pick up to **15** sections that actually answer the question. Prefer
+  sections with body-confirmed evidence from Step 3.
+- Each selection must have `ref` (`file_id|sid`) and `matched_on`:
+  - `"title"` — the section title directly mentions a Step 1 term.
+  - `"keyword"` — only a keyword on the section line matched.
+  - `"body"` — relevance was confirmed only by reading the body.
 - Do not emit a `ref` whose `file_id` is absent from `read_notes`.
-- If no section plausibly answers the question, return
-  `"selections": []`. Do not force a consolation pick.
+- If no section plausibly answers the question, return `"selections": []`.
+- Record as `selections` and `files_read_count` (count of files you
+  called Read on in Step 3).
 
-### Step 5 — Compose the answer
-
-Now switch from retrieval to answering. Restate the question's core
-ask in one sentence to anchor your focus, then produce the final
-answer using **only** the sections you already Read in Step 3.
+**Compose the answer** using only the sections you Read in Step 3.
 
 - `conclusion`: one-sentence direct answer (≤600 chars). Write in the
-  **same language as the question** (Japanese question → Japanese
-  answer).
-- `evidence`: up to 8 entries, each `{quote, cited}` where:
+  **same language as the question** (Japanese question → Japanese answer).
+- `evidence`: up to 10 entries, each `{quote, cited}` where:
   - `quote` is a short excerpt **copied from the section body** that
-    supports a specific fact in the conclusion. Prefer 1-2 sentences
+    supports a specific fact in the conclusion. Prefer 1–2 sentences
     (≤400 chars). Copy characters verbatim — keep whitespace and
-    markdown as-is, do not paraphrase, do not concatenate disjoint
+    markdown as-is. Do not paraphrase. Do not concatenate disjoint
     sentences.
   - `cited` is the `file_id|sid` the quote came from. It MUST be in
-    your `selections`.
+    `selections`.
 - `caveats`: up to 5 short notes on constraints / pitfalls / edge
-  cases — only if the sections you used actually mention them. Skip
-  the field (empty array) if nothing applies.
-- `cited`: the deduplicated set of `file_id|sid` values that appear in
-  `evidence[].cited`. No extras; no omissions.
-- **Narrow from selections.** Step 4 was recall-first; Step 5 is
-  precision. Do not cite a section merely to demonstrate coverage. If
-  the conclusion is complete without a section, drop that citation.
-- Do NOT pad with training-data knowledge that is not in the sections.
-- If the sections show Nablarch has no standard feature for what was
-  asked, write `conclusion: "Nablarch には標準機能はない。最も近い代替は ..."`
+  cases. **Caveats MUST be grounded in the sections you Read.** Do not
+  add constraints or warnings from background knowledge — only what
+  you found in the section bodies. If the sections do not mention any
+  caveats, return an empty array.
+- `cited`: deduplicated set of `file_id|sid` values from `evidence[].cited`.
+- **Narrow from selections.** Step 2–3 were recall-first; Step 4 answer
+  is precision. Do not cite a section merely for coverage. Drop sections
+  whose content is not needed to complete the answer.
+- **Scope check**: Before citing a section in the conclusion, verify that
+  its scope matches the question. For example, a section about
+  multi-process patterns (`db_messaging` / `multiple_process`) must NOT
+  be cited as if it applies to a single-process multi-thread scenario.
+  If a section's scope is different, either omit it or explicitly qualify
+  it in the conclusion (e.g. "マルチプロセス構成の場合は...").
+- Do NOT add facts from training-data knowledge not present in the sections.
+- If the sections show Nablarch has no standard feature for the ask,
+  write `conclusion: "Nablarch には標準機能はない。最も近い代替は ..."`
   and cite the closest-neighbor sections.
 
 ## Output schema
@@ -129,8 +136,8 @@ The runtime enforces a strict schema. Every field is required.
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["intent", "candidate_files", "read_notes", "selections",
-               "conclusion", "evidence", "caveats", "cited"],
+  "required": ["intent", "candidate_files", "read_notes", "files_read_count",
+               "selections", "conclusion", "evidence", "caveats", "cited"],
   "properties": {
     "intent": {"type": "string"},
     "candidate_files": {
@@ -162,6 +169,7 @@ The runtime enforces a strict schema. Every field is required.
         }
       }
     },
+    "files_read_count": {"type": "integer", "minimum": 0},
     "selections": {
       "type": "array", "maxItems": 15,
       "items": {
@@ -174,7 +182,7 @@ The runtime enforces a strict schema. Every field is required.
     },
     "conclusion": {"type": "string", "maxLength": 600},
     "evidence": {
-      "type": "array", "maxItems": 8,
+      "type": "array", "maxItems": 10,
       "items": {
         "type": "object", "required": ["quote", "cited"],
         "properties": {
