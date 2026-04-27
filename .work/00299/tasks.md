@@ -12,25 +12,30 @@
 - **全 5 バージョン verify FAIL 0** 確認済
 - 377 tests GREEN
 - nabledge-test runner は model: sonnet 固定 (`nabledge-test-runner.md` frontmatter)
+- PR #304 push 済 (`7a035e6b3`) — **388 ファイル差分** (knowledge/docs は main と同じ状態)
 
 ---
 
 ## In Progress
 
-### PR 差分スリム化 (PRレビュー向け)
+### PR レビュー
 
-PR の差分が多すぎてレビュー不可能な状態。再生成可能ファイルや他 issue の混入ファイルを revert し、意図した差分のみの状態にする。
+push 済み。GitHub PR 画面で v1.2/1.3/1.4/v5 の docs/knowledge 配下に数ファイルの差分が見えるとユーザーから報告あり。ローカルの `git diff main HEAD` では docs/knowledge 差分はゼロ確認済み。GitHub API 制限 (300ファイル上限) で `gh pr diff` も取得不可。
 
 **Steps:**
-- [ ] `.claude/skills/nabledge-*/knowledge/` + `docs/` を全 5 バージョン revert (再生成可能)
-- [ ] `docs/metrics.md` を revert (`.claude/rules/metrics.md` ルール違反)
-- [ ] `tools/metrics/sloc-snapshot.json` / `traffic-snapshot.json` を revert
-- [ ] `.work/00039〜00301/` (299 以外) を revert (他 issue の作業ログ、このブランチに混入)
-- [ ] `.work/00299/` を整理 (不要ファイル削除・要約)
-- [ ] `work-log.md` ルール追記 commit & push
-- [ ] 全 5 バージョン `rbkc create + verify` で再生成 → FAIL 0 確認
-- [ ] `git diff main...HEAD` で意図した差分のみか確認 → ユーザー報告
-- [ ] ユーザー承認後 push
+- [DECISION: GitHub画面で見えているファイル名を教えてもらい、原因特定する] 差分ファイル名をユーザーに確認
+- [ ] 確認後、必要なら追加 revert & push
+
+## Not Started
+
+### knowledge/docs 再生成 (PR レビュー承認後)
+
+PR レビュー承認後に全 5 バージョンを `rbkc create` で再生成し、RBKC 生成物を追加して最終マージ。
+
+**Steps:**
+- [ ] 全 5 バージョン `rbkc create` 実行
+- [ ] `git diff main HEAD` で差分が意図通りか確認 → ユーザー報告
+- [ ] ユーザー承認後 push & merge
 
 ## Not Started
 
