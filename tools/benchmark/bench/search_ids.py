@@ -26,7 +26,7 @@ SCHEMA_SELECT = {
         "intent": {"type": "string"},
         "candidate_files": {
             "type": "array",
-            "maxItems": 20,
+            "maxItems": 12,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
@@ -39,7 +39,7 @@ SCHEMA_SELECT = {
         },
         "read_notes": {
             "type": "array",
-            "maxItems": 20,
+            "maxItems": 12,
             "items": {
                 "type": "object",
                 "additionalProperties": False,

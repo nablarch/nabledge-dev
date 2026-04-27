@@ -52,7 +52,7 @@ OR is semantically adjacent to the intent.
 
 - Work at **file granularity** — listing the file lets Step 3 inspect
   every subsection via Read.
-- **Max 20 files.** Include all plausible matches. When in doubt, include.
+- **Max 12 files.** Include all plausible matches. When in doubt, include.
 - For each candidate, record a short `reason` citing what matched
   (e.g. "title 多言語化対応", "keyword 排他 in s5").
 - Record the result as `candidate_files`.
@@ -84,7 +84,7 @@ For each file:
 for every file_id in `candidate_files`. Missing entries will fail
 validation.
 
-Maximum 6 relevant sections per file. Maximum 20 file entries total.
+Maximum 6 relevant sections per file. Maximum 12 file entries total.
 
 ### Step 4 — Select sections and compose the answer
 
