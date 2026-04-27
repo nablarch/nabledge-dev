@@ -237,15 +237,39 @@ Grep の `output_mode: content` ならマッチ行＋周辺テキストがその
 - [ ] ユーザーにリストを提示してレビュー・承認を得る
 - [ ] 承認後、qa-v6.json を更新してコミット
 
-#### Step 6-D: 3 件再計測＋1 件ずつ実行詳細確認
+#### Step 6-D: 3 件再計測
 
-Fix-1〜3 完了後に実施。
+Fix-1〜3 完了後に実施。逐次実行。
 
-- [ ] req-05 / review-01 / review-08 を再計測（逐次実行）
-- [ ] req-05 の実行ログを読んで事実確認（想定通り L3 か）
-- [ ] review-01 の実行ログを読んで事実確認（a_fact 修正後に L3 か）
-- [ ] review-08 の実行ログを読んで事実確認（timeout 解消・judge 判定は妥当か）
-- [ ] 3 件の結果をユーザーに報告して次の対応を決める
+- [ ] req-05 を計測
+- [ ] review-01 を計測
+- [ ] review-08 を計測
+
+#### Step 6-D-1: req-05 実行詳細確認
+
+**想定**: Fix-1 (sid 修正) により judge が SUPPORTED_BY_KB を正しく維持 → L3
+
+- [ ] search.json: AI-1 の selections / evidence に問題ないか
+- [ ] judge.json: C-claim が SUPPORTED_BY_KB のまま維持されているか / level が 3 か
+- [ ] stream/judge.jsonl: judge が sid Grep 確認ステップを実行しているか
+- [ ] 事実をユーザーに報告
+
+#### Step 6-D-2: review-01 実行詳細確認
+
+**想定**: Fix-3 (a_facts 修正) によりスコープ外 a_fact が除去 → L3
+
+- [ ] search.json: AI-1 の selections / evidence に問題ないか
+- [ ] judge.json: a_facts が全件 COVERED / level が 3 か
+- [ ] 事実をユーザーに報告
+
+#### Step 6-D-3: review-08 実行詳細確認
+
+**想定**: Fix-2 (Grep のみ) により timeout 解消、a_fact 4 (PARTIAL) の扱いを確認
+
+- [ ] search.json: AI-1 の selections / evidence に問題ないか
+- [ ] judge.json: timeout なく完了しているか / a_fact 4 の判定は何か
+- [ ] stream/judge.jsonl: Grep のみで KB 検証が完結しているか
+- [ ] 事実をユーザーに報告、a_fact 4 の扱いをユーザーと決める
 
 #### Step 6: 検索が安定したら回答統合の検討 (条件付き次期)
 
