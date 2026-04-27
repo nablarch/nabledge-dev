@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-27 (final)
+**Updated**: 2026-04-27
 
 ---
 
@@ -40,3 +40,4 @@
 - [x] `work-log.md` に `.work/` は常に git 対象である旨追記
 - [x] kc 削除 + metrics kc→rbkc 置換 — `dae508c7f`, `0b7485008`
 - [x] setup.sh: RBKC requirements.txt 追加 + 公式ドキュメントclone修正 — `dce9adcbd`
+- [x] metrics RBKC SLOC: Production を Create/Verify/Common に内訳化、Test を total に戻す、Trend に凡例注釈追加 — `f44bc0f2a`〜`6cb277b41`
