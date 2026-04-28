@@ -16,6 +16,7 @@ from typing import Any
 from docutils import nodes
 
 from . import rst_admonition, rst_ast
+from .handler_js import parse_handler_dict, parse_handler_queue, render_handler_table
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +121,8 @@ class _MDVisitor:
         self._prefix: str = ""
         # Counter for enumerated lists.
         self._enum_stack: list[int] = []
+        # 3-block state machine for Handler.js raw blocks.
+        self._handler_js_state: dict = {}  # keys: js_text, script_text
         # Cross-document label → target-title map (used to resolve :ref:
         # whose target lives in another file; docutils only resolves within
         # one doctree).  Phase 22-B-16b: values may be :class:`LabelTarget`
@@ -328,7 +331,7 @@ class _MDVisitor:
             out.append(term_line)
             if definition_body:
                 out.append(definition_body)
-        return "\n".join(out)
+        return "\n\n".join(out)
 
     def visit_field_list(self, node: nodes.field_list) -> str | None:
         # §3-1a: field_list context-aware.
@@ -603,6 +606,26 @@ class _MDVisitor:
         if fmt != "html":
             return ""
         text = node.astext()
+        source = node.get("source", "") or ""
+
+        # 3-block state machine for Handler.js handler-queue rendering.
+        # Block 1: :file: Handler.js  — store JS text, return ""
+        # Block 2: inline <script> with HandlerQueue — store script, return ""
+        # Block 3: :file: handler_structure.html — render table, reset state
+        if source.endswith("Handler.js"):
+            self._handler_js_state = {"js_text": text}
+            return ""
+        if "HandlerQueue" in text and "js_text" in self._handler_js_state:
+            self._handler_js_state["script_text"] = text
+            return ""
+        if source.endswith("handler_structure.html") and "js_text" in self._handler_js_state:
+            js_text = self._handler_js_state.get("js_text", "")
+            script_text = self._handler_js_state.get("script_text", "")
+            self._handler_js_state = {}
+            handler_dict = parse_handler_dict(js_text)
+            _, queue = parse_handler_queue(script_text)
+            return render_handler_table(handler_dict, queue)
+
         return rst_ast.normalise_raw_html(text)
 
     # ------------------------------------------------------------------
