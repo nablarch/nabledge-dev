@@ -1,9 +1,10 @@
-"""Tests for scripts/common/handler_js — parse_handler_dict, parse_handler_queue, render_handler_table."""
+"""Tests for scripts/common/handler_js — parse_api_dict, parse_handler_dict, parse_handler_queue, render_handler_table."""
 from __future__ import annotations
 
 import pytest
 
 from scripts.common.handler_js import (
+    parse_api_dict,
     parse_handler_dict,
     parse_handler_queue,
     render_handler_table,
@@ -11,8 +12,78 @@ from scripts.common.handler_js import (
 
 
 # ---------------------------------------------------------------------------
+# parse_api_dict
+# ---------------------------------------------------------------------------
+
+_API_JS_SNIPPET = """<script>
+var Api = {
+RequestMessage: {
+  name: 'RequestMessage'
+, doc: 'http://example.com/RequestMessage.html'
+},
+ResponseMessage: {
+  name: 'ResponseMessage'
+, doc: 'http://example.com/ResponseMessage.html'
+}
+};
+var Handler = {};
+</script>"""
+
+
+class TestParseApiDict:
+    def test_basic_entries(self):
+        result = parse_api_dict(_API_JS_SNIPPET)
+        assert "RequestMessage" in result
+        assert result["RequestMessage"]["name"] == "RequestMessage"
+        assert "ResponseMessage" in result
+        assert result["ResponseMessage"]["name"] == "ResponseMessage"
+
+    def test_empty_api_block(self):
+        js = "<script>\nvar Api = {};\nvar Handler = {};\n</script>"
+        result = parse_api_dict(js)
+        assert result == {}
+
+    def test_no_api_block(self):
+        js = "<script>\nvar Handler = {};\n</script>"
+        result = parse_api_dict(js)
+        assert result == {}
+
+
+# ---------------------------------------------------------------------------
 # parse_handler_dict
 # ---------------------------------------------------------------------------
+
+_FULL_JS = """<script>
+var Api = {
+RequestMessage: {
+  name: 'RequestMessage'
+, doc: ''
+},
+ResponseMessage: {
+  name: 'ResponseMessage'
+, doc: ''
+}
+};
+
+var Handler = {
+
+SomeHandler: {
+  name: "テストハンドラ"
+, package: "nablarch.fw.test"
+, type: {
+    argument: Api.RequestMessage
+  , returns:  Api.ResponseMessage
+  }
+, behavior: {
+    inbound:  "往路処理テキスト"
+  , outbound: "復路処理テキスト"
+  , error:    "例外処理テキスト"
+  }
+}
+
+};
+</script>"""
+
 
 class TestParseHandlerDict:
     def test_basic_entry(self):
@@ -35,6 +106,102 @@ SomeHandler: {
         assert h["behavior"]["inbound"] == "往路処理テキスト"
         assert h["behavior"]["outbound"] == "復路処理テキスト"
         assert h["behavior"]["error"] == "例外処理テキスト"
+
+    def test_package_and_type_fields(self):
+        """Extended: parse_handler_dict must extract package and type (argument/returns)."""
+        api_dict = {
+            "RequestMessage": {"name": "RequestMessage"},
+            "ResponseMessage": {"name": "ResponseMessage"},
+        }
+        js = """
+var Handler = {
+SomeHandler: {
+  name: "テストハンドラ"
+, package: "nablarch.fw.test"
+, type: {
+    argument: Api.RequestMessage
+  , returns:  Api.ResponseMessage
+  }
+, behavior: {
+    inbound:  "往路"
+  , outbound: "復路"
+  , error:    "-"
+  }
+}
+};
+"""
+        result = parse_handler_dict(js, api_dict=api_dict)
+        h = result["SomeHandler"]
+        assert h["package"] == "nablarch.fw.test"
+        assert h["type"]["argument"] == "RequestMessage"
+        assert h["type"]["returns"] == "ResponseMessage"
+
+    def test_type_null_argument(self):
+        """null type.argument / returns must resolve to None."""
+        js = """
+var Handler = {
+SomeHandler: {
+  name: "ハンドラ"
+, package: "nablarch.fw"
+, type: {
+    argument: null
+  , returns:  null
+  }
+, behavior: {
+    inbound:  "-"
+  , outbound: "-"
+  , error:    "-"
+  }
+}
+};
+"""
+        result = parse_handler_dict(js, api_dict={})
+        h = result["SomeHandler"]
+        assert h["type"]["argument"] is None
+        assert h["type"]["returns"] is None
+
+    def test_api_key_not_in_api_dict(self):
+        """Api.Unknown not in api_dict → type field resolves to None."""
+        js = """
+var Handler = {
+SomeHandler: {
+  name: "ハンドラ"
+, package: "nablarch.fw"
+, type: {
+    argument: Api.UnknownType
+  , returns:  null
+  }
+, behavior: {
+    inbound:  "-"
+  , outbound: "-"
+  , error:    "-"
+  }
+}
+};
+"""
+        result = parse_handler_dict(js, api_dict={})
+        h = result["SomeHandler"]
+        assert h["type"]["argument"] is None
+
+    def test_no_package_field(self):
+        """Handlers without package field (old format) still parse without error."""
+        js = """
+var Handler = {
+OldHandler: {
+  name: "旧ハンドラ"
+, behavior: {
+    inbound:  "往路"
+  , outbound: "-"
+  , error:    "-"
+  }
+}
+};
+"""
+        result = parse_handler_dict(js)
+        h = result["OldHandler"]
+        assert h["name"] == "旧ハンドラ"
+        assert h.get("package") is None
+        assert h.get("type") is None
 
     def test_multiline_concatenation(self):
         js = """
@@ -203,10 +370,14 @@ var Context      = 'handler web'
 _SAMPLE_DICT = {
     "HandlerA": {
         "name": "ハンドラA",
+        "package": "nablarch.fw.test",
+        "type": {"argument": "RequestMessage", "returns": "ResponseMessage"},
         "behavior": {"inbound": "往路A", "outbound": "復路A", "error": "-"},
     },
     "HandlerB": {
         "name": "ハンドラB",
+        "package": "nablarch.fw.test",
+        "type": {"argument": None, "returns": None},
         "behavior": {"inbound": "-", "outbound": "復路B", "error": "例外B"},
     },
 }
@@ -214,34 +385,60 @@ _SAMPLE_DICT = {
 _DICT_WITH_CALLBACK = {
     "HandlerA": {
         "name": "ハンドラA",
-        "behavior": {"inbound": "往路A", "outbound": "復路A", "error": "-", "callback": "-"},
+        "package": "nablarch.fw.test",
+        "type": {"argument": "Request", "returns": "Result"},
+        "behavior": {"inbound": "往路A", "outbound": "往路A", "error": "-", "callback": "-"},
     },
     "HandlerB": {
         "name": "ハンドラB",
+        "package": "nablarch.fw.test",
+        "type": {"argument": None, "returns": None},
         "behavior": {"inbound": "-", "outbound": "復路B", "error": "例外B", "callback": "コールバック処理"},
     },
 }
 
 
 class TestRenderHandlerTable:
-    def test_no_callback_four_columns(self):
+    def test_includes_class_name_and_type_columns(self):
+        """クラス名・入力型・結果型列がヘッダに含まれる (design §3-1)."""
+        result = render_handler_table(_SAMPLE_DICT, ["HandlerA"])
+        header = result.strip().splitlines()[0]
+        assert "クラス名" in header
+        assert "入力型" in header
+        assert "結果型" in header
+
+    def test_class_name_is_package_dot_key(self):
+        """クラス名 = package + '.' + key."""
+        result = render_handler_table(_SAMPLE_DICT, ["HandlerA"])
+        assert "nablarch.fw.test.HandlerA" in result
+
+    def test_type_null_renders_dash(self):
+        """null type.argument / returns must render as '-'."""
+        result = render_handler_table(_SAMPLE_DICT, ["HandlerB"])
+        # HandlerB has argument=None, returns=None → both render as "-"
+        lines = result.strip().splitlines()
+        data_row = lines[2]  # header(0), sep(1), data(2)
+        # The "-" for input and result type should appear
+        assert "| - |" in data_row or data_row.count("| -") >= 2
+
+    def test_no_callback_base_columns(self):
         result = render_handler_table(_SAMPLE_DICT, ["HandlerA", "HandlerB"])
         lines = result.strip().splitlines()
-        # Structure: preamble, empty, header, sep, data×2 = 6 lines
-        assert len(lines) == 6
-        header = lines[2]
+        # Structure: header, sep, data×2 = 4 lines
+        assert len(lines) == 4
+        header = lines[0]
         assert "往路処理" in header
         assert "復路処理" in header
         assert "例外処理" in header
         assert "コールバック" not in header
-        assert "ハンドラA" in lines[4]
-        assert "往路A" in lines[4]
+        assert "ハンドラA" in lines[2]
+        assert "往路A" in lines[2]
 
-    def test_with_callback_five_columns(self):
+    def test_with_callback_includes_column(self):
         result = render_handler_table(_DICT_WITH_CALLBACK, ["HandlerA", "HandlerB"])
         lines = result.strip().splitlines()
-        assert "コールバック" in lines[2]
-        assert len(lines) == 6
+        assert "コールバック" in lines[0]
+        assert len(lines) == 4
 
     def test_br_in_callback_replaced(self):
         d = {
@@ -255,6 +452,21 @@ class TestRenderHandlerTable:
         }
         result = render_handler_table(d, ["HandlerA"])
         assert "処理1 / 処理2 / 処理3" in result
+        assert "<br/>" not in result
+
+    def test_closing_br_tag_replaced(self):
+        """</br/> (invalid but present in Handler.js) must be replaced with ' / '."""
+        d = {
+            "HandlerA": {
+                "name": "ハンドラA",
+                "behavior": {
+                    "inbound": "-", "outbound": "-", "error": "-",
+                    "callback": "処理1<br/>処理2</br/>",
+                },
+            },
+        }
+        result = render_handler_table(d, ["HandlerA"])
+        assert "</br/>" not in result
         assert "<br/>" not in result
 
     def test_unknown_key_renders_unknown(self):
@@ -271,8 +483,8 @@ class TestRenderHandlerTable:
         result = render_handler_table(d, ["HandlerA"])
         # Empty string → render as "-"
         lines = result.strip().splitlines()
-        # Structure: preamble, empty, header, sep, data = 5 lines
-        data_row = lines[4]
+        # Structure: header, sep, data = 3 lines
+        data_row = lines[2]
         assert data_row.count("- |") >= 3 or data_row.count("| -") >= 1
 
     def test_all_callback_dash_omits_column(self):
@@ -292,14 +504,10 @@ class TestRenderHandlerTable:
     def test_header_row_format(self):
         result = render_handler_table(_SAMPLE_DICT, ["HandlerA"])
         lines = result.strip().splitlines()
-        # lines[0] = preamble, lines[1] = empty, lines[2] = header, lines[3] = sep
-        assert lines[2].startswith("| ハンドラ")
-        assert "---" in lines[3]
+        # lines[0] = header, lines[1] = sep, lines[2] = data
+        assert lines[0].startswith("| ハンドラ")
+        assert "---" in lines[1]
 
     def test_empty_queue_returns_empty_string(self):
         result = render_handler_table(_SAMPLE_DICT, [])
         assert result == ""
-
-    def test_preamble_present(self):
-        result = render_handler_table(_SAMPLE_DICT, ["HandlerA"])
-        assert "**ハンドラ処理概要**" in result

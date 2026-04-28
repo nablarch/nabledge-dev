@@ -1,4 +1,4 @@
-"""Unit tests for scripts/common/rst_ast_visitor — visit_raw 3-block state machine."""
+"""Unit tests for scripts/common/rst_ast_visitor — visit_raw 3-block state machine and visit_image."""
 from __future__ import annotations
 
 import pytest
@@ -73,7 +73,7 @@ class TestVisitRaw3BlockStateMachine:
         v.visit_raw(block1)
         v.visit_raw(block2)
         result = v.visit_raw(block3)
-        assert "**ハンドラ処理概要**" in result
+        assert "| ハンドラ |" in result
         assert "認可制御ハンドラ" in result
         assert "権限チェックを行う" in result
         assert "<script>" not in result
@@ -110,4 +110,91 @@ class TestVisitRaw3BlockStateMachine:
         block3 = _make_raw(_BLOCK3_BODY, source="/path/to/fw/architectural_pattern/handler_structure.html")
         v.visit_raw(block2)
         result = v.visit_raw(block3)
-        assert "**ハンドラ処理概要**" in result
+        assert "| ハンドラ |" in result
+
+    def test_block3_with_handlerqueue_in_content_renders_table(self):
+        """Bug 2: Block 3 HTML containing 'HandlerQueue' must not be consumed as Block 2.
+
+        The actual handler_structure.html file includes a <script> that defines HandlerQueue.
+        Block 3 must be detected by source path, not by text content.
+        """
+        v = _make_visitor()
+        block1 = _make_raw(_HANDLER_JS_SNIPPET, source="/path/to/fw/Handler.js")
+        block2 = _make_raw(_BLOCK2_SCRIPT)
+        # Block 3 HTML that also contains "HandlerQueue" in its content (as the real file does)
+        block3_html_with_queue = (
+            "<style>#handler_structure{}</style>"
+            "<script>var HandlerQueue=['PermissionCheckHandler'];</script>"
+            "<table id='handler_structure'></table>"
+        )
+        block3 = _make_raw(block3_html_with_queue, source="/path/to/fw/architectural_pattern/handler_structure.html")
+        v.visit_raw(block1)
+        v.visit_raw(block2)
+        result = v.visit_raw(block3)
+        assert "| ハンドラ |" in result
+        assert "認可制御ハンドラ" in result
+
+
+# ---------------------------------------------------------------------------
+# visit_image — invisible image suppression (Bug 1)
+# ---------------------------------------------------------------------------
+
+def _make_image(uri: str, alt: str = "", height: int | str | None = None, width: int | str | None = None) -> nodes.image:
+    attrs: dict = {"uri": uri}
+    if alt:
+        attrs["alt"] = alt
+    if height is not None:
+        attrs["height"] = height
+    if width is not None:
+        attrs["width"] = width
+    return nodes.image("", **attrs)
+
+
+class TestVisitImageInvisibleSuppression:
+    def test_normal_image_is_rendered(self):
+        v = _make_visitor()
+        img = _make_image(uri="diagram.png", alt="architecture diagram")
+        result = v.visit_image(img)
+        assert "diagram.png" in result
+        assert "architecture diagram" in result
+
+    def test_invisible_image_height_0_width_0_is_suppressed(self):
+        """Bug 1: link.rst injects handler_structure_bg.png/handler_bg.png with height=0, width=0.
+
+        These are invisible spacer images; they must produce empty output.
+        """
+        v = _make_visitor()
+        img = _make_image(uri="handler_structure_bg.png", height=0, width=0)
+        result = v.visit_image(img)
+        assert result == ""
+
+    def test_invisible_image_height_0_only_is_suppressed(self):
+        v = _make_visitor()
+        img = _make_image(uri="handler_bg.png", height=0)
+        result = v.visit_image(img)
+        assert result == ""
+
+    def test_invisible_image_width_0_only_is_suppressed(self):
+        v = _make_visitor()
+        img = _make_image(uri="bg.png", width=0)
+        result = v.visit_image(img)
+        assert result == ""
+
+    def test_image_with_nonzero_height_is_rendered(self):
+        v = _make_visitor()
+        img = _make_image(uri="chart.png", alt="chart", height=100, width=200)
+        result = v.visit_image(img)
+        assert "chart.png" in result
+
+    def test_invisible_image_string_zero_height_is_suppressed(self):
+        """docutils stores height/width as strings; '0' must also be suppressed."""
+        v = _make_visitor()
+        img = _make_image(uri="handler_structure_bg.png", height="0", width="0")
+        result = v.visit_image(img)
+        assert result == ""
+
+    def test_invisible_image_string_zero_height_only_is_suppressed(self):
+        v = _make_visitor()
+        img = _make_image(uri="handler_bg.png", height="0")
+        result = v.visit_image(img)
+        assert result == ""
