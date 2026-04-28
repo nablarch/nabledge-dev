@@ -6,18 +6,14 @@
 
 ## In Progress
 
-### Task 0: サンプル変換 (1ページ) → 動作確認
-実装着手前に1ページ分だけアンカーを見出しテキストベースで生成し、ページ内遷移が実際に機能することを確認する。
-- [ ] `labels.py` の `_anchor_for_label` を `github_slug(title)` に変更して1ページJSON再生成
-- [ ] 生成した docs MD のアンカーが見出しテキストと一致していることを検証
-- [ ] 変更を revert して Task 1 へ進む
+### Task 1: TDD — 見出しテキストベースのアンカーテスト追加 (RED)
 
 ### Task 1: TDD — 見出しテキストベースのアンカーテスト追加 (RED)
-`test_labels_doc_map.py` に、`_anchor_for_label` の代わりに見出しテキストから GitHub アンカーを生成することを検証するテストを追加する。
-- 日本語見出し (`ユニバーサルDAO`) → `github_slug("ユニバーサルDAO")` = `"ユニバーサルdao"`
-- 英語見出し (`Universal DAO`) → `github_slug("Universal DAO")` = `"universal-dao"`
-- 既存 `TestSphinxAnchorParity` の期待値修正: ラベル名スラグ → 見出しテキストスラグ
-- RED 確認後コミット
+`test_labels_doc_map.py` に、見出しテキストから GitHub アンカーを生成することを検証するテストを追加する。
+- [ ] 日本語見出し (`ユニバーサルDAO`) → anchor = `"ユニバーサルdao"` のテスト追加
+- [ ] 英語見出し (`Universal DAO`) → anchor = `"universal-dao"` のテスト追加
+- [ ] 既存 `TestSphinxAnchorParity` の期待値修正: ラベル名スラグ → 見出しテキストスラグ
+- [ ] RED 確認後コミット
 
 ### Task 2: `labels.py` の `_anchor_for_label` を見出しテキストベースに修正 (GREEN)
 - `_anchor_for_label(label)` を `_anchor_for_title(title)` に置き換える
@@ -47,3 +43,4 @@
 
 - [x] ブランチ作成: `316-fix-docs-md-anchor-heading-slug`
 - [x] tasks.md 作成・コミット
+- [x] Task 0: サンプル変換 (1ページ) → 動作確認 — `labels.py` を変更して `libraries-universal-dao.md` 再生成、全67リンク (OK: 7 self + 60 cross, MISS: 0) 確認
