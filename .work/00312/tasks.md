@@ -3,7 +3,7 @@
 
 **PR**: #315
 **Issue**: #312
-**Updated**: 2026-04-28
+**Updated**: 2026-04-29
 
 ## In Progress
 
@@ -50,7 +50,7 @@
 - [x] TDD: write test for leading blank line suppression in docs.py (RED)
 - [x] Fix `docs.py`: suppress leading empty line when title is empty (GREEN) — `496d6d6f2`
 - [x] Re-run prototype: `python -m scripts.run create 1.4`、`.work/00312/prototype-*.md` を更新してプッシュ — `52c1d59a1`
-- [ ] [DECISION: ユーザー確認] 再生成 MD 確認 → OK なら Task 3 へ
+- [x] [DECISION: ユーザー確認] 再生成 MD 確認 → OK（ユーザー承認済み）
 
 ### 3. Full implementation (after prototype approval)
 **Steps:**
