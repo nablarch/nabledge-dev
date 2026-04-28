@@ -1,5 +1,3 @@
-
-
 ## リクエストスレッド内ループ制御ハンドラ
 
 **クラス名:** `nablarch.fw.handler.RequestThreadLoopHandler`

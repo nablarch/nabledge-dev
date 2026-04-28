@@ -1,5 +1,3 @@
-
-
 ## リトライ制御ハンドラ
 
 **クラス名:** `nablarch.fw.handler.RetryHandler`

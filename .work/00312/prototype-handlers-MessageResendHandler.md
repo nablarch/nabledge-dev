@@ -1,5 +1,3 @@
-
-
 ## 再送電文制御ハンドラ
 
 **クラス名:** `nablarch.fw.messaging.handler.MessageResendHandler`
