@@ -4,17 +4,9 @@
 **Issue**: #311
 **Updated**: 2026-04-28
 
-## In Progress
-
-### [E] Expert review & PR 作成
-
-**Steps:**
-- [ ] Expert review (Software Engineer + QA Engineer) — 実装レビュー
-- [ ] Finding があれば修正
-- [ ] PR 作成 via `/pr create`
-
 ## Done
 
+- [x] [E] Expert review & PR 作成 — SE impl 0 Findings, QA 0 Findings (1 fixed: §3-4 table), PR #314 updated — `75e9d7920`
 - [x] [D] 設計書通りに実装 — 全5バージョン verify 0 FAIL (`5384ebe89`)
   - v5 ダブルスペース問題: `5384ebe89` で解決済み (verify All files verified OK 確認)
   - docs MD 目視確認完了: P2-1 多列行 (`No  適用手順` 形式)、P2-3 セルLF展開 正常
