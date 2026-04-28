@@ -2,7 +2,7 @@
 
 **PR**: #314
 **Issue**: #311
-**Updated**: 2026-04-28
+**Updated**: 2026-04-28 (updated)
 
 ## In Progress
 
@@ -18,12 +18,12 @@
 - → P2-1/P2-3 非対象の docs 341ファイル + knowledge JSON 372ファイルが差分として発生
 
 **Steps:**
-- [ ] `origin/main` へリベース (`git rebase origin/main`)
-- [ ] リベース後の差分を確認（非P2-1ファイルの余分な変更が消えているか）
-- [ ] 未コミットの knowledge JSON 372件を確認・コミット（またはリベース後に再生成）
-- [ ] 全5バージョン verify 0 FAIL 確認
-- [ ] diff-check.md を更新（リベース後の結果に書き換え）
-- [ ] commit & push --force-with-lease
+- [x] `origin/main` へリベース — merge-base が `c430898c9` (origin/main最新) と一致、リベース不要と判明
+- [x] リベース後の差分を確認 — スコープ外 330 docs MD + 351 knowledge JSON（PR #315の内容と同一、内容は正しい）
+- [x] 知識 JSON 372件を再生成 — `4b11e55c3` は docs MD のみで JSON は未再生成だった（QO2 418 FAIL）→ 全5バージョン再生成して修正 — `fe2765c37`
+- [x] 全5バージョン verify 0 FAIL 確認 — v6/v5/v1.4/v1.3/v1.2 All files verified OK
+- [x] diff-check.md を更新 — `55a746a86`
+- [ ] push --force-with-lease
 
 ## Done
 
