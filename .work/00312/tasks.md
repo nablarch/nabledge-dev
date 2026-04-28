@@ -7,12 +7,9 @@
 
 **Note**: rbkc.sh は `tools/rbkc/` から実行する（`cd tools/rbkc && bash rbkc.sh ...`）
 
-## In Progress
+## Done
 
-### 4. PR
-**Steps:**
-- [x] Expert review — 0 Findings (SE), 2 Findings fixed (QA) — committed `311745d0f`
-- [ ] Create PR
+- [x] Task 4: PR — expert review + create — committed `38ae40adb`, PR #315
 
 ## Done
 
