@@ -109,9 +109,8 @@ class TestBuildLabelDocMap:
         assert lt.section_title == "Usage"
         assert lt.category == "libraries"
         assert lt.file_id == "libraries-foo"
-        # Phase 22-B-16b step 2b: anchor is the label name slug, not the
-        # heading slug — Sphinx parity.
-        assert lt.anchor == "my-label"
+        # Issue #316: anchor is github_slug(heading_title), not label name slug.
+        assert lt.anchor == "usage"
 
     def test_orphan_label_stamped_with_unresolved_sentinel(self, tmp_path):
         """Label declared but not followed by a heading must map to

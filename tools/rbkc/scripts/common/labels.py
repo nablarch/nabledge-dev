@@ -188,18 +188,15 @@ def _scan_rst_labels(rst_path: Path) -> tuple[list[tuple[list[str], str]], str]:
     return found, doc_title
 
 
-def _anchor_for_label(label: str) -> str:
-    """Slug the label name the same way Sphinx does for HTML `id` anchors.
+def _anchor_for_title(title: str) -> str:
+    """Slug the heading text to match GitHub's auto-anchor for the heading.
 
-    Spec §3-2-2: Sphinx uses the label name itself as the anchor target,
-    lower-casing and replacing underscores with hyphens.  We delegate to
-    :func:`scripts.common.github_slug.github_slug` so the output matches
-    GitHub's auto-anchor rules for slug consistency across create/verify.
+    Spec §3-2-1: GitHub auto-anchors are derived from heading text (lowercased,
+    spaces → hyphens, non-word chars stripped).  Using heading text here ensures
+    the ``#anchor`` fragment in generated docs MD matches what GitHub renders.
     """
     from scripts.common.github_slug import github_slug
-    # Sphinx replaces underscores with hyphens in anchors; github_slug also
-    # does so for consistency with GitHub's MD auto-anchor rule.
-    return github_slug(label.replace("_", "-"))
+    return github_slug(title)
 
 
 def build_label_map(source_dir) -> dict[str, LabelTarget]:
@@ -228,7 +225,7 @@ def build_label_map(source_dir) -> dict[str, LabelTarget]:
                             file_id="",
                             section_title=title,
                             category="",
-                            anchor=_anchor_for_label(lbl),
+                            anchor=_anchor_for_title(title),
                         ),
                     )
     return label_map
@@ -293,7 +290,7 @@ def build_label_doc_map(
                             section_title=title,
                             category=fc.category,
                             type=fc.type,
-                            anchor=_anchor_for_label(lbl),
+                            anchor=_anchor_for_title(title),
                         ),
                     )
 
