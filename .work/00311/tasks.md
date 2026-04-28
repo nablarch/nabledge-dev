@@ -6,39 +6,11 @@
 
 ## In Progress
 
-### [F] P2-1 ####-本文バグの調査・設計・修正
-
-PR #314 マージ後に発覚したバグ（実装前から存在）。
-
-**状況**:
-- 影響シート（全バージョン網羅調査済み）:
-  - v5: `security-check-1.概要` — **既存コミット済みMDが既に壊れている**（offset=2の15行が `####` 見出しになっている）
-  - v6: `security-check-1.概要` — 再生成すると壊れる
-  - v6: `マルチパートリクエストのサポート対応` — 再生成すると壊れる
-- v1.2/v1.3/v1.4 は該当なし
-
-**根本原因**:
-- `_build_p2_1_meta` (xlsx_common.py) が `offset <= 2 → p2_headings/####` と判定
-- `security-check-1.概要` は H2(col=1)/H3(col=2)/本文(col=3) の3段構造
-  → col=3 は offset=2 になり本文が `####` 見出しに誤変換される
-- `マルチパートリクエストのサポート対応` も同様（H2/H3/本文の3段構造）
-- Excelのインデント構造はシートごとに異なるため「offset=2は必ず見出し」という前提が成立しない
-
-**検討方針（未決定）** [DECISION: あるべき姿を検討してから実装]:
-- 対処療法でなくあるべき姿を設計してから実装すること
-- キーとなる問いは「P2-1シートで何が見出しで何が本文かをどう判定するか」
-
-**Steps:**
-- [ ] あるべき設計の検討（expert consultation 含む）[DECISION: 設計方針の確定が必要]
-- [ ] 設計書更新（rbkc-converter-design.md §8）
-- [ ] TDD: verify テスト追加（RED）
-- [ ] 実装修正（GREEN）
-- [ ] 全5バージョン create + verify 0 FAIL 確認
-- [ ] v5 security-check-1.概要 の MD が正常になっていることを目視確認
-- [ ] commit & push
+## Done
 
 ## Done
 
+- [x] [F] P2-1 ####-本文バグ修正 — 絶対列＋単一セル条件で判定、全5バージョン verify OK — `4b11e55c3`
 - [x] [E] Expert review & PR 作成 — SE impl 0 Findings, QA 0 Findings (1 fixed: §3-4 table), PR #314 updated — `75e9d7920`
 - [x] [D] 設計書通りに実装 — 全5バージョン verify 0 FAIL (`5384ebe89`)
   - v5 ダブルスペース問題: `5384ebe89` で解決済み (verify All files verified OK 確認)
