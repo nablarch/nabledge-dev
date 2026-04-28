@@ -2,7 +2,7 @@
 
 **PR**: #314
 **Issue**: #311
-**Updated**: 2026-04-28 (C設計書更新・Expert review完了)
+**Updated**: 2026-04-28
 
 ## In Progress
 
@@ -18,7 +18,8 @@
 - [x] `rbkc-converter-design.md` §8 を更新（P2-1/P2-3 仕様 + sheet_subtype + verify 例外）
 - [x] `rbkc-verify-quality-design.md` §3-3 を更新（P2-1 QO1 例外 + P2-3 QO2 例外）
 - [x] Expert review (Software Engineer) — 2 Findings → 両方修正済み → `.work/00311/review-by-software-engineer.md`
-- [ ] ユーザーに最終確認
+- [x] ユーザーに最終確認 — `sections: []` で `##` をスキップする設計は品質基準違反の指摘あり → 設計見直し必要 (BLOCKED)
+- [BLOCKED: P2-1 QO1 例外の設計が不十分。「スキップ」ではなく別軸でのチェックが必要。設計を再検討すること]
 
 ### [D] 設計書通りに実装
 
