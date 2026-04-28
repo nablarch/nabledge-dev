@@ -4,7 +4,7 @@
 **Issue**: #311
 **Updated**: 2026-04-28 (updated)
 
-## In Progress
+## Done (continued)
 
 ### [G] リベース＋スコープ外変更の調査・対応
 
@@ -23,7 +23,7 @@
 - [x] 知識 JSON 372件を再生成 — `4b11e55c3` は docs MD のみで JSON は未再生成だった（QO2 418 FAIL）→ 全5バージョン再生成して修正 — `fe2765c37`
 - [x] 全5バージョン verify 0 FAIL 確認 — v6/v5/v1.4/v1.3/v1.2 All files verified OK
 - [x] diff-check.md を更新 — `55a746a86`
-- [ ] push --force-with-lease
+- [x] push --force-with-lease — `106879891`
 
 ## Done
 
