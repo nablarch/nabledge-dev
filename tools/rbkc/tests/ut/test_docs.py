@@ -140,6 +140,59 @@ class TestTopLevelContent:
         assert not any(l.startswith("## ") for l in md.splitlines())
 
 
+class TestLeadingBlankLineSuppression:
+    """When title is empty, the rendered MD must not start with a blank line.
+
+    Root cause: `lines = [f"# {title}" if title else "", ""]` produces
+    `["", ""]` when title is empty, causing the file to open with two blank
+    lines. This manifests after Bug 1 fix (invisible image suppression) exposed
+    the leading blank lines in handler docs for v1.x.
+    """
+
+    def test_full_empty_title_no_leading_blank(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        _write_json(kn / "other/notitle.json", {
+            "id": "notitle",
+            "title": "",
+            "content": "本文。",
+            "no_knowledge_content": False,
+            "sections": [],
+        })
+        generate_docs(kn, docs, "6")
+        md = (docs / "other" / "notitle.md").read_text(encoding="utf-8")
+        assert not md.startswith("\n"), "MD must not start with a blank line when title is empty"
+
+    def test_no_knowledge_empty_title_no_leading_blank(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        _write_json(kn / "other/notitle2.json", {
+            "id": "notitle2",
+            "title": "",
+            "content": "",
+            "no_knowledge_content": True,
+            "sections": [],
+        })
+        generate_docs(kn, docs, "6")
+        md = (docs / "other" / "notitle2.md").read_text(encoding="utf-8")
+        assert not md.startswith("\n"), "MD must not start with a blank line when title is empty"
+
+    def test_full_with_title_starts_with_h1(self, tmp_path):
+        """Regression: title present must still render # heading at line 0."""
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        _write_json(kn / "other/withtitle.json", {
+            "id": "withtitle",
+            "title": "MyTitle",
+            "content": "前書き。",
+            "no_knowledge_content": False,
+            "sections": [],
+        })
+        generate_docs(kn, docs, "6")
+        md = (docs / "other" / "withtitle.md").read_text(encoding="utf-8")
+        assert md.startswith("# MyTitle"), "MD with title must start with # heading"
+
+
 class TestAssetsExcluded:
     """generate_docs must ignore JSON files under knowledge/assets/.
 
