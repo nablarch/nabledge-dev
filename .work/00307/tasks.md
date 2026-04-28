@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-28 (7-B-4 分析完了、backtick/escape 横断修正完了、次: review-03 a_fact 修正 → 14件再計測)
+**Updated**: 2026-04-28 (review-03 a_fact 修正完了、次: 14件再計測 Step 7-C)
 
 ## ゴール
 
@@ -325,7 +325,7 @@ SEエキスパートによる横断コードレビューで review-07/impact-01 
 **Steps:**
 - [x] README に evaluation workflow 追記（手順 + human_review.json フォーマット）
 - [ ] `docs/results-history.md` 新規作成（計測ごとの比較表）
-- [ ] review-03 a_fact 修正（`qa-v6.json` から A-fact 2「リソースクラスに JAX-RS アノテーションを付与する」削除）→ コミット
+- [x] review-03 a_fact 修正（`qa-v6.json` から A-fact 2「リソースクラスに JAX-RS アノテーションを付与する」削除）→ コミット — `fcecc7350`
 - [ ] 30件計測完了後に human_review.json を作成し review-03/review-04 を L3 に override
 
 #### Step 7-C: 14件再計測（前回 L1/L0 の 4件 + 周辺 10件）
