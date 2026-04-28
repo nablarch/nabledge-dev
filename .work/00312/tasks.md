@@ -5,6 +5,8 @@
 **Issue**: #312
 **Updated**: 2026-04-28
 
+**Note**: rbkc.sh は `tools/rbkc/` から実行する（`cd tools/rbkc && bash rbkc.sh ...`）
+
 ## In Progress
 
 ### 2. Prototype: fix bugs and extend to full columns
@@ -65,20 +67,29 @@
 
 #### 3a. v6 verify FAIL 対応
 **Steps:**
-- [ ] `bash rbkc.sh verify 6` を実行してFAIL内容を確認
-- [ ] FAILがあれば原因調査・修正
-- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` でFAIL 0 を確認
+- [x] `bash rbkc.sh verify 6` を実行してFAIL内容を確認 → 0 FAILs（OK）
 
 #### 3b. v5 verify FAIL 対応
 **Steps:**
-- [ ] `bash rbkc.sh verify 5` を実行してFAIL内容を確認
-- [ ] FAILがあれば原因調査・修正
-- [ ] `bash rbkc.sh create 5 && bash rbkc.sh verify 5` でFAIL 0 を確認
+- [x] `bash rbkc.sh verify 5` を実行してFAIL内容を確認 → 0 FAILs（OK）
 
 #### 3c. v1.4 verify FAIL 対応
+
+**状況**: verify で 132 FAILs — 全て `handler_structure_bg.png` / `handler_bg.png`（false positive）
+
+**原因**: `verify.py` のQL1 imageチェックが `height=0` / `width=0` の不可視画像を除外していない。
+RBKCは `visit_image` で正しく除外済み（Bug 1修正）だが verifyがそれを知らない。
+
+**必要な修正**:
+1. `verify.py:2114-2128` に `height=0` / `width=0` スキップを追加（false positive修正）
+2. `rbkc-verify-quality-design.md` §346 `image`行に除外条件を注記追加
+
+**ユーザー承認済み**: はい（「設計書への影響はない？」確認後、進めてよいかの返答待ち → `/sv`で中断）
+
 **Steps:**
-- [ ] `bash rbkc.sh verify 1.4` を実行してFAIL内容を確認
-- [ ] FAILがあれば原因調査・修正
+- [DECISION: verify変更の実施承認はOK（設計書更新込みで）。次セッションで実施する] TDD: 不可視画像スキップのテスト追加（RED）
+- [ ] `verify.py` に `height=0` / `width=0` スキップ追加（GREEN）
+- [ ] `rbkc-verify-quality-design.md` §346 に除外条件注記を追加
 - [ ] `bash rbkc.sh create 1.4 && bash rbkc.sh verify 1.4` でFAIL 0 を確認
 
 #### 3d. v1.3 verify FAIL 対応
