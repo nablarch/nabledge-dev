@@ -16,6 +16,7 @@ from typing import Any
 from docutils import nodes
 
 from . import rst_admonition, rst_ast
+from .handler_js import parse_api_dict, parse_handler_dict, parse_handler_queue, render_handler_table
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +121,8 @@ class _MDVisitor:
         self._prefix: str = ""
         # Counter for enumerated lists.
         self._enum_stack: list[int] = []
+        # 3-block state machine for Handler.js raw blocks.
+        self._handler_js_state: dict = {}  # keys: js_text, script_text
         # Cross-document label → target-title map (used to resolve :ref:
         # whose target lives in another file; docutils only resolves within
         # one doctree).  Phase 22-B-16b: values may be :class:`LabelTarget`
@@ -328,7 +331,7 @@ class _MDVisitor:
             out.append(term_line)
             if definition_body:
                 out.append(definition_body)
-        return "\n".join(out)
+        return "\n\n".join(out)
 
     def visit_field_list(self, node: nodes.field_list) -> str | None:
         # §3-1a: field_list context-aware.
@@ -496,6 +499,19 @@ class _MDVisitor:
         if not uri and not alt:
             # Zero-exception: an image with neither uri nor alt is malformed
             raise UnknownNodeError("image node without uri or alt")
+        # Suppress invisible spacer images (height=0 or width=0).
+        # link.rst injects handler_structure_bg.png / handler_bg.png with height=0, width=0;
+        # these have no visual content and must not appear in Markdown output.
+        # docutils stores the value as a string (e.g. "0"), so compare after int conversion.
+        height = node.get("height")
+        width = node.get("width")
+        try:
+            if height is not None and int(height) == 0:
+                return ""
+            if width is not None and int(width) == 0:
+                return ""
+        except (ValueError, TypeError):
+            pass
         # Phase 22-B-16c: rewrite URI to ``assets/{file_id}/{basename}``
         # so all images land under the knowledge file's asset folder and
         # docs.py's rewrite (`assets/...` → `../../knowledge/assets/...`)
@@ -603,6 +619,29 @@ class _MDVisitor:
         if fmt != "html":
             return ""
         text = node.astext()
+        source = node.get("source", "") or ""
+
+        # 3-block state machine for Handler.js handler-queue rendering.
+        # Block 1: :file: Handler.js  — store JS text, return ""
+        # Block 2: inline <script> with HandlerQueue — store script, return ""
+        # Block 3: :file: handler_structure.html — render table, reset state
+        # NOTE: Block 3 is checked before Block 2 because the real handler_structure.html
+        # contains a <script> with HandlerQueue, which would otherwise trigger the Block 2 branch.
+        if source.endswith("Handler.js"):
+            self._handler_js_state = {"js_text": text}
+            return ""
+        if source.endswith("handler_structure.html") and "script_text" in self._handler_js_state:
+            js_text = self._handler_js_state.get("js_text", "")
+            script_text = self._handler_js_state.get("script_text", "")
+            self._handler_js_state = {}
+            api_dict = parse_api_dict(js_text)
+            handler_dict = parse_handler_dict(js_text, api_dict=api_dict)
+            _, queue = parse_handler_queue(script_text)
+            return render_handler_table(handler_dict, queue)
+        if "HandlerQueue" in text and "js_text" in self._handler_js_state:
+            self._handler_js_state["script_text"] = text
+            return ""
+
         return rst_ast.normalise_raw_html(text)
 
     # ------------------------------------------------------------------

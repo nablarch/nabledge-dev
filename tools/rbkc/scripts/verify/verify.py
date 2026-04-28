@@ -2116,6 +2116,18 @@ def check_source_links(
                 continue
             if _under_substitution(img):
                 continue
+            # Skip invisible images (height=0 or width=0).
+            # Such images carry no visible content and are not knowledge content
+            # per RST source format spec — they must not trigger QL1 content checks.
+            try:
+                h = img.get("height")
+                w = img.get("width")
+                if h is not None and int(h) == 0:
+                    continue
+                if w is not None and int(w) == 0:
+                    continue
+            except (ValueError, TypeError):
+                pass
             alt = (img.get("alt") or "").strip()
             uri = img.get("uri", "")
             check_text = alt or (_Path(uri).name if uri else "")

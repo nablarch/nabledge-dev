@@ -72,7 +72,7 @@ def _rewrite_asset_links(text: str, docs_md_path: Path, knowledge_dir: Path) -> 
 def _render_no_knowledge(data: dict) -> str:
     """Minimal MD for no_knowledge_content files (title only)."""
     title = data.get("title", "")
-    lines = [f"# {title}" if title else "", ""]
+    lines = [f"# {title}", ""] if title else [""]
     return "\n".join(lines)
 
 
@@ -94,7 +94,7 @@ def _render_full(data: dict, docs_md_path: Path, knowledge_dir: Path) -> str:
         return _render_xlsx_p2(data)
 
     title = data.get("title", "")
-    lines = [f"# {title}" if title else "", ""]
+    lines = [f"# {title}", ""] if title else []
 
     top_content = data.get("content", "")
     if top_content:
@@ -140,9 +140,7 @@ def _render_xlsx_p1(data: dict) -> str:
     rows = data.get("data_rows", [])
     top = data.get("content", "")
 
-    lines: list[str] = []
-    lines.append(f"# {title}" if title else "")
-    lines.append("")
+    lines: list[str] = [f"# {title}", ""] if title else []
     if top:
         lines.append(top)
         lines.append("")
@@ -163,9 +161,7 @@ def _render_xlsx_p2(data: dict) -> str:
     """Render an Excel P2 sheet as title + body text."""
     title = data.get("title", "")
     top = data.get("content", "")
-    lines: list[str] = []
-    lines.append(f"# {title}" if title else "")
-    lines.append("")
+    lines: list[str] = [f"# {title}", ""] if title else []
     if top:
         lines.append(top)
         lines.append("")
