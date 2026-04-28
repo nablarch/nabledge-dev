@@ -18,8 +18,8 @@
 
 **Steps:**
 - [x] 全212シートの方針を表にまとめる → `.work/00311/sheet-mapping.md`（生成済み）
-- [ ] sheet-mapping.md を `tools/rbkc/docs/xlsx-sheet-mapping.md` に移動（`current` 列削除、設計情報として整形）
-- [ ] 各パターンの複雑な代表シートの変換サンプルを生成して提示
+- [x] sheet-mapping.md を `tools/rbkc/docs/xlsx-sheet-mapping.md` に移動（`current` 列削除、設計情報として整形）
+- [x] 各パターンの複雑な代表シートの変換サンプルを生成して提示
   - P2-1: `マルチパートリクエストのサポート対応`（v6）、`HIDDENストア脆弱性`（v5）
   - P2-2: `バージョンアップ手順`（v5u5）
   - P2-3: `バージョンアップ手順`（v6u2、Maven LF）、`3.PCIDSS対応表`（v6）
