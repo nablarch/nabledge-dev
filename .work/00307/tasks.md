@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-28 (review-03 a_fact 修正完了、次: 14件再計測 Step 7-C)
+**Updated**: 2026-04-28 (Step 7-C 部分完了 review-01〜10 + impact-01 取得、review-05/07/08 要調査)
 
 ## ゴール
 
@@ -330,13 +330,38 @@ SEエキスパートによる横断コードレビューで review-07/impact-01 
 
 #### Step 7-C: 14件再計測（前回 L1/L0 の 4件 + 周辺 10件）
 
-**前提条件**:
-- [ ] review-03 a_fact 修正完了後に実施
-- 対象: 前回測定済み 14件（review-01〜10, impact-01〜03, req-05）
-- 期待: review-07/impact-01 → L3（backtick fix 確認）、review-03/review-04 → L3
+**結果** (`.results/20260428-164827-v6-next-sonnet/`、review-01〜10 + impact-01 取得):
 
-- [ ] **Step 7-C**: 14件再計測（修正確認）
-- [ ] **Step 7-D**: 残り 16 件計測
+| シナリオ | 今回 | 前回 | 変化 |
+|---------|------|------|------|
+| review-01 | L3 | L3 | ✅ |
+| review-02 | L3 | L3 | ✅ |
+| review-03 | L3 | L1 | ✅ a_fact fix 効果 |
+| review-04 | L3 | L1 | ✅ |
+| review-05 | **L1** | L3 | ❌ 要調査 |
+| review-06 | L3 | L3 | ✅ |
+| review-07 | **None（timeout）** | L0 | ❌ backtick fix 効果なし |
+| review-08 | **L1** | L3 | ❌ 要調査 |
+| review-09 | L3 | L3 | ✅ |
+| review-10 | L3 | L3 | ✅ |
+| impact-01 | 取得済（未確認） | L0 | 要確認 |
+| impact-02〜03, req-05 | 中断 | — | 未計測 |
+
+**要調査 3 件**:
+- review-07: timeout 再発 → backtick fix では解消せず、根本原因調査必要
+- review-05: L3 → L1 悪化 → ログ調査
+- review-08: L3 → L1 悪化 → ログ調査（AI非決定性の可能性あり）
+
+- [x] **Step 7-C 部分完了**（review-01〜10 + impact-01 取得）
+
+#### Step 7-C 調査タスク
+
+- [ ] **調査-review-07**: timeout 再発の根本原因調査（verify_kb_evidence + judge の処理フロー確認）
+- [ ] **調査-review-05**: L3→L1 悪化の原因調査（judge.json / answer.md 読む）
+- [ ] **調査-review-08**: L3→L1 悪化の原因調査（AI 非決定性 or 構造的問題か判断）
+- [ ] **調査-impact-01**: 前回 L0（backtick fix 対象）→ 今回結果確認
+
+- [ ] **Step 7-D**: 残り計測（impact-02〜03, req-05 + 未計測 16 件）
 - [ ] **Step 7-E**: human review 実施 → human_review.json 作成 → docs/results-history.md 更新 → baseline 昇格判断
 
 ### Phase 2 (必須): AI-3 回答プロンプト改善
