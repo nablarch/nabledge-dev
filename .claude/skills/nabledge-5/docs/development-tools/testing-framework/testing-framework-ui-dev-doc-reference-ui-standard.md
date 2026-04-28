@@ -16,12 +16,12 @@
 テストの結果、修正を要する問題が検出された場合、当該のソースコード(プラグイン)を直接修正すると、
 既存の対応ブラウザ上の挙動に問題を生じさせる危険性がある。
 
-このため、ブラウザ固有の特性や不具合に起因する問題への対処は [特定端末向けパッチプラグイン](../../development-tools/testing-framework/testing-framework-ui-dev-doc-reference-ui-plugin.md#nablarch-device-fix)
+このため、ブラウザ固有の特性や不具合に起因する問題への対処は [特定端末向けパッチプラグイン](../../development-tools/testing-framework/testing-framework-ui-dev-doc-reference-ui-plugin.md#特定端末向けパッチプラグイン)
 としてまとめられている。
 これらのプラグインでは **nablarch-device-fix-base** が出力する環境固有のCSSクラスや
 グローバル変数を参照することにより、既存コードに影響しない形で特定環境向けの対応を行なっている。
 
-新規対応ブラウザ向けに対処する場合は、既存の [特定端末向けパッチプラグイン](../../development-tools/testing-framework/testing-framework-ui-dev-doc-reference-ui-plugin.md#nablarch-device-fix)
+新規対応ブラウザ向けに対処する場合は、既存の [特定端末向けパッチプラグイン](../../development-tools/testing-framework/testing-framework-ui-dev-doc-reference-ui-plugin.md#特定端末向けパッチプラグイン)
 を参考にして新規にプラグインを追加すること。
 
 ### どうしてもIE6/7はサポートできないのか?
@@ -33,8 +33,11 @@
 ただし、IE6/7をサポートする場合、対応コストの増大に加えて、以下の制約が発生する。
 
 **1. アイコンが表示できない**
+
 IE6では Web Font をサポートしていないので、アイコンを表示することができない。
+
 **2. マウスオーバ時の背景色反転ができない。**
+
 UI標準ではボタンやメニュー上にマウスが移動した場合に背景表示色を
 反転させるとしているが、IE6ではリンク要素以外での :hover 擬似セレクタをサポートしていないため、
 そのような効果は発生しない。
@@ -43,7 +46,7 @@ UI標準ではボタンやメニュー上にマウスが移動した場合に背
 
 ### 表示モードを変更したい
 
-[UI標準2.1. 端末の画面サイズと表示モード](../../development-tools/testing-framework/testing-framework-ui-dev-doc-reference-ui-standard.md#ui-standard-2-1) を参照。
+[UI標準2.1. 端末の画面サイズと表示モード](../../development-tools/testing-framework/testing-framework-ui-dev-doc-reference-ui-standard.md#ui標準21-端末の画面サイズと表示モード) を参照。
 
 ## UI標準1.2. 使用技術
 
@@ -78,12 +81,19 @@ UI標準ではボタンやメニュー上にマウスが移動した場合に背
 各パラメータの役割は以下のとおり。
 
 **@baseColor**
+
 背景色
+
 **@mainColor1**
+
 前景色1 : メニューや見出し、入力部品などの主要要素の配色として使用
+
 **@mainColor2**
+
 前景色2 : 主に文字色として使用
+
 **@subColor**
+
 差し色 : 上記の3色以外で特にアクセントが必要な場合に使用
 
 > **Tip:**
@@ -132,10 +142,15 @@ UI標準ではボタンやメニュー上にマウスが移動した場合に背
 ### 共通エラー・メッセージ表示領域の表示を調整したい
 
 **共通エラーメッセージの表示スタイル**
+
 **nablarch-css-common** プラグインの **ui_public/css/common/nablarch.less** を修正する。
+
 **共通エラーメッセージの表示内容**
+
 **nablarch-template-page** プラグインの **ui_public/WEB-INF/include/app_error.jsp** を修正する。
+
 **共通エラーメッセージの表示位置**
+
 **nablarch-template-page** プラグインの **ui_public/WEB-INF/tags/template/page_template.tag** を修正する。
 (上記インクルードファイルの読み込み位置を修正する。)
 
@@ -264,7 +279,7 @@ nablarch-template-app_header/
 
 ### タブキーによるフォーカス移動順番を制御したい
 
-[業務画面ベースレイアウト](../../development-tools/testing-framework/testing-framework-jsp-page-templates.md#base-layout-tag) の **tagIndexOrder** 属性により指定できる。
+[業務画面ベースレイアウト](../../development-tools/testing-framework/testing-framework-jsp-page-templates.md#業務画面ベースレイアウト) の **tagIndexOrder** 属性により指定できる。
 詳細は当該属性の解説を参照すること。
 
 > **Tip:**
@@ -360,7 +375,7 @@ UI部品を修正する場合は、対応するプラグインをそれぞれ修
 | ファイル選択 | [ファイル選択ウィジェット](../../development-tools/testing-framework/testing-framework-field-file.md) | **nablarch-widget-field-file** |
 | カレンダー日付入力 | [カレンダー日付入力ウィジェット](../../development-tools/testing-framework/testing-framework-field-calendar.md) | **nablarch-widget-field-calendar** |
 | 自動集計 |  | **nablarch-widget-event-autosum** |
-| フォーカス移動制御 | [業務画面ベースレイアウト](../../development-tools/testing-framework/testing-framework-jsp-page-templates.md#base-layout-tag) (**tabIndexOrder** 属性値の解説を参照) | **nablarch-template-base** |
+| フォーカス移動制御 | [業務画面ベースレイアウト](../../development-tools/testing-framework/testing-framework-jsp-page-templates.md#業務画面ベースレイアウト) (**tabIndexOrder** 属性値の解説を参照) | **nablarch-template-base** |
 
 **コントロール部品**
 

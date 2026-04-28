@@ -9,21 +9,21 @@
 * CSRFトークンを再生成する
 
 本ハンドラは、トークンを使った一般的なCSRF(クロスサイトリクエストフォージェリ)対策を行うための機能を提供する。
-本ハンドラを使用して、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md#web-application) と [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restful-web-service)
+本ハンドラを使用して、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md#ウェブアプリケーション編) と [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restfulウェブサービス編)
 のCSRF対策を実現できる。
 
-本ハンドラをハンドラ構成に含めると、リクエスト処理でCSRFトークンの生成と検証が行われ、 [Jakarta Server Pagesカスタムタグ](../../component/libraries/libraries-tag.md#tag) を使用している場合は
+本ハンドラをハンドラ構成に含めると、リクエスト処理でCSRFトークンの生成と検証が行われ、 [Jakarta Server Pagesカスタムタグ](../../component/libraries/libraries-tag.md#jakarta-server-pagesカスタムタグ) を使用している場合は
 CSRFトークンが画面に自動で出力される。
-そのため、アプリケーションプログラマが実装することなく、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md#web-application)
+そのため、アプリケーションプログラマが実装することなく、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md#ウェブアプリケーション編)
 のCSRF対策を漏れなく行うことができる。
 
-[RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restful-web-service) においてCSRF対策を実現できるように、
+[RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restfulウェブサービス編) においてCSRF対策を実現できるように、
 本ハンドラはリクエストヘッダまたはリクエストパラメータからCSRFトークンを取得する。
 生成されたCSRFトークンを取得するためのユーティリティクラス(
 CsrfTokenUtil )を提供しているので、
 プロジェクトのアーキテクチャに合わせてクライアントにCSRFトークンを送る仕組みを実装できる。
 
-本ハンドラはCSRFトークンをセッションストアに格納するため、本ハンドラを使用する場合は [セッションストア](../../component/libraries/libraries-session-store.md#session-store) の使用が必須となる。
+本ハンドラはCSRFトークンをセッションストアに格納するため、本ハンドラを使用する場合は [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) の使用が必須となる。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -53,22 +53,24 @@ CsrfTokenUtil )を提供しているので、
 
 ## 制約
 
-[セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#session-store-handler) より後ろに配置すること
+[セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) より後ろに配置すること
+
 CSRFトークンをセッションストアに格納するため、
-本ハンドラは [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#session-store-handler) より後ろに配置する必要がある。
+本ハンドラは [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) より後ろに配置する必要がある。
 
 > **Tip:**
-> [マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#multipart-handler) を使ったファイルアップロード時に、
-> ファイルの保存前にCSRFトークンの検証を行いたい場合は [マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#multipart-handler) の前に本ハンドラおよび [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#session-store-handler) を配置すること。
+> [マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#マルチパートリクエストハンドラ) を使ったファイルアップロード時に、
+> ファイルの保存前にCSRFトークンの検証を行いたい場合は [マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#マルチパートリクエストハンドラ) の前に本ハンドラおよび [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) を配置すること。
 
-[Jakarta Server Pagesカスタムタグ](../../component/libraries/libraries-tag.md#tag) を使用する場合は [Nablarchカスタムタグ制御ハンドラ](../../component/handlers/handlers-nablarch-tag-handler.md#nablarch-tag-handler) より後ろに配置すること
-[Jakarta Server Pagesカスタムタグ](../../component/libraries/libraries-tag.md#tag) を使用する場合は [クライアントに保持するデータを暗号化する(hidden暗号化)](../../component/libraries/libraries-tag.md#tag-hidden-encryption) を使用して画面にCSRFトークンを出力しているため、
-本ハンドラは [Nablarchカスタムタグ制御ハンドラ](../../component/handlers/handlers-nablarch-tag-handler.md#nablarch-tag-handler) より後ろに配置する必要がある。
+[Jakarta Server Pagesカスタムタグ](../../component/libraries/libraries-tag.md#jakarta-server-pagesカスタムタグ) を使用する場合は [Nablarchカスタムタグ制御ハンドラ](../../component/handlers/handlers-nablarch-tag-handler.md#nablarchカスタムタグ制御ハンドラ) より後ろに配置すること
+
+[Jakarta Server Pagesカスタムタグ](../../component/libraries/libraries-tag.md#jakarta-server-pagesカスタムタグ) を使用する場合は [クライアントに保持するデータを暗号化する(hidden暗号化)](../../component/libraries/libraries-tag.md#クライアントに保持するデータを暗号化するhidden暗号化) を使用して画面にCSRFトークンを出力しているため、
+本ハンドラは [Nablarchカスタムタグ制御ハンドラ](../../component/handlers/handlers-nablarch-tag-handler.md#nablarchカスタムタグ制御ハンドラ) より後ろに配置する必要がある。
 
 ## CSRFトークンの生成と検証
 
 本ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う。
-[Jakarta Server Pagesカスタムタグ](../../component/libraries/libraries-tag.md#tag) を使用する場合の設定例を以下に示す。
+[Jakarta Server Pagesカスタムタグ](../../component/libraries/libraries-tag.md#jakarta-server-pagesカスタムタグ) を使用する場合の設定例を以下に示す。
 
 ```xml
 <!-- ハンドラ構成 -->
@@ -96,21 +98,30 @@ CSRFトークンをセッションストアに格納するため、
 デフォルトでは以下の処理を行う。
 
 セッションストアからCSRFトークンを取得する
+
 * CSRFトークンをセッションストアに格納する際に使用する名前は `nablarch_csrf-token` となる。
+
 取得できなかった場合はCSRFトークンを生成してセッションストアへ保存する
+
 * CSRFトークンの生成は CsrfTokenGenerator が行う。
   デフォルトではバージョン4のUUIDを使用してCSRFトークンを生成する UUIDv4CsrfTokenGenerator を使用する。
 * CSRFトークンの格納先となるセッションストアはデフォルトのセッションストアとなる。（セッションストアの名前を指定しないでCSRFトークンを格納する）
+
 HTTPリクエストが検証対象か否かを判定する
+
 * 検証対象か否かの判定は VerificationTargetMatcher が行う。
   デフォルトではHTTPメソッドからHTTPリクエストが検証対象か否かを判定する HttpMethodVerificationTargetMatcher を使用する。
 * HttpMethodVerificationTargetMatcher は、HTTPメソッドの `GET` `HEAD` `TRACE` `OPTIONS` をCSRFトークンの検証対象 **外** と判定する（つまりPOSTやPUT等は検査対象となる）。
+
 検証対象の場合はHTTPリクエストからCSRFトークンを取得して検証する
+
 * CSRFトークンをHTTPリクエストに格納する際に使用する名前は以下となる。
 
   HTTPリクエストヘッダ `X-CSRF-TOKEN`
   HTTPリクエストパラメータ `csrf-token`
+
 検証に成功した場合は次のハンドラへ処理を移し、検証に失敗した場合はBadRequest(400)のレスポンスを返す
+
 * 検証失敗時の処理は VerificationFailureHandler が行う。
   デフォルトではBadRequest(400)のレスポンスを生成する BadRequestVerificationFailureHandler を使用する。
 

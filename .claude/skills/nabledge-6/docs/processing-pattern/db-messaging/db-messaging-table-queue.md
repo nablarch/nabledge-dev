@@ -3,13 +3,16 @@
 Exampleアプリケーションを元にテーブルキューを監視し、未処理データを取り込むアプリケーションを解説する。
 
 作成する機能の概要
+
 テーブルキューを定期的に監視し、未処理データ(ステータス:`0`)のデータを取り込む。
 テーブルキュー及び取り込み先テーブルの情報は以下の通り。
 
 プロジェクト登録メッセージ受信(INS_PROJECT_RECEIVE_MESSAGE)
 
 プロジェクト(PROJECT)
+
 Exampleアプリケーションの実行手順
+
 手順内で行っているSQLの実行については、任意のデータベースクライアントでH2に接続し、行うこと。
 接続先情報は、 `config/database.properties` を参照。
 
@@ -87,24 +90,29 @@ select * from project
 BatchAction を継承したアクションクラスを作成する。
 
 実装例
+
 ```java
 public class ProjectCreationServiceAction extends BatchAction<SqlRow> {
   // 中身の作成方法は後述
 }
 ```
+
 ポイント
+
 * テーブルをキューとして扱うため、入力データはテーブルの検索結果となる。
   このため、 BatchAction の型パラメータには SqlRow を指定する。
 
 ## テーブルを監視するためのリーダを生成する
 
-[アクションクラスを作成する](../../processing-pattern/db-messaging/db-messaging-table-queue.md#db-queue-example-create-action) で作成したアクションクラスに、テーブルを監視するリーダを生成するメソッドを作成する。
+[アクションクラスを作成する](../../processing-pattern/db-messaging/db-messaging-table-queue.md#アクションクラスを作成する) で作成したアクションクラスに、テーブルを監視するリーダを生成するメソッドを作成する。
 
-[データベースキューで使用するリーダ](../../processing-pattern/db-messaging/db-messaging-architecture.md#db-messaging-architecture-reader) に記載がある通り、
+[データベースキューで使用するリーダ](../../processing-pattern/db-messaging/db-messaging-architecture.md#使用するデータリーダ) に記載がある通り、
 DatabaseTableQueueReader をリーダとして生成する。
 
 実装例
+
 アクションクラス
+
 ```java
 @Override
 public DataReader<SqlRow> createReader(final ExecutionContext context) {
@@ -132,7 +140,9 @@ public DataReader<SqlRow> createReader(final ExecutionContext context) {
             databaseRecordReader, 1000, "RECEIVED_MESSAGE_SEQUENCE");
 }
 ```
+
 SQLファイル(ProjectCreationServiceAction.sql)
+
 ```sql
 -- 未処理の受信データを悲観ロックするSQL
 UPDATE_PROCESS_ID=
@@ -152,7 +162,9 @@ from
 where
   status = '0' and process_id = :processId
 ```
+
 ポイント
+
 * createReader を実装し、
   DatabaseTableQueueReader を生成する。
 * DatabaseTableQueueReader には以下を指定する。
@@ -165,19 +177,20 @@ where
   * 未処理データを検索するための SqlPStatement
   * 未処理データの悲観ロックを行う
     DatabaseRecordListener の実装クラス。
-    詳細は、[マルチプロセス化](../../processing-pattern/db-messaging/db-messaging-multiple-process.md#db-messaging-multiple-process) を参照。
+    詳細は、[マルチプロセス化](../../processing-pattern/db-messaging/db-messaging-multiple-process.md#マルチプロセス化) を参照。
 * SQLファイルでは、以下のSQLを定義する。
 
   * 他のプロセスの処理対象となることを防ぐため、未処理データを悲観ロックするSQL
   * 自身のプロセスの処理対象となる未処理データを取得するため、
     `STATUS` カラムの値が `0` 、かつ `PROCESS_ID` カラムの値が自身のプロセスIDであるレコードを取得するSQL
-* SQLファイルへのSQLの記述ルールは、 [SQLをファイルで管理する](../../component/libraries/libraries-database.md#database-use-sql-file) を参照。
+* SQLファイルへのSQLの記述ルールは、 [SQLをファイルで管理する](../../component/libraries/libraries-database.md#sqlをファイルで管理する) を参照。
 
 ## 未処理データを元に業務処理を実行する
 
-[アクションクラスを作成する](../../processing-pattern/db-messaging/db-messaging-table-queue.md#db-queue-example-create-action) で作成したアクションクラスに、業務処理を実装するメソッドを作成する。
+[アクションクラスを作成する](../../processing-pattern/db-messaging/db-messaging-table-queue.md#アクションクラスを作成する) で作成したアクションクラスに、業務処理を実装するメソッドを作成する。
 
 実装例
+
 ```java
 @Override
 public Result handle(final SqlRow inputData, final ExecutionContext context) {
@@ -199,7 +212,9 @@ public Result handle(final SqlRow inputData, final ExecutionContext context) {
   return new Result.Success();
 }
 ```
+
 ポイント
+
 * handle メソッドに業務処理を実装する。
   (処理内容の詳細な説明は、Example依存のため省略する。)
 * 正常に処理したことを示す Result.Success を返却する。
@@ -207,10 +222,12 @@ public Result handle(final SqlRow inputData, final ExecutionContext context) {
 
 ## 処理済みデータのステータスを更新する
 
-[アクションクラスを作成する](../../processing-pattern/db-messaging/db-messaging-table-queue.md#db-queue-example-create-action) で作成したアクションクラスに、ステータスを更新するメソッドを作成する。
+[アクションクラスを作成する](../../processing-pattern/db-messaging/db-messaging-table-queue.md#アクションクラスを作成する) で作成したアクションクラスに、ステータスを更新するメソッドを作成する。
 
 実装例
+
 アクションクラス
+
 ```java
 @Override
 protected void transactionSuccess(final SqlRow inputData, final ExecutionContext context) {
@@ -243,7 +260,9 @@ public static final class StatusUpdateDto {
   }
 }
 ```
+
 SQLファイル(ProjectCreationServiceAction.sql)
+
 ```sql
 -- ステータスを更新するSQL
 UPDATE_STATUS =
@@ -254,10 +273,12 @@ set
 where
   received_message_sequence = :id
 ```
+
 ポイント
+
 * 正常に処理できたレコードの更新処理は、 transactionSuccess に実装する。
   (正常に処理できた場合(例外が送出されなかった場合)、このメソッドがNablarchによりコールバックされる。)
 * 正常に処理できなかったレコードの更新処理は、 transactionFailure に実装する。
   (処理中に例外やエラーが送出されたレコードの場合、このメソッドがNablarchによりコールバックされる)
 * SQLでは、指定のレコードのステータスを更新する。
-* SQLファイルへのSQLの記述ルールは、 [SQLをファイルで管理する](../../component/libraries/libraries-database.md#database-use-sql-file) を参照。
+* SQLファイルへのSQLの記述ルールは、 [SQLをファイルで管理する](../../component/libraries/libraries-database.md#sqlをファイルで管理する) を参照。

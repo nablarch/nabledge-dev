@@ -20,8 +20,8 @@
 運用担当者向けのログは、ログカテゴリ名を `operator` として出力する。
 このカテゴリ名を使用して、運用担当者向けのログ用のファイルにログを出力することが出来る。
 
-[ログ出力](../../component/libraries/libraries-log.md#log) を使用した場合の `log.properties` の設定例を以下に示す。
-[logアダプタ](../../component/adapters/adapters-log-adaptor.md#log-adaptor) を使用している場合には、アダプタに対応したログライブラリのマニュアルなどを参照して設定すること。
+[ログ出力](../../component/libraries/libraries-log.md#ログ出力) を使用した場合の `log.properties` の設定例を以下に示す。
+[logアダプタ](../../component/adapters/adapters-log-adaptor.md#logアダプタ) を使用している場合には、アダプタに対応したログライブラリのマニュアルなどを参照して設定すること。
 
 ```properties
 # operation log file
@@ -45,10 +45,13 @@ loggers.OPERATOR.writerNames=operationLog
 運用担当者向けのログを出力するための実装例を以下に示す。
 
 ポイント
+
 * OperationLogger#write
   を使用してログを出力する。
 * 運用担当者向けのログ出力とともにバッチ処理を異常終了させたい場合には、例外を送出すること。
+
 実装例
+
 ```java
 @Named
 @Dependent
@@ -72,7 +75,9 @@ public class SampleBatchlet extends AbstractBatchlet {
     }
 }
 ```
+
 出力例
+
 ```bash
 ERROR operator ファイルが存在しません。正しく受信できているか確認してください。
 ```

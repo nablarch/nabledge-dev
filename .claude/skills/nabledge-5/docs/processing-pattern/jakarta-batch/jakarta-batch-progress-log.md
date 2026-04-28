@@ -39,8 +39,8 @@ INFO progress finish job. job name: [test-job]
 進捗を示すログは、ログカテゴリ名を `progress` として出力する。
 このカテゴリ名を使用して、進捗ログ用のファイルにログを出力することが出来る。
 
-[ログ出力](../../component/libraries/libraries-log.md#log) を使用した場合の `log.properties` の設定例を以下に示す。
-[logアダプタ](../../component/adapters/adapters-log-adaptor.md#log-adaptor) を使用している場合には、アダプタに対応したログライブラリのマニュアルなどを参照して設定すること。
+[ログ出力](../../component/libraries/libraries-log.md#ログ出力) を使用した場合の `log.properties` の設定例を以下に示す。
+[logアダプタ](../../component/adapters/adapters-log-adaptor.md#logアダプタ) を使用している場合には、アダプタに対応したログライブラリのマニュアルなどを参照して設定すること。
 
 ```properties
 # progress log file
@@ -67,6 +67,7 @@ Batchletステップで進捗状況をログに出力するための実装例を
 Batchletで、ループを伴う処理を行う必要がある場合には、下の実装例を元に進捗ログを出力すると良い。
 
 ポイント
+
 * processメソッドの先頭で、処理対象件数(データベースへのcount結果やファイルのレコード数等)を取得し、 inputCount に設定する。
 
   > **Important:**
@@ -74,7 +75,9 @@ Batchletで、ループを伴う処理を行う必要がある場合には、下
   > inputCount を呼び出し後にデータベースから対象データを抽出するなどの重い処理を行った場合、
   > TPSが実際と異なる(実際より小さい値)結果となるので注意すること。
 * 処理を行うループ処理内で、一定間隔ごとに進捗ログを出力する outputProgressInfo を呼び出す。
+
 実装例
+
 ```java
 @Named
 @Dependent
@@ -124,7 +127,9 @@ public class ProgressBatchlet extends AbstractBatchlet {
 Chunkステップで進捗状況をログに出力するための実装例を以下に示す。
 
 ItemReader
+
 ポイント
+
 * コンストラクタインジェクションを使用して、進捗ログを出力するインタフェース( ProgressManager )をインジェクションする。
 * openメソッドにて、処理対象件数(データベースへのcount結果やファイルのレコード数等)を取得し、 inputCount に設定する。
 
@@ -132,7 +137,9 @@ ItemReader
 > TPSの算出の起点となる時間は、 inputCount が呼び出されたタイミングとなる。
   > inputCount を呼び出し後にデータベースから対象データを抽出するなどの重い処理を行った場合、
   > TPSが実際と異なる(実際より小さい値)結果となるので注意すること。
+
 実装例
+
 ```java
 @Named
 @Dependent
@@ -164,9 +171,13 @@ public class ProgressReader extends AbstractItemReader {
 ```
 
 ジョブ定義ファイル
+
 ポイント
+
 * step配下のリスナーのリストに進捗ログを出力するリスナー(名前は、 `progressLogListener` 固定)を設定する。
+
 実装例
+
 ```xml
 <job id="batchlet-progress-test" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
   <listeners>
@@ -189,9 +200,9 @@ public class ProgressReader extends AbstractItemReader {
 ```
 
 > **Important:**
-> [ItemReader](../../processing-pattern/jakarta-batch/jakarta-batch-progress-log.md#jsr352-progress-reader) で処理対象件数を設定せずに、
-> [進捗ログ出力リスナー](../../processing-pattern/jakarta-batch/jakarta-batch-progress-log.md#jsr352-progress-listener) を設定した場合には、設定不備として例外を送出し処理を異常終了させる。
-> このため、進捗ログを必要としない場合には、 [進捗ログ出力リスナー](../../processing-pattern/jakarta-batch/jakarta-batch-progress-log.md#jsr352-progress-listener) の設定を必ず削除すること。
+> [ItemReader](../../processing-pattern/jakarta-batch/jakarta-batch-progress-log.md#chunkステップで進捗ログを出力する) で処理対象件数を設定せずに、
+> [進捗ログ出力リスナー](../../processing-pattern/jakarta-batch/jakarta-batch-progress-log.md#chunkステップで進捗ログを出力する) を設定した場合には、設定不備として例外を送出し処理を異常終了させる。
+> このため、進捗ログを必要としない場合には、 [進捗ログ出力リスナー](../../processing-pattern/jakarta-batch/jakarta-batch-progress-log.md#chunkステップで進捗ログを出力する) の設定を必ず削除すること。
 
 > **Important:**
 > chunkステップでRetrying Exceptionsを設定した場合は、リスナーによる進捗ログの出力が正しく機能しなくなる。

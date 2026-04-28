@@ -16,13 +16,20 @@
 応答の方法には、下記4通りが存在する。
 
 サーブレットフォワード
+
 サーブレットにフォワードを行い、レスポンスを描画する。主にJSPを使ったレスポンス時に使用する。
+
 カスタムレスポンスライター
+
 カスタムレスポンスライター（後述）を使用して、任意のレスポンス出力処理を行う。
 主にテンプレートエンジン等の外部ライブラリを使ったレスポンス時に使用する。
+
 リダイレクト
+
 クライアントにリダイレクトを行う応答を返す。
+
 直接レスポンス
+
 ServletResponse の getOutputStream メソッドを使用して直接
 レスポンスを行う。
 
@@ -78,7 +85,7 @@ CustomResponseWriter
 の実装クラスを設定することで、任意のレスポンス出力処理 [3] を実行できる。
 
 具体例として、JSPではなくテンプレートエンジンを使用してレスポンスを出力するというケースが挙げられる。
-Nablarchが提供している実装としては、[ウェブアプリケーション Thymeleafアダプタ](../../component/adapters/adapters-web-thymeleaf-adaptor.md#web-thymeleaf-adaptor) がある。
+Nablarchが提供している実装としては、[ウェブアプリケーション Thymeleafアダプタ](../../component/adapters/adapters-web-thymeleaf-adaptor.md#ウェブアプリケーション-thymeleafアダプタ) がある。
 
 ## HTTPステータスコードの変更
 
