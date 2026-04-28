@@ -61,7 +61,67 @@ summary.json              mean level, distribution, total cost
 
 `.results/` is gitignored. Commit-worthy runs go under `baseline/`.
 
+## Evaluation workflow
+
+### Step 1: Run
+
+```bash
+python3 run.py --variant next
+python3 run.py --variant current
+```
+
+### Step 2: Human review (both variants)
+
+The LLM judge has a known limitation: it penalizes claims that are architecturally
+obvious but not literally stated in the KB (e.g. "implement auth in a handler" when
+the KB only says "not provided by the framework"). These are false positives.
+
+After each run, review each scenario where `judge level < 3` together with the
+human reviewer. For each false positive, record an override in `human_review.json`.
+
+**Create `.results/{ts}-next-sonnet/human_review.json`:**
+
+```json
+{
+  "reviewed_at": "YYYY-MM-DD",
+  "reviewers": ["kiyotis", "claude"],
+  "overrides": [
+    {
+      "scenario_id": "review-03",
+      "judge_level": 1,
+      "human_level": 3,
+      "reason": "Why this is a false positive"
+    }
+  ],
+  "adjusted_mean": 2.93
+}
+```
+
+`adjusted_mean` = mean level after applying overrides.
+
+### Step 3: Compare with previous baseline
+
+Check `docs/results-history.md` for the previous `next` baseline row.
+Compare `adjusted_mean` (next) and `judge_mean` (current).
+
+### Step 4: Promote to baseline
+
+When a run represents a stable improvement:
+
+```bash
+cp -r .results/{ts}-next-sonnet/ baseline/next-sonnet/
+```
+
+Copy `human_review.json` alongside. Then update `docs/results-history.md`.
+
+---
+
+## Results history
+
+See `docs/results-history.md` for the full comparison table.
+
 ## Operational rules
 
 - Run one `run.py` invocation at a time. Parallel claude-CLI usage causes 240s timeouts. See `.claude/rules/benchmark.md`.
 - Do not weaken the judge prompt to make a flow pass. Fix the flow; the judge is the quality gate.
+- Both `next` and `current` require human review after LLM judging.
