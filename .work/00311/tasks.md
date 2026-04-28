@@ -6,30 +6,33 @@
 
 ## In Progress
 
-### [C] 設計書の更新と expert review
-
-**目標**: [B] 承認済みの方針を `rbkc-converter-design.md` §8 に反映し、3軸の品質を担保した仕様に仕上げる。
-3軸: ① 知識ファイル JSON の content 品質、② verify 設計書 (QC1/QC2/QC3) への影響、③ 閲覧用 docs MD の可読性。
-
-**Steps:**
-- [x] `rbkc-verify-quality-design.md` で P2 関連チェック（QC1/QC2/QC3/QP）を確認
-- [x] P2-1/P2-3 変換仕様が verify チェックに与える影響を分析（QO1/QO2 false positive 特定）
-- [x] docs MD 閲覧用の変換仕様も設計書に含める（JSON と docs MD で出力が異なる場合を明示）
-- [x] `rbkc-converter-design.md` §8 を更新（P2-1/P2-3 仕様 + sheet_subtype + verify 例外）
-- [x] `rbkc-verify-quality-design.md` §3-3 を更新（P2-1 QO1 例外 + P2-3 QO2 例外）
-- [x] Expert review (Software Engineer) — 2 Findings → 両方修正済み → `.work/00311/review-by-software-engineer.md`
-- [x] ユーザーに最終確認 — `p2_headings` 逐次照合設計に再設計（欠落・余分・レベル誤り・順序違いをすべて検出）— 承認済み
-- [x] 設計書再更新 — `p2_headings` フィールド追加、`sheet_subtype` を P2-3 専用に変更、§8-6/§3-3 逐次照合仕様に差し替え — `[pending]`
-
 ### [D] 設計書通りに実装
 
+**Status**: 実装完了、v6 verify 0 FAIL。v5 verify で P2-1 QO2 ダブルスペース問題 13 FAIL 残存。
+
 **Steps:**
-- [ ] TDD: verify ユニットテストを先に書く（P2-1/P2-3 関連チェックが変わる場合）
-- [ ] `xlsx_common.py` の `_detect_header()` 変更（P1-1 対応、閾値 3→2）
-- [ ] `xlsx_common.py` の `_build_p2_content()` 変更（P2-1: 列→見出し変換、P2-3: LF 保持）
-- [ ] `docs.py` の `_render_xlsx_p2()` 変更（P2-1/P2-3 対応）
-- [ ] 全5バージョンで `create → verify` を実行し FAIL 差分確認
+- [x] TDD: verify/docs ユニットテスト先行記述（P2-1/P2-3 関連）— 398 tests pass
+- [x] `xlsx_common.py`: `load_sheet_subtype_map()`, `_build_p2_1_meta()`, `_build_p2_content_raw()`, `sheet_to_result(sheet_subtype)` 実装
+- [x] `xlsx_releasenote.py` / `xlsx_security.py`: `convert(sheet_subtype=None)` 追加
+- [x] `docs.py` の `_render_xlsx_p2()` 変更（P2-1 raw_lines/p2_base_col、P2-3 hard line break）
+- [x] `run.py`: `_load_sheet_subtype_map()`, `_convert_and_write(sheet_subtype_map)`, meta serialization (p2_headings/p2_raw_lines/p2_base_col/sheet_subtype/p2_raw_content) 実装
+- [x] verify.py: QO1 p2_headings 逐次照合, QO2 P2-1 per-line, QO2 P2-3 両辺正規化 (+ blank line 二重スペース collapse) 実装
+- [x] v6 create + verify → 0 FAIL
+- [ ] **[BLOCKED: 未調査]** v5 verify P2-1 QO2 ダブルスペース問題 13 FAIL を調査・修正
+  - 症状: `'クライアント側  サーバ側'` (ダブルスペース入り行) が docs MD に見つからない
+  - 原因仮説: docs.py `_render_xlsx_p2` が body 行を `"  ".join(...)` で結合 → ダブルスペース生成、
+    verify が `line not in docs_md_text` で照合するが docs MD 上は別の形式になっている可能性
+  - 調査手順: v5 該当 JSON と docs MD を直接比較し、docs MD 内の実際の文字列を確認する
+  - 影響: v5 の P2-1 ボディ行（見出し以外の行）に2列以上データがある場合に発生する可能性
+- [ ] v5/v1.4/v1.3/v1.2 create + verify → 0 FAIL（上記修正後）
 - [ ] docs MD を目視確認（P2-1 変換結果が意図通りか）
+
+### [C] 設計書の更新と expert review — 完了済み
+
+**Steps:** (すべて完了)
+- [x] `rbkc-verify-quality-design.md` §3-3 更新
+- [x] `rbkc-converter-design.md` §8 更新（p2_headings 逐次照合仕様）— `d1c612c67`
+- [x] Expert review (Software Engineer) — 0 Finding — `.work/00311/review-by-software-engineer.md`
 
 ### [E] Expert review & PR 作成
 

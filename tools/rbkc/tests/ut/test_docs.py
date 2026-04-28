@@ -193,6 +193,64 @@ class TestLeadingBlankLineSuppression:
         assert md.startswith("# MyTitle"), "MD with title must start with # heading"
 
 
+class TestRenderXlsxP2Subtypes:
+    """docs MD rendering for P2-1 (column-indent→headings) and P2-3 (LF→hard line break)."""
+
+    def _render(self, data: dict) -> str:
+        from scripts.create.docs import _render_full
+        return _render_full(data, docs_md_path=None, knowledge_dir=None)
+
+    def test_p2_1_col0_becomes_h2(self):
+        """P2-1: col-0 entries in p2_headings level=2 become ## headings."""
+        data = {
+            "id": "f", "title": "概要", "content": "",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "p2_headings": [
+                {"text": "セクションA", "level": 2},
+                {"text": "サブB", "level": 3},
+            ],
+        }
+        md = self._render(data)
+        assert "## セクションA" in md
+        assert "### サブB" in md
+
+    def test_p2_1_no_h2_when_no_p2_headings(self):
+        """P2 without p2_headings renders plain text, no ## headings."""
+        data = {
+            "id": "f", "title": "T", "content": "本文テキスト",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+        }
+        md = self._render(data)
+        assert "## " not in md
+        assert "本文テキスト" in md
+
+    def test_p2_3_lf_becomes_hard_line_break(self):
+        """P2-3: embedded LF in content becomes Markdown hard line break (  \\n)."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "行1 行2 行3",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "sheet_subtype": "P2-3",
+            "p2_raw_content": "行1\n行2\n行3",
+        }
+        md = self._render(data)
+        assert "行1  \n行2  \n行3" in md
+
+    def test_p2_2_no_change(self):
+        """P2-2 (neither p2_headings nor sheet_subtype P2-3): plain text output."""
+        data = {
+            "id": "f", "title": "T", "content": "ステップ1  ステップ2",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+        }
+        md = self._render(data)
+        assert "ステップ1" in md
+        assert "## " not in md
+
+
 class TestAssetsExcluded:
     """generate_docs must ignore JSON files under knowledge/assets/.
 

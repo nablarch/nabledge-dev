@@ -37,6 +37,27 @@ class RawSheet:
         return len(self.rows[0]) if self.rows else 0
 
 
+def load_sheet_subtype_map(mapping_path: Path) -> dict[tuple[str, str], str]:
+    """Parse xlsx-sheet-mapping.md and return (file_basename, sheet_name) → subtype.
+
+    Only P2-1 and P2-3 entries are returned (P1/P2-2 use default handling).
+    Returns an empty dict if the file does not exist.
+    """
+    if not mapping_path.exists():
+        return {}
+    result: dict[tuple[str, str], str] = {}
+    import re
+    row_re = re.compile(r'^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(P2-1|P2-3)\s*\|')
+    for line in mapping_path.read_text(encoding="utf-8").splitlines():
+        m = row_re.match(line)
+        if m:
+            file_name = m.group(1).strip()
+            sheet_name = m.group(2).strip()
+            subtype = m.group(3).strip()
+            result[(file_name, sheet_name)] = subtype
+    return result
+
+
 def list_sheet_names(path: Path) -> list[str]:
     """Return worksheet names in file order."""
     ext = path.suffix.lower()
@@ -362,13 +383,20 @@ def _flatten_ws(s: str) -> str:
 # Sheet → RSTResult conversion
 # ---------------------------------------------------------------------------
 
-def sheet_to_result(sheet: RawSheet) -> tuple[RSTResult, dict]:
+def sheet_to_result(
+    sheet: RawSheet,
+    sheet_subtype: str | None = None,
+) -> tuple[RSTResult, dict]:
     """Convert one :class:`RawSheet` to an :class:`RSTResult`.
 
     Returns ``(result, meta)`` where ``meta`` carries the ``sheet_type``
     ("P1" | "P2") and, for P1, the table body (``columns`` + ``data_rows``)
     needed by docs.py to restore a MD table.  ``meta`` is serialised onto
     the output JSON verbatim via ``run._convert_and_write``.
+
+    ``sheet_subtype``: pass "P2-1" or "P2-3" for sheets listed in
+    xlsx-sheet-mapping.md.  Controls p2_headings / p2_raw_content generation
+    for docs MD.  Ignored when header detection succeeds (P1).
     """
     title, body_start, title_row_extras = _extract_title(sheet)
 
@@ -396,8 +424,7 @@ def sheet_to_result(sheet: RawSheet) -> tuple[RSTResult, dict]:
         }
         return result, meta
 
-    # P2: keep every body row verbatim (no flatten) so verify's raw-token
-    # match succeeds.
+    # P2: JSON content always uses flattened whitespace (AI keyword search).
     content = _build_p2_content(sheet, body_start, "")
     result = RSTResult(
         title=title,
@@ -405,7 +432,18 @@ def sheet_to_result(sheet: RawSheet) -> tuple[RSTResult, dict]:
         content=content,
         sections=[],
     )
-    meta = {"sheet_type": "P2"}
+    meta: dict = {"sheet_type": "P2"}
+
+    if sheet_subtype == "P2-1":
+        p2_headings, p2_raw_lines, p2_base_col = _build_p2_1_meta(sheet, body_start)
+        meta["p2_headings"] = p2_headings
+        meta["p2_raw_lines"] = p2_raw_lines
+        meta["p2_base_col"] = p2_base_col
+
+    elif sheet_subtype == "P2-3":
+        meta["sheet_subtype"] = "P2-3"
+        meta["p2_raw_content"] = _build_p2_content_raw(sheet, body_start)
+
     return result, meta
 
 
@@ -514,6 +552,65 @@ def _first_non_empty(cells: list[str]) -> str:
     return next((c for c in cells if c), "")
 
 
+def _build_p2_1_meta(
+    sheet: RawSheet, body_start: int
+) -> tuple[list[dict], list[list[tuple[int, str]]]]:
+    """Build p2_headings and p2_raw_lines for P2-1 sheets.
+
+    Level assignment is relative to the minimum non-empty column index in
+    the body (base_col).  base_col → level 2, base_col+1 → level 3,
+    base_col+2 → level 4.  Rows where the leftmost non-empty cell is at
+    base_col+3 or beyond are body paragraphs (no heading entry).
+
+    Returns:
+        p2_headings: [{text, level}] for every heading row in source order.
+        p2_raw_lines: [[(col_index, cell_text), ...]] for every non-empty row,
+            preserving column positions so docs.py can reconstruct the structure.
+        base_col: the minimum non-empty column index in the body.
+    """
+    # Determine base column: the smallest column index that has a non-empty
+    # cell anywhere in the body.
+    base_col = sheet.ncols
+    for r in sheet.rows[body_start:]:
+        for cx, v in enumerate(r):
+            if v:
+                base_col = min(base_col, cx)
+    if base_col == sheet.ncols:
+        base_col = 0  # empty sheet fallback
+
+    p2_headings: list[dict] = []
+    p2_raw_lines: list[list[tuple[int, str]]] = []
+
+    for r in sheet.rows[body_start:]:
+        cells = [(cx, _flatten_ws(v)) for cx, v in enumerate(r) if v]
+        if not cells:
+            continue
+        p2_raw_lines.append(cells)
+        min_cx = min(cx for cx, _ in cells)
+        offset = min_cx - base_col
+        if offset <= 2:
+            text = next(v for cx, v in cells if cx == min_cx)
+            p2_headings.append({"text": text, "level": 2 + offset})
+        # offset >= 3 → body paragraph, no heading entry
+
+    return p2_headings, p2_raw_lines, base_col
+
+
+def _build_p2_content_raw(sheet: RawSheet, body_start: int) -> str:
+    """Build P2-3 raw content preserving embedded newlines in cells.
+
+    Unlike _build_p2_content, cell values are NOT whitespace-flattened so
+    that docs.py can convert embedded LF to Markdown hard line breaks.
+    """
+    lines: list[str] = []
+    for r in sheet.rows[body_start:]:
+        non_empty = [v for v in r if v]
+        if not non_empty:
+            continue
+        lines.append("  ".join(non_empty))
+    return "\n".join(lines)
+
+
 def _build_p2_content(sheet: RawSheet, body_start: int, preamble: str) -> str:
     """Flatten all body rows to text.
 
@@ -538,6 +635,10 @@ def _build_p2_content(sheet: RawSheet, body_start: int, preamble: str) -> str:
 # Convenience: per-file convert (used by run.py when sheet_name is given)
 # ---------------------------------------------------------------------------
 
-def convert_sheet(path: Path, sheet_name: str) -> tuple[RSTResult, dict]:
+def convert_sheet(
+    path: Path,
+    sheet_name: str,
+    sheet_subtype: str | None = None,
+) -> tuple[RSTResult, dict]:
     sheet = read_sheet(path, sheet_name)
-    return sheet_to_result(sheet)
+    return sheet_to_result(sheet, sheet_subtype=sheet_subtype)
