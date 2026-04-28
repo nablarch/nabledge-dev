@@ -557,27 +557,17 @@ def _build_p2_1_meta(
 ) -> tuple[list[dict], list[list[tuple[int, str]]]]:
     """Build p2_headings and p2_raw_lines for P2-1 sheets.
 
-    Level assignment is relative to the minimum non-empty column index in
-    the body (base_col).  base_col → level 2, base_col+1 → level 3,
-    base_col+2 → level 4.  Rows where the leftmost non-empty cell is at
-    base_col+3 or beyond are body paragraphs (no heading entry).
+    Level assignment uses absolute column position (per spec §8):
+    col-0 → level 2 (##), col-1 → level 3 (###), col-2 → level 4 (####).
+    Rows where the leftmost non-empty cell is at col-3 or beyond are body
+    paragraphs (no heading entry).
 
     Returns:
         p2_headings: [{text, level}] for every heading row in source order.
         p2_raw_lines: [[(col_index, cell_text), ...]] for every non-empty row,
             preserving column positions so docs.py can reconstruct the structure.
-        base_col: the minimum non-empty column index in the body.
+        base_col: always 0 (kept for JSON schema compatibility).
     """
-    # Determine base column: the smallest column index that has a non-empty
-    # cell anywhere in the body.
-    base_col = sheet.ncols
-    for r in sheet.rows[body_start:]:
-        for cx, v in enumerate(r):
-            if v:
-                base_col = min(base_col, cx)
-    if base_col == sheet.ncols:
-        base_col = 0  # empty sheet fallback
-
     p2_headings: list[dict] = []
     p2_raw_lines: list[list[tuple[int, str]]] = []
 
@@ -587,13 +577,14 @@ def _build_p2_1_meta(
             continue
         p2_raw_lines.append(cells)
         min_cx = min(cx for cx, _ in cells)
-        offset = min_cx - base_col
-        if offset <= 2:
+        # Single-cell rows at col 0/1/2 are headings; multi-cell rows (tables/
+        # comparison pairs like "変更前  変更後") are always body paragraphs.
+        if len(cells) == 1 and min_cx <= 2:
             text = next(v for cx, v in cells if cx == min_cx)
-            p2_headings.append({"text": text, "level": 2 + offset})
-        # offset >= 3 → body paragraph, no heading entry
+            p2_headings.append({"text": text, "level": 2 + min_cx})
+        # multi-cell row or min_cx >= 3 → body paragraph, no heading entry
 
-    return p2_headings, p2_raw_lines, base_col
+    return p2_headings, p2_raw_lines, 0
 
 
 def _build_p2_content_raw(sheet: RawSheet, body_start: int) -> str:

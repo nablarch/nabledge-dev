@@ -200,6 +200,65 @@ class TestRenderXlsxP2Subtypes:
         from scripts.create.docs import _render_full
         return _render_full(data, docs_md_path=None, knowledge_dir=None)
 
+    def test_p2_1_col3_is_body_not_heading(self):
+        """P2-1: col-3 rows must be body paragraphs, not #### headings.
+
+        Regression: security-check-1.概要 has col_dist {1:H2, 2:H3, 3:body}.
+        Before the fix, the relative-offset logic treated col-3 (offset=2 from
+        base_col=1) as H4 (####).  After the fix, absolute-column logic treats
+        col-3 as body (min_cx=3 > 2).
+        """
+        # Simulate security-check-1.概要: base_col=1, col-3 rows are body text
+        # p2_raw_lines: each row is [(col_index, text)]
+        data = {
+            "id": "f", "title": "1.概要", "content": "",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "p2_headings": [
+                {"text": "1.概要", "level": 3},       # col-1 → H3
+                {"text": "1.1 本書の位置づけ", "level": 4},  # col-2 → H4
+            ],
+            "p2_raw_lines": [
+                [(1, "1.概要")],                          # col-1 → H3
+                [(2, "1.1 本書の位置づけ")],              # col-2 → H4
+                [(3, "本文テキストA")],                   # col-3 → body (NOT ####)
+                [(3, "本文テキストB")],                   # col-3 → body
+            ],
+            "p2_base_col": 1,
+        }
+        md = self._render(data)
+        assert "### 1.概要" in md
+        assert "#### 1.1 本書の位置づけ" in md
+        assert "本文テキストA" in md
+        assert "本文テキストB" in md
+        assert "#### 本文テキストA" not in md, "col-3 must be body, not #### heading"
+        assert "#### 本文テキストB" not in md
+
+    def test_p2_1_multicell_row_is_body_not_heading(self):
+        """P2-1: rows with multiple cells (comparison tables) must be body, not headings.
+
+        Regression: 変更前/変更後 pairs like (col-1,'変更前'),(col-10,'変更後') have
+        min_cx=1, but they are comparison table rows — not ### headings.
+        """
+        data = {
+            "id": "f", "title": "修正内容", "content": "",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "p2_headings": [
+                {"text": "見出し", "level": 3},
+            ],
+            "p2_raw_lines": [
+                [(1, "見出し")],                            # single-cell col-1 → H3
+                [(1, "変更前"), (10, "変更後")],            # multi-cell → body
+                [(1, "旧クラス名"), (10, "新クラス名")],    # multi-cell → body
+            ],
+            "p2_base_col": 0,
+        }
+        md = self._render(data)
+        assert "### 見出し" in md
+        assert "変更前  変更後" in md
+        assert "### 変更前" not in md, "multi-cell row must not become ### heading"
+
     def test_p2_1_col0_becomes_h2(self):
         """P2-1: col-0 entries in p2_headings level=2 become ## headings."""
         data = {

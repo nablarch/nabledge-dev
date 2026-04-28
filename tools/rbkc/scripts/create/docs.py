@@ -175,18 +175,17 @@ def _render_xlsx_p2(data: dict) -> str:
         # P2-1: p2_raw_lines holds original row data as [[(col, text), ...], ...]
         # Fall back to reconstructing from p2_headings alone if raw lines absent.
         raw_lines = data.get("p2_raw_lines")
-        base_col = data.get("p2_base_col", 0)
         if raw_lines is not None:
             # Each element is a list of (col_index, cell_text) pairs for one row.
-            # offset = min_col - base_col: 0 → H2, 1 → H3, 2 → H4, ≥3 → body.
+            # Absolute column: col-0 → H2 (##), col-1 → H3 (###), col-2 → H4 (####),
+            # col-3+ → body paragraph. Multi-cell rows are always body (comparison tables).
             for row in raw_lines:
                 if not row:
                     continue
                 min_cx = min(cx for cx, _ in row if _)
-                offset = min_cx - base_col
-                if offset <= 2:
+                if len(row) == 1 and min_cx <= 2:
                     text = next(v for cx, v in row if cx == min_cx)
-                    hashes = "#" * (2 + offset)
+                    hashes = "#" * (2 + min_cx)
                     lines.append(f"{hashes} {text}")
                     lines.append("")
                 else:
