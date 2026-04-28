@@ -2467,9 +2467,9 @@ class TestCheckSourceLinks:
         assert any("QL1" in i and "diagram.png" in i for i in issues)
 
     def test_pass_rst_image_invisible_height_zero_skipped(self):
-        """QL1 must not fire for RST images with height=0 (invisible spacer).
-        link.rst injects handler_structure_bg.png / handler_bg.png with height=0;
-        RBKC suppresses these in visit_image, so verify must also skip them."""
+        """QL1 must not fire for RST images with height=0.
+        Images with zero height carry no visible content and are not knowledge
+        content per RST source format spec — QL1 must not flag them."""
         src = (
             "概要\n====\n\n"
             ".. image:: images/handler_structure_bg.png\n"
@@ -2481,7 +2481,8 @@ class TestCheckSourceLinks:
         assert ql1 == [], ql1
 
     def test_pass_rst_image_invisible_width_zero_skipped(self):
-        """QL1 must not fire for RST images with width=0 (invisible spacer)."""
+        """QL1 must not fire for RST images with width=0.
+        Images with zero width carry no visible content — same as height=0."""
         src = (
             "概要\n====\n\n"
             ".. image:: images/handler_bg.png\n"

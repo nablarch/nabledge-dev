@@ -2116,9 +2116,9 @@ def check_source_links(
                 continue
             if _under_substitution(img):
                 continue
-            # Skip invisible spacer images (height=0 or width=0).
-            # link.rst injects handler_structure_bg.png / handler_bg.png with these
-            # dimensions; RBKC suppresses them in visit_image, so verify must match.
+            # Skip invisible images (height=0 or width=0).
+            # Such images carry no visible content and are not knowledge content
+            # per RST source format spec — they must not trigger QL1 content checks.
             try:
                 h = img.get("height")
                 w = img.get("width")
