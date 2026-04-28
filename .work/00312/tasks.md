@@ -5,6 +5,10 @@
 **Issue**: #312
 **Updated**: 2026-04-28
 
+## Review Response
+
+- [x] Responded to reviewer comment — added diff-check script + result with conclusion — `73dcc13b5`, `1aec72e19`
+
 **Note**: rbkc.sh は `tools/rbkc/` から実行する（`cd tools/rbkc && bash rbkc.sh ...`）
 
 ## Done
