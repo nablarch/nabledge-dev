@@ -28,7 +28,7 @@
 
 [ソースコード](https://github.com/nablarch/nablarch-messaging-simulator)
 
-本サンプルは、Nablarchアプリケーションフレームワークの [MOMメッセージング](../../component/libraries/libraries-mom-system-messaging.md#mom-system-messaging) 、 [HTTPメッセージング](../../component/libraries/libraries-http-system-messaging.md#http-system-messaging) を使用する
+本サンプルは、Nablarchアプリケーションフレームワークの [MOMメッセージング](../../component/libraries/libraries-mom-system-messaging.md#momメッセージング) 、 [HTTPメッセージング](../../component/libraries/libraries-http-system-messaging.md#httpメッセージング) を使用する
 アプリケーションのテストにて、対向先システムをシミュレートするサンプル実装を提供する。
 
 テスト環境構築後の疎通テストやアプリケーションの結合テスト等で、アプリケーションの接続先として、
@@ -37,8 +37,11 @@
 シミュレータの動作イメージを以下に示す。
 
 シミュレータがメッセージ受信する場合
+
 ![behavior_illustration01.png](../../../knowledge/assets/biz-samples-11/behavior_illustration01.png)
+
 シミュレータがメッセージ送信する場合
+
 ![behavior_illustration02.png](../../../knowledge/assets/biz-samples-11/behavior_illustration02.png)
 
 > **Important:**
@@ -110,12 +113,15 @@ Nablarchアプリケーションフレームワークのマルチスレッド実
 そのため、シミュレータを使用するには、以下の手順に従ってビルドを実行し、実行モジュールを作成する必要がある。
 
 シミュレータの取得
+
 以下のコマンドを実行してシミュレータのソースコードを取得する。
 
 ```bash
 git clone https://github.com/nablarch/nablarch-messaging-simulator.git
 ```
+
 実行モジュールの作成
+
 以下のコマンドを実行し、 `target/build` 配下に実行モジュールを作成する。
 
 ```bat

@@ -4,9 +4,10 @@
 以下に示す例を参考に実装することで、ロック時間が短縮され他プロセスへの影響を抑えることができる。
 
 ポイント
+
 * ItemReader では処理対象レコードの主キーのみ取得する。
 * ItemProcessor で主キーをもとに処理対象レコードを取得して悲観的ロックを行う。
-  [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#universal-dao) を使用した悲観的ロックについては [悲観的ロックを行う](../../component/libraries/libraries-universal-dao.md#universal-dao-jpa-pessimistic-lock) を参照。
+  [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) を使用した悲観的ロックについては [悲観的ロックを行う](../../component/libraries/libraries-universal-dao.md#悲観的ロックを行う) を参照。
 
 ```java
 @Dependent

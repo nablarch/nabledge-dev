@@ -6,12 +6,12 @@
 * ハンドラキュー(handler queue)
 
   * インターセプタ(interceptor)
-* [ライブラリ(library)](../../component/libraries/libraries-libraries.md#library)
+* [ライブラリ(library)](../../component/libraries/libraries-libraries.md#nablarchが提供するライブラリ)
 
 Nablarchアプリケーションフレームワークのアーキテクチャについて解説する。
 
 > **Warning:**
-> 本項で解説するアーキテクチャは、 [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md#jsr352-batch) には該当しない（詳細については、 [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md#jsr352-batch) の [アーキテクチャ概要](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md#jsr352-architecture) を参照）。
+> 本項で解説するアーキテクチャは、 [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md#jakarta-batchに準拠したバッチアプリケーション) には該当しない（詳細については、 [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md#jakarta-batchに準拠したバッチアプリケーション) の [アーキテクチャ概要](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md#アーキテクチャ概要) を参照）。
 
 ## Nablarchアプリケーションフレームワークの主な構成要素
 
@@ -38,12 +38,15 @@ Nablarchアプリケーションフレームワークの主な構成要素を以
 
 > 業務ロジックを実装するクラスの親クラスで共通処理を実装するようなケースを多く見かけるが、
 > 個別のハンドラとして実装することを推奨する。
-> (個別のハンドラの前後に処理を追加したい場合には [インターセプタ(interceptor)](../../about/about-nablarch/about-nablarch-architecture.md#nablarch-architecture-interceptor) を使用することを推奨する。)
+> (個別のハンドラの前後に処理を追加したい場合には [インターセプタ(interceptor)](../../about/about-nablarch/about-nablarch-architecture.md#インターセプタinterceptor) を使用することを推奨する。)
 
 > 個別のハンドラで実装した場合
+
 > 個々のハンドラの責務が明確になるため、テストが容易であり保守性が高くなる。
 > また、ハンドラ毎処理が独立しているため、共通処理の抜き差しが容易に出来る。
+
 > 親クラスに共通処理を実装した場合
+
 > 共通処理が増えた場合に親クラスが肥大化し複数の責務を持つことになる。
 > これは、メンテナンス時のコストが増大するだけではなく、テストも複雑になり不具合の温床ともなる。
 > 本来継承すべきクラスを正しく継承をしなかった場合でも、共通処理の内容によっては異常終了とならずに処理が実行出来るため、
@@ -83,4 +86,4 @@ Nablarchは受け取ったリクエストに対し、ハンドラキュー上に
 
 ライブラリとは、データベースアクセスやファイルアクセス、ログ出力などのようにハンドラから呼び出されるコンポーネント群のことを指す。
 
-Nablarchアプリケーションフレームワークが提供するライブラリは、 [Nablarchが提供するライブラリ](../../component/libraries/libraries-libraries.md#library) を参照。
+Nablarchアプリケーションフレームワークが提供するライブラリは、 [Nablarchが提供するライブラリ](../../component/libraries/libraries-libraries.md#nablarchが提供するライブラリ) を参照。

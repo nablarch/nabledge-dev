@@ -14,7 +14,7 @@
 データベースやファイルなどに格納した静的データへのアクセスを高速化するためのキャッシュ機能を提供する。
 
 この機能は単体では動作しない。
-静的データをキャッシュしたい場合には、 [任意のデータをキャッシュする](../../component/libraries/libraries-static-data-cache.md#static-data-cache-load-data) を参照し、データのロード処理を実装すること。
+静的データをキャッシュしたい場合には、 [任意のデータをキャッシュする](../../component/libraries/libraries-static-data-cache.md#任意のデータをキャッシュする) を参照し、データのロード処理を実装すること。
 
 > **Important:**
 > この機能では、キャシュしたデータをヒープ上に保持する。
@@ -30,7 +30,7 @@
 このため、新たなデータをキャッシュしたい場合には、データをロードする処理のみを実装すればよい。
 特に、マルチスレッド環境下での同期処理などを行う必要がないのは大きなメリットである。
 
-詳細は、 [任意のデータをキャッシュする](../../component/libraries/libraries-static-data-cache.md#static-data-cache-load-data) を参照。
+詳細は、 [任意のデータをキャッシュする](../../component/libraries/libraries-static-data-cache.md#任意のデータをキャッシュする) を参照。
 
 ## モジュール一覧
 
@@ -54,6 +54,7 @@
 以下に詳細な手順を示す。
 
 StaticDataLoaderインタフェースを実装しローダーを作成する
+
 StaticDataLoader を実装し、任意のストアから静的データをロードする処理を実装する。
 
 幾つか実装すべきメソッドがあるが、以下のルールにもとづいて実装すると良い。
@@ -67,22 +68,26 @@ StaticDataLoader を実装し、任意のストアから静的データをロー
 この機能は実装方法が複雑になるだけでなく、使用するメリットもないため原則使用しない。
 
 実装としては、 return null で良い。
+
 BasicStaticDataCacheクラスにローダーを設定する
+
 StaticDataLoader を実装したローダーを、 BasicStaticDataCache.loader に設定する。
 
-設定例は、 [静的データキャッシュの設定ファイル例](../../component/libraries/libraries-static-data-cache.md#static-data-cache-config-sample) を参照。
+設定例は、 [静的データキャッシュの設定ファイル例](../../component/libraries/libraries-static-data-cache.md#任意のデータをキャッシュする) を参照。
 
 > **Important:**
 > 設定例でも行っているように、 BasicStaticDataCache は必ず初期化対象に設定すること。
-> 初期化の詳細は、 [オブジェクトの初期化処理を行う](../../component/libraries/libraries-repository.md#repository-initialize-object) を参照。
+> 初期化の詳細は、 [オブジェクトの初期化処理を行う](../../component/libraries/libraries-repository.md#オブジェクトの初期化処理を行う) を参照。
+
 キャッシュを使用するクラスにBasicStaticDataCacheを設定する
+
 キャッシュを使用するクラスに、ローダーを持つ BasicStaticDataCache を設定することで、キャッシュされたデータにアクセスできる。
 
 以下にキャッシュを使用するクラスの例を示す。
 
 この例では、設定された StaticDataCache を使用して、キャッシュしたデータを取得している。
 
-設定例は、 [静的データキャッシュの設定ファイル例](../../component/libraries/libraries-static-data-cache.md#static-data-cache-config-sample) を参照。
+設定例は、 [静的データキャッシュの設定ファイル例](../../component/libraries/libraries-static-data-cache.md#任意のデータをキャッシュする) を参照。
 
 ```java
 public class SampleService {
@@ -100,6 +105,7 @@ public class SampleService {
 ```
 
 設定ファイル例
+
 ```xml
 <!-- ローダー -->
 <component name="sampleLoader" class="sample.SampleLoader" />

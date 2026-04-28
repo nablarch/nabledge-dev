@@ -10,11 +10,11 @@
 * ヘルスチェック結果のレスポンスを変更する
 
 本ハンドラは、アプリケーションのヘルスチェックを行うための機能を提供する。
-本ハンドラを使用して、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md#web-application) と [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restful-web-service)
+本ハンドラを使用して、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md#ウェブアプリケーション編) と [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restfulウェブサービス編)
 のヘルスチェックを行うエンドポイントを実現できる。
 
 ヘルスチェックのデフォルト実装として DB と
-[Redis](../../component/adapters/adapters-lettuce-adaptor.md#lettuce-adaptor) のヘルスチェックを提供している。
+[Redis](../../component/adapters/adapters-lettuce-adaptor.md#lettuceアダプタ) のヘルスチェックを提供している。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -47,10 +47,11 @@
 
 ## 制約
 
-[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#http-response-handler) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler) より後ろに配置すること
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jax-rsレスポンスハンドラ) より後ろに配置すること
+
 本ハンドラで生成した HttpResponse を
-[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#http-response-handler) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler) が処理するため、
-本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#http-response-handler) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler) より後ろに配置する必要がある。
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jax-rsレスポンスハンドラ) が処理するため、
+本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jax-rsレスポンスハンドラ) より後ろに配置する必要がある。
 
 ## ヘルスチェックのエンドポイントを作る
 
@@ -140,7 +141,7 @@ DB等のリソースのヘルスチェックは、 HealthChecker
 
 ## ヘルスチェックを追加する
 
-[ヘルスチェックのエンドポイントを作る](../../component/handlers/handlers-health-check-endpoint-handler.md#health-check-endpoint-handler-health-check-endpoint) で説明したように、
+[ヘルスチェックのエンドポイントを作る](../../component/handlers/handlers-health-check-endpoint-handler.md#ヘルスチェックのエンドポイントを作る) で説明したように、
 DB等のリソースのヘルスチェックは HealthChecker
 という抽象クラスが行うので、HealthChecker を継承したクラスを作成し、
 本ハンドラのhealthCheckersプロパティに指定するとヘルスチェックを追加できる。
@@ -190,9 +191,12 @@ public class CustomHealthChecker extends HealthChecker {
 デフォルトのレスポンスは以下となる。
 
 ステータスコード
+
 * ヘルスチェックの成功：200
 * ヘルスチェックの失敗：503
+
 レスポンスボディ
+
 * Content-Type：application/json
 * フォーマット
 
@@ -216,7 +220,9 @@ public class CustomHealthChecker extends HealthChecker {
   * 実際は改行がなく1行となるが上記は見やすさのために整形している。
   * ヘルスチェック全体の結果はtargetsのヘルスチェック結果が1つでも失敗の場合に失敗となる。
   * targetsは指定された HealthChecker の数だけ含まれる。
+
 ヘルスチェック結果のラベル
+
 * ヘルスチェックの成功：UP
 * ヘルスチェックの失敗：DOWN
 

@@ -33,9 +33,10 @@
 
 ## 制約
 
-[マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#multipart-handler) より後ろに配置すること
+[マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#マルチパートリクエストハンドラ) より後ろに配置すること
+
 このハンドラはリクエストパラータにアクセスする。
-このため、 [マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#multipart-handler) よりも後ろに設定する必要がある。
+このため、 [マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#マルチパートリクエストハンドラ) よりも後ろに設定する必要がある。
 
 ## 標準で提供しているノーマライズ処理
 
@@ -52,6 +53,7 @@
 以下に例を示す。
 
 ノーマライザの実装例
+
 ```java
 public class SampleNormalizer implements Normalizer {
 
@@ -72,7 +74,9 @@ public class SampleNormalizer implements Normalizer {
     }
 }
 ```
+
 コンポーネント設定ファイルに定義する
+
 以下の設定例のように、適用したいノーマライザを設定する。
 複数のノーマライザを設定した場合、より上に設定したものから順次ノーマライズ処理が実行される。
 このため、ノーマライズ処理に順序性がある場合には、設定順に注意すること。

@@ -7,10 +7,10 @@
 * 制約
 * CORSを実現する
 
-本ハンドラは、 [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restful-web-service) でCORS(Cross-Origin Resource Sharing)を実現するために使用する。
+本ハンドラは、 [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restfulウェブサービス編) でCORS(Cross-Origin Resource Sharing)を実現するために使用する。
 
 CORSを実現するには、実際のリクエストの前に送信されるプリフライトリクエストと実際のリクエストに対する処理が必要となる。
-プリフライトリクエストは本ハンドラで処理し、実際のリクエストに対する処理は [クライアントに返すレスポンスに共通処理を追加する](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler-response-finisher) で説明している
+プリフライトリクエストは本ハンドラで処理し、実際のリクエストに対する処理は [クライアントに返すレスポンスに共通処理を追加する](../../component/handlers/handlers-jaxrs-response-handler.md#クライアントに返すレスポンスに共通処理を追加する) で説明している
 ResponseFinisherを実装した CorsResponseFinisher で処理する。
 
 本ハンドラでは、以下の処理を行う。
@@ -36,9 +36,10 @@ ResponseFinisherを実装した CorsResponseFinisher で処理する。
 
 ## 制約
 
-[Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler) より後ろに配置すること
-本ハンドラで生成した HttpResponse を [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler) が処理するため、
-本ハンドラは [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jaxrs-response-handler) より後ろに配置する必要がある。
+[Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jakarta-restful-web-servicesレスポンスハンドラ) より後ろに配置すること
+
+本ハンドラで生成した HttpResponse を [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jakarta-restful-web-servicesレスポンスハンドラ) が処理するため、
+本ハンドラは [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jakarta-restful-web-servicesレスポンスハンドラ) より後ろに配置する必要がある。
 
 ## CORSを実現する
 
@@ -94,6 +95,7 @@ CORSの処理は Cors インタフェースが行う。
 BasicCors はデフォルトで以下の処理を行う。
 
 プリフライトリクエスト(CorsPreflightRequestHandlerが呼び出す処理)
+
 * リクエストが以下の条件を全て満たす場合にプリフライトリクエストと判定する。
 
   * HTTPメソッド：OPTIONS
@@ -102,6 +104,7 @@ BasicCors はデフォルトで以下の処理を行う。
 * リクエストがプリフライトリクエストの場合は以下のレスポンスを返す。
 
 実際のリクエスト(CorsResponseFinisherが呼び出す処理)
+
 * 以下のレスポンスヘッダを設定する。
 
   * Access-Control-Allow-Originヘッダ：リクエストのOriginヘッダ

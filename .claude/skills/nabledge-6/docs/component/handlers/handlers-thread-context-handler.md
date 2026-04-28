@@ -18,7 +18,7 @@
 同一の処理スレッド内で共有する値をスレッドローカル領域上に保持するための仕組みである。
 
 > **Important:**
-> 本ハンドラで設定したスレッドローカル上の値は、 [スレッドコンテキスト変数削除ハンドラ](../../component/handlers/handlers-thread-context-clear-handler.md#thread-context-clear-handler) を使用して、復路処理で削除すること。
+> 本ハンドラで設定したスレッドローカル上の値は、 [スレッドコンテキスト変数削除ハンドラ](../../component/handlers/handlers-thread-context-clear-handler.md#スレッドコンテキスト変数削除ハンドラ) を使用して、復路処理で削除すること。
 > 往路処理にて本ハンドラより手前のハンドラでスレッドコンテキストにアクセスした場合、
 > 値を取得できないため本ハンドラより手前ではスレッドコンテキストにアクセスしないよう注意すること。
 
@@ -28,7 +28,7 @@
 
 本ハンドラでは、以下の処理を行う。
 
-* [リクエスト毎にスレッドコンテキストの初期化を行う](../../component/handlers/handlers-thread-context-handler.md#thread-context-handler-initialization)
+* [リクエスト毎にスレッドコンテキストの初期化を行う](../../component/handlers/handlers-thread-context-handler.md#リクエスト毎にスレッドコンテキストの初期化を行う)
 
 処理の流れは以下のとおり。
 
@@ -66,24 +66,32 @@ ThreadContextAttributeインタフェース
 デフォルトで以下のクラスを提供している。
 
 リクエストID、内部リクエストID
+
 * RequestIdAttribute
 * InternalRequestIdAttribute  [1]
 
-[認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md#permission-check-handler) や [サービス提供可否チェックハンドラ](../../component/handlers/handlers-ServiceAvailabilityCheckHandler.md#serviceavailabilitycheckhandler) のような、内部リクエストIDに対する処理を実施するハンドラを使用する場合に設定する。
+[認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md#認可チェックハンドラ) や [サービス提供可否チェックハンドラ](../../component/handlers/handlers-ServiceAvailabilityCheckHandler.md#サービス提供可否チェックハンドラ) のような、内部リクエストIDに対する処理を実施するハンドラを使用する場合に設定する。
 
 ユーザID
+
 * UserIdAttribute
 * UserIdAttributeInSessionStore
+
 言語
+
 * LanguageAttribute
 * HttpLanguageAttribute
 * LanguageAttributeInHttpCookie
 * LanguageAttributeInHttpSession
+
 タイムゾーン
+
 * TimeZoneAttribute
 * TimeZoneAttributeInHttpCookie
 * TimeZoneAttributeInHttpSession
+
 実行時ID
+
 * ExecutionIdAttribute
 
 これらのクラスは、コンポーネント設定ファイルに定義を追加して使用する。
@@ -207,6 +215,7 @@ LanguageAttributeInHttpUtil
 ここでは、クッキーに言語を保持し、リンクにより言語を選択させる画面の実装例を示す。
 
 設定例
+
 ```xml
 <!-- LanguageAttributeInHttpUtilを使用するため、
      コンポーネント名を"languageAttribute"にする。-->
@@ -216,7 +225,9 @@ LanguageAttributeInHttpUtil
   <property name="supportedLanguages" value="ja,en" />
 </component>
 ```
+
 JSPの実装例
+
 ```jsp
 <%-- n:submitLinkタグを使用しリンクを出力し
   n:paramタグを使用しリンク毎に別々の言語を送信する --%>
@@ -234,7 +245,9 @@ JSPの実装例
   <n:param paramName="user.language" value="ja" />
 </n:submitLink>
 ```
+
 ハンドラの実装例
+
 ```java
 // ユーザが選択した言語の保持を行うハンドラ。
 // 複数画面でユーザに言語を選択させる場合を想定しハンドラとして実装する。
@@ -276,6 +289,7 @@ TimeZoneAttributeInHttpUtil
 ここでは、クッキーにタイムゾーンを保持し、リンクによりタイムゾーンを選択させる画面の実装例を示す。
 
 設定例
+
 ```xml
 <!-- TimeZoneAttributeInHttpUtilを使用するため、
      コンポーネント名を"timeZoneAttribute"にする。-->
@@ -285,7 +299,9 @@ TimeZoneAttributeInHttpUtil
   <property name="supportedTimeZones" value="Asia/Tokyo,America/New_York" />
 </component>
 ```
+
 JSPの実装例
+
 ```jsp
 <%-- n:submitLinkタグを使用しリンクを出力し
   n:paramタグを使用しリンク毎に別々のタイムゾーンを送信する --%>
@@ -303,7 +319,9 @@ JSPの実装例
   <n:param paramName="user.timeZone" value="Asia/Tokyo" />
 </n:submitLink>
 ```
+
 ハンドラの実装例
+
 ```java
 // ユーザが選択したタイムゾーンの保持を行うハンドラ。
 // 複数画面でユーザにタイムゾーンを選択させる場合を想定しハンドラとして実装する。
