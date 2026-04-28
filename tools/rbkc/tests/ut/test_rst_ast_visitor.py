@@ -198,3 +198,10 @@ class TestVisitImageInvisibleSuppression:
         img = _make_image(uri="handler_bg.png", height="0")
         result = v.visit_image(img)
         assert result == ""
+
+    def test_invisible_image_string_zero_width_only_is_suppressed(self):
+        """docutils stores width as a string; width='0' must also be suppressed."""
+        v = _make_visitor()
+        img = _make_image(uri="bg.png", width="0")
+        result = v.visit_image(img)
+        assert result == ""

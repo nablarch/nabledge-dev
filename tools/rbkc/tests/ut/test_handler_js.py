@@ -362,6 +362,24 @@ var Context      = 'handler web'
         assert context == "handler web"
         assert queue == ["SomeHandler"]
 
+    def test_empty_queue_returns_empty_list(self):
+        script = "<script>\nvar Context = 'handler'\n  , HandlerQueue = [];\n</script>"
+        context, queue = parse_handler_queue(script)
+        assert context == "handler"
+        assert queue == []
+
+    def test_no_handler_queue_returns_empty_list(self):
+        script = "<script>\nvar Context = 'handler';\n</script>"
+        context, queue = parse_handler_queue(script)
+        assert context == "handler"
+        assert queue == []
+
+    def test_no_context_returns_empty_string(self):
+        script = '<script>\nvar HandlerQueue = [\n    "HandlerA"\n  , "HandlerB"\n  ];\n</script>'
+        context, queue = parse_handler_queue(script)
+        assert context == ""
+        assert queue == ["HandlerA", "HandlerB"]
+
 
 # ---------------------------------------------------------------------------
 # render_handler_table
