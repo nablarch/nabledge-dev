@@ -8,14 +8,14 @@
 
 ### Task 1: 調査 — toctreeエントリの現在の変換フローを把握する
 **Steps:**
-- [ ] application_framework/index.rst など純粋toctreeページのJSONを確認し、現状の`content`フィールドを把握する
-- [ ] RBKCでtoctreeがどう処理されるかをrst_ast.py / rst_ast_visitor.py / rst.py / docs.pyで追跡する
-- [ ] `no_knowledge_content`の判定ロジックを確認する
-- [ ] 全バージョン（v6/v5/v1.4/v1.3/v1.2）のtoctree-indexファイルの傾向を調査する
+- [x] application_framework/index.rst など純粋toctreeページのJSONを確認し、現状の`content`フィールドを把握する
+- [x] RBKCでtoctreeがどう処理されるかをrst_ast.py / rst_ast_visitor.py / rst.py / docs.pyで追跡する
+- [x] `no_knowledge_content`の判定ロジックを確認する
+- [x] 全バージョン（v6/v5/v1.4/v1.3/v1.2）のtoctree-indexファイルの傾向を調査する
 
 ### Task 2: 設計 — toctreeエントリのリンク変換方針を設計書・verify設計書に反映する（ユーザー確認必須）
 **Steps:**
-- [ ] toctreeエントリをMDリンクに変換する方針を設計する（`no_knowledge_content`設定 vs リンク変換）
+- [x] toctreeエントリをMDリンクに変換する方針を設計する — **Option A（MD リンク変換）に決定**
 - [ ] rbkc-converter-design.md の toctree 対応表エントリを更新する（変更前にユーザー確認）
 - [ ] rbkc-verify-quality-design.md に必要な verify 変更があれば記載する（変更前にユーザー確認）
 - [ ] ユーザーに設計を提示して承認を得る
@@ -57,3 +57,5 @@
 ## In Progress
 
 ## Done
+
+- [x] Task 1 調査完了（設計方針 Option A に決定）
