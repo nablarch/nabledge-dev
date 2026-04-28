@@ -2,28 +2,9 @@
 
 **PR**: #314
 **Issue**: #311
-**Updated**: 2026-04-29
+**Updated**: 2026-04-28
 
 ## In Progress
-
-### [B] 全シートの対応方針表の作成と承認
-
-**目標**: [A] の調査結果を元に全212シートの変換方針を `tools/rbkc/docs/xlsx-sheet-mapping.md` にまとめ、承認を得る。
-
-**対応パターン**:
-- **P2-1**: 絶対列インデックス → Markdown 見出しレベルに変換（col0=H1, col1=H2, col2=H3, col3以降=本文）
-- **P2-2**: 現状維持（テーブル構造、単列リスト等）
-- **P2-3**: セル内 `\n` を Markdown 改行（`  \n`）として保持
-- **P1-1 なし**: スコープ外（低効果）
-
-**Steps:**
-- [x] 全212シートの方針を表にまとめる → `.work/00311/sheet-mapping.md`（生成済み）
-- [x] sheet-mapping.md を `tools/rbkc/docs/xlsx-sheet-mapping.md` に移動（`current` 列削除、設計情報として整形）
-- [x] 各パターンの複雑な代表シートの変換サンプルを生成して提示
-  - P2-1: `マルチパートリクエストのサポート対応`（v6）、`HIDDENストア脆弱性`（v5）
-  - P2-2: `バージョンアップ手順`（v5u5）
-  - P2-3: `バージョンアップ手順`（v6u2、Maven LF）、`3.PCIDSS対応表`（v6）
-- [ ] ユーザーに提示して承認取得
 
 ### [C] 設計書の更新と expert review
 
@@ -58,6 +39,7 @@
 
 ## Done
 
+- [x] [B] 全シートの対応方針表の作成と承認 — `tools/rbkc/docs/xlsx-sheet-mapping.md` 生成、サンプル4種（P1/P2-1/P2-2/P2-3）作成・承認取得 — `fde8da01b`
 - [x] Created feature branch `311-excel-docs-md-readability`
 - [x] Created `.work/00311/tasks.md`
 - [x] Created PR #314
