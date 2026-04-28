@@ -6,7 +6,7 @@
 
 ## Summary
 
-2 Findings identified — both resolved in the design update.
+2 Findings identified — both resolved in the design update. Finding 1 fix redesigned after user review to use `p2_headings` sequential matching instead of skip.
 
 ## Findings (All Resolved)
 
@@ -16,7 +16,7 @@
 
 **Description**: P2-1 docs MD emits `##`/`###`/`####` headings from column-indent structure, but JSON has `sections: []`. Verify's QO1 check for non-P1 sheets fires on the `##` headings — a false positive.
 
-**Fix Applied**: Added `sheet_subtype: "P2-1"` to JSON schema (§8-4). Added P2-1 QO1 exception in `rbkc-verify-quality-design.md §3-3` (same pattern as P1 exception). Updated `check_json_docs_md_consistency` condition to skip the assertion for P2-1.
+**Fix Applied (revised)**: Added `p2_headings: [{text, level}]` array to JSON schema (§8-4) for P2-1 sheets only. `sheet_subtype: "P2-1"` removed; `sheet_subtype` now only used for P2-3. QO1 check replaced with sequential matching: extract `##`/`###`/`####` from docs MD in order, compare element-by-element against `p2_headings` (count, text, level, order all checked). Detects missing/extra/wrong-level/reordered headings. `sections 空 → ## なし` check excluded for P2-1 via `not data.get("p2_headings")` guard.
 
 ---
 
