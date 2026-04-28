@@ -193,6 +193,123 @@ class TestLeadingBlankLineSuppression:
         assert md.startswith("# MyTitle"), "MD with title must start with # heading"
 
 
+class TestRenderXlsxP2Subtypes:
+    """docs MD rendering for P2-1 (column-indent→headings) and P2-3 (LF→hard line break)."""
+
+    def _render(self, data: dict) -> str:
+        from scripts.create.docs import _render_full
+        return _render_full(data, docs_md_path=None, knowledge_dir=None)
+
+    def test_p2_1_col3_is_body_not_heading(self):
+        """P2-1: col-3 rows must be body paragraphs, not #### headings.
+
+        Regression: security-check-1.概要 has col_dist {1:H2, 2:H3, 3:body}.
+        Before the fix, the relative-offset logic treated col-3 (offset=2 from
+        base_col=1) as H4 (####).  After the fix, absolute-column logic treats
+        col-3 as body (min_cx=3 > 2).
+        """
+        # Simulate security-check-1.概要: base_col=1, col-3 rows are body text
+        # p2_raw_lines: each row is [(col_index, text)]
+        data = {
+            "id": "f", "title": "1.概要", "content": "",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "p2_headings": [
+                {"text": "1.概要", "level": 3},       # col-1 → H3
+                {"text": "1.1 本書の位置づけ", "level": 4},  # col-2 → H4
+            ],
+            "p2_raw_lines": [
+                [(1, "1.概要")],                          # col-1 → H3
+                [(2, "1.1 本書の位置づけ")],              # col-2 → H4
+                [(3, "本文テキストA")],                   # col-3 → body (NOT ####)
+                [(3, "本文テキストB")],                   # col-3 → body
+            ],
+            "p2_base_col": 1,
+        }
+        md = self._render(data)
+        assert "### 1.概要" in md
+        assert "#### 1.1 本書の位置づけ" in md
+        assert "本文テキストA" in md
+        assert "本文テキストB" in md
+        assert "#### 本文テキストA" not in md, "col-3 must be body, not #### heading"
+        assert "#### 本文テキストB" not in md
+
+    def test_p2_1_multicell_row_is_body_not_heading(self):
+        """P2-1: rows with multiple cells (comparison tables) must be body, not headings.
+
+        Regression: 変更前/変更後 pairs like (col-1,'変更前'),(col-10,'変更後') have
+        min_cx=1, but they are comparison table rows — not ### headings.
+        """
+        data = {
+            "id": "f", "title": "修正内容", "content": "",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "p2_headings": [
+                {"text": "見出し", "level": 3},
+            ],
+            "p2_raw_lines": [
+                [(1, "見出し")],                            # single-cell col-1 → H3
+                [(1, "変更前"), (10, "変更後")],            # multi-cell → body
+                [(1, "旧クラス名"), (10, "新クラス名")],    # multi-cell → body
+            ],
+            "p2_base_col": 0,
+        }
+        md = self._render(data)
+        assert "### 見出し" in md
+        assert "変更前  変更後" in md
+        assert "### 変更前" not in md, "multi-cell row must not become ### heading"
+
+    def test_p2_1_col0_becomes_h2(self):
+        """P2-1: col-0 entries in p2_headings level=2 become ## headings."""
+        data = {
+            "id": "f", "title": "概要", "content": "",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "p2_headings": [
+                {"text": "セクションA", "level": 2},
+                {"text": "サブB", "level": 3},
+            ],
+        }
+        md = self._render(data)
+        assert "## セクションA" in md
+        assert "### サブB" in md
+
+    def test_p2_1_no_h2_when_no_p2_headings(self):
+        """P2 without p2_headings renders plain text, no ## headings."""
+        data = {
+            "id": "f", "title": "T", "content": "本文テキスト",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+        }
+        md = self._render(data)
+        assert "## " not in md
+        assert "本文テキスト" in md
+
+    def test_p2_3_lf_becomes_hard_line_break(self):
+        """P2-3: embedded LF in content becomes Markdown hard line break (  \\n)."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "行1 行2 行3",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "sheet_subtype": "P2-3",
+            "p2_raw_content": "行1\n行2\n行3",
+        }
+        md = self._render(data)
+        assert "行1  \n行2  \n行3" in md
+
+    def test_p2_2_no_change(self):
+        """P2-2 (neither p2_headings nor sheet_subtype P2-3): plain text output."""
+        data = {
+            "id": "f", "title": "T", "content": "ステップ1  ステップ2",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+        }
+        md = self._render(data)
+        assert "ステップ1" in md
+        assert "## " not in md
+
+
 class TestAssetsExcluded:
     """generate_docs must ignore JSON files under knowledge/assets/.
 

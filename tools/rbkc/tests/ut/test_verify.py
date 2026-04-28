@@ -4256,3 +4256,285 @@ class TestVerifyP1SpanInheritComposition:
         issues = self._check(str(xlsx_path), data, sheet_name="Sheet1")
         assert issues, "span-inherit omission must FAIL"
         assert any("QP" in i or "QC" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# QO1 P2-1: p2_headings 逐次照合
+# ---------------------------------------------------------------------------
+
+class TestCheckJsonDocsMdConsistency_QO1_P2Headings:
+    """QO1 p2_headings sequential matching for P2-1 sheets (Issue #311)."""
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def _p2_data(self, p2_headings, content="テキスト"):
+        return {
+            "id": "f",
+            "title": "T",
+            "content": content,
+            "sections": [],
+            "sheet_type": "P2",
+            "p2_headings": p2_headings,
+        }
+
+    def test_pass_exact_match(self):
+        """p2_headings matches docs MD headings exactly — no issues."""
+        data = self._p2_data([
+            {"text": "概要", "level": 2},
+            {"text": "詳細", "level": 3},
+            {"text": "備考", "level": 4},
+        ])
+        docs = "# T\n\nテキスト\n\n## 概要\n\n## 詳細\n\n### 詳細\n\n#### 備考\n"
+        # docs MD has extra ## 詳細 which is level 2 but p2_headings[1] is level 3
+        # Use a correct docs MD instead:
+        docs = "# T\n\nテキスト\n\n## 概要\n\n### 詳細\n\n#### 備考\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_missing_heading(self):
+        """docs MD is missing one heading from p2_headings → FAIL."""
+        data = self._p2_data([
+            {"text": "概要", "level": 2},
+            {"text": "詳細", "level": 3},
+        ])
+        docs = "# T\n\nテキスト\n\n## 概要\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues), issues
+
+    def test_fail_extra_heading(self):
+        """docs MD has one extra heading not in p2_headings → FAIL."""
+        data = self._p2_data([
+            {"text": "概要", "level": 2},
+        ])
+        docs = "# T\n\nテキスト\n\n## 概要\n\n### 詳細\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues), issues
+
+    def test_fail_wrong_level(self):
+        """docs MD heading has wrong level vs p2_headings → FAIL."""
+        data = self._p2_data([
+            {"text": "概要", "level": 2},
+        ])
+        docs = "# T\n\nテキスト\n\n### 概要\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues), issues
+
+    def test_fail_wrong_order(self):
+        """docs MD headings are in wrong order vs p2_headings → FAIL."""
+        data = self._p2_data([
+            {"text": "概要", "level": 2},
+            {"text": "詳細", "level": 3},
+        ])
+        docs = "# T\n\nテキスト\n\n### 詳細\n\n## 概要\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues), issues
+
+    def test_fail_wrong_text(self):
+        """docs MD heading text differs from p2_headings → FAIL."""
+        data = self._p2_data([
+            {"text": "概要", "level": 2},
+        ])
+        docs = "# T\n\nテキスト\n\n## 詳細\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues), issues
+
+    def test_pass_no_p2_headings_no_h2_sections_empty(self):
+        """P2 without p2_headings and no ## in docs MD: sections=[] check passes."""
+        data = {
+            "id": "f", "title": "T", "content": "テキスト",
+            "sections": [], "sheet_type": "P2",
+        }
+        docs = "# T\n\nテキスト\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_no_p2_headings_but_h2_present(self):
+        """P2 without p2_headings but docs MD has ##: existing sections-empty check fires."""
+        data = {
+            "id": "f", "title": "T", "content": "テキスト",
+            "sections": [], "sheet_type": "P2",
+        }
+        docs = "# T\n\nテキスト\n\n## 余分\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# xlsx_common.py: sheet_to_result P2-1/P2-3 subtype support
+# ---------------------------------------------------------------------------
+
+class TestSheetToResultP2Subtypes:
+    """sheet_to_result with sheet_subtype for P2-1/P2-3 (Issue #311)."""
+
+    def _make_sheet(self, name, rows):
+        from scripts.create.converters.xlsx_common import RawSheet
+        width = max(len(r) for r in rows) if rows else 0
+        padded = [list(r) + [""] * (width - len(r)) for r in rows]
+        return RawSheet(name=name, rows=padded)
+
+    def test_p2_1_generates_p2_headings(self):
+        """P2-1: col-0/col-1/col-2 entries produce p2_headings in meta."""
+        from scripts.create.converters.xlsx_common import sheet_to_result
+        sheet = self._make_sheet("概要", [
+            ["■概要"],
+            ["セクションA", "", ""],
+            ["", "サブB", ""],
+            ["", "", "サブサブC"],
+            ["", "", "", "本文テキスト"],
+        ])
+        result, meta = sheet_to_result(sheet, sheet_subtype="P2-1")
+        assert meta["sheet_type"] == "P2"
+        headings = meta.get("p2_headings", [])
+        assert {"text": "セクションA", "level": 2} in headings
+        assert {"text": "サブB", "level": 3} in headings
+        assert {"text": "サブサブC", "level": 4} in headings
+        # p2_raw_lines should be present for docs.py
+        assert "p2_raw_lines" in meta
+
+    def test_p2_3_generates_sheet_subtype_and_raw_content(self):
+        """P2-3: meta has sheet_subtype='P2-3' and p2_raw_content with LF."""
+        from scripts.create.converters.xlsx_common import sheet_to_result
+        sheet = self._make_sheet("PCIDSS", [
+            ["■PCIDSS対応表"],
+            ["要件A\n詳細1\n詳細2", "対応B"],
+        ])
+        result, meta = sheet_to_result(sheet, sheet_subtype="P2-3")
+        assert meta["sheet_type"] == "P2"
+        assert meta.get("sheet_subtype") == "P2-3"
+        raw = meta.get("p2_raw_content", "")
+        # LF in cell must be preserved in p2_raw_content
+        assert "\n" in raw
+        # JSON content must be flat (LF normalized to space)
+        assert "\n" not in result.content
+
+    def test_p2_2_no_extra_meta(self):
+        """P2-2 (default): no p2_headings, no sheet_subtype in meta."""
+        from scripts.create.converters.xlsx_common import sheet_to_result
+        sheet = self._make_sheet("分類", [
+            ["■分類"],
+            ["ステップ1"],
+            ["ステップ2"],
+        ])
+        result, meta = sheet_to_result(sheet)
+        assert meta["sheet_type"] == "P2"
+        assert "p2_headings" not in meta
+        assert "sheet_subtype" not in meta
+
+    def test_p2_1_empty_rows_skipped(self):
+        """P2-1: rows with all-empty cells produce no heading."""
+        from scripts.create.converters.xlsx_common import sheet_to_result
+        sheet = self._make_sheet("概要", [
+            ["■概要"],
+            ["セクションA", "", ""],
+            ["", "", ""],
+            ["", "サブB", ""],
+        ])
+        result, meta = sheet_to_result(sheet, sheet_subtype="P2-1")
+        headings = meta.get("p2_headings", [])
+        texts = [h["text"] for h in headings]
+        assert "セクションA" in texts
+        assert "サブB" in texts
+        assert "" not in texts
+
+
+# ---------------------------------------------------------------------------
+# QO2 P2-3: hard line break normalization
+# ---------------------------------------------------------------------------
+
+class TestCheckJsonDocsMdConsistency_QO2_P2_3:
+    """QO2 for P2-3 sheets: docs MD hard line break normalized before comparison."""
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_pass_hard_line_break_normalized(self):
+        """P2-3: docs MD with '  \\n' should pass QO2 when JSON content is flat."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "行1 行2 行3",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "sheet_subtype": "P2-3",
+        }
+        docs = "# T\n\n行1  \n行2  \n行3\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_content_genuinely_missing(self):
+        """P2-3: if normalized content is still not in docs MD → FAIL."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "行1 行2 行3",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "sheet_subtype": "P2-3",
+        }
+        docs = "# T\n\n全く別のテキスト\n"
+        issues = self._check(data, docs)
+        assert any("QO2" in i for i in issues), issues
+
+    def test_pass_blank_line_normalized(self):
+        """P2-3: blank line in raw (\\n\\n) → docs '  \\n  \\n' → double space after first-pass.
+        Second-pass collapses to single space; JSON content has single space (via _flatten_ws)."""
+        # p2_raw "A\n\nB" → docs.py "A  \n  \nB" → top_norm "A  B" → collapse "A B"
+        # content "A B" (blank line flattened to single space by _flatten_ws)
+        data = {
+            "id": "f", "title": "T",
+            "content": "A B",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "sheet_subtype": "P2-3",
+        }
+        docs = "# T\n\nA  \n  \nB\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_p2_2_without_normalization(self):
+        """P2-2 (no sheet_subtype): QO2 verbatim check, no normalization."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "テキスト",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+        }
+        docs = "# T\n\nテキスト\n"
+        assert self._check(data, docs) == []
+
+
+# ---------------------------------------------------------------------------
+# QO2 P2-1: per-line containment check
+# ---------------------------------------------------------------------------
+
+class TestCheckJsonDocsMdConsistency_QO2_P2_1:
+    """QO2 for P2-1 sheets: each content line must appear in docs MD."""
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_pass_content_lines_in_docs_md(self):
+        """P2-1: content lines appear as heading text in docs MD → pass."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "セクションA\nサブB\n本文テキスト",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "p2_headings": [
+                {"text": "セクションA", "level": 2},
+                {"text": "サブB", "level": 3},
+            ],
+        }
+        docs = "# T\n\n## セクションA\n\n### サブB\n\n本文テキスト\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_content_line_missing_from_docs_md(self):
+        """P2-1: if a content line is missing from docs MD → QO2 FAIL."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "セクションA\n欠落した行",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "p2_headings": [{"text": "セクションA", "level": 2}],
+        }
+        docs = "# T\n\n## セクションA\n"
+        issues = self._check(data, docs)
+        assert any("QO2" in i for i in issues), issues

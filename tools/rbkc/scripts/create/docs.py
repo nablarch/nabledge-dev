@@ -158,10 +158,60 @@ def _render_xlsx_p1(data: dict) -> str:
 
 
 def _render_xlsx_p2(data: dict) -> str:
-    """Render an Excel P2 sheet as title + body text."""
+    """Render an Excel P2 sheet as title + body text.
+
+    P2-1 (p2_headings present): emit each heading at its declared level,
+    interleaved with body paragraphs from content (lines not matching any
+    heading text are emitted as plain paragraphs between headings).
+    P2-3 (sheet_subtype == "P2-3"): use p2_raw_content and convert embedded
+    LF to Markdown hard line break (  \\n).
+    P2-2 (neither): emit content as-is.
+    """
     title = data.get("title", "")
+    lines: list[str] = [f"# {title}" if title else "", ""]
+
+    p2_headings = data.get("p2_headings")
+    if p2_headings is not None:
+        # P2-1: p2_raw_lines holds original row data as [[(col, text), ...], ...]
+        # Fall back to reconstructing from p2_headings alone if raw lines absent.
+        raw_lines = data.get("p2_raw_lines")
+        if raw_lines is not None:
+            # Each element is a list of (col_index, cell_text) pairs for one row.
+            # Absolute column: col-0 → H2 (##), col-1 → H3 (###), col-2 → H4 (####),
+            # col-3+ → body paragraph. Multi-cell rows are always body (comparison tables).
+            for row in raw_lines:
+                if not row:
+                    continue
+                min_cx = min(cx for cx, _ in row if _)
+                if len(row) == 1 and min_cx <= 2:
+                    text = next(v for cx, v in row if cx == min_cx)
+                    hashes = "#" * (2 + min_cx)
+                    lines.append(f"{hashes} {text}")
+                    lines.append("")
+                else:
+                    body = "  ".join(v for _, v in row if v)
+                    if body:
+                        lines.append(body)
+                        lines.append("")
+        else:
+            # Minimal fallback: emit headings in order (no body paragraphs)
+            for h in p2_headings:
+                lvl = h.get("level", 2)
+                lines.append(f"{'#' * lvl} {h['text']}")
+                lines.append("")
+        return "\n".join(lines)
+
+    if data.get("sheet_subtype") == "P2-3":
+        # P2-3: use raw content (LF preserved), convert LF → hard line break
+        raw = data.get("p2_raw_content", data.get("content", ""))
+        if raw:
+            converted = re.sub(r'\n', '  \n', raw.rstrip('\n'))
+            lines.append(converted)
+            lines.append("")
+        return "\n".join(lines)
+
+    # P2-2: plain text
     top = data.get("content", "")
-    lines: list[str] = [f"# {title}", ""] if title else []
     if top:
         lines.append(top)
         lines.append("")
