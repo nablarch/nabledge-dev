@@ -354,15 +354,40 @@ SEエキスパートによる横断コードレビューで review-07/impact-01 
 
 - [x] **Step 7-C 部分完了**（review-01〜10 + impact-01 取得）
 
-#### Step 7-C 調査タスク
+#### 調査-impact-01: backtick fix 効果確認
 
-- [ ] **調査-review-07**: timeout 再発の根本原因調査（verify_kb_evidence + judge の処理フロー確認）
-- [ ] **調査-review-05**: L3→L1 悪化の原因調査（judge.json / answer.md 読む）
-- [ ] **調査-review-08**: L3→L1 悪化の原因調査（AI 非決定性 or 構造的問題か判断）
-- [ ] **調査-impact-01**: 前回 L0（backtick fix 対象）→ 今回結果確認
+**Steps:**
+- [ ] judge.json を読んで今回の level を確認
+- [ ] 前回 L0（backtick シェルエスケープ問題）から改善しているか報告
 
-- [ ] **Step 7-D**: 残り計測（impact-02〜03, req-05 + 未計測 16 件）
-- [ ] **Step 7-E**: human review 実施 → human_review.json 作成 → docs/results-history.md 更新 → baseline 昇格判断
+#### 調査-review-07: timeout 再発の根本原因調査
+
+**Steps:**
+- [ ] judge.json / stream ログを読んで timeout 直前の処理を確認
+- [ ] backtick fix 適用済みかコード確認
+- [ ] 根本原因を特定してユーザーに報告
+
+#### 調査-review-05: L3→L1 悪化の原因調査
+
+**Steps:**
+- [ ] judge.json / answer.md を読んで MISSING / C-claim を確認
+- [ ] AI 非決定性か構造的問題か判断してユーザーに報告
+
+#### 調査-review-08: L3→L1 悪化の原因調査
+
+**Steps:**
+- [ ] judge.json / answer.md を読んで MISSING / C-claim を確認
+- [ ] AI 非決定性か構造的問題か判断してユーザーに報告
+
+#### Step 7-D: 残り計測
+
+- [ ] impact-02〜03, req-05 + 未計測 16 件を逐次実行
+
+#### Step 7-E: human review + 結果集計
+
+- [ ] human review 実施 → human_review.json 作成
+- [ ] docs/results-history.md 更新
+- [ ] baseline 昇格判断
 
 ### Phase 2 (必須): AI-3 回答プロンプト改善
 
