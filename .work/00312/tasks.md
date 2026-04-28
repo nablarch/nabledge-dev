@@ -7,43 +7,26 @@
 
 ## In Progress
 
-### 1. Investigate and design readable state
-**Steps:**
-- [x] Read affected MD file (e.g. handlers-PermissionCheckHandler.md) — confirmed `<script>` leak
-- [x] Read corresponding RST source — found 3x `.. raw:: html` blocks (Handler.js, inline script, handler_structure.html)
-- [x] Identify RBKC conversion code — `rst_ast_visitor.py visit_raw` → `normalise_raw_html` in `rst_ast.py`
-- [x] Read verify design spec (`rbkc-verify-quality-design.md`) — QC1-QC4 = sequential-delete, QC5 = regex
-- [x] Analyze knowledge value: Handler.js `behavior.inbound/outbound/error/callback` = 実データ（日本語説明文）
-- [x] Study top 3 complex handlers: MessageResendHandler(5), RetryHandler(4), RequestThreadLoopHandler(3)
-- [x] Decide output approach: **Case A** — parse Handler.js, render Markdown table per HandlerQueue
-- [x] Agree on architecture: `scripts/common/handler_js.py` 共通モジュール (create + verify 両側から利用)
-- [x] Create design doc at `tools/rbkc/docs/rbkc-handler-v1x-design.md`
-- [x] Propose fix for ハンドラ処理フロー blank-line loss (definition_list間の改行)
-- [ ] Present full design to user and get approval
-
-**Agreed design (this session):**
-- 共通モジュール `scripts/common/handler_js.py` に3関数:
-  - `parse_handler_dict(js_text)` → `{ HandlerName → {name, behavior: {inbound, outbound, error, callback}} }`
-  - `parse_handler_queue(script_text)` → `(Context, [HandlerName, ...])`
-  - `render_handler_table(handler_dict, context, queue)` → Markdown テーブル文字列
-- create の `visit_raw`: 3ブロック状態機械で呼ぶ
-- verify の normalizer: 同じ `raw` ノードで呼んで正規化ソースに含める → QC1-QC4 sequential-delete がそのまま機能
-- verify は Handler.js を独立ロードしない（§2-2 独立性原則: common モジュール経由でよい）
-- `handler_js.py` のユニットテスト: 文字列連結、`<br/>`変換、`-`値、callbackあり/なし、サフィックス付きキー
-
-### 2. Prototype: verify output with 3 complex handlers (after design approval)
+### 2. Prototype: fix bugs found in review
 
 対象: MessageResendHandler (5), RetryHandler (4), RequestThreadLoopHandler (3) — HandlerQueue 数が多い上位3ファイル
 
+**Bugs found in prototype review (user feedback):**
+1. `handler_structure_bg.png` / `handler_bg.png` の画像参照が先頭に出る → Block 1/3 の `:file:` が image nodeとして別出力されている（要調査・除去）
+2. **ハンドラ処理概要** タイトルは出るがテーブルが空 → Block 3 検出ロジックのバグ: `node.source` は RST ファイルパスを返し `:file:` パスを返さない。Block 2 → Block 3 の連携が機能していない（`script_text` が未セットのまま Block 3 に到達）
+
 **Steps:**
-- [ ] TDD: write unit tests for `handler_js.py` (RED)
-- [ ] Implement `handler_js.py` (GREEN)
-- [ ] Write converter unit tests for `visit_raw` 3-block state machine (RED)
-- [ ] Implement `visit_raw` fix (GREEN)
-- [ ] Fix ハンドラ処理フロー blank-line loss in `visit_definition_list`
-- [ ] Run `bash rbkc.sh create v1.4` for v1.4 only (prototype scope)
-- [ ] Output 3 target docs files to `.tmp/handler-prototype/` for user review
-- [ ] [DECISION: ユーザー確認] 生成 MD の内容・フォーマットを確認 → OK なら Task 3 へ
+- [x] TDD: write unit tests for `handler_js.py` (RED) — committed `224c2a669`
+- [x] Implement `handler_js.py` (GREEN) — committed `224c2a669`
+- [x] Write converter unit tests for `visit_raw` 3-block state machine (RED) — committed `224c2a669`
+- [x] Implement `visit_raw` fix (GREEN) — committed `224c2a669`
+- [x] Fix ハンドラ処理フロー blank-line loss in `visit_definition_list` — committed `224c2a669`
+- [x] Run `bash rbkc.sh create 1.4` for v1.4 only (prototype scope)
+- [x] Output 3 target docs files to `.work/00312/prototype-*.md` for user review — committed `224c2a669`
+- [ ] Fix Bug 1: `handler_structure_bg.png` / `handler_bg.png` 画像参照を除去（`:file:` が image として別出力される経路を調査）
+- [ ] Fix Bug 2: Block 3 検出ロジック修正 — `node.source` は RST パス。検出方法を再設計（Block 2 後にカウンタで Block 3 を判定、または Block 2 の次の raw を Block 3 とみなす）
+- [ ] Re-run prototype after fixes and push updated `.work/00312/prototype-*.md`
+- [ ] [DECISION: ユーザー確認] 再生成 MD の確認 → OK なら Task 3 へ
 
 ### 3. Full implementation (after prototype approval)
 **Steps:**
@@ -67,3 +50,5 @@
 - [x] RBKC conversion code identified: `rst_ast_visitor.py:visit_raw` + `rst_ast.py:normalise_raw_html`
 - [x] Verify QC5 pattern confirmed: `<[a-zA-Z][a-zA-Z0-9]*...>` already detects opening tags
 - [x] Blank-line loss root cause: `visit_definition_list` が全アイテムを `"\n".join` で結合している
+- [x] Design approved: `handler_js.py` + 3-block state machine — `224c2a669`
+- [x] Task 1: Investigate and design — completed
