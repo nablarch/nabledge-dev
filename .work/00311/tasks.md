@@ -18,8 +18,8 @@
 - [x] `rbkc-converter-design.md` §8 を更新（P2-1/P2-3 仕様 + sheet_subtype + verify 例外）
 - [x] `rbkc-verify-quality-design.md` §3-3 を更新（P2-1 QO1 例外 + P2-3 QO2 例外）
 - [x] Expert review (Software Engineer) — 2 Findings → 両方修正済み → `.work/00311/review-by-software-engineer.md`
-- [x] ユーザーに最終確認 — `sections: []` で `##` をスキップする設計は品質基準違反の指摘あり → 設計見直し必要 (BLOCKED)
-- [BLOCKED: P2-1 QO1 例外の設計が不十分。「スキップ」ではなく別軸でのチェックが必要。設計を再検討すること]
+- [x] ユーザーに最終確認 — `p2_headings` 逐次照合設計に再設計（欠落・余分・レベル誤り・順序違いをすべて検出）— 承認済み
+- [x] 設計書再更新 — `p2_headings` フィールド追加、`sheet_subtype` を P2-3 専用に変更、§8-6/§3-3 逐次照合仕様に差し替え — `[pending]`
 
 ### [D] 設計書通りに実装
 
