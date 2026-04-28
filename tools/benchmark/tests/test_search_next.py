@@ -374,3 +374,45 @@ def test_merge_term_hits_respects_cap():
     merged = merge_term_hits_into_selections(existing, hits, cap=12)
     assert len(merged) == 12
     assert merged[-2:] == ["extra|s0", "extra|s1"]
+
+
+def test_normalize_for_match_strips_backtick_from_evidence(tmp_path, monkeypatch):
+    """evidence with backtick-wrapped tokens should match a plain-text body (impact-01 pattern)."""
+    from tools.benchmark.bench.search_next import _normalize_for_match
+    root = tmp_path / "knowledge"
+    (root / "c").mkdir(parents=True)
+    body = "chunk要素のitem-count属性でwriteItems一回当たりの処理件数を設定する"
+    (root / "c/f.json").write_text(json.dumps({
+        "id": "f", "title": "F",
+        "index": [{"id": "s1", "title": "t"}],
+        "sections": {"s1": body},
+    }), encoding="utf-8")
+    monkeypatch.setattr(io, "KNOWLEDGE_ROOT", root)
+    id_to_path = {"f": {"path": "c/f.json", "sections": ["s1"]}}
+    evidence_with_backticks = "`chunk`要素の`item-count`属性で`writeItems`一回当たりの処理件数を設定する"
+    read_notes = [{
+        "file_id": "f",
+        "relevant_sections": [{"sid": "s1", "evidence": evidence_with_backticks}],
+    }]
+    result = verify_read_notes(read_notes, id_to_path)
+    assert result["per_section"][0]["verdict"] == "match"
+
+
+def test_normalize_for_match_strips_backtick_from_body(tmp_path, monkeypatch):
+    """plain evidence should match body that uses inline-code backticks (review-07 pattern)."""
+    root = tmp_path / "knowledge"
+    (root / "c").mkdir(parents=True)
+    body = "the value `unsafe-inline` is allowed in the CSP header"
+    (root / "c/f.json").write_text(json.dumps({
+        "id": "f", "title": "F",
+        "index": [{"id": "s1", "title": "t"}],
+        "sections": {"s1": body},
+    }), encoding="utf-8")
+    monkeypatch.setattr(io, "KNOWLEDGE_ROOT", root)
+    id_to_path = {"f": {"path": "c/f.json", "sections": ["s1"]}}
+    read_notes = [{
+        "file_id": "f",
+        "relevant_sections": [{"sid": "s1", "evidence": "unsafe-inline is allowed in the CSP header"}],
+    }]
+    result = verify_read_notes(read_notes, id_to_path)
+    assert result["per_section"][0]["verdict"] == "match"

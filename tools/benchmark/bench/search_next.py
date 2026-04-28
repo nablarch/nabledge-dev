@@ -256,17 +256,29 @@ def resolve_selections(
 
 _NORM_HEADER_RE = re.compile(r'^\s*#+\s+.*$', flags=re.M)
 _NORM_EMPHASIS_RE = re.compile(r'\*\*|__')
+_NORM_BACKTICK_RE = re.compile(r'`([^`\n]*)`')
 _NORM_WS_RE = re.compile(r'\s+')
 
 
-def _normalize_for_match(s: str) -> str:
-    """Relax evidence matching: strip markdown headers / emphasis markers and
-    collapse whitespace. The goal is "faithful quote" (not fabrication), not
-    byte-identical copy — AI-1 often trims leading `## ` and joins lines, and
-    those benign rewrites would otherwise look like mismatches.
+def _normalize_for_match(s: str, *, is_body: bool = True) -> str:
+    """Relax evidence matching: strip markdown markup and collapse whitespace.
+
+    The goal is "faithful quote" (not fabrication), not byte-identical copy —
+    AI-1 often trims leading `## ` and joins lines, and those benign rewrites
+    would otherwise look like mismatches.  Backtick stripping (`token` → token)
+    handles the case where the KB body uses inline code markup but the evidence
+    string drops (or adds) the backticks.
+
+    `is_body=True`  (default): also strip ATX headers and emphasis markers
+                    (**text** / __text__). Applied to the KB body side only.
+    `is_body=False`: strip backticks only — used for the evidence string so
+                    that Python dunder names like __init__ are NOT stripped and
+                    do not produce false matches against their bare counterparts.
     """
-    s = _NORM_HEADER_RE.sub('', s)
-    s = _NORM_EMPHASIS_RE.sub('', s)
+    if is_body:
+        s = _NORM_HEADER_RE.sub('', s)
+        s = _NORM_EMPHASIS_RE.sub('', s)
+    s = _NORM_BACKTICK_RE.sub(r'\1', s)
     return _NORM_WS_RE.sub(' ', s).strip()
 
 
@@ -334,10 +346,10 @@ def verify_read_notes(
             prefix = evidence[:prefix_len] if evidence else ""
             if evidence and (
                 evidence in body
-                or _normalize_for_match(evidence) in _normalize_for_match(body)
+                or _normalize_for_match(evidence, is_body=False) in _normalize_for_match(body)
                 or (len(prefix) >= prefix_len and prefix in body)
                 or (len(prefix) >= prefix_len
-                    and _normalize_for_match(prefix) in _normalize_for_match(body))
+                    and _normalize_for_match(prefix, is_body=False) in _normalize_for_match(body))
             ):
                 verdict = "match"
             else:

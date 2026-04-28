@@ -85,11 +85,19 @@ this step. Step 4 Grep calls do NOT count against this budget.
 **Step 4. Self-verify every SUPPORTED_BY_KB citation (max 3 retries per
 claim).** Before emitting StructuredOutput, for each C-claim you intend
 to mark `SUPPORTED_BY_KB`, run the following Bash command to confirm
-the `quote` is actually present in the cited `file:sid`. All arguments
-must be double-quoted to handle spaces and non-ASCII characters:
+the `quote` is actually present in the cited `file:sid`.
+
+**IMPORTANT — use a single-quoted heredoc for the quote.** Passing the
+quote as a regular argument double-quoted on the command line is unsafe:
+bash expands backticks (`` `token` ``) and `$variables` inside double
+quotes, corrupting the quote before the script receives it. A
+single-quoted heredoc (`` <<'QUOTE_END' ``) is literal — nothing is
+expanded.
 
 ```
-"{{python}}" "{{verify_script}}" "{{knowledge_root_abs}}" "<file>" "<sid>" "<quote>"
+"{{python}}" "{{verify_script}}" "{{knowledge_root_abs}}" "<file>" "<sid>" - <<'QUOTE_END'
+<verbatim quote text — paste exactly as it appears in the KB section body>
+QUOTE_END
 ```
 
 - If the output is `match` → the citation is confirmed. Proceed.

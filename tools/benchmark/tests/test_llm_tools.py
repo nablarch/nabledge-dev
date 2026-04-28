@@ -14,8 +14,14 @@ VERIFY_SCRIPT = LLM_TOOLS / "verify_kb_evidence.py"
 
 
 def _run(knowledge_root: str, file_rel: str, sid: str, quote: str) -> str:
+    """Call verify_kb_evidence.py using the stdin-based interface (argv[4] == "-").
+
+    The quote is passed via stdin to avoid shell-expansion of backticks and
+    dollar-signs, which is the same mechanism the judge LLM is instructed to use.
+    """
     result = subprocess.run(
-        [sys.executable, str(VERIFY_SCRIPT), knowledge_root, file_rel, sid, quote],
+        [sys.executable, str(VERIFY_SCRIPT), knowledge_root, file_rel, sid, "-"],
+        input=quote,
         capture_output=True, text=True,
     )
     return result.stdout.strip()
@@ -84,6 +90,36 @@ class TestVerifyKbEvidence:
         root = _make_kb(tmp_path, "foo.json", {"s1": "The constant value is used"})
         out = _run(root, "foo.json", "s1", "__constant__")
         assert out.startswith("mismatch")
+
+    def test_match_backtick_stripped_from_body(self, tmp_path):
+        """quote without backticks should match body containing `code` with backticks (review-07 scenario)."""
+        root = _make_kb(tmp_path, "foo.json", {"s1": "the value `unsafe-inline` is allowed"})
+        assert _run(root, "foo.json", "s1", "unsafe-inline") == "match"
+
+    def test_match_backtick_stripped_from_quote(self, tmp_path):
+        """quote with backticks should match body that contains the text without backticks (impact-01 scenario)."""
+        root = _make_kb(tmp_path, "foo.json", {"s1": "use the unsafe-inline value here"})
+        assert _run(root, "foo.json", "s1", "`unsafe-inline`") == "match"
+
+    def test_match_multiple_backtick_tokens_in_quote(self, tmp_path):
+        """quote with multiple backtick-wrapped tokens matches plain-text body (impact-01 exact pattern)."""
+        body = "chunk要素のitem-count属性でwriteItems一回当たりの処理件数を設定する"
+        root = _make_kb(tmp_path, "foo.json", {"s1": body})
+        quote = "`chunk`要素の`item-count`属性で`writeItems`一回当たりの処理件数を設定する"
+        assert _run(root, "foo.json", "s1", quote) == "match"
+
+    def test_match_quote_with_dollar_sign_via_stdin(self, tmp_path):
+        """quote containing $ is passed safely via stdin and does not expand."""
+        body = "Set $HOME to the installation directory"
+        root = _make_kb(tmp_path, "foo.json", {"s1": body})
+        assert _run(root, "foo.json", "s1", "Set $HOME to the installation directory") == "match"
+
+    def test_stdin_interface_with_backtick_and_dollar(self, tmp_path):
+        """Stdin interface must survive a quote that has both backticks and $ without shell expansion."""
+        body = "`$HOME` and `item-count` are both set"
+        root = _make_kb(tmp_path, "foo.json", {"s1": body})
+        # quote passes both chars through stdin; they must arrive unmangled
+        assert _run(root, "foo.json", "s1", "$HOME and item-count are both set") == "match"
 
 
 class TestComputeLevel:
