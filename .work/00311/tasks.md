@@ -6,7 +6,24 @@
 
 ## In Progress
 
-## Done
+### [G] リベース＋スコープ外変更の調査・対応
+
+差分チェックにより、PR #314 には Issue #311 スコープ外の変更が含まれることが判明。
+リベースして解消する。
+
+**背景**:
+- ブランチが `origin/main` の `8f37ab917` から分岐
+- その後 PR #315 (Issue #312) が `origin/main` にマージ (`c430898c9`)
+- `4b11e55c3` で `create 5` / `create 6` を全再生成した際、PR #315 の変更（RST block_quote 修正）が v5/v6 の非P2-1ファイルに取り込まれた
+- → P2-1/P2-3 非対象の docs 341ファイル + knowledge JSON 372ファイルが差分として発生
+
+**Steps:**
+- [ ] `origin/main` へリベース (`git rebase origin/main`)
+- [ ] リベース後の差分を確認（非P2-1ファイルの余分な変更が消えているか）
+- [ ] 未コミットの knowledge JSON 372件を確認・コミット（またはリベース後に再生成）
+- [ ] 全5バージョン verify 0 FAIL 確認
+- [ ] diff-check.md を更新（リベース後の結果に書き換え）
+- [ ] commit & push --force-with-lease
 
 ## Done
 
