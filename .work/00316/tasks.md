@@ -4,13 +4,13 @@
 **Issue**: #316
 **Updated**: 2026-04-28
 
-## Not Started
+## In Progress
 
-### Task 0: サンプル変換 (1ページ) → ユーザー確認
-実装着手前に1ページ分だけアンカーを見出しテキストベースで生成し、GitHub上でページ内遷移が正しく動作することをユーザーに確認してもらう。
-- `labels.py` の `_anchor_for_label` を一時的に `github_slug(title)` に変更して1ページ生成
-- 生成した docs MD を一時的にプッシュし、レビュアーにリンク確認を依頼
-- 確認 OK → Task 1 へ進む
+### Task 0: サンプル変換 (1ページ) → 動作確認
+実装着手前に1ページ分だけアンカーを見出しテキストベースで生成し、ページ内遷移が実際に機能することを確認する。
+- [ ] `labels.py` の `_anchor_for_label` を `github_slug(title)` に変更して1ページJSON再生成
+- [ ] 生成した docs MD のアンカーが見出しテキストと一致していることを検証
+- [ ] 変更を revert して Task 1 へ進む
 
 ### Task 1: TDD — 見出しテキストベースのアンカーテスト追加 (RED)
 `test_labels_doc_map.py` に、`_anchor_for_label` の代わりに見出しテキストから GitHub アンカーを生成することを検証するテストを追加する。
