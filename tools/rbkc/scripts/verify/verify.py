@@ -2116,6 +2116,18 @@ def check_source_links(
                 continue
             if _under_substitution(img):
                 continue
+            # Skip invisible spacer images (height=0 or width=0).
+            # link.rst injects handler_structure_bg.png / handler_bg.png with these
+            # dimensions; RBKC suppresses them in visit_image, so verify must match.
+            try:
+                h = img.get("height")
+                w = img.get("width")
+                if h is not None and int(h) == 0:
+                    continue
+                if w is not None and int(w) == 0:
+                    continue
+            except (ValueError, TypeError):
+                pass
             alt = (img.get("alt") or "").strip()
             uri = img.get("uri", "")
             check_text = alt or (_Path(uri).name if uri else "")

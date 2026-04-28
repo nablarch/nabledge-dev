@@ -2466,6 +2466,32 @@ class TestCheckSourceLinks:
         issues = self._check(src, "rst", data)
         assert any("QL1" in i and "diagram.png" in i for i in issues)
 
+    def test_pass_rst_image_invisible_height_zero_skipped(self):
+        """QL1 must not fire for RST images with height=0 (invisible spacer).
+        link.rst injects handler_structure_bg.png / handler_bg.png with height=0;
+        RBKC suppresses these in visit_image, so verify must also skip them."""
+        src = (
+            "概要\n====\n\n"
+            ".. image:: images/handler_structure_bg.png\n"
+            "   :height: 0\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        ql1 = [i for i in issues if "QL1" in i and "handler_structure_bg.png" in i]
+        assert ql1 == [], ql1
+
+    def test_pass_rst_image_invisible_width_zero_skipped(self):
+        """QL1 must not fire for RST images with width=0 (invisible spacer)."""
+        src = (
+            "概要\n====\n\n"
+            ".. image:: images/handler_bg.png\n"
+            "   :width: 0\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        ql1 = [i for i in issues if "QL1" in i and "handler_bg.png" in i]
+        assert ql1 == [], ql1
+
     def test_fail_md_image_alt_missing(self):
         src = "# T\n\n![会社ロゴ](./logo.png)\n"
         data = self._data(content="別の内容")
