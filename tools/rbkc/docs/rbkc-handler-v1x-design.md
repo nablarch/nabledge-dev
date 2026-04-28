@@ -278,13 +278,20 @@ detect Block 1 and Block 3 by filename suffix.
 | File | Change |
 |------|--------|
 | `tools/rbkc/scripts/common/handler_js.py` | New: parse + render |
-| `tools/rbkc/scripts/common/rst_ast_visitor.py` | Update `visit_raw` with state machine |
-| `tools/rbkc/scripts/common/rst_ast_visitor.py` | Update `visit_definition_list` blank-line fix |
+| `tools/rbkc/scripts/common/rst_ast_visitor.py` | Update `visit_raw` with state machine; update `visit_definition_list` blank-line fix |
+| `tools/rbkc/scripts/create/docs.py` | Bug 3 fix: suppress leading blank line when title is empty |
+| `tools/rbkc/scripts/verify/verify.py` | Fix false-positive QL1: skip invisible images (height=0 / width=0) |
+| `tools/rbkc/docs/rbkc-verify-quality-design.md` | Add exclusion condition note for invisible images in QL1 |
 | `tools/rbkc/tests/ut/test_handler_js.py` | New: unit tests for handler_js |
-| `tools/rbkc/tests/ut/test_rst_ast_visitor.py` | Add visit_raw 3-block tests |
+| `tools/rbkc/tests/ut/test_rst_ast_visitor.py` | Add visit_raw 3-block tests and invisible-image edge cases |
+| `tools/rbkc/tests/ut/test_docs.py` | Add tests for Bug 3 (empty title leading blank line) |
+| `tools/rbkc/tests/ut/test_verify.py` | Add tests for invisible image QL1 skip |
 | `tools/rbkc/docs/rbkc-handler-v1x-design.md` | This document |
 
-No changes to `scripts/verify/verify.py` or `scripts/create/` converters.
+**Note**: `docs.py` and `verify.py` changes were not in the original design — they arose during
+implementation. Bug 3 (leading blank line) was masked by Bug 1's invisible images before that fix.
+The `verify.py` change fixes a false-positive QL1 check that triggered after Bug 1 was fixed in
+the converter (see §3-4 and postmortem `.work/00312/postmortem-handler-raw-html.md`).
 
 ---
 
