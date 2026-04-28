@@ -3,7 +3,7 @@
 
 **PR**: #315
 **Issue**: #312
-**Updated**: 2026-04-29
+**Updated**: 2026-04-28
 
 ## In Progress
 
@@ -52,10 +52,49 @@
 - [x] Re-run prototype: `python -m scripts.run create 1.4`、`.work/00312/prototype-*.md` を更新してプッシュ — `52c1d59a1`
 - [x] [DECISION: ユーザー確認] 再生成 MD 確認 → OK（ユーザー承認済み）
 
-### 3. Full implementation (after prototype approval)
+### 3. Full implementation — verify FAIL 対応
+
+**Before状態（create前）:**
+- v6: 0 FAILs
+- v5: 0 FAILs
+- v1.4: 0 FAILs
+- v1.3: 1 FAIL (concept.rst — handler_structure_bg.png)
+- v1.2: 1 FAIL (concept.rst — handler_structure_bg.png)
+
+**After状態（create後）— verify FAIL 多数発生、１バージョンずつ対応する:**
+
+#### 3a. v6 verify FAIL 対応
 **Steps:**
-- [ ] Run `python -m scripts.run create <v> && bash rbkc.sh verify <v>` for all 5 versions (before/after)
-- [ ] Confirm FAIL count diff is as expected
+- [ ] `bash rbkc.sh verify 6` を実行してFAIL内容を確認
+- [ ] FAILがあれば原因調査・修正
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` でFAIL 0 を確認
+
+#### 3b. v5 verify FAIL 対応
+**Steps:**
+- [ ] `bash rbkc.sh verify 5` を実行してFAIL内容を確認
+- [ ] FAILがあれば原因調査・修正
+- [ ] `bash rbkc.sh create 5 && bash rbkc.sh verify 5` でFAIL 0 を確認
+
+#### 3c. v1.4 verify FAIL 対応
+**Steps:**
+- [ ] `bash rbkc.sh verify 1.4` を実行してFAIL内容を確認
+- [ ] FAILがあれば原因調査・修正
+- [ ] `bash rbkc.sh create 1.4 && bash rbkc.sh verify 1.4` でFAIL 0 を確認
+
+#### 3d. v1.3 verify FAIL 対応
+**Steps:**
+- [ ] `bash rbkc.sh verify 1.3` を実行してFAIL内容を確認
+- [ ] FAILがあれば原因調査・修正
+- [ ] `bash rbkc.sh create 1.3 && bash rbkc.sh verify 1.3` でFAIL 0 を確認
+
+#### 3e. v1.2 verify FAIL 対応
+**Steps:**
+- [ ] `bash rbkc.sh verify 1.2` を実行してFAIL内容を確認
+- [ ] FAILがあれば原因調査・修正
+- [ ] `bash rbkc.sh create 1.2 && bash rbkc.sh verify 1.2` でFAIL 0 を確認
+
+#### 3f. Horizontal check & post-mortem
+**Steps:**
 - [ ] Horizontal check: `.. raw:: html` + `:file:` across all 5 versions
 - [ ] Write post-mortem at `.work/00312/postmortem-handler-raw-html.md`
 
