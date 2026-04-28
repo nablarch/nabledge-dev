@@ -1,9 +1,5 @@
 
 
-![handler_structure_bg.png](../../../knowledge/assets/handlers-MessageResendHandler/handler_structure_bg.png)
-
-![handler_bg.png](../../../knowledge/assets/handlers-MessageResendHandler/handler_bg.png)
-
 ## 再送電文制御ハンドラ
 
 **クラス名:** `nablarch.fw.messaging.handler.MessageResendHandler`
@@ -24,6 +20,14 @@
 -----
 
 **ハンドラ処理概要**
+
+| ハンドラ | クラス名 | 入力型 | 結果型 | 往路処理 | 復路処理 | 例外処理 | コールバック |
+|---|---|---|---|---|---|---|---|
+| 電文応答制御ハンドラ | nablarch.fw.messaging.handler.MessageReplyHandler | Object | ResponseMessage | - | 後続ハンドラから返される応答電文オブジェクトの内容をもとに電文を作成して送信する。 | エラーオブジェクトの内容をもとに電文を作成して送信する。 | - |
+| データリードハンドラ(FW制御ヘッダリーダ/メッセージリーダ利用) | nablarch.fw.handler.DataReadHandler_messaging | Object | Result | 要求電文を受信しFW制御ヘッダ部を解析して要求電文オブジェクト(RequestMessage)を作成し後続のハンドラに渡す。また、FW制御ヘッダのrequestId/userIdの値をメッセージコンテキストに設定する。 | - | - | - |
+| トランザクション制御ハンドラ | nablarch.fw.common.handler.TransactionManagementHandler | Object | Object | 業務トランザクションの開始 | トランザクションをコミットする。 | トランザクションをロールバックする。 | 1.コミット完了後 / 2.ロールバック後 |
+| 再送電文制御ハンドラ | nablarch.fw.messaging.handler.MessageResendHandler | RequestMessage | ResponseMessage | 再送要求に対し、以前応答した電文が保存されていれば、その内容をリターンする。(後続ハンドラは実行しない) | 業務トランザクションが正常終了(コミット)された場合のみ電文を保存する | - | - |
+| 同期応答電文処理用業務アクションハンドラ | nablarch.fw.action.MessagingAction | RequestMessage | ResponseMessage | 要求電文の内容をもとに業務処理を実行する。 | 業務処理の結果と要求電文の内容から応答電文の内容を作成して返却する。 | - | トランザクションロールバック時にエラー応答電文を作成する。 |
 
 **関連するハンドラ**
 

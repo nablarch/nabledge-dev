@@ -3,7 +3,7 @@
 
 **PR**: #315
 **Issue**: #312
-**Updated**: 2026-04-28
+**Updated**: 2026-04-28 (session 2)
 
 ## In Progress
 
@@ -29,12 +29,14 @@
 - [x] Fix ハンドラ処理フロー blank-line loss in `visit_definition_list` — `224c2a669`
 - [x] Run prototype, push `.work/00312/prototype-*.md` — `224c2a669`
 - [x] Update design doc and tasks.md with bugs and extension
-- [ ] Fix Bug 1: `link.rst` 由来の不可視画像（height=0）を `visit_image` で抑制
-- [ ] Fix Bug 2: Block 3 検出を「Block 2 後の次の raw node」で判定するよう修正
-- [ ] Extend: `parse_api_dict` 追加 + `parse_handler_dict` に package/type 追加
-- [ ] Extend: `render_handler_table` にクラス名・入力型・結果型列を追加
-- [ ] Update unit tests for all changes (RED → GREEN)
-- [ ] Re-run prototype: `python -m scripts.run create 1.4`、`.work/00312/prototype-*.md` を更新してプッシュ
+- [x] Fix Bug 1: `visit_image` で height/width=0（文字列含む）の不可視画像を抑制
+- [x] Fix Bug 2: Block 3 検出を source path ベースに変更、Block 3 を Block 2 より先に評価
+- [x] Fix `</br/>` タグ（Handler.js の誤記）も `_BR_RE` で処理
+- [x] Fix duplicate `**ハンドラ処理概要**`: preamble を render_handler_table から削除
+- [x] Extend: `parse_api_dict` 追加 + `parse_handler_dict` に package/type 追加
+- [x] Extend: `render_handler_table` にクラス名・入力型・結果型列を追加
+- [x] Update unit tests for all changes (RED → GREEN) — 423 passed
+- [x] Re-run prototype: `python -m scripts.run create 1.4`、`.work/00312/prototype-*.md` を更新
 - [ ] [DECISION: ユーザー確認] 再生成 MD の確認 → OK なら Task 3 へ
 
 ### 3. Full implementation (after prototype approval)

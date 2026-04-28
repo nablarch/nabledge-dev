@@ -1,9 +1,5 @@
 
 
-![handler_structure_bg.png](../../../knowledge/assets/handlers-RetryHandler/handler_structure_bg.png)
-
-![handler_bg.png](../../../knowledge/assets/handlers-RetryHandler/handler_bg.png)
-
 ## リトライ制御ハンドラ
 
 **クラス名:** `nablarch.fw.handler.RetryHandler`
@@ -30,6 +26,13 @@
   初回実行時からの経過時間に対する上限を設定する。
 
 **ハンドラ処理概要** ([常駐バッチ実行制御基盤（スレッド同期型）](../../processing-pattern/nablarch-batch/nablarch-batch-batch-resident-thread-sync.md) での構成)
+
+| ハンドラ | クラス名 | 入力型 | 結果型 | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|---|---|
+| リトライ制御ハンドラ | nablarch.fw.handler.RetryHandler | Object | Object | - | - | リトライ可能な実行時例外を捕捉し、かつリトライ上限に達していなければ後続のハンドラを再実行する。 |
+| プロセス常駐化ハンドラ | nablarch.fw.handler.ProcessResidentHandler | Object | Object | データ監視間隔ごとに後続処理を繰り返し実行する。 | ループを継続する。 | ログ出力を行い、実行時例外が送出された場合はリトライ可能例外にラップして送出する。エラーが送出された場合はそのまま再送出する。 |
+| データベース接続管理ハンドラ | nablarch.common.handler.DbConnectionManagementHandler | Object | Object | 業務処理用ＤＢ接続を取得し、スレッドローカル上に保持する。 | 業務処理用ＤＢ接続を開放（プールに返却）する。 | 業務処理用ＤＢ接続を開放（プールに返却）する。 |
+| メッセージングコンテキスト管理ハンドラ | nablarch.fw.messaging.handler.MessagingContextHandler | Object | Object | メッセージングコンテキスト(MQ接続)を取得し、スレッドローカルに保持する。 | メッセージングコンテキストを開放する。（プールに戻す） | メッセージングコンテキストを開放する。（プールに戻す） |
 
 -----
 

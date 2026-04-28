@@ -1,9 +1,5 @@
 
 
-![handler_structure_bg.png](../../../knowledge/assets/handlers-RequestThreadLoopHandler/handler_structure_bg.png)
-
-![handler_bg.png](../../../knowledge/assets/handlers-RequestThreadLoopHandler/handler_bg.png)
-
 ## リクエストスレッド内ループ制御ハンドラ
 
 **クラス名:** `nablarch.fw.handler.RequestThreadLoopHandler`
@@ -31,6 +27,12 @@
 -----
 
 **ハンドラ処理概要**
+
+| ハンドラ | クラス名 | 入力型 | 結果型 | 往路処理 | 復路処理 | 例外処理 | コールバック |
+|---|---|---|---|---|---|---|---|
+| マルチスレッド実行制御ハンドラ | nablarch.fw.handler.MultiThreadExecutionHandler | Object | MultiStatus | サブスレッドを作成し、後続ハンドラの処理を並行実行する。 実行コンテキスト上にデータリーダが存在しない場合は、コールバックを行う。 | 全スレッドの正常終了まで待機する。 | 処理中のスレッドが完了するまで待機し起因例外を再送出する。 | 1. 処理開始前 / 2. データリーダ作成 / 3. スレッド異常終了時 / 4. 処理完了時 |
+| リクエストスレッド内ループ制御ハンドラ | nablarch.fw.handler.RequestThreadLoopHandler | Object | Object | データリーダが閉じられるまで、後続のハンドラを繰り返し実行する。 | ハンドラキューの内容を復旧しループを継続する。 | プロセス停止か致命的なエラーが発生した場合のみループを停止する。 | - |
+| 処理停止制御ハンドラ | nablarch.fw.handler.ProcessStopHandler | Object | Object | リクエストテーブル上の処理停止フラグがオンであった場合は、後続の処理は行なわずにプロセス停止例外(ProcessStop)を送出する。 | - | - | - |
 
 **関連するハンドラ**
 
