@@ -8,10 +8,9 @@
 
 ### Task 1: TDD — 見出しテキストベースのアンカーテスト追加 (RED)
 
-### Task 5: PR変更差分チェック
-- [ ] `git diff main...HEAD` で想定した変更のみが含まれていることを確認
-- [ ] 意図しないファイル変更が含まれていないことを検証
-- [ ] 確認後 PR を作成
+### Task 5: PR変更差分チェック → PR作成
+- [x] `git diff origin/main...HEAD` のコードファイルは `labels.py` + `test_labels_doc_map.py` のみ (意図通り)
+- [ ] PRの内容を更新してレビュー依頼
 
 ### Task 2: `labels.py` の `_anchor_for_label` を見出しテキストベースに修正 (GREEN)
 - `_anchor_for_label(label)` を `_anchor_for_title(title)` に置き換える
