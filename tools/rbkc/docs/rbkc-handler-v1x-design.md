@@ -2,7 +2,7 @@
 
 **Issue**: #312  
 **Date**: 2026-04-28  
-**Status**: Awaiting approval
+**Status**: Revised 2026-04-28 (prototype review)
 
 ---
 
@@ -76,21 +76,23 @@ knowledge content** — not boilerplate — and must appear in the generated kno
 ### 3-1. Output Format
 
 Replace the three raw-HTML blocks with a Markdown table showing the handler queue
-and behavioral descriptions for the handlers listed in `HandlerQueue`:
+and all knowledge fields for the handlers listed in `HandlerQueue`:
 
 ```markdown
 **ハンドラ処理概要**
 
-| ハンドラ | 往路処理 | 復路処理 | 例外処理 |
-|----------|----------|----------|----------|
-| スレッドコンテキスト変数削除ハンドラ | - | ThreadContextHandlerで設定したスレッドローカル上の変数を削除する | ThreadContextHandlerで設定したスレッドローカル上の変数を削除する |
-| スレッドコンテキスト変数設定ハンドラ(メインスレッド) | 起動引数の内容からリクエストID、ユーザID等のスレッドコンテキスト変数を初期化する。 | - | - |
+| ハンドラ | クラス名 | 入力型 | 結果型 | 往路処理 | 復路処理 | 例外処理 |
+|----------|----------|--------|--------|----------|----------|----------|
+| 再送電文制御ハンドラ | nablarch.fw.messaging.handler.MessageResendHandler | RequestMessage | ResponseMessage | 再送要求に対し... | 業務トランザクションが... | - |
 ```
 
-- Column set: ハンドラ (name from Handler.js), 往路処理, 復路処理, 例外処理
+- Column set: ハンドラ, クラス名 (package + "." + key), 入力型, 結果型, 往路処理, 復路処理, 例外処理
 - コールバック column: included only when at least one handler in the queue has
   a non-`"-"` callback value
 - Handler name: use `handler.name` from Handler.js (Japanese display name)
+- クラス名: `handler.package + "." + handler_key` (e.g. `nablarch.fw.messaging.handler.MessageResendHandler`)
+- 入力型 / 結果型: resolved from `Api` dictionary via `handler.type.argument` / `handler.type.returns`
+  — use `api_entry.name` (e.g. `"RequestMessage"`); `null` type renders as `-`
 - `"-"` values: render as-is (they are the canonical "none" marker)
 - `<br/>` in multi-line values (e.g. callback): replace with ` / ` for table cell
   compatibility
@@ -102,8 +104,12 @@ and behavioral descriptions for the handlers listed in `HandlerQueue`:
 New module shared by both create and verify sides.
 
 ```python
-def parse_handler_dict(js_text: str) -> dict[str, dict]:
-    """Parse Handler.js → { key: {name, behavior: {inbound, outbound, error, callback?}} }"""
+def parse_api_dict(js_text: str) -> dict[str, dict]:
+    """Parse Handler.js → { key: {name} } for the Api dictionary."""
+
+def parse_handler_dict(js_text: str, api_dict: dict[str, dict]) -> dict[str, dict]:
+    """Parse Handler.js → { key: {name, package, type: {argument, returns}, behavior: {inbound, outbound, error, callback?}} }
+    api_dict is used to resolve Api.* references in type fields."""
 
 def parse_handler_queue(script_text: str) -> tuple[str, list[str]]:
     """Parse Block 2 script → (context, [HandlerKey, ...])"""
@@ -115,11 +121,18 @@ def render_handler_table(
     """Render Markdown table from queue + handler_dict. Returns empty string if queue is empty."""
 ```
 
+**Parsing strategy for `parse_api_dict`**:
+- Extract the `var Api = { ... };` block from the JS text using balanced-brace matching
+- For each entry, extract `name` (string literal)
+- Returns `{ "RequestMessage": {"name": "RequestMessage"}, ... }`
+
 **Parsing strategy for `parse_handler_dict`**:
 - Extract the `var Handler = { ... };` block from the JS text using balanced-brace
   matching (not `eval()` — the JS is not valid Python)
-- For each entry, extract `name` (string literal) and `behavior` fields
-  (`inbound`, `outbound`, `error`, `callback` optional)
+- For each entry, extract `name`, `package` (string literals) and `type`, `behavior` fields
+  - `type.argument` / `type.returns`: JS references like `Api.RequestMessage` →
+    resolve via `api_dict`; `null` → `None`
+  - `behavior`: `inbound`, `outbound`, `error`, `callback` (optional)
 - Handle multi-line string concatenation (`"..." + "..."` → joined)
 - Handle trailing whitespace in string values (v1.3 has trailing spaces)
 - Keys with suffix (`ThreadContextHandler_main`, `DbConnectionManagementHandler_main`):
@@ -152,8 +165,14 @@ Block 3 (raw with :file: containing "handler_structure.html"):
 
 Detection logic:
 - Block 1: `node.get("source")` path ends with `Handler.js`
-- Block 2: `node.astext()` contains `HandlerQueue`
-- Block 3: `node.get("source")` path ends with `handler_structure.html`
+- Block 2: `node.astext()` contains `HandlerQueue` AND Block 1 already seen
+- Block 3: Block 2 already seen AND `node.astext()` does NOT contain `HandlerQueue`
+  (i.e. the next raw block after Block 2 — `node.source` is not reliable for `:file:` detection)
+
+**Bug fix note**: The original design assumed `node.get("source")` returns the `:file:` path for
+Block 3. In practice, docutils sets `source` to the RST file path, not the `:file:` argument.
+Block 3 is therefore detected by position (the raw block immediately following Block 2) rather
+than by source path.
 
 Any `raw:: html` block that does not match any of the three roles falls through to
 the existing `normalise_raw_html()` path (preserves current behavior for other HTML).
@@ -192,7 +211,7 @@ detect Block 1 and Block 3 by filename suffix.
 
 | Case | Handling |
 |------|----------|
-| Handler key not found in Handler.js | Log warning; render row with `(不明)` as name, `-` for all behavior fields |
+| Handler key not found in Handler.js | Log warning; render row with `(不明)` as name, `-` for all fields |
 | Suffixed key (e.g. `ThreadContextHandler_main`) | Looked up directly; no stripping |
 | Empty `""` behavior value | Render as `-` |
 | `callback` present and non-`"-"` | Add コールバック column to table |
@@ -200,6 +219,8 @@ detect Block 1 and Block 3 by filename suffix.
 | `<br/>` in callback value | Replace with ` / ` |
 | JS string concatenation `"a" + "b"` | Join before rendering |
 | Trailing whitespace in behavior string | Strip |
+| `type.argument` or `type.returns` is `null` (JS) | Render as `-` |
+| Api key not found in api_dict | Render as `-` |
 | v1.2 / v1.3 / v1.4 Handler.js differences | Handled by per-version file load; same parser |
 
 ---
@@ -222,16 +243,22 @@ detect Block 1 and Block 3 by filename suffix.
 
 | Test | Input | Expected |
 |------|-------|----------|
-| parse_handler_dict — basic entry | Handler.js snippet with inbound/outbound/error | dict with correct values |
+| parse_api_dict — basic | Api snippet with name | dict with name |
+| parse_handler_dict — basic entry | Handler.js snippet with all fields | dict with name/package/type/behavior |
+| parse_handler_dict — type resolution | `type: { argument: Api.RequestMessage }` | type.argument = "RequestMessage" |
+| parse_handler_dict — null type | `argument: null` | type.argument = None |
 | parse_handler_dict — multiline concatenation | `"a" + "b"` | joined string |
 | parse_handler_dict — empty string value | `inbound: ""` | `""` in dict |
 | parse_handler_dict — callback present | entry with callback | callback in dict |
 | parse_handler_dict — dash value | `inbound: "-"` | `"-"` |
 | parse_handler_dict — trailing whitespace | `"text  "` | stripped |
+| parse_handler_dict — suffixed key | `ThreadContextHandler_main` | key preserved |
 | parse_handler_queue — basic | script with Context and HandlerQueue | correct tuple |
 | parse_handler_queue — multiline HandlerQueue | array spread over lines | all keys extracted |
-| render_handler_table — no callback | queue without callback handlers | 4-column table |
-| render_handler_table — with callback | queue with callback handler | 5-column table |
+| render_handler_table — includes package/type columns | basic queue | クラス名/入力型/結果型 columns present |
+| render_handler_table — null type renders dash | null argument/returns | `-` in cell |
+| render_handler_table — no callback | queue without callback handlers | no コールバック column |
+| render_handler_table — with callback | queue with callback handler | コールバック column present |
 | render_handler_table — br in callback | `"a<br/>b"` | `"a / b"` |
 | render_handler_table — unknown key | key not in dict | row with `(不明)` |
 | render_handler_table — empty string behavior | `""` → `-` | `-` in cell |
