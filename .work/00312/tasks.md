@@ -3,7 +3,7 @@
 
 **PR**: #315
 **Issue**: #312
-**Updated**: 2026-04-28 (session 2)
+**Updated**: 2026-04-28
 
 ## In Progress
 
@@ -37,7 +37,20 @@
 - [x] Extend: `render_handler_table` にクラス名・入力型・結果型列を追加
 - [x] Update unit tests for all changes (RED → GREEN) — 423 passed
 - [x] Re-run prototype: `python -m scripts.run create 1.4`、`.work/00312/prototype-*.md` を更新
-- [ ] [DECISION: ユーザー確認] 再生成 MD の確認 → OK なら Task 3 へ
+- [x] セルフチェック完了 → 残課題あり（下記 Bug 3）
+
+**Bug 3（セルフチェックで発見）** — 先頭空行2行
+- 原因: `docs.py` の `lines = [f"# {title}" if title else "", ""]` で title が空のとき先頭が `""` になる。修正前は link.rst 由来の不可視画像MDが先頭にあり目立たなかったが、Bug 1 修正（画像抑制）で空行が露出。
+- 修正方針: `docs.py` で title が空のとき先頭の `""` を出力しない（`if title` ガード）。
+- 影響範囲: link.rst を include する v1.x ファイル 98 件（全バージョン共通コードなので共有）
+
+### 2b. Bug 3 fix: 先頭空行除去
+
+**Steps:**
+- [ ] TDD: write test for leading blank line suppression in docs.py (RED)
+- [ ] Fix `docs.py`: suppress leading empty line when title is empty (GREEN)
+- [ ] Re-run prototype: `python -m scripts.run create 1.4`、`.work/00312/prototype-*.md` を更新してプッシュ
+- [ ] [DECISION: ユーザー確認] 再生成 MD 確認 → OK なら Task 3 へ
 
 ### 3. Full implementation (after prototype approval)
 **Steps:**
