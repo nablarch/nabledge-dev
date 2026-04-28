@@ -2,7 +2,7 @@
 
 **PR**: #314
 **Issue**: #311
-**Updated**: 2026-04-28
+**Updated**: 2026-04-28 (C設計書更新・Expert review完了)
 
 ## In Progress
 
@@ -12,12 +12,12 @@
 3軸: ① 知識ファイル JSON の content 品質、② verify 設計書 (QC1/QC2/QC3) への影響、③ 閲覧用 docs MD の可読性。
 
 **Steps:**
-- [ ] `rbkc-verify-quality-design.md` で P2 関連チェック（QC1/QC2/QC3/QP）を確認
-- [ ] P2-1/P2-3 変換仕様が verify チェックに与える影響を分析（content トークン変化 → QC1 閾値影響など）
-- [ ] docs MD 閲覧用の変換仕様も設計書に含める（JSON と docs MD で出力が異なる場合は明示）
-- [ ] `rbkc-converter-design.md` §8 を更新（対応パターン定義 + sheet-mapping.md へのリンク）
-- [ ] Expert review (Software Engineer) — 設計書レビュー
-- [ ] Finding があれば修正し再レビュー
+- [x] `rbkc-verify-quality-design.md` で P2 関連チェック（QC1/QC2/QC3/QP）を確認
+- [x] P2-1/P2-3 変換仕様が verify チェックに与える影響を分析（QO1/QO2 false positive 特定）
+- [x] docs MD 閲覧用の変換仕様も設計書に含める（JSON と docs MD で出力が異なる場合を明示）
+- [x] `rbkc-converter-design.md` §8 を更新（P2-1/P2-3 仕様 + sheet_subtype + verify 例外）
+- [x] `rbkc-verify-quality-design.md` §3-3 を更新（P2-1 QO1 例外 + P2-3 QO2 例外）
+- [x] Expert review (Software Engineer) — 2 Findings → 両方修正済み → `.work/00311/review-by-software-engineer.md`
 - [ ] ユーザーに最終確認
 
 ### [D] 設計書通りに実装
