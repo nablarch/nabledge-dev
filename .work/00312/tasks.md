@@ -47,9 +47,9 @@
 ### 2b. Bug 3 fix: 先頭空行除去
 
 **Steps:**
-- [ ] TDD: write test for leading blank line suppression in docs.py (RED)
-- [ ] Fix `docs.py`: suppress leading empty line when title is empty (GREEN)
-- [ ] Re-run prototype: `python -m scripts.run create 1.4`、`.work/00312/prototype-*.md` を更新してプッシュ
+- [x] TDD: write test for leading blank line suppression in docs.py (RED)
+- [x] Fix `docs.py`: suppress leading empty line when title is empty (GREEN) — `496d6d6f2`
+- [x] Re-run prototype: `python -m scripts.run create 1.4`、`.work/00312/prototype-*.md` を更新してプッシュ — `52c1d59a1`
 - [ ] [DECISION: ユーザー確認] 再生成 MD 確認 → OK なら Task 3 へ
 
 ### 3. Full implementation (after prototype approval)
