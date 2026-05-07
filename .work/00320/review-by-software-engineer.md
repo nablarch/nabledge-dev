@@ -2,43 +2,45 @@
 
 **Date**: 2026-05-07
 **Reviewer**: AI Agent as Software Engineer
-**Files Reviewed**: 1 file
+**Files Reviewed**: 3 files (Task 10 changes)
 
 ## Summary
 
-0 Findings (after fixes applied)
+0 Findings (after fix applied)
 
 ## Findings (original — all fixed)
 
-### Finding 1: Dedup bug — file-level `seen` set suppresses anchor validation when no-anchor link appears first
+### Finding 1: Display-text `:ref:` form skips cross-doc target validation
 
-**Violated clause**: Spec `rbkc-verify-quality-design.md` §3-2-3: "target JSON の `sections[]` に section_title が実在" and "target docs MD の heading slug と anchor が一致" — checks must fire for every anchor in a cross-document link.
+**Violated clause**: Spec §3-2-3 table, row 2: `| inline role=ref | 同上 (label 側から解決) | ... | verify 検証 (JSON side) 同上 | verify 検証 (docs MD side) 同上 |` — "同上" means the same cross-doc check applies to all `inline role=ref` nodes, not only bare-label form.
 
-**Description**: `seen` (3-tuple) deduplicated at file level. A subsequent anchor-bearing link to an already-seen file hit `continue` and skipped anchor validation. Confirmed with RBKC-generated JSON that routinely links the same file multiple times from different sections.
+**Description**: The entire cross-doc block sat inside `if not display and label not in seen_labels:`. When `:ref:`My Title <cross-doc-label>`` is used, `display` is non-empty, so target JSON existence, section_title, and anchor slug are never validated. A dangling cross-doc ref with explicit display text silently passes.
 
-**Fix applied**: `seen` now guards file-existence check only. `missing_json` / `missing_md` track files confirmed absent so anchor check is skipped for them. Anchor check uses `seen_anchors` / `seen_md_anchors` (4-tuple) operating independently — fires for every distinct anchor regardless of prior file-level hits.
-
-### Finding 2: `_heading_slugs` did not strip fenced code blocks — phantom slugs suppress true anchor FAILs
-
-**Violated clause**: Spec §3-2-3 "target docs MD の heading slug と anchor が一致" — applies to rendered headings only; fenced-block `## Heading` is not a rendered heading and produces no GitHub anchor.
-
-**Description**: Raw docs MD text was scanned without stripping fenced code blocks. A `## Fake Heading` inside ` ``` ` was matched and its slug added to the set — false-negative that hides RBKC anchor bugs.
-
-**Fix applied**: `_heading_slugs` now calls `_strip_fenced_code(md_text)` before scanning. The helper already exists at module level and is used by `check_json_docs_md_consistency`. Added test `TestCheckSourceLinks_DocsMdSide::test_fail_docs_md_heading_in_fenced_block_not_an_anchor` — confirmed RED before fix, GREEN after.
+**Fix applied**:
+- Extracted cross-doc validation into nested helper `_check_crossdoc_target(tgt)` inside `check_source_links()`, replacing the inline block.
+- Display-text path now resolves `label_map.get(label)` and calls `_check_crossdoc_target()` for non-`UNRESOLVED` targets (guarded by `seen_crossdoc_labels` for deduplication).
+- Bare-label path calls the same `_check_crossdoc_target()` helper.
+- Added `seen_crossdoc_labels` to prevent double-reporting when the same label appears in both forms.
+- Added test `test_fail_crossdoc_ref_display_text_form_json_missing` — confirmed RED before fix, GREEN after.
 
 ## Observations
 
-- `_heading_slugs` and `_json_section_slugs` are closures with no dependency on closure state. Could be module-level helpers for independent testability. Not a spec violation.
-- `_json_section_slugs` `except Exception: return set()` may confuse diagnosis for corrupt JSON. Not a QL1 scope issue since `check_index_coverage` handles corrupt JSON separately.
-- `_heading_slugs` does not pass `seen` dict to `github_slug` for duplicate-heading collision handling. Conservative behavior (strict direction). Not a spec violation.
+1. **`_section_titles_from_json` docstring inconsistency**: Line 1793 says "(lowercased for matching)" while line 1795 says "Returns titles as-is (not slugged)". The function body is correct; the first docstring line is a residue. No behavioral impact.
+
+2. **Silent exception swallowing**: `_section_titles_from_json` uses bare `except Exception: return set()`. A corrupt target JSON returns empty set, causing "section_title not found in sections[]" rather than "JSON failed to parse". No false negative — still produces a FAIL — but the diagnostic quality is reduced.
+
+3. **Thin wrapper functions in `check_ql1_link_targets`**: `_heading_slugs()` and `_json_section_slugs()` are now one-liners that delegate to module-level helpers. Could be inlined for less indirection. No behavioral impact.
 
 ## Positive Aspects
 
-- Reuse of `_strip_fenced_code` (module-level helper) in `_heading_slugs` is architecturally clean.
-- The `missing_json` / `missing_md` set approach cleanly separates "file not found" from "anchor not found" without double-reporting.
-- Per-anchor `seen_anchors` 4-tuple deduplication correctly avoids duplicate error reports for repeated identical anchored links.
-- `scripts.common.github_slug` reuse on both sides maintains the circular-avoidance architecture per spec §3-2-3.
+- The promotion of `_heading_slugs_from_md` and `_section_titles_from_json` to module level correctly eliminates duplication between the two check functions.
+- The `_check_crossdoc_target` helper follows the principle of sharing logic via a single path — future changes to the four-check cascade need to be made in one place only.
+- `seen_crossdoc_labels` dedup is architecturally correct — it is keyed on label (the stable identifier), not on file_id, so same-file references with different display texts are still deduplicated.
+- The `run.py` change is minimal: reuses the already-computed `docs_dir` value with no new logic.
+- 313/313 tests pass.
 
 ## Files Reviewed
 
 - `tools/rbkc/scripts/verify/verify.py` (source code)
+- `tools/rbkc/tests/ut/test_verify.py` (tests)
+- `tools/rbkc/scripts/run.py` (plumbing)
