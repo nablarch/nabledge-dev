@@ -27,7 +27,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from scripts.create.classify import FileInfo
+from scripts.common.sources import FileInfo
 
 
 def compute_sha256(path: Path) -> str:

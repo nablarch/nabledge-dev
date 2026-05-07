@@ -30,12 +30,11 @@ import json
 import sys
 from pathlib import Path
 
-from scripts.create.classify import FileInfo, classify_sources
+from scripts.common.sources import FileInfo, classify_sources, scan_sources
 from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.create.docs import generate_docs
 from scripts.create.index import generate_index
 from scripts.create.resolver import collect_asset_refs, copy_assets
-from scripts.create.scan import scan_sources
 from scripts.common.labels import build_label_doc_map, build_label_map  # noqa: F401
 from scripts.verify.verify import (
     verify_file,
