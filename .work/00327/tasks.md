@@ -1,6 +1,6 @@
 # Tasks: fix: format PCIDSS table in security-check-3 docs (v5/v6)
 
-**PR**: #TBD
+**PR**: #332
 **Issue**: #327
 **Updated**: 2026-05-07
 
@@ -14,25 +14,10 @@
 
 - [x] ブランチ作成 `327-format-pcidss-table`
 - [x] 対象ファイル調査（v6, v5 とも同一内容28行、テーブルがフラットテキスト）
+- [x] Task 1: tasks.md 作成・コミット — `9f9e7c040`
+- [x] Task 2: プレビューMD作成・コミット・PR作成・ユーザー確認依頼 — `9f9e7c040` / PR #332
 
 ## In Progress
-
-### Task 1: tasks.md 作成・コミット（本ファイル）
-
-**Steps:**
-- [x] .work/00327/tasks.md 作成
-- [ ] コミット & プッシュ
-
-### Task 2: 閲覧用プレビューMD作成・コミット → ユーザー確認
-
-閲覧用MDで見栄えに関する変更のため、実装前にプレビューをコミットしてユーザー確認を行う。
-
-**Steps:**
-- [ ] .work/00327/preview-security-check-3.md にフォーマット後のMD内容を作成
-- [ ] コミット & プッシュ
-- [ ] PRでユーザーに確認依頼
-
-## Not Started
 
 ### Task 3: v6・v5 ファイルへのMarkdownテーブル適用
 
@@ -40,12 +25,14 @@
 - `.claude/skills/nabledge-6/docs/check/security-check/security-check-3.PCIDSS対応表.md`
 - `.claude/skills/nabledge-5/docs/check/security-check/security-check-3.PCIDSS対応表.md`
 
-**前提:** Task 2 でユーザーがプレビュー内容を確認・承認済みであること
+**前提:** [DECISION: preview-security-check-3.md のフォーマットをユーザーが承認すること] — PR #332 にてユーザー確認依頼済み
 
 **Steps:**
 - [ ] v6 ファイルを preview 内容で更新
 - [ ] v5 ファイルを preview 内容で更新
 - [ ] 1コミットでv5・v6 まとめてコミット（クロスバージョン一括変更ルール）
+
+## Not Started
 
 ### Task 4: 変更差分チェック → ユーザー確認
 
