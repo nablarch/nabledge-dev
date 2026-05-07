@@ -22,6 +22,7 @@ def convert(
     path: Path,
     file_id: str = "",
     sheet_name: str | None = None,
+    sheet_subtype: str | None = None,
 ) -> RSTResult:
     """Convert one worksheet of *path* to :class:`RSTResult`.
 
@@ -34,6 +35,6 @@ def convert(
         if not names:
             raise ValueError(f"{path}: workbook has no sheets")
         sheet_name = names[0]
-    result, meta = convert_sheet(path, sheet_name)
+    result, meta = convert_sheet(path, sheet_name, sheet_subtype=sheet_subtype)
     result.meta = meta
     return result

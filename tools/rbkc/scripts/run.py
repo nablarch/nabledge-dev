@@ -78,6 +78,7 @@ def _convert_and_write(
     output_dir: Path,
     label_map: dict | None = None,
     doc_map: dict | None = None,
+    sheet_subtype_map: dict | None = None,
 ) -> None:
     """Convert one source file and write its knowledge JSON to *output_dir*.
 
@@ -87,6 +88,8 @@ def _convert_and_write(
         label_map: RST label→LabelTarget map (legacy bare-str values still
             accepted for backward compat).
         doc_map: rst_relpath→LabelTarget map for :doc: resolution.
+        sheet_subtype_map: (file_basename, sheet_name) → "P2-1"|"P2-3" from
+            xlsx-sheet-mapping.md.  None disables subtype handling.
     """
     convert = _converter_for(fi.format, fi.source_path.name)
 
@@ -107,7 +110,15 @@ def _convert_and_write(
         )
     else:
         # xlsx: sheet_name is set by classify; pass it through.
-        result = convert(fi.source_path, fi.file_id, sheet_name=fi.sheet_name)
+        sheet_subtype = None
+        if sheet_subtype_map and fi.sheet_name:
+            key = (fi.source_path.name, fi.sheet_name)
+            sheet_subtype = sheet_subtype_map.get(key)
+        result = convert(
+            fi.source_path, fi.file_id,
+            sheet_name=fi.sheet_name,
+            sheet_subtype=sheet_subtype,
+        )
 
     sections = []
     for idx, sec in enumerate(result.sections, start=1):
@@ -144,6 +155,17 @@ def _convert_and_write(
         if meta.get("sheet_type") == "P1":
             data["columns"] = meta.get("columns", [])
             data["data_rows"] = meta.get("data_rows", [])
+        # Issue #311: P2-1 / P2-3 subtype fields for docs MD generation.
+        if "p2_headings" in meta:
+            data["p2_headings"] = meta["p2_headings"]
+        if "p2_raw_lines" in meta:
+            data["p2_raw_lines"] = meta["p2_raw_lines"]
+        if "p2_base_col" in meta:
+            data["p2_base_col"] = meta["p2_base_col"]
+        if "sheet_subtype" in meta:
+            data["sheet_subtype"] = meta["sheet_subtype"]
+        if "p2_raw_content" in meta:
+            data["p2_raw_content"] = meta["p2_raw_content"]
 
     out_path = output_dir / fi.output_path
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -153,6 +175,17 @@ def _convert_and_write(
     # §3-2-2 "silent skip 禁止" is honoured across both create and verify.
     for w in getattr(result, "warnings", []) or []:
         print(f"WARN {fi.source_path}: {w}", file=sys.stderr)
+
+
+# ---------------------------------------------------------------------------
+# Sheet subtype map loader
+# ---------------------------------------------------------------------------
+
+def _load_sheet_subtype_map() -> dict[tuple[str, str], str]:
+    """Load (file_basename, sheet_name) → "P2-1"|"P2-3" from xlsx-sheet-mapping.md."""
+    from scripts.create.converters.xlsx_common import load_sheet_subtype_map
+    mapping_path = Path(__file__).parent.parent / "docs" / "xlsx-sheet-mapping.md"
+    return load_sheet_subtype_map(mapping_path)
 
 
 # ---------------------------------------------------------------------------
@@ -211,9 +244,11 @@ def create(
     # also returns doc_map for :doc: resolution.
     label_map, doc_map = build_label_doc_map(version, repo_root)
 
+    sheet_subtype_map = _load_sheet_subtype_map()
+
     all_asset_refs = []
     for fi in file_infos:
-        _convert_and_write(fi, output_dir, label_map, doc_map)
+        _convert_and_write(fi, output_dir, label_map, doc_map, sheet_subtype_map)
         if fi.format == "rst":
             all_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
 
@@ -254,12 +289,14 @@ def update(
     added, modified, _deleted = diff_snapshot(old_snap, new_snap)
     changed_keys = set(added + modified)
 
+    sheet_subtype_map = _load_sheet_subtype_map()
+
     changed_asset_refs = []
     count = 0
     for fi in file_infos:
         rel = str(fi.source_path.relative_to(repo_root)).replace("\\", "/")
         if rel in changed_keys:
-            _convert_and_write(fi, output_dir, label_map, doc_map)
+            _convert_and_write(fi, output_dir, label_map, doc_map, sheet_subtype_map)
             if fi.format == "rst":
                 changed_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
             count += 1

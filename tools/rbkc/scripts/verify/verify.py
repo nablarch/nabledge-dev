@@ -161,7 +161,29 @@ def check_json_docs_md_consistency(
         docs_all_titles = [t for _, t in docs_headings]
         json_sec_titles = [s.get("title", "") for s in sections if s.get("title")]
 
-        if not sections and docs_h2_only_titles:
+        p2_headings = data.get("p2_headings")
+        if p2_headings is not None:
+            # P2-1: p2_headings 逐次照合 (spec §8-6 / §3-3)
+            md_h_list = [(len(m.group(1)), m.group(2).strip())
+                         for m in _HEADING_RE.finditer(docs_scan)]
+            if len(p2_headings) != len(md_h_list):
+                issues.append(
+                    f"[QO1] {file_id}: p2_headings count mismatch — "
+                    f"JSON={len(p2_headings)}, docs MD={len(md_h_list)}"
+                )
+            else:
+                for i, (exp, (actual_lvl, actual_txt)) in enumerate(
+                    zip(p2_headings, md_h_list)
+                ):
+                    exp_txt = exp.get("text", "")
+                    exp_lvl = exp.get("level", 0)
+                    if exp_txt != actual_txt or exp_lvl != actual_lvl:
+                        issues.append(
+                            f"[QO1] {file_id}: p2_headings[{i}] mismatch — "
+                            f"expected ({exp_lvl}, {exp_txt!r}), "
+                            f"got ({actual_lvl}, {actual_txt!r})"
+                        )
+        elif not sections and docs_h2_only_titles:
             issues.append(f"[QO1] {file_id}: docs MD has section headings but JSON has no sections")
         else:
             missing = [t for t in json_sec_titles if t not in docs_all_titles]
@@ -279,8 +301,31 @@ def check_json_docs_md_consistency(
         start = h1_match.end() if h1_match else 0
         end = h2_match.start() if h2_match else len(docs_md_text)
         top_region = docs_md_text[start:end] if start <= end else ""
-        if expected not in top_region:
-            issues.append(f"[QO2] {file_id}: top-level content not found verbatim directly below the # heading")
+        # Issue #311 P2-1: content is row-per-line flat text; docs MD renders
+        # rows as headings/paragraphs — verbatim containment impossible.
+        # Use per-line containment (JSON line ⊂ MD) instead (§3-3 QO2 P2-1).
+        if data.get("p2_headings") is not None:
+            for line in expected.splitlines():
+                line = line.strip()
+                if line and line not in docs_md_text:
+                    issues.append(
+                        f"[QO2] {file_id}: P2-1 content line not found in docs MD: {line!r}"
+                    )
+        else:
+            # Issue #311 P2-3: normalize Markdown hard line breaks (  \n) in
+            # docs MD to single spaces before verbatim comparison.  JSON content
+            # uses \n as row separator (not cell-LF); docs MD uses "  \n".
+            # Normalize both sides: docs MD "  \n" → " ", JSON "\n" → " ".
+            # Blank lines (p2_raw \n\n → docs "  \n  \n" → top "  ") produce
+            # double spaces after the first-pass substitution; collapse them
+            # to match JSON content which uses _flatten_ws (single-space) to
+            # represent the same gap.
+            # This is a false-positive fix per §3-3 QO2 / §8-6.
+            if data.get("sheet_subtype") == "P2-3":
+                top_region = re.sub(r' {2,}', ' ', re.sub(r'  \n', ' ', top_region))
+                expected = re.sub(r' {2,}', ' ', re.sub(r'\n', ' ', expected))
+            if expected not in top_region:
+                issues.append(f"[QO2] {file_id}: top-level content not found verbatim directly below the # heading")
 
     # QO2: section content verbatim. Per spec §3-3 QO2 "JSON 各セクション
     # の content が docs MD に完全一致で含まれている" — unconditional.
