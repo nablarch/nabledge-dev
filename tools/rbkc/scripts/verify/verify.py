@@ -8,7 +8,7 @@ Public API:
     verify_docs_md(source_path, docs_md_path, fmt) -> list[str]
     check_index_coverage(knowledge_dir, index_path) -> list[str]
     check_docs_coverage(knowledge_dir, docs_dir) -> list[str]
-    check_source_links(source_text, fmt, data, label_map, source_path) -> list[str]
+    check_source_links(source_text, fmt, data, label_map, source_path, knowledge_dir, docs_dir) -> list[str]
     check_json_docs_md_consistency(data, docs_md_text) -> list[str]
     check_external_urls(source_text, data, fmt) -> list[str]
     check_content_completeness(source_text, data, fmt) -> list[str]
@@ -1774,6 +1774,38 @@ from scripts.common.linkfmt import (
 )
 
 
+def _heading_slugs_from_md(md_text: str) -> set[str]:
+    """Return github_slug values for all ATX headings in *md_text*.
+
+    Fenced code blocks are stripped — `## Heading` inside a fence is not a
+    rendered heading and produces no GitHub anchor.
+    Used by both check_ql1_link_targets() and check_source_links().
+    """
+    from scripts.common.github_slug import github_slug as _gs
+    stripped = _strip_fenced_code(md_text)
+    slugs: set[str] = set()
+    for m in re.finditer(r"^#{1,6}\s+(.+?)(?:\s+#+)?\s*$", stripped, re.MULTILINE):
+        slugs.add(_gs(m.group(1).strip()))
+    return slugs
+
+
+def _section_titles_from_json(json_path) -> set[str]:
+    """Return the set of section titles in target JSON (lowercased for matching).
+
+    Returns titles as-is (not slugged) so callers can compare directly.
+    """
+    try:
+        obj = json.loads(Path(json_path).read_text(encoding="utf-8"))
+    except Exception:
+        return set()
+    titles: set[str] = set()
+    for sec in obj.get("sections", []) or []:
+        title = sec.get("title", "") or ""
+        if title:
+            titles.add(title)
+    return titles
+
+
 def check_ql1_link_targets(
     data: dict,
     knowledge_dir,
@@ -1861,23 +1893,50 @@ def check_ql1_link_targets(
     for sec in data.get("sections", []) or []:
         sources.append(sec.get("content", "") or "")
 
+    from scripts.common.github_slug import github_slug as _github_slug
+
+    def _heading_slugs(md_text: str) -> set[str]:
+        return _heading_slugs_from_md(md_text)
+
+    def _json_section_slugs(json_path) -> set[str]:
+        """Return github_slug values for all section titles in target JSON."""
+        titles = _section_titles_from_json(json_path)
+        return {_github_slug(t) for t in titles}
+
+    # `seen` / `seen_md` deduplicate file-existence checks only.
+    # `seen_anchors` / `seen_md_anchors` are keyed on (type, cat, file_id, anchor)
+    # and operate independently so that anchor validation fires for every
+    # distinct anchor even when the same file was already seen without an anchor.
+    # (spec §3-2-3: every anchor-bearing link must be validated)
     seen: set[tuple[str, str, str]] = set()
+    missing_json: set[tuple[str, str, str]] = set()
+    seen_anchors: set[tuple[str, str, str, str]] = set()
     seen_assets: set[tuple[str, str]] = set()
     issues: list[str] = []
 
     for text in sources:
-        for type_, category, file_id, _anchor in _collect_links(text):
+        for type_, category, file_id, anchor in _collect_links(text):
             key = (type_, category, file_id)
-            if key in seen:
-                continue
-            seen.add(key)
             target_json = knowledge_root / type_ / category / f"{file_id}.json"
-            if not target_json.exists():
-                issues.append(
-                    f"[QL1] JSON link target missing: "
-                    f"../../{type_}/{category}/{file_id}.md → "
-                    f"{target_json.relative_to(knowledge_root.parent)} not on disk"
-                )
+            if key not in seen:
+                seen.add(key)
+                if not target_json.exists():
+                    missing_json.add(key)
+                    issues.append(
+                        f"[QL1] JSON link target missing: "
+                        f"../../{type_}/{category}/{file_id}.md → "
+                        f"{target_json.relative_to(knowledge_root.parent)} not on disk"
+                    )
+            if anchor and key not in missing_json:
+                anchor_key = (type_, category, file_id, anchor)
+                if anchor_key not in seen_anchors:
+                    seen_anchors.add(anchor_key)
+                    if anchor not in _json_section_slugs(target_json):
+                        issues.append(
+                            f"[QL1] JSON link anchor not found: "
+                            f"../../{type_}/{category}/{file_id}.md#{anchor} — "
+                            f"no section title in {file_id}.json slugifies to '{anchor}'"
+                        )
         # Phase 22-B-16c: asset existence check.  `assets/{file_id}/
         # {basename}` must exist under knowledge_dir/assets/...
         for asset_fid, basename in _collect_assets(text):
@@ -1894,18 +1953,31 @@ def check_ql1_link_targets(
 
     if docs_md_text is not None:
         seen_md: set[tuple[str, str, str]] = set()
-        for type_, category, file_id, _anchor in _collect_links(docs_md_text):
+        missing_md: set[tuple[str, str, str]] = set()
+        seen_md_anchors: set[tuple[str, str, str, str]] = set()
+        for type_, category, file_id, anchor in _collect_links(docs_md_text):
             key = (type_, category, file_id)
-            if key in seen_md:
-                continue
-            seen_md.add(key)
             target_md = docs_root / type_ / category / f"{file_id}.md"
-            if not target_md.exists():
-                issues.append(
-                    f"[QL1] docs MD link target missing: "
-                    f"../../{type_}/{category}/{file_id}.md → "
-                    f"{target_md.relative_to(docs_root.parent)} not on disk"
-                )
+            if key not in seen_md:
+                seen_md.add(key)
+                if not target_md.exists():
+                    missing_md.add(key)
+                    issues.append(
+                        f"[QL1] docs MD link target missing: "
+                        f"../../{type_}/{category}/{file_id}.md → "
+                        f"{target_md.relative_to(docs_root.parent)} not on disk"
+                    )
+            if anchor and key not in missing_md:
+                anchor_key = (type_, category, file_id, anchor)
+                if anchor_key not in seen_md_anchors:
+                    seen_md_anchors.add(anchor_key)
+                    md_text = target_md.read_text(encoding="utf-8")
+                    if anchor not in _heading_slugs(md_text):
+                        issues.append(
+                            f"[QL1] docs MD link anchor not found: "
+                            f"../../{type_}/{category}/{file_id}.md#{anchor} — "
+                            f"no heading in {file_id}.md slugifies to '{anchor}'"
+                        )
 
     return issues
 
@@ -1986,6 +2058,8 @@ def check_source_links(
     label_map: dict,
     source_path=None,
     corpus_label_map: dict | None = None,
+    knowledge_dir=None,
+    docs_dir=None,
 ) -> list[str]:
     """QL1: Internal links in source must be reflected in JSON.
 
@@ -2061,6 +2135,47 @@ def check_source_links(
 
         # :ref: role references (Sphinx shim produces inline with class role-ref)
         seen_labels: set[str] = set()
+        seen_crossdoc_labels: set[str] = set()
+
+        def _check_crossdoc_target(tgt) -> None:
+            """Validate cross-doc LabelTarget: JSON exists, section_title found,
+            docs MD exists, anchor slug matches. Spec §3-2-3, Issue #320.
+            Applies to both bare-label and display-text :ref: forms.
+            """
+            if isinstance(tgt, str) or knowledge_dir is None:
+                return
+            fid = getattr(tgt, "file_id", "") or ""
+            cat = getattr(tgt, "category", "") or ""
+            typ = getattr(tgt, "type", "") or ""
+            sec_title = getattr(tgt, "section_title", "") or ""
+            anch = getattr(tgt, "anchor", "") or ""
+            if not (fid and cat and typ):
+                return
+            tgt_json = Path(knowledge_dir) / typ / cat / f"{fid}.json"
+            if not tgt_json.exists():
+                issues.append(
+                    f"[QL1] :ref: cross-doc target JSON missing: "
+                    f"../../{typ}/{cat}/{fid}.json"
+                )
+                return
+            if sec_title and sec_title not in _section_titles_from_json(tgt_json):
+                issues.append(
+                    f"[QL1] :ref: cross-doc section_title not in target JSON: "
+                    f"{sec_title!r} not found in {fid}.json sections[]"
+                )
+            if docs_dir is not None and anch:
+                tgt_md = Path(docs_dir) / typ / cat / f"{fid}.md"
+                if not tgt_md.exists():
+                    issues.append(
+                        f"[QL1] :ref: cross-doc target docs MD missing: "
+                        f"../../{typ}/{cat}/{fid}.md"
+                    )
+                elif anch not in _heading_slugs_from_md(tgt_md.read_text(encoding="utf-8")):
+                    issues.append(
+                        f"[QL1] :ref: cross-doc anchor not in target docs MD: "
+                        f"'{anch}' not found in {fid}.md headings"
+                    )
+
         for n in doctree.findall(nodes.inline):
             cls = n.get("classes") or []
             if not any(c.startswith("role-") for c in cls):
@@ -2076,11 +2191,21 @@ def check_source_links(
             else:
                 display = ""
                 label = raw
-            # Display-text form: the display string must appear in JSON
+            # Display-text form: the display string must appear in JSON.
+            # Cross-doc target validation also applies (spec §3-2-3) — run
+            # it for display-text refs using a separate dedup set so that
+            # the same label reaching the bare-label path below is not
+            # double-reported.
             if display and display not in json_full:
                 issues.append(
                     f"[QL1] :ref: display text missing from JSON: {display!r}"
                 )
+            if display and label not in seen_crossdoc_labels:
+                seen_crossdoc_labels.add(label)
+                from scripts.common.labels import UNRESOLVED
+                _dt = label_map.get(label)
+                if _dt is not None and _dt is not UNRESOLVED:
+                    _check_crossdoc_target(_dt)
             # Bare label form: Phase 22-B-12 five-quadrant classification
             # (spec §3-2-2).  The quadrants:
             #   - Q1: label in label_map → resolved title must appear (PASS/FAIL)
@@ -2095,6 +2220,7 @@ def check_source_links(
             # label string as the required display text for Q3/Q4.
             if not display and label not in seen_labels:
                 seen_labels.add(label)
+                seen_crossdoc_labels.add(label)  # prevent double-report if same label used both ways
                 target = label_map.get(label)
                 from scripts.common.labels import UNRESOLVED
                 if target is None or target is UNRESOLVED:
@@ -2115,6 +2241,8 @@ def check_source_links(
                     issues.append(
                         f"[QL1] :ref:`{label}` target title missing from JSON: {title!r}"
                     )
+                # Cross-doc target validation (spec §3-2-3, Issue #320).
+                _check_crossdoc_target(target)
 
         def _under_substitution(node) -> bool:
             """True if *node* lives under a substitution_definition subtree.

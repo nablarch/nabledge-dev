@@ -3945,7 +3945,7 @@ class TestCheckQL1LinkTargets:
         kn, _docs = self._setup(tmp_path)
 
         data = {
-            "content": "See [Foo](../../component/libraries/libraries-foo.md#foo) for details.",
+            "content": "See [Foo](../../component/libraries/libraries-foo.md) for details.",
             "sections": [],
         }
         issues = check_ql1_link_targets(data, kn)
@@ -4040,6 +4040,464 @@ class TestCheckQL1LinkTargets:
         }
         issues = check_ql1_link_targets(data, kn)
         assert len(issues) == 1
+
+
+# ---------------------------------------------------------------------------
+# Issue #320: QL1 anchor validation (JSON side + docs MD side)
+# ---------------------------------------------------------------------------
+
+
+class TestCheckSourceLinks_JsonSide:
+    """Spec §3-2-3 QL1 two-sided: JSON side anchor validation.
+
+    When a cross-doc link includes `#anchor`, the target JSON's
+    `sections[].title` must slug (via `github_slug`) to that anchor.
+    Missing anchor → FAIL `[QL1] JSON link anchor not found`.
+    """
+
+    def _setup(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        target_json = kn / "component" / "libraries" / "libraries-foo.json"
+        target_json.write_text(
+            '{"id":"libraries-foo","title":"Foo","content":"",'
+            '"sections":[{"title":"Basic Usage","content":""}]}',
+            encoding="utf-8",
+        )
+        return kn
+
+    def test_pass_json_anchor_exists(self, tmp_path):
+        """Link `#basic-usage` → target JSON section title 'Basic Usage'
+        slugifies to 'basic-usage' → PASS."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#basic-usage).",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert issues == []
+
+    def test_fail_json_anchor_missing(self, tmp_path):
+        """Link `#nosuch` → no section title in target JSON slugifies to
+        'nosuch' → FAIL `[QL1] JSON link anchor not found`."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#nosuch).",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert any("[QL1] JSON link anchor not found" in i for i in issues), issues
+        assert any("nosuch" in i for i in issues), issues
+
+    def test_pass_json_link_no_anchor(self, tmp_path):
+        """Link without `#` → only file existence is checked (existing
+        behavior unchanged)."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md).",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert issues == []
+
+    def test_fail_json_target_missing_with_anchor(self, tmp_path):
+        """Target JSON missing (anchor irrelevant) → FAIL
+        `JSON link target missing` only — no anchor error."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        data = {
+            "content": "See [X](../../component/libraries/libraries-gone.md#foo).",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert any("JSON link target missing" in i for i in issues), issues
+        assert not any("JSON link anchor not found" in i for i in issues), issues
+
+
+class TestCheckSourceLinks_DocsMdSide:
+    """Spec §3-2-3 QL1 two-sided: docs MD side anchor validation.
+
+    When a cross-doc link in docs MD includes `#anchor`, the target docs
+    MD must have a heading whose `github_slug(heading_text)` equals the
+    anchor.  Missing anchor → FAIL `[QL1] docs MD link anchor not found`.
+    """
+
+    def _setup(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        (kn / "component" / "libraries" / "libraries-foo.json").write_text(
+            '{"id":"libraries-foo","title":"Foo","content":"","sections":[]}',
+            encoding="utf-8",
+        )
+        target_md = docs / "component" / "libraries" / "libraries-foo.md"
+        target_md.write_text("# Foo\n\n## Basic Usage\n\nText.\n", encoding="utf-8")
+        return kn, docs
+
+    def test_pass_docs_md_anchor_slug_match(self, tmp_path):
+        """Link `#basic-usage` → target docs MD has heading `## Basic Usage`
+        → `github_slug('Basic Usage') == 'basic-usage'` → PASS."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+        docs_md = "See [Foo](../../component/libraries/libraries-foo.md#basic-usage).\n"
+        issues = check_ql1_link_targets({}, kn, docs_md_text=docs_md)
+        assert issues == []
+
+    def test_fail_docs_md_anchor_slug_mismatch(self, tmp_path):
+        """Link `#bar` → target docs MD headings slug to `foo` and
+        `basic-usage` only → FAIL `[QL1] docs MD link anchor not found`."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+        docs_md = "See [Foo](../../component/libraries/libraries-foo.md#bar).\n"
+        issues = check_ql1_link_targets({}, kn, docs_md_text=docs_md)
+        assert any("[QL1] docs MD link anchor not found" in i for i in issues), issues
+        assert any("bar" in i for i in issues), issues
+
+    def test_pass_docs_md_link_no_anchor(self, tmp_path):
+        """Link without `#` → only file existence is checked (existing
+        behavior unchanged)."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+        docs_md = "See [Foo](../../component/libraries/libraries-foo.md).\n"
+        issues = check_ql1_link_targets({}, kn, docs_md_text=docs_md)
+        assert issues == []
+
+    def test_fail_docs_md_heading_in_fenced_block_not_an_anchor(self, tmp_path):
+        """A `## Heading` inside a fenced code block is not a real heading
+        — GitHub's TOC filter ignores it.  Linking to its slug must FAIL.
+
+        Spec §3-2-3: 'target docs MD の heading slug と anchor が一致' applies
+        to rendered headings only; fenced-block content is not rendered as a
+        heading and produces no anchor.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        (kn / "component" / "libraries" / "libraries-bar.json").write_text(
+            '{"id":"libraries-bar","title":"Bar","content":"","sections":[]}',
+            encoding="utf-8",
+        )
+        # Target docs MD: `## Fake Heading` is inside a fenced code block —
+        # NOT a real heading. The only real heading is `# Bar`.
+        (docs / "component" / "libraries" / "libraries-bar.md").write_text(
+            "# Bar\n\n```\n## Fake Heading\n```\n",
+            encoding="utf-8",
+        )
+        docs_md = "See [Bar](../../component/libraries/libraries-bar.md#fake-heading).\n"
+        issues = check_ql1_link_targets({}, kn, docs_md_text=docs_md)
+        assert any("[QL1] docs MD link anchor not found" in i for i in issues), issues
+        assert any("fake-heading" in i for i in issues), issues
+
+
+class TestCheckSourceLinks_JsonSideDedup:
+    """Spec §3-2-3: anchor check must fire even when the same file was
+    already linked without an anchor in an earlier text source."""
+
+    def _setup(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        target_json = kn / "component" / "libraries" / "libraries-foo.json"
+        target_json.write_text(
+            '{"id":"libraries-foo","title":"Foo","content":"",'
+            '"sections":[{"title":"Basic Usage","content":""}]}',
+            encoding="utf-8",
+        )
+        return kn
+
+    def test_fail_anchor_missing_when_same_file_linked_no_anchor_first(self, tmp_path):
+        """content links file.md (no anchor); sections[0].content links
+        file.md#nosuch (bad anchor) — the anchor check must still fire.
+
+        Spec §3-2-3: every anchor-bearing link must be validated regardless
+        of whether an earlier no-anchor link to the same file was seen.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md).",
+            "sections": [{"content": "See [Foo](../../component/libraries/libraries-foo.md#nosuch)."}],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert any("[QL1] JSON link anchor not found" in i for i in issues), issues
+        assert any("nosuch" in i for i in issues), issues
+
+
+class TestCheckSourceLinks_DocsMdSideDedup:
+    """Spec §3-2-3: docs MD side anchor check must fire even when the same
+    file was already linked without an anchor earlier in docs_md_text."""
+
+    def _setup(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        (kn / "component" / "libraries" / "libraries-foo.json").write_text(
+            '{"id":"libraries-foo","title":"Foo","content":"","sections":[]}',
+            encoding="utf-8",
+        )
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Basic Usage\n\nText.\n", encoding="utf-8"
+        )
+        return kn
+
+    def test_fail_docs_md_anchor_missing_when_same_file_linked_no_anchor_first(self, tmp_path):
+        """docs_md_text first links file.md (no anchor), then file.md#nosuch
+        (bad anchor) — the anchor check must still fire on the second link.
+
+        Spec §3-2-3: every anchor-bearing link must be validated regardless
+        of whether an earlier no-anchor link to the same file was seen.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        docs_md = (
+            "See [Foo](../../component/libraries/libraries-foo.md).\n"
+            "Also [Foo](../../component/libraries/libraries-foo.md#nosuch).\n"
+        )
+        issues = check_ql1_link_targets({}, kn, docs_md_text=docs_md)
+        assert any("[QL1] docs MD link anchor not found" in i for i in issues), issues
+        assert any("nosuch" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# Issue #320: check_source_links cross-doc :ref: target/anchor validation
+# ---------------------------------------------------------------------------
+
+
+class TestCheckSourceLinks_CrossDoc:
+    """Spec §3-2-3 QL1: check_source_links() must validate that a cross-doc
+    :ref:label target JSON exists, its sections[] contain section_title, its
+    docs MD exists, and its heading slug matches the anchor.
+
+    This is the source-side check — it reads RST :ref: intent from label_map,
+    not from MD output links.  check_ql1_link_targets() covers output-side
+    independently.
+    """
+
+    def _make_target(self, tmp_path, section_title="Basic Usage"):
+        """Create target JSON and docs MD under tmp_path."""
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        anchor = github_slug(section_title)
+        (kn / "component" / "libraries" / "libraries-target.json").write_text(
+            f'{{"id":"libraries-target","title":"Target","content":"",'
+            f'"sections":[{{"title":"{section_title}","content":""}}]}}',
+            encoding="utf-8",
+        )
+        (docs / "component" / "libraries" / "libraries-target.md").write_text(
+            f"# Target\n\n## {section_title}\n\nText.\n",
+            encoding="utf-8",
+        )
+        return kn, docs, anchor
+
+    def _label_map(self, section_title="Basic Usage"):
+        """Return a label_map with one cross-doc LabelTarget."""
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        anchor = github_slug(section_title)
+        return {
+            "target-basic": LabelTarget(
+                title=section_title,
+                file_id="libraries-target",
+                section_title=section_title,
+                category="libraries",
+                type="component",
+                anchor=anchor,
+            )
+        }
+
+    def _check(self, src, data, label_map, knowledge_dir, docs_dir):
+        from scripts.verify.verify import check_source_links
+        return check_source_links(
+            src, "rst", data, label_map,
+            knowledge_dir=knowledge_dir, docs_dir=docs_dir,
+        )
+
+    def _data(self, content=""):
+        return {"id": "f", "title": "T", "content": content, "sections": []}
+
+    # --- JSON side ---
+
+    def test_pass_crossdoc_ref_json_target_exists_section_found(self, tmp_path):
+        """:ref:`target-basic` resolves to libraries-target.json which has
+        section 'Basic Usage' → JSON side PASS."""
+        kn, docs, anchor = self._make_target(tmp_path)
+        src = "See :ref:`target-basic`.\n"
+        data = self._data(content="See Basic Usage.")
+        issues = self._check(src, data, self._label_map(), kn, docs)
+        assert not any("[QL1] :ref: cross-doc" in i for i in issues), issues
+
+    def test_fail_crossdoc_ref_json_target_missing(self, tmp_path):
+        """:ref: resolves to a file_id for which no JSON exists → FAIL."""
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        kn.mkdir(parents=True)
+        docs.mkdir(parents=True)
+        label_map = {
+            "gone-label": LabelTarget(
+                title="Gone Section",
+                file_id="libraries-gone",
+                section_title="Gone Section",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Gone Section"),
+            )
+        }
+        src = "See :ref:`gone-label`.\n"
+        data = self._data(content="See Gone Section.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert any("[QL1] :ref: cross-doc" in i and "libraries-gone" in i for i in issues), issues
+
+    def test_fail_crossdoc_ref_json_section_title_not_in_sections(self, tmp_path):
+        """:ref: resolves to a JSON that exists but whose sections[] does not
+        contain section_title → FAIL."""
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn, docs, _ = self._make_target(tmp_path, section_title="Basic Usage")
+        # label_map points to a section_title that is NOT in the JSON
+        label_map = {
+            "target-missing": LabelTarget(
+                title="Nonexistent Section",
+                file_id="libraries-target",
+                section_title="Nonexistent Section",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Nonexistent Section"),
+            )
+        }
+        src = "See :ref:`target-missing`.\n"
+        data = self._data(content="See Nonexistent Section.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert any("[QL1] :ref: cross-doc" in i and "Nonexistent Section" in i for i in issues), issues
+
+    # --- docs MD side ---
+
+    def test_fail_crossdoc_ref_docs_md_target_missing(self, tmp_path):
+        """:ref: resolves to a file_id for which no docs MD exists → FAIL."""
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        # JSON exists but docs MD does not
+        (kn / "component" / "libraries" / "libraries-nomd.json").write_text(
+            '{"id":"libraries-nomd","title":"T","content":"",'
+            '"sections":[{"title":"Basic Usage","content":""}]}',
+            encoding="utf-8",
+        )
+        label_map = {
+            "nomd-label": LabelTarget(
+                title="Basic Usage",
+                file_id="libraries-nomd",
+                section_title="Basic Usage",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Basic Usage"),
+            )
+        }
+        src = "See :ref:`nomd-label`.\n"
+        data = self._data(content="See Basic Usage.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert any("[QL1] :ref: cross-doc" in i and "libraries-nomd" in i for i in issues), issues
+
+    def test_fail_crossdoc_ref_docs_md_anchor_slug_mismatch(self, tmp_path):
+        """:ref: anchor does not match any heading slug in target docs MD → FAIL.
+
+        This detects the case where create generated the wrong anchor — the
+        intent (RST source) points to 'Basic Usage' but the docs MD was written
+        with a different heading.
+        """
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        (kn / "component" / "libraries" / "libraries-badmd.json").write_text(
+            '{"id":"libraries-badmd","title":"T","content":"",'
+            '"sections":[{"title":"Basic Usage","content":""}]}',
+            encoding="utf-8",
+        )
+        # docs MD has a different heading — anchor won't match
+        (docs / "component" / "libraries" / "libraries-badmd.md").write_text(
+            "# T\n\n## Different Heading\n\nText.\n",
+            encoding="utf-8",
+        )
+        label_map = {
+            "badmd-label": LabelTarget(
+                title="Basic Usage",
+                file_id="libraries-badmd",
+                section_title="Basic Usage",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Basic Usage"),
+            )
+        }
+        src = "See :ref:`badmd-label`.\n"
+        data = self._data(content="See Basic Usage.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert any("[QL1] :ref: cross-doc" in i and "basic-usage" in i for i in issues), issues
+
+    def test_pass_crossdoc_ref_no_file_id(self, tmp_path):
+        """A label_map entry with empty file_id is a same-file reference —
+        no cross-doc target check should fire."""
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        kn.mkdir(parents=True)
+        docs.mkdir(parents=True)
+        from scripts.common.labels import LabelTarget
+        label_map = {
+            "same-file": LabelTarget(
+                title="Same File Section",
+                file_id="",
+                section_title="Same File Section",
+                category="",
+                type="",
+                anchor="same-file-section",
+            )
+        }
+        src = "See :ref:`same-file`.\n"
+        data = self._data(content="See Same File Section.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert not any("[QL1] :ref: cross-doc" in i for i in issues), issues
+
+    def test_fail_crossdoc_ref_display_text_form_json_missing(self, tmp_path):
+        """Display-text :ref:`My Title <cross-doc-label>` must also trigger
+        cross-doc target validation (spec §3-2-3 applies to all inline role=ref
+        nodes regardless of bare vs display-text form). When target JSON is
+        missing, [QL1] :ref: cross-doc must fire."""
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        kn.mkdir(parents=True)
+        docs.mkdir(parents=True)
+        label_map = {
+            "gone-label": LabelTarget(
+                title="Gone Section",
+                file_id="libraries-gone",
+                section_title="Gone Section",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Gone Section"),
+            )
+        }
+        # Display-text form: `:ref:`My Title <gone-label>``
+        src = "See :ref:`My Title <gone-label>`.\n"
+        data = self._data(content="See My Title.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert any("[QL1] :ref: cross-doc" in i and "libraries-gone" in i for i in issues), issues
 
 
 # ---------------------------------------------------------------------------
