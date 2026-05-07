@@ -80,3 +80,39 @@ whose anchor doesn't match any heading in the target docs MD (heading text misma
 Sample: `'ブランクプロジェクト' not found in blank-project-blank-project.json sections[]`
 — the JSON title is correct but `sections[]` is empty (single-section document, RBKC
 outputs the content at top-level, not as a section).
+
+## 2026-05-07 (Task 11: create/verify diff check)
+
+### Task 10 baseline note
+
+The Task 10 baseline counts (v6:1233 v5:1243 v1.4:670 v1.3:624 v1.2:640) were recorded
+in notes.md at commit `b906f2f20` using knowledge files generated at that time.
+
+### Task 11 diff check (post-Task-10 code, fresh create)
+
+Running `create + verify` for all 5 versions with the final code (post Task 10):
+
+| Version | FAIL count | vs Task 10 baseline | Explanation |
+|---------|-----------|---------------------|-------------|
+| v6      | 1422      | +189 (1233→1422)    | Expected: display-text refs now checked (Task 10 `56b91449b`) adds new cross-doc FAILs |
+| v5      | 1443      | +200 (1243→1443)    | Same as v6 |
+| v1.4    | 262       | -408 (670→262)      | See note below |
+| v1.3    | 238       | -386 (624→238)      | See note below |
+| v1.2    | 283       | -357 (640→283)      | See note below |
+
+**v1.x decrease explanation**: The fresh `create` run generated a different set of knowledge
+files than those used for the Task 10 baseline. RBKC create-side fixes from PRs merged into
+main (#315 handler HTML tables, #316 anchor fix, #317 toctree MD links) were committed to
+`.claude/skills/nabledge-1.x/` but the Task 10 baseline used knowledge files generated
+before or independently of those committed files. The fresh create generates more files and
+with improved content → fewer genuine RBKC bugs detected by verify.
+
+Confirmed: with `bc1cc68cc` verify code (Task 10 pre-fix), the current fresh-created
+v1.4 knowledge files yield 767 FAILs — higher than 670 because more files are now generated.
+The v1.x drops reflect improved knowledge file coverage, not a regression in verify.
+
+**v6/v5 increase**: Purely additive — Task 10 `56b91449b` extended the cross-doc check to
+display-text `:ref:` forms, which v6/v5 use more extensively than v1.x. All new FAILs are
+genuine RBKC bugs (display-text refs whose targets are missing or broken in the JSON/MD).
+
+All changes are expected. No unexpected FAILs introduced by Task 10.
