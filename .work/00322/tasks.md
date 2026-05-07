@@ -2,22 +2,12 @@
 
 **PR**: #329
 **Issue**: #322
-**Updated**: 2026-05-07
+**Updated**: 2026-05-07 (all tasks complete)
 
-## In Progress
-
-### Task 8: Update PR #329 body Expert Review section with links
-
-**Steps:**
-- [x] Write RED tests for SE-F1 (`from scripts.common.sources import list_sheet_names` fails), QA-F1〜F4
-- [x] Confirm all new tests RED
-- [x] Move `list_sheet_names` into `common/sources.py`; update `classify_sources` to use the local import
-- [x] Confirm all tests GREEN; run full suite (488 pass) — committed `9192309a7`
-- [x] Save review results to `.work/00322/review-by-software-engineer.md` and `review-by-qa-engineer.md` — committed `59bfd5662`
-- [ ] Update PR #329 body Expert Review section with links
 
 ## Done
 
+- [x] Task 8: Fix expert review Findings (SE-F1 + QA-F1〜F4) + update PR body — committed `9192309a7`, `59bfd5662`
 - [x] Created tasks.md — committed `a8c90fe71`
 - [x] Task 1: Write TDD tests for scripts/common/sources module (RED) — committed `2a0881af1`
 - [x] Task 2: Create scripts/common/sources.py (GREEN) — committed `2a0881af1`
