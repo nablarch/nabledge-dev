@@ -6,36 +6,6 @@
 
 ## Done
 
-### Task 10: Add cross-doc `:ref:` target validation to `check_source_links()`
-
-Issue SC revised. The correct check is: when a RST `:ref:label` resolves via `label_map`
-to a cross-document target `(file_id, section_title, anchor)`, verify that:
-1. target JSON exists on disk
-2. target JSON `sections[].title` contains `section_title`
-3. target docs MD exists on disk
-4. target docs MD heading slugs contain `anchor` (= `github_slug(section_title)`)
-
-This is distinct from `check_ql1_link_targets()` which checks anchors in MD output links.
-Both checks are needed (see design doc §3-2-3 implementation note).
-
-**Context**:
-- `check_source_links()` in `verify.py` — RST `:ref:` processing at line ~2122
-- `label_map` entries with `file_id` set = cross-doc targets
-- Helper `_json_section_slugs()` and `_heading_slugs()` already exist in `check_ql1_link_targets()`
-- Need to extract as shared helpers or duplicate inline
-- Design doc §3-2-3 updated, §4 matrix updated to ✅
-
-**Steps:**
-- [x] Issue #320 SC revised (cross-doc `:ref:` target + anchor reach validation)
-- [x] Design doc §3-2-3 updated with implementation note + §4 matrix updated to ✅
-- [x] TDD: `TestCheckSourceLinks_CrossDoc` (6 tests) added — RED confirmed
-- [x] Implement cross-doc target validation in `check_source_links()` — 480 tests GREEN
-- [x] Run verify on all 5 versions, record FAIL diff (notes.md)
-- [x] Expert review (QA + SE) — 1 Finding fixed (display-text :ref: cross-doc check)
-- [x] Commit (test + verify.py + run.py changes) and push — committed `56b91449b`
-
-## Done
-
 - [x] Issue #320 fetched and analyzed
 - [x] Branch `320-verify-ql1-link-targets` created
 - [x] PR #330 created
