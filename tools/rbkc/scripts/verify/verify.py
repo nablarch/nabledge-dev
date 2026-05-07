@@ -1861,23 +1861,70 @@ def check_ql1_link_targets(
     for sec in data.get("sections", []) or []:
         sources.append(sec.get("content", "") or "")
 
+    from scripts.common.github_slug import github_slug as _github_slug
+
+    def _heading_slugs(md_text: str) -> set[str]:
+        """Return the set of github_slug values for all ATX headings in *md_text*.
+
+        Fenced code blocks are stripped first — `## Heading` inside a
+        fence is not a rendered heading and produces no GitHub anchor
+        (spec §3-2-3 'target docs MD の heading slug と anchor が一致').
+        """
+        import re as _re
+        stripped = _strip_fenced_code(md_text)
+        slugs: set[str] = set()
+        for m in _re.finditer(r"^#{1,6}\s+(.+?)(?:\s+#+)?\s*$", stripped, _re.MULTILINE):
+            slugs.add(_github_slug(m.group(1).strip()))
+        return slugs
+
+    def _json_section_slugs(json_path) -> set[str]:
+        """Return github_slug values for all section titles in target JSON."""
+        import json as _json
+        try:
+            obj = _json.loads(json_path.read_text(encoding="utf-8"))
+        except Exception:
+            return set()
+        slugs: set[str] = set()
+        for sec in obj.get("sections", []) or []:
+            title = sec.get("title", "") or ""
+            if title:
+                slugs.add(_github_slug(title))
+        return slugs
+
+    # `seen` / `seen_md` deduplicate file-existence checks only.
+    # `seen_anchors` / `seen_md_anchors` are keyed on (type, cat, file_id, anchor)
+    # and operate independently so that anchor validation fires for every
+    # distinct anchor even when the same file was already seen without an anchor.
+    # (spec §3-2-3: every anchor-bearing link must be validated)
     seen: set[tuple[str, str, str]] = set()
+    missing_json: set[tuple[str, str, str]] = set()
+    seen_anchors: set[tuple[str, str, str, str]] = set()
     seen_assets: set[tuple[str, str]] = set()
     issues: list[str] = []
 
     for text in sources:
-        for type_, category, file_id, _anchor in _collect_links(text):
+        for type_, category, file_id, anchor in _collect_links(text):
             key = (type_, category, file_id)
-            if key in seen:
-                continue
-            seen.add(key)
             target_json = knowledge_root / type_ / category / f"{file_id}.json"
-            if not target_json.exists():
-                issues.append(
-                    f"[QL1] JSON link target missing: "
-                    f"../../{type_}/{category}/{file_id}.md → "
-                    f"{target_json.relative_to(knowledge_root.parent)} not on disk"
-                )
+            if key not in seen:
+                seen.add(key)
+                if not target_json.exists():
+                    missing_json.add(key)
+                    issues.append(
+                        f"[QL1] JSON link target missing: "
+                        f"../../{type_}/{category}/{file_id}.md → "
+                        f"{target_json.relative_to(knowledge_root.parent)} not on disk"
+                    )
+            if anchor and key not in missing_json:
+                anchor_key = (type_, category, file_id, anchor)
+                if anchor_key not in seen_anchors:
+                    seen_anchors.add(anchor_key)
+                    if anchor not in _json_section_slugs(target_json):
+                        issues.append(
+                            f"[QL1] JSON link anchor not found: "
+                            f"../../{type_}/{category}/{file_id}.md#{anchor} — "
+                            f"no section title in {file_id}.json slugifies to '{anchor}'"
+                        )
         # Phase 22-B-16c: asset existence check.  `assets/{file_id}/
         # {basename}` must exist under knowledge_dir/assets/...
         for asset_fid, basename in _collect_assets(text):
@@ -1894,18 +1941,31 @@ def check_ql1_link_targets(
 
     if docs_md_text is not None:
         seen_md: set[tuple[str, str, str]] = set()
-        for type_, category, file_id, _anchor in _collect_links(docs_md_text):
+        missing_md: set[tuple[str, str, str]] = set()
+        seen_md_anchors: set[tuple[str, str, str, str]] = set()
+        for type_, category, file_id, anchor in _collect_links(docs_md_text):
             key = (type_, category, file_id)
-            if key in seen_md:
-                continue
-            seen_md.add(key)
             target_md = docs_root / type_ / category / f"{file_id}.md"
-            if not target_md.exists():
-                issues.append(
-                    f"[QL1] docs MD link target missing: "
-                    f"../../{type_}/{category}/{file_id}.md → "
-                    f"{target_md.relative_to(docs_root.parent)} not on disk"
-                )
+            if key not in seen_md:
+                seen_md.add(key)
+                if not target_md.exists():
+                    missing_md.add(key)
+                    issues.append(
+                        f"[QL1] docs MD link target missing: "
+                        f"../../{type_}/{category}/{file_id}.md → "
+                        f"{target_md.relative_to(docs_root.parent)} not on disk"
+                    )
+            if anchor and key not in missing_md:
+                anchor_key = (type_, category, file_id, anchor)
+                if anchor_key not in seen_md_anchors:
+                    seen_md_anchors.add(anchor_key)
+                    md_text = target_md.read_text(encoding="utf-8")
+                    if anchor not in _heading_slugs(md_text):
+                        issues.append(
+                            f"[QL1] docs MD link anchor not found: "
+                            f"../../{type_}/{category}/{file_id}.md#{anchor} — "
+                            f"no heading in {file_id}.md slugifies to '{anchor}'"
+                        )
 
     return issues
 
