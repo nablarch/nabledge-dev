@@ -3945,7 +3945,7 @@ class TestCheckQL1LinkTargets:
         kn, _docs = self._setup(tmp_path)
 
         data = {
-            "content": "See [Foo](../../component/libraries/libraries-foo.md#foo) for details.",
+            "content": "See [Foo](../../component/libraries/libraries-foo.md) for details.",
             "sections": [],
         }
         issues = check_ql1_link_targets(data, kn)
@@ -4040,6 +4040,228 @@ class TestCheckQL1LinkTargets:
         }
         issues = check_ql1_link_targets(data, kn)
         assert len(issues) == 1
+
+
+# ---------------------------------------------------------------------------
+# Issue #320: QL1 anchor validation (JSON side + docs MD side)
+# ---------------------------------------------------------------------------
+
+
+class TestCheckSourceLinks_JsonSide:
+    """Spec §3-2-3 QL1 two-sided: JSON side anchor validation.
+
+    When a cross-doc link includes `#anchor`, the target JSON's
+    `sections[].title` must slug (via `github_slug`) to that anchor.
+    Missing anchor → FAIL `[QL1] JSON link anchor not found`.
+    """
+
+    def _setup(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        target_json = kn / "component" / "libraries" / "libraries-foo.json"
+        target_json.write_text(
+            '{"id":"libraries-foo","title":"Foo","content":"",'
+            '"sections":[{"title":"Basic Usage","content":""}]}',
+            encoding="utf-8",
+        )
+        return kn
+
+    def test_pass_json_anchor_exists(self, tmp_path):
+        """Link `#basic-usage` → target JSON section title 'Basic Usage'
+        slugifies to 'basic-usage' → PASS."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#basic-usage).",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert issues == []
+
+    def test_fail_json_anchor_missing(self, tmp_path):
+        """Link `#nosuch` → no section title in target JSON slugifies to
+        'nosuch' → FAIL `[QL1] JSON link anchor not found`."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#nosuch).",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert any("[QL1] JSON link anchor not found" in i for i in issues), issues
+        assert any("nosuch" in i for i in issues), issues
+
+    def test_pass_json_link_no_anchor(self, tmp_path):
+        """Link without `#` → only file existence is checked (existing
+        behavior unchanged)."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md).",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert issues == []
+
+    def test_fail_json_target_missing_with_anchor(self, tmp_path):
+        """Target JSON missing (anchor irrelevant) → FAIL
+        `JSON link target missing` only — no anchor error."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        data = {
+            "content": "See [X](../../component/libraries/libraries-gone.md#foo).",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert any("JSON link target missing" in i for i in issues), issues
+        assert not any("JSON link anchor not found" in i for i in issues), issues
+
+
+class TestCheckSourceLinks_DocsMdSide:
+    """Spec §3-2-3 QL1 two-sided: docs MD side anchor validation.
+
+    When a cross-doc link in docs MD includes `#anchor`, the target docs
+    MD must have a heading whose `github_slug(heading_text)` equals the
+    anchor.  Missing anchor → FAIL `[QL1] docs MD link anchor not found`.
+    """
+
+    def _setup(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        (kn / "component" / "libraries" / "libraries-foo.json").write_text(
+            '{"id":"libraries-foo","title":"Foo","content":"","sections":[]}',
+            encoding="utf-8",
+        )
+        target_md = docs / "component" / "libraries" / "libraries-foo.md"
+        target_md.write_text("# Foo\n\n## Basic Usage\n\nText.\n", encoding="utf-8")
+        return kn, docs
+
+    def test_pass_docs_md_anchor_slug_match(self, tmp_path):
+        """Link `#basic-usage` → target docs MD has heading `## Basic Usage`
+        → `github_slug('Basic Usage') == 'basic-usage'` → PASS."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+        docs_md = "See [Foo](../../component/libraries/libraries-foo.md#basic-usage).\n"
+        issues = check_ql1_link_targets({}, kn, docs_md_text=docs_md)
+        assert issues == []
+
+    def test_fail_docs_md_anchor_slug_mismatch(self, tmp_path):
+        """Link `#bar` → target docs MD headings slug to `foo` and
+        `basic-usage` only → FAIL `[QL1] docs MD link anchor not found`."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+        docs_md = "See [Foo](../../component/libraries/libraries-foo.md#bar).\n"
+        issues = check_ql1_link_targets({}, kn, docs_md_text=docs_md)
+        assert any("[QL1] docs MD link anchor not found" in i for i in issues), issues
+        assert any("bar" in i for i in issues), issues
+
+    def test_pass_docs_md_link_no_anchor(self, tmp_path):
+        """Link without `#` → only file existence is checked (existing
+        behavior unchanged)."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs = self._setup(tmp_path)
+        docs_md = "See [Foo](../../component/libraries/libraries-foo.md).\n"
+        issues = check_ql1_link_targets({}, kn, docs_md_text=docs_md)
+        assert issues == []
+
+    def test_fail_docs_md_heading_in_fenced_block_not_an_anchor(self, tmp_path):
+        """A `## Heading` inside a fenced code block is not a real heading
+        — GitHub's TOC filter ignores it.  Linking to its slug must FAIL.
+
+        Spec §3-2-3: 'target docs MD の heading slug と anchor が一致' applies
+        to rendered headings only; fenced-block content is not rendered as a
+        heading and produces no anchor.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        (kn / "component" / "libraries" / "libraries-bar.json").write_text(
+            '{"id":"libraries-bar","title":"Bar","content":"","sections":[]}',
+            encoding="utf-8",
+        )
+        # Target docs MD: `## Fake Heading` is inside a fenced code block —
+        # NOT a real heading. The only real heading is `# Bar`.
+        (docs / "component" / "libraries" / "libraries-bar.md").write_text(
+            "# Bar\n\n```\n## Fake Heading\n```\n",
+            encoding="utf-8",
+        )
+        docs_md = "See [Bar](../../component/libraries/libraries-bar.md#fake-heading).\n"
+        issues = check_ql1_link_targets({}, kn, docs_md_text=docs_md)
+        assert any("[QL1] docs MD link anchor not found" in i for i in issues), issues
+        assert any("fake-heading" in i for i in issues), issues
+
+
+class TestCheckSourceLinks_JsonSideDedup:
+    """Spec §3-2-3: anchor check must fire even when the same file was
+    already linked without an anchor in an earlier text source."""
+
+    def _setup(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        target_json = kn / "component" / "libraries" / "libraries-foo.json"
+        target_json.write_text(
+            '{"id":"libraries-foo","title":"Foo","content":"",'
+            '"sections":[{"title":"Basic Usage","content":""}]}',
+            encoding="utf-8",
+        )
+        return kn
+
+    def test_fail_anchor_missing_when_same_file_linked_no_anchor_first(self, tmp_path):
+        """content links file.md (no anchor); sections[0].content links
+        file.md#nosuch (bad anchor) — the anchor check must still fire.
+
+        Spec §3-2-3: every anchor-bearing link must be validated regardless
+        of whether an earlier no-anchor link to the same file was seen.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md).",
+            "sections": [{"content": "See [Foo](../../component/libraries/libraries-foo.md#nosuch)."}],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert any("[QL1] JSON link anchor not found" in i for i in issues), issues
+        assert any("nosuch" in i for i in issues), issues
+
+
+class TestCheckSourceLinks_DocsMdSideDedup:
+    """Spec §3-2-3: docs MD side anchor check must fire even when the same
+    file was already linked without an anchor earlier in docs_md_text."""
+
+    def _setup(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        (kn / "component" / "libraries" / "libraries-foo.json").write_text(
+            '{"id":"libraries-foo","title":"Foo","content":"","sections":[]}',
+            encoding="utf-8",
+        )
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Basic Usage\n\nText.\n", encoding="utf-8"
+        )
+        return kn
+
+    def test_fail_docs_md_anchor_missing_when_same_file_linked_no_anchor_first(self, tmp_path):
+        """docs_md_text first links file.md (no anchor), then file.md#nosuch
+        (bad anchor) — the anchor check must still fire on the second link.
+
+        Spec §3-2-3: every anchor-bearing link must be validated regardless
+        of whether an earlier no-anchor link to the same file was seen.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn = self._setup(tmp_path)
+        docs_md = (
+            "See [Foo](../../component/libraries/libraries-foo.md).\n"
+            "Also [Foo](../../component/libraries/libraries-foo.md#nosuch).\n"
+        )
+        issues = check_ql1_link_targets({}, kn, docs_md_text=docs_md)
+        assert any("[QL1] docs MD link anchor not found" in i for i in issues), issues
+        assert any("nosuch" in i for i in issues), issues
 
 
 # ---------------------------------------------------------------------------
