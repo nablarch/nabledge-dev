@@ -4,7 +4,7 @@
 **Issue**: #320
 **Updated**: 2026-05-07
 
-## In Progress
+## Done
 
 ### Task 10: Add cross-doc `:ref:` target validation to `check_source_links()`
 
@@ -32,11 +32,7 @@ Both checks are needed (see design doc §3-2-3 implementation note).
 - [x] Implement cross-doc target validation in `check_source_links()` — 480 tests GREEN
 - [x] Run verify on all 5 versions, record FAIL diff (notes.md)
 - [x] Expert review (QA + SE) — 1 Finding fixed (display-text :ref: cross-doc check)
-- [ ] Commit (test + verify.py + run.py changes) and push
-
-**WIP state**: `verify.py`, `run.py`, `test_verify.py` modified but NOT yet committed.
-480 tests GREEN. FAIL diff recorded in notes.md.
-Untracked `.claude/skills/nabledge-6/6/` — unrelated to this PR, leave as-is.
+- [x] Commit (test + verify.py + run.py changes) and push — committed `56b91449b`
 
 ## Done
 
@@ -52,3 +48,4 @@ Untracked `.claude/skills/nabledge-6/6/` — unrelated to this PR, leave as-is.
 - [x] Task 8: Expert review (QA + SE) — 2 Findings fixed — committed `3928aa4`
 - [x] Task 9: Diff check — committed `267caa7`
 - [x] Issue #320 SC revised + design doc §3-2-3 updated + §4 matrix ✅
+- [x] Task 10: cross-doc :ref: validation in check_source_links() + expert review (1 Finding fixed) — committed `56b91449b`
