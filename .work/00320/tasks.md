@@ -32,7 +32,11 @@ Both checks are needed (see design doc §3-2-3 implementation note).
 - [x] Implement cross-doc target validation in `check_source_links()` — 480 tests GREEN
 - [x] Run verify on all 5 versions, record FAIL diff (notes.md)
 - [ ] Expert review (QA + SE)
-- [ ] Commit and push
+- [ ] Commit (test + verify.py + run.py changes) and push
+
+**WIP state**: `verify.py`, `run.py`, `test_verify.py` modified but NOT yet committed.
+480 tests GREEN. FAIL diff recorded in notes.md.
+Untracked `.claude/skills/nabledge-6/6/` — unrelated to this PR, leave as-is.
 
 ## Done
 
