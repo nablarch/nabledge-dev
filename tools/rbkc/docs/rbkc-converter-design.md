@@ -119,7 +119,7 @@ docutils transform が解決できなかった `substitution_reference` / `refer
 | `docinfo` | 子 node (`field`) を再帰 Visit | 同左 | v1.4 に 1 件のみ |
 | `paragraph` | 子 inline を連結、末尾 `\n\n` | 同左 | |
 | `transition` | `-----\n\n` を出力 | `-----\n\n` | create/verify で同一形式 (sequential-delete で marker として一致) |
-| `container` | 子 node を再帰 Visit（属性は無視） | 同左 | generic grouping |
+| `container` | `directive_name == "toctree"` のとき: 子 `paragraph` の各テキスト行を toctree エントリとして取り出し、`doc_map` で解決する。解決成功なら `* [title](../../{type}/{category}/{file_id}.md)` 形式の bullet list 行を出力。解決失敗なら `` * `{path}` `` としてコードスパンで出力。複数 `paragraph` は結合して 1 つの bullet list とする。`directive_name != "toctree"` のとき: 子 node を再帰 Visit（属性は無視） | 同左（toctree か否かで同じ分岐を適用） | toctree は MD リンクリストに変換。`no_knowledge_content` 判定はリンク出力後の `content.strip()` 非空チェックで自動解決 |
 | `compound` | 子 node を再帰 Visit | 同左 | |
 | `topic` | 子 node を再帰 Visit（topic title は title child） | 同左 | |
 | `sidebar` | 子 node を再帰 Visit | 同左 | |
