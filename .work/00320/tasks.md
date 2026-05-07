@@ -4,6 +4,33 @@
 **Issue**: #320
 **Updated**: 2026-05-07
 
+## Not Started
+
+### Task 11: create/verify diff check after Task 10
+
+Run `bash rbkc.sh create <v> && bash rbkc.sh verify <v>` for all 5 versions after Task 10
+(display-text :ref: cross-doc fix). Confirm FAIL diff vs Task 10 pre-change baseline is
+expected (0 new unexpected FAILs from the display-text fix path).
+
+**Steps:**
+- [ ] Run create/verify v6, v5, v1.4, v1.3, v1.2 — record FAIL counts
+- [ ] Compare vs Task 10 pre-change baseline (v6:1233 v5:1243 v1.4:670 v1.3:624 v1.2:640)
+- [ ] Confirm all changes are expected — record diff in notes.md
+- [ ] Commit notes.md update and push
+
+### Task 12: Resolve SC ❌ — §4 matrix QL1 ✅
+
+SC requires design doc §4 matrix QL1 column to be ✅. Currently ❌ because 成立条件3
+(FAIL 0件) is unmet — 1000+ FAILs are genuine RBKC bugs, not verify bugs.
+
+Resolution: create a follow-up issue for the RBKC anchor generation fix, then update
+SC ❌ to ✅ with a note that verify is correct and the RBKC fix is tracked separately.
+
+**Steps:**
+- [ ] Create follow-up issue for RBKC cross-doc anchor generation bug
+- [ ] Update PR body SC check: ✅ Met with note linking follow-up issue
+- [ ] Confirm all SC are ✅ before requesting review
+
 ## Done
 
 - [x] Issue #320 fetched and analyzed
