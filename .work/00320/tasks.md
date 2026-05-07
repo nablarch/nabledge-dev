@@ -6,25 +6,34 @@
 
 ## In Progress
 
-### Task 10: Issue #320 scope revision + reimplementation
-Issue SCが不完全だった。現在の実装（anchor存在確認）では不十分で、
-「RSTの`:ref:`が解決した先のsectionに、生成されたanchorが実際に到達できるか」
-の検証が必要。
+### Task 10: Add cross-doc `:ref:` target validation to `check_source_links()`
 
-**Decision made this session**:
-- 現在の実装「anchorが任意headingに存在するか」は弱すぎる
-- 正しいチェック: `:ref:label` → `label_map` で解決した section title → `github_slug(section_title)` が JSON/docs MD のリンク anchor と一致するか
-- これは `check_source_links()`（RST パースと label_map がある場所）で行うのが正しい設計
-- Issue #320 の SC 自体を見直す必要がある
+Issue SC revised. The correct check is: when a RST `:ref:label` resolves via `label_map`
+to a cross-document target `(file_id, section_title, anchor)`, verify that:
+1. target JSON exists on disk
+2. target JSON `sections[].title` contains `section_title`
+3. target docs MD exists on disk
+4. target docs MD heading slugs contain `anchor` (= `github_slug(section_title)`)
+
+This is distinct from `check_ql1_link_targets()` which checks anchors in MD output links.
+Both checks are needed (see design doc §3-2-3 implementation note).
+
+**Context**:
+- `check_source_links()` in `verify.py` — RST `:ref:` processing at line ~2122
+- `label_map` entries with `file_id` set = cross-doc targets
+- Helper `_json_section_slugs()` and `_heading_slugs()` already exist in `check_ql1_link_targets()`
+- Need to extract as shared helpers or duplicate inline
+- Design doc §3-2-3 updated, §4 matrix updated to ✅
 
 **Steps:**
-- [DECISION: Issue #320のSCを見直してから実装方針を確定する] Issue SC改訂 + 実装設計
-- [ ] Issue #320 のSCを更新（anchor存在確認 → 意図した場所への到達可能確認）
-- [ ] 実装設計: `check_source_links()` 側での `:ref:` 解決先 anchor 照合設計
-- [ ] TDD: 失敗テスト追加
-- [ ] 実装
-- [ ] 全5バージョン verify FAIL diff 記録
-- [ ] 現在の「anchor存在確認」実装の扱いを決める（残す/削除/スコープ変更）
+- [x] Issue #320 SC revised (cross-doc `:ref:` target + anchor reach validation)
+- [x] Design doc §3-2-3 updated with implementation note + §4 matrix updated to ✅
+- [ ] TDD: add failing tests in `TestCheckSourceLinks_JsonSide` and `TestCheckSourceLinks_DocsMdSide` for cross-doc `:ref:` target/anchor validation
+- [ ] Implement cross-doc target validation in `check_source_links()` (RST `:ref:` branch)
+- [ ] Run all tests GREEN
+- [ ] Run verify on all 5 versions, record FAIL diff vs. pre-change baseline
+- [ ] Expert review (QA + SE)
+- [ ] Commit and push
 
 ## Done
 
@@ -34,9 +43,9 @@ Issue SCが不完全だった。現在の実装（anchor存在確認）では不
 - [x] Task 1: Design review completed
 - [x] Task 2: `TestCheckSourceLinks_JsonSide` added — committed `197bc96`
 - [x] Task 3: `TestCheckSourceLinks_DocsMdSide` added — committed `197bc96`
-- [x] Task 4: JSON side anchor check implemented — committed `38e18cc`
-- [x] Task 5: Docs MD side anchor check implemented — committed `38e18cc`
+- [x] Task 4: JSON side anchor check in `check_ql1_link_targets()` implemented — committed `38e18cc`
+- [x] Task 5: Docs MD side anchor check in `check_ql1_link_targets()` implemented — committed `38e18cc`
 - [x] Task 6: FAIL diff recorded (v6:656 v5:658 v1.4:613 v1.3:578 v1.2:588) — committed `3928aa4`
 - [x] Task 8: Expert review (QA + SE) — 2 Findings fixed — committed `3928aa4`
 - [x] Task 9: Diff check — committed `267caa7`
-- [x] **Session discovery**: 現在の実装（anchor存在確認）はIssue本来の意図を満たさない。「意図した場所への到達可能確認」が必要 → Issue SC見直しと実装再設計が必要
+- [x] Issue #320 SC revised + design doc §3-2-3 updated + §4 matrix ✅
