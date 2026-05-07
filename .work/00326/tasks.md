@@ -1,5 +1,9 @@
 # Tasks: fix: broken link in v6 docs README for Nablarch 6u2 release note
 
+## Rules
+
+- **推測しない**: 「〜のはず」「〜と思われる」で判断しない。必ず事実（コード・git diff・実行結果）を確認してから結論を出す
+
 **PR**: #331
 **Issue**: #326
 **Updated**: 2026-05-07 (resumed)
