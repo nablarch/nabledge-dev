@@ -1,11 +1,13 @@
-"""Unit tests for scripts/common/rst_ast_visitor — visit_raw 3-block state machine and visit_image."""
+"""Unit tests for scripts/common/rst_ast_visitor — visit_raw 3-block state machine, visit_image, and visit_container (toctree)."""
 from __future__ import annotations
 
 import pytest
 from docutils import nodes
+from pathlib import Path
 
-from scripts.common.rst_ast_visitor import _MDVisitor
-from scripts.common.rst_ast import normalise_raw_html
+from scripts.common.rst_ast_visitor import _MDVisitor, extract_document
+from scripts.common.rst_ast import normalise_raw_html, parse
+from scripts.common.labels import LabelTarget
 
 
 # ---------------------------------------------------------------------------
@@ -205,3 +207,89 @@ class TestVisitImageInvisibleSuppression:
         img = _make_image(uri="bg.png", width="0")
         result = v.visit_image(img)
         assert result == ""
+
+
+# ---------------------------------------------------------------------------
+# visit_container — toctree MD link conversion
+# ---------------------------------------------------------------------------
+
+def _make_doc_map_entry(title: str, type_: str, category: str, file_id: str) -> LabelTarget:
+    return LabelTarget(title=title, file_id=file_id, section_title="", category=category, type=type_)
+
+
+def _make_toctree_rst(entries: list[str]) -> str:
+    entry_lines = "\n".join(f"   {e}" for e in entries)
+    return f"Page\n====\n\n.. toctree::\n   :maxdepth: 1\n\n{entry_lines}\n"
+
+
+class TestVisitContainerToctree:
+    def test_toctree_resolved_entries_become_md_links(self):
+        """toctree entries that resolve via doc_map are emitted as MD bullet links."""
+        source = _make_toctree_rst(["handlers/index"])
+        source_path = Path("/repo/ja/application_framework/index.rst")
+        doc_map = {
+            "application_framework/handlers/index.rst": _make_doc_map_entry(
+                "ハンドラ一覧", "component", "handlers", "handlers-handlers"
+            )
+        }
+        doctree, _ = parse(source, source_path=source_path)
+        parts = extract_document(doctree, doc_map=doc_map, source_path=source_path)
+        assert "[ハンドラ一覧](../../component/handlers/handlers-handlers.md)" in parts.top_content
+        assert parts.top_content.startswith("*")
+
+    def test_toctree_unresolved_entries_become_code_spans(self):
+        """toctree entries that cannot be resolved emit a code span fallback."""
+        source = _make_toctree_rst(["unknown/path"])
+        source_path = Path("/repo/ja/index.rst")
+        doc_map: dict = {}
+        doctree, _ = parse(source, source_path=source_path)
+        parts = extract_document(doctree, doc_map=doc_map, source_path=source_path)
+        assert "`unknown/path`" in parts.top_content
+        assert parts.top_content.startswith("*")
+
+    def test_toctree_multiple_entries_all_rendered(self):
+        """Multiple toctree entries across paragraphs are merged into one list."""
+        source = _make_toctree_rst(["web/index", "batch/index"])
+        source_path = Path("/repo/ja/application_framework/index.rst")
+        doc_map = {
+            "application_framework/web/index.rst": _make_doc_map_entry(
+                "ウェブ編", "processing-pattern", "web-application", "web-application-web"
+            ),
+            "application_framework/batch/index.rst": _make_doc_map_entry(
+                "バッチ編", "processing-pattern", "nablarch-batch", "nablarch-batch-batch"
+            ),
+        }
+        doctree, _ = parse(source, source_path=source_path)
+        parts = extract_document(doctree, doc_map=doc_map, source_path=source_path)
+        assert "[ウェブ編]" in parts.top_content
+        assert "[バッチ編]" in parts.top_content
+        # Both must appear as bullet items
+        assert parts.top_content.count("* ") == 2
+
+    def test_non_toctree_container_recurses_children(self):
+        """Containers with directive_name != 'toctree' render children as usual."""
+        source = "Page\n====\n\n.. function:: foo()\n\n   This is a function.\n"
+        source_path = Path("/repo/ja/api.rst")
+        doctree, _ = parse(source, source_path=source_path)
+        parts = extract_document(doctree, source_path=source_path)
+        assert "This is a function." in parts.top_content
+        assert "[" not in parts.top_content  # no link syntax
+
+    def test_toctree_page_has_content_not_empty(self):
+        """A page consisting only of a toctree must NOT be no_knowledge_content=True after fix."""
+        from scripts.create.converters.rst import convert as rst_convert
+        source = _make_toctree_rst(["handlers/index"])
+        source_path = Path("/repo/ja/application_framework/index.rst")
+        doc_map = {
+            "application_framework/handlers/index.rst": _make_doc_map_entry(
+                "ハンドラ一覧", "component", "handlers", "handlers-handlers"
+            )
+        }
+        result = rst_convert(
+            source,
+            file_id="app-framework-index",
+            source_path=source_path,
+            doc_map=doc_map,
+        )
+        assert result.no_knowledge_content is False
+        assert result.content.strip() != ""

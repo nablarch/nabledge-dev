@@ -242,7 +242,33 @@ class _MDVisitor:
         return self.render_children(node)
 
     def visit_container(self, node: nodes.container) -> str:
+        if node.get("directive_name") == "toctree":
+            return self._render_toctree(node)
         return self.render_children(node)
+
+    def _render_toctree(self, node: nodes.container) -> str:
+        """Render a toctree container as a MD bullet list.
+
+        Each text line inside the toctree's paragraph children is a toctree
+        entry path.  Resolve via doc_map to emit a MD link; fall back to a
+        code span when resolution fails.
+        """
+        from scripts.common.linkfmt import emit_crossdoc_link
+        lines: list[str] = []
+        for para in node.findall(nodes.paragraph):
+            for entry in para.astext().split("\n"):
+                entry = entry.strip()
+                if not entry:
+                    continue
+                target = self._resolve_doc_target(entry)
+                if target is not None:
+                    link = emit_crossdoc_link(
+                        target.title, target.type, target.category, target.file_id
+                    )
+                else:
+                    link = f"`{entry}`"
+                lines.append(f"* {link}")
+        return "\n".join(lines)
 
     def visit_compound(self, node: nodes.compound) -> str:
         return self.render_children(node)
