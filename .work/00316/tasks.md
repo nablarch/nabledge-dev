@@ -2,7 +2,7 @@
 
 **PR**: #323
 **Issue**: #316
-**Updated**: 2026-04-28
+**Updated**: 2026-05-07
 
 ## In Progress
 
@@ -18,3 +18,5 @@
 - [x] Task 3: 設計書更新 — §3-2-2 anchor slug 規則 + Sphinx 追従例外を追記 — committed `0571024`
 - [x] Task 4: verify before/after — 全5バージョン FAIL 0→0 (差分なし) — notes.md に記録
 - [x] Task 5: PR差分チェック — コードファイルは `labels.py` + `test_labels_doc_map.py` のみ確認、PR #323 body 更新完了
+- [x] リベース — origin/main (5a34f258) にリベース、471ファイルのコンフリクト解消（自分のブランチ版を採用）、force-push済み
+- [x] リベース後 create+verify — 全5バージョン FAIL 0 (変化なし) 確認
