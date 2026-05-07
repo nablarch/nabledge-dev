@@ -2,7 +2,7 @@
 
 **PR**: #332
 **Issue**: #327
-**Updated**: 2026-05-07
+**Updated**: 2026-05-07 (session 2)
 
 ## Rules
 
@@ -25,11 +25,14 @@
 - `.claude/skills/nabledge-6/docs/check/security-check/security-check-3.PCIDSS対応表.md`
 - `.claude/skills/nabledge-5/docs/check/security-check/security-check-3.PCIDSS対応表.md`
 
-**前提:** [DECISION: preview-security-check-3.md のフォーマットをユーザーが承認すること] — PR #332 にてユーザー確認依頼済み
+**決定事項（このセッションで確定）:**
+- フォーマット: 脚注スタイル（※1〜※3 をテーブル外に置く）— preview-security-check-3.md のまま採用
+- 根拠: ユーザーがレビューコメントへの返信で「今までと同じスタイルでいきましょう」と確認 (2026-05-07)
+- このファイルは RBKC 生成対象外（Mapping 未登録）。手動編集のみで対応可。RBKC ロジック追加不要。
 
 **Steps:**
-- [ ] v6 ファイルを preview 内容で更新
-- [ ] v5 ファイルを preview 内容で更新
+- [ ] v6 ファイルを preview-security-check-3.md の内容で更新
+- [ ] v5 ファイルを preview-security-check-3.md の内容で更新
 - [ ] 1コミットでv5・v6 まとめてコミット（クロスバージョン一括変更ルール）
 
 ## Not Started
