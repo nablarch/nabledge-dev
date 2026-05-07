@@ -29,6 +29,7 @@ import json
 import os
 import re
 from pathlib import Path
+from urllib.parse import quote
 
 from scripts.create.index import _derive_type_category
 
@@ -293,6 +294,11 @@ def generate_docs(knowledge_dir: Path, docs_dir: Path, version: str = "") -> int
 
         title = data.get("title") or file_id
         rel_md = str(docs_md_path.relative_to(docs_dir)).replace("\\", "/")
+        # URL-encode the path so spaces (and other special chars) in file
+        # names become valid Markdown link targets (e.g. space → %20).
+        # safe="/" preserves directory separators; safe also includes "-_.()"
+        # which are common in knowledge file names and need no encoding.
+        rel_md = quote(rel_md, safe="/-_.()")
         readme_entries.append((type_, category, title, rel_md))
 
     _generate_readme(readme_entries, docs_dir, version)
