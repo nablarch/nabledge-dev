@@ -1,24 +1,10 @@
 # Tasks: verify QL1 link target validation
 
-**PR**: TBD
+**PR**: #330
 **Issue**: #320
 **Updated**: 2026-05-07
 
 ## Not Started
-
-### Task 1: Design review — QL1 anchor check spec confirmation
-Confirm that the existing §3-2-3 design spec fully covers the two missing checks
-(JSON side: section_title existence in target JSON; docs MD side: heading slug match).
-Identify any gaps or ambiguities. No code change.
-
-**Steps:**
-- [ ] Read §3-2-3 in full and enumerate the two anchor check specs exactly
-- [ ] Confirm JSON data structure: `sections[].title` is the field to compare against
-- [ ] Confirm docs MD side: headings are extracted and `github_slug(heading_text)` compared to anchor
-- [ ] Confirm dedup key: extend existing `seen` set to include anchor (or keep file-level dedup)
-- [ ] Confirm error message format for the two new FAIL types
-- [ ] Confirm that no changes to `rbkc-verify-quality-design.md` §3-2-3 are needed
-- [ ] Output findings to `.work/00320/notes.md`
 
 ### Task 2: TDD — test for JSON side anchor check (RED)
 Write failing tests for `check_ql1_link_targets()` — JSON side anchor validation.
@@ -105,7 +91,9 @@ Check PR diff contains only expected changes.
 
 - [x] Issue #320 fetched and analyzed
 - [x] Branch `320-verify-ql1-link-targets` created
+- [x] PR #330 created
 - [x] Existing implementation in `check_ql1_link_targets()` confirmed: `_anchor` extracted but silently discarded at l.1869 and l.1897
 - [x] Design spec §3-2-3 confirmed: two missing checks identified
 - [x] `github_slug.py` confirmed available in `scripts/common/`
 - [x] Test correspondence table in §4 confirmed: `TestCheckSourceLinks_JsonSide` and `TestCheckSourceLinks_DocsMdSide` are the planned test classes
+- [x] Task 1: Design review completed — §3-2-3 fully covers both checks; no design doc changes needed pre-implementation; dedup key stays file-level (anchor validation is per-file, not per-anchor); FAIL message formats confirmed as `[QL1] JSON link anchor not found` and `[QL1] docs MD link anchor not found`
