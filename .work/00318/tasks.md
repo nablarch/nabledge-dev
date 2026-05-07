@@ -6,12 +6,7 @@
 
 ## In Progress
 
-### Task 3: Expert review and PR creation
-
-**Steps:**
-- [x] Run expert review (Prompt Engineer for mapping config change)
-- [x] Save review to `.work/00318/review-by-prompt-engineer.md`
-- [ ] Create PR via `/pr create`
+(none)
 
 ## Not Started
 
@@ -26,3 +21,4 @@
   - v1.4/v1.3/v1.2: no mapping change needed (no setting_guide entries)
   - setting_guide files now under `setup/setting-guide/` (not `about/about-nablarch/`)
 - [x] Task 2: Check PR diff — diff-check.md created, 63 files all expected
+- [x] Task 3: Expert review and PR creation — 0 Findings, PR #328 updated — committed `6f2ec2d72`
