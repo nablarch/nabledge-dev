@@ -31,7 +31,7 @@ Both checks are needed (see design doc §3-2-3 implementation note).
 - [x] TDD: `TestCheckSourceLinks_CrossDoc` (6 tests) added — RED confirmed
 - [x] Implement cross-doc target validation in `check_source_links()` — 480 tests GREEN
 - [x] Run verify on all 5 versions, record FAIL diff (notes.md)
-- [ ] Expert review (QA + SE)
+- [x] Expert review (QA + SE) — 1 Finding fixed (display-text :ref: cross-doc check)
 - [ ] Commit (test + verify.py + run.py changes) and push
 
 **WIP state**: `verify.py`, `run.py`, `test_verify.py` modified but NOT yet committed.
