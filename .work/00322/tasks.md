@@ -1,6 +1,6 @@
 # Tasks: Move scan_sources and classify_sources to scripts/common/ for §2-2 compliance
 
-**PR**: (TBD)
+**PR**: #329
 **Issue**: #322
 **Updated**: 2026-05-07
 
@@ -14,19 +14,19 @@
 ### Task 2: Create scripts/common/sources.py (GREEN)
 **Steps:**
 - [ ] Create `scripts/common/sources.py` with `SourceFile` (dataclass), `scan_sources`, `FileInfo` (dataclass), `classify_sources`, `_sheet_slug`
-- [ ] Move `_source_roots` and `_all_releasenote_root` helpers to `sources.py` (replacing the duplicated `_source_roots_for_version` in file_id.py with a reference to `sources.py`, or vice versa — keep single source of truth)
+- [ ] Move `_source_roots` and `_all_releasenote_root` helpers to `sources.py`; remove duplicated `_source_roots_for_version` from `file_id.py` and delegate to `sources.py`
 - [ ] Confirm tests pass GREEN
 
 ### Task 3: Update scripts/create/scan.py to re-export from scripts/common/sources
 **Steps:**
 - [ ] Replace `SourceFile` and `scan_sources` definitions with re-exports from `scripts.common.sources`
-- [ ] Keep `_source_roots` and `_all_releasenote_root` as pass-through re-exports or delegates (test_file_id.py references `scripts.create.scan._source_roots` in tests/ut/test_run.py patch targets)
+- [ ] Keep `_source_roots` as a pass-through for any callers that patch it in tests
 - [ ] Confirm `test_file_id.py` TestReExportsFromCreate tests still pass
 
 ### Task 4: Update scripts/create/classify.py to re-export from scripts/common/sources
 **Steps:**
 - [ ] Replace `FileInfo` and `classify_sources` definitions with re-exports from `scripts.common.sources`
-- [ ] Keep `_parent_prefix` backward-compat shim as-is (already delegates to common)
+- [ ] Keep `_parent_prefix` backward-compat shim as-is
 - [ ] Confirm tests pass
 
 ### Task 5: Update scripts/create/differ.py to import FileInfo from scripts/common/sources
@@ -38,9 +38,16 @@
 **Steps:**
 - [ ] Change `from scripts.create.scan import scan_sources` → `from scripts.common.sources import scan_sources`
 - [ ] Change `from scripts.create.classify import FileInfo, classify_sources` → `from scripts.common.sources import FileInfo, classify_sources`
-- [ ] Update patch paths in `test_run.py` if needed (`scripts.run.scan_sources` / `scripts.run.classify_sources` mock targets should still work as they patch run.py's namespace)
+- [ ] Update patch paths in `test_run.py` if needed
 - [ ] Run `cd tools/rbkc && python -m pytest tests/ -v` and confirm all pass
+
+### Task 7: Diff check and user confirmation before PR review request
+**Steps:**
+- [ ] Run `git diff main...HEAD --stat` and `git diff main...HEAD` to enumerate all changed files
+- [ ] Verify diff contains only expected changes (no unintended files)
+- [ ] Output diff check result to `.work/00322/diff-check.md`
+- [ ] Present result to user and get confirmation before requesting PR review
 
 ## Done
 
-- [x] Created tasks.md
+- [x] Created tasks.md — committed `a8c90fe71`
