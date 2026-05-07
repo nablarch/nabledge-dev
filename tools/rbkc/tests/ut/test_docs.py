@@ -310,6 +310,38 @@ class TestRenderXlsxP2Subtypes:
         assert "## " not in md
 
 
+class TestReadmeUrlEncoding:
+    """README.md link paths must URL-encode spaces so Markdown links resolve.
+
+    Root cause: file names with spaces (e.g. "6u2 (6u1からの変更点).json") are
+    stored on disk with literal spaces. When _generate_readme writes
+    `- [title](path with space)` the link breaks in Markdown renderers.
+    The fix: percent-encode the path before writing it into README.md.
+    """
+
+    def test_readme_url_encodes_space_in_filename(self, tmp_path):
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        # File name with a space — mirrors the real 6u2 release note name.
+        json_file = kn / "releases" / "releases" / "releases-nablarch6u2-releasenote-6u2 (6u1からの変更点).json"
+        _write_json(json_file, {
+            "id": "releases-nablarch6u2-releasenote-6u2 (6u1からの変更点)",
+            "title": "Nablarch 6u2 リリースノート",
+            "content": "",
+            "no_knowledge_content": False,
+            "sections": [],
+        })
+        generate_docs(kn, docs, "6")
+        readme = (docs / "README.md").read_text(encoding="utf-8")
+        # Link must use %20 — not a literal space
+        assert "6u2%20(6u1" in readme, (
+            "README.md link must URL-encode space as %20; found raw space instead"
+        )
+        assert "6u2 (6u1" not in readme, (
+            "README.md must not contain a literal space in the link path"
+        )
+
+
 class TestAssetsExcluded:
     """generate_docs must ignore JSON files under knowledge/assets/.
 
