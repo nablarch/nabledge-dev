@@ -200,6 +200,154 @@ class TestClassifySources:
             assert c.sheet_name == cr.sheet_name
 
 
+class TestListSheetNames:
+    """SE-F1: list_sheet_names must be importable from scripts.common.sources (not only from
+    scripts.create.converters.xlsx_common) to avoid §2-2 layering violation."""
+
+    def test_list_sheet_names_importable_from_common_sources(self):
+        from scripts.common.sources import list_sheet_names  # noqa: F401
+
+    def test_list_sheet_names_returns_sheet_list(self, tmp_path):
+        """list_sheet_names returns sheet names for a real xlsx file."""
+        import openpyxl
+        from scripts.common.sources import list_sheet_names
+
+        wb = openpyxl.Workbook()
+        wb.active.title = "Sheet1"
+        wb.create_sheet("Sheet2")
+        path = tmp_path / "test.xlsx"
+        wb.save(str(path))
+
+        names = list_sheet_names(path)
+        assert names == ["Sheet1", "Sheet2"]
+
+    def test_list_sheet_names_single_sheet(self, tmp_path):
+        """list_sheet_names returns a list with one entry for a single-sheet workbook."""
+        import openpyxl
+        from scripts.common.sources import list_sheet_names
+
+        wb = openpyxl.Workbook()
+        wb.active.title = "Only"
+        path = tmp_path / "single.xlsx"
+        wb.save(str(path))
+
+        names = list_sheet_names(path)
+        assert names == ["Only"]
+
+
+class TestClassifySourcesEdgeCases:
+    """QA-F1〜F4: edge-case tests for classify_sources and scan_sources."""
+
+    def test_classify_sources_empty_input(self, monkeypatch):
+        """QA-F2: classify_sources([]) must return []."""
+        from scripts.common.sources import classify_sources
+        from pathlib import Path
+
+        monkeypatch.setattr("scripts.common.sources._load_mappings", lambda v, r: {})
+
+        result = classify_sources([], "6", Path("."))
+        assert result == []
+
+    def test_classify_sources_single_sheet_xlsx_no_sheet_suffix(self, tmp_path, monkeypatch):
+        """QA-F1: xlsx with exactly one sheet → file_id must NOT get a sheet-name suffix."""
+        import openpyxl
+        from scripts.common.sources import SourceFile, classify_sources
+        from scripts.common.file_id import FileClass
+
+        # Create a real xlsx file with one sheet
+        wb = openpyxl.Workbook()
+        wb.active.title = "Only"
+        xlsx_path = tmp_path / "spec.xlsx"
+        wb.save(str(xlsx_path))
+
+        src = SourceFile(path=xlsx_path, format="xlsx", filename="spec.xlsx")
+
+        def fake_derive(path, fmt, version, repo_root, mappings=None):
+            return FileClass(
+                source_path=path,
+                format=fmt,
+                type="component",
+                category="test",
+                file_id="test-spec",
+                matched_pattern="",
+            )
+
+        monkeypatch.setattr("scripts.common.sources._load_mappings", lambda v, r: {})
+        monkeypatch.setattr("scripts.common.sources.derive_file_id", fake_derive)
+
+        results = classify_sources([src], "6", tmp_path)
+
+        assert len(results) == 1
+        fi = results[0]
+        # Single sheet: file_id must NOT end with "-Only"
+        assert fi.file_id == "test-spec"
+        assert fi.sheet_name == "Only"
+
+    def test_classify_sources_multi_sheet_xlsx_gets_sheet_suffix(self, tmp_path, monkeypatch):
+        """QA-F1 complement: xlsx with 2 sheets → each FileInfo gets a sheet-name suffix."""
+        import openpyxl
+        from scripts.common.sources import SourceFile, classify_sources
+        from scripts.common.file_id import FileClass
+
+        wb = openpyxl.Workbook()
+        wb.active.title = "A"
+        wb.create_sheet("B")
+        xlsx_path = tmp_path / "multi.xlsx"
+        wb.save(str(xlsx_path))
+
+        src = SourceFile(path=xlsx_path, format="xlsx", filename="multi.xlsx")
+
+        def fake_derive(path, fmt, version, repo_root, mappings=None):
+            return FileClass(
+                source_path=path,
+                format=fmt,
+                type="component",
+                category="test",
+                file_id="test-multi",
+                matched_pattern="",
+            )
+
+        monkeypatch.setattr("scripts.common.sources._load_mappings", lambda v, r: {})
+        monkeypatch.setattr("scripts.common.sources.derive_file_id", fake_derive)
+
+        results = classify_sources([src], "6", tmp_path)
+
+        assert len(results) == 2
+        ids = {fi.file_id for fi in results}
+        assert ids == {"test-multi-A", "test-multi-B"}
+
+    def test_scan_sources_absolute_path_input(self, tmp_path):
+        """QA-F4: scan_sources with files= as absolute paths must work."""
+        from scripts.common.sources import scan_sources, SourceFile
+
+        rst_file = tmp_path / "doc.rst"
+        rst_file.touch()
+
+        results = scan_sources("6", tmp_path, files=[str(rst_file)])  # absolute path
+
+        assert len(results) == 1
+        assert results[0].format == "rst"
+        assert results[0].path == rst_file
+
+    def test_scan_sources_v1x_iterdir_path(self, tmp_path):
+        """QA-F3: scan_sources for v1.x version uses iterdir() of v_dir."""
+        from scripts.common.sources import scan_sources
+
+        # Build a minimal v1.4-style directory tree
+        v_dir = tmp_path / ".lw" / "nab-official" / "v1.4"
+        subdir = v_dir / "nablarch-fw-web"
+        subdir.mkdir(parents=True)
+        rst_file = subdir / "feature.rst"
+        rst_file.touch()
+
+        # scan_sources with a non-existent mapping (files= path, so no mapping needed)
+        results = scan_sources("1.4", tmp_path, files=[
+            str(rst_file.relative_to(tmp_path)),
+        ])
+        assert len(results) == 1
+        assert results[0].format == "rst"
+
+
 class TestSheetSlug:
     """_sheet_slug must be importable from scripts.common.sources."""
 

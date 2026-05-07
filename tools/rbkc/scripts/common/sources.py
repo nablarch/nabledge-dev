@@ -47,6 +47,18 @@ class FileInfo:
     sheet_name: str | None = None
 
 
+def list_sheet_names(path: Path) -> list[str]:
+    """Return worksheet names in file order."""
+    ext = path.suffix.lower()
+    if ext == ".xls":
+        import xlrd
+        wb = xlrd.open_workbook(str(path))
+        return [s.name for s in wb.sheets()]
+    import openpyxl
+    wb = openpyxl.load_workbook(str(path), data_only=True, read_only=True)
+    return list(wb.sheetnames)
+
+
 def _all_releasenote_root(version: str, repo_root: Path) -> Path | None:
     """Return the all-releasenote directory for the given version, or None if absent."""
     dir_name = f"nablarch-{version}-all-releasenote"
@@ -274,7 +286,6 @@ def classify_sources(
             continue
 
         if src.format == "xlsx":
-            from scripts.create.converters.xlsx_common import list_sheet_names
             sheet_names = list_sheet_names(src.path)
             if not sheet_names:
                 continue
