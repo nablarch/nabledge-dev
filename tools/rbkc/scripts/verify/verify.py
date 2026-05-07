@@ -8,7 +8,7 @@ Public API:
     verify_docs_md(source_path, docs_md_path, fmt) -> list[str]
     check_index_coverage(knowledge_dir, index_path) -> list[str]
     check_docs_coverage(knowledge_dir, docs_dir) -> list[str]
-    check_source_links(source_text, fmt, data, label_map, source_path) -> list[str]
+    check_source_links(source_text, fmt, data, label_map, source_path, knowledge_dir, docs_dir) -> list[str]
     check_json_docs_md_consistency(data, docs_md_text) -> list[str]
     check_external_urls(source_text, data, fmt) -> list[str]
     check_content_completeness(source_text, data, fmt) -> list[str]
@@ -1774,6 +1774,38 @@ from scripts.common.linkfmt import (
 )
 
 
+def _heading_slugs_from_md(md_text: str) -> set[str]:
+    """Return github_slug values for all ATX headings in *md_text*.
+
+    Fenced code blocks are stripped — `## Heading` inside a fence is not a
+    rendered heading and produces no GitHub anchor.
+    Used by both check_ql1_link_targets() and check_source_links().
+    """
+    from scripts.common.github_slug import github_slug as _gs
+    stripped = _strip_fenced_code(md_text)
+    slugs: set[str] = set()
+    for m in re.finditer(r"^#{1,6}\s+(.+?)(?:\s+#+)?\s*$", stripped, re.MULTILINE):
+        slugs.add(_gs(m.group(1).strip()))
+    return slugs
+
+
+def _section_titles_from_json(json_path) -> set[str]:
+    """Return the set of section titles in target JSON (lowercased for matching).
+
+    Returns titles as-is (not slugged) so callers can compare directly.
+    """
+    try:
+        obj = json.loads(Path(json_path).read_text(encoding="utf-8"))
+    except Exception:
+        return set()
+    titles: set[str] = set()
+    for sec in obj.get("sections", []) or []:
+        title = sec.get("title", "") or ""
+        if title:
+            titles.add(title)
+    return titles
+
+
 def check_ql1_link_targets(
     data: dict,
     knowledge_dir,
@@ -1864,32 +1896,12 @@ def check_ql1_link_targets(
     from scripts.common.github_slug import github_slug as _github_slug
 
     def _heading_slugs(md_text: str) -> set[str]:
-        """Return the set of github_slug values for all ATX headings in *md_text*.
-
-        Fenced code blocks are stripped first — `## Heading` inside a
-        fence is not a rendered heading and produces no GitHub anchor
-        (spec §3-2-3 'target docs MD の heading slug と anchor が一致').
-        """
-        import re as _re
-        stripped = _strip_fenced_code(md_text)
-        slugs: set[str] = set()
-        for m in _re.finditer(r"^#{1,6}\s+(.+?)(?:\s+#+)?\s*$", stripped, _re.MULTILINE):
-            slugs.add(_github_slug(m.group(1).strip()))
-        return slugs
+        return _heading_slugs_from_md(md_text)
 
     def _json_section_slugs(json_path) -> set[str]:
         """Return github_slug values for all section titles in target JSON."""
-        import json as _json
-        try:
-            obj = _json.loads(json_path.read_text(encoding="utf-8"))
-        except Exception:
-            return set()
-        slugs: set[str] = set()
-        for sec in obj.get("sections", []) or []:
-            title = sec.get("title", "") or ""
-            if title:
-                slugs.add(_github_slug(title))
-        return slugs
+        titles = _section_titles_from_json(json_path)
+        return {_github_slug(t) for t in titles}
 
     # `seen` / `seen_md` deduplicate file-existence checks only.
     # `seen_anchors` / `seen_md_anchors` are keyed on (type, cat, file_id, anchor)
@@ -2046,6 +2058,8 @@ def check_source_links(
     label_map: dict,
     source_path=None,
     corpus_label_map: dict | None = None,
+    knowledge_dir=None,
+    docs_dir=None,
 ) -> list[str]:
     """QL1: Internal links in source must be reflected in JSON.
 
@@ -2175,6 +2189,47 @@ def check_source_links(
                     issues.append(
                         f"[QL1] :ref:`{label}` target title missing from JSON: {title!r}"
                     )
+                # Cross-doc target validation (spec §3-2-3, Issue #320):
+                # When the label resolves to a different file, verify that
+                # (1) target JSON exists, (2) section_title is in its sections[],
+                # (3) target docs MD exists, (4) anchor slug is in its headings.
+                if not isinstance(target, str) and knowledge_dir is not None:
+                    file_id = getattr(target, "file_id", "") or ""
+                    category = getattr(target, "category", "") or ""
+                    type_ = getattr(target, "type", "") or ""
+                    section_title = getattr(target, "section_title", "") or ""
+                    anchor = getattr(target, "anchor", "") or ""
+                    if file_id and category and type_:
+                        target_json = (
+                            Path(knowledge_dir) / type_ / category / f"{file_id}.json"
+                        )
+                        if not target_json.exists():
+                            issues.append(
+                                f"[QL1] :ref: cross-doc target JSON missing: "
+                                f"../../{type_}/{category}/{file_id}.json"
+                            )
+                        else:
+                            if section_title and section_title not in _section_titles_from_json(target_json):
+                                issues.append(
+                                    f"[QL1] :ref: cross-doc section_title not in target JSON: "
+                                    f"{section_title!r} not found in {file_id}.json sections[]"
+                                )
+                            if docs_dir is not None and anchor:
+                                target_md = (
+                                    Path(docs_dir) / type_ / category / f"{file_id}.md"
+                                )
+                                if not target_md.exists():
+                                    issues.append(
+                                        f"[QL1] :ref: cross-doc target docs MD missing: "
+                                        f"../../{type_}/{category}/{file_id}.md"
+                                    )
+                                elif anchor not in _heading_slugs_from_md(
+                                    target_md.read_text(encoding="utf-8")
+                                ):
+                                    issues.append(
+                                        f"[QL1] :ref: cross-doc anchor not in target docs MD: "
+                                        f"'{anchor}' not found in {file_id}.md headings"
+                                    )
 
         def _under_substitution(node) -> bool:
             """True if *node* lives under a substitution_definition subtree.

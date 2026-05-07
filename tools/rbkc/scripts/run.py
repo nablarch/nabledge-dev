@@ -399,7 +399,8 @@ def verify(
         if not json_data.get("no_knowledge_content"):
             source_text = fi.source_path.read_text(encoding="utf-8", errors="replace")
             for issue in check_source_links(
-                source_text, fi.format, json_data, label_map, source_path=fi.source_path
+                source_text, fi.format, json_data, label_map, source_path=fi.source_path,
+                knowledge_dir=output_dir, docs_dir=docs_dir,
             ):
                 print(f"FAIL {source_rel}: [Check C] {issue}", file=sys.stderr)
                 all_ok = False
