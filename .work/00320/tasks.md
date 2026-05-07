@@ -28,10 +28,9 @@ Both checks are needed (see design doc §3-2-3 implementation note).
 **Steps:**
 - [x] Issue #320 SC revised (cross-doc `:ref:` target + anchor reach validation)
 - [x] Design doc §3-2-3 updated with implementation note + §4 matrix updated to ✅
-- [ ] TDD: add failing tests in `TestCheckSourceLinks_JsonSide` and `TestCheckSourceLinks_DocsMdSide` for cross-doc `:ref:` target/anchor validation
-- [ ] Implement cross-doc target validation in `check_source_links()` (RST `:ref:` branch)
-- [ ] Run all tests GREEN
-- [ ] Run verify on all 5 versions, record FAIL diff vs. pre-change baseline
+- [x] TDD: `TestCheckSourceLinks_CrossDoc` (6 tests) added — RED confirmed
+- [x] Implement cross-doc target validation in `check_source_links()` — 480 tests GREEN
+- [x] Run verify on all 5 versions, record FAIL diff (notes.md)
 - [ ] Expert review (QA + SE)
 - [ ] Commit and push
 
