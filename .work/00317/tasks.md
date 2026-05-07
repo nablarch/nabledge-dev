@@ -46,9 +46,9 @@
 
 ### Task 7: 変更差分チェック — PRの変更差分が想定通りかを確認する（ユーザー確認必須）
 **Steps:**
-- [ ] `git diff main...HEAD` を確認して想定外の変更が含まれていないかチェックする
-- [ ] 結果を `.work/00317/diff-check.md` に出力する
-- [ ] ユーザーに確認を依頼する
+- [x] `git diff main...HEAD` を確認して想定外の変更が含まれていないかチェックする
+- [x] 結果を `.work/00317/diff-check.md` に出力する
+- [DECISION: ユーザーに確認を依頼する — diff-check.md を確認してください]
 
 ### Task 8: PR作成
 **Steps:**
