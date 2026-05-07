@@ -109,9 +109,8 @@ class TestBuildLabelDocMap:
         assert lt.section_title == "Usage"
         assert lt.category == "libraries"
         assert lt.file_id == "libraries-foo"
-        # Phase 22-B-16b step 2b: anchor is the label name slug, not the
-        # heading slug — Sphinx parity.
-        assert lt.anchor == "my-label"
+        # Issue #316: anchor is github_slug(heading_title), not label name slug.
+        assert lt.anchor == "usage"
 
     def test_orphan_label_stamped_with_unresolved_sentinel(self, tmp_path):
         """Label declared but not followed by a heading must map to
@@ -301,68 +300,140 @@ class TestWarningsPropagation:
         normalise_rst(text, label_map={}, strict_unknown=True)
 
 
-class TestSphinxAnchorParity:
-    """LabelTarget.anchor must equal the HTML `id=` Sphinx emits for
-    `.. _label:` (verified empirically with `sphinx-build` 9.1.0 on
-    `/tmp/sphinx-test`).  These assertions are pinned to Sphinx's
-    observable output, not to RBKC's own ``_anchor_for_label`` logic —
-    if the two diverge, the fixture values win and `_anchor_for_label`
-    must be fixed.
+class TestHeadingTextAnchor:
+    """LabelTarget.anchor must equal github_slug(heading_title) — the same
+    slug GitHub Web auto-generates for the heading, so ``#anchor`` fragments
+    in docs MD resolve correctly on GitHub.
+
+    Spec §3-2-1: anchor is derived from heading text, not the RST label name.
     """
 
-    # Fixture: (label_name, sphinx_emitted_id).  Collected from
-    # /tmp/sphinx-test/_build/index.html on 2026-04-23 with the RST:
-    #   .. _my_usage_label:    Usage  -----
-    #   .. _UPPER_Case_Label:  Upper  -----
-    #   .. _has-hyphen:        Hyphen ------
-    SPHINX_ANCHOR_FIXTURE = [
-        ("my_usage_label", "my-usage-label"),
-        ("UPPER_Case_Label", "upper-case-label"),
-        ("has-hyphen", "has-hyphen"),
-    ]
-
-    def test_anchor_matches_sphinx_html_id(self, tmp_path):
-        """For every (label, sphinx_id) in the fixture, labels.py must
-        return the same anchor as Sphinx's HTML `id=`."""
+    def test_japanese_heading_anchor(self, tmp_path):
+        """Japanese heading → anchor uses lowercased CJK text (GitHub keeps CJK)."""
         from scripts.common.labels import build_label_map
+        from scripts.common.github_slug import github_slug
 
-        # Build one RST file containing all fixture labels.
-        body_parts = ["Test\n====\n\n"]
-        for i, (lbl, _) in enumerate(self.SPHINX_ANCHOR_FIXTURE):
-            body_parts.append(f".. _{lbl}:\n\nSection{i}\n---------\n\nBody{i}.\n\n")
         rst = tmp_path / "x.rst"
-        rst.write_text("".join(body_parts), encoding="utf-8")
-
-        m = build_label_map(tmp_path)
-        for lbl, expected_id in self.SPHINX_ANCHOR_FIXTURE:
-            lt = m.get(lbl)
-            assert lt is not None, lbl
-            assert lt.anchor == expected_id, (
-                f"label {lbl!r}: got {lt.anchor!r}, expected {expected_id!r} "
-                f"(Sphinx empirical output)"
-            )
-
-    def test_anchor_for_block_quote_nested_label(self, tmp_path):
-        """v6 big_picture.rst:20 pattern — label inside block_quote.
-        Sphinx emits `id="runtime-platform"` on the containing element."""
-        from scripts.common.labels import build_label_map
-
-        rst = tmp_path / "big_picture.rst"
         rst.write_text(
-            "様々な処理方式に対応できる\n"
-            "============================\n\n"
-            "本文。\n\n"
-            " .. _runtime_platform:\n\n"
-            " 実行制御基盤\n"
-            "  * item\n",
+            ".. _universal_dao:\n\n"
+            "ユニバーサルDAO\n"
+            "================\n\n"
+            "Body.\n",
             encoding="utf-8",
         )
 
         m = build_label_map(tmp_path)
-        lt = m.get("runtime_platform")
+        lt = m.get("universal_dao")
         assert lt is not None
-        # Sphinx empirical output on this exact construct.
-        assert lt.anchor == "runtime-platform"
+        assert lt.anchor == github_slug("ユニバーサルDAO"), (
+            f"got {lt.anchor!r}, expected {github_slug('ユニバーサルDAO')!r}"
+        )
+
+    def test_english_heading_anchor(self, tmp_path):
+        """ASCII heading → anchor is lowercased with spaces replaced by hyphens."""
+        from scripts.common.labels import build_label_map
+        from scripts.common.github_slug import github_slug
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(
+            ".. _universal_dao_overview:\n\n"
+            "Universal DAO\n"
+            "=============\n\n"
+            "Body.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("universal_dao_overview")
+        assert lt is not None
+        assert lt.anchor == github_slug("Universal DAO"), (
+            f"got {lt.anchor!r}, expected {github_slug('Universal DAO')!r}"
+        )
+
+    def test_anchor_differs_from_label_slug_for_japanese(self, tmp_path):
+        """Confirm the new behaviour: anchor is NOT the RST label slug.
+
+        Previously anchor = github_slug(label.replace('_', '-')) which would
+        give 'universal-dao' for label 'universal_dao'.  The heading 'ユニバーサルDAO'
+        should instead yield 'ユニバーサルdao'.
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(
+            ".. _universal_dao:\n\n"
+            "ユニバーサルDAO\n"
+            "================\n\n"
+            "Body.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("universal_dao")
+        assert lt is not None
+        # New: title-based slug
+        assert lt.anchor == "ユニバーサルdao", f"got {lt.anchor!r}"
+        # Confirm it is NOT the old label-based slug
+        assert lt.anchor != "universal-dao", (
+            "anchor must be heading-text-based, not RST-label-based"
+        )
+
+    def test_enclosing_section_anchor(self, tmp_path):
+        """Label not directly before heading resolves to enclosing section title."""
+        from scripts.common.labels import build_label_map
+        from scripts.common.github_slug import github_slug
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(
+            "親セクション\n"
+            "============\n\n"
+            "本文。\n\n"
+            " .. _nested_orphan:\n\n"
+            " block_quote 内の段落\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("nested_orphan")
+        assert lt is not None
+        assert lt.anchor == github_slug("親セクション"), (
+            f"got {lt.anchor!r}, expected {github_slug('親セクション')!r}"
+        )
+
+    def test_build_label_doc_map_anchor_is_title_based(self, tmp_path):
+        """build_label_doc_map must also use heading-text anchor (not label slug)."""
+        from scripts.common.labels import build_label_doc_map
+        from scripts.common.github_slug import github_slug
+
+        src_root = (
+            tmp_path / ".lw/nab-official/v6/nablarch-document/ja/"
+            "application_framework/application_framework/libraries/foo"
+        )
+        src_root.mkdir(parents=True)
+        (src_root / "index.rst").write_text(
+            ".. _my_label:\n\n"
+            "日本語の見出し\n"
+            "==============\n\n"
+            "Body.\n",
+            encoding="utf-8",
+        )
+
+        mappings_dir = tmp_path / "tools/rbkc/mappings"
+        mappings_dir.mkdir(parents=True)
+        (mappings_dir / "v6.json").write_text(
+            '{"rst":[{"pattern":"application_framework/application_framework/libraries/",'
+            '"type":"component","category":"libraries"}],"md":{},"xlsx":{},"xlsx_patterns":[]}',
+            encoding="utf-8",
+        )
+
+        label_map, _ = build_label_doc_map("6", tmp_path)
+
+        lt = label_map.get("my_label")
+        assert lt is not None
+        assert lt.anchor == github_slug("日本語の見出し"), (
+            f"got {lt.anchor!r}, expected {github_slug('日本語の見出し')!r}"
+        )
+        assert lt.anchor != "my-label", "anchor must not be the RST label slug"
 
 
 class TestEnclosingSectionResolution:
