@@ -16,9 +16,9 @@
 ### Task 2: 設計 — toctreeエントリのリンク変換方針を設計書・verify設計書に反映する（ユーザー確認必須）
 **Steps:**
 - [x] toctreeエントリをMDリンクに変換する方針を設計する — **Option A（MD リンク変換）に決定**
-- [ ] rbkc-converter-design.md の toctree 対応表エントリを更新する（変更前にユーザー確認）
-- [ ] rbkc-verify-quality-design.md に必要な verify 変更があれば記載する（変更前にユーザー確認）
-- [ ] ユーザーに設計を提示して承認を得る
+- [x] rbkc-converter-design.md の toctree 対応表エントリを更新する（変更前にユーザー確認）
+- [x] rbkc-verify-quality-design.md に必要な verify 変更があれば記載する — **変更なし（converter-design.md の対応表のみ更新）**
+- [x] ユーザーに設計を提示して承認を得る — **承認済み**
 
 ### Task 3: 試し変換 — 閲覧用MDの見栄えを確認する（ユーザー確認必須）
 **Steps:**
@@ -59,3 +59,4 @@
 ## Done
 
 - [x] Task 1 調査完了（設計方針 Option A に決定）
+- [x] Task 2 設計ドキュメント更新・ユーザー承認済み
