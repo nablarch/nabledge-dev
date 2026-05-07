@@ -2,16 +2,7 @@
 
 **PR**: #331
 **Issue**: #326
-**Updated**: 2026-05-07
-
-## In Progress
-
-### Investigate and commit create/verify results
-**Steps:**
-- [ ] Understand what docs.py change actually affects (which versions, which files)
-- [ ] Confirm whether 919 unstaged file changes are expected or unexpected
-- [ ] Investigate actual diff content to identify root cause
-- [ ] Commit result or revert as appropriate
+**Updated**: 2026-05-07 (resumed)
 
 ## Done
 
@@ -19,3 +10,4 @@
 - [x] Fix `docs.py` to URL-encode spaces permanently (prevent create regression) — committed `7c9b1baf9`
 - [x] Add expert reviews (Software Engineer + QA Engineer) — committed `a7ec6dd10`
 - [x] Run create/verify for all 5 versions — all passed OK
+- [x] Investigate 919 unstaged changes — root cause: quote() encoded Japanese chars; narrowed to .replace(" ", "%20") — committed `4e5643273`
