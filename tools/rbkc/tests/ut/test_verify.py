@@ -4265,6 +4265,215 @@ class TestCheckSourceLinks_DocsMdSideDedup:
 
 
 # ---------------------------------------------------------------------------
+# Issue #320: check_source_links cross-doc :ref: target/anchor validation
+# ---------------------------------------------------------------------------
+
+
+class TestCheckSourceLinks_CrossDoc:
+    """Spec §3-2-3 QL1: check_source_links() must validate that a cross-doc
+    :ref:label target JSON exists, its sections[] contain section_title, its
+    docs MD exists, and its heading slug matches the anchor.
+
+    This is the source-side check — it reads RST :ref: intent from label_map,
+    not from MD output links.  check_ql1_link_targets() covers output-side
+    independently.
+    """
+
+    def _make_target(self, tmp_path, section_title="Basic Usage"):
+        """Create target JSON and docs MD under tmp_path."""
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        anchor = github_slug(section_title)
+        (kn / "component" / "libraries" / "libraries-target.json").write_text(
+            f'{{"id":"libraries-target","title":"Target","content":"",'
+            f'"sections":[{{"title":"{section_title}","content":""}}]}}',
+            encoding="utf-8",
+        )
+        (docs / "component" / "libraries" / "libraries-target.md").write_text(
+            f"# Target\n\n## {section_title}\n\nText.\n",
+            encoding="utf-8",
+        )
+        return kn, docs, anchor
+
+    def _label_map(self, section_title="Basic Usage"):
+        """Return a label_map with one cross-doc LabelTarget."""
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        anchor = github_slug(section_title)
+        return {
+            "target-basic": LabelTarget(
+                title=section_title,
+                file_id="libraries-target",
+                section_title=section_title,
+                category="libraries",
+                type="component",
+                anchor=anchor,
+            )
+        }
+
+    def _check(self, src, data, label_map, knowledge_dir, docs_dir):
+        from scripts.verify.verify import check_source_links
+        return check_source_links(
+            src, "rst", data, label_map,
+            knowledge_dir=knowledge_dir, docs_dir=docs_dir,
+        )
+
+    def _data(self, content=""):
+        return {"id": "f", "title": "T", "content": content, "sections": []}
+
+    # --- JSON side ---
+
+    def test_pass_crossdoc_ref_json_target_exists_section_found(self, tmp_path):
+        """:ref:`target-basic` resolves to libraries-target.json which has
+        section 'Basic Usage' → JSON side PASS."""
+        kn, docs, anchor = self._make_target(tmp_path)
+        src = "See :ref:`target-basic`.\n"
+        data = self._data(content="See Basic Usage.")
+        issues = self._check(src, data, self._label_map(), kn, docs)
+        assert not any("[QL1] :ref: cross-doc" in i for i in issues), issues
+
+    def test_fail_crossdoc_ref_json_target_missing(self, tmp_path):
+        """:ref: resolves to a file_id for which no JSON exists → FAIL."""
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        kn.mkdir(parents=True)
+        docs.mkdir(parents=True)
+        label_map = {
+            "gone-label": LabelTarget(
+                title="Gone Section",
+                file_id="libraries-gone",
+                section_title="Gone Section",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Gone Section"),
+            )
+        }
+        src = "See :ref:`gone-label`.\n"
+        data = self._data(content="See Gone Section.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert any("[QL1] :ref: cross-doc" in i and "libraries-gone" in i for i in issues), issues
+
+    def test_fail_crossdoc_ref_json_section_title_not_in_sections(self, tmp_path):
+        """:ref: resolves to a JSON that exists but whose sections[] does not
+        contain section_title → FAIL."""
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn, docs, _ = self._make_target(tmp_path, section_title="Basic Usage")
+        # label_map points to a section_title that is NOT in the JSON
+        label_map = {
+            "target-missing": LabelTarget(
+                title="Nonexistent Section",
+                file_id="libraries-target",
+                section_title="Nonexistent Section",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Nonexistent Section"),
+            )
+        }
+        src = "See :ref:`target-missing`.\n"
+        data = self._data(content="See Nonexistent Section.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert any("[QL1] :ref: cross-doc" in i and "Nonexistent Section" in i for i in issues), issues
+
+    # --- docs MD side ---
+
+    def test_fail_crossdoc_ref_docs_md_target_missing(self, tmp_path):
+        """:ref: resolves to a file_id for which no docs MD exists → FAIL."""
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        # JSON exists but docs MD does not
+        (kn / "component" / "libraries" / "libraries-nomd.json").write_text(
+            '{"id":"libraries-nomd","title":"T","content":"",'
+            '"sections":[{"title":"Basic Usage","content":""}]}',
+            encoding="utf-8",
+        )
+        label_map = {
+            "nomd-label": LabelTarget(
+                title="Basic Usage",
+                file_id="libraries-nomd",
+                section_title="Basic Usage",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Basic Usage"),
+            )
+        }
+        src = "See :ref:`nomd-label`.\n"
+        data = self._data(content="See Basic Usage.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert any("[QL1] :ref: cross-doc" in i and "libraries-nomd" in i for i in issues), issues
+
+    def test_fail_crossdoc_ref_docs_md_anchor_slug_mismatch(self, tmp_path):
+        """:ref: anchor does not match any heading slug in target docs MD → FAIL.
+
+        This detects the case where create generated the wrong anchor — the
+        intent (RST source) points to 'Basic Usage' but the docs MD was written
+        with a different heading.
+        """
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        (kn / "component" / "libraries" / "libraries-badmd.json").write_text(
+            '{"id":"libraries-badmd","title":"T","content":"",'
+            '"sections":[{"title":"Basic Usage","content":""}]}',
+            encoding="utf-8",
+        )
+        # docs MD has a different heading — anchor won't match
+        (docs / "component" / "libraries" / "libraries-badmd.md").write_text(
+            "# T\n\n## Different Heading\n\nText.\n",
+            encoding="utf-8",
+        )
+        label_map = {
+            "badmd-label": LabelTarget(
+                title="Basic Usage",
+                file_id="libraries-badmd",
+                section_title="Basic Usage",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Basic Usage"),
+            )
+        }
+        src = "See :ref:`badmd-label`.\n"
+        data = self._data(content="See Basic Usage.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert any("[QL1] :ref: cross-doc" in i and "basic-usage" in i for i in issues), issues
+
+    def test_pass_crossdoc_ref_no_file_id(self, tmp_path):
+        """A label_map entry with empty file_id is a same-file reference —
+        no cross-doc target check should fire."""
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        kn.mkdir(parents=True)
+        docs.mkdir(parents=True)
+        from scripts.common.labels import LabelTarget
+        label_map = {
+            "same-file": LabelTarget(
+                title="Same File Section",
+                file_id="",
+                section_title="Same File Section",
+                category="",
+                type="",
+                anchor="same-file-section",
+            )
+        }
+        src = "See :ref:`same-file`.\n"
+        data = self._data(content="See Same File Section.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert not any("[QL1] :ref: cross-doc" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
 # Phase 22-B-12: Excel preamble + span-inherit header composition
 # ---------------------------------------------------------------------------
 
