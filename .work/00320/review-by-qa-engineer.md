@@ -2,42 +2,42 @@
 
 **Date**: 2026-05-07
 **Reviewer**: AI Agent as QA Engineer
-**Files Reviewed**: 2 files
+**Files Reviewed**: 3 files (Task 10 changes)
 
 ## Summary
 
-0 Findings (after fixes applied)
+0 Findings (after fix applied)
 
 ## Findings (original — all fixed)
 
-### Finding 1: Deduplication by file skips anchor validation for second-and-later links to the same file
+### Finding 1: Display-text `:ref:` form skips cross-doc target validation
 
-**Violated clause**: `.claude/rules/development.md` — "Edge cases: ... A test suite that only covers the happy path is incomplete." Also spec §3-2-3: "target JSON の `sections[]` に section_title が実在" — must apply to every anchor-bearing link.
+**Violated clause**: Spec §3-2-3 table row `inline role=ref`: "同上 (label 側から解決)" — the same four-check cross-doc validation applies to all `inline role=ref` nodes regardless of bare vs display-text form. No exception is made for display-text refs.
 
-**Description**: The `seen` 3-tuple set deduplicated at file level. When the same file was linked first without anchor, subsequent links to the same file with an anchor hit `continue` and skipped the anchor check silently.
+**Description**: The cross-doc validation block was inside `if not display and label not in seen_labels:`. When `:ref:`Custom Text <label>`` is used, `display` is non-empty, so the entire cross-doc block was skipped. A dangling cross-doc reference written as `:ref:`Custom Text <gone-label>`` produced no `[QL1] :ref: cross-doc` FAIL even when the target JSON did not exist.
 
-**Fix applied**: Separated file-existence dedup (`seen` / `missing_json`) from anchor dedup (`seen_anchors`). Anchor check now fires independently for every distinct `(type, cat, file_id, anchor)` regardless of whether the file was already seen. Added regression tests `TestCheckSourceLinks_JsonSideDedup` and `TestCheckSourceLinks_DocsMdSideDedup`.
-
-### Finding 2: Missing test cases for the anchor-silenced-by-file-dedup scenario
-
-**Violated clause**: `.claude/rules/development.md` — "Bug-revealing cases: Input that exercises each specific failure mode."
-
-**Fix applied**: Added `TestCheckSourceLinks_JsonSideDedup::test_fail_anchor_missing_when_same_file_linked_no_anchor_first` and `TestCheckSourceLinks_DocsMdSideDedup::test_fail_docs_md_anchor_missing_when_same_file_linked_no_anchor_first` — confirmed RED before fix, GREEN after.
+**Fix applied**:
+- Promoted the cross-doc check logic into a nested helper `_check_crossdoc_target(tgt)` within `check_source_links()`.
+- Added a new path after the display-text JSON check that resolves the label from `label_map` and calls `_check_crossdoc_target()` for display-text refs (deduped by `seen_crossdoc_labels`).
+- Bare-label path continues to call `_check_crossdoc_target()` via the same helper.
+- Added test `test_fail_crossdoc_ref_display_text_form_json_missing` — confirmed RED before fix, GREEN after.
 
 ## Observations
 
-- `_json_section_slugs` catches `json.JSONDecodeError` with `except Exception: return set()`. Over-reports (false FAIL) rather than under-reports — acceptable from a ゼロトレランス perspective.
-- `_heading_slugs` uses ATX-only regex. RBKC docs.py emits ATX headings exclusively — no real-world risk.
-- Deduplication intent for `seen` (avoid re-checking file existence) is architecturally sound.
+- The `_section_titles_from_json` docstring first line says "(lowercased for matching)" but the function returns titles as-is. The function body is correct; the comment is misleading. No behavioral impact.
+- `_section_titles_from_json` catches `Exception` broadly and returns empty set on parse failure, which produces a "section_title not found" FAIL rather than "JSON parse error" FAIL. No false negative — ゼロトレランス is maintained.
+- The thin wrapper functions `_heading_slugs()` and `_json_section_slugs()` inside `check_ql1_link_targets()` could be inlined to reduce indirection, but this has no behavioral impact.
+- The six original tests plus the new display-text test provide complete coverage of all four FAIL modes and two PASS modes.
 
 ## Positive Aspects
 
-- Circular-avoidance architecture correctly implemented: `_heading_slugs` recomputes slugs from heading text via shared `github_slug.py`, independent of create side.
-- `_json_section_slugs` correctly reads `sections[].title` without reusing create-side data structures.
+- The helper function design (`_check_crossdoc_target`) correctly shares the cross-doc logic between bare-label and display-text paths, eliminating the risk of future drift.
+- The `seen_crossdoc_labels` set prevents double-reporting when the same label appears in both bare and display-text forms in the same source file.
 - All test assertions are spec-derived, not implementation-derived.
-- `test_fail_json_target_missing_with_anchor` correctly verifies no double-reporting on missing files.
+- 313/313 tests pass.
 
 ## Files Reviewed
 
 - `tools/rbkc/scripts/verify/verify.py` (source code)
 - `tools/rbkc/tests/ut/test_verify.py` (tests)
+- `tools/rbkc/scripts/run.py` (plumbing)

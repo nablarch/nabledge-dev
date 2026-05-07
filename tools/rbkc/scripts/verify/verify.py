@@ -2135,6 +2135,47 @@ def check_source_links(
 
         # :ref: role references (Sphinx shim produces inline with class role-ref)
         seen_labels: set[str] = set()
+        seen_crossdoc_labels: set[str] = set()
+
+        def _check_crossdoc_target(tgt) -> None:
+            """Validate cross-doc LabelTarget: JSON exists, section_title found,
+            docs MD exists, anchor slug matches. Spec §3-2-3, Issue #320.
+            Applies to both bare-label and display-text :ref: forms.
+            """
+            if isinstance(tgt, str) or knowledge_dir is None:
+                return
+            fid = getattr(tgt, "file_id", "") or ""
+            cat = getattr(tgt, "category", "") or ""
+            typ = getattr(tgt, "type", "") or ""
+            sec_title = getattr(tgt, "section_title", "") or ""
+            anch = getattr(tgt, "anchor", "") or ""
+            if not (fid and cat and typ):
+                return
+            tgt_json = Path(knowledge_dir) / typ / cat / f"{fid}.json"
+            if not tgt_json.exists():
+                issues.append(
+                    f"[QL1] :ref: cross-doc target JSON missing: "
+                    f"../../{typ}/{cat}/{fid}.json"
+                )
+                return
+            if sec_title and sec_title not in _section_titles_from_json(tgt_json):
+                issues.append(
+                    f"[QL1] :ref: cross-doc section_title not in target JSON: "
+                    f"{sec_title!r} not found in {fid}.json sections[]"
+                )
+            if docs_dir is not None and anch:
+                tgt_md = Path(docs_dir) / typ / cat / f"{fid}.md"
+                if not tgt_md.exists():
+                    issues.append(
+                        f"[QL1] :ref: cross-doc target docs MD missing: "
+                        f"../../{typ}/{cat}/{fid}.md"
+                    )
+                elif anch not in _heading_slugs_from_md(tgt_md.read_text(encoding="utf-8")):
+                    issues.append(
+                        f"[QL1] :ref: cross-doc anchor not in target docs MD: "
+                        f"'{anch}' not found in {fid}.md headings"
+                    )
+
         for n in doctree.findall(nodes.inline):
             cls = n.get("classes") or []
             if not any(c.startswith("role-") for c in cls):
@@ -2150,11 +2191,21 @@ def check_source_links(
             else:
                 display = ""
                 label = raw
-            # Display-text form: the display string must appear in JSON
+            # Display-text form: the display string must appear in JSON.
+            # Cross-doc target validation also applies (spec §3-2-3) — run
+            # it for display-text refs using a separate dedup set so that
+            # the same label reaching the bare-label path below is not
+            # double-reported.
             if display and display not in json_full:
                 issues.append(
                     f"[QL1] :ref: display text missing from JSON: {display!r}"
                 )
+            if display and label not in seen_crossdoc_labels:
+                seen_crossdoc_labels.add(label)
+                from scripts.common.labels import UNRESOLVED
+                _dt = label_map.get(label)
+                if _dt is not None and _dt is not UNRESOLVED:
+                    _check_crossdoc_target(_dt)
             # Bare label form: Phase 22-B-12 five-quadrant classification
             # (spec §3-2-2).  The quadrants:
             #   - Q1: label in label_map → resolved title must appear (PASS/FAIL)
@@ -2169,6 +2220,7 @@ def check_source_links(
             # label string as the required display text for Q3/Q4.
             if not display and label not in seen_labels:
                 seen_labels.add(label)
+                seen_crossdoc_labels.add(label)  # prevent double-report if same label used both ways
                 target = label_map.get(label)
                 from scripts.common.labels import UNRESOLVED
                 if target is None or target is UNRESOLVED:
@@ -2189,47 +2241,8 @@ def check_source_links(
                     issues.append(
                         f"[QL1] :ref:`{label}` target title missing from JSON: {title!r}"
                     )
-                # Cross-doc target validation (spec §3-2-3, Issue #320):
-                # When the label resolves to a different file, verify that
-                # (1) target JSON exists, (2) section_title is in its sections[],
-                # (3) target docs MD exists, (4) anchor slug is in its headings.
-                if not isinstance(target, str) and knowledge_dir is not None:
-                    file_id = getattr(target, "file_id", "") or ""
-                    category = getattr(target, "category", "") or ""
-                    type_ = getattr(target, "type", "") or ""
-                    section_title = getattr(target, "section_title", "") or ""
-                    anchor = getattr(target, "anchor", "") or ""
-                    if file_id and category and type_:
-                        target_json = (
-                            Path(knowledge_dir) / type_ / category / f"{file_id}.json"
-                        )
-                        if not target_json.exists():
-                            issues.append(
-                                f"[QL1] :ref: cross-doc target JSON missing: "
-                                f"../../{type_}/{category}/{file_id}.json"
-                            )
-                        else:
-                            if section_title and section_title not in _section_titles_from_json(target_json):
-                                issues.append(
-                                    f"[QL1] :ref: cross-doc section_title not in target JSON: "
-                                    f"{section_title!r} not found in {file_id}.json sections[]"
-                                )
-                            if docs_dir is not None and anchor:
-                                target_md = (
-                                    Path(docs_dir) / type_ / category / f"{file_id}.md"
-                                )
-                                if not target_md.exists():
-                                    issues.append(
-                                        f"[QL1] :ref: cross-doc target docs MD missing: "
-                                        f"../../{type_}/{category}/{file_id}.md"
-                                    )
-                                elif anchor not in _heading_slugs_from_md(
-                                    target_md.read_text(encoding="utf-8")
-                                ):
-                                    issues.append(
-                                        f"[QL1] :ref: cross-doc anchor not in target docs MD: "
-                                        f"'{anchor}' not found in {file_id}.md headings"
-                                    )
+                # Cross-doc target validation (spec §3-2-3, Issue #320).
+                _check_crossdoc_target(target)
 
         def _under_substitution(node) -> bool:
             """True if *node* lives under a substitution_definition subtree.

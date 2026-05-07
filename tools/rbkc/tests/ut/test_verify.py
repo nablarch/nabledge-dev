@@ -4472,6 +4472,33 @@ class TestCheckSourceLinks_CrossDoc:
         issues = self._check(src, data, label_map, kn, docs)
         assert not any("[QL1] :ref: cross-doc" in i for i in issues), issues
 
+    def test_fail_crossdoc_ref_display_text_form_json_missing(self, tmp_path):
+        """Display-text :ref:`My Title <cross-doc-label>` must also trigger
+        cross-doc target validation (spec §3-2-3 applies to all inline role=ref
+        nodes regardless of bare vs display-text form). When target JSON is
+        missing, [QL1] :ref: cross-doc must fire."""
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        kn.mkdir(parents=True)
+        docs.mkdir(parents=True)
+        label_map = {
+            "gone-label": LabelTarget(
+                title="Gone Section",
+                file_id="libraries-gone",
+                section_title="Gone Section",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Gone Section"),
+            )
+        }
+        # Display-text form: `:ref:`My Title <gone-label>``
+        src = "See :ref:`My Title <gone-label>`.\n"
+        data = self._data(content="See My Title.")
+        issues = self._check(src, data, label_map, kn, docs)
+        assert any("[QL1] :ref: cross-doc" in i and "libraries-gone" in i for i in issues), issues
+
 
 # ---------------------------------------------------------------------------
 # Phase 22-B-12: Excel preamble + span-inherit header composition
