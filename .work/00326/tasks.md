@@ -13,11 +13,15 @@
 ### 再現検証: docs.py変更がv1.x差分の原因か確認
 
 **Steps:**
-- [ ] `git stash` でこのブランチの全変更を退避（docs.py、README.md、レビューファイル含む）
-- [ ] create v1.2/1.3/1.4 実行して差分確認 → 差分ゼロなら報告して次へ
-- [ ] docs.py変更のみ `git stash show -p | git apply` で適用（または手動復元）
-- [ ] create v1.2/1.3/1.4 再実行して差分確認 → 差分あれば原因確定
-- [ ] stash pop で全変更を戻す
+- [ ] untracked files（前回createの残骸）を除去
+- [ ] `git stash` でこのブランチのコミット済み変更を退避（stash対象: docs.py, README.md, レビューファイル等）
+- [ ] `git fetch origin && git rebase origin/main` で最新mainにリベース
+- [ ] create + verify 全5バージョン (6, 5, 1.4, 1.3, 1.2) 実行
+- [ ] `git diff --stat` で差分確認 → 差分あれば内容を記録して報告、差分ゼロなら次ステップへ
+- [ ] `git stash pop` でこのブランチの変更を復元
+- [ ] create + verify 全5バージョン 再実行
+- [ ] `git diff --stat` で差分確認 → docs.py変更前後を比較して原因を特定
+- [ ] untracked files を除去して作業ツリーをクリーンに戻す
 
 ## Done
 
