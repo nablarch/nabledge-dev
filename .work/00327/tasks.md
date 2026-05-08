@@ -12,11 +12,7 @@
 
 ## In Progress
 
-### Task 6: PR レビュー依頼
-
-**Steps:**
-- [x] PR ボディにエキスパートレビューリンクを追加
-- [ ] ユーザーにレビュー依頼
+(なし — PR #332 レビュー待ち)
 
 ## Not Started
 
@@ -30,7 +26,8 @@
 - [x] Task 2: プレビューMD作成・コミット・PR作成・ユーザー確認依頼 — `9f9e7c040` / PR #332
 - [x] Task 3: v6・v5 ファイルへのMarkdownテーブル適用 — `1b09a73ea`
 - [x] Task 4: 変更差分チェック — `db8291d80`
-- [x] Task 5: Technical Writer エキスパートレビュー（0 Findings）
+- [x] Task 5: Technical Writer エキスパートレビュー（0 Findings） — `a82db3d24`
+- [x] Task 6: PR ボディ更新・レビュー依頼済み — `a82db3d24`
 
 ## Success Criteria Check
 
