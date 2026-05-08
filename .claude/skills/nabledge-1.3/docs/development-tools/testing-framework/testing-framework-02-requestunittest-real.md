@@ -50,9 +50,9 @@ LIST_MAPのデータタイプで１テストメソッド分のテストショッ
 | setUpTable | 各テストケース実行前にデータベースに登録する場合は、同じシート内に記載したデータの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する [1] 。データの投入は自動テストフレーム ワークにより行われる。 |  |
 | expectedTable | データベースの内容を比較する場合、期待するテーブルの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する [1] 。 |  |
 | expectedLog | 期待するログメッセージのIDを記載する。そのログメッセージが実際に出力されたかどうか、 自動テストフレームワークにて検証される。 |  |
-| diConfig | 常駐プロセスを実行する際のコンポーネント設定ファイルへのパスを記載する。( [コマンドライン引数](../../guide/nablarch-batch/nablarch-batch-02-basic.md#コマンドライン引数) を参照)  [2] | 必須 |
-| requestPath | 常駐プロセスを実行する際のリクエストパスを記載する。( [コマンドライン引数](../../guide/nablarch-batch/nablarch-batch-02-basic.md#コマンドライン引数) を参照)  [2] | 必須 |
-| userId | 常駐プロセス実行ユーザIDを記載する。( [コマンドライン引数](../../guide/nablarch-batch/nablarch-batch-02-basic.md#コマンドライン引数) を参照)  [2] | 必須 |
+| diConfig | 常駐プロセスを実行する際のコンポーネント設定ファイルへのパスを記載する。( [処理の流れ](../../guide/nablarch-batch/nablarch-batch-02-basic.md#処理の流れ) を参照)  [2] | 必須 |
+| requestPath | 常駐プロセスを実行する際のリクエストパスを記載する。( [処理の流れ](../../guide/nablarch-batch/nablarch-batch-02-basic.md#処理の流れ) を参照)  [2] | 必須 |
+| userId | 常駐プロセス実行ユーザIDを記載する。( [処理の流れ](../../guide/nablarch-batch/nablarch-batch-02-basic.md#処理の流れ) を参照)  [2] | 必須 |
 
 デフォルトのグループIDを使用したい（グループIDを使わない）場合は、 default と記載する。
 デフォルトのグループIDと個別のグループを併用することも可能である。

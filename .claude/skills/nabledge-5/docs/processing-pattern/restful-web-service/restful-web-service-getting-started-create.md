@@ -114,7 +114,7 @@ public HttpResponse save(ProjectForm project) {
 URLとのマッピングを定義
 
 [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md) を使用して、業務アクションとURLのマッピングを行う。
-マッピングには [JAX-RSのPathアノテーション](../../component/adapters/adapters-router-adaptor.md#jax-rsのpathアノテーションでマッピングする) を使用する。
+マッピングには [JAX-RSのPathアノテーション](../../component/adapters/adapters-router-adaptor.md#業務アクションとurlを自動的にマッピングする) を使用する。
 
 ProjectAction.java
 

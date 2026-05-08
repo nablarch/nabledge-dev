@@ -17,7 +17,7 @@
 本ツールは、コーディング規約で定められた使用を許可するAPI(以下、公開API)以外を使用していないことをチェックするツールである。
 公開APIの指定は、ホワイトリスト形式で設定ファイルに記述する仕様となっているため、Nablarch導入プロジェクトのコーディング規約に従いカスタマイズを行うことが可能である。
 
-公開APIは設定ファイルで指定する。詳細は [設定ファイル記述方法](../../development-tools/java-static-analysis/java-static-analysis-UnpublishedApi.md#設定ファイル記述方法) を参照のこと。
+公開APIは設定ファイルで指定する。詳細は [設定ファイル](../../development-tools/java-static-analysis/java-static-analysis-UnpublishedApi.md#設定ファイル) を参照のこと。
 
 公開API以外の呼び出しは、下記ルールに従いチェックを行う。
 

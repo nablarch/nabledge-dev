@@ -134,13 +134,13 @@ public HttpResponse upload(HttpRequest request, ExecutionContext context) {
 
 この実装のポイント
 
-* マルチパートファイルを送信するため、 [formタグ](../../component/libraries/libraries-tag-reference.md#formタグ) の enctype 属性を multipart/form-data と指定する。
-* [fileタグ](../../component/libraries/libraries-tag-reference.md#fileタグ) を用いてファイルアップロード欄を作成する。 name 属性にはリクエストオブジェクトへの登録名を指定する。
+* マルチパートファイルを送信するため、 [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) の enctype 属性を multipart/form-data と指定する。
+* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) を用いてファイルアップロード欄を作成する。 name 属性にはリクエストオブジェクトへの登録名を指定する。
   業務アクションでファイルを取得するには、 HttpRequest#getPart
   の引数にこの登録名を指定する。
-* アップロード完了時に、 [messageタグ](../../component/libraries/libraries-tag-reference.md#messageタグ) でアップロード完了メッセージを表示する。
+* アップロード完了時に、 [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) でアップロード完了メッセージを表示する。
   完了メッセージにアップロード件数を含めるため、 option0 属性には、リクエストスコープに設定されたアップロード件数を指定する。
-* [errorsタグ](../../component/libraries/libraries-tag-reference.md#errorsタグ) を用いて、対象ファイルに対するバリデーションエラーメッセージを一覧表示する領域を作成する。
+* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) を用いて、対象ファイルに対するバリデーションエラーメッセージを一覧表示する領域を作成する。
   エラーメッセージ一覧の出力形式については [エラーメッセージの一覧表示](../../component/libraries/libraries-tag.md#エラー表示を行う) を参照。
 
 業務アクションメソッドの作成
@@ -358,7 +358,7 @@ private List<Message> validate(final ProjectUploadDto projectUploadDto) {
 * エラーが発生した時点でバリデーションを中止せず、最終行まで検証する場合、
   バリデーション終了後に全行分のエラーメッセージを格納した Message のリスト
   を引数に ApplicationException を生成して送出することで、
-  [errorsタグ](../../component/libraries/libraries-tag-reference.md#errorsタグ) で画面に出力できる。
+  [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) で画面に出力できる。
 * バリデーションメッセージにプロパティ名を付与する方法については
   [バリデーションエラー時のメッセージに項目名を含めたい](../../component/libraries/libraries-bean-validation.md#バリデーションエラー時のメッセージに項目名を含めたい) を参照し実装する。
 

@@ -71,7 +71,7 @@ public HttpResponse create(HttpRequest request, ExecutionContext context) {
 
 この実装のポイント
 
-* [buttonタグ](../../component/libraries/libraries-tag-reference.md#buttonタグ) の allowDoubleSubmission 属性にfalseを指定することで、二重サブミットを制御するJavaScriptが追加される。
+* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) の allowDoubleSubmission 属性にfalseを指定することで、二重サブミットを制御するJavaScriptが追加される。
 * ブラウザのJavaScriptが無効になっている場合等を考慮して、サーバサイドでも二重サブミットを制御する。
 
 登録完了画面の表示処理を実装する

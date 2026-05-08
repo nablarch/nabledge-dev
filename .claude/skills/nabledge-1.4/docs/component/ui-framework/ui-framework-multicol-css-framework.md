@@ -126,7 +126,7 @@ C.multicol用の行及び列を定義するプラグインを選択する:
 
 プロジェクトの *ui_plugins/pjconf.json* を修正し、プロジェクトのWEBディレクトリ配下にUI部品（ウィジェット、JavaScript、スタイルシートなど）が展開されるようにする。
 
-詳細は、 [ビルドコマンド用設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド用設定ファイル) を参照
+詳細は、 [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル) を参照
 
 以下に修正例を示す。
 
@@ -188,8 +188,8 @@ B.マルチレイアウト用のHTML headタグが使用されるようにする
 multicol.lessは、自動生成した雛形を修正する。
 自動生成方法及び修正方法の詳細は、以下を参照すること。
 
-* [lessインポート定義雛形生成コマンド](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義雛形生成コマンド)
-* [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル)
+* [ビルドコマンド](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド)
+* [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル)
 
 [サンプルのmulticol.lessのダウンロード](../../../knowledge/assets/ui-framework-multicol-css-framework/multicol.less)
 

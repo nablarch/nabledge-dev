@@ -80,10 +80,10 @@ http://sample.co.jp/<コンテキストパス>/LogoutAction/LOGOUT01
 
 なお、本機能では、URIを指定するHTMLタグについて、コンテキストパスの付加とURLリライトに対応する下記のカスタムタグを提供する。
 
-* [aタグ](../../component/libraries/libraries-07-TagReference.md#aタグ) (リンク)
-* [imgタグ](../../component/libraries/libraries-07-TagReference.md#imgタグ) (画像ファイル)
-* [scriptタグ](../../component/libraries/libraries-07-TagReference.md#scriptタグ) (JavaScriptファイル)
-* [linkタグ](../../component/libraries/libraries-07-TagReference.md#linkタグ) (CSSファイル)
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) (リンク)
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) (画像ファイル)
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) (JavaScriptファイル)
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) (CSSファイル)
 
 ## HTMLエスケープと改行、半角スペース変換
 
@@ -124,7 +124,7 @@ HTMLエスケープ処理では、下記の文字変換を行う。
 業務アクションなどで設定された値をページ上に出力する場合は、 Webview_WriteTag を使用するが、
 HTMLエスケープを行わず、変数内のHTMLタグを直接出力したい場合は、以下のタグを使用する。
 
-* [prettyPrintタグ](../../component/libraries/libraries-07-TagReference.md#prettyprintタグ)
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性)
 
   変数中の **<b>** や **<del>** のような装飾系のHTMLタグをエスケープせずに出力するカスタムタグ。
   使用可能なHTMLタグ及び属性は、 [カスタムタグのデフォルト値の設定](../../component/libraries/libraries-07-HowToSettingCustomTag.md#カスタムタグのデフォルト値の設定) で任意に設定することができる。
@@ -139,16 +139,16 @@ HTMLエスケープを行わず、変数内のHTMLタグを直接出力したい
   color size border colspan rowspan bgcolor
 
   > **Warning:**
-> [prettyPrintタグ](../../component/libraries/libraries-07-TagReference.md#prettyprintタグ) で出力する変数の内容が、不特定のユーザによって任意に設定できるものであった場合、
+> [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) で出力する変数の内容が、不特定のユーザによって任意に設定できるものであった場合、
   > 脆弱性の要因となる可能性があるため、使用可能なHTMLタグ及び属性を設定する場合は、その選択に十分に留意すること。
   > 例えば、 **<script>** タグや **onclick** 属性を使用可能とした場合、クロスサイトスクリプティング(XSS)脆弱性の
   > 直接要因となる。
-* [rawWriteタグ](../../component/libraries/libraries-07-TagReference.md#rawwriteタグ)
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性)
 
   変数中の文字列の内容をエスケープせずにそのまま出力するカスタムタグ。
 
   > **Warning:**
-> [rawWriteタグ](../../component/libraries/libraries-07-TagReference.md#rawwriteタグ) で出力する変数の内容が、不特定のユーザによって任意に設定できるものであった場合、
+> [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) で出力する変数の内容が、不特定のユーザによって任意に設定できるものであった場合、
   > クロスサイトスクリプティング(XSS)脆弱性の直接の要因となる。
 
   > この為、本タグの使用には十分な考慮が必要である。
@@ -159,15 +159,15 @@ HTMLエスケープを行わず、変数内のHTMLタグを直接出力したい
 リソースパスを扱うタグは、言語設定をもとにリソースパスを動的に切り替える機能をもつ。
 下記のタグが言語毎のリソースパスの切り替えに対応している。
 
-* [aタグ](../../component/libraries/libraries-07-TagReference.md#aタグ)
-* [imgタグ](../../component/libraries/libraries-07-TagReference.md#imgタグ)
-* [scriptタグ](../../component/libraries/libraries-07-TagReference.md#scriptタグ)
-* [linkタグ](../../component/libraries/libraries-07-TagReference.md#linkタグ)
-* [confirmationPageタグ](../../component/libraries/libraries-07-TagReference.md#confirmationpageタグ)
-* [includeタグ](../../component/libraries/libraries-07-TagReference.md#includeタグ)
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性)
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性)
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性)
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性)
+* [setタグ](../../component/libraries/libraries-07-TagReference.md#setタグ)
+* [setタグ](../../component/libraries/libraries-07-TagReference.md#setタグ)
 
 includeタグは動的なJSPインクルードを言語毎のリソースパスの切り替えに対応させるために提供している。
-[includeParamタグ](../../component/libraries/libraries-07-TagReference.md#includeparamタグ) を使用してインクルード時に追加するパラメータを指定する。
+[setタグ](../../component/libraries/libraries-07-TagReference.md#setタグ) を使用してインクルード時に追加するパラメータを指定する。
 
 ```jsp
 <%-- path属性にインクルード先のパスを指定する。 --%>
@@ -212,9 +212,9 @@ static_content_version=1.0
 
 対応する属性は以下の通り。
 
-* [imgタグ](../../component/libraries/libraries-07-TagReference.md#imgタグ) のsrc属性
-* [scriptタグ](../../component/libraries/libraries-07-TagReference.md#scriptタグ) のsrc属性
-* [linkタグ](../../component/libraries/libraries-07-TagReference.md#linkタグ) のhref属性
-* [submitタグ](../../component/libraries/libraries-07-TagReference.md#submitタグ) のsrc属性
-* [popupSubmitタグ](../../component/libraries/libraries-07-TagReference.md#popupsubmitタグ) のsrc属性
-* [downloadSubmitタグ](../../component/libraries/libraries-07-TagReference.md#downloadsubmitタグ) のsrc属性
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) のsrc属性
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) のsrc属性
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) のhref属性
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) のsrc属性
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) のsrc属性
+* [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) のsrc属性

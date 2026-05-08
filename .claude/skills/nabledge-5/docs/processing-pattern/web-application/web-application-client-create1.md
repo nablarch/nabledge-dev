@@ -48,7 +48,7 @@ create.jspに登録画面の内容を追加する。
 
 * [JSPカスタムタグ](../../component/libraries/libraries-tag.md) を使用し、テキスト入力フォーム、プルダウンを作成する。
   [入力フォームを作る](../../component/libraries/libraries-tag.md#入力フォームを作る) を参照。
-* [selectタグ](../../component/libraries/libraries-tag-reference.md#selectタグ) の listName 属性に、
+* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) の listName 属性に、
   後述の初期表示メソッドでリクエストスコープに登録する業種リストの名称を指定し、プルダウンに表示する。
   [選択項目(プルダウン/ラジオボタン/チェックボックス)を表示する](../../component/libraries/libraries-tag.md#選択項目プルダウンラジオボタンチェックボックスを表示する) を参照。
 
@@ -118,7 +118,7 @@ routes.xml
 
 この実装のポイント
 
-* [JSPカスタムタグ](../../component/libraries/libraries-tag.md) の [aタグ](../../component/libraries/libraries-tag-reference.md#aタグ) を使用してリンクを作成する。
+* [JSPカスタムタグ](../../component/libraries/libraries-tag.md) の [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) を使用してリンクを作成する。
 
 動作確認を行う
 

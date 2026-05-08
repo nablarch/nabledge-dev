@@ -1,4 +1,4 @@
-# ユーザ削除情報電文送信処理の仕様 — 機能概要
+# ユーザ削除情報電文送信処理の仕様
 
 ![userDeleteInfoMessageSend.png](../../../knowledge/assets/mom-messaging-01-userDeleteInfoMessageSendSpec/userDeleteInfoMessageSend.png)
 
@@ -21,6 +21,8 @@
 【OUTPUTデータ】
 
 * ユーザ削除情報電文
+
+## 機能概要
 
 ## エンティティ情報
 

@@ -87,7 +87,7 @@ public class ProjectSearchForm extends SearchFormBase implements Serializable {
 
 この実装のポイント
 
-* リクエストをGETで送信する場合は、 [formタグ](../../component/libraries/libraries-tag-reference.md#formタグ) の method 属性にGETを指定する。
+* リクエストをGETで送信する場合は、 [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) の method 属性にGETを指定する。
   さらに、GETの場合、ボタンやリンクにカスタムタグを使用できないので、HTMLでボタンやリンクを作成する。詳細は [GETリクエストを使用する](../../component/libraries/libraries-tag.md#getリクエストを使用する) を参照。
 
 検索条件Beanの作成
@@ -290,7 +290,7 @@ private List<Project> searchProject(ProjectSearchDto searchCondition,
     <!-- その他の設定は省略 -->
   </routes>
   ```
-* 値を出力するために、 [writeタグ](../../component/libraries/libraries-tag-reference.md#writeタグ) を用いる。
+* 値を出力するために、 [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) を用いる。
   値を「日付」や「金額」等の形式でフォーマットして出力したい場合は、 valueFormat 属性で形式を指定する。詳細は [フォーマットして値を出力する](../../component/libraries/libraries-tag.md#フォーマットして値を出力する) を参照。
 * <app:listSearchResult> の使用方法については [検索結果の一覧表示](../../guide/biz-samples/biz-samples-03.md) を参照。
 

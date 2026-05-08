@@ -419,7 +419,7 @@ Nablarch Validationで入力値チェックを実施しているEntityには、 
 テストでは、コンストラクタにこれらの値の組み合わせを与えたとき、各プロパティに指定した値が設定されているか(getterを呼び出して、想定通りの値が取得できるか)確認している。
 
 実際のテストコードでは、コンストラクタへの値の設定及び値の確認は、自動テストフレームワークで提供されるメソッド内で行われる。
-詳細は、 [テストコード](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#excelへの定義) を参照すること。
+詳細は、 [テストコード](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#コンストラクタに対するテストケース) を参照すること。
 
 > **Tip:**
 > Entityは自動生成されるため、アプリケーションで使用されないコンストラクタが生成される可能性がある。

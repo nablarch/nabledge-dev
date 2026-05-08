@@ -40,7 +40,7 @@
 ### DbAccessSupportクラス
 
 DbAccessSupportクラスは、データベースアクセス機能が提供するデータベースアクセス処理を簡易的に実装するためのサポートクラスである。
-DbAccessSupportの詳細については、 [DbAccessSupportクラス](../../component/libraries/libraries-04-Statement.md#nablarchcoredbstatementパッケージ) を参照。
+DbAccessSupportの詳細については、 [DbAccessSupportクラス](../../component/libraries/libraries-04-Statement.md#クラス定義) を参照。
 
 DbAccessSupportは、一覧検索用の検索を実行するsearchメソッドを提供する。
 searchメソッドは、SQL_IDとListSearchInfoを受け取り、下記の処理を行う。
@@ -191,13 +191,13 @@ public class UserSearchAction extends DbAccessSupport {
 
 ### listSearchResultタグ
 
-[listSearchResultタグ](../../component/libraries/libraries-07-TagReference.md#listsearchresultタグ) は、検索結果のリスト表示を行うタグである。
+[個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) は、検索結果のリスト表示を行うタグである。
 listSearchResultタグで出力する画面要素を下記に示す。
 
 ![WebView_ListSearchResultPagingTableFull.jpg](../../../knowledge/assets/libraries-07-FacilitateTag/WebView_ListSearchResultPagingTableFull.jpg)
 
 > **Note:**
-> 以下の解説では [listSearchResultタグ](../../component/libraries/libraries-07-TagReference.md#listsearchresultタグ) の設定項目のうち、
+> 以下の解説では [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) の設定項目のうち、
 > 主要なものについてのみ解説している。
 > しかし、検索結果の表示は各プロジェクトごとに大きく異なるため、
 > 以下で解説する範囲では要求を満たせない場合もある。
@@ -206,7 +206,7 @@ listSearchResultタグで出力する画面要素を下記に示す。
 > 1. >   [listSearchResultタグ](../../component/libraries/libraries-07-FacilitateTag.md#listsearchresultタグ) には一覧内の各UI要素のカスタマイズ等を行うためのオプションが
 >   多く定義されており、これらを設定することで表示や挙動を変更することができる。
 
->   listSearchResultタグで指定できる全ての属性については、 [listSearchResultタグ](../../component/libraries/libraries-07-TagReference.md#listsearchresultタグ) を参照すること。
+>   listSearchResultタグで指定できる全ての属性については、 [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) を参照すること。
 > 2. >   オプション設定では要件を実現できない場合は、各タグファイルを直接カスタマイズする必要がある。
 
 >   タグファイルのカスタマイズ方法については、 [検索結果の一覧表示機能の画面表示のカスタマイズ方法](../../component/libraries/libraries-07-FacilitateTag.md#検索結果の一覧表示機能の画面表示のカスタマイズ方法) を参照すること。
@@ -285,7 +285,7 @@ ListSearchInfoオブジェクトにアクセスすることが可能となる。
 | ページ番号 | ページ番号全体(1..n)は、総ページ数が2以上の場合のみ表示される。 各ページ番号は、上記の「最初」や「前へ」と同様に、遷移可否に応じて表示される。 |
 
 ページングの画面要素で指定可能な属性のうち、代表的なものを下記に示す。
-全ての属性の詳細については、 [listSearchResultタグ](../../component/libraries/libraries-07-TagReference.md#listsearchresultタグ) を参照。
+全ての属性の詳細については、 [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) を参照。
 
 * 各画面要素の使用有無
 * 各画面要素のラベル(最初、前へ、次へ、最後など)
@@ -411,7 +411,7 @@ ListSearchInfoから取得する。
 ### 検索結果の並び替え
 
 検索結果の一覧表示では、列見出しを選択することで選択された列データによる並び替えを行いたい場合がある。
-検索結果の並び替えは、並び替え用の列見出しを出力する [listSearchSortSubmitタグ](../../component/libraries/libraries-07-TagReference.md#listsearchsortsubmitタグ) と、
+検索結果の並び替えは、並び替え用の列見出しを出力する [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) と、
 データベースアクセス機能が提供する可変ORDER BY構文(ORDER BY句を動的に変更する構文)を使用した検索処理により実現する。
 可変ORDER BY構文の詳細については、 VariableOrderBySyntaxConvertorクラス を参照。
 
@@ -489,7 +489,7 @@ public class UserSearchCondition extends ListSearchInfo {
 listSearchSortSubmitタグは、並び替え用のサブミット要素を出力する。
 
 listSearchSortSubmitタグの必須属性及び代表的な属性を下記に示す。
-listSearchSortSubmitタグで指定できる全ての属性については、 [listSearchSortSubmitタグ](../../component/libraries/libraries-07-TagReference.md#listsearchsortsubmitタグ) を参照。
+listSearchSortSubmitタグで指定できる全ての属性については、 [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) を参照。
 
 | 属性 | 説明 |
 |---|---|
@@ -714,7 +714,7 @@ property名と設定内容を下記に示す。
 
 尚、一部機能のみ個別に設定値を変更したい場合は、下記の通り個別機能の実装で対応する。
 
-* 画面表示に関する設定は、JSP上で [listSearchResultタグ](../../component/libraries/libraries-07-TagReference.md#listsearchresultタグ) の属性を指定する。
+* 画面表示に関する設定は、JSP上で [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) の属性を指定する。
 * ページング用の検索処理に関する設定は、該当の一覧表示画面を表示するActionのメソッドにて、ListSearchInfoを継承したクラスに値を設定する。
 
 下記に検索結果の最大件数(上限)を50、表示件数を10に変更する場合の実装例を下記に示す。
@@ -848,7 +848,7 @@ public class UserSearchAction extends DbAccessSupport {
 アクションは、入力画面と確認画面でそれぞれ別々のJSPにフォワードしておき、
 仕様変更に伴い入力画面と確認画面を別々に作成する必要が発生した場合にもアクションへの影響を抑える。
 
-確認画面のJSPは、 [confirmationPageタグ](../../component/libraries/libraries-07-TagReference.md#confirmationpageタグ) を使用してフォワードを行う。
+確認画面のJSPは、 [setタグ](../../component/libraries/libraries-07-TagReference.md#setタグ) を使用してフォワードを行う。
 確認画面の実装例を示す。
 入力画面と確認画面のJSPは同じ場所に配置することが多いので、実装例のように相対パスで指定できる。
 
@@ -928,7 +928,7 @@ public class UserSearchAction extends DbAccessSupport {
 ### 確認画面での入力項目の表示
 
 ユーザがどの画面にいても素早く目的の画面にアクセスできるように、全画面の共通ヘッダに検索フォームを配置したい場合がある。
-しかし、 [confirmationPageタグ](../../component/libraries/libraries-07-TagReference.md#confirmationpageタグ) を使用した画面では、確認画面の場合にすべての入力項目のカスタムタグが確認用の出力を行うため、
+しかし、 [setタグ](../../component/libraries/libraries-07-TagReference.md#setタグ) を使用した画面では、確認画面の場合にすべての入力項目のカスタムタグが確認用の出力を行うため、
 共通ヘッダの検索フォームも確認用として出力される。
 このため、確認画面へ入力項目を表示するために、本機能は [ignoreConfirmationタグ](../../component/libraries/libraries-07-TagReference.md#ignoreconfirmationタグ) を提供する。
 

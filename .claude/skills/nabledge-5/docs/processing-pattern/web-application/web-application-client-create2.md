@@ -39,11 +39,11 @@ public class ClientForm implements Serializable {
 
 登録画面のJSPに以下の項目を追加する。
 
-* [textタグ](../../component/libraries/libraries-tag-reference.md#textタグ) の name 属性に、顧客名を受け付けるフォームのプロパティ名を追加する。
-* [selectタグ](../../component/libraries/libraries-tag-reference.md#selectタグ) の name 属性に、業種コードを受け付けるフォームのプロパティ名を追加する。
+* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) の name 属性に、顧客名を受け付けるフォームのプロパティ名を追加する。
+* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) の name 属性に、業種コードを受け付けるフォームのプロパティ名を追加する。
 * 各タグの name 属性の指定方法は、 [入力/出力データへのアクセスルール](../../component/libraries/libraries-tag.md#入力出力データへのアクセスルール) を参照。
-* [textタグ](../../component/libraries/libraries-tag-reference.md#textタグ) 、 [selectタグ](../../component/libraries/libraries-tag-reference.md#selectタグ) に入力エラー発生時のCSSクラスを追加する。
-* 登録ボタン( [buttonタグ](../../component/libraries/libraries-tag-reference.md#buttonタグ) )の uri 属性に、登録確認画面へ遷移するURIを追加する。
+* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) 、 [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) に入力エラー発生時のCSSクラスを追加する。
+* 登録ボタン( [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) )の uri 属性に、登録確認画面へ遷移するURIを追加する。
   uri 属性の指定方法は、 [URIの指定方法](../../component/libraries/libraries-tag.md#uriの指定方法) を参照。
 * 入力エラー発生時のエラーメッセージ表示領域を追加する。
 
@@ -185,7 +185,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 この実装のポイント
 
-* [confirmationPageタグ](../../component/libraries/libraries-tag-reference.md#confirmationpageタグ) を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は [入力画面と確認画面を共通化する](../../component/libraries/libraries-tag.md#入力画面と確認画面を共通化する) を参照。
+* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は [入力画面と確認画面を共通化する](../../component/libraries/libraries-tag.md#入力画面と確認画面を共通化する) を参照。
 
 登録画面を修正する
 

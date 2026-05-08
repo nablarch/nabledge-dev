@@ -220,7 +220,7 @@ httpAccessLogFormatter.endOutputEnabled=true
 
 プレースホルダ一覧
 
-[リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#リクエスト処理開始時のログ出力に使用するフォーマット) と同じ。
+[リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#httpアクセスログの設定方法) と同じ。
 ただし、リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号後の状態となる。
 
 デフォルトのフォーマット
@@ -234,7 +234,7 @@ httpAccessLogFormatter.endOutputEnabled=true
 
 プレースホルダ一覧
 
-[リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#リクエスト処理開始時のログ出力に使用するフォーマット) に加えて、下記のプレースホルダを指定できる。
+[リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#httpアクセスログの設定方法) に加えて、下記のプレースホルダを指定できる。
 リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号後の状態となる。
 
 | 項目名 | プレースホルダ |
@@ -251,7 +251,7 @@ httpAccessLogFormatter.endOutputEnabled=true
 
 プレースホルダ一覧
 
-[リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#リクエスト処理開始時のログ出力に使用するフォーマット) に加えて、下記のプレースホルダを指定できる。
+[リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#httpアクセスログの設定方法) に加えて、下記のプレースホルダを指定できる。
 リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号後の状態となる。
 
 | 項目名 | プレースホルダ |

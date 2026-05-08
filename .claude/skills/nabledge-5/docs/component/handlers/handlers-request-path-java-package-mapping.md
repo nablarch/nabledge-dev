@@ -78,7 +78,7 @@
 本ハンドラを使ってディスパッチする場合、ディスパッチ先のクラスは、リクエストパスの指定によって複数振り分けることができる。
 この際は、リクエストパスでクラス名を指定する箇所で、ベースパッケージからの相対パッケージ名を指定する。
 
-たとえば上記 [ベースパッケージ、ベースパスの設定](../../component/handlers/handlers-request-path-java-package-mapping.md#ベースパッケージベースパスの設定) を設定した際に、 `nablarch.application.xxx.ExampleBatchAction`
+たとえば上記 [リクエストディスパッチハンドラ](../../component/handlers/handlers-request-path-java-package-mapping.md) を設定した際に、 `nablarch.application.xxx.ExampleBatchAction`
 クラスにディスパッチする場合、リクエストパスには `/app/action/xxx/ExampleBatchAction` を指定すればよい。
 
 ## クラス名のプレフィクス、サフィックスの設定
@@ -101,7 +101,7 @@
 
 ## 複雑なパッケージへのディスパッチ
 
-[複数パッケージのクラスにディスパッチする](../../component/handlers/handlers-request-path-java-package-mapping.md#複数パッケージのクラスにディスパッチする) で示した方法では、
+[リクエストディスパッチハンドラ](../../component/handlers/handlers-request-path-java-package-mapping.md) で示した方法では、
 「アクションを配置するパッケージを同じパッケージ配下のサブパッケージにまとめないといけない」制約がある。
 本ハンドラでは、このようなディスパッチでは問題がある場合に、 アクションを配置するパッケージをリクエストパスごとに別々に設定する方法を提供している。
 

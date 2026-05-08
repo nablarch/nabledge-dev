@@ -306,7 +306,7 @@ public class CognitoRSAKeyProvider implements RSAKeyProvider, Initializable {
 public class LoginAction {
 ```
 
-JAX-RSのPathアノテーションによるマッピングについては  [Jakarta RESTful Web ServicesのPathアノテーションでマッピングする](../../component/adapters/adapters-router-adaptor.md#jakarta-restful-web-servicesのpathアノテーションでマッピングする) を参照。
+JAX-RSのPathアノテーションによるマッピングについては  [業務アクションとURLを自動的にマッピングする](../../component/adapters/adapters-router-adaptor.md#業務アクションとurlを自動的にマッピングする) を参照。
 
 ### 認証および成功時のログイン状態設定
 

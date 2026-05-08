@@ -355,7 +355,7 @@ SQLインジェクション対策として最も有効な手段となる。
   }
   ```
 
-詳細は、 [推奨するJavaの実装例(SQL文を外部ファイル化した場合)](../../component/libraries/libraries-04-Statement.md#推奨するjavaの実装例sql文を外部ファイル化した場合) を参照すること。
+詳細は、 [処理概要](../../component/libraries/libraries-04-Statement.md#処理概要) を参照すること。
 
 * SQLインジェクションの脆弱性を含んだ実装の例
 

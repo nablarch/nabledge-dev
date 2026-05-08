@@ -245,7 +245,7 @@ WHERE
 この実装のポイント
 
 * 更新画面を確認画面として使い回す方法は、 [登録機能の確認画面作成](../../processing-pattern/web-application/web-application-client-create2.md) にて説明済みであるため省略する。
-* 二重サブミットを防ぐJavaScriptを追加するために、 [submitタグ](../../component/libraries/libraries-tag-reference.md#submitタグ) の allowDoubleSubmission 属性にfalseを指定する。
+* 二重サブミットを防ぐJavaScriptを追加するために、 [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) の allowDoubleSubmission 属性にfalseを指定する。
   詳細は [二重サブミットを防ぐ](../../component/libraries/libraries-tag.md#二重サブミットを防ぐ) を参照。
 
 ## データベースの更新

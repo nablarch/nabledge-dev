@@ -30,7 +30,7 @@
 > ![multi-thread.png](../../../knowledge/assets/handlers-SessionStoreHandler/multi-thread.png)
 
 > このため、使用するストアの特性をよく理解し、要件にあったストアを選択する必要がある。
-> ストアの詳細は、 [セッションストアの特長と選択基準](../../component/libraries/libraries-session-store.md#セッションストアの特長と選択基準) を参照。
+> ストアの詳細は、 [セッション変数の保存先を追加する](../../component/libraries/libraries-session-store.md#セッション変数の保存先を追加する) を参照。
 
 ## ハンドラクラス名
 

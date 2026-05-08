@@ -279,7 +279,7 @@ nablarch-template-app_header/
 
 ### タブキーによるフォーカス移動順番を制御したい
 
-[業務画面ベースレイアウト](../../development-tools/testing-framework/testing-framework-jsp-page-templates.md#業務画面ベースレイアウト) の **tagIndexOrder** 属性により指定できる。
+[業務画面テンプレートの詳細仕様](../../development-tools/testing-framework/testing-framework-jsp-page-templates.md#業務画面テンプレートの詳細仕様) の **tagIndexOrder** 属性により指定できる。
 詳細は当該属性の解説を参照すること。
 
 > **Tip:**
@@ -375,7 +375,7 @@ UI部品を修正する場合は、対応するプラグインをそれぞれ修
 | ファイル選択 | [ファイル選択ウィジェット](../../development-tools/testing-framework/testing-framework-field-file.md) | **nablarch-widget-field-file** |
 | カレンダー日付入力 | [カレンダー日付入力ウィジェット](../../development-tools/testing-framework/testing-framework-field-calendar.md) | **nablarch-widget-field-calendar** |
 | 自動集計 |  | **nablarch-widget-event-autosum** |
-| フォーカス移動制御 | [業務画面ベースレイアウト](../../development-tools/testing-framework/testing-framework-jsp-page-templates.md#業務画面ベースレイアウト) (**tabIndexOrder** 属性値の解説を参照) | **nablarch-template-base** |
+| フォーカス移動制御 | [業務画面テンプレートの詳細仕様](../../development-tools/testing-framework/testing-framework-jsp-page-templates.md#業務画面テンプレートの詳細仕様) (**tabIndexOrder** 属性値の解説を参照) | **nablarch-template-base** |
 
 **コントロール部品**
 

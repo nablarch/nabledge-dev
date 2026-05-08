@@ -254,13 +254,13 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 | interpolateKey_ *n* | 埋め込み文字のキー名（ *n* は1からの連番、省略可 ） |
 | interpolateValue_ *n* | 埋め込み文字の値（ *n* は1からの連番、省略可） |
 
-グループの指定方法は、 [文字種と文字列長の単項目精査テストケースの作成方法](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#テストケース表の作成方法) に記載の方法と同じである。
+グループの指定方法は、 [文字種と文字列長の単項目精査テストケースの作成方法](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#文字種と文字列長の単項目精査テストケース) に記載の方法と同じである。
 
 ひとつのキーに対して複数のパラメータを指定する場合は、input2, input3 というようにカラムを増やす。
 
 [セルへの特殊な記述方法](../../development-tools/testing-framework/testing-framework-01-Abstract.md#セルへの特殊な記述方法) の記法を使用することで、効率的に入力値を作成できる。
 
-メッセージの指定方法は、 [文字種と文字列長の単項目精査テストケースの作成方法](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#テストケース表の作成方法) に記載の方法と同じである。
+メッセージの指定方法は、 [文字種と文字列長の単項目精査テストケースの作成方法](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#文字種と文字列長の単項目精査テストケース) に記載の方法と同じである。
 
 具体例を以下に示す。
 
@@ -323,10 +323,10 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 | interpolateKey *n*_ *k*  [12] | 埋め込み文字のキー名（ *n* はexpectedMessageId の *n* に対応、 *k* は1からの連番。省略可） |
 | interpolateValue *n*_ *k* | 埋め込み文字の値（ *n* はexpectedMessageId の *n* に対応、 *k* は1からの連番。省略可） |
 
-グループの指定方法は、 [文字種と文字列長の単項目精査テストケースの作成方法](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#テストケース表の作成方法)
+グループの指定方法は、 [文字種と文字列長の単項目精査テストケースの作成方法](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#文字種と文字列長の単項目精査テストケース)
 に記載の方法と同じである。
 
-メッセージの指定方法は、 [文字種と文字列長の単項目精査テストケースの作成方法](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#テストケース表の作成方法)
+メッセージの指定方法は、 [文字種と文字列長の単項目精査テストケースの作成方法](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#文字種と文字列長の単項目精査テストケース)
 に記載の方法と同じである。複数のメッセージを期待する場合、expectedMessageId2, propertyName2というように数値を増やして右側に追加していく。
 
 複数のメッセージに対応する埋め込み文字が存在する場合は、同様にinterpolateKey2_1, interpolateValue2_1,

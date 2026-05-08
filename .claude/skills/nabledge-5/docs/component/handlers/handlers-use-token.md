@@ -12,7 +12,7 @@
 
 JSP以外のテンプレートエンジンでは、このインターセプタの使用に加えてテンプレートでトークンを明示的にhiddenへ埋め込む必要がある。
 トークンの埋め込み方は後述する。
-なお、JSPを使用している場合は [formタグ](../../component/libraries/libraries-tag-reference.md#formタグ) のuseToken属性でトークン生成とhiddenへの埋め込みが行われる。
+なお、JSPを使用している場合は [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) のuseToken属性でトークン生成とhiddenへの埋め込みが行われる。
 
 トークンをチェックするため後続のアクションに対して
 [OnDoubleSubmissionインターセプタ](../../component/handlers/handlers-on-double-submission.md)

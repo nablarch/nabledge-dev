@@ -48,14 +48,14 @@ URIを使用する [スレッドコンテキスト変数管理ハンドラ](../.
 携帯端末アクセスハンドラを使用したURLにアクセスした際は、 下記Nablarch
 タグライブラリが通常出力するJavaScriptが一切出力されなくなる。
 
-* [n:form タグ](../../component/libraries/libraries-tag-reference.md#formタグ)
-* [n:script タグ](../../component/libraries/libraries-tag-reference.md#scriptタグ)
+* [n:form タグ](../../component/libraries/libraries-tag-reference.md#個別属性)
+* [n:script タグ](../../component/libraries/libraries-tag-reference.md#個別属性)
 * [サブミット関連のタグ](../../component/libraries/libraries-tag-reference.md)
 
 > **Important:**
 > 下記のタグは、元々想定していた機能が実現できないため、使用できなくなる。
 
-> * >   [n:submitLink タグ](../../component/libraries/libraries-tag-reference.md#submitlinkタグ)
+> * >   [n:submitLink タグ](../../component/libraries/libraries-tag-reference.md#個別属性)
 
 > n:submitLink タグの代替として、 n:a タグを使用すること。
 > 特にリクエストパラメータについては、GETメソッドのパラメータで送信する必要がある。

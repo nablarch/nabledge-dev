@@ -7,7 +7,7 @@
 アクションは、入力画面と確認画面でそれぞれ別々のJSPにフォワードしておき、
 仕様変更に伴い入力画面と確認画面を別々に作成する必要が発生した場合にもアクションへの影響を抑える。
 
-確認画面のJSPは、 [confirmationPageタグ](../../component/libraries/libraries-07-TagReference.md#confirmationpageタグ) を使用してフォワードを行う。
+確認画面のJSPは、 [setタグ](../../component/libraries/libraries-07-TagReference.md#setタグ) を使用してフォワードを行う。
 確認画面の実装例を示す。
 入力画面と確認画面のJSPは同じ場所に配置することが多いので、実装例のように相対パスで指定できる。
 
@@ -87,7 +87,7 @@
 ## 確認画面での入力項目の表示
 
 ユーザがどの画面にいても素早く目的の画面にアクセスできるように、全画面の共通ヘッダに検索フォームを配置したい場合がある。
-しかし、 [confirmationPageタグ](../../component/libraries/libraries-07-TagReference.md#confirmationpageタグ) を使用した画面では、確認画面の場合にすべての入力項目のカスタムタグが確認用の出力を行うため、
+しかし、 [setタグ](../../component/libraries/libraries-07-TagReference.md#setタグ) を使用した画面では、確認画面の場合にすべての入力項目のカスタムタグが確認用の出力を行うため、
 共通ヘッダの検索フォームも確認用として出力される。
 このため、確認画面へ入力項目を表示するために、本機能は [ignoreConfirmationタグ](../../component/libraries/libraries-07-TagReference.md#ignoreconfirmationタグ) を提供する。
 

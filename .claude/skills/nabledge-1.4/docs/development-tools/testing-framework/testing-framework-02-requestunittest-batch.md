@@ -64,9 +64,9 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 | expectedFile | 出力ファイルの内容を比較する場合、期待するファイルの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する [1] 。 |  |
 | expectedTable | データベースの内容を比較する場合、期待するテーブルの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する [1] 。 |  |
 | expectedLog | 期待するログメッセージを記載したLIST_MAPデータのIDを記載する。 そのログメッセージが実際に出力されたかどうか、自動テストフレームワークにて検証される。 (『 ログの結果検証 』を参照) |  |
-| diConfig | バッチを実行する際のコンポーネント設定ファイルへのパスを記載する。 ( [コマンドライン引数](../../guide/nablarch-batch/nablarch-batch-02-basic.md#コマンドライン引数) を参照) | 必須 |
-| requestPath | バッチを実行する際のリクエストパスを記載する。 ( [コマンドライン引数](../../guide/nablarch-batch/nablarch-batch-02-basic.md#コマンドライン引数) を参照) | 必須 |
-| userId | バッチ実行ユーザIDを記載する。 ( [コマンドライン引数](../../guide/nablarch-batch/nablarch-batch-02-basic.md#コマンドライン引数) を参照) | 必須 |
+| diConfig | バッチを実行する際のコンポーネント設定ファイルへのパスを記載する。 ( [処理の流れ](../../guide/nablarch-batch/nablarch-batch-02-basic.md#処理の流れ) を参照) | 必須 |
+| requestPath | バッチを実行する際のリクエストパスを記載する。 ( [処理の流れ](../../guide/nablarch-batch/nablarch-batch-02-basic.md#処理の流れ) を参照) | 必須 |
+| userId | バッチ実行ユーザIDを記載する。 ( [処理の流れ](../../guide/nablarch-batch/nablarch-batch-02-basic.md#処理の流れ) を参照) | 必須 |
 | expectedMessage | メッセージ同期送信を行う場合、期待する要求電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
 | responseMessage | メッセージ同期送信を行う場合、返却する応答電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
 | expectedMessageByClient | HTTPメッセージ同期送信を行う場合、期待する要求電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
@@ -78,7 +78,7 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 
 #### コマンドライン引数
 
-テストデータで、 [コマンドライン引数](../../guide/nablarch-batch/nablarch-batch-02-basic.md#コマンドライン引数) を指定する方法を説明する。
+テストデータで、 [処理の流れ](../../guide/nablarch-batch/nablarch-batch-02-basic.md#処理の流れ) を指定する方法を説明する。
 
 バッチ起動時の引数を指定するには、
 `args[n]` （ **添字nは0以上の整数** ）という形式でカラムを追加する。

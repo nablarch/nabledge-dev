@@ -241,7 +241,7 @@ java -jar openapi-generator-cli-7.10.0.jar help generate
 > **Important:**
 > Nablarch RESTfulウェブサービスはJakarta RESTful Web Servicesが提供するすべてのアノテーションをサポートしているわけではないため、ここで記載する内容以外のOpenAPIドキュメントの内容は生成されるソースコードに反映されないことに注意すること。
 
-> Nablarch RESTfulウェブサービスがサポートしているアノテーションについては [アーキテクチャ概要](../../processing-pattern/restful-web-service/restful-web-service-architecture.md) および、ルーティングアダプタの [Jakarta RESTful Web ServicesのPathアノテーションでマッピングする](../../component/adapters/adapters-router-adaptor.md#jakarta-restful-web-servicesのpathアノテーションでマッピングする) を参照すること。
+> Nablarch RESTfulウェブサービスがサポートしているアノテーションについては [アーキテクチャ概要](../../processing-pattern/restful-web-service/restful-web-service-architecture.md) および、ルーティングアダプタの [業務アクションとURLを自動的にマッピングする](../../component/adapters/adapters-router-adaptor.md#業務アクションとurlを自動的にマッピングする) を参照すること。
 
 ### リソース(アクション)インターフェース生成仕様
 
