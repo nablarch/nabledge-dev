@@ -1,5 +1,29 @@
 # Notes
 
+## 2026-05-08
+
+### Task 14: PR diff check
+
+**Total**: 1,297 files — all within scope.
+
+| Category | Count | Notes |
+|----------|-------|-------|
+| knowledge/ (RBKC regenerated) | 639 | All 5 versions, expected from chore: commits |
+| docs/ MD | 646 | Corresponding docs files, expected |
+| tools/ | 8 | verify.py, rst_ast_visitor.py, labels.py, run.py + 3 tests + design doc |
+| .work/ | 4 | tasks.md, notes.md, 2 expert reviews |
+
+tools/ changes verified by reading actual diffs:
+- `verify.py` (252-line diff): `_heading_slugs_from_md()` / `_section_titles_from_json()` added; anchor validation added to `check_ql1_link_targets()`; cross-doc target validation added to `check_source_links()`. All Issue #320 scope.
+- `rst_ast_visitor.py` (20-line diff): subtitle treated as h2 section instead of title suffix. Task 13 scope.
+- `labels.py` (162-line diff): `_SIMPLE_TABLE_BORDER_RE` added; `_is_heading_underline` fixed to require all-same char; span-sep detection pre-pass added. Task 13 scope.
+- `run.py` (8-line diff): `knowledge_dir=output_dir, docs_dir=docs_dir` added to `check_source_links()` call. Issue #320 cross-doc arg wiring.
+- 3 test files, `rbkc-verify-quality-design.md` — corresponding to above.
+
+knowledge/docs files: 1,285 files across 3 `chore: regenerate` commits (ee0f4af, 84bc2de, 6a6dd8b). Verified commit-to-file mapping confirmed.
+
+No unexpected files found.
+
 ## 2026-05-07
 
 ### Scope analysis
