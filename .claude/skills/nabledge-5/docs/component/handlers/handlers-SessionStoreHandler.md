@@ -16,7 +16,7 @@
 
 後続のハンドラやライブラリで追加・更新・削除されたセッション変数を、セッションストアに保存するハンドラ。
 
-セッションストア機能の詳細は、 [セッションストア](../../component/libraries/libraries-session-store.md) を参照。
+セッションストア機能の詳細は、 [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) を参照。
 
 本ハンドラの処理の流れは以下の通りとなる。
 
@@ -30,7 +30,7 @@
 > ![multi-thread.png](../../../knowledge/assets/handlers-SessionStoreHandler/multi-thread.png)
 
 > このため、使用するストアの特性をよく理解し、要件にあったストアを選択する必要がある。
-> ストアの詳細は、 [セッション変数の保存先を追加する](../../component/libraries/libraries-session-store.md#セッション変数の保存先を追加する) を参照。
+> ストアの詳細は、 [セッションストアの特長と選択基準](../../component/libraries/libraries-session-store.md#セッションストアの特長と選択基準) を参照。
 
 ## ハンドラクラス名
 
@@ -53,22 +53,22 @@
 
 ## 制約
 
-[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) より後ろに配置すること
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) より後ろに配置すること
 
 サーブレットフォワード時、フォワード先でセッションストアの値にアクセスできるようにするため、
-本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) より後ろに配置する必要がある。
+本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) より後ろに配置する必要がある。
 
-[マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md) より後ろに配置すること
+[マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#マルチパートリクエストハンドラ) より後ろに配置すること
 
 HIDDENストア使用時にリクエストパラメータにアクセスできるようにするため、
-本ハンドラは [マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md) より後ろに配置する必要がある。
+本ハンドラは [マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#マルチパートリクエストハンドラ) より後ろに配置する必要がある。
 
-[内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md) より前に配置すること
+[内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md#内部フォーワードハンドラ) より前に配置すること
 
-[内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md) を本ハンドラよりも前に設定した場合、セッションストアの読み込み、保存が複数回実行されるが、
+[内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md#内部フォーワードハンドラ) を本ハンドラよりも前に設定した場合、セッションストアの読み込み、保存が複数回実行されるが、
 HIDDENストアはリクエストパラメータからセッション変数を読み込み、リクエストスコープにセッション変数を保存するため、
 内部フォーワード時にHIDDENストアを使用した場合、最新のセッション変数を取得できない問題がある。
-このため、本ハンドラは [内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md) より前に配置すること。
+このため、本ハンドラは [内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md#内部フォーワードハンドラ) より前に配置すること。
 
 ## セッションストアを使用するための設定
 
@@ -114,17 +114,17 @@ HIDDENストアの改竄を検知した場合
 ## 改竄エラー時の遷移先を設定する
 
 セッションストアの改竄を検知した場合に表示するエラーページは web.xml に記載する必要がある。
-なぜなら、本ハンドラは [制約](../../component/handlers/handlers-SessionStoreHandler.md#制約) に記載の通り、 [内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md) よりも前に設定する必要がある。
+なぜなら、本ハンドラは [制約](../../component/handlers/handlers-SessionStoreHandler.md#制約) に記載の通り、 [内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md#内部フォーワードハンドラ) よりも前に設定する必要がある。
 この場合、以下の理由により本ハンドラで発生した例外に対して、 [デフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#デフォルトページの設定) を適用できないため、
 web.xml に対する設定が必要となる。
 
 理由
 
-[内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md) は、 [HTTPエラー制御ハンドラ](../../component/handlers/handlers-HttpErrorHandler.md) よりも手前に設定する必要がある。
-これは、 [HTTPエラー制御ハンドラ](../../component/handlers/handlers-HttpErrorHandler.md)  の [デフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#デフォルトページの設定) に対して指定した
+[内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md#内部フォーワードハンドラ) は、 [HTTPエラー制御ハンドラ](../../component/handlers/handlers-HttpErrorHandler.md#httpエラー制御ハンドラ) よりも手前に設定する必要がある。
+これは、 [HTTPエラー制御ハンドラ](../../component/handlers/handlers-HttpErrorHandler.md#httpエラー制御ハンドラ)  の [デフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#デフォルトページの設定) に対して指定した
 内部フォワードのパスを正しく扱うために必要な設定順となる。
 
-この結果、 [内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md) より前に設定される本ハンドラで発生した例外に対しては、
+この結果、 [内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md#内部フォーワードハンドラ) より前に設定される本ハンドラで発生した例外に対しては、
 [デフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#デフォルトページの設定) への設定値が適用できないため web.xml への設定が必要となる。
 
 ## セッションIDを保持するクッキーの名前や属性を変更する

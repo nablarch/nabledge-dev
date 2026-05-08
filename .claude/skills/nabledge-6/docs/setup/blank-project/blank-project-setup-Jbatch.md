@@ -196,9 +196,9 @@ mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main -Dexec.args="'sample-ba
 
 ### データベースに関する設定を行う
 
-ブランクプロジェクトは、初期状態ではH2 Database Engineを使用するように設定されている。使用するRDBMSを変更する場合は、[使用するRDBMSの変更手順](../../setup/blank-project/blank-project-CustomizeDB.md) を参照して設定すること。
+ブランクプロジェクトは、初期状態ではH2 Database Engineを使用するように設定されている。使用するRDBMSを変更する場合は、[使用するRDBMSの変更手順](../../setup/blank-project/blank-project-CustomizeDB.md#使用するrdbmsの変更手順) を参照して設定すること。
 
-またER図からのDDL生成や実行、Entityクラスの自動生成を行うにはgsp-dba-maven-pluginの初期設定および実行を行う。詳細は [gsp-dba-maven-plugin(DBA作業支援ツール)の初期設定方法](../../setup/blank-project/blank-project-addin-gsp.md) を参照。
+またER図からのDDL生成や実行、Entityクラスの自動生成を行うにはgsp-dba-maven-pluginの初期設定および実行を行う。詳細は [gsp-dba-maven-plugin(DBA作業支援ツール)の初期設定方法](../../setup/blank-project/blank-project-addin-gsp.md#gsp-dba-maven-plugindba作業支援ツールの初期設定方法) を参照。
 
 ### 補足
 

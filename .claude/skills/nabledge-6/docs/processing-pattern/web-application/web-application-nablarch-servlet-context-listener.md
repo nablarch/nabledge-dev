@@ -11,12 +11,12 @@
 
 起動時
 
-* [システムリポジトリ](../../component/libraries/libraries-repository.md) の初期化処理
-* [ログ出力](../../component/libraries/libraries-log.md) の初期化処理
+* [システムリポジトリ](../../component/libraries/libraries-repository.md#システムリポジトリ) の初期化処理
+* [ログ出力](../../component/libraries/libraries-log.md#ログ出力) の初期化処理
 
 終了時
 
-* [ログ出力](../../component/libraries/libraries-log.md) の終了処理
+* [ログ出力](../../component/libraries/libraries-log.md#ログ出力) の終了処理
 
 ## モジュール一覧
 

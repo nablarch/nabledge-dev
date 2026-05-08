@@ -33,10 +33,10 @@
 
 ## 制約
 
-[マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md) より後ろに配置すること
+[マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#マルチパートリクエストハンドラ) より後ろに配置すること
 
 このハンドラはリクエストパラータにアクセスする。
-このため、 [マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md) よりも後ろに設定する必要がある。
+このため、 [マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#マルチパートリクエストハンドラ) よりも後ろに設定する必要がある。
 
 ## 標準で提供しているノーマライズ処理
 

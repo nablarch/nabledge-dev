@@ -4,18 +4,18 @@
 
 | カスタムタグ | 出力するHTMLタグ |
 |---|---|
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | inputタグ(type=text) |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | textareaタグ |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | inputタグ(type=password) |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | HTMLタグの出力を行わず、ウィンドウスコープに値を出力する。 |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | inputタグ(type=hidden) |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | inputタグ(type=radio) |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | inputタグ(type=checkbox) |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | inputタグ(type=radio) ※ 複合キーを使用する場合 |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | inputタグ(type=checkbox) ※ 複合キーを使用する場合 |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | selectタグ ※ List型変数の各要素ごとにoptionタグを出力する。 |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | 複数のinputタグ(type=radio) ※ List型変数の各要素ごとにラジオボタンを出力する。 |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | 複数のinputタグ(type=checkbox) ※ List型変数の各要素ごとにチェックボックスを出力する。 |
+| [textタグ](../../component/libraries/libraries-07-TagReference.md#textタグ) | inputタグ(type=text) |
+| [textareaタグ](../../component/libraries/libraries-07-TagReference.md#textareaタグ) | textareaタグ |
+| [passwordタグ](../../component/libraries/libraries-07-TagReference.md#passwordタグ) | inputタグ(type=password) |
+| [hiddenタグ](../../component/libraries/libraries-07-TagReference.md#hiddenタグ) | HTMLタグの出力を行わず、ウィンドウスコープに値を出力する。 |
+| [plainHiddenタグ](../../component/libraries/libraries-07-TagReference.md#plainhiddenタグ) | inputタグ(type=hidden) |
+| [radioButtonタグ](../../component/libraries/libraries-07-TagReference.md#radiobuttonタグ) | inputタグ(type=radio) |
+| [checkboxタグ](../../component/libraries/libraries-07-TagReference.md#checkboxタグ) | inputタグ(type=checkbox) |
+| [compositeKeyRadioButtonタグ](../../component/libraries/libraries-07-TagReference.md#compositekeyradiobuttonタグ) | inputタグ(type=radio) ※ 複合キーを使用する場合 |
+| [compositeKeyCheckboxタグ](../../component/libraries/libraries-07-TagReference.md#compositekeycheckboxタグ) | inputタグ(type=checkbox) ※ 複合キーを使用する場合 |
+| [selectタグ](../../component/libraries/libraries-07-TagReference.md#selectタグ) | selectタグ ※ List型変数の各要素ごとにoptionタグを出力する。 |
+| [radioButtonsタグ](../../component/libraries/libraries-07-TagReference.md#radiobuttonsタグ) | 複数のinputタグ(type=radio) ※ List型変数の各要素ごとにラジオボタンを出力する。 |
+| [checkboxesタグ](../../component/libraries/libraries-07-TagReference.md#checkboxesタグ) | 複数のinputタグ(type=checkbox) ※ List型変数の各要素ごとにチェックボックスを出力する。 |
 
 XHTMLの属性以外に、本機能で属性を追加しているカスタムタグについて解説する。
 
@@ -237,7 +237,7 @@ JSP は下記のように実装する。
 
 ## List型変数に対応するカスタムタグの共通属性
 
-[個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) 、 [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) 、 [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) の3つのカスタムタグは、
+[selectタグ](../../component/libraries/libraries-07-TagReference.md#selectタグ) 、 [radioButtonsタグ](../../component/libraries/libraries-07-TagReference.md#radiobuttonsタグ) 、 [checkboxesタグ](../../component/libraries/libraries-07-TagReference.md#checkboxesタグ) の3つのカスタムタグは、
 List型変数の各要素ごとにタグを出力する仕様となっている。
 ここでは、これら3つのタグに共通する属性について解説する。
 

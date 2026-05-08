@@ -32,7 +32,7 @@
 
 ### リクエスト単位でサービス提供可否をチェックできる
 
-[サービス提供可否チェックハンドラ](../../component/handlers/handlers-ServiceAvailabilityCheckHandler.md) をハンドラキューに設定することで、
+[サービス提供可否チェックハンドラ](../../component/handlers/handlers-ServiceAvailabilityCheckHandler.md#サービス提供可否チェックハンドラ) をハンドラキューに設定することで、
 ウェブでも常駐バッチでも、リクエスト単位でサービス提供可否をチェックできるようになる。
 この機能は、ウェブや常駐バッチといった処理方式に依存しない。
 

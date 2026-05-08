@@ -36,7 +36,7 @@
 
 ### リクエスト単位で認可チェックを行うことができる
 
-[認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md) をハンドラキューに設定することで、
+[認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md#認可チェックハンドラ) をハンドラキューに設定することで、
 リクエスト単位で認可チェックを行うことができる。
 
 詳細は以下を参照。
@@ -150,7 +150,7 @@ yyyyMMdd形式で、指定しない場合は”99991231”
 * BasicPermissionFactory
   の設定をコンポーネント定義に追加する。
 * BasicPermissionFactory は、
-  [認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md) に設定して使うので、コンポーネント名は任意の名前を指定する。
+  [認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md#認可チェックハンドラ) に設定して使うので、コンポーネント名は任意の名前を指定する。
 
 ```xml
 <component name="permissionFactory" class="nablarch.common.permission.BasicPermissionFactory">
@@ -230,7 +230,7 @@ BasicPermissionFactory は、
 ### サーバサイドで認可チェックを行う
 
 認可チェックは、 Permission を使用する。
-[認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md) により、スレッドコンテキストに
+[認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md#認可チェックハンドラ) により、スレッドコンテキストに
 Permission が設定されているので、
 PermissionUtil.getPermission
 を使って取得する。
@@ -253,7 +253,7 @@ if (permission.permit("/action/user/unlock")) {
 権限データにアクセスしたい場合がある。
 しかし、本機能では、認可チェックを行う機能しか提供していない。
 
-そのため、権限データにアクセスしたい場合は、 [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) を使用し、
+そのため、権限データにアクセスしたい場合は、 [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) を使用し、
 SQLを作成することで対応する。
 
 ## 拡張例

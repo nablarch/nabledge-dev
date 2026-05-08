@@ -7,7 +7,7 @@
 
 > **Note:**
 > リクエスト単体テストそのものの概要については、
-> [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md)
+> [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#リクエスト単体テストの実施方法同期応答メッセージ送信処理)
 > を参照。
 
 ### 全体像

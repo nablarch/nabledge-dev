@@ -37,9 +37,9 @@
 
 ## 制約
 
-[セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md) より後ろに配置すること
+[セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) より後ろに配置すること
 
-[セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md) より後ろに配置すべき理由は、
+[セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) より後ろに配置すべき理由は、
 [改竄エラー時の遷移先を設定する](../../component/handlers/handlers-SessionStoreHandler.md#改竄エラー時の遷移先を設定する) を参照
 
 ## 内部フォーワードを示すレスポンスを返却する

@@ -179,10 +179,10 @@ tutorial_project/ui_plugins/package.json を任意のテキストエディタで
 各プラグインの内容については [UIプラグイン](../../component/ui-framework/ui-framework-plugins.md) の項を参照すること。
 
 削除したプラグインがlessファイルを含んでいる場合、プロジェクトではそのlessファイルも
-使用できなくなるため、 [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル) から、当該プラグインのlessファイルの
+使用できなくなるため、 [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル) から、当該プラグインのlessファイルの
 import定義を削除する必要がある。
 
-[設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル) には、以下のようにプロジェクトが各表示モードで使用するlessファイルの
+[lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル) には、以下のようにプロジェクトが各表示モードで使用するlessファイルの
 import定義が列挙されている。
 
 ```css
@@ -197,7 +197,7 @@ import定義が列挙されている。
 @import "../../node_modules/tutorial-template-error/ui_public/css/template/errorpage";
 ```
 
-上記で削除したプラグインに対応するlessファイルは、それぞれの [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル) から削除する必要がある。
+上記で削除したプラグインに対応するlessファイルは、それぞれの [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル) から削除する必要がある。
 チュートリアルプロジェクトの場合は、以下の6ファイルから削除する。
 
 * tutorial_project/ui_plugins/css/ui_local/compact.less

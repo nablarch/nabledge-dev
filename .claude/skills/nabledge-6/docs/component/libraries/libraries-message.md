@@ -316,7 +316,7 @@ JSP
 > View
 
 > View(JSP等)では、リクエストスコープに設定したメッセージを出力する。
-> JSPを使用する場合は、 [write](../../component/libraries/libraries-tag-reference.md#個別属性) タグを使用してリクエストスコープに設定したメッセージを出力する。
+> JSPを使用する場合は、 [write](../../component/libraries/libraries-tag-reference.md#writeタグ) タグを使用してリクエストスコープに設定したメッセージを出力する。
 
 > ```jsp
 > <div class="alert alert-success" role="alert">

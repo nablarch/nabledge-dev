@@ -73,7 +73,7 @@
 
 | 用語 | 意味 |
 |---|---|
-| 内蔵サーバ | 画面オンライン処理方式で作成したWebアプリケーションの動作確認・リクエスト単体テストを行う際に使用する軽量サーバ。詳細については、 [リクエスト単体テスト（画面オンライン処理）](../../development-tools/testing-framework/testing-framework-06-testfwguide-02-RequestUnitTest.md) を参照。 |
+| 内蔵サーバ | 画面オンライン処理方式で作成したWebアプリケーションの動作確認・リクエスト単体テストを行う際に使用する軽量サーバ。詳細については、 [リクエスト単体テスト（画面オンライン処理）](../../development-tools/testing-framework/testing-framework-06-testfwguide-02-RequestUnitTest.md#リクエスト単体テスト画面オンライン処理) を参照。 |
 
 ### は行
 

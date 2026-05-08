@@ -33,10 +33,10 @@ APサーバをステートレスにできる。
 
 以下の機能は、デフォルトではHTTPセッションに依存している。
 
-* [セッションストア](../../component/libraries/libraries-session-store.md)
+* [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア)
 * [2重サブミット防止](../../component/libraries/libraries-tag.md#二重サブミットを防ぐ)
-* [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md)
-* [HTTPリライトハンドラ](../../component/handlers/handlers-http-rewrite-handler.md)
+* [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ)
+* [HTTPリライトハンドラ](../../component/handlers/handlers-http-rewrite-handler.md#httpリライトハンドラ)
 * [hidden暗号化](../../component/libraries/libraries-tag.md#クライアントに保持するデータを暗号化するhidden暗号化)
 
 ## HTTPセッション非依存機能の導入方法
@@ -49,7 +49,7 @@ APサーバをステートレスにできる。
 
 ### 2重サブミット防止
 
-* [データベースを使用した二重サブミット防止](../../component/libraries/libraries-db-double-submit.md)
+* [データベースを使用した二重サブミット防止](../../component/libraries/libraries-db-double-submit.md#データベースを使用した二重サブミット防止)
 
 ### スレッドコンテキスト変数管理ハンドラ
 
@@ -67,7 +67,7 @@ APサーバをステートレスにできる。
 
 ### HTTPリライトハンドラ
 
-[HTTPリライトハンドラ](../../component/handlers/handlers-http-rewrite-handler.md) を使用しない。
+[HTTPリライトハンドラ](../../component/handlers/handlers-http-rewrite-handler.md#httpリライトハンドラ) を使用しない。
 使用する場合にはセッションスコープにアクセスしないよう設定する。
 
 ### hidden暗号化

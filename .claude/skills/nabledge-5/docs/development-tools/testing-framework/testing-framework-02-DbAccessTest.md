@@ -385,7 +385,7 @@ nablarch.test.core.db.BasicDefaultValuesクラスを使用し、
 
 ### 外部キーが設定されたテーブルにデータをセットアップしたい
 
-[マスタデータ復旧機能](../../development-tools/testing-framework/testing-framework-04-MasterDataRestore.md) と同じ機能を用いて、テーブルの親子関係を判断しデータを削除及び登録する。
+[マスタデータ復旧機能](../../development-tools/testing-framework/testing-framework-04-MasterDataRestore.md#マスタデータ復旧機能) と同じ機能を用いて、テーブルの親子関係を判断しデータを削除及び登録する。
 詳細は [外部キーが設定されたテーブルを使用する場合について](../../development-tools/testing-framework/testing-framework-04-MasterDataRestore.md#外部キーが設定されたテーブルを使用する場合について) を参照。
 
 ### Excelファイルに記述できるカラムのデータ型に関する注意点

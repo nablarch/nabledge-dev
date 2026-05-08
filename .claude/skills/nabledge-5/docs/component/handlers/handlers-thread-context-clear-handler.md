@@ -7,7 +7,7 @@
 * 制約
 * スレッドコンテキストの削除処理
 
-[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md) で設定したスレッドローカル上の変数を削除するハンドラ。
+[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) で設定したスレッドローカル上の変数を削除するハンドラ。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -37,4 +37,4 @@
 
 ## スレッドコンテキストの削除処理
 
-[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md) でスレッドローカル上に設定した値を全て削除する。
+[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) でスレッドローカル上に設定した値を全て削除する。

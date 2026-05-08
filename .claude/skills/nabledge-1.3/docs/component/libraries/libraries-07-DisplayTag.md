@@ -1,7 +1,7 @@
 ## 値のフォーマット出力
 
 入力データを表示する際に、日付や金額などの値をフォーマットして出力することが要求される。
-本機能では、 [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) と [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) については値をフォーマットして出力する機能を提供する。
+本機能では、 [writeタグ](../../component/libraries/libraries-07-TagReference.md#writeタグ) と [textタグ](../../component/libraries/libraries-07-TagReference.md#textタグ) については値をフォーマットして出力する機能を提供する。
 valueFormat属性を指定することでフォーマット出力を指示する。
 valueFormat属性の指定がない場合は、フォーマットせずに値を出力する。
 
@@ -95,8 +95,8 @@ HTMLの出力例を下記に示す。
 
 | カスタムタグ | 説明 |
 |---|---|
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | 複数のエラーメッセージをリスト表示する場合に使用する。 |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | エラーの原因となった入力項目の近くにエラーメッセージを個別に表示する場合に使用する。 |
+| [errorsタグ](../../component/libraries/libraries-07-TagReference.md#errorsタグ) | 複数のエラーメッセージをリスト表示する場合に使用する。 |
+| [errorタグ](../../component/libraries/libraries-07-TagReference.md#errorタグ) | エラーの原因となった入力項目の近くにエラーメッセージを個別に表示する場合に使用する。 |
 
 errorsタグとerrorタグは、リクエストスコープからApplicationExceptionを取得してエラーメッセージを出力する。
 ApplicationExceptionは、Webフロントコントローラの例外制御(OnErrorアノテーション)を使用して、リクエストスコープに設定する。
@@ -400,14 +400,14 @@ context.addResultMessage("mobilePhoneNumber", "MSG00004");
 
 | カスタムタグ | 出力するHTMLタグ |
 |---|---|
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | selectタグ |
+| [codeSelectタグ](../../component/libraries/libraries-07-TagReference.md#codeselectタグ) | selectタグ |
 | WebView_CodeRadiobuttonsTag | 複数のinputタグ(type=radio) |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | 複数のinputタグ(type=checkbox) |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | 単一のinputタグ(type=checkbox) |
-| [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) | 指定されたファーマットに対応するタグ。 |
+| [codeCheckboxesタグ](../../component/libraries/libraries-07-TagReference.md#codecheckboxesタグ) | 複数のinputタグ(type=checkbox) |
+| [codeCheckboxタグ](../../component/libraries/libraries-07-TagReference.md#codecheckboxタグ) | 単一のinputタグ(type=checkbox) |
+| [codeタグ](../../component/libraries/libraries-07-TagReference.md#codeタグ) | 指定されたファーマットに対応するタグ。 |
 
 codeタグ以外は選択項目、codeタグは表示項目を出力する。
-codeタグは [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) と同様の使い方で、一覧表示や参照画面においてコード値を出力する場合に使用する。
+codeタグは [writeタグ](../../component/libraries/libraries-07-TagReference.md#writeタグ) と同様の使い方で、一覧表示や参照画面においてコード値を出力する場合に使用する。
 
 codeCheckboxタグは、 [checkboxタグ](../../component/libraries/libraries-07-FormTagList.md#checkboxタグ) と同様に、単一のinputタグ(type=checkbox)を出力し、チェックなしに対応する値をリクエストパラメータに設定する。
 codeCheckboxタグは、データベース上でフラグ(1or0)で表されるデータ項目に対して、コード管理機能を使用してチェック有無に応じたラベルを管理したい場合に使用する。
@@ -718,7 +718,7 @@ N:NO(ノー)
 
 メッセージの表示とは、メッセージ機能を使用して取得したメッセージを出力する機能である。
 メッセージ機能については、 [メッセージ管理](../../component/libraries/libraries-07-Message.md) 機能を参照。
-メッセージの表示には [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) を使用する。
+メッセージの表示には [messageタグ](../../component/libraries/libraries-07-TagReference.md#messageタグ) を使用する。
 
 国際化を行うアプリケーションにおいて1つのJSPファイルで多言語に対応する場合、
 messageタグを使用することでユーザが選択した言語に応じて画面の文言を切り替えることができる。

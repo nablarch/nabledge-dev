@@ -82,7 +82,7 @@ protected void initialize(CommandLine command, ExecutionContext context) {
 ```
 
 コマンドライン引数は、initilizeメソッドの引数で渡されるCommandLineから取得する。
-詳細は、 [処理の流れ](../../guide/nablarch-batch/nablarch-batch-02-basic.md#処理の流れ) を参照。
+詳細は、 [コマンドライン引数](../../guide/nablarch-batch/nablarch-batch-02-basic.md#コマンドライン引数) を参照。
 
 初期化処理の実装は必須ではないが、以下のような場合には、
 initializeメソッドをオーバーライドすること。

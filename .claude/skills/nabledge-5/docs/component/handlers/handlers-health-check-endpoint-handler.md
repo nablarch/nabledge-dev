@@ -10,11 +10,11 @@
 * ヘルスチェック結果のレスポンスを変更する
 
 本ハンドラは、アプリケーションのヘルスチェックを行うための機能を提供する。
-本ハンドラを使用して、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md) と [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md)
+本ハンドラを使用して、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md#ウェブアプリケーション編) と [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restfulウェブサービス編)
 のヘルスチェックを行うエンドポイントを実現できる。
 
 ヘルスチェックのデフォルト実装として DB と
-[Redis](../../component/adapters/adapters-lettuce-adaptor.md) のヘルスチェックを提供している。
+[Redis](../../component/adapters/adapters-lettuce-adaptor.md#lettuceアダプタ) のヘルスチェックを提供している。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -47,11 +47,11 @@
 
 ## 制約
 
-[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md) より後ろに配置すること
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jax-rsレスポンスハンドラ) より後ろに配置すること
 
 本ハンドラで生成した HttpResponse を
-[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md) が処理するため、
-本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md) より後ろに配置する必要がある。
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jax-rsレスポンスハンドラ) が処理するため、
+本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) または [JAX-RSレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jax-rsレスポンスハンドラ) より後ろに配置する必要がある。
 
 ## ヘルスチェックのエンドポイントを作る
 

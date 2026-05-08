@@ -10,7 +10,7 @@
   * Formクラスに精査処理を実装
   * Formクラスの単体テストを実行
 
-Formクラスの精査処理実装は [Entityの精査処理実装フロー](../../guide/web-application/web-application-04-create-entity.md) と同じフローで行う。
+Formクラスの精査処理実装は [Entityの精査処理実装フロー](../../guide/web-application/web-application-04-create-entity.md#entityクラス精査処理の実装) と同じフローで行う。
 
 ## Formクラスのプロパティの実装
 
@@ -86,7 +86,7 @@ public class W11AC02Form {
   |---|---|---|
   | test/java/nablarch/sample/ss11AC | W11AC02FormTest.xlsx | testValidateForRegister |
 
-  以下に、テストデータの例を示しておく。（詳細は、 [Form/Entityのクラス単体テスト](../../development-tools/testing-framework/testing-framework-01-entityUnitTest.md) 参照）
+  以下に、テストデータの例を示しておく。（詳細は、 [Form/Entityのクラス単体テスト](../../development-tools/testing-framework/testing-framework-01-entityUnitTest.md#formentityのクラス単体テスト) 参照）
 
   ![form_test_validation_01.png](../../../knowledge/assets/web-application-05-create-form/form_test_validation_01.png)
 2. Form単体テストコードの作成

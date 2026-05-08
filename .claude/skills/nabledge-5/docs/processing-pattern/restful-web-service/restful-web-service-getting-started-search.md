@@ -144,14 +144,14 @@ public List<Project> find(JaxRsHttpRequest req) {
 * ValidatorUtil#validate
   を使用してフォームのバリデーションを行う。
 * フォームの値を BeanUtil を使用して検索条件Beanにコピーする。
-* [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) を使用して取得したプロジェクト情報のリストを戻り値として返却する。
-* 戻り値のオブジェクトは [リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md) によってJSON形式に変換されるため、
+* [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) を使用して取得したプロジェクト情報のリストを戻り値として返却する。
+* 戻り値のオブジェクトは [リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md#リクエストボディ変換ハンドラ) によってJSON形式に変換されるため、
   業務アクションメソッド内で変換処理を実装する必要はない。
 
 URLとのマッピングを定義
 
-[ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md) を使用して、業務アクションとURLのマッピングを行う。
-マッピングには [JAX-RSのPathアノテーション](../../component/adapters/adapters-router-adaptor.md#業務アクションとurlを自動的にマッピングする) を使用する。
+[ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md#ルーティングアダプタ) を使用して、業務アクションとURLのマッピングを行う。
+マッピングには [JAX-RSのPathアノテーション](../../component/adapters/adapters-router-adaptor.md#jax-rsのpathアノテーションでマッピングする) を使用する。
 
 ProjectAction.java
 

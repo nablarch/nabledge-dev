@@ -31,12 +31,12 @@
 
 ### テストデータとテストクラスの作成
 
-[テストデータとテストクラスの作成](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#テストデータとテストクラスの作成) 、 [テストデータとテストクラスの作成](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#テストデータとテストクラスの作成) 、 [メッセージIDを確認しなければならないもの](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#メッセージidを確認しなければならないもの) のそれぞれについて、テストデータとテストクラスの作成方法を説明する。
+[事前準備データの作成処理](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#事前準備データの作成処理) 、 [処理終了後のデータベースの状況を確認しなければならないもの](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#処理終了後のデータベースの状況を確認しなければならないもの) 、 [メッセージIDを確認しなければならないもの](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#メッセージidを確認しなければならないもの) のそれぞれについて、テストデータとテストクラスの作成方法を説明する。
 まず最初に、テストデータ(Excelファイル)そのもののと、テストクラスの作成方法(継承すべきクラスなど)を説明する。次に、各パターンごとのデータとテストメソッド作成方法を説明する。
 
 #### テストデータの作成
 
-テストデータを記載したExcelファイルは、 [Nablarch Validationに対応したForm/Entityのクラス単体テスト](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md) と同様にテストソースコードと同じディレクトリに同じ名前で格納する(拡張子のみ異なる)。
+テストデータを記載したExcelファイルは、 [Nablarch Validationに対応したForm/Entityのクラス単体テスト](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#nablarch-validationに対応したformentityのクラス単体テスト) と同様にテストソースコードと同じディレクトリに同じ名前で格納する(拡張子のみ異なる)。
 なお、全てのテストデータは同じExcelのシートに記載する前提である。
 
 テストデータの記述方法詳細については、 [自動テストフレームワーク](../../development-tools/testing-framework/testing-framework-01-Abstract.md) 、 [データベースを使用するクラスのテスト](../../development-tools/testing-framework/testing-framework-02-DbAccessTest.md) を参照。
@@ -262,9 +262,9 @@ case1を例にとると、想定結果は次のようになる。
 
 | テーブル名 | 想定 |
 |---|---|
-| SYSTEM_ACCOUNT | [テストデータとテストクラスの作成](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#テストデータとテストクラスの作成) で示したレコード+1レコード追加。計4レコード。 |
-| USERS | 1レコード追加。( [テストデータとテストクラスの作成](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#テストデータとテストクラスの作成) で0件に初期化し、テスト対象処理で1レコード追加) |
-| UGROUP_SYSTEM_ACCOUNT | 1レコード追加。( [テストデータとテストクラスの作成](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#テストデータとテストクラスの作成) で0件に初期化し、テスト対象処理で1レコード追加) |
+| SYSTEM_ACCOUNT | [事前準備データの作成処理](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#事前準備データの作成処理) で示したレコード+1レコード追加。計4レコード。 |
+| USERS | 1レコード追加。( [事前準備データの作成処理](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#事前準備データの作成処理) で0件に初期化し、テスト対象処理で1レコード追加) |
+| UGROUP_SYSTEM_ACCOUNT | 1レコード追加。( [事前準備データの作成処理](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#事前準備データの作成処理) で0件に初期化し、テスト対象処理で1レコード追加) |
 | SYSTEM_ACCOUNT_AUTHORITY | 変化なし(新規追加なし)。 |
 
 #### メッセージIDを確認しなければならないもの

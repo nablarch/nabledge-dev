@@ -21,9 +21,9 @@
 
 > **Important:**
 > この機能は、以下の理由により **非推奨** である。
-> 排他制御には、 [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) を使用すること。
+> 排他制御には、 [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) を使用すること。
 
-> * >   [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) の排他制御は、本機能より簡単に使用できる。
+> * >   [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) の排他制御は、本機能より簡単に使用できる。
 
 >   [楽観的ロックを行う](../../component/libraries/libraries-universal-dao.md#楽観的ロックを行う) 、 [悲観的ロックを行う](../../component/libraries/libraries-universal-dao.md#悲観的ロックを行う) を参照。
 > * >   主キーを非文字列型で定義した場合、データベースによってはこの機能を使用することができない。

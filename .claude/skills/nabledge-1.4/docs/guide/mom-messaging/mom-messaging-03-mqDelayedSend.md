@@ -1,6 +1,6 @@
 # 応答不要メッセージ送信処理
 
-[ユーザ削除情報電文送信処理](../../guide/mom-messaging/mom-messaging-01-userDeleteInfoMessageSendSpec.md) を例に、応答不要メッセージ送信処理の実装方法を説明する。
+[ユーザ削除情報電文送信処理](../../guide/mom-messaging/mom-messaging-01-userDeleteInfoMessageSendSpec.md#ユーザ削除情報電文送信処理の仕様) を例に、応答不要メッセージ送信処理の実装方法を説明する。
 
 ![userDeleteInfoMessageSend.png](../../../knowledge/assets/mom-messaging-03-mqDelayedSend/userDeleteInfoMessageSend.png)
 
@@ -15,7 +15,7 @@
 
 ## アプリケーション開発者が実装する成果物
 
-[応答不要メッセージ送信処理のアプリケーション構造](../../guide/mom-messaging/mom-messaging-04-explanation-delayed-send-02-basic.md) からわかるように、電文を送信するアクションはNablarchの一部として提供される。
+[応答不要メッセージ送信処理のアプリケーション構造](../../guide/mom-messaging/mom-messaging-04-explanation-delayed-send-02-basic.md#応答不要メッセージ送信処理のアプリケーション構造) からわかるように、電文を送信するアクションはNablarchの一部として提供される。
 このため、アプリケーション開発者は電文を送信するために必要となる下記成果物のみを作成すれ良い。
 
 * 送信電文を作成するためのデータを保持するテーブル(以降、一時テーブルと呼ぶ)

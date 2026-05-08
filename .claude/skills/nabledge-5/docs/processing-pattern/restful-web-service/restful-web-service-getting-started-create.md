@@ -106,15 +106,15 @@ public HttpResponse save(ProjectForm project) {
 * リクエストをJSON形式で受け付けるため、 Consumes アノテーションに
   `MediaType.APPLICATION_JSON` を指定する。
 * Valid アノテーションを使用して、リクエストのバリデーションを行う。
-  詳細は [JAX-RS BeanValidationハンドラ](../../component/handlers/handlers-jaxrs-bean-validation-handler.md) を参照。
+  詳細は [JAX-RS BeanValidationハンドラ](../../component/handlers/handlers-jaxrs-bean-validation-handler.md#jax-rs-beanvalidationハンドラ) を参照。
 * BeanUtil でフォームをエンティティに変換し、
-  [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) を使用してプロジェクト情報をデータベースに登録する。
+  [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) を使用してプロジェクト情報をデータベースに登録する。
 * 戻り値として、リソースの作成完了(ステータスコード： `201` )を表す HttpResponse を返却する。
 
 URLとのマッピングを定義
 
-[ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md) を使用して、業務アクションとURLのマッピングを行う。
-マッピングには [JAX-RSのPathアノテーション](../../component/adapters/adapters-router-adaptor.md#業務アクションとurlを自動的にマッピングする) を使用する。
+[ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md#ルーティングアダプタ) を使用して、業務アクションとURLのマッピングを行う。
+マッピングには [JAX-RSのPathアノテーション](../../component/adapters/adapters-router-adaptor.md#jax-rsのpathアノテーションでマッピングする) を使用する。
 
 ProjectAction.java
 

@@ -38,7 +38,7 @@ YYYYMMDDConvertorを使用するには、StringConvertorの拡張コンバータ
 | messageId | 日付の精査に失敗した際のメッセージID  例 : "{0}は有効な日付ではありません。"  messageId属性の指定がない場合はYYYYMMDDConvertorに設定されたメッセージIDが使用される。 |
 
 > **Note:**
-> カスタムタグの [個別属性](../../component/libraries/libraries-07-TagReference.md#個別属性) で年月日のフォーマットが指定された場合は、
+> カスタムタグの [textタグ](../../component/libraries/libraries-07-TagReference.md#textタグ) で年月日のフォーマットが指定された場合は、
 > YYYYMMDDアノテーションのallowFormat属性でなく、
 > textタグで指定されたフォーマットが精査に使用される。
 > textタグのフォーマット指定については、 [値のフォーマット出力](../../component/libraries/libraries-07-DisplayTag.md#値のフォーマット出力) を参照。

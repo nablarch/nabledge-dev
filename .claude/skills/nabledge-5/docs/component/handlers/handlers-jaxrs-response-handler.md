@@ -13,7 +13,7 @@
   * 特定のエラーの場合に個別に定義したエラーレスポンスを返却する
   * クライアントに返すレスポンスに共通処理を追加する
 
-本ハンドラでは、後続のハンドラ(リソース(アクション)クラスや [リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md))
+本ハンドラでは、後続のハンドラ(リソース(アクション)クラスや [リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md#リクエストボディ変換ハンドラ))
 から戻されたレスポンス情報を、クライアントに返却する。
 後続のハンドラで例外及びエラーが送出された場合には、エラー及び例外に対応したレスポンス情報を構築しクライアントに返却する。
 
@@ -186,7 +186,7 @@ public class CustomResponseFinisher implements ResponseFinisher {
 </component>
 ```
 
-セキュリティ関連のレスポンスヘッダを設定する [セキュアハンドラ](../../component/handlers/handlers-secure-handler.md) のような既存のハンドラをResponseFinisherとして使用したい場合がある。
+セキュリティ関連のレスポンスヘッダを設定する [セキュアハンドラ](../../component/handlers/handlers-secure-handler.md#セキュアハンドラ) のような既存のハンドラをResponseFinisherとして使用したい場合がある。
 このような場合に対応するため、ハンドラをResponseFinisherに適用する
 AdoptHandlerResponseFinisher クラスを提供している。
 

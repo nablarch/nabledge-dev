@@ -1,4 +1,4 @@
-# ゲートウェイの進行先ノード判定ロジックを変更する方法
+# ゲートウェイの進行先ノード判定ロジックを変更する方法 — 進行先ノードの判定制御ロジックの実装
 
 `FlowProceedCondition` インタフェースを実装することで、進行先ノードの判定制御としてPJ固有のロジックを用いることが出来る。
 
@@ -40,5 +40,3 @@ public boolean isMatch(String instanceId, Map<String, ?> param, SequenceFlow seq
     }
 }
 ```
-
-## 進行先ノードの判定制御ロジックの実装

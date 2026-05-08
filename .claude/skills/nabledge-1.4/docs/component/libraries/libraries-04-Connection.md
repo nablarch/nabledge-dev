@@ -241,8 +241,8 @@ JNDIに関連のない設定については、 [設定ファイル例(DataSource
 
 | property名 | 設定内容 |
 |---|---|
-| statementReuse(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#設定ファイル例datasourceを使用してデータベース接続を行う場合) の同一項目を参照すること。 |
-| statementFactory(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#設定ファイル例datasourceを使用してデータベース接続を行う場合) の同一項目を参照すること。 |
-| dbAccessExceptionFactory(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#設定ファイル例datasourceを使用してデータベース接続を行う場合) の同一項目を参照すること。 |
+| statementReuse(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#設定内容詳細) の同一項目を参照すること。 |
+| statementFactory(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#設定内容詳細) の同一項目を参照すること。 |
+| dbAccessExceptionFactory(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#設定内容詳細) の同一項目を参照すること。 |
 | jndiProperties | JNDI経由でDataSourceを取得するための、環境設定を行う。 Webサーバ上で稼働する場合や、クラスパス配下に「jndi.properties」を配置している場合には、本設定値は省略して良い。  > **Note:** > 設定に関する詳細は、Webサーバのベンダーマニュアルなどを参照すること。  > 本設定例は、WebLogicサーバ上にDataSourceが登録されていることを想定した設定例となっている。 |
 | jndiResourceName(必須) | JNDIリソース名を設定する。  > **Note:** > 設定に関する詳細は、Webサーバのベンダーマニュアルなどを参照すること。  > 例えば、WebLogicサーバの場合は、管理コンソールからDataSourceを登録する際に「JNDI Name」に入力した値を設定する。 |

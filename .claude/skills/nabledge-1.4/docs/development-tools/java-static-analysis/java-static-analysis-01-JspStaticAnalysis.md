@@ -91,7 +91,7 @@ UI開発基盤の開発プロジェクトでは、チェック対象のファイ
 チェック対象ディレクトリに混在するケースがある。
 このような場合には、除外ファイル設定を使用することで、不要なファイルへのチェックを無効にできる。
 
-チェック対象のファイル（ディレクトリ）、チェック対象外ファイル（ディレクトリ）の設定方法は、 [ツール構成](../../development-tools/java-static-analysis/java-static-analysis-02-JspStaticAnalysisInstall.md#ツール構成) を参照
+チェック対象のファイル（ディレクトリ）、チェック対象外ファイル（ディレクトリ）の設定方法は、 [Antビルドファイル用設定ファイルの書き換え](../../development-tools/java-static-analysis/java-static-analysis-02-JspStaticAnalysisInstall.md#antビルドファイル用設定ファイルの書き換え) を参照
 
 ### 対象ファイル内の一部を強制的にチェック対象外にする方法
 
@@ -218,7 +218,7 @@ ${
 
 Antビルドファイル用設定ファイルを、実行環境にあわせて修正すること。
 
-詳細は、 [ツール構成](../../development-tools/java-static-analysis/java-static-analysis-02-JspStaticAnalysisInstall.md#ツール構成) を参照
+詳細は、 [Antビルドファイル用設定ファイルの書き換え](../../development-tools/java-static-analysis/java-static-analysis-02-JspStaticAnalysisInstall.md#antビルドファイル用設定ファイルの書き換え) を参照
 
 ### 実行方法
 

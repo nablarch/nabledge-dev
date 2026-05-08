@@ -26,9 +26,6 @@ from pathlib import Path
 
 _RST_LABEL_DEF_RE = re.compile(r'^\.\.\s+_(?:`([^`]+)`|([a-zA-Z0-9_-]+)):')
 _RST_HEADING_CHARS = set('=-~^"\'`#*+<>')
-# Multi-column simple-table border: two or more groups of '=' separated by spaces.
-# Single-column (no spaces) is excluded to avoid false-positive on overline headings.
-_SIMPLE_TABLE_BORDER_RE = re.compile(r'^=+( +=+)+$')
 
 
 @dataclass(frozen=True)
@@ -76,9 +73,7 @@ UNRESOLVED = LabelTarget(
 
 def _is_heading_underline(line: str) -> bool:
     s = line.strip()
-    # Sphinx requires all characters to be the same single adornment char.
-    # Mixed sequences like '-->' (used in HTML/JSP comments) are not underlines.
-    return len(s) >= 2 and len(set(s)) == 1 and s[0] in _RST_HEADING_CHARS
+    return len(s) >= 2 and all(c in _RST_HEADING_CHARS for c in s)
 
 
 def _scan_rst_labels(rst_path: Path) -> tuple[list[tuple[list[str], str]], str]:
@@ -105,73 +100,6 @@ def _scan_rst_labels(rst_path: Path) -> tuple[list[tuple[list[str], str]], str]:
         return [], ""
     lines = text.splitlines()
 
-    # Pre-pass: identify RST simple-table span-separator lines so they are
-    # not mistaken for heading underlines in Pass 1.
-    #
-    # A span-separator is a line of pure '-' chars that separates row groups
-    # inside a simple table.  It looks identical to a heading underline/overline
-    # but is distinguished by context: a span-separator is NOT immediately
-    # followed by a matching underline (the "overline + title + underline"
-    # triple that characterises a heading).
-    #
-    # Detection logic for each '-' repeated line:
-    #   1. Only consider lines that sit between multi-column table borders
-    #      (``===... ===...``).
-    #   2. Exclude lines that are the *overline* of a heading: an overline is
-    #      identified by the pattern  overline → title → underline  where the
-    #      title is the next non-blank line and the underline follows immediately.
-    #
-    # This correctly handles FormTagList.rst where overline-style headings
-    # (``------ / checkboxタグ / ------``) sit between table blocks.
-    n = len(lines)
-    table_border_set = {
-        idx
-        for idx, ln in enumerate(lines)
-        if _SIMPLE_TABLE_BORDER_RE.match(ln.strip())
-    }
-    _span_sep_indices: set[int] = set()
-    if table_border_set:
-        first_border = min(table_border_set)
-        last_border = max(table_border_set)
-        for idx, ln in enumerate(lines):
-            s = ln.strip()
-            if not (_is_heading_underline(s) and s[0] == '-'):
-                continue
-            if not (idx > first_border and idx < last_border):
-                continue
-            # Exclude this line if it is part of an overline-style heading.
-            # An overline-style heading is a 3-line triple:
-            #   overline → title (non-underline) → underline
-            # This line may be either the overline or the underline of such a triple.
-            #
-            # Case A: this line is the overline.
-            #   Pattern: this line → next non-blank (title) → underline.
-            next_nonempty = next(
-                (j for j in range(idx + 1, n) if lines[j].strip()), None
-            )
-            if (
-                next_nonempty is not None
-                and not _is_heading_underline(lines[next_nonempty].strip())
-                and next_nonempty + 1 < n
-                and _is_heading_underline(lines[next_nonempty + 1].strip())
-            ):
-                # This '-' line is the overline of a real heading — not a span-sep.
-                continue
-            # Case B: this line is the underline.
-            #   Pattern: overline → title (non-underline) → this line.
-            prev_nonempty = next(
-                (j for j in range(idx - 1, -1, -1) if lines[j].strip()), None
-            )
-            if prev_nonempty is not None and not _is_heading_underline(lines[prev_nonempty].strip()):
-                # prev is a title candidate; check if there's an overline before it.
-                prev_prev = next(
-                    (j for j in range(prev_nonempty - 1, -1, -1) if lines[j].strip()), None
-                )
-                if prev_prev is not None and _is_heading_underline(lines[prev_prev].strip()):
-                    # This '-' line is the underline of a real overline-style heading.
-                    continue
-            _span_sep_indices.add(idx)
-
     # Pass 1: collect heading positions and titles.
     #   headings[i] = (line_index, title)
     # Overline style (underline above + below) and underline-only are both
@@ -179,22 +107,15 @@ def _scan_rst_labels(rst_path: Path) -> tuple[list[tuple[list[str], str]], str]:
     # underline with a non-underline blank-separated line above it counts.
     headings: list[tuple[int, str]] = []
     i = 0
+    n = len(lines)
     while i < n:
         stripped = lines[i].strip()
-        raw = lines[i]
-        if (
-            stripped
-            and raw and raw[0] not in (' ', '\t')  # not indented — section titles are never indented
-            and i + 1 < n
-            and _is_heading_underline(lines[i + 1].strip())
-        ):
+        if stripped and i + 1 < n and _is_heading_underline(lines[i + 1].strip()):
             # underline-only: title (i), underline (i+1)
-            # Skip if the underline is a simple-table span-separator.
-            if i + 1 not in _span_sep_indices:
-                headings.append((i, stripped))
-                i += 2
-                continue
-        if _is_heading_underline(stripped) and i not in _span_sep_indices:
+            headings.append((i, stripped))
+            i += 2
+            continue
+        if _is_heading_underline(stripped):
             # overline style: overline (i), title (i+1 non-blank),
             # underline (i+2).  Tolerate blank lines between overline
             # and title (docutils does too).
@@ -206,7 +127,6 @@ def _scan_rst_labels(rst_path: Path) -> tuple[list[tuple[list[str], str]], str]:
                 and not _is_heading_underline(lines[next_idx].strip())
                 and next_idx + 1 < n
                 and _is_heading_underline(lines[next_idx + 1].strip())
-                and next_idx + 1 not in _span_sep_indices
             ):
                 headings.append((next_idx, lines[next_idx].strip()))
                 i = next_idx + 2
@@ -361,23 +281,16 @@ def build_label_doc_map(
                 for lbl in labels:
                     label_map.setdefault(lbl, UNRESOLVED)
             else:
-                # Labels whose resolved heading IS the document title (h1) are
-                # document-level references.  The JSON schema stores h1 in
-                # ``title``, not in ``sections[]``, so section_title and anchor
-                # must be empty to avoid false QL1 FAIL in verify (spec §3-2-3).
-                is_doc_level = (title == doc_title)
-                sec_title = "" if is_doc_level else title
-                anchor = "" if is_doc_level else _anchor_for_title(title)
                 for lbl in labels:
                     label_map.setdefault(
                         lbl,
                         LabelTarget(
                             title=title,
                             file_id=fc.file_id,
-                            section_title=sec_title,
+                            section_title=title,
                             category=fc.category,
                             type=fc.type,
-                            anchor=anchor,
+                            anchor=_anchor_for_title(title),
                         ),
                     )
 

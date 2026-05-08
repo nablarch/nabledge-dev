@@ -20,7 +20,7 @@
 > **Important:**
 > HTTPセッションを使用した [二重サブミット防止](../../component/libraries/libraries-tag.md#二重サブミットを防ぐ) はCSRF対策に使用できたが、
 > 本機能はユーザを識別せずにトークンをDBに格納しているためCSRF対策に使用できない。
-> 本機能を使用する場合は、CSRF対策に [CSRFトークン検証ハンドラ](../../component/handlers/handlers-csrf-token-verification-handler.md) を使用すること。
+> 本機能を使用する場合は、CSRF対策に [CSRFトークン検証ハンドラ](../../component/handlers/handlers-csrf-token-verification-handler.md#csrfトークン検証ハンドラ) を使用すること。
 
 ## 機能概要
 

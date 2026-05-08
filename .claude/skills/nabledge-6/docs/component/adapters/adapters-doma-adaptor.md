@@ -346,8 +346,8 @@ public HttpResponse create(final HttpRequest request, final ExecutionContext con
 
 ## DomaとNablarchのデータベースアクセスを併用する
 
-データベースアクセスにDomaを採用した場合でも、 [Nablarch提供のデータベースアクセス](../../component/libraries/libraries-database-management.md) を使用したい場合がある。
-例えば、 [メール送信ライブラリ](../../component/libraries/libraries-mail.md) を使用する場合が該当する。([メール送信要求](../../component/libraries/libraries-mail.md#メール送信要求を登録する) で [データベースアクセス(JDBCラッパー)](../../component/libraries/libraries-database.md) を使用している。)
+データベースアクセスにDomaを採用した場合でも、 [Nablarch提供のデータベースアクセス](../../component/libraries/libraries-database-management.md#データベースアクセス) を使用したい場合がある。
+例えば、 [メール送信ライブラリ](../../component/libraries/libraries-mail.md#メール送信) を使用する場合が該当する。([メール送信要求](../../component/libraries/libraries-mail.md#メール送信要求を登録する) で [データベースアクセス(JDBCラッパー)](../../component/libraries/libraries-database.md#データベースアクセスjdbcラッパー) を使用している。)
 
 この問題を解決するため、Nablarchのデータベースアクセス処理が、Domaと同じトランザクション(データベース接続)を使用できる機能を提供している。
 

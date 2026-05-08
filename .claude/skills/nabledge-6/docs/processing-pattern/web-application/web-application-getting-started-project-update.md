@@ -95,7 +95,7 @@ public class ProjectUpdateForm implements Serializable {
 この実装のポイント
 
 * 入力項目がプロジェクト登録画面と重複しているが、
-  責務配置上 [フォームはHTMLのフォーム単位で作成すべきである](../../processing-pattern/web-application/web-application-application-design.md) ため、プロジェクト更新画面専用のフォームを作成する。
+  責務配置上 [フォームはHTMLのフォーム単位で作成すべきである](../../processing-pattern/web-application/web-application-application-design.md#アプリケーションの責務配置) ため、プロジェクト更新画面専用のフォームを作成する。
 
 更新画面を表示する業務アクションメソッドの作成
 
@@ -138,16 +138,16 @@ public HttpResponse edit(HttpRequest request, ExecutionContext context) {
 > Exampleアプリケーションでは、独自のエラー制御ハンドラを追加しているため、 NoDataException が発生した場合は404エラー画面へ遷移する。
   > ハンドラによるエラー制御の作成方法は、 [ハンドラで例外クラスに対応したエラーページに遷移させる](../../processing-pattern/web-application/web-application-forward-error-page.md#ハンドラで共通の振る舞いを定義する) を参照。
 * 編集中に他ユーザによる更新が行われる可能性を考慮し、編集開始時点のバージョン番号を用いて [楽観的ロック](../../component/libraries/libraries-universal-dao.md#entityに使用できるjakarta-persistenceアノテーション) (後述)を行うため、
-  編集開始時点のエンティティを [セッションストア](../../component/libraries/libraries-session-store.md) に登録する。
+  編集開始時点のエンティティを [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) に登録する。
 
 更新画面のJSPの作成
 
-画面の作成については、登録編の [登録画面初期表示の作成](../../processing-pattern/web-application/web-application-client-create1.md) にて説明済みであるため省略する。
+画面の作成については、登録編の [登録画面初期表示の作成](../../processing-pattern/web-application/web-application-client-create1.md#登録画面初期表示の作成) にて説明済みであるため省略する。
 
 更新内容の確認を行う業務アクションメソッドの作成
 
 更新内容をバリデーションし、確認画面を表示する業務アクションメソッドを作成する。
-[Bean Validation](../../component/libraries/libraries-bean-validation.md) に加えて、業務アクションメソッド内に、データベース検索を伴うバリデーションを実装する。
+[Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) に加えて、業務アクションメソッド内に、データベース検索を伴うバリデーションを実装する。
 
 ProjectAction.java
 
@@ -192,7 +192,7 @@ public HttpResponse confirmOfUpdate(HttpRequest request, ExecutionContext contex
 * データベース検索が必要なバリデーションは業務アクションメソッドに記述する。
   データの存在確認をする場合、 UniversalDao#exists
   を使用する。詳細は、 [データベース検索が必要なバリデーション](../../component/libraries/libraries-bean-validation.md#データベースとの相関バリデーションを行う) を参照。
-* 責務配置上 [フォームを直接セッションストアに格納すべきではない](../../component/libraries/libraries-session-store.md#入力確認完了画面間で入力情報を保持する) ため、Beanへ詰め替える。
+* 責務配置上 [フォームを直接セッションストアに格納すべきではない](../../component/libraries/libraries-session-store.md#hiddenstoreのparameternameプロパティの値を設定) ため、Beanへ詰め替える。
 
 SQLの作成
 
@@ -244,8 +244,8 @@ WHERE
 
 この実装のポイント
 
-* 更新画面を確認画面として使い回す方法は、 [登録機能の確認画面作成](../../processing-pattern/web-application/web-application-client-create2.md) にて説明済みであるため省略する。
-* 二重サブミットを防ぐJavaScriptを追加するために、 [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) の allowDoubleSubmission 属性にfalseを指定する。
+* 更新画面を確認画面として使い回す方法は、 [登録機能の確認画面作成](../../processing-pattern/web-application/web-application-client-create2.md#登録内容の確認) にて説明済みであるため省略する。
+* 二重サブミットを防ぐJavaScriptを追加するために、 [submitタグ](../../component/libraries/libraries-tag-reference.md#submitタグ) の allowDoubleSubmission 属性にfalseを指定する。
   詳細は [二重サブミットを防ぐ](../../component/libraries/libraries-tag.md#二重サブミットを防ぐ) を参照。
 
 ## データベースの更新
@@ -359,4 +359,4 @@ public HttpResponse completeOfUpdate(HttpRequest request, ExecutionContext conte
 
 更新機能の解説は以上。
 
-[Getting Started TOPページへ](../../processing-pattern/web-application/web-application-getting-started.md)
+[Getting Started TOPページへ](../../processing-pattern/web-application/web-application-getting-started.md#getting-started)

@@ -34,7 +34,7 @@
 この章では、Nablarchで独自に実装したバリデーション機能を解説する。
 
 > **Tip:**
-> [入力値のチェック](../../component/libraries/libraries-validation.md) で説明したように、 [Bean Validation](../../component/libraries/libraries-bean-validation.md) を使用することを推奨する。
+> [入力値のチェック](../../component/libraries/libraries-validation.md#入力値のチェック) で説明したように、 [Bean Validation](../../component/libraries/libraries-bean-validation.md) を使用することを推奨する。
 
 ## 機能概要
 
@@ -480,12 +480,12 @@ public class SampleForm {
 
 ### 文字種バリデーションを行う
 
-文字種バリデーションの定義方法は、 [Bean Validation](../../component/libraries/libraries-bean-validation.md) と同じである。
+文字種バリデーションの定義方法は、 [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) と同じである。
 詳細な設定方法は、 [Bean Validationの文字種バリデーションを行う](../../component/libraries/libraries-bean-validation.md#文字種バリデーションを行う) を参照。
-ただし、サロゲートペアを許容する設定は [Bean Validation](../../component/libraries/libraries-bean-validation.md) と異なるので下記を参照すること。
+ただし、サロゲートペアを許容する設定は [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) と異なるので下記を参照すること。
 
 なお、使用するアノテーションは、 @SystemChar で、
-[Bean Validation](../../component/libraries/libraries-bean-validation.md) とは完全修飾名が異なる(アノテーション名は同一)ので注意すること。
+[Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) とは完全修飾名が異なる(アノテーション名は同一)ので注意すること。
 
 サロゲートペアを許容する
 
@@ -688,8 +688,8 @@ public class SampleForm {
 
 ### ウェブアプリケーションのユーザ入力値のチェックを行う
 
-ウェブアプリケーションのユーザ入力値のチェックは [InjectForm インターセプタ](../../component/handlers/handlers-InjectForm.md) を使用して行う。
-詳細は、 [InjectForm インターセプタ](../../component/handlers/handlers-InjectForm.md) を参照
+ウェブアプリケーションのユーザ入力値のチェックは [InjectForm インターセプタ](../../component/handlers/handlers-InjectForm.md#injectform-インターセプタ) を使用して行う。
+詳細は、 [InjectForm インターセプタ](../../component/handlers/handlers-InjectForm.md#injectform-インターセプタ) を参照
 
 ## 拡張例
 

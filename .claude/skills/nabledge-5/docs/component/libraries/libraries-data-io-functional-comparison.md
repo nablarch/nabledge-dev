@@ -2,8 +2,8 @@
 
 この章では、以下の機能の比較を示す。
 
-* [データバインド](../../component/libraries/libraries-data-bind.md)
-* [汎用データフォーマット](../../component/libraries/libraries-data-format.md)
+* [データバインド](../../component/libraries/libraries-data-bind.md#データバインド)
+* [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット)
 
 機能比較（○：提供あり　△：一部提供あり　×：提供なし　－:対象外）
 
@@ -19,11 +19,11 @@
 | データ入出力時に値の変換ができる   (trimやパック数値やゾーン数値の変換など) | △ [4] | ○   [解説書へ](../../component/libraries/libraries-data-format.md#パディングやトリミングなどの変換処理に対応) |
 | データの寄せ字ができる   システムで許容可能な文字への変換などを指す | × [5] | ○   [解説書へ](../../component/libraries/libraries-data-format.md#文字の置き換え寄せ字を行う) |
 
-レコード毎に異なるフォーマットのCSVを扱う場合には、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md) を使用すること。
+レコード毎に異なるフォーマットのCSVを扱う場合には、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット) を使用すること。
 
-JSONデータの入出力は未実装。JSONデータを扱う場合は、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md) やOSSを使用すること。
+JSONデータの入出力は未実装。JSONデータを扱う場合は、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット) やOSSを使用すること。
 
-XMLデータの入出力は未実装。XMLデータを扱う場合は、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md) やJAXBを使用すること。
+XMLデータの入出力は未実装。XMLデータを扱う場合は、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット) やJAXBを使用すること。
 
 固定長データのみtrim等のコンバータを提供している。CSVで値を変換したい場合は、出力前及び入力後に変換すること。
 

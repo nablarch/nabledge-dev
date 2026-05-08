@@ -2,7 +2,7 @@
 
 本章では、登録した内容を確認する処理について解説する。
 
-[前へ](../../processing-pattern/web-application/web-application-client-create1.md)
+[前へ](../../processing-pattern/web-application/web-application-client-create1.md#登録画面初期表示の作成)
 
 登録画面へ入力項目を追加する
 
@@ -32,18 +32,18 @@ public class ClientForm implements Serializable {
 この実装のポイント
 
 * フォームクラスには必ずセッタ及びゲッタを作成する。
-* @InjectForm を使用してバリデーションを実行する( [後述](../../processing-pattern/web-application/web-application-client-create2.md) )ために、フォームは Serializable インタフェースを実装する。
+* @InjectForm を使用してバリデーションを実行する( [後述](../../processing-pattern/web-application/web-application-client-create2.md#登録内容の確認) )ために、フォームは Serializable インタフェースを実装する。
 * 入力値を受け付けるプロパティは全てString型で宣言する。詳細は [バリデーションルールの設定方法](../../component/libraries/libraries-bean-validation.md#バリデーションルールの設定方法) を参照。
 
 登録画面のJSPを修正する
 
 登録画面のJSPに以下の項目を追加する。
 
-* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) の name 属性に、顧客名を受け付けるフォームのプロパティ名を追加する。
-* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) の name 属性に、業種コードを受け付けるフォームのプロパティ名を追加する。
+* [textタグ](../../component/libraries/libraries-tag-reference.md#textタグ) の name 属性に、顧客名を受け付けるフォームのプロパティ名を追加する。
+* [selectタグ](../../component/libraries/libraries-tag-reference.md#selectタグ) の name 属性に、業種コードを受け付けるフォームのプロパティ名を追加する。
 * 各タグの name 属性の指定方法は、 [入力/出力データへのアクセスルール](../../component/libraries/libraries-tag.md#入力出力データへのアクセスルール) を参照。
-* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) 、 [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) に入力エラー発生時のCSSクラスを追加する。
-* 登録ボタン( [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) )の uri 属性に、登録確認画面へ遷移するURIを追加する。
+* [textタグ](../../component/libraries/libraries-tag-reference.md#textタグ) 、 [selectタグ](../../component/libraries/libraries-tag-reference.md#selectタグ) に入力エラー発生時のCSSクラスを追加する。
+* 登録ボタン( [buttonタグ](../../component/libraries/libraries-tag-reference.md#buttonタグ) )の uri 属性に、登録確認画面へ遷移するURIを追加する。
   uri 属性の指定方法は、 [URIの指定方法](../../component/libraries/libraries-tag.md#uriの指定方法) を参照。
 * 入力エラー発生時のエラーメッセージ表示領域を追加する。
 
@@ -84,7 +84,7 @@ public class ClientForm implements Serializable {
 
 入力値のチェックルールを設定する
 
-[Bean Validation](../../component/libraries/libraries-bean-validation.md) を使用して、入力値のチェックルールを設定する。
+[Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を使用して、入力値のチェックルールを設定する。
 
 ClientForm.java
 
@@ -108,7 +108,7 @@ nablarch.core.validation.ee.Required.select.message=選択してください。
 
 この実装のポイント
 
-* [Bean Validation](../../component/libraries/libraries-bean-validation.md) を行うためには、nablarch.core.validation.ee 配下のアノテーションを付与する
+* [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を行うためには、nablarch.core.validation.ee 配下のアノテーションを付与する
   ( nablarch.core.validation.validator 配下に同名アノテーションが存在する場合があるので注意)。
 * [ドメインバリデーション](../../component/libraries/libraries-bean-validation.md#ドメインバリデーションを使う) を使用して、ClientForm クラスのプロパティにバリデーションルールを定義する。
 * 対象項目に適したメッセージを表示するために、 Required の message 属性に独自に定義したメッセージを指定する。
@@ -134,14 +134,14 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 この実装のポイント
 
-* 業務アクションメソッドに InjectForm を付与して [Bean Validation](../../component/libraries/libraries-bean-validation.md) を実行する。
+* 業務アクションメソッドに InjectForm を付与して [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を実行する。
 * OnError の path 属性で、バリデーションエラー発生時にinputメソッドへ内部フォーワードするよう設定する
   (登録画面を再表示するためには、業種リストを設定する必要があるため)。
 * バリデーションエラーが発生しなかった場合は、リクエストスコープからバリデーション済みオブジェクトが取得出来る。
 
 登録確認画面の表示処理を実装する
 
-後続の登録処理に使用する顧客情報を [セッションストア](../../component/libraries/libraries-session-store.md) に保存し、登録確認画面を表示する。
+後続の登録処理に使用する顧客情報を [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) に保存し、登録確認画面を表示する。
 
 ClientAction.java
 
@@ -164,10 +164,10 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 この実装のポイント
 
 * 登録画面の表示処理時と同様、業種情報をデータベースから取得してリクエストスコープに設定する。
-* [セッションストア](../../component/libraries/libraries-session-store.md) への保存は、SessionUtil を使用する。
-* [セッションストアにフォームは格納しない](../../component/libraries/libraries-session-store.md#入力確認完了画面間で入力情報を保持する) ため、
-  BeanUtil を使用してフォームをエンティティに変換した上で [セッションストア](../../component/libraries/libraries-session-store.md) に登録する。
-* [セッションストア](../../component/libraries/libraries-session-store.md) を使用する際の詳しい実装例は [登録機能での実装例](../../component/libraries/libraries-create-example.md) を参照。
+* [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) への保存は、SessionUtil を使用する。
+* [セッションストアにフォームは格納しない](../../component/libraries/libraries-session-store.md#hiddenstoreのparameternameプロパティの値を設定) ため、
+  BeanUtil を使用してフォームをエンティティに変換した上で [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) に登録する。
+* [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) を使用する際の詳しい実装例は [登録機能での実装例](../../component/libraries/libraries-create-example.md#登録機能での実装例) を参照。
 
 登録確認画面のJSPを作成する
 
@@ -185,7 +185,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 この実装のポイント
 
-* [個別属性](../../component/libraries/libraries-tag-reference.md#個別属性) を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は [入力画面と確認画面を共通化する](../../component/libraries/libraries-tag.md#入力画面と確認画面を共通化する) を参照。
+* [confirmationPageタグ](../../component/libraries/libraries-tag-reference.md#confirmationpageタグ) を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は [入力画面と確認画面を共通化する](../../component/libraries/libraries-tag.md#入力画面と確認画面を共通化する) を参照。
 
 登録画面を修正する
 
@@ -247,4 +247,4 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 ![input_invalid_display.png](../../../knowledge/assets/web-application-client-create2/input_invalid_display.png)
 
-[次へ](../../processing-pattern/web-application/web-application-client-create3.md)
+[次へ](../../processing-pattern/web-application/web-application-client-create3.md#登録内容確認画面から登録画面へ戻る)

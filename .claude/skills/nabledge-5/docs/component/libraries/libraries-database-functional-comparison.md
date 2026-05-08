@@ -2,7 +2,7 @@
 
 この章では、以下の機能の比較を示す。
 
-* [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md)
+* [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao)
 * <a href="https://jcp.org/en/jsr/detail?id=317" target="_blank">JSR317(外部サイト、英語)</a>
 
 > **Important:**

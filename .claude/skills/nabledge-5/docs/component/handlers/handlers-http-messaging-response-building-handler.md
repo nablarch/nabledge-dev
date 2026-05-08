@@ -34,10 +34,10 @@
 
 ## 制約
 
-[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) よりも後ろに設定すること
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) よりも後ろに設定すること
 
 このハンドラで生成した HTTPレスポンスオブジェクト を
-[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) がクライアントに返却するため。
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) がクライアントに返却するため。
 
 ## レスポンスヘッダに設定される値
 

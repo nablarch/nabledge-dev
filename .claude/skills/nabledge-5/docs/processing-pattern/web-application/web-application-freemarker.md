@@ -67,10 +67,10 @@ return new HttpResponse("/WEB-INF/template/index.ftl");
 > **Tip:**
 > FreeMarkerによって生成されたhtmlがクライアントに返却される仕組みは以下の通り。
 
-> 1. >   [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) が `/WEB-INF/template/index.ftl` に対してServlet forwardを行う。
+> 1. >   [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) が `/WEB-INF/template/index.ftl` に対してServlet forwardを行う。
 > 2. >   拡張子の `ftl` に反応し `FreeMarkerServlet` が実行され、テンプレートとリクエストスコープ等のデータを元にhtmlを生成する。
 > 3. >   生成したhtmlをクライアントに返す。
 
 ## 2重サブミットを防止する
 
-2重サブミットを防止したい場合は、 [UseTokenインターセプタ](../../component/handlers/handlers-use-token.md) を参照しAction及びテンプレートファイル(ftlファイル)を作成すること。
+2重サブミットを防止したい場合は、 [UseTokenインターセプタ](../../component/handlers/handlers-use-token.md#usetokenインターセプタ) を参照しAction及びテンプレートファイル(ftlファイル)を作成すること。

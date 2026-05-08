@@ -1,7 +1,7 @@
 {
   "id": "handlers-health-check-endpoint-handler",
   "title": "ヘルスチェックエンドポイントハンドラ",
-  "content": "**目次**\n\n* ハンドラクラス名\n* モジュール一覧\n* 制約\n* ヘルスチェックのエンドポイントを作る\n* ヘルスチェックを追加する\n* ヘルスチェック結果のレスポンスを変更する\n\n本ハンドラは、アプリケーションのヘルスチェックを行うための機能を提供する。\n本ハンドラを使用して、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md) と [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md)\nのヘルスチェックを行うエンドポイントを実現できる。\n\nヘルスチェックのデフォルト実装として DB と\n[Redis](../../component/adapters/adapters-lettuce-adaptor.md) のヘルスチェックを提供している。\n\n本ハンドラでは、以下の処理を行う。\n\n* ヘルスチェックを行い、チェック結果をレスポンスとして返す。\n\n処理の流れは以下のとおり。\n\n![flow.png](assets/handlers-health-check-endpoint-handler/flow.png)\n\n本ハンドラはヘルスチェックを行うエンドポイントとなるため、後続ハンドラの呼び出しは行わない。",
+  "content": "**目次**\n\n* ハンドラクラス名\n* モジュール一覧\n* 制約\n* ヘルスチェックのエンドポイントを作る\n* ヘルスチェックを追加する\n* ヘルスチェック結果のレスポンスを変更する\n\n本ハンドラは、アプリケーションのヘルスチェックを行うための機能を提供する。\n本ハンドラを使用して、 [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md#ウェブアプリケーション編) と [RESTfulウェブサービス](../../processing-pattern/restful-web-service/restful-web-service-rest.md#restfulウェブサービス編)\nのヘルスチェックを行うエンドポイントを実現できる。\n\nヘルスチェックのデフォルト実装として DB と\n[Redis](../../component/adapters/adapters-lettuce-adaptor.md#lettuceアダプタ) のヘルスチェックを提供している。\n\n本ハンドラでは、以下の処理を行う。\n\n* ヘルスチェックを行い、チェック結果をレスポンスとして返す。\n\n処理の流れは以下のとおり。\n\n![flow.png](assets/handlers-health-check-endpoint-handler/flow.png)\n\n本ハンドラはヘルスチェックを行うエンドポイントとなるため、後続ハンドラの呼び出しは行わない。",
   "no_knowledge_content": false,
   "sections": [
     {
@@ -19,7 +19,7 @@
     {
       "id": "s3",
       "title": "制約",
-      "content": "[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) または [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md) より後ろに配置すること\n\n本ハンドラで生成した HttpResponse を\n[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) または [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md) が処理するため、\n本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) または [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md) より後ろに配置する必要がある。",
+      "content": "[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) または [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jakarta-restful-web-servicesレスポンスハンドラ) より後ろに配置すること\n\n本ハンドラで生成した HttpResponse を\n[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) または [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jakarta-restful-web-servicesレスポンスハンドラ) が処理するため、\n本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) または [Jakarta RESTful Web Servicesレスポンスハンドラ](../../component/handlers/handlers-jaxrs-response-handler.md#jakarta-restful-web-servicesレスポンスハンドラ) より後ろに配置する必要がある。",
       "level": 2
     },
     {

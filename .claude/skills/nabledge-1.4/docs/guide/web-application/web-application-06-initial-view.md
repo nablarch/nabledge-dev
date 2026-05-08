@@ -207,7 +207,7 @@ HTMLの出力先フォルダ：tmp/html_dump/W11AC02ActionRequestTest 配下
 
 ### JSP静的チェックツールの実行
 
-[JSP静的解析ツール](../../development-tools/java-static-analysis/java-static-analysis-01-JspStaticAnalysis.md) を実行し、該当ファイルに静的チェックエラーがないことを確認する。
+[JSP静的解析ツール](../../development-tools/java-static-analysis/java-static-analysis-01-JspStaticAnalysis.md#jsp静的解析ツール) を実行し、該当ファイルに静的チェックエラーがないことを確認する。
 
 JSP静的解析ツールは、マスターデータセットアップツールと同様の方法でEclipseの
 Antビューに追加して実行する。

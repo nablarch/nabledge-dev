@@ -60,7 +60,7 @@ HttpResponseHandler へ設定する。
 > **Tip:**
 > `ITemplateResolver` インタフェースの実装クラスに、
 > `org.thymeleaf.templateresolver.ServletContextTemplateResolver` が存在するが、
-> 以下の理由により、[システムリポジトリ](../../component/libraries/libraries-repository.md) にコンポーネントとして登録できない。
+> 以下の理由により、[システムリポジトリ](../../component/libraries/libraries-repository.md#システムリポジトリ) にコンポーネントとして登録できない。
 
 > * >   コンストラクタ引数に `javax.servlet.ServletContext` が必須である(デフォルトコンストラクタを持たない)。
 > * >   システムリポジトリ構築時には `javax.servlet.ServletContext` にアクセスできず、[ファクトリ](../../component/libraries/libraries-repository.md#ファクトリクラスで生成したオブジェクトをインジェクションする) によるオブジェクト生成もできない。

@@ -12,7 +12,7 @@
 
 ### 作成内容
 
-本項で作成するのは、下記画面遷移図の赤丸の部分である。ただし"戻る"遷移は対象外(戻る遷移については [画面遷移処理](../../guide/web-application/web-application-05-screenTransition.md) 参照のこと)。
+本項で作成するのは、下記画面遷移図の赤丸の部分である。ただし"戻る"遷移は対象外(戻る遷移については [画面遷移処理](../../guide/web-application/web-application-05-screenTransition.md#画面遷移処理) 参照のこと)。
 
 ![screenTransition.png](../../../knowledge/assets/web-application-04-validation/screenTransition.png)
 

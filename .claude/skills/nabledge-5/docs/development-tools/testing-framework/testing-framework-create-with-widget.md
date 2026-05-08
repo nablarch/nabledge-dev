@@ -77,7 +77,7 @@
   * **画面表示パターン定義ウィジェット** (`/WEB-INF/tags/widget/spec`)
 
     画面状態を設計情報として記述するためのUI部品が提供されている。
-    詳細については [画面表示パターン定義ウィジェット](../../development-tools/testing-framework/testing-framework-spec-condition.md) を参照。
+    詳細については [画面表示パターン定義ウィジェット](../../development-tools/testing-framework/testing-framework-spec-condition.md#画面表示パターン定義ウィジェット) を参照。
 
     ```jsp
     <%@ taglib prefix="spec" tagdir="/WEB-INF/tags/widget/spec" %>

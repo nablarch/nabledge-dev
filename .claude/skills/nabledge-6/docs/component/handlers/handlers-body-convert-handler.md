@@ -40,11 +40,11 @@ Consumes 及び Produces アノテーションで指定する。
 
 ## 制約
 
-本ハンドラは [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md) よりも後ろに設定すること
+本ハンドラは [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md#ルーティングアダプタ) よりも後ろに設定すること
 
 このハンドラは、リソース(アクション)クラスのメソッドに設定された、アノテーションの情報を元に
 リクエスト及びレスポンスの変換処理を行う。
-このため、ディスパッチ先を特定する [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md) よりも後ろに設定する必要がある。
+このため、ディスパッチ先を特定する [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md#ルーティングアダプタ) よりも後ろに設定する必要がある。
 
 ## 変換処理を行うコンバータを設定する
 

@@ -1016,10 +1016,11 @@ def extract_document(
         if isinstance(child, nodes.title):
             parts.top_title = visitor.render_inline(child)
         elif isinstance(child, nodes.subtitle):
-            # docutils promotes h2 to subtitle when a prolog is prepended
-            # (e.g. rst_ast.parse adds a substitution prolog).  Treat the
-            # promoted subtitle as an h2 section, not as a title suffix.
-            parts.sections.append(Section(title=visitor.render_inline(child), content="", level=2))
+            text = visitor.render_inline(child)
+            if parts.top_title:
+                parts.top_title = f"{parts.top_title} — {text}"
+            else:
+                parts.top_title = text
         elif isinstance(child, nodes.section):
             section_children.append(child)
         else:

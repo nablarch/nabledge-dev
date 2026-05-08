@@ -173,7 +173,7 @@ ${
 > **Note:**
 > 以下で述べるプロパティとは、すべてjsp-analysis-build.propertiesのプロパティを指す。
 
-> jsp-analysis-build.propertiesの各プロパティの意味は、 [ツール構成](../../development-tools/java-static-analysis/java-static-analysis-02-JspStaticAnalysisInstall.md#ツール構成) を参照のこと。
+> jsp-analysis-build.propertiesの各プロパティの意味は、 [プロパティファイルの書き換え](../../development-tools/java-static-analysis/java-static-analysis-02-JspStaticAnalysisInstall.md#プロパティファイルの書き換え) を参照のこと。
 
 nablarch-tfw.jarが配置されているディレクトリを確認し（デフォルトでは 「<プロジェクトルート>/test/lib」ディレクトリ ）、
 common.project.test.lib プロパティにそのパスが設定する。
