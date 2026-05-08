@@ -13,7 +13,7 @@
 このインターセプタを使用するためには、
 [jspでのformタグによるトークン設定](../../component/libraries/libraries-tag.md#デフォルトは-true-)
 または
-[UseTokenインターセプタによるトークン設定](../../component/handlers/handlers-use-token.md#usetokenインターセプタ)
+[UseTokenインターセプタによるトークン設定](../../component/handlers/handlers-use-token.md)
 が必要である。
 
 ## インターセプタクラス名

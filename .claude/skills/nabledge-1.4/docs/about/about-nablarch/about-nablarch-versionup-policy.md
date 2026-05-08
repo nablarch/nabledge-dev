@@ -2,8 +2,8 @@
 
 ## Nablarch のバージョンアップ方針
 
-Nablarchが提供するコンテンツ(詳細は [Nablarchの製品構成](../../about/about-nablarch/about-nablarch-contents.md#nablarchの製品構成) をご参照ください)に対するバージョンアップ方針について説明します。
-Nablarchコンテンツ種類（Nablarchフレームワーク、 Nablarch標準/ガイド、 Nablarchライブラリ、Nablarchツール）については、 [Nablarchのコンテンツ種類](../../about/about-nablarch/about-nablarch-contents-type.md#nablarchのコンテンツ種類) を参照。
+Nablarchが提供するコンテンツ(詳細は [Nablarchの製品構成](../../about/about-nablarch/about-nablarch-contents.md) をご参照ください)に対するバージョンアップ方針について説明します。
+Nablarchコンテンツ種類（Nablarchフレームワーク、 Nablarch標準/ガイド、 Nablarchライブラリ、Nablarchツール）については、 [Nablarchのコンテンツ種類](../../about/about-nablarch/about-nablarch-contents-type.md) を参照。
 
 ### バージョンアップ種類
 
@@ -152,7 +152,7 @@ GA版以外のリリースを行う際に、バージョン表示に安定度を
 
 #### コンテンツとバージョン番号の関係
 
-Nablarchのコンテンツにはさまざまな物が含まれます(詳細は [Nablarchの製品構成](../../about/about-nablarch/about-nablarch-contents.md#nablarchの製品構成) をご参照ください)。
+Nablarchのコンテンツにはさまざまな物が含まれます(詳細は [Nablarchの製品構成](../../about/about-nablarch/about-nablarch-contents.md) をご参照ください)。
 これら一式に対して1つのバージョン番号が割り振られます。
 
 #### 差し替え用コンテンツ提供

@@ -73,7 +73,7 @@ d) エンティティクラス
 | SystemAccount | ユーザのアカウント情報を保持するクラス。ユニバーサルDAOの検索結果を格納する。 |
 
 > **Tip:**
-> Nablarch導入プロジェクトでは、エンティティクラスは [gsp-dba-maven-plugin(DBA作業支援ツール)](../../setup/blank-project/blank-project-addin-gsp.md#gsp-dba-maven-plugindba作業支援ツールの初期設定方法) を使用して自動生成する。
+> Nablarch導入プロジェクトでは、エンティティクラスは [gsp-dba-maven-plugin(DBA作業支援ツール)](../../setup/blank-project/blank-project-addin-gsp.md) を使用して自動生成する。
 > 本サンプルには動作確認のため [テーブル定義](../../guide/biz-samples/biz-samples-01.md#テーブル定義) に記載の定義に合わせて自動生成したエンティティクラスを同梱している。
 > プロジェクトにて実装する際は本サンプルのエンティティクラスを使用するのではなく、各プロジェクトで自動生成したエンティティクラスを使用するよう修正すること。
 

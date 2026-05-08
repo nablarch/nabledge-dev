@@ -58,7 +58,7 @@ public HttpResponse delete(HttpRequest request, ExecutionContext context) {
   を実行することで、SQLを作成しなくとも実行できる。
 
 > **Tip:**
-> [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) は、主キーを条件とする削除機能のみを提供する。主キー以外を条件として削除する場合は、別途SQLを作成して実行する必要がある。
+> [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) は、主キーを条件とする削除機能のみを提供する。主キー以外を条件として削除する場合は、別途SQLを作成して実行する必要がある。
 > SQLの実行方法については、 [SQLIDを指定してSQLを実行する](../../component/libraries/libraries-database.md#sqlidを指定してsqlを実行する) を参照。
 
 削除完了画面の作成
@@ -69,4 +69,4 @@ public HttpResponse delete(HttpRequest request, ExecutionContext context) {
 
 削除機能の解説は以上。
 
-[Getting Started TOPページへ](../../processing-pattern/web-application/web-application-getting-started.md#getting-started)
+[Getting Started TOPページへ](../../processing-pattern/web-application/web-application-getting-started.md)

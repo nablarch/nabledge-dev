@@ -45,9 +45,9 @@
 JDBCを使用してデータベースに対してSQL文を実行する機能を提供する。
 
 > **Tip:**
-> [データベースアクセス](../../component/libraries/libraries-database-management.md#データベースアクセス) で説明したように、SQLの実行に関しては [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) を使用することを推奨する。
+> [データベースアクセス](../../component/libraries/libraries-database-management.md) で説明したように、SQLの実行に関しては [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) を使用することを推奨する。
 
-> なお、[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) 内部では、この機能のAPIを使用してデータベースアクセスを行っているため、
+> なお、[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) 内部では、この機能のAPIを使用してデータベースアクセスを行っているため、
 > この機能を使用するための設定は必ず必要になる。
 
 > **Important:**
@@ -170,10 +170,10 @@ BasicDbConnectionFactoryForJndi への
 
 > **Tip:**
 > 上記に設定したクラスを直接使用することは基本的にない。
-> データベースアクセスを必要とする場合には、 [データベース接続管理ハンドラ](../../component/handlers/handlers-database-connection-management-handler.md#データベース接続管理ハンドラ) を使用すること。
+> データベースアクセスを必要とする場合には、 [データベース接続管理ハンドラ](../../component/handlers/handlers-database-connection-management-handler.md) を使用すること。
 
 > なお、データベースを使用する場合はトランザクション管理も必要となる。
-> トランザクション管理については、 [トランザクション管理](../../component/libraries/libraries-transaction.md#トランザクション管理) を参照。
+> トランザクション管理については、 [トランザクション管理](../../component/libraries/libraries-transaction.md) を参照。
 
 ### データベース製品に対応したダイアレクトを使用する
 
@@ -285,7 +285,7 @@ sql
 ### SQLIDを指定してSQLを実行する
 
 SQLIDを元にSQLを実行するには、 DbConnectionContext から取得したデータベース接続を使用する。
-なお、  DbConnectionContext には、 [データベース接続管理ハンドラ](../../component/handlers/handlers-database-connection-management-handler.md#データベース接続管理ハンドラ) でデータベース接続を登録する必要がある。
+なお、  DbConnectionContext には、 [データベース接続管理ハンドラ](../../component/handlers/handlers-database-connection-management-handler.md) でデータベース接続を登録する必要がある。
 
 SQLIDと実際に実行されるSQLとのマッピングルールは以下のとおり。
 
@@ -983,7 +983,7 @@ try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 データベース接続エラー時の例外
 
 データベースアクセスエラー時の例外がデータベース接続エラーを示す場合には、 DbConnectionException が送出される。
-この例外は、 [リトライハンドラ](../../component/handlers/handlers-retry-handler.md#リトライハンドラ) により処理される。([リトライハンドラ](../../component/handlers/handlers-retry-handler.md#リトライハンドラ) 未適用の場合には、実行時例外として扱われる。)
+この例外は、 [リトライハンドラ](../../component/handlers/handlers-retry-handler.md) により処理される。([リトライハンドラ](../../component/handlers/handlers-retry-handler.md) 未適用の場合には、実行時例外として扱われる。)
 
 なお、データベース接続エラーの判定には、 [ダイアレクト](../../component/libraries/libraries-database.md#データベースの方言を意識することなく使用できる) が使用される。
 

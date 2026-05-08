@@ -2,7 +2,7 @@
 
 本章では、顧客情報をデータベースへ登録する処理について解説する。
 
-[前へ](../../processing-pattern/web-application/web-application-client-create3.md#登録内容確認画面から登録画面へ戻る)
+[前へ](../../processing-pattern/web-application/web-application-client-create3.md)
 
 登録処理の実装
 
@@ -25,8 +25,8 @@ public HttpResponse create(HttpRequest request, ExecutionContext context) {
 
 この実装のポイント
 
-* [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) から顧客エンティティを取り出して、 [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) を使用してデータベースに登録する。
-* [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) から顧客情報を削除する。
+* [セッションストア](../../component/libraries/libraries-session-store.md) から顧客エンティティを取り出して、 [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) を使用してデータベースに登録する。
+* [セッションストア](../../component/libraries/libraries-session-store.md) から顧客情報を削除する。
 * レスポンスオブジェクトの遷移先として、登録完了画面の表示処理へのリダイレクトを指定する(完了画面でのブラウザの更新ボタン押下による顧客情報の多重登録を防ぐため)。
   リダイレクトに指定するステータスコードについては、 [ステータスコード](../../processing-pattern/web-application/web-application-feature-details.md#ステータスコード) を参照。
 
@@ -154,4 +154,4 @@ public HttpResponse complete(HttpRequest request, ExecutionContext context) {
 
 登録機能の解説は以上。
 
-[Getting Started TOPページへ](../../processing-pattern/web-application/web-application-getting-started.md#getting-started)
+[Getting Started TOPページへ](../../processing-pattern/web-application/web-application-getting-started.md)

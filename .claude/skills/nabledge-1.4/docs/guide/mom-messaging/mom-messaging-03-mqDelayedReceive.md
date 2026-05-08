@@ -1,12 +1,12 @@
 # 応答不要メッセージ受信処理
 
-[ユーザ登録情報電文受信処理](../../guide/mom-messaging/mom-messaging-01-userRegisterMessageReceiveSpec.md#ユーザ登録情報電文受信処理の仕様) を例に、応答不要メッセージ受信処理の実装方法を説明する。
+[ユーザ登録情報電文受信処理](../../guide/mom-messaging/mom-messaging-01-userRegisterMessageReceiveSpec.md) を例に、応答不要メッセージ受信処理の実装方法を説明する。
 
 ![userRegisterMessageReceive.png](../../../knowledge/assets/mom-messaging-03-mqDelayedReceive/userRegisterMessageReceive.png)
 
 ## アプリケーション開発者が実装する成果物
 
-[応答不要型メッセージ受信処理のアプリケーション構造](../../guide/mom-messaging/mom-messaging-04-explanation-delayed-receive-02-basic.md#応答不要型メッセージ受信処理のアプリケーション構造) からわかるように、電文を受信するアクションはNablarchの一部として提供される。
+[応答不要型メッセージ受信処理のアプリケーション構造](../../guide/mom-messaging/mom-messaging-04-explanation-delayed-receive-02-basic.md) からわかるように、電文を受信するアクションはNablarchの一部として提供される。
 このため、アプリケーション開発者は電文を受信テーブルに登録するために必要となる下記成果物のみを作成すれ良い。
 
 * 電文のレイアウトを定義したフォーマット定義ファイル

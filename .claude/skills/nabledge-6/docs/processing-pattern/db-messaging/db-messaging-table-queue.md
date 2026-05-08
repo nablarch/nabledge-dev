@@ -177,7 +177,7 @@ where
   * 未処理データを検索するための SqlPStatement
   * 未処理データの悲観ロックを行う
     DatabaseRecordListener の実装クラス。
-    詳細は、[マルチプロセス化](../../processing-pattern/db-messaging/db-messaging-multiple-process.md#マルチプロセス化) を参照。
+    詳細は、[マルチプロセス化](../../processing-pattern/db-messaging/db-messaging-multiple-process.md) を参照。
 * SQLファイルでは、以下のSQLを定義する。
 
   * 他のプロセスの処理対象となることを防ぐため、未処理データを悲観ロックするSQL

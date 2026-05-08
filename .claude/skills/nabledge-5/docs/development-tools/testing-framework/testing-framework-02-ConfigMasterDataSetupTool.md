@@ -8,7 +8,7 @@
 
   * Eclipse
   * Maven
-* [Nablarchのアーキタイプ](../../setup/blank-project/blank-project-blank-project.md#ブランクプロジェクト) から生成されたプロジェクトであること
+* [Nablarchのアーキタイプ](../../setup/blank-project/blank-project-blank-project.md) から生成されたプロジェクトであること
 * テーブルが作成済みであること
 * バックアップ用スキーマにテーブルが作成済みであること [1]
 

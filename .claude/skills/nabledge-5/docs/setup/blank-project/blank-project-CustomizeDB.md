@@ -3,7 +3,7 @@
 **目次**
 
 * 前提
-* [Mavenリポジトリへのファイル登録](../../setup/blank-project/blank-project-maven.md#apache-mavenについて)
+* [Mavenリポジトリへのファイル登録](../../setup/blank-project/blank-project-maven.md)
 
   * JDBCドライバの登録
 * ファイル修正

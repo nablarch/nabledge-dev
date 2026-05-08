@@ -7,7 +7,7 @@
   * ブランクプロジェクトの種類
   * ブランクプロジェクトの設計思想と留意事項
 * 初期セットアップの前提
-* [Mavenの設定](../../setup/blank-project/blank-project-maven.md#apache-mavenについて)
+* [Mavenの設定](../../setup/blank-project/blank-project-maven.md)
 * 使用するNablarchのバージョンの指定
 * 初期セットアップを行う際の共通的な注意点
 

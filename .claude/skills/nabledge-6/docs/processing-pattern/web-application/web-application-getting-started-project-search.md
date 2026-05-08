@@ -92,7 +92,7 @@ public class ProjectSearchForm extends SearchFormBase implements Serializable {
 
 検索条件Beanの作成
 
-検索条件を設定し [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) へ引き渡すBeanを作成する。
+検索条件を設定し [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) へ引き渡すBeanを作成する。
 Beanのプロパティは、[対応する条件カラムの定義(型)と互換性のある型とする](../../component/libraries/libraries-universal-dao.md#条件を指定して検索する) こと。
 
 ProjectSearchDto.java
@@ -292,8 +292,8 @@ private List<Project> searchProject(ProjectSearchDto searchCondition,
   ```
 * 値を出力するために、 [writeタグ](../../component/libraries/libraries-tag-reference.md#writeタグ) を用いる。
   値を「日付」や「金額」等の形式でフォーマットして出力したい場合は、 valueFormat 属性で形式を指定する。詳細は [フォーマットして値を出力する](../../component/libraries/libraries-tag.md#フォーマットして値を出力する) を参照。
-* <app:listSearchResult> の使用方法については [検索結果の一覧表示](../../guide/biz-samples/biz-samples-03.md#検索結果の一覧表示) を参照。
+* <app:listSearchResult> の使用方法については [検索結果の一覧表示](../../guide/biz-samples/biz-samples-03.md) を参照。
 
 検索機能の解説は以上。
 
-[Getting Started TOPページへ](../../processing-pattern/web-application/web-application-getting-started.md#getting-started)
+[Getting Started TOPページへ](../../processing-pattern/web-application/web-application-getting-started.md)

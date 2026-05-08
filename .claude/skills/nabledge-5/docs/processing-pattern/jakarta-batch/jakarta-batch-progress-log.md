@@ -39,8 +39,8 @@ INFO progress finish job. job name: [test-job]
 進捗を示すログは、ログカテゴリ名を `progress` として出力する。
 このカテゴリ名を使用して、進捗ログ用のファイルにログを出力することが出来る。
 
-[ログ出力](../../component/libraries/libraries-log.md#ログ出力) を使用した場合の `log.properties` の設定例を以下に示す。
-[logアダプタ](../../component/adapters/adapters-log-adaptor.md#logアダプタ) を使用している場合には、アダプタに対応したログライブラリのマニュアルなどを参照して設定すること。
+[ログ出力](../../component/libraries/libraries-log.md) を使用した場合の `log.properties` の設定例を以下に示す。
+[logアダプタ](../../component/adapters/adapters-log-adaptor.md) を使用している場合には、アダプタに対応したログライブラリのマニュアルなどを参照して設定すること。
 
 ```properties
 # progress log file

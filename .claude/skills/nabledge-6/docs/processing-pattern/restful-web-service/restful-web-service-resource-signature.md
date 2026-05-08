@@ -21,7 +21,7 @@
 | 戻り値の型 | 説明 |
 |---|---|
 | void | レスポンスのボディが空であることを示す `204: NoContent` をクライアントに返却する。 |
-| フォーム(Java Beans) | メソッドから戻されたフォームを [リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md#リクエストボディ変換ハンドラ) で、レスポンスボディに出力する内容に変換しクライアントに返却する。 |
+| フォーム(Java Beans) | メソッドから戻されたフォームを [リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md) で、レスポンスボディに出力する内容に変換しクライアントに返却する。 |
 | HttpResponse | メソッドから戻された HttpResponse の情報を、クライアントに返却する。 |
 
 ## パスパラメータを扱う
@@ -37,7 +37,7 @@ URLの例
 URLとアクションとのマッピング時にパスパラメータ部に任意の名前を設定する。
 この例では、 `id` という名前を設定し、数値のみを許容する設定としている。
 
-詳細は、 [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md#ルーティングアダプタ) を参照。
+詳細は、 [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md) を参照。
 
 ```xml
 <routes>
@@ -123,7 +123,7 @@ public UserSearchForm {
 
 > **Important:**
 > アプリケーション全体で共通となるレスポンスヘッダを指定したい場合はハンドラで設定すること。
-> セキュリティ関連のレスポンスヘッダを指定したい場合は [セキュアハンドラ](../../component/handlers/handlers-secure-handler.md#セキュアハンドラ) を使用すればよい。
+> セキュリティ関連のレスポンスヘッダを指定したい場合は [セキュアハンドラ](../../component/handlers/handlers-secure-handler.md) を使用すればよい。
 
 リソースクラスのメソッドで HttpResponse を作成する場合は、
 HttpResponseにレスポンスヘッダを指定すればよい。

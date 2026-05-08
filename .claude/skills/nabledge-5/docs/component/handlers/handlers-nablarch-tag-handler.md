@@ -7,7 +7,7 @@
 * 制約
 * 復号に失敗(改竄エラー、セッション無効化エラー)した場合のエラーページを設定する
 
-Nablarchの [JSPカスタムタグ](../../component/libraries/libraries-tag.md#jspカスタムタグ) に必要なリクエスト処理を行うハンドラ。
+Nablarchの [JSPカスタムタグ](../../component/libraries/libraries-tag.md) に必要なリクエスト処理を行うハンドラ。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -16,7 +16,7 @@ Nablarchの [JSPカスタムタグ](../../component/libraries/libraries-tag.md#j
 * [hidden暗号化](../../component/libraries/libraries-tag.md#クライアントに保持するデータを暗号化するhidden暗号化) に対応する改竄チェックと復号処理を行う。
 * [チェックボックスのチェックなしに対する値を指定する](../../component/libraries/libraries-tag.md#チェックボックスでチェックなしに対する値を指定する) ために、リクエストにチェックなしに対応する値を設定する。
 * [ボタン又はリンク毎のパラメータ追加](../../component/libraries/libraries-tag.md#ボタンリンク毎にパラメータを追加する) のために、リクエストにパラメータを追加する。
-* [HTTPアクセスログの出力](../../component/libraries/libraries-http-access-log.md#httpアクセスログの出力) のリクエストパラメータを出力する。
+* [HTTPアクセスログの出力](../../component/libraries/libraries-http-access-log.md) のリクエストパラメータを出力する。
 * [複合キーを扱える](../../component/libraries/libraries-tag.md#複合キーのラジオボタンやチェックボックスを作る) ようにするため、複合キーを復元する。
 
 > **Tip:**
@@ -45,11 +45,11 @@ Nablarchの [JSPカスタムタグ](../../component/libraries/libraries-tag.md#j
 
 ## 制約
 
-[マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md#マルチパートリクエストハンドラ) より後ろに設定すること
+[マルチパートリクエストハンドラ](../../component/handlers/handlers-multipart-handler.md) より後ろに設定すること
 
-本ハンドラは、 [JSPカスタムタグ](../../component/libraries/libraries-tag.md#jspカスタムタグ) に必要なリクエスト処理でリクエストパラメータにアクセスするため。
+本ハンドラは、 [JSPカスタムタグ](../../component/libraries/libraries-tag.md) に必要なリクエスト処理でリクエストパラメータにアクセスするため。
 
-[hidden暗号化](../../component/libraries/libraries-tag.md#クライアントに保持するデータを暗号化するhidden暗号化) 使用時は、[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) より後ろに設定すること
+[hidden暗号化](../../component/libraries/libraries-tag.md#クライアントに保持するデータを暗号化するhidden暗号化) 使用時は、[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md) より後ろに設定すること
 
 hidden暗号化対象のリクエストか否かを判定するために、スレッドコンテキストからリクエストIDを取得するため。
 

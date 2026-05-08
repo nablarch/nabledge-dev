@@ -14,7 +14,7 @@
 | プロジェクト種別 | Mavenプロジェクト |
 | プロジェクト構成 | 単一プロジェクト構成 |
 | 使用DB | H2 Databaes Engine(アプリケーションに組み込み) |
-| 組み込まれているアダプタ | ルーティングアダプタ(詳細は、 [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md#ルーティングアダプタ) を参照) |
+| 組み込まれているアダプタ | ルーティングアダプタ(詳細は、 [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md) を参照) |
 | 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。  * Nablarchのウェブアプリケーション用の基本的な設定 * 疎通確認用ウェブアプリケーション * Mavenと連動して動作するツールの初期設定( [nablarch-archetype-parent(親プロジェクト)](../../setup/blank-project/blank-project-MavenModuleStructures.md#nablarch-archetype-parent親プロジェクト) を参照することによって取り込んでいる)。 |
 
 他のプロジェクトとの関係、及びディレクトリ構成は、 [Mavenアーキタイプの構成](../../setup/blank-project/blank-project-MavenModuleStructures.md) を参照。

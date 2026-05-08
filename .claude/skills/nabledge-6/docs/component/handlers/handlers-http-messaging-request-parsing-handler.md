@@ -38,17 +38,17 @@ RequestMessage
 
 ## 制約
 
-[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) より後ろに配置すること
+[HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) より後ろに配置すること
 
 変換処理に失敗した場合は、ステータスコードを指定したレスポンスをクライアントに返すため、
-本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md#httpレスポンスハンドラ) より後ろに配置する必要がある。
+本ハンドラは [HTTPレスポンスハンドラ](../../component/handlers/handlers-http-response-handler.md) より後ろに配置する必要がある。
 
-[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) より後ろに配置すること
+[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md) より後ろに配置すること
 
 スレッドコンテキスト上に設定されたリクエストIDをもとに、
 要求電文と応答電文の変換に使う
 DataRecordFormatter を取得するため、
-[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) より後ろに本ハンドラを配置する必要がある。
+[スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md) より後ろに本ハンドラを配置する必要がある。
 
 ## HTTPリクエストを要求電文に変換する
 
@@ -64,7 +64,7 @@ DataRecordFormatter を取得するため、
 
 リクエストボディの変換
 
-リクエストボディの変換は、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット) により行う。
+リクエストボディの変換は、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md) により行う。
 以下のルールでフォーマット定義ファイルを準備しておく必要がある。
 
 受信時のフォーマット定義ファイルの論理名

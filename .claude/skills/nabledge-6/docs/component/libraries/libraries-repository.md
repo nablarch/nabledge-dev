@@ -816,8 +816,8 @@ public class ExampleService {
 #### ActionクラスをDIコンテナで管理する
 
 アノテーションをActionクラスに付与することでDIコンテナで管理可能となる。
-Nablarchで用意されたディスパッチハンドラ（ [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md#ルーティングアダプタ) 、 [リクエストディスパッチハンドラ](../../component/handlers/handlers-request-path-java-package-mapping.md#リクエストディスパッチハンドラ) 、
-[HTTPリクエストディスパッチハンドラ](../../component/handlers/handlers-http-request-java-package-mapping.md#httpリクエストディスパッチハンドラ) ）では
+Nablarchで用意されたディスパッチハンドラ（ [ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md) 、 [リクエストディスパッチハンドラ](../../component/handlers/handlers-request-path-java-package-mapping.md) 、
+[HTTPリクエストディスパッチハンドラ](../../component/handlers/handlers-http-request-java-package-mapping.md) ）では
 ディスパッチ先のクラスはディスパッチハンドラ内でインスタンス化される。
 そのため、ActionクラスをDIコンテナに登録する場合は、ディスパッチ先のクラスをシステムリポジトリから取得するよう DelegateFactory を
 差し替える必要がある。差し替えは以下のように DispatchHandler#setDelegateFactory にて設定する。

@@ -23,17 +23,17 @@ ResumeDataReader (レジューム機能付き読み込み)
 
 ## バッチ処理でエラー発生時に処理を継続する
 
-エラー発生時の処理継続は、 [常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#アーキテクチャ概要) のみ対応している。
-[都度起動バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#アーキテクチャ概要) は対応していない。
+エラー発生時の処理継続は、 [常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md) のみ対応している。
+[都度起動バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md) は対応していない。
 
-[常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#アーキテクチャ概要) では、
+[常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md) では、
 TransactionAbnormalEnd
-を送出すると、 [リトライハンドラ](../../component/handlers/handlers-retry-handler.md#リトライハンドラ) により処理が継続される。
+を送出すると、 [リトライハンドラ](../../component/handlers/handlers-retry-handler.md) により処理が継続される。
 ただし、 [バッチ処理をリランできるようにする](../../processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.md#バッチ処理をリランできるようにする) に記載した内容で、
 バッチ処理がリランできるようになっている必要がある。
 
 > **Tip:**
-> [都度起動バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#アーキテクチャ概要) で
+> [都度起動バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md) で
 > TransactionAbnormalEnd
 > が送出されると、バッチ処理が異常終了となる。
 

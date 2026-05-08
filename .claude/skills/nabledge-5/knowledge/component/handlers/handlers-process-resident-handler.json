@@ -19,7 +19,7 @@
     {
       "id": "s3",
       "title": "制約",
-      "content": "本ハンドラは、リトライハンドラよりも後ろに設定すること\n\n本ハンドラで実行時例外を捕捉した場合、リトライ可能例外( RetryableException )でラップしてから再送出し、\nプロセスの継続制御を [リトライハンドラ](../../component/handlers/handlers-retry-handler.md#リトライハンドラ) に委譲する。\nこのため、このハンドラはリトライハンドラより後に設定する必要がある。",
+      "content": "本ハンドラは、リトライハンドラよりも後ろに設定すること\n\n本ハンドラで実行時例外を捕捉した場合、リトライ可能例外( RetryableException )でラップしてから再送出し、\nプロセスの継続制御を [リトライハンドラ](../../component/handlers/handlers-retry-handler.md) に委譲する。\nこのため、このハンドラはリトライハンドラより後に設定する必要がある。",
       "level": 2
     },
     {
@@ -31,7 +31,7 @@
     {
       "id": "s5",
       "title": "プロセス常駐化ハンドラの終了方法",
-      "content": "このハンドラはプロセスの正常終了を示す例外が送出された場合に、後続のハンドラの呼び出しを止め処理を終了する。\nデフォルトでは、 [プロセス停止制御ハンドラ](../../component/handlers/handlers-process-stop-handler.md#プロセス停止制御ハンドラ) が送出する処理停止を示す例外( ProcessStop (サブクラス含む))が送出された場合に、このハンドラは処理を終了する。\n\nプロセスの正常終了を示す例外を変更したい場合には、 normalEndExceptions プロパティに例外クラスのリストを設定する。\nなお、例外リストを設定する場合にはデフォルトの設定が上書きされるため、 ProcessStop の設定を忘れずに行う必要がある。\n\n以下に例を示す。\n\n```xml\n<component name=\"settingsProcessResidentHandler\"\n    class=\"nablarch.fw.handler.ProcessResidentHandler\">\n\n  <!-- プロセスの正常終了を示す例外リスト -->\n  <property name=\"normalEndExceptions\">\n    <list>\n      <!-- Nablarchデフォルトのプロセス停止を示す例外クラス -->\n      <value>nablarch.fw.handler.ProcessStopHandler$ProcessStop</value>\n      <!-- プロジェクトカスタムなプロセス停止を示す例外クラス(サブクラスも対象となる) -->\n      <value>sample.CustomProcessStop</value>\n    </list>\n  </property>\n\n  <!-- その他のプロパティは省略 -->\n</component>\n```",
+      "content": "このハンドラはプロセスの正常終了を示す例外が送出された場合に、後続のハンドラの呼び出しを止め処理を終了する。\nデフォルトでは、 [プロセス停止制御ハンドラ](../../component/handlers/handlers-process-stop-handler.md) が送出する処理停止を示す例外( ProcessStop (サブクラス含む))が送出された場合に、このハンドラは処理を終了する。\n\nプロセスの正常終了を示す例外を変更したい場合には、 normalEndExceptions プロパティに例外クラスのリストを設定する。\nなお、例外リストを設定する場合にはデフォルトの設定が上書きされるため、 ProcessStop の設定を忘れずに行う必要がある。\n\n以下に例を示す。\n\n```xml\n<component name=\"settingsProcessResidentHandler\"\n    class=\"nablarch.fw.handler.ProcessResidentHandler\">\n\n  <!-- プロセスの正常終了を示す例外リスト -->\n  <property name=\"normalEndExceptions\">\n    <list>\n      <!-- Nablarchデフォルトのプロセス停止を示す例外クラス -->\n      <value>nablarch.fw.handler.ProcessStopHandler$ProcessStop</value>\n      <!-- プロジェクトカスタムなプロセス停止を示す例外クラス(サブクラスも対象となる) -->\n      <value>sample.CustomProcessStop</value>\n    </list>\n  </property>\n\n  <!-- その他のプロパティは省略 -->\n</component>\n```",
       "level": 2
     },
     {

@@ -4,7 +4,7 @@
 
 RESTfulウェブサービス実行基盤向けのテストでは、他の実行基盤向けテスティングフレームワークに加え
 依存するモジュールを追加する必要がある。
-詳細は [自動テストフレームワークの使用方法](../../development-tools/testing-framework/testing-framework-RequestUnitTest-rest.md#リクエスト単体テストrestfulウェブサービス) 参照。
+詳細は [自動テストフレームワークの使用方法](../../development-tools/testing-framework/testing-framework-RequestUnitTest-rest.md) 参照。
 
 ## テストクラスの書き方
 

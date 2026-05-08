@@ -40,7 +40,7 @@ $mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
 と [業務ロジックの実行](../../processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.md#業務ロジックを実行する) に分けて解説する。
 
 処理フローについては、 [Nablarchバッチの処理フロー](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#nablarchバッチアプリケーションの処理の流れ) を参照。
-責務配置については [Nablarchバッチの責務配置](../../processing-pattern/nablarch-batch/nablarch-batch-application-design.md#アプリケーションの責務配置) を参照。
+責務配置については [Nablarchバッチの責務配置](../../processing-pattern/nablarch-batch/nablarch-batch-application-design.md) を参照。
 
 住所ファイル登録バッチのハンドラ構成については import-zip-code-file.xml を参照。
 
@@ -53,7 +53,7 @@ $mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
 
 入力ファイルを受け付けるフォームを作成
 
-[データバインド](../../component/libraries/libraries-data-bind.md#データバインド) を用いてCSV(住所ファイル)をバインドするフォームを作成する。
+[データバインド](../../component/libraries/libraries-data-bind.md) を用いてCSV(住所ファイル)をバインドするフォームを作成する。
 
 ZipCodeForm.java
 
@@ -102,9 +102,9 @@ public class ZipCodeForm {
 
 この実装のポイント
 
-* [データバインド](../../component/libraries/libraries-data-bind.md#データバインド) を用いてフォームにCSVをバインドするため、Csv
+* [データバインド](../../component/libraries/libraries-data-bind.md) を用いてフォームにCSVをバインドするため、Csv
   及び CsvFormat を付与する。
-* [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を実施するために、バリデーション用のアノテーションを付与する。
+* [Bean Validation](../../component/libraries/libraries-bean-validation.md) を実施するために、バリデーション用のアノテーションを付与する。
 * 行数プロパティを定義し、ゲッタに LineNumber を付与することで、
   対象データが何行目のデータであるかを自動的に設定できる。
 
@@ -257,5 +257,5 @@ public class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {
 * createReader メソッドでは使用するデータリーダクラスのインスタンスを返却する。
 
 > **Tip:**
-> [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を実行するロジックにバッチごとの差はないため、Exampleアプリケーションではインターセプタを作成してバリデーション処理を共通化している。
+> [Bean Validation](../../component/libraries/libraries-bean-validation.md) を実行するロジックにバッチごとの差はないため、Exampleアプリケーションではインターセプタを作成してバリデーション処理を共通化している。
 > インターセプタの実装に関しては、Exampleアプリケーションの ValidateData.java の実装を参照。

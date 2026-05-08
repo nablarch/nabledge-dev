@@ -234,7 +234,7 @@ public Long getLineNumber() {
 ### データの入力値をチェックする
 
 データをJava Beansオブジェクトとして読み込むことができるため、
-[Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) による入力値チェックを行うことができる。
+[Bean Validation](../../component/libraries/libraries-bean-validation.md) による入力値チェックを行うことができる。
 
 実装例を以下に示す。
 
@@ -295,7 +295,7 @@ public HttpResponse download(HttpRequest request, ExecutionContext context) {
 ポイント
 
 * PartInfo#getInputStream を使用して、アップロードファイルのストリームを取得する。
-* 不正なデータが入力されている可能性があるため、[Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を使用して入力チェックを行う。
+* 不正なデータが入力されている可能性があるため、[Bean Validation](../../component/libraries/libraries-bean-validation.md) を使用して入力チェックを行う。
 
 ```java
 List<PartInfo> partInfoList = request.getPart("uploadFile");
@@ -647,9 +647,9 @@ try (ObjectMapper<Map> mapper = ObjectMapperFactory.create(Map.class, outputStre
 
 ### 出力するデータの表示形式をフォーマットする
 
-データを出力する際に、 [フォーマッタ](../../component/libraries/libraries-format.md#フォーマッタ) を使用することで日付や数値などのデータの表示形式をフォーマットできる。
+データを出力する際に、 [フォーマッタ](../../component/libraries/libraries-format.md) を使用することで日付や数値などのデータの表示形式をフォーマットできる。
 
-詳細は [フォーマッタ](../../component/libraries/libraries-format.md#フォーマッタ) を参照すること。
+詳細は [フォーマッタ](../../component/libraries/libraries-format.md) を参照すること。
 
 ## 拡張例
 

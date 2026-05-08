@@ -47,15 +47,15 @@
 
 ## 制約
 
-[電文応答制御ハンドラ](../../component/handlers/handlers-message-reply-handler.md#電文応答制御ハンドラ) よりも後ろに設定すること
+[電文応答制御ハンドラ](../../component/handlers/handlers-message-reply-handler.md) よりも後ろに設定すること
 
 本ハンドラで作成した応答電文を送信する必要がある。
-このため、電文を送信するための [電文応答制御ハンドラ](../../component/handlers/handlers-message-reply-handler.md#電文応答制御ハンドラ) よりも後ろに本ハンドラを設定する必要がある。
+このため、電文を送信するための [電文応答制御ハンドラ](../../component/handlers/handlers-message-reply-handler.md) よりも後ろに本ハンドラを設定する必要がある。
 
-[トランザクション制御ハンドラ](../../component/handlers/handlers-transaction-management-handler.md#トランザクション制御ハンドラ) よりも後ろに設定すること
+[トランザクション制御ハンドラ](../../component/handlers/handlers-transaction-management-handler.md) よりも後ろに設定すること
 
 本ハンドラでは、応答電文をデータベースに保存する。
-このため、データベースへのトランザクション制御を実現する [トランザクション制御ハンドラ](../../component/handlers/handlers-transaction-management-handler.md#トランザクション制御ハンドラ) よりも後ろに本ハンドラを設定する必要がある。
+このため、データベースへのトランザクション制御を実現する [トランザクション制御ハンドラ](../../component/handlers/handlers-transaction-management-handler.md) よりも後ろに本ハンドラを設定する必要がある。
 
 ## 応答電文の保存先について
 

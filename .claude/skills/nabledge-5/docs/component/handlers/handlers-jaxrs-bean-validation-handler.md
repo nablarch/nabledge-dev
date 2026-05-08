@@ -8,13 +8,13 @@
 * リソース(アクション)で受け取るForm(Bean)に対してバリデーションを実行する
 * Bean Validationのグループを指定する
 
-本ハンドラは、リソース(アクション)クラスが受け取るForm(Bean)に対して、[Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を実行する。
+本ハンドラは、リソース(アクション)クラスが受け取るForm(Bean)に対して、[Bean Validation](../../component/libraries/libraries-bean-validation.md) を実行する。
 バリデーションでバリデーションエラーが発生した場合には、後続のハンドラに処理は委譲せずに、
 ApplicationException を送出して処理を終了する。
 
 本ハンドラでは、以下の処理を行う。
 
-* リソース(アクション)クラスのメソッドが受け取るFormに対する [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を行う。
+* リソース(アクション)クラスのメソッドが受け取るFormに対する [Bean Validation](../../component/libraries/libraries-bean-validation.md) を行う。
 
 処理の流れは以下のとおり。
 
@@ -41,9 +41,9 @@ ApplicationException を送出して処理を終了する。
 
 ## 制約
 
-[リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md#リクエストボディ変換ハンドラ) よりも後ろに設定すること
+[リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md) よりも後ろに設定すること
 
-このハンドラは、 [リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md#リクエストボディ変換ハンドラ) がリクエストボディから変換したForm(Bean)に対してバリデーションを行うため。
+このハンドラは、 [リクエストボディ変換ハンドラ](../../component/handlers/handlers-body-convert-handler.md) がリクエストボディから変換したForm(Bean)に対してバリデーションを行うため。
 
 ## リソース(アクション)で受け取るForm(Bean)に対してバリデーションを実行する
 

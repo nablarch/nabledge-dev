@@ -13,7 +13,7 @@
 ## 概要
 
 ここでは、検索結果の一覧表示を行うタグファイルの実装サンプルを提供する。
-タグファイルは、[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) の検索機能と連携して、次の機能を提供する。
+タグファイルは、[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) の検索機能と連携して、次の機能を提供する。
 
 * 検索結果件数の表示機能
 * 検索結果を指定件数毎に表示する機能(以降はページングと称す)
@@ -39,7 +39,7 @@ a) フレームワーク
 
 | クラス名 | 概要 |
 |---|---|
-| UniversalDao | 汎用的なDAO機能を提供するクラス。基本的な使い方は、[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) を参照。 |
+| UniversalDao | 汎用的なDAO機能を提供するクラス。基本的な使い方は、[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) を参照。 |
 | ListSearchInfo | 一覧検索用の情報を保持する抽象クラス。 |
 | Pagination | ListSearchInfoを継承した具象クラス。 |
 | EntityList | ユニバーサルDAOから返される結果リストの保持クラス。 |

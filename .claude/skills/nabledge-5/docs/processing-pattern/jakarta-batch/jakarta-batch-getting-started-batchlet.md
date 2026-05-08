@@ -110,7 +110,7 @@ public class TruncateTableBatchlet extends AbstractBatchlet {
   これにより、ジョブ定義に指定するBatchletクラス名をCDIの管理名で記述出来るようになる。 
   
   (CDI管理Beanとしなかった場合は、完全修飾名(FQCN)で記述する)
-* [データベースアクセス](../../component/libraries/libraries-database.md#データベースアクセスjdbcラッパー) を使用してTRUNCATE文を実行する。
+* [データベースアクセス](../../component/libraries/libraries-database.md) を使用してTRUNCATE文を実行する。
 
 ジョブ定義ファイルの作成
 

@@ -36,11 +36,11 @@
 > アプリケーション側ではStepContextの一時領域は使用できない。
 
 > **Tip:**
-> [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md#jakarta-batchに準拠したバッチアプリケーション)のアーキテクチャは、 <a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a> で定められた構成に準拠しているため、
-> Nablarchアプリケーションフレームワークの [アーキテクチャ](../../about/about-nablarch/about-nablarch-architecture.md#アーキテクチャ) に記載されているような、
+> [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md)のアーキテクチャは、 <a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a> で定められた構成に準拠しているため、
+> Nablarchアプリケーションフレームワークの [アーキテクチャ](../../about/about-nablarch/about-nablarch-architecture.md) に記載されているような、
 > ハンドラを用いたアーキテクチャとは異なっている。
 
-> [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md#jakarta-batchに準拠したバッチアプリケーション) では、ハンドラで行われるような横断的な処理（ログ出力やトランザクション制御等）は、
+> [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md) では、ハンドラで行われるような横断的な処理（ログ出力やトランザクション制御等）は、
 > <a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a> で規定されているリスナーを用いることで実現されている。
 
 > ただし、リスナーは既定のタイミングで起動されるものであり、入力、出力に対して直接処理を行うものではない点がハンドラとは異なっている。
@@ -108,7 +108,7 @@ Chunkステップの責務配置については、 [Chunkの責務配置](../../
 ### 例外(エラー含む)発生時の処理の流れ
 
 バッチ実行中に例外が発生した場合、Nablarchでは例外の捕捉は行わずJakarta Batchの実装側で例外ハンドリングを行う方針としている。
-これは、Jakarta Batchに準拠したバッチアプリケーション特有の振る舞いであり、他の基盤( [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md#ウェブアプリケーション編) や [Nablarchバッチアプリケーション](../../processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch.md#nablarchバッチアプリケーション) など)とは異なる振る舞いである点に注意すること。
+これは、Jakarta Batchに準拠したバッチアプリケーション特有の振る舞いであり、他の基盤( [Webアプリケーション](../../processing-pattern/web-application/web-application-web.md) や [Nablarchバッチアプリケーション](../../processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch.md) など)とは異なる振る舞いである点に注意すること。
 
 > **Tip:**
 > Jakarta Batchに準拠したバッチアプリケーションがこのようなアーキテクチャを採用した理由は以下の通り。
@@ -130,7 +130,7 @@ Jakarta Batchの実装で補足された例外の情報は、Jakarta Batchの実
 ログの設定(フォーマットや出力先などの設定)は、Jakarta Batch実装が使用しているロギングフレームワークのマニュアルなどを参照して行うこと。
 
 なお、アプリケーションで明示的に出力するエラーログ等をJakarta Batchと同じログファイルに出力したい場合には、
-[logアダプタ](../../component/adapters/adapters-log-adaptor.md#logアダプタ) を使用してJakarta Batchの実装とロギングフレームワークを統一することで対応できる。
+[logアダプタ](../../component/adapters/adapters-log-adaptor.md) を使用してJakarta Batchの実装とロギングフレームワークを統一することで対応できる。
 
 ## バッチアプリケーションで使用するリスナー
 
@@ -166,7 +166,7 @@ ItemWriter の実行前及び実行後にコールバックされるリスナー
 > このため、Nablarchでは以下の点に対応することで、リスナーを指定した順で実行出来るよう対応している。
 
 > * >   各レベルのリスナーには、リスナーの実行順を保証するリスナーのみを設定する
-> * >   リスナーの実行順を保証するリスナーは、 [システムリポジトリ](../../component/libraries/libraries-repository.md#システムリポジトリ) からリスナーリストを取得し、定義順にリスナーを実行する。
+> * >   リスナーの実行順を保証するリスナーは、 [システムリポジトリ](../../component/libraries/libraries-repository.md) からリスナーリストを取得し、定義順にリスナーを実行する。
 
 > 実際のリスナーの定義方法は、 [リスナーの指定方法](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md#リスナーの指定方法) を参照。
 

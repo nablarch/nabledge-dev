@@ -5,7 +5,7 @@
 * Redisのヘルスチェックを行う
 
 [Redis(外部サイト、英語)](https://redis.io/) のヘルスチェックをできるようにするアダプタを提供する。
-ヘルスチェックについては [ヘルスチェックエンドポイントハンドラ](../../component/handlers/handlers-health-check-endpoint-handler.md#ヘルスチェックエンドポイントハンドラ) を参照。
+ヘルスチェックについては [ヘルスチェックエンドポイントハンドラ](../../component/handlers/handlers-health-check-endpoint-handler.md) を参照。
 
 ヘルスチェックは、 [ヘルスチェックを追加する](../../component/handlers/handlers-health-check-endpoint-handler.md#ヘルスチェックを追加する) で説明している
 HealthChecker を継承したクラスを作成して追加できる。

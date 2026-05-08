@@ -2,7 +2,7 @@
 
 ## Nablarch のバージョンアップ方針
 
-Nablarchが提供するコンテンツ(詳細は [Nablarch の製品構成](../../about/about-nablarch/about-nablarch-contents.md#nablarch-の製品構成) をご参照ください)に対するバージョンアップ方針について説明します。
+Nablarchが提供するコンテンツ(詳細は [Nablarch の製品構成](../../about/about-nablarch/about-nablarch-contents.md) をご参照ください)に対するバージョンアップ方針について説明します。
 
 ### 更新内容
 
@@ -95,7 +95,7 @@ Nablarchのバージョン番号は、メジャー番号、マイナー番号、
 
 #### コンテンツとバージョン番号の関係
 
-Nablarchのコンテンツにはさまざまな物が含まれます(詳細は [Nablarch の製品構成](../../about/about-nablarch/about-nablarch-contents.md#nablarch-の製品構成) をご参照ください)。これら一式に対して1つ
+Nablarchのコンテンツにはさまざまな物が含まれます(詳細は [Nablarch の製品構成](../../about/about-nablarch/about-nablarch-contents.md) をご参照ください)。これら一式に対して1つ
 のバージョン番号が割り振られます。
 
 #### バージョン番号と更新内容の対応

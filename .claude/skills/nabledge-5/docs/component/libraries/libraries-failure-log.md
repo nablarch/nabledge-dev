@@ -100,7 +100,7 @@ try {
 このような場合は、
 TransactionAbnormalEnd または
 ProcessAbnormalEnd を送出し、
-例外ハンドラ([グローバルエラーハンドラ](../../component/handlers/handlers-global-error-handler.md#グローバルエラーハンドラ) や [リクエストスレッド内ループ制御ハンドラ](../../component/handlers/handlers-request-thread-loop-handler.md#リクエストスレッド内ループ制御ハンドラ)) に障害ログの出力を依頼する。
+例外ハンドラ([グローバルエラーハンドラ](../../component/handlers/handlers-global-error-handler.md) や [リクエストスレッド内ループ制御ハンドラ](../../component/handlers/handlers-request-thread-loop-handler.md)) に障害ログの出力を依頼する。
 
 ```java
 // 自ら例外を生成する場合
@@ -124,8 +124,8 @@ try {
 
 障害ログに出力されるメッセージ
 
-障害ログに出力されるメッセージは、 [メッセージ管理](../../component/libraries/libraries-message.md#メッセージ管理) を使用して障害コードに対応するメッセージを取得する。
-[メッセージ管理](../../component/libraries/libraries-message.md#メッセージ管理) では、メッセージが見つからない場合に例外が発生する。
+障害ログに出力されるメッセージは、 [メッセージ管理](../../component/libraries/libraries-message.md) を使用して障害コードに対応するメッセージを取得する。
+[メッセージ管理](../../component/libraries/libraries-message.md) では、メッセージが見つからない場合に例外が発生する。
 メッセージ取得処理で例外が発生した場合は、障害ログとは別に、
 メッセージ取得処理で発生した例外をWARNレベルでログ出力し、障害ログには下記のメッセージを出力する。
 

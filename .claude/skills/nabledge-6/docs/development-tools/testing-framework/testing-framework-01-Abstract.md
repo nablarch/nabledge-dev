@@ -325,7 +325,7 @@ Excelセル内の改行（Alt+Enter）は *LF* として扱われる。これは
 * テスト実行速度が上がる。
 
 > **Tip:**
-> マスタデータの投入には、 [マスタデータ投入ツール](../../development-tools/testing-framework/testing-framework-01-MasterDataSetupTool.md#マスタデータ投入ツール) を使用する。
+> マスタデータの投入には、 [マスタデータ投入ツール](../../development-tools/testing-framework/testing-framework-01-MasterDataSetupTool.md) を使用する。
 > また、 [マスタデータ復旧機能](../../development-tools/testing-framework/testing-framework-04-MasterDataRestore.md) により、テスト内で発生したマスタデータの変更をテスト終了時に自動的に元の状態に戻すことができる。これにより、マスタデータに変更が必要なテストケースであっても、他のテストケースに影響無く実行できる。
 
 ### テストデータは全てExcelシートに記述する
@@ -386,7 +386,7 @@ JUnit 5には、JUnit Vintageというプロジェクトがある。
 > JUnit 4からJUnit 5に移行するときの手順については、 [公式のガイド(外部サイト、英語)](https://junit.org/junit5/docs/5.11.0/user-guide/#migrating-from-junit4) を参照。
 
 > **Tip:**
-> JUnit 5のテストで自動テストフレームワークを使用する方法については、 [JUnit 5用拡張機能](../../development-tools/testing-framework/testing-framework-JUnit5-Extension.md#junit-5用拡張機能) を参照。
+> JUnit 5のテストで自動テストフレームワークを使用する方法については、 [JUnit 5用拡張機能](../../development-tools/testing-framework/testing-framework-JUnit5-Extension.md) を参照。
 
 以下で、JUnit Vintageを使用して自動テストフレームワークをJUnit 5で動かす方法について説明する。
 

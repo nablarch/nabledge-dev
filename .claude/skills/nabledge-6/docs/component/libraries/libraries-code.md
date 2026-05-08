@@ -43,7 +43,7 @@
 > しかし、Nablarchはenumの値とデータベースの値との相互変換の機能を持っておらず、enumの値をデータベースに登録できない。
 
 > Domaを使用することで、enumの値をデータベース登録できる。
-> Domaを使用する際は、 [Domaアダプタ](../../component/adapters/adapters-doma-adaptor.md#domaアダプタ) を参照して設定すること。
+> Domaを使用する際は、 [Domaアダプタ](../../component/adapters/adapters-doma-adaptor.md) を参照して設定すること。
 
 ## 機能概要
 
@@ -375,18 +375,18 @@ KANA_NAMEの名称を表示する場合は、以下のように optionColumnName
 
 以下に例を示す。
 
-[Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation)
+[Bean Validation](../../component/libraries/libraries-bean-validation.md)
 
-[Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を使用する場合は、 nablarch.common.code.validator.ee.CodeValue アノテーションを使用する。
+[Bean Validation](../../component/libraries/libraries-bean-validation.md) を使用する場合は、 nablarch.common.code.validator.ee.CodeValue アノテーションを使用する。
 
 ```java
 @CodeValue(codeId = "GENDER")
 private String gender;
 ```
 
-[Nablarch Validation](../../component/libraries/libraries-nablarch-validation.md#nablarch-validation)
+[Nablarch Validation](../../component/libraries/libraries-nablarch-validation.md)
 
-[Nablarch Validation](../../component/libraries/libraries-nablarch-validation.md#nablarch-validation) を使用する場合は、 nablarch.common.code.validator.CodeValue アノテーションを使用する。
+[Nablarch Validation](../../component/libraries/libraries-nablarch-validation.md) を使用する場合は、 nablarch.common.code.validator.CodeValue アノテーションを使用する。
 
 ```java
 @CodeValue(codeId = "GENDER")

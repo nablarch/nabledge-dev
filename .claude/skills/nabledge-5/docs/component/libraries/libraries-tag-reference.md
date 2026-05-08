@@ -1,7 +1,7 @@
 # タグリファレンス
 
 このリファレンスには、Nablarchが提供するタグとその属性について記述されている。
-各タグの使用方法や使用例などの詳細については [JSPカスタムタグ](../../component/libraries/libraries-tag.md#jspカスタムタグ) を参照すること。
+各タグの使用方法や使用例などの詳細については [JSPカスタムタグ](../../component/libraries/libraries-tag.md) を参照すること。
 
 フォーム
 

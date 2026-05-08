@@ -73,7 +73,7 @@
     {
       "id": "s12",
       "title": "データの入力値をチェックする",
-      "content": "データをJava Beansオブジェクトとして読み込むことができるため、\n[Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) による入力値チェックを行うことができる。\n\n実装例を以下に示す。\n\n```java\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        // 入力値チェックを実行\n        ValidatorUtil.validate(person);\n\n        // 後続の処理は省略\n    }\n} catch (InvalidDataFormatException e) {\n    // データファイルのフォーマット不正時の処理を記述\n}\n```",
+      "content": "データをJava Beansオブジェクトとして読み込むことができるため、\n[Bean Validation](../../component/libraries/libraries-bean-validation.md) による入力値チェックを行うことができる。\n\n実装例を以下に示す。\n\n```java\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inputStream)) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        // 入力値チェックを実行\n        ValidatorUtil.validate(person);\n\n        // 後続の処理は省略\n    }\n} catch (InvalidDataFormatException e) {\n    // データファイルのフォーマット不正時の処理を記述\n}\n```",
       "level": 3
     },
     {
@@ -85,7 +85,7 @@
     {
       "id": "s14",
       "title": "アップロードファイルのデータを読み込む",
-      "content": "ウェブアプリケーションで、画面からアップロードされたデータファイルをJava Beansオブジェクトとして読み込むための実装例を以下に示す。\n\nポイント\n\n* PartInfo#getInputStream を使用して、アップロードファイルのストリームを取得する。\n* 不正なデータが入力されている可能性があるため、[Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を使用して入力チェックを行う。\n\n```java\nList<PartInfo> partInfoList = request.getPart(\"uploadFile\");\nif (partInfoList.isEmpty()) {\n    // アップロードファイルが見つからない場合の処理を記述\n}\n\nPartInfo partInfo = partInfoList.get(0);\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, partInfo.getInputStream())) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        // 入力値チェックを実行\n        ValidatorUtil.validate(person);\n\n        // 後続の処理は省略\n    }\n} catch (InvalidDataFormatException e) {\n    // データファイルのフォーマット不正時の処理を記述\n}\n```",
+      "content": "ウェブアプリケーションで、画面からアップロードされたデータファイルをJava Beansオブジェクトとして読み込むための実装例を以下に示す。\n\nポイント\n\n* PartInfo#getInputStream を使用して、アップロードファイルのストリームを取得する。\n* 不正なデータが入力されている可能性があるため、[Bean Validation](../../component/libraries/libraries-bean-validation.md) を使用して入力チェックを行う。\n\n```java\nList<PartInfo> partInfoList = request.getPart(\"uploadFile\");\nif (partInfoList.isEmpty()) {\n    // アップロードファイルが見つからない場合の処理を記述\n}\n\nPartInfo partInfo = partInfoList.get(0);\ntry (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, partInfo.getInputStream())) {\n    Person person;\n    while ((person = mapper.read()) != null) {\n        // 入力値チェックを実行\n        ValidatorUtil.validate(person);\n\n        // 後続の処理は省略\n    }\n} catch (InvalidDataFormatException e) {\n    // データファイルのフォーマット不正時の処理を記述\n}\n```",
       "level": 3
     },
     {
@@ -109,7 +109,7 @@
     {
       "id": "s18",
       "title": "出力するデータの表示形式をフォーマットする",
-      "content": "データを出力する際に、 [フォーマッタ](../../component/libraries/libraries-format.md#フォーマッタ) を使用することで日付や数値などのデータの表示形式をフォーマットできる。\n\n詳細は [フォーマッタ](../../component/libraries/libraries-format.md#フォーマッタ) を参照すること。",
+      "content": "データを出力する際に、 [フォーマッタ](../../component/libraries/libraries-format.md) を使用することで日付や数値などのデータの表示形式をフォーマットできる。\n\n詳細は [フォーマッタ](../../component/libraries/libraries-format.md) を参照すること。",
       "level": 3
     },
     {

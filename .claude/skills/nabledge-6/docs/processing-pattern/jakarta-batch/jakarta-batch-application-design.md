@@ -40,7 +40,7 @@ Chunkステップの場合の実装すべきクラスとその責務について
 
 > **Tip:**
 > アイテムリーダで読み込んだデータが外部から取得したデータの場合は、業務ロジックの実行前に入力値のチェックを行うこと。
-> 入力値のチェックについては、 [入力値のチェック](../../component/libraries/libraries-validation.md#入力値のチェック) を参照。
+> 入力値のチェックについては、 [入力値のチェック](../../component/libraries/libraries-validation.md) を参照。
 
 アイテムライタ(ItemWriter class)
 

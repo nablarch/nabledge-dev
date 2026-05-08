@@ -2,7 +2,7 @@
 
 この章では、以下の機能の比較を示す。
 
-* [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao)
+* [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md)
 * <a href="https://jakarta.ee/specifications/persistence/" target="_blank">Jakarta Persistence(外部サイト、英語)</a>
 
 > **Important:**

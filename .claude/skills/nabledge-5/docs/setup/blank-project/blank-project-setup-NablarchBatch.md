@@ -16,9 +16,9 @@ Nablarchバッチプロジェクトの初期セットアップでは以下を行
 | 使用DB | H2 Databaes Engine(アプリケーションに組み込み) |
 | 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。  * Nablarchバッチアプリケーション用の基本的な設定 * 疎通確認用の都度起動バッチアプリケーション * 疎通確認用のテーブルをキューとして使ったメッセージング * メール送信バッチの設定  [1] * Mavenと連動して動作するツールの初期設定( [nablarch-archetype-parent(親プロジェクト)](../../setup/blank-project/blank-project-MavenModuleStructures.md#nablarch-archetype-parent親プロジェクト) を参照することによって取り込んでいる)。 |
 
-メール送信バッチは、[常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#アーキテクチャ概要)  として動作し、SMTPサーバに対してメールを送信するものである。
+メール送信バッチは、[常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md)  として動作し、SMTPサーバに対してメールを送信するものである。
 コンポーネント設定ファイルのサンプルは `src/main/resources/mail-sender-boot.xml` に存在する。
-メール送信バッチは初期環境構築時には必要ないが、必要になったタイミングで [メール送信](../../component/libraries/libraries-mail.md#メール送信) の解説を読んだ上で使用する。
+メール送信バッチは初期環境構築時には必要ないが、必要になったタイミングで [メール送信](../../component/libraries/libraries-mail.md) の解説を読んだ上で使用する。
 
 他のプロジェクトとの関係、及びディレクトリ構成は、 [Mavenアーキタイプの構成](../../setup/blank-project/blank-project-MavenModuleStructures.md) を参照。
 

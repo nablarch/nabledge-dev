@@ -6,12 +6,12 @@
 * ハンドラキュー(handler queue)
 
   * インターセプタ(interceptor)
-* [ライブラリ(library)](../../component/libraries/libraries-libraries.md#nablarchが提供するライブラリ)
+* [ライブラリ(library)](../../component/libraries/libraries-libraries.md)
 
 Nablarchアプリケーションフレームワークのアーキテクチャについて解説する。
 
 > **Warning:**
-> 本項で解説するアーキテクチャは、 [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md#jakarta-batchに準拠したバッチアプリケーション) には該当しない（詳細については、 [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md#jakarta-batchに準拠したバッチアプリケーション) の [アーキテクチャ概要](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md#アーキテクチャ概要) を参照）。
+> 本項で解説するアーキテクチャは、 [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md) には該当しない（詳細については、 [Jakarta Batchに準拠したバッチアプリケーション](../../processing-pattern/jakarta-batch/jakarta-batch-jsr352.md) の [アーキテクチャ概要](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md) を参照）。
 
 ## Nablarchアプリケーションフレームワークの主な構成要素
 
@@ -86,4 +86,4 @@ Nablarchは受け取ったリクエストに対し、ハンドラキュー上に
 
 ライブラリとは、データベースアクセスやファイルアクセス、ログ出力などのようにハンドラから呼び出されるコンポーネント群のことを指す。
 
-Nablarchアプリケーションフレームワークが提供するライブラリは、 [Nablarchが提供するライブラリ](../../component/libraries/libraries-libraries.md#nablarchが提供するライブラリ) を参照。
+Nablarchアプリケーションフレームワークが提供するライブラリは、 [Nablarchが提供するライブラリ](../../component/libraries/libraries-libraries.md) を参照。

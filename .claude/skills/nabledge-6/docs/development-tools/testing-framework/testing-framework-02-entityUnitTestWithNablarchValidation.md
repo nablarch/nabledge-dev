@@ -1,11 +1,11 @@
 # Nablarch Validationに対応したForm/Entityのクラス単体テスト
 
-本項では、入力値チェックを [Nablarch Validation](../../component/libraries/libraries-nablarch-validation.md#nablarch-validation) で実施しているFormおよびEntityクラス単体テスト(以下Form単体テストまたはEntity単体テスト)について説明する。
+本項では、入力値チェックを [Nablarch Validation](../../component/libraries/libraries-nablarch-validation.md) で実施しているFormおよびEntityクラス単体テスト(以下Form単体テストまたはEntity単体テスト)について説明する。
 両者はほぼ同じように単体テストを行えるため、共通する内容についてはEntity単体テストをベースに説明し、特有の処理については個別に説明する。
 
 > **Tip:**
 > Form、Entityの責務については、各処理方式の責務配置を参照すること。
-> 例： [ウェブアプリケーションの責務配置](../../processing-pattern/web-application/web-application-application-design.md#アプリケーションの責務配置) 、 [Nablarchバッチアプリケーションの責務配置](../../processing-pattern/nablarch-batch/nablarch-batch-application-design.md#アプリケーションの責務配置)
+> 例： [ウェブアプリケーションの責務配置](../../processing-pattern/web-application/web-application-application-design.md) 、 [Nablarchバッチアプリケーションの責務配置](../../processing-pattern/nablarch-batch/nablarch-batch-application-design.md)
 
 ## Form/Entity単体テストの書き方
 
@@ -315,7 +315,7 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 
 ##### 精査対象確認
 
-精査対象のプロパティを指定( [Nablarch Validation](../../component/libraries/libraries-nablarch-validation.md#nablarch-validation) 参照)した場合、
+精査対象のプロパティを指定( [Nablarch Validation](../../component/libraries/libraries-nablarch-validation.md) 参照)した場合、
 その指定が正しいかどうか確認するケースを作成する。
 
 全てのプロパティに対して、おのおの単項目精査でエラーとなるデータを用意する。

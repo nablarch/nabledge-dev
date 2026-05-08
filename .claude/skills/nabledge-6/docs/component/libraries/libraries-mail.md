@@ -25,7 +25,7 @@
 
 この機能では、ディレードオンライン処理と呼ばれる方式を採用しており、
 メール送信を即時に行うのではなく、一旦、メール送信要求をデータベースに格納しておき、
-[常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#アーキテクチャ概要) を使い非同期にメールを送信する。
+[常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md) を使い非同期にメールを送信する。
 
 ![mail_system.png](../../../knowledge/assets/libraries-mail/mail_system.png)
 
@@ -65,9 +65,9 @@
 
 > 既存の定型メール機能の代わりに、より高機能な下記のテンプレートエンジンを使用した定型メール機能を推奨する。
 
-> * >   [E-mail FreeMarkerアダプタ](../../component/adapters/adapters-mail-sender-freemarker-adaptor.md#e-mail-freemarkerアダプタ)
-> * >   [E-mail Thymeleafアダプタ](../../component/adapters/adapters-mail-sender-thymeleaf-adaptor.md#e-mail-thymeleafアダプタ)
-> * >   [E-mail Velocityアダプタ](../../component/adapters/adapters-mail-sender-velocity-adaptor.md#e-mail-velocityアダプタ)
+> * >   [E-mail FreeMarkerアダプタ](../../component/adapters/adapters-mail-sender-freemarker-adaptor.md)
+> * >   [E-mail Thymeleafアダプタ](../../component/adapters/adapters-mail-sender-thymeleaf-adaptor.md)
+> * >   [E-mail Velocityアダプタ](../../component/adapters/adapters-mail-sender-velocity-adaptor.md)
 
 ### キャンペーン通知のような大量メールの一斉送信には対応していない
 
@@ -261,8 +261,8 @@ MailConfig の設定をコンポーネント定義に追加する。
 
 MailRequester は、
 メール送信要求をデータベースに登録する際、
-[採番](../../component/libraries/libraries-generator.md#サロゲートキーの採番) を使ってメール送信要求IDを生成する。
-そのため、 [採番](../../component/libraries/libraries-generator.md#サロゲートキーの採番) の設定も別途必要となる。
+[採番](../../component/libraries/libraries-generator.md) を使ってメール送信要求IDを生成する。
+そのため、 [採番](../../component/libraries/libraries-generator.md) の設定も別途必要となる。
 
 設定例を以下に示す。
 
@@ -390,7 +390,7 @@ String mailRequestId = requester.requestToSend(mailRequest);
 ### メールを送信する(メール送信バッチを実行する)
 
 メール送信バッチには、 MailSender を使用する。
-MailSender は、 [常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#アーキテクチャ概要)
+MailSender は、 [常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md)
 を使用して動作させるバッチアクションとして作成している。
 
 メール送信処理では、障害発生時に同一のメールが複数送信されないように、以下のような処理の流れとなっている。
@@ -550,7 +550,7 @@ MailSender は、
 ### メール送信要求時に使用するトランザクションを指定する
 
 業務アプリケーションが失敗してもメール送信要求を確実に行いたい場合など、
-メール送信要求 MailRequester とメール送信要求IDの [採番](../../component/libraries/libraries-generator.md#サロゲートキーの採番)
+メール送信要求 MailRequester とメール送信要求IDの [採番](../../component/libraries/libraries-generator.md)
 で実行されるトランザクションを、業務アプリケーションのトランザクションとは独立して指定したい場合がある。
 
 その場合の設定例を以下に示す。

@@ -29,29 +29,29 @@
 
 ## 入力値のチェック
 
-* [入力値のチェック](../../component/libraries/libraries-validation.md#入力値のチェック)
+* [入力値のチェック](../../component/libraries/libraries-validation.md)
 
 ## データベースアクセス
 
 * [データベースを入力とするChunkステップ](../../processing-pattern/jakarta-batch/jakarta-batch-database-reader.md)
 
-* [データベースアクセス](../../component/libraries/libraries-database-management.md#データベースアクセス)
+* [データベースアクセス](../../component/libraries/libraries-database-management.md)
 * [データベースを入力とするChunkステップ](../../processing-pattern/jakarta-batch/jakarta-batch-database-reader.md)
 
 ## ファイル入出力
 
-* [ファイル入出力](../../component/libraries/libraries-data-converter.md#様々なフォーマットのデータへのアクセス)
+* [ファイル入出力](../../component/libraries/libraries-data-converter.md)
 
 ## 排他制御
 
 * [Jakarta Batchに準拠したバッチアプリケーションの悲観的ロック](../../processing-pattern/jakarta-batch/jakarta-batch-pessimistic-lock.md)
 
 排他制御は、以下の2種類の方法を提供しているが、
-[UniversalDaoを推奨する理由](../../component/libraries/libraries-exclusive-control.md#排他制御) に記載がある通り、
-[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) の使用を推奨する。
+[UniversalDaoを推奨する理由](../../component/libraries/libraries-exclusive-control.md) に記載がある通り、
+[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) の使用を推奨する。
 
-* [排他制御](../../component/libraries/libraries-exclusive-control.md#排他制御)
-* [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao)
+* [排他制御](../../component/libraries/libraries-exclusive-control.md)
+* [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md)
 
   * [悲観的ロック](../../processing-pattern/jakarta-batch/jakarta-batch-pessimistic-lock.md)
 

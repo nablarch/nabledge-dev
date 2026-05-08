@@ -121,9 +121,9 @@ public HttpResponse update(ProjectUpdateForm form) {
 * リクエストボディをJSON形式で受け付けるため、 Consumes アノテーションに
   `MediaType.APPLICATION_JSON` を指定する。
 * Valid アノテーションを使用して、リクエストのバリデーションを行う。
-  詳細は [Jakarta RESTful Web Servcies Bean Validationハンドラ](../../component/handlers/handlers-jaxrs-bean-validation-handler.md#jakarta-restful-web-servcies-bean-validationハンドラ) を参照。
+  詳細は [Jakarta RESTful Web Servcies Bean Validationハンドラ](../../component/handlers/handlers-jaxrs-bean-validation-handler.md) を参照。
 * BeanUtil でフォームからエンティティを作成し、
-  [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md#ユニバーサルdao) を使用してプロジェクト情報を更新する。
+  [ユニバーサルDAO](../../component/libraries/libraries-universal-dao.md) を使用してプロジェクト情報を更新する。
 * 更新に成功した場合は、正常終了(ステータスコード： `200` )を表す HttpResponse を返却する。
 
 > **Tip:**
@@ -134,7 +134,7 @@ public HttpResponse update(ProjectUpdateForm form) {
 
 URLとのマッピングを定義
 
-[ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md#ルーティングアダプタ) を使用して、業務アクションとURLのマッピングを行う。
+[ルーティングアダプタ](../../component/adapters/adapters-router-adaptor.md) を使用して、業務アクションとURLのマッピングを行う。
 マッピングには [Jakarta RESTful Web ServicesのPathアノテーション](../../component/adapters/adapters-router-adaptor.md#jakarta-restful-web-servicesのpathアノテーションでマッピングする) を使用する。
 
 ProjectAction.java

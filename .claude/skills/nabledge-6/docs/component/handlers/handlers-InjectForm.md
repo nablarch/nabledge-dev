@@ -77,7 +77,7 @@ public HttpResponse handle(HttpRequest req, ExecutionContext ctx) {
 ```
 
 > **Tip:**
-> バリデーションに [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を使用する場合、バリデーションエラー時にもリクエストスコープから
+> バリデーションに [Bean Validation](../../component/libraries/libraries-bean-validation.md) を使用する場合、バリデーションエラー時にもリクエストスコープから
 > オブジェクトを取得可能となるよう設定ができる。詳細は『 [バリデーションエラー時にもリクエストパラメータをリクエストスコープから取得したい](../../component/libraries/libraries-bean-validation.md#バリデーションエラー時にもリクエストパラメータをリクエストスコープから取得したい) 』を参照。
 
 ## バリデーションエラー時の遷移先を指定する
@@ -91,7 +91,7 @@ OnError が設定されていない場合、バリデーションエラーがシ
 
 ## Bean Validationのグループを指定する
 
-バリデーションに [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を使用する場合は、 InjectForm#validationGroup にグループを指定することができる。
+バリデーションに [Bean Validation](../../component/libraries/libraries-bean-validation.md) を使用する場合は、 InjectForm#validationGroup にグループを指定することができる。
 
 以下に実装例を示す。
 

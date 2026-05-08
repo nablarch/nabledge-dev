@@ -113,7 +113,7 @@
   本来であれば精査処理を行い、精査OKの場合に確認画面が表示される。
 4. JSP静的チェックツールの実行
 
-  [JSP静的解析ツール](../../development-tools/java-static-analysis/java-static-analysis-01-JspStaticAnalysis.md#jsp静的解析ツール) を実行し、該当ファイルに静的チェックエラーがないことを確認する。
+  [JSP静的解析ツール](../../development-tools/java-static-analysis/java-static-analysis-01-JspStaticAnalysis.md) を実行し、該当ファイルに静的チェックエラーがないことを確認する。
 
 ## 精査処理呼び出し実装
 
@@ -132,7 +132,7 @@
   リクエスト単体テストを実施し、テストが失敗することを確認する。（Actionクラスに精査処理を実装していないため。）
 3. 精査処理の呼び出し実装
 
-  登録確認画面の実装- [Actionクラスの実装](../../guide/web-application/web-application-07-confirm-view.md#actionクラスの実装) で作成したActionクラスに対して、 [Entityクラス（精査処理）の実装](../../guide/web-application/web-application-04-create-entity.md#entityクラス精査処理の実装) と [Formクラスの実装](../../guide/web-application/web-application-05-create-form.md#formクラスの実装) で作成した精査処理の呼び出し、精査エラー時の遷移先指定を実装する。
+  登録確認画面の実装- [Actionクラスの実装](../../guide/web-application/web-application-07-confirm-view.md#actionクラスの実装) で作成したActionクラスに対して、 [Entityクラス（精査処理）の実装](../../guide/web-application/web-application-04-create-entity.md) と [Formクラスの実装](../../guide/web-application/web-application-05-create-form.md) で作成した精査処理の呼び出し、精査エラー時の遷移先指定を実装する。
 
   ```java
   /**

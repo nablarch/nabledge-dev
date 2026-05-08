@@ -330,7 +330,7 @@ JAX-RSのPathアノテーションによるマッピングについては  [JAX-
 
 > **Tip:**
 > 本サンプルでは、CSRF(クロスサイトリクエストフォージェリ)への対策のため、CSRFトークン検証ハンドラの使用を想定している。
-> CSRF対策の詳細については [CSRFトークン検証ハンドラ](../../component/handlers/handlers-csrf-token-verification-handler.md#csrfトークン検証ハンドラ) を参照。
+> CSRF対策の詳細については [CSRFトークン検証ハンドラ](../../component/handlers/handlers-csrf-token-verification-handler.md) を参照。
 
 ```java
 /**
