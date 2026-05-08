@@ -12,34 +12,45 @@
 
 ## In Progress
 
-### Task 7: RBKC P1閾値変更の影響調査
+### Task 7: xlsx-sheet-mapping を create/verify 両側の正式定義にする
 
-**背景決定事項:**
+**背景決定事項（このセッションで確定）:**
 - 手動変更はNGと確定（`eb36437d7`でrevert済み）
-- 正しい対応: RBKC側（`_detect_header`）を修正してMDテーブルを自動生成する
-- 方針: `_run_length ≥ 3` を `≥ 2` に変更することで3.PCIDSS対応表（2列テーブル）をP1として自動判定させる
-- 設計書（`rbkc-converter-design.md` §8-2）の `≥ 3` 記述も合わせて変更が必要
-- verify設計書（`rbkc-verify-quality-design.md`）は §8-2 参照のため変更不要だが確認要
-- `rbkc.md` にRBKC生成ファイルの手動編集禁止ルール追加が必要
+- 当初方針（閾値変更）は廃棄：副作用でバージョンアップ手順もP1化される、verifyとの不整合
+- SE/QAエキスパートレビュー実施済み → アプローチB採用
+- **確定方針**: `xlsx-sheet-mapping.md` を create/verify 両側の正式定義にする
+  - mapping に P1/P2 を明示 → create も verify もそれを読んで従う
+  - mapping にないシートは FAIL（自動判定廃止）
+  - PCIDSS対応表を `P1` に変更 → テーブル出力
+- v1.4/v1.3/v1.2 も含めて全バージョンを同時対応（自動判定結果を mapping に焼き込む）
+- **現在の状態**: 途中実装あり（WIP stash対象）
+
+**現在の未コミット変更（途中実装 — WIP）:**
+- `tools/rbkc/scripts/create/converters/xlsx_common.py` — P1 override 実装（方針変更で廃棄予定）
+- `tools/rbkc/docs/rbkc-converter-design.md` — P1 override の設計書追記（廃棄予定）
+- `tools/rbkc/docs/xlsx-sheet-mapping.md` — PCIDSS対応表を P1 に変更（一部正しい）
+- `.claude/skills/nabledge-5/`, `.claude/skills/nabledge-6/` — rbkc create の出力（廃棄予定）
 
 **Steps:**
-- [ ] Step 1: 閾値を `≥ 2` に変更して `rbkc.sh create 6` を実行し、差分が出るファイルを全列挙する
-- [ ] Step 2: 同様に `rbkc.sh create 5` を実行し差分確認
-- [ ] Step 3: 差分ファイルを精査し、意図しない変更（3.PCIDSS対応表以外のシートがP1化されていないか）を確認
-- [ ] Step 4: 影響確認後、設計書・verify設計書の要更新箇所を特定して提案
-- [ ] Step 5: ユーザー承認後に実装（TDD: テスト→RED→実装→GREEN）
-- [ ] Step 6: `rbkc.sh verify 6` および `rbkc.sh verify 5` でFAIL 0件を確認
+- [ ] Step 0: WIP変更をrevert（xlsx_common.py の P1 override、設計書追記、knowledge files）
+- [ ] Step 1: スクリプトで全バージョン(v6/v5/v1.4/v1.3/v1.2) の全 xlsx シートを走査し、現在の自動判定（P1/P2）を列挙する
+- [ ] Step 2: 列挙結果で `xlsx-sheet-mapping.md` を更新（v1.x セクション追加、PCIDSS対応表を P1 に変更）
+- [ ] Step 3: create 側（`xlsx_common.py`）を mapping 優先に変更（mapping にないシートはエラー）
+- [ ] Step 4: verify 側（`verify.py`）を mapping 優先に変更（mapping にないシートはエラー）
+- [ ] Step 5: PCIDSS対応表が P1 として正しく生成されることを確認（`rbkc create 6/5`）
+- [ ] Step 6: `rbkc.sh verify 6` および `rbkc.sh verify 5` で FAIL 0件を確認
 - [ ] Step 7: `rbkc.md` に手動編集禁止ルール追加
 - [ ] Step 8: PRボディ更新
-- [ ] Step 9: PR変更差分チェック — `git diff origin/main..HEAD --stat` でRBKC修正・設計書・テスト・work logのみであること、意図しないファイルが含まれていないことを確認し、結果を `.work/00327/diff-check.md` に記録する
+- [ ] Step 9: PR変更差分チェック
 - [ ] Step 10: レビュー依頼
 
 **調査済み事実:**
-- `_detect_header()` @ `tools/rbkc/scripts/create/converters/xlsx_common.py:341` が `_run_length(row_h) < 3` で閾値判定
-- `_run_length()` は行の「最長連続非空セル数」を返す
-- `3.PCIDSS対応表` はヘッダ行の非空セルが2列（col B, col C）のみ → `< 3` で P2 扱い
-- P2-3 として `xlsx-sheet-mapping.md:23,45` に手動登録されている（v6/v5 両方）
-- `rbkc-converter-design.md` §8-2 に「連続非空セル ≥ 3」と明記
+- v6/v5 の xlsx シートは `tools/rbkc/docs/xlsx-sheet-mapping.md` に全212シート列挙済み
+- v1.4/v1.3/v1.2 の xlsx は `tools/rbkc/mappings/v1.x.json` の `xlsx` キーで定義（releasenote.xlsx のみ）
+- releasenote.xlsx の件数: v1.4/v1.3/v1.2 合計32ファイル
+- `_detect_header()` @ `xlsx_common.py:341` が自動判定を行っている
+- PCIDSS対応表: ヘッダ行の連続非空セルが2列（col B, col C）、run_length=2 → 現在 P2
+- 自動判定を走らせた際の影響: v6 で PCIDSS対応表+リリースノート3件変更（リリースノートはP2-2のまま維持すべき）
 
 ## Not Started
 
@@ -57,6 +68,7 @@
 - [x] Task 6: PR ボディ更新・レビュー依頼済み — `a82db3d24`
 - [x] レビューコメント（@kiyotis）への返信 — 手動変更が `rbkc.sh create` で上書きされる問題を報告
 - [x] 手動変更のrevert — `eb36437d7`（RBKC修正で対応する方針に変更）
+- [x] SE/QAエキスパートレビュー実施 — 途中実装（P1 override）の問題を特定、方針確定
 
 ## Success Criteria Check
 
