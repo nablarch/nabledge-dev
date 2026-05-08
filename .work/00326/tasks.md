@@ -20,6 +20,7 @@
 - [ ] ブランチの修正（README.md, docs.py, test_docs.py）を再適用
 - [ ] create + verify 全5バージョン 再実行
 - [ ] `git diff origin/main --stat` で差分確認 → 想定外差分があれば報告
+- [ ] PRレビュー依頼前チェック: `git diff origin/main --name-only` で変更ファイルを列挙し、Issue #326 のスコープ（README.md, docs.py, test_docs.py および対応 v6 知識ファイル）のみか確認 → 範囲外ファイルがあれば報告してユーザー判断を仰ぐ
 
 **調査結果（このセッションで判明）:**
 
