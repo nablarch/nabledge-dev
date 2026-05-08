@@ -4,6 +4,14 @@
 **Issue**: #320
 **Updated**: 2026-05-08
 
+## Not Started
+
+### Task 14: PR差分確認
+**Steps:**
+- [ ] `git diff origin/main HEAD --name-only` でPRの変更ファイル一覧を確認
+- [ ] RBKC生成ファイル（chore: regenerate commits）以外が想定通りのファイルのみか確認
+- [ ] 問題なければレビュー依頼
+
 ## In Progress
 
 ## Done
