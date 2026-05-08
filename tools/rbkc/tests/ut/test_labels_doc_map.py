@@ -744,6 +744,159 @@ class TestHeadingUnderlineMustBeSameChar:
         )
 
 
+class TestSimpleTableSpanSeparatorNotHeading:
+    """RST simple-table span-separator rows (a run of ``-`` spanning table
+    columns) must NOT be treated as heading underlines.
+
+    Reproduces the 04_Connection.rst pattern in v1.x where lines like:
+        nablarch.core.db.connectionパッケージ
+        -----------------------------------------------------------------------------------
+    appeared inside a simple table.  The ``---...---`` row is a
+    *span-separator* (merges cells across rows), not a heading underline.
+    Sphinx does not create a section for these lines.
+
+    Root cause: ``_scan_rst_labels`` Pass 1 treated any ``---...---`` line
+    that followed a non-blank text line as a heading underline, regardless
+    of whether that text was a table cell rather than a potential heading.
+    """
+
+    def test_span_separator_inside_simple_table_not_a_heading(self, tmp_path):
+        """A ``---`` line inside a simple table must not become a heading.
+
+        The label defined before the table must resolve to the real enclosing
+        section, NOT to the table-cell text above the span-separator.
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "conn.rst"
+        rst.write_text(
+            "データベース接続部品の構造\n"
+            "--------------------------\n\n"
+            "インタフェース定義\n"
+            "^^^^^^^^^^^^^^^^^^\n\n"
+            ".. _db-interfaces-label:\n\n"
+            "=========================================================== =======================================================================================\n"
+            "インタフェース名                                            概要\n"
+            "=========================================================== =======================================================================================\n"
+            "nablarch.core.db.connectionパッケージ\n"
+            "---------------------------------------------------------------------------------------------------------------------------------------------------\n"
+            "ConnectionFactory                                           データベース接続を生成するインターフェース。\n"
+            "=========================================================== =======================================================================================\n\n"
+            "Body text.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        lt = m.get("db-interfaces-label")
+        assert lt is not None
+        # The label is between headings — it should resolve to the enclosing
+        # section "インタフェース定義", NOT to "nablarch.core.db.connectionパッケージ"
+        assert lt.title == "インタフェース定義", (
+            f"expected 'インタフェース定義', got {lt.title!r} — "
+            "span-separator '---' was mistakenly treated as a heading underline"
+        )
+
+    def test_span_separator_label_inside_table_gets_enclosing_section(self, tmp_path):
+        """A label defined INSIDE a simple table (before a span-separator row)
+        must resolve to the enclosing RST section, not the cell text."""
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "stmt.rst"
+        rst.write_text(
+            "Statement Classes\n"
+            "=================\n\n"
+            "=========================================================== =======================================================================================\n"
+            "クラス名                                                    概要\n"
+            "=========================================================== =======================================================================================\n"
+            "nablarch.core.db.statementパッケージ\n"
+            "---------------------------------------------------------------------------------------------------------------------------------------------------\n"
+            ".. _stmt-label:\n\n"
+            "BasicSqlPStatement                                          SQL文の実行クラス。\n"
+            "=========================================================== =======================================================================================\n\n"
+            "本文。\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        lt = m.get("stmt-label")
+        assert lt is not None
+        # Must resolve to the section heading, not the span-separator cell
+        assert lt.title == "Statement Classes", (
+            f"expected 'Statement Classes', got {lt.title!r}"
+        )
+
+    def test_real_dash_heading_still_detected(self, tmp_path):
+        """A ``---`` underline outside a simple table must still be a heading."""
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "real.rst"
+        rst.write_text(
+            "Document Title\n"
+            "==============\n\n"
+            "Real Subsection\n"
+            "---------------\n\n"
+            ".. _my-label:\n\n"
+            "Content.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        lt = m.get("my-label")
+        assert lt is not None
+        assert lt.title == "Real Subsection", (
+            f"expected 'Real Subsection', got {lt.title!r}"
+        )
+
+
+class TestIndentedCodeBlockNotHeading:
+    """Indented lines inside code-block directives must NOT be treated as
+    heading titles or underlines.
+
+    Root cause: in FormTagList.rst (v1.x), a code-block contains:
+        <%-- 確認画面 --%>
+        ########
+    Both lines are indented (2 spaces). The '########' line is a run of '#'
+    chars — a valid heading adornment character — but it is NOT a heading
+    because it is indented (code-block content).
+
+    Fix: underline-only heading detection requires the title line to be
+    at column 0 (not indented). Indented lines are inside directives and
+    cannot be section titles.
+    """
+
+    def test_indented_hash_run_in_code_block_not_heading(self, tmp_path):
+        """'########' inside a code-block (indented) must not become a heading."""
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "tag.rst"
+        rst.write_text(
+            "passwordタグ\n"
+            "============\n\n"
+            ".. code-block:: html\n\n"
+            "  <%-- 確認画面 --%>\n"
+            "  ########\n\n"
+            ".. _WebView_SingleCheckBoxTag:\n\n"
+            "checkboxタグ\n"
+            "------------\n\n"
+            "Body.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        lt = m.get("WebView_SingleCheckBoxTag")
+        assert lt is not None
+        # Must resolve to the actual RST heading 'checkboxタグ',
+        # NOT to '<%-- 確認画面 --%>' from the code-block
+        assert lt.title == "checkboxタグ", (
+            f"expected 'checkboxタグ', got {lt.title!r} — "
+            "indented '########' in code-block was mistakenly treated as heading underline"
+        )
+
+
 class TestBuildLabelMapBackwardCompat:
     """The old ``build_label_map(source_dir) -> dict[label, str|UNRESOLVED]``
     must keep working so downstream callers that haven't migrated keep going.

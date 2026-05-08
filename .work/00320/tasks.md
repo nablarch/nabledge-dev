@@ -30,10 +30,12 @@ verify FAIL 0件 は §4 マトリクス ✅ 成立条件 3。現在 v6:38, v5:4
   - **Root cause A（解消済み）**: `-->` (HTML/JSP コメント閉じ) が見出し下線として誤検出 → `_is_heading_underline()` に「同一文字の繰り返し」条件を追加 → v6:0, v5:0
   - **Root cause B（残存）**: RST simple table のセパレーター行（`======= =======` 形式）が見出し下線として誤検出 → v1.4:28, v1.3:24, v1.2:28 の原因
   - Root cause B の具体例: `04_Connection.rst` のテーブル内セル `nablarch.core.db.connectionパッケージ` が見出しとして解決される
-- [ ] Root cause B の修正実装（TDD: simple table セパレーター行を見出し検出からスキップ）
-- [ ] 全5バージョン create + verify — FAIL 0件確認
-- [ ] 設計書 §4 マトリクス QL1 を正しく ✅ に更新
-- [ ] PR #330 SC を ✅ に更新
+- [x] Root cause B の修正実装（TDD: simple table セパレーター行を見出し検出からスキップ）
+- [x] Root cause C の修正実装（TDD: インデントされたコードブロック内 `###...` を見出し検出からスキップ）
+- [x] subtitle バグ修正（TDD: docutils subtitle promotion → section として追加）
+- [x] 全5バージョン create + verify — FAIL 0件確認（v6:0, v5:0, v1.4:0, v1.3:0, v1.2:0）
+- [x] 設計書 §4 マトリクス QL1 — 既に ✅（Task 9 で更新済み）
+- [x] PR #330 SC を ✅ に更新
 - [ ] commit & push
 
 ## Done
