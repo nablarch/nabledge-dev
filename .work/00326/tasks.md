@@ -2,14 +2,12 @@
 
 **PR**: #331
 **Issue**: #326
-**Updated**: 2026-05-08
+**Updated**: 2026-05-08 (session end)
 
-## In Progress
+## Not Started
 
 ### PRレビュー依頼
-
-**Steps:**
-- [ ] PRレビュー依頼（expert review済み）
+- [ ] PRレビュー依頼（expert review済み、PR #331 本文更新済み）
 
 ## Done
 
