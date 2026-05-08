@@ -16,10 +16,10 @@
 
 **Steps:**
 - [x] untracked files（1629件）を Python スクリプトで除去（git clean 相当）
-- [ ] `git stash` でこのブランチのコミット済み変更を退避
+- [ ] `git diff main..HEAD -- <3ファイル>` をパッチファイルに保存 → `git checkout main -- <3ファイル>` で main 状態に戻す
 - [ ] create + verify 全5バージョン (6, 5, 1.4, 1.3, 1.2) 実行（main ベース）
 - [ ] `git diff --stat` で差分を記録
-- [ ] `git stash pop` でこのブランチの変更を復元
+- [ ] `git apply` でパッチを適用してブランチの変更を復元
 - [ ] create + verify 全5バージョン 再実行（このブランチ適用後）
 - [ ] `git diff --stat` で差分を記録 → 2回の結果を比較して原因を特定
 - [ ] untracked files を除去して作業ツリーをクリーンに戻す
