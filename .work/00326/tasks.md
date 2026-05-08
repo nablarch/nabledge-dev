@@ -2,7 +2,7 @@
 
 **PR**: #331
 **Issue**: #326
-**Updated**: 2026-05-08 (rebase onto origin/main 完了)
+**Updated**: 2026-05-08
 
 ## In Progress
 
@@ -16,7 +16,7 @@
 - [x] origin/main 状態で create + verify 全5バージョン (6, 5, 1.4, 1.3, 1.2) 実行 — 全 OK
 - [x] `git diff origin/main --stat` で差分確認 → **67ファイル差分あり**（v1.2/1.3/1.4 のみ、v5/v6 は差分なし）
 - [x] 差分原因調査結果を記録（.lw更新起因、PR修正とは無関係）
-- [DECISION: この差分の扱いを決定してから次のステップへ] v1.x再生成をこのPRに含めるか、Issue #326修正のみにするか
+- [x] v1.x知識ファイル再生成を main 側で対応 (#337)、リベースで取り込み済み → origin/main との差分はゼロ（tasks.mdのみ）
 - [ ] ブランチの修正（README.md, docs.py, test_docs.py）を再適用
 - [ ] create + verify 全5バージョン 再実行
 - [ ] `git diff origin/main --stat` で差分確認 → 想定外差分があれば報告
