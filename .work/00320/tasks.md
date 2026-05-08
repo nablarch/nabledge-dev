@@ -4,38 +4,39 @@
 **Issue**: #320
 **Updated**: 2026-05-08
 
-## Not Started
-
-### Task 15: 設計 — `scripts/common/labels.py` + verify リンク照合
-
-**背景:**
-前回の実装（Tasks 1–14）はリバート済み（commit `8673f77a5`）。
-原因: verify の QL1 チェックが「リンク先が存在するか」しか見ておらず、
-「RST が意図したページ・セクションを指しているか」を検証していなかった。
-そのため RBKC が間違ったリンクを生成しても PASS してしまっていた。
-
-**設計方針（エキスパートレビュー済み、ユーザー承認待ち）:**
-- Option C: `scripts/common/labels.py` を新設し、create / verify 両方が使う
-- `labels.py`: RST ファイルをスキャンして `label → (file_id, section_title)` マップを構築（RBKC ロジックを含まない）
-- verify: labels.py のマップで「RST が意図した section_title」を取得 → 生成 MD のリンクを辿って target `.md` の実際のページタイトル・セクションタイトルと照合
-- create: 同じ `labels.py` を使って解決
-
-**Steps:**
-- [ ] 設計書 §3-2-3 の QL1 照合ロジックを更新（labels.py の役割・インタフェース定義）
-- [ ] `scripts/common/labels.py` のインタフェース設計（入出力・テスト fixtures）
-- [ ] verify リンク照合ロジックの詳細設計
-- [ ] ユーザーへ設計確認依頼 [DECISION: 設計方針の承認]
+## In Progress
 
 ### Task 16: 実装
 
-**Steps:**
-- [ ] TDD: `TestLabels_*` テスト追加（RED）
-- [ ] `scripts/common/labels.py` 実装（GREEN）
-- [ ] TDD: verify QL1 リンク照合テスト追加（RED）
-- [ ] verify QL1 リンク照合実装（GREEN）
-- [ ] 全5バージョン verify 実行、FAIL diff 確認
+**設計（Task 15 完了・ユーザー承認済み）:**
+- `labels.py` の `build_label_doc_map()` は `file_id`, `section_title`, `type`, `category`, `anchor` を持つ `LabelTarget` を返す（既存・main 済み）
+- `run.py` は verify パスで `build_label_doc_map()` を使い、`label_map` に完全な `LabelTarget` を持っている（既存）
+- `check_source_links()` にクロスドキュメント検証を追加:
+  - シグネチャに `knowledge_dir=None`, `docs_dir=None` を追加
+  - `:ref:` で `LabelTarget.file_id` が非空のとき、4 点検証（target JSON 存在・section_title 照合・target docs MD 存在・anchor slug 照合）
+  - display-text `:ref:` にも同じ 4 点チェックを適用
+- `run.py` に `knowledge_dir=output_dir, docs_dir=docs_dir` を `check_source_links()` 呼び出しに追加
+- ヘルパー（module レベル）: `_section_titles_from_json()`, `_heading_slugs_from_md()`
+- テストクラス: `TestCheckSourceLinks_JsonSide`, `TestCheckSourceLinks_DocsMdSide`（spec §4 対応テスト表の通り）
 
-## In Progress
+**Steps:**
+- [ ] TDD: `TestCheckSourceLinks_JsonSide` テスト追加（RED）
+- [ ] `verify.py` — `_section_titles_from_json()` + cross-doc JSON side 実装（GREEN）
+- [ ] TDD: `TestCheckSourceLinks_DocsMdSide` テスト追加（RED）
+- [ ] `verify.py` — `_heading_slugs_from_md()` + cross-doc docs MD side 実装（GREEN）
+- [ ] `run.py` に `knowledge_dir`, `docs_dir` 引数追加
+- [ ] 全5バージョン create + verify 実行、FAIL diff 確認・記録
+- [ ] Expert review (Software Engineer + QA Engineer)
+- [ ] 設計書 §4 マトリクス QL1 を ✅ に更新
+- [ ] CHANGELOG 更新
+
+## Not Started
+
+### Task 17: PR 最終確認・マージ
+
+**Steps:**
+- [ ] PR #330 の Success Criteria チェック
+- [ ] PR 更新（Expert Review リンク追加）
 
 ## Done
 
@@ -46,3 +47,4 @@
   - リバート理由: verify が「リンク先存在チェック」のみで「意図したリンクか」を検証しておらず、
     RBKC の heading 修正が正しいリンクを壊しても FAIL しなかった
 - [x] エキスパート（Software Engineer）相談 — Option C (common/labels.py) を推奨
+- [x] Task 15: 設計完了・ユーザー承認済み
