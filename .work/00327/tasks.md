@@ -2,7 +2,7 @@
 
 **PR**: #332
 **Issue**: #327
-**Updated**: 2026-05-08
+**Updated**: 2026-05-08 (session 2)
 
 ## Rules
 
@@ -12,45 +12,56 @@
 
 ## In Progress
 
-### Task 7: xlsx-sheet-mapping を create/verify 両側の正式定義にする
+### Task 7: PCIDSS対応表専用の P2-4 パターンを追加する
 
-**背景決定事項（このセッションで確定）:**
+**背景決定事項:**
 - 手動変更はNGと確定（`eb36437d7`でrevert済み）
-- 当初方針（閾値変更）は廃棄：副作用でバージョンアップ手順もP1化される、verifyとの不整合
-- SE/QAエキスパートレビュー実施済み → アプローチB採用
-- **確定方針**: `xlsx-sheet-mapping.md` を create/verify 両側の正式定義にする
-  - mapping に P1/P2 を明示 → create も verify もそれを読んで従う
-  - mapping にないシートは FAIL（自動判定廃止）
-  - PCIDSS対応表を `P1` に変更 → テーブル出力
-- v1.4/v1.3/v1.2 も含めて全バージョンを同時対応（自動判定結果を mapping に焼き込む）
-- **現在の状態**: 途中実装あり（WIP stash対象）
+- mapping一元化アプローチ（前セッションのアプローチB）は複雑すぎと判断 → 廃棄
+- **確定方針（今セッション確定）**: PCIDSS対応表専用の P2-4 パターンを新設する
+  - xlsx-sheet-mapping.md の `3.PCIDSS対応表` を `P2-3` → `P2-4` に変更
+  - create 側: P2-4 ハンドラーを追加（2列テーブル＋セル内LF→`<br>`）
+  - verify 側: P2-4 対応の QO2 チェックを追加
+  - docs.py: P2-4 の MDテーブルレンダラーを追加
+- **WIP stash**: `stash@{0}` は廃棄（前セッションの P1 override — 不要）
 
-**現在の未コミット変更（途中実装 — WIP）:**
-- `tools/rbkc/scripts/create/converters/xlsx_common.py` — P1 override 実装（方針変更で廃棄予定）
-- `tools/rbkc/docs/rbkc-converter-design.md` — P1 override の設計書追記（廃棄予定）
-- `tools/rbkc/docs/xlsx-sheet-mapping.md` — PCIDSS対応表を P1 に変更（一部正しい）
-- `.claude/skills/nabledge-5/`, `.claude/skills/nabledge-6/` — rbkc create の出力（廃棄予定）
+**PCIDSS Excel 構造（調査済み）:**
+- ファイル: `Nablarch機能のセキュリティ対応表.xlsx` / シート: `3.PCIDSS対応表`
+- 3列（col A: 常に空、col B: 要件番号、col C: 対応内容）
+- rows 1-4: 前文（col A のみ）
+- row 5: 空行
+- row 6: ヘッダ（B=`PCI DSS 要件 `、C=`2.チェックリストとの対応`）
+- rows 7-16: データ 10行（B=`6.5.1`〜`6.5.10`、C=対応内容。embedded LF あり）
+- `_useful_width` は B+C の2列のみ使用 → `<= 2` で P1判定スキップ → 現在 P2-3
+
+**目標 docs MD:**
+- 前文 → プレーンテキスト（P2-3と同じ）
+- ヘッダ+データ → Markdownテーブル（セル内LFは `<br>` 変換）
+- v5 は v6 と同じ Excel 構造・同じ処理
+
+**変更対象ファイル:**
+- `tools/rbkc/docs/xlsx-sheet-mapping.md` — `3.PCIDSS対応表` を `P2-3` → `P2-4`（v6, v5 の2行）
+- `tools/rbkc/scripts/create/converters/xlsx_common.py` — `_build_p2_4_meta()` 追加、`sheet_to_result()` に P2-4 分岐追加
+- `tools/rbkc/scripts/create/docs.py` — `_render_xlsx_p2()` に P2-4 ブランチ追加
+- `tools/rbkc/scripts/verify/verify.py` — `check_content_completeness()` に P2-4 QO2 対応追加
 
 **Steps:**
-- [ ] Step 0: WIP変更をrevert（xlsx_common.py の P1 override、設計書追記、knowledge files）
-- [ ] Step 1: スクリプトで全バージョン(v6/v5/v1.4/v1.3/v1.2) の全 xlsx シートを走査し、現在の自動判定（P1/P2）を列挙する
-- [ ] Step 2: 列挙結果で `xlsx-sheet-mapping.md` を更新（v1.x セクション追加、PCIDSS対応表を P1 に変更）
-- [ ] Step 3: create 側（`xlsx_common.py`）を mapping 優先に変更（mapping にないシートはエラー）
-- [ ] Step 4: verify 側（`verify.py`）を mapping 優先に変更（mapping にないシートはエラー）
-- [ ] Step 5: PCIDSS対応表が P1 として正しく生成されることを確認（`rbkc create 6/5`）
-- [ ] Step 6: `rbkc.sh verify 6` および `rbkc.sh verify 5` で FAIL 0件を確認
-- [ ] Step 7: `rbkc.md` に手動編集禁止ルール追加
-- [ ] Step 8: PRボディ更新
-- [ ] Step 9: PR変更差分チェック
-- [ ] Step 10: レビュー依頼
-
-**調査済み事実:**
-- v6/v5 の xlsx シートは `tools/rbkc/docs/xlsx-sheet-mapping.md` に全212シート列挙済み
-- v1.4/v1.3/v1.2 の xlsx は `tools/rbkc/mappings/v1.x.json` の `xlsx` キーで定義（releasenote.xlsx のみ）
-- releasenote.xlsx の件数: v1.4/v1.3/v1.2 合計32ファイル
-- `_detect_header()` @ `xlsx_common.py:341` が自動判定を行っている
-- PCIDSS対応表: ヘッダ行の連続非空セルが2列（col B, col C）、run_length=2 → 現在 P2
-- 自動判定を走らせた際の影響: v6 で PCIDSS対応表+リリースノート3件変更（リリースノートはP2-2のまま維持すべき）
+- [x] Step 0: WIP stash 確認済み（`stash@{0}` は廃棄 — 不要）
+- [ ] Step 1: テスト作成（TDD — RED）
+  - `xlsx_common.py` の P2-4 meta 生成テスト
+  - `docs.py` の P2-4 MDテーブルレンダーテスト
+  - `verify.py` の P2-4 QO2 テスト
+- [ ] Step 2: `xlsx-sheet-mapping.md` 更新（P2-3 → P2-4 を v6/v5 の2行）
+- [ ] Step 3: `xlsx_common.py` に `_build_p2_4_meta()` + `sheet_to_result()` 分岐追加
+- [ ] Step 4: `docs.py` に P2-4 レンダラー追加（前文 + MDテーブル、セル内LF→`<br>`）
+- [ ] Step 5: `verify.py` に P2-4 QO2 対応追加
+- [ ] Step 6: テストが GREEN になることを確認
+- [ ] Step 7: `bash rbkc.sh create 6` および `bash rbkc.sh create 5` 実行 → MDテーブル確認
+- [ ] Step 8: `bash rbkc.sh verify 6` および `bash rbkc.sh verify 5` で FAIL 0件確認
+- [ ] Step 9: 全5バージョン verify（v6/v5/v1.4/v1.3/v1.2）FAIL count 変化なし確認
+- [ ] Step 10: `rbkc.md` に手動編集禁止ルール追加
+- [ ] Step 11: PRボディ更新
+- [ ] Step 12: PR変更差分チェック
+- [ ] Step 13: レビュー依頼
 
 ## Not Started
 
