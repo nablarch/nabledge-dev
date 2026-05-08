@@ -13,7 +13,7 @@
 ### 再現検証: docs.py変更がv1.x差分の原因か確認
 
 **Steps:**
-- [ ] untracked files（前回createの残骸）を除去
+- [ ] `git clean -fd` で untracked files（前回createの残骸、851件）を除去
 - [ ] `git stash` でこのブランチのコミット済み変更を退避（stash対象: docs.py, README.md, レビューファイル等）
 - [ ] `git fetch origin && git rebase origin/main` で最新mainにリベース
 - [ ] create + verify 全5バージョン (6, 5, 1.4, 1.3, 1.2) 実行
