@@ -293,6 +293,9 @@ def generate_docs(knowledge_dir: Path, docs_dir: Path, version: str = "") -> int
 
         title = data.get("title") or file_id
         rel_md = str(docs_md_path.relative_to(docs_dir)).replace("\\", "/")
+        # Encode only spaces — spaces break Markdown link parsing but other
+        # non-ASCII chars (e.g. Japanese) are valid in GitHub link targets.
+        rel_md = rel_md.replace(" ", "%20")
         readme_entries.append((type_, category, title, rel_md))
 
     _generate_readme(readme_entries, docs_dir, version)
