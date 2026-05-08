@@ -73,7 +73,9 @@ UNRESOLVED = LabelTarget(
 
 def _is_heading_underline(line: str) -> bool:
     s = line.strip()
-    return len(s) >= 2 and all(c in _RST_HEADING_CHARS for c in s)
+    # Sphinx requires all characters to be the same single adornment char.
+    # Mixed sequences like '-->' (used in HTML/JSP comments) are not underlines.
+    return len(s) >= 2 and len(set(s)) == 1 and s[0] in _RST_HEADING_CHARS
 
 
 def _scan_rst_labels(rst_path: Path) -> tuple[list[tuple[list[str], str]], str]:

@@ -26,8 +26,11 @@ verify FAIL 0件 は §4 マトリクス ✅ 成立条件 3。現在 v6:38, v5:4
 - [x] v6 FAIL パターンを列挙・分類（root cause 特定）
 - [x] RBKC create 修正（TDD: RED→GREEN、484件全テスト GREEN）
 - [x] 全5バージョン create + verify — v6:38, v5:48, v1.4:32, v1.3:28, v1.2:32
-- [ ] 残存 38/48/32/28/32 FAIL の root cause を仕様書で確認・分類（勝手に修正しない）
-- [ ] ユーザーに分類結果を提案→承認後に修正実装
+- [x] 残存 FAIL の root cause を仕様書で確認・分類
+  - **Root cause A（解消済み）**: `-->` (HTML/JSP コメント閉じ) が見出し下線として誤検出 → `_is_heading_underline()` に「同一文字の繰り返し」条件を追加 → v6:0, v5:0
+  - **Root cause B（残存）**: RST simple table のセパレーター行（`======= =======` 形式）が見出し下線として誤検出 → v1.4:28, v1.3:24, v1.2:28 の原因
+  - Root cause B の具体例: `04_Connection.rst` のテーブル内セル `nablarch.core.db.connectionパッケージ` が見出しとして解決される
+- [ ] Root cause B の修正実装（TDD: simple table セパレーター行を見出し検出からスキップ）
 - [ ] 全5バージョン create + verify — FAIL 0件確認
 - [ ] 設計書 §4 マトリクス QL1 を正しく ✅ に更新
 - [ ] PR #330 SC を ✅ に更新

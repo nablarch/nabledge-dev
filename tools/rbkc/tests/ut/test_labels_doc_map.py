@@ -650,6 +650,100 @@ class TestDocLevelLabelResolution:
         assert lt.anchor == ""
 
 
+class TestHeadingUnderlineMustBeSameChar:
+    """Sphinx requires heading underlines to consist of a single repeated
+    character.  Mixed-character sequences like ``-->`` (used in HTML/JSP
+    comments inside code-block directives) must NOT be treated as underlines.
+
+    Root cause: ``_is_heading_underline`` accepted any combination of chars
+    in ``_RST_HEADING_CHARS``, so ``-->`` (``-``, ``-``, ``>``) passed the
+    check and caused the preceding text to be misidentified as a heading.
+    Sphinx spec: a valid adornment line consists of a single character type.
+    """
+
+    def test_html_comment_close_not_detected_as_heading_underline(self, tmp_path):
+        """'-->' in a code-block must not cause the preceding text to become
+        a heading, making it the wrong enclosing section for a later label.
+
+        Reproduces tag.rst bug: JSP code-block contains '...text.\\n  -->'
+        Labels below this block were resolving to the code-comment text
+        instead of the actual enclosing RST section heading.
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "tag.rst"
+        rst.write_text(
+            "別ウィンドウを開くボタン\n"
+            "=========================\n\n"
+            " .. code-block:: jsp\n\n"
+            "  <!--\n"
+            "    window.open関数の第3引数に指定する。\n"
+            "  -->\n\n"
+            ".. _tag-submit_change_param_name:\n\n"
+            " パラメータ名変更の説明。\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        lt = m.get("tag-submit_change_param_name")
+        assert lt is not None
+        # Must resolve to the enclosing section (real heading),
+        # NOT to the code-comment text above '-->'
+        assert lt.title == "別ウィンドウを開くボタン", (
+            f"expected '別ウィンドウを開くボタン', got {lt.title!r} — "
+            "'-->' was mistakenly treated as a heading underline"
+        )
+
+    def test_mixed_heading_chars_not_underline(self, tmp_path):
+        """Mixed-char strings like '<=>',  '-~-' must not be underlines."""
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "mixed.rst"
+        rst.write_text(
+            "Parent Section\n"
+            "==============\n\n"
+            ".. _my-label:\n\n"
+            "some text\n"
+            "<=>\n\n"
+            "Body.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        lt = m.get("my-label")
+        assert lt is not None
+        # '<=>' is mixed-char — 'some text' must NOT become a heading
+        assert lt.title == "Parent Section", (
+            f"expected enclosing 'Parent Section', got {lt.title!r} — "
+            "mixed-char '<=> ' was mistakenly treated as a heading underline"
+        )
+
+    def test_single_char_underline_still_valid(self, tmp_path):
+        """Single-character underlines (e.g. '---', '===') remain valid."""
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "valid.rst"
+        rst.write_text(
+            "Document Title\n"
+            "==============\n\n"
+            ".. _my-section:\n\n"
+            "Valid Heading\n"
+            "-------------\n\n"
+            "Body.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        lt = m.get("my-section")
+        assert lt is not None
+        assert lt.title == "Valid Heading", (
+            f"single-char underline '---' must remain valid, got {lt.title!r}"
+        )
+
+
 class TestBuildLabelMapBackwardCompat:
     """The old ``build_label_map(source_dir) -> dict[label, str|UNRESOLVED]``
     must keep working so downstream callers that haven't migrated keep going.
