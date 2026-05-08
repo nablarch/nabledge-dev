@@ -31,7 +31,7 @@
 - [ ] Step 6: `rbkc.sh verify 6` および `rbkc.sh verify 5` でFAIL 0件を確認
 - [ ] Step 7: `rbkc.md` に手動編集禁止ルール追加
 - [ ] Step 8: PRボディ更新
-- [ ] Step 9: PR変更差分チェック — `git diff origin/main..HEAD --stat` でRBKC修正・設計書・テスト・work logのみであること、意図しないファイルが含まれていないことを確認
+- [ ] Step 9: PR変更差分チェック — `git diff origin/main..HEAD --stat` でRBKC修正・設計書・テスト・work logのみであること、意図しないファイルが含まれていないことを確認し、結果を `.work/00327/diff-check.md` に記録する
 - [ ] Step 10: レビュー依頼
 
 **調査済み事実:**
