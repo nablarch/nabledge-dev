@@ -2220,7 +2220,6 @@ def check_source_links(
             # label string as the required display text for Q3/Q4.
             if not display and label not in seen_labels:
                 seen_labels.add(label)
-                seen_crossdoc_labels.add(label)  # prevent double-report if same label used both ways
                 target = label_map.get(label)
                 from scripts.common.labels import UNRESOLVED
                 if target is None or target is UNRESOLVED:
@@ -2242,7 +2241,11 @@ def check_source_links(
                         f"[QL1] :ref:`{label}` target title missing from JSON: {title!r}"
                     )
                 # Cross-doc target validation (spec §3-2-3, Issue #320).
-                _check_crossdoc_target(target)
+                # Guard on seen_crossdoc_labels to prevent double-report when
+                # the same label appeared earlier as display-text :ref: form.
+                if label not in seen_crossdoc_labels:
+                    seen_crossdoc_labels.add(label)
+                    _check_crossdoc_target(target)
 
         def _under_substitution(node) -> bool:
             """True if *node* lives under a substitution_definition subtree.

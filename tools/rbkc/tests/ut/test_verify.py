@@ -4499,6 +4499,40 @@ class TestCheckSourceLinks_CrossDoc:
         issues = self._check(src, data, label_map, kn, docs)
         assert any("[QL1] :ref: cross-doc" in i and "libraries-gone" in i for i in issues), issues
 
+    def test_no_double_report_display_text_first_then_bare(self, tmp_path):
+        """Display-text :ref: form appears before bare form for the same label
+        — _check_crossdoc_target must fire exactly once, not twice.
+
+        Spec §3-2-3 + .claude/rules/development.md §Test Writing: every
+        failure mode must have a bug-revealing test.  The double-report is a
+        false positive (F2): the same [QL1] cross-doc FAIL is emitted twice,
+        inflating the FAIL count and confusing diagnosis.
+        """
+        from scripts.common.labels import LabelTarget
+        from scripts.common.github_slug import github_slug
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        kn.mkdir(parents=True)
+        docs.mkdir(parents=True)
+        label_map = {
+            "gone-label": LabelTarget(
+                title="Gone Section",
+                file_id="libraries-gone",
+                section_title="Gone Section",
+                category="libraries",
+                type="component",
+                anchor=github_slug("Gone Section"),
+            )
+        }
+        # Display-text form first, then bare form — same label
+        src = "See :ref:`My Title <gone-label>`. Also :ref:`gone-label`.\n"
+        data = self._data(content="See My Title. Also Gone Section.")
+        issues = self._check(src, data, label_map, kn, docs)
+        crossdoc_issues = [i for i in issues if "[QL1] :ref: cross-doc" in i and "libraries-gone" in i]
+        assert len(crossdoc_issues) == 1, (
+            f"expected exactly 1 cross-doc issue, got {len(crossdoc_issues)}: {crossdoc_issues}"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Phase 22-B-12: Excel preamble + span-inherit header composition
