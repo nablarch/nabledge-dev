@@ -6,15 +6,7 @@
 
 **PR**: #331
 **Issue**: #326
-**Updated**: 2026-05-07
-
-## Not Started
-
-### Investigate 917-file diff in v1.2/1.3/1.4/v5 after create
-
-**Steps:**
-- [ ] create全バージョン実行後のgit diffをサンプリングして変更内容を確認
-- [ ] 確認結果次第で対応内容をこのタスクファイルに追加する
+**Updated**: 2026-05-08
 
 ## Done
 
@@ -23,3 +15,4 @@
 - [x] Add expert reviews (Software Engineer + QA Engineer) — committed `a7ec6dd10`
 - [x] Run create/verify for all 5 versions — all passed OK
 - [x] Investigate 919 unstaged changes — root cause: quote() encoded Japanese chars; narrowed to .replace(" ", "%20") — committed `4e5643273`
+- [x] Investigate 917-file diff in v1.2/1.3/1.4 after create — root cause: pre-existing ID collision bug (not caused by this PR); out of scope for #326
