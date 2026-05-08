@@ -12,6 +12,7 @@
 
 **Steps:**
 - [x] PRを origin/main と差分ゼロの状態にした（7ファイルをリバート、PR本文もクリア）
+- [x] .lw を最新化した（古い .lw が原因で前回の create に差分が出ていた）
 - [ ] origin/main 状態で create + verify 全5バージョン (6, 5, 1.4, 1.3, 1.2) 実行
 - [ ] `git diff origin/main --stat` で差分ゼロを確認
 - [ ] ブランチの修正（README.md, docs.py, test_docs.py）を再適用
@@ -20,4 +21,4 @@
 
 ## Done
 
-(なし — 全変更をリバート済み。再検証から再スタート)
+(なし — 全変更をリバート済み、.lw最新化済み。再検証から再スタート)
