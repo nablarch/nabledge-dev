@@ -8,6 +8,17 @@
 **Issue**: #326
 **Updated**: 2026-05-08
 
+## In Progress
+
+### 再現検証: docs.py変更がv1.x差分の原因か確認
+
+**Steps:**
+- [ ] `git stash` でこのブランチの全変更を退避（docs.py、README.md、レビューファイル含む）
+- [ ] create v1.2/1.3/1.4 実行して差分確認 → 差分ゼロなら報告して次へ
+- [ ] docs.py変更のみ `git stash show -p | git apply` で適用（または手動復元）
+- [ ] create v1.2/1.3/1.4 再実行して差分確認 → 差分あれば原因確定
+- [ ] stash pop で全変更を戻す
+
 ## Done
 
 - [x] Fix broken link in `.claude/skills/nabledge-6/docs/README.md` line 371 — URL-encoded space as `%20` — committed `55bba1da2`
