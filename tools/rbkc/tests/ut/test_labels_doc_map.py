@@ -106,11 +106,12 @@ class TestBuildLabelDocMap:
         lt = label_map["my-label"]
         assert isinstance(lt, LabelTarget)
         assert lt.title == "Usage"
-        assert lt.section_title == "Usage"
+        # Label before h1 → document-level reference (Issue #320)
+        assert lt.section_title == ""
         assert lt.category == "libraries"
         assert lt.file_id == "libraries-foo"
-        # Issue #316: anchor is github_slug(heading_title), not label name slug.
-        assert lt.anchor == "usage"
+        # Label before h1 → no #fragment anchor (document-root reference)
+        assert lt.anchor == ""
 
     def test_orphan_label_stamped_with_unresolved_sentinel(self, tmp_path):
         """Label declared but not followed by a heading must map to
@@ -430,10 +431,14 @@ class TestHeadingTextAnchor:
 
         lt = label_map.get("my_label")
         assert lt is not None
-        assert lt.anchor == github_slug("日本語の見出し"), (
-            f"got {lt.anchor!r}, expected {github_slug('日本語の見出し')!r}"
+        # Label before h1 → document-level reference, no #fragment (Issue #320)
+        assert lt.anchor == "", (
+            f"got {lt.anchor!r}, expected '' (document-level label before h1)"
         )
         assert lt.anchor != "my-label", "anchor must not be the RST label slug"
+        assert lt.anchor != github_slug("日本語の見出し"), (
+            "anchor must not be github_slug(h1_title) for document-level labels"
+        )
 
 
 class TestEnclosingSectionResolution:
@@ -535,6 +540,114 @@ class TestEnclosingSectionResolution:
         lt = m.get("direct_label")
         assert lt is not None
         assert lt.title == "直接の見出し"
+
+
+class TestDocLevelLabelResolution:
+    """Labels that directly precede the document-level h1 heading must be
+    treated as document-level references: section_title="" and anchor="".
+
+    Rationale (spec §3-2-3, Issue #320): the JSON schema stores the h1
+    title in ``title``, not in ``sections[]``.  A `:ref:` that targets
+    the h1 anchor ("#h1-slug") would always FAIL the
+    `section_title ∈ sections[]` and anchor-slug checks because sections[]
+    only contains h2+ entries.  Setting section_title="" causes verify to
+    skip the section-existence check (since sec_title is falsy), and
+    anchor="" means the generated link has no ``#`` fragment — which is
+    correct for a document-root reference.
+    """
+
+    def _make_repo(self, tmp_path: Path, rst_text: str) -> None:
+        src_root = (
+            tmp_path / ".lw/nab-official/v6/nablarch-document/ja/"
+            "application_framework/application_framework/libraries/foo"
+        )
+        src_root.mkdir(parents=True)
+        (src_root / "index.rst").write_text(rst_text, encoding="utf-8")
+        mappings_dir = tmp_path / "tools/rbkc/mappings"
+        mappings_dir.mkdir(parents=True)
+        (mappings_dir / "v6.json").write_text(
+            '{"rst":[{"pattern":"application_framework/application_framework/libraries/",'
+            '"type":"component","category":"libraries"}],"md":{},"xlsx":{},"xlsx_patterns":[]}',
+            encoding="utf-8",
+        )
+
+    def test_label_before_h1_is_document_level(self, tmp_path):
+        """Label immediately before the h1 heading → section_title="" anchor="".
+
+        This is the exact pattern in nablarch_architecture / nablarch_big_picture.
+        """
+        from scripts.common.labels import build_label_doc_map
+
+        self._make_repo(tmp_path, (
+            ".. _my-label:\n\n"
+            "ドキュメントタイトル\n"
+            "====================\n\n"
+            "本文。\n"
+        ))
+        label_map, _ = build_label_doc_map("6", tmp_path)
+
+        lt = label_map.get("my-label")
+        assert lt is not None
+        # h1 label → document-level reference
+        assert lt.title == "ドキュメントタイトル"
+        assert lt.section_title == "", (
+            "label before h1 must have section_title='' (document-level)"
+        )
+        assert lt.anchor == "", (
+            "label before h1 must have anchor='' (no #fragment)"
+        )
+
+    def test_label_before_h2_still_uses_h2_title(self, tmp_path):
+        """Label immediately before an h2 heading → section_title=h2_title.
+
+        Only h1 labels are promoted to document-level; h2 labels are unchanged.
+        """
+        from scripts.common.labels import build_label_doc_map
+        from scripts.common.github_slug import github_slug
+
+        self._make_repo(tmp_path, (
+            "ドキュメントタイトル\n"
+            "====================\n\n"
+            "冒頭本文。\n\n"
+            ".. _section-label:\n\n"
+            "セクション見出し\n"
+            "----------------\n\n"
+            "セクション本文。\n"
+        ))
+        label_map, _ = build_label_doc_map("6", tmp_path)
+
+        lt = label_map.get("section-label")
+        assert lt is not None
+        # h2 label → section-level reference (unchanged)
+        assert lt.title == "セクション見出し"
+        assert lt.section_title == "セクション見出し", (
+            "label before h2 must retain section_title=h2_title"
+        )
+        assert lt.anchor == github_slug("セクション見出し"), (
+            "label before h2 must retain anchor=github_slug(h2_title)"
+        )
+
+    def test_label_before_h1_with_subsections(self, tmp_path):
+        """h1 label is document-level even when the document has h2 subsections."""
+        from scripts.common.labels import build_label_doc_map
+
+        self._make_repo(tmp_path, (
+            ".. _doc-label:\n\n"
+            "ドキュメントタイトル\n"
+            "====================\n\n"
+            "冒頭本文。\n\n"
+            "サブセクション\n"
+            "--------------\n\n"
+            "サブ本文。\n"
+        ))
+        label_map, _ = build_label_doc_map("6", tmp_path)
+
+        lt = label_map.get("doc-label")
+        assert lt is not None
+        assert lt.section_title == "", (
+            "h1 label must be document-level even when document has h2 subsections"
+        )
+        assert lt.anchor == ""
 
 
 class TestBuildLabelMapBackwardCompat:

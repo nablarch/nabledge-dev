@@ -281,16 +281,23 @@ def build_label_doc_map(
                 for lbl in labels:
                     label_map.setdefault(lbl, UNRESOLVED)
             else:
+                # Labels whose resolved heading IS the document title (h1) are
+                # document-level references.  The JSON schema stores h1 in
+                # ``title``, not in ``sections[]``, so section_title and anchor
+                # must be empty to avoid false QL1 FAIL in verify (spec §3-2-3).
+                is_doc_level = (title == doc_title)
+                sec_title = "" if is_doc_level else title
+                anchor = "" if is_doc_level else _anchor_for_title(title)
                 for lbl in labels:
                     label_map.setdefault(
                         lbl,
                         LabelTarget(
                             title=title,
                             file_id=fc.file_id,
-                            section_title=title,
+                            section_title=sec_title,
                             category=fc.category,
                             type=fc.type,
-                            anchor=_anchor_for_title(title),
+                            anchor=anchor,
                         ),
                     )
 
