@@ -12,32 +12,15 @@
 
 ## In Progress
 
-### Task 4: 変更差分チェック → ユーザー確認
-
-PRレビュー依頼前に変更差分が想定した変更のみかを確認する。
-
-**Steps:**
-- [ ] `git diff main...HEAD` で変更内容を確認
-- [ ] .work/00327/diff-check.md に差分チェック結果を記録
-- [ ] コミット & プッシュ
-- [ ] ユーザーに差分確認依頼
-
-## Not Started
-
-### Task 5: エキスパートレビュー（Technical Writer）
-
-**前提:** Task 4 でユーザーが差分を確認・承認済みであること
-
-**Steps:**
-- [ ] Technical Writer エキスパートレビュー実行
-- [ ] .work/00327/review-by-technical-writer.md に保存
-- [ ] コミット & プッシュ
-
 ### Task 6: PR レビュー依頼
 
 **Steps:**
-- [ ] PR ボディにエキスパートレビューリンクを追加
+- [x] PR ボディにエキスパートレビューリンクを追加
 - [ ] ユーザーにレビュー依頼
+
+## Not Started
+
+(なし)
 
 ## Done
 
@@ -46,6 +29,8 @@ PRレビュー依頼前に変更差分が想定した変更のみかを確認す
 - [x] Task 1: tasks.md 作成・コミット — `9f9e7c040`
 - [x] Task 2: プレビューMD作成・コミット・PR作成・ユーザー確認依頼 — `9f9e7c040` / PR #332
 - [x] Task 3: v6・v5 ファイルへのMarkdownテーブル適用 — `1b09a73ea`
+- [x] Task 4: 変更差分チェック — `db8291d80`
+- [x] Task 5: Technical Writer エキスパートレビュー（0 Findings）
 
 ## Success Criteria Check
 
