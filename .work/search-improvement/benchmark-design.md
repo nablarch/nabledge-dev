@@ -292,13 +292,15 @@ tools/benchmark/
     c-claim-judge.md           ← 回答精度LLMプロンプト
     hallucination-judge.md     ← ハルシネーション判定LLMプロンプト
 
-.tmp/benchmark/
-  run-{YYYYMMDD-HHMMSS}/      ← 実行結果ワークスペース
-    {scenario-id}/
-      hearing.json             ← 診断: ヒアリング結果
-      search.json              ← 診断: 検索結果（セクションIDリスト）
-      answer.md                ← 診断: 回答テキスト
-      metrics.json             ← メトリクス
-      evaluation.json          ← 自動判定結果
-      final.json               ← 人間確定後の最終結果
+tools/benchmark/
+  results/
+    {run-label}/                 ← 実行結果（gitコミットして比較可能にする）
+      {scenario-id}/
+        hearing.json             ← 診断: ヒアリング結果
+        search.json              ← 診断: 検索結果（セクションIDリスト）
+        answer.md                ← 診断: 回答テキスト
+        metrics.json             ← メトリクス
+        evaluation.json          ← 自動判定結果
+        final.json               ← 人間確定後の最終結果
+      report.md                  ← 集計レポート
 ```

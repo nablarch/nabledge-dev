@@ -95,17 +95,17 @@ keyword-searchは既知の用語で確実にヒットさせる（precision重視
     index.md                          ← セクション目次（RBKC生成）
     terms.json                        ← term→section_idマップ（RBKC生成）
   workflows/
-    qa.md                             ← 質問応答オーケストレーション（変更）
+    qa.md                             ← 質問応答オーケストレーション
     qa/
       hearing.md                      ← ヒアリング
       answer.md                       ← 回答生成
       verify.md                       ← 根拠検証
     keyword-search.md                 ← キーワード検索（公開）
     semantic-search.md                ← 意味検索（公開）
-    code-analysis.md                  ← コード分析（軽微変更）
+    code-analysis.md                  ← コード分析
   scripts/
-    keyword-search.sh                 ← キーワード検索スクリプト（旧full-text-search.sh）
-    read-sections.sh                  ← セクション本文取得（既存）
+    keyword-search.sh                 ← キーワード検索スクリプト
+    read-sections.sh                  ← セクション本文取得
   assets/
     hearing-prompt.md                 ← ヒアリング判定LLMプロンプト
     c-claim-judge-prompt.md           ← C-claim判定LLMプロンプト
