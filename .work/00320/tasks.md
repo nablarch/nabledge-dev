@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev12)
+**Updated**: 2026-05-11 (rev13)
 
 ## In Progress
 
@@ -10,7 +10,31 @@
 
 ## Not Started
 
-（なし）
+### Task 19: Bug 1 修正 — label_map lookup の case normalization
+**原因**: docutils が target node の `names[]` を小文字正規化するが、
+`rst_ast_visitor.py` / `verify.py` の `label_map.get()` は RST 元の大文字混じりキーで検索するため、大文字を含むラベル（`NablarchServletContextListener`、`guide_appendix_windowScope`、`SqlLog` 等）がヒットせず UNRESOLVED → 平文フォールバック
+
+**Steps:**
+- [ ] TDD: `test_labels.py` に case-insensitive lookup のテスト追加 → RED
+- [ ] `rst_ast_visitor.py`: `:ref:` / `:numref:` の `label_map.get(target_label)` を `label_map.get(target_label.lower())` に変更（`_find_label_target` も同様）
+- [ ] `verify.py check_source_links()`: `label_map.get(label)` を `label_map.get(label.lower())` に変更
+- [ ] GREEN 確認 → 全5バージョン create + verify FAIL diff 確認
+
+### Task 20: Bug 2 修正 — `_next_section_for_node` の多段 climb
+**原因**: `_next_section_for_node` はセクション境界を1段しか遡らない（`is_last_meaningful` の grandparent 探索は1レベルのみ）。深いネスト末尾のラベル（例: `sql-gaibuka-label` が h4 内末尾 → 2段上の h3 を参照）で失敗し、`_enclosing_section_title_for_node` にフォールバック → 誤った section title（`処理概要`）を返す
+
+**Steps:**
+- [ ] TDD: 多段ネストのラベル解決テストを追加 → RED
+- [ ] `labels.py`: `_next_section_for_node` を iterative multi-level climb に書き換え（段数制限なし、document root で停止）
+- [ ] GREEN 確認 → 全5バージョン create + verify FAIL diff 確認
+
+### Task 21: 横並びチェック・再生成・PR 更新
+**Steps:**
+- [ ] 横並びチェック: 同クラスのバグが他バージョン / 他ファイルに残っていないか確認
+- [ ] 全5バージョン再生成（`bash rbkc.sh create <v>`）
+- [ ] 全5バージョン verify（`bash rbkc.sh verify <v>`）、0 FAIL 確認
+- [ ] エキスパートレビュー（SE + QA）実施
+- [ ] PR #330 更新（Success Criteria・Expert Review 更新）
 
 ## Done
 
