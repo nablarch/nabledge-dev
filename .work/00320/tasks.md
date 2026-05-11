@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev23)
+**Updated**: 2026-05-11 (rev24)
 
 ## In Progress
 
@@ -38,10 +38,17 @@
   - #3217245104 (RequestPathJavaPackageMapping.md line 115): **修正** — `#ハンドラの構造と実装` → `#特殊なリクエスト処理`（docs MD + JSON 両方）
   - #3217248788 (FailureLog.md line 582): 正常、`#クラス定義` が正しいアンカーと確認（返信済み）
 
-## 未解決事項
+## In Progress
 
-- **#3217245104 の修正は知識ファイル直接編集のみ** — RBKC (create) 側は未修正。
-  `method_binding` ラベルは `concept.rst` の `特殊なリクエスト処理` セクション内 (v1.2/v1.3/v1.4) に定義されており、
-  再生成すると誤ったリンク (`#ハンドラの構造と実装`) が復活する可能性がある。
-  → RBKC create 側の修正 or verify でこのパターンを検出する仕組みが必要かどうか、ユーザー判断が必要。
-  [DECISION: RBKC create 側も修正すべきか？ それとも今回は知識ファイル直接編集で完結させるか？]
+### Task 23: `21e4b8fec` の手動編集コミットをリバートし、RBKC create 側を修正する
+
+知識ファイルの手動編集は禁止（RBKC が生成するもの）。手動編集コミットをリバートし、
+RBKC create 側で `method_binding` ラベルが正しい見出し（`#特殊なリクエスト処理`）を
+指すように修正した上で再生成する。
+
+**Steps:**
+- [ ] `21e4b8fec` をリバート（docs MD + JSON の手動編集を取り消す）
+- [ ] `method_binding` ラベルがどの見出しセクションに属するか RST で確認（v1.2/v1.3/v1.4）
+- [ ] RBKC create 側の修正（`rst_ast_visitor.py` or `labels.py` の cross-doc リンク解決）
+- [ ] 全5バージョン `create + verify` で 0 FAIL 確認
+- [ ] PR #330 更新
