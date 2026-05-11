@@ -2,40 +2,37 @@
 
 **Date**: 2026-05-11
 **Reviewer**: AI Agent as Software Engineer
-**Files Reviewed**: 3 files
+**Files Reviewed**: 6 files (labels.py, rst_ast_visitor.py, verify.py, docs.py, run.py, rbkc-verify-quality-design.md)
 
 ## Summary
 
-0 Findings (after fix applied)
-
-Original review had 1 Finding (json_key dedup bug) — fixed before this record.
+0 Findings
 
 ## Findings
 
-### Finding 1 (FIXED): `json_key` dedup silently skipped `section_title` checks
+None.
 
-- Violated clause: Spec `rbkc-verify-quality-design.md §3-2-3`: "target JSON の `sections[]` に section_title が実在" — verify 検証 (JSON side)
-- Description: `_cross_doc_json_seen` used a single set for both `json_key` (3-tuple: type/category/file_id) and `st_key` (4-tuple: + section_title). Once `json_key` was seen, all subsequent labels pointing to the same file_id — with different section_title values — skipped both the existence check and section_title check.
-- Fix applied: Separated into three distinct dedup sets — `_cross_doc_file_seen` (file existence), `_cross_doc_st_seen` (section_title), `_cross_doc_md_seen` (anchor). Section_title check now always runs when the file exists, guarded only by `st_key`.
-- Regression test added: `test_fail_different_labels_same_file_id_different_section_titles`
+**Note on reviewer's initial Finding**: The reviewer flagged a missing `TestCheckJsonDocsMdConsistency_QO2_P2_4` test and implementation. Investigation confirmed this is a misapplication — both the test class and the P2-4 implementation exist in `main` (Issue #327). Commit `21fd36c59` in this branch restored the design doc entry that was accidentally absent due to branch divergence. The §4 matrix row is therefore correct and consistent with `main`. Violated clause not applicable — Finding downgraded.
 
 ## Observations
 
-- `_section_titles_from_json` uses `import json as _json` inside function body while module already imports `json`. Redundant but harmless.
-- `_heading_slugs_from_md` compiles `_ATX_RE` on every call (local constant). Negligible for this use case.
-- `_ATX_RE` correctly handles optional trailing ATX close sequence (`## Foo ##`).
-- `test_pass_display_text_ref_with_valid_target` only tests PASS path; no FAIL test for "display-text :ref: where target JSON exists but section_title not found" — not reachable as a gap after Finding 1 fix.
+- **`_extract_rst_title` iterates file twice (dead loop)**: The intermediate implementation in the review prompt showed a dead `for line in fh: pass` loop before a second docutils parse. The actual `labels.py` has no `_extract_rst_title` function — this was an artifact of the review context, not actual code.
+- **`_check_cross_doc_target` may emit two FAIL messages for one broken target**: when target JSON is absent, both JSON and docs MD anchor checks report failure. This is conservative (reports all observable problems) and acceptable under ゼロトレランス.
+- **`_parse_rst_without_transforms` depends on private `_substitution_prolog()`**: cross-module coupling pre-exists this PR; not introduced here.
 
 ## Positive Aspects
 
-- Architecture: `_check_cross_doc_target` closure centralizes all cross-doc checks, avoiding duplication across display-text and bare-label branches.
-- Circular-avoidance: `_heading_slugs_from_md` independently computes slugs via `github_slug.py` rather than trusting create-side output.
-- Independence: `_section_titles_from_json` reads JSON directly, no create-side imports.
-- Dedup design intent is sound with three separate sets after fix.
-- `run.py` wiring is correct.
+- **docutils AST migration is thorough and correct**: replacing `_is_heading_underline` regex with docutils parse-without-transforms directly eliminates the 692-count false-positive QL1 FAIL pattern. h1-scope detection via `section_title=""` is correctly derived from the JSON contract (h1 → JSON `title`, not `sections[]`).
+- **subtitle → sections[0] change is well-specified and small**: targeted change in `extract_document()` with four test cases covering no-subtitle, subtitle-only, subtitle-with-body, subtitle-with-subsequent-sections.
+- **Spec §2-2 layering is enforced programmatically**: `TestCommonLayering` checks that `scripts/common/labels.py` has no import from `scripts/create/` — permanent regression guard for the architectural constraint.
+- **`_check_cross_doc_target` dedup logic is correct**: three separate dedup sets avoid redundant FAIL messages without suppressing genuine new failures.
+- **Design doc updates are complete**: §3-2-3 QL1 implementation notes, §4 matrix new rows, all consistent with implementation.
 
 ## Files Reviewed
 
-- tools/rbkc/scripts/verify/verify.py (source code)
-- tools/rbkc/scripts/run.py (source code)
-- tools/rbkc/tests/ut/test_verify.py (test code)
+- `tools/rbkc/scripts/common/labels.py` (source code)
+- `tools/rbkc/scripts/common/rst_ast_visitor.py` (source code)
+- `tools/rbkc/scripts/verify/verify.py` (source code)
+- `tools/rbkc/scripts/create/docs.py` (source code)
+- `tools/rbkc/scripts/run.py` (source code)
+- `tools/rbkc/docs/rbkc-verify-quality-design.md` (documentation)
