@@ -105,7 +105,6 @@ keyword-searchは既知の用語で確実にヒットさせる（precision重視
     code-analysis.md                  ← コード分析（軽微変更）
   scripts/
     keyword-search.sh                 ← キーワード検索スクリプト（旧full-text-search.sh）
-    annotate-index.sh                 ← semantic-searchのStep 1で使用。index.mdに★注釈を付与
     read-sections.sh                  ← セクション本文取得（既存）
   assets/
     hearing-prompt.md                 ← ヒアリング判定LLMプロンプト

@@ -72,8 +72,47 @@ Step 2: セクション選定（AI）
     2. 回答に必要な前提知識セクション (nice-to-have)
   - 最大10件
 
-出力: file_path:section_id のリスト（JSON配列）
+出力: pointer JSON（下記スキーマ）
 ```
+
+### 出力スキーマ
+
+既存の`_knowledge-search.md`のpointer JSONスキーマと同一。下流のqa.md、read-sections.sh、ベンチマークランナーとの互換性を維持する。
+
+```json
+{
+  "results": [
+    {
+      "file": "component/libraries/libraries-universal-dao.json",
+      "section_id": "s9",
+      "relevance": "high"
+    },
+    {
+      "file": "component/libraries/libraries-database.json",
+      "section_id": "s29",
+      "relevance": "partial"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| file | string | knowledge/からの相対パス |
+| section_id | string | セクションID（s1, s2, ... 形式） |
+| relevance | "high" \| "partial" | high: 直接回答可能 / partial: 前提知識・関連情報 |
+
+results はrelevance降順（high → partial）。空配列は一致なし。
+
+### 最大10件の根拠
+
+ベンチマーク24件のmust-section数: 平均1.46件/シナリオ、最大3件。acceptable含めても最大5件。
+10件上限はベンチマーク実績の2倍以上のマージン。
+
+10件で不足するケースへの対応:
+- semantic-searchの出力が空（results: []）の場合、qa.mdが「知識ファイルに含まれていません」レスポンスを返す（既存仕様）
+- 回答生成後のverify.md（根拠検証）でmust factが欠けていた場合、再検索を指示可能（将来実装）
+- ベンチマーク §検証ポイント2 で10件上限がmust-section missを起こさないことを全シナリオで確認する（必須ゲート）
 
 ### 選定ガイドライン（semantic-search.mdに記載）
 
