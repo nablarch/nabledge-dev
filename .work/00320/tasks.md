@@ -12,20 +12,15 @@
 - 前回は verify 追加 → FAIL 大量 → RBKC 修正 → 劣化、という最悪ループに陥り revert
 - 今回の 683 FAIL（v6）が genuine RBKC バグか、verify の誤検知かを確認してから次に進む
 
-**疑問点:**
-- 全 FAIL が `section_title 'XXX' not found in yyy.json sections[]` パターン
-- 例: `:ref:\`universal_dao\`` → `section_title='ユニバーサルDAO'` が `libraries-universal-dao.json sections[]` にない
-- 原因仮説: `labels.py` が h1 ラベルに `section_title=h1タイトル` をセットするが、RBKC は h1 を `sections[]` ではなく JSON `title` フィールドに出力する
-- 前回の revert 前に `373a6d4cd fix: h1-level labels resolve to document-level reference (section_title="")` というコミットがあった（revert で消えた）
-- その fix が正しければ：h1 ラベルは `section_title=""` にすべきで、そうすれば section チェックがスキップされ FAIL は消える
-- verify のロジックが正しければ RBKC 側（labels.py）を fix すべき、verify を弱めてはいけない
+**調査手順（推測禁止・事実確認のみ）:**
 
 **Steps:**
-- [ ] FAIL サンプル調査: `:ref:\`universal_dao\`` の labels.py 解決値を確認（`section_title` が h1 か否か）
-- [ ] `about-nablarch-big-picture.json` の `sections[]` を確認（`全体像` がなぜ absent か）
-- [ ] 前回リバート前の `373a6d4cd` の内容を確認（h1 label fix の実装）
-- [ ] verify ロジックが正しいか / labels.py を fix すべきか判断してユーザーに提示
-- [ ] ユーザー承認後に labels.py 修正 or verify 修正
+- [ ] FAIL サンプル1: `:ref:\`universal_dao\`` について — labels.py が返す `section_title` の実際の値を確認（コードを読む）
+- [ ] FAIL サンプル2: `libraries-universal-dao.json` の `sections[].title` 一覧を確認（ファイルを読む）
+- [ ] FAIL サンプル3: `universal_dao.rst` の先頭を確認（ラベルが h1 直前か h2 直前かを確認）
+- [ ] 上記3点の事実から FAIL が genuine RBKC バグか verify の誤検知かを判断
+- [ ] 判断結果をユーザーに提示（推測なし・事実のみ）
+- [ ] ユーザー承認後に fix 実施
 
 ### Task 16: 実装（完了）
 
