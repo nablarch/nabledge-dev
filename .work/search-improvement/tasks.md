@@ -1,7 +1,7 @@
 # Tasks: Search Improvement (Zero-base)
 
 **Branch**: search
-**Updated**: 2026-05-12
+**Updated**: 2026-05-11
 
 ## Rules
 
@@ -42,8 +42,8 @@
 - [x] 0-2. 判定方式の設計 — 2軸評価（回答精度 + ハルシネーション）+ 診断情報 + メトリクス
 - [x] 0-3. メトリクス設計 — duration_ms, total_tokens, tool_uses（Agentツールusageから自動取得）
 - [x] 0-4. 設計書レビュー — QA Engineer: 6 Findings全件修正 → ユーザーレビュー: 4軸→2軸に修正 — committed `44fa4a1`
-- [x] 0-5. 評価ロジック実装 — evaluate.py（C-claim/ハルシネーション判定+スコアリング）、report.py（レポート生成）、LLMプロンプト、54テスト全GREEN
-- [x] 0-6. エキスパートレビュー — SE: 2 Findings（ABSENT確定分類バグ + テスト欠如）、QA: 4 Findings（+metrics/generate_full_report テスト欠如 + 弱アサーション）→ 全件修正済
+- [x] 0-5. 評価ロジック実装 — evaluate.py（C-claim/ハルシネーション判定+スコアリング）、report.py（レポート生成）、LLMプロンプト、54テスト全GREEN — committed `4f5e947`, `f897405`
+- [x] 0-6. エキスパートレビュー — SE: 2 Findings（ABSENT確定分類バグ + テスト欠如）、QA: 4 Findings（+metrics/generate_full_report テスト欠如 + 弱アサーション）→ 全件修正済（修正は0-5コミットに含む）
 - [ ] 0-7. ランナー実装 — ワークフロー実行+構造化キャプチャ（**プレベンチマーク前に実施。各コンポーネント完成後**）
 
 ## Not Started
