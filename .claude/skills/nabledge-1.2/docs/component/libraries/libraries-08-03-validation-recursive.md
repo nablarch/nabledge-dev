@@ -14,7 +14,7 @@
 2. 親Formの子Formを設定するセッタに、 @ValidationTarget アノテーションを設定する。
 3. 親Form、子Formに共通の名称 [1] で validateFor メソッドを作成する。
 
-例えば [Entity の使用](../../component/libraries/libraries-08-02-validation-usage.md#entity-の使用) で示した USER テーブルと、ユーザが持つ住所を保持する
+例えば [バリデーション結果のエラーメッセージ生成](../../component/libraries/libraries-08-02-validation-usage.md#バリデーション結果のエラーメッセージ生成) で示した USER テーブルと、ユーザが持つ住所を保持する
 ADDRESS テーブルにまとめてデータを登録する画面の場合、下記のような Form を作成する。
 
 ```java

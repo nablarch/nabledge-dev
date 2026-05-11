@@ -27,8 +27,8 @@ a) nablarch.core.db.connection.ConnectionFactoryの実装クラス
 |---|---|
 | nablarch.core.db.connectionパッケージ |  |
 | ConnectionFactorySupport | ConnectionFactoryインタフェースを実装したクラスをサポートするクラス。  本クラスの実装は、サブクラスで必要となる共通設定を保持するのみである。 |
-| BasicDbConnectionFactoryForJndi | JNDI経由でWebアプリケーションサーバ等からデータベース接続(java.sql.Connection)を取得し、 BasicDbConnectionを生成するクラス。  JNDI経由でデータベース接続を取得するための情報は、 [リポジトリ](../../component/libraries/libraries-02-Repository.md) を使用して本クラスに設定をする必要がある。 設定ファイルの記述方法は、 [設定ファイル例(JNDIを使用してデータベース接続を行う場合)](../../component/libraries/libraries-04-Connection.md#設定ファイル例jndiを使用してデータベース接続を行う場合) を参照すること。 |
-| BasicDbConnectionFactoryForDataSource | javax.sql.DataSourceからデータベース接続(java.sql.Connection)を取得し、 BasicDbConnectionを生成するクラス。  javax.sql.DataSourceは、 [リポジトリ](../../component/libraries/libraries-02-Repository.md) を使用して本クラスに設定をする必要がある。 設定ファイルの記述方法は、 [設定ファイル例(DataSourceを使用してデータベース接続を行う場合)](../../component/libraries/libraries-04-Connection.md#設定ファイル例datasourceを使用してデータベース接続を行う場合) を参照すること。 |
+| BasicDbConnectionFactoryForJndi | JNDI経由でWebアプリケーションサーバ等からデータベース接続(java.sql.Connection)を取得し、 BasicDbConnectionを生成するクラス。  JNDI経由でデータベース接続を取得するための情報は、 [リポジトリ](../../component/libraries/libraries-02-Repository.md) を使用して本クラスに設定をする必要がある。 設定ファイルの記述方法は、 [設定内容詳細](../../component/libraries/libraries-04-Connection.md#設定内容詳細) を参照すること。 |
+| BasicDbConnectionFactoryForDataSource | javax.sql.DataSourceからデータベース接続(java.sql.Connection)を取得し、 BasicDbConnectionを生成するクラス。  javax.sql.DataSourceは、 [リポジトリ](../../component/libraries/libraries-02-Repository.md) を使用して本クラスに設定をする必要がある。 設定ファイルの記述方法は、 [Javaの実装例](../../component/libraries/libraries-04-Connection.md#javaの実装例) を参照すること。 |
 
 b) nablarch.core.db.connection.TransactionManagerConnectionの実装クラス
 
@@ -89,8 +89,8 @@ SqlResultSet resultSet = new SimpleDbTransactionExecutor<SqlResultSet>(
 
 ## 設定ファイル例(DataSourceを使用してデータベース接続を行う場合)
 
-本設定ファイルは、 DataSourceからデータベース接続を取得する場合の 設定例となっている。
-JNDI経由でデータベース接続を取得する場合 は、 [設定ファイル例(JNDIを使用してデータベース接続を行う場合)](../../component/libraries/libraries-04-Connection.md#設定ファイル例jndiを使用してデータベース接続を行う場合) を参照すること。
+本設定ファイルは、 [DataSourceからデータベース接続を取得する場合の](../../component/libraries/libraries-04-Connection.md#クラス定義) 設定例となっている。
+[JNDI経由でデータベース接続を取得する場合](../../component/libraries/libraries-04-Connection.md#クラス定義) は、 [設定内容詳細](../../component/libraries/libraries-04-Connection.md#設定内容詳細) を参照すること。
 
 ```xml
 <!-- SimpleDbTransactionManagerの設定 -->
@@ -172,7 +172,7 @@ c) nablarch.core.db.transaction.JdbcTransactionFactoryへの設定
 ## 設定ファイル例(JNDIを使用してデータベース接続を行う場合)
 
 本設定例は、JNDI経由でデータベース接続を取得する際に必要となる箇所のみを記載している。
-JNDIに関連のない設定については、 [設定ファイル例(DataSourceを使用してデータベース接続を行う場合)](../../component/libraries/libraries-04-Connection.md#設定ファイル例datasourceを使用してデータベース接続を行う場合) を参照し、必要な設定を行うこと。
+JNDIに関連のない設定については、 [Javaの実装例](../../component/libraries/libraries-04-Connection.md#javaの実装例) を参照し、必要な設定を行うこと。
 
 ```xml
 <component class="nablarch.core.db.connection.BasicDbConnectionFactoryForJndi">

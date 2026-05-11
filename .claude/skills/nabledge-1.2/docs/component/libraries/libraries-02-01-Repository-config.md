@@ -36,7 +36,7 @@ sample.value2=true
 ```
 
 > **Note:**
-> 環境設定ファイルの記述ルールの詳細については、 [環境設定ファイル記述ルール](../../component/libraries/libraries-02-01-Repository-config.md#環境設定ファイル記述ルール) を参照。
+> 環境設定ファイルの記述ルールの詳細については、 [設定したコンポーネントの取得例](../../component/libraries/libraries-02-01-Repository-config.md#設定したコンポーネントの取得例) を参照。
 
 ### 環境設定ファイルの読み込み (通常フレームワークの責務)
 
@@ -166,7 +166,7 @@ DIコンテナはコンポーネント設定ファイルを元にしてコンポ
 </component-configuration>
 ```
 
-コンポーネント設定ファイルの要素、属性については [コンポーネント設定ファイル 要素 リファレンス](../../component/libraries/libraries-02-01-Repository-config.md#コンポーネント設定ファイル-要素-リファレンス) に詳細を記述する。
+コンポーネント設定ファイルの要素、属性については [エスケープ文字（'\'）](../../component/libraries/libraries-02-01-Repository-config.md#エスケープ文字) に詳細を記述する。
 
 なお、eclipse等のIDEでは、 [component-configuration.xsd ファイル](../../../knowledge/assets/libraries-02-01-Repository-config/component-configuration.xsd)
 をコンポーネント設定ファイルと同一ディレクトリに配置し、 component-configuration 要素の xsi:schemaLocation
@@ -594,7 +594,7 @@ System.out.println(helloImport2.getValue());
 1. 読み込む環境設定ファイルを作成する。
 2. コンポーネント設定ファイルの property 要素の value 属性に指定する文字列に "${hello.message}" のように環境設定ファイルに記述したキーを${}で囲う文字列を設定する。
 
-以下に [リポジトリに保持するインスタンスの生成(DIコンテナ)](../../component/libraries/libraries-02-01-Repository-config.md#リポジトリに保持するインスタンスの生成diコンテナ) で示した HelloMessageProvider に設定するメッセージを外部ファイルに持たせる場合の設定例を示す。
+以下に [環境設定の取得](../../component/libraries/libraries-02-01-Repository-config.md#環境設定の取得) で示した HelloMessageProvider に設定するメッセージを外部ファイルに持たせる場合の設定例を示す。
 
 ### 読み込む環境設定ファイル(hello.config)
 
@@ -685,16 +685,16 @@ dir 属性に "./environment_config" と設定する。
 
 また、 [設定値の上書きの対象](../../component/libraries/libraries-02-04-Repository-override.md#設定値の上書きの対象)  に記述した方法で、本番用とテスト用で異なる設定を特定のディレクトリに配置して、本番環境とテスト環境の差異を吸収するといった使い方もできる。
 
-なお、別々の設定ファイルに記述された同名の設定は  [import 要素および config-file 要素による外部ファイル読み込み時の優先順位](../../component/libraries/libraries-02-04-Repository-override.md#import-要素および-config-file-要素による外部ファイル読み込み時の優先順位)
-および [dir 属性を使用した読み込み時の優先順位](../../component/libraries/libraries-02-04-Repository-override.md#dir-属性を使用した読み込み時の優先順位)  に記述した優先順位で評価される。
+なお、別々の設定ファイルに記述された同名の設定は  [テスト用の設定ファイル(/opt/testconfig/testconfig.xml)](../../component/libraries/libraries-02-04-Repository-override.md#テスト用の設定ファイルopttestconfigtestconfigxml)
+および [onefile-example.xml(import-example1.xml、import-example2.xmlと等価)](../../component/libraries/libraries-02-04-Repository-override.md#onefile-examplexmlimport-example1xmlimport-example2xmlと等価)  に記述した優先順位で評価される。
 
 ## 自動インジェクション
 
-DIコンテナは、 [リポジトリに保持するインスタンスの生成(DIコンテナ)](../../component/libraries/libraries-02-01-Repository-config.md#リポジトリに保持するインスタンスの生成diコンテナ) で記述したref属性の設定によるインジェクションの他に、クラスの型を判定して
+DIコンテナは、 [環境設定の取得](../../component/libraries/libraries-02-01-Repository-config.md#環境設定の取得) で記述したref属性の設定によるインジェクションの他に、クラスの型を判定して
 自動的にインジェクションを実行する、自動インジェクションの機能を持つ。
 この機能により、システムで1つしか必要としないコンポーネントについては property 要素によるインジェクションの設定が不要となる。
 
-[リポジトリに保持するインスタンスの生成(DIコンテナ)](../../component/libraries/libraries-02-01-Repository-config.md#リポジトリに保持するインスタンスの生成diコンテナ) で示したサンプルの HelloMessageProvider をインタフェースと実装を下記のように分離した例を使用して、設定例を説明する。
+[環境設定の取得](../../component/libraries/libraries-02-01-Repository-config.md#環境設定の取得) で示したサンプルの HelloMessageProvider をインタフェースと実装を下記のように分離した例を使用して、設定例を説明する。
 
 ### Helloメッセージを取得するインタフェース
 
@@ -784,7 +784,7 @@ helloComponent.printHello();
 
 ネストしたコンポーネントのコンポーネント名は、親となるコンポーネントの名称とコンポーネント定義の名称を"."で繋いだ名称となる。
 
-以下に [自動インジェクション](../../component/libraries/libraries-02-01-Repository-config.md#自動インジェクション) で示した例の設定を、ネストした形式で記述するコンポーネント設定ファイルの例を示す。
+以下に [コンポーネント設定ファイル](../../component/libraries/libraries-02-01-Repository-config.md#コンポーネント設定ファイル) で示した例の設定を、ネストした形式で記述するコンポーネント設定ファイルの例を示す。
 
 ### コンポーネント設定ファイル
 
@@ -1000,7 +1000,7 @@ List の要素となる文字列を指定する。
 この要素に指定した内容が、そのまま List の要素となる。
 
 文字列には、環境設定ファイルに記述した値の埋め込み機能が使用できる。
-埋め込みの方法は [環境設定ファイルに記述した値をコンポーネント設定ファイルで使用する](../../component/libraries/libraries-02-01-Repository-config.md#環境設定ファイルに記述した値をコンポーネント設定ファイルで使用する) を参照。
+埋め込みの方法は [設定した値を取得する実装例](../../component/libraries/libraries-02-01-Repository-config.md#設定した値を取得する実装例) を参照。
 
 この要素は属性を持たない。
 
@@ -1037,9 +1037,9 @@ Map の Entry を定義する。
 
 | 属性名 | 説明 |
 |---|---|
-| key | Entry のキーとなる文字列を直接記述する。 文字列には、環境設定ファイルに記述した値の埋め込み機能が使用できる。 埋め込みの方法は [環境設定ファイルに記述した値をコンポーネント設定ファイルで使用する](../../component/libraries/libraries-02-01-Repository-config.md#環境設定ファイルに記述した値をコンポーネント設定ファイルで使用する) を参照。 |
+| key | Entry のキーとなる文字列を直接記述する。 文字列には、環境設定ファイルに記述した値の埋め込み機能が使用できる。 埋め込みの方法は [設定した値を取得する実装例](../../component/libraries/libraries-02-01-Repository-config.md#設定した値を取得する実装例) を参照。 |
 | key-name | 要素の外で定義したコンポーネントのコンポーネント名を設定し、 そのコンポーネントを Entry のキーとして指定する。 |
-| value | Entry の値となる文字列を直接記述する。 文字列には、環境設定ファイルに記述した値の埋め込み機能が使用できる。 埋め込みの方法は [環境設定ファイルに記述した値をコンポーネント設定ファイルで使用する](../../component/libraries/libraries-02-01-Repository-config.md#環境設定ファイルに記述した値をコンポーネント設定ファイルで使用する) を参照。 |
+| value | Entry の値となる文字列を直接記述する。 文字列には、環境設定ファイルに記述した値の埋め込み機能が使用できる。 埋め込みの方法は [設定した値を取得する実装例](../../component/libraries/libraries-02-01-Repository-config.md#設定した値を取得する実装例) を参照。 |
 | value-name | 要素の外で定義したコンポーネントのコンポーネント名を設定し、 そのコンポーネントを Entry の値として指定する。 |
 
 ### key-component 要素

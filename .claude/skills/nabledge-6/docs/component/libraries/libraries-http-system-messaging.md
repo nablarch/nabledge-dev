@@ -19,11 +19,11 @@
 
 HTTPを使ったメッセージの送受信を行う機能を提供する。
 
-HTTPメッセージングでは、 [送受信電文のデータモデル](../../component/libraries/libraries-http-system-messaging.md#送受信電文のデータモデル) に示したデータモデルを前提としている。
+HTTPメッセージングでは、 [HTTPメッセージ送信のHTTPクライアント処理を変更する](../../component/libraries/libraries-http-system-messaging.md#httpメッセージ送信のhttpクライアント処理を変更する) に示したデータモデルを前提としている。
 また、メッセージのフォーマットには、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット) を使用する。
 
 > **Important:**
-> [送受信電文のデータモデル](../../component/libraries/libraries-http-system-messaging.md#送受信電文のデータモデル) の中で、
+> [HTTPメッセージ送信のHTTPクライアント処理を変更する](../../component/libraries/libraries-http-system-messaging.md#httpメッセージ送信のhttpクライアント処理を変更する) の中で、
 > [フレームワーク制御ヘッダ](../../component/libraries/libraries-mom-system-messaging.md#送受信電文のデータモデル) については、
 > Nablarchで独自に規定している項目となり、 [メッセージボディ](../../component/libraries/libraries-http-system-messaging.md#送受信電文のデータモデル) に含めることを想定している。
 

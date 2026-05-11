@@ -29,7 +29,7 @@
 * 一時テーブルの処理ステータスを更新するためのFormクラス
 
   > **Note:**
-> Formクラスは、各アプリケーションプログラマが作成する必要はない。詳細は、 [Formクラスの実装例](../../guide/mom-messaging/mom-messaging-03-mqDelayedSend.md#formクラス) を参照。
+> Formクラスは、各アプリケーションプログラマが作成する必要はない。詳細は、 [Formクラスの実装例](../../guide/mom-messaging/mom-messaging-03-mqDelayedSend.md#実際のテーブル定義の例) を参照。
 
 ## フォーマット定義ファイル
 

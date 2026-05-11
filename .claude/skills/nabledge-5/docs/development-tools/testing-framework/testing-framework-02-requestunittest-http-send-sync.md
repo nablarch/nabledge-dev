@@ -34,7 +34,7 @@
 
 複数回電文を送信する場合のテストは、テスティングフレームワークの以下の仕様に注意をして記述すること。
 
-* 同一データタイプ(以下の例では `RESPONSE_HEADER_MESSAGES` と `RESPONSE_BODY_MESSAGES` )は、それぞれ、まとめて記述する。詳細は、  [一つのシートに複数テストケースのデータを記載したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) 及び、  [複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する](../../development-tools/testing-framework/testing-framework-01-Abstract.md#複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する) を参照。
+* 同一データタイプ(以下の例では `RESPONSE_HEADER_MESSAGES` と `RESPONSE_BODY_MESSAGES` )は、それぞれ、まとめて記述する。詳細は、  [Excelファイル記述例](../../development-tools/testing-framework/testing-framework-03-Tips.md#excelファイル記述例) 及び、  [複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する](../../development-tools/testing-framework/testing-framework-01-Abstract.md#複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する) を参照。
 * 同一リクエストIDの電文については、noの値を変えてまとめて記述する。
 * 同一リクエストIDの電文の場合は、電文の長さを合わせる(電文を1回送信する場合と同様の制約である。テストケース上、同一の長さにできない場合は、手動でテストを行うこと)
 

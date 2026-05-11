@@ -95,7 +95,7 @@ file-type:        "Fixed" # 固定長
 
 Formクラスは、一時テーブルに電文を登録する際に使用する。
 これは、Nablarchフレームワークのデータベース機能で提供されるオブジェクトのフィールド値をデータベースへ保存する機能を使用するために必要となるクラスである。
-データベース機能の詳細は、  [オブジェクトのフィールドの値の登録機能(オブジェクト(Form)編)](../../guide/web-application/web-application-01-DbAccessSpec-Example.md#オブジェクトのフィールドの値の登録機能オブジェクトform編) を参照すること。
+データベース機能の詳細は、  [バイナリデータをファイルとして出力する方法](../../guide/web-application/web-application-01-DbAccessSpec-Example.md#バイナリデータをファイルとして出力する方法) を参照すること。
 
 **Formクラスは、下記ルールに準拠すること**
 

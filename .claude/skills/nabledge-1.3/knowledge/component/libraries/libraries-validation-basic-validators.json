@@ -49,7 +49,7 @@
     {
       "id": "s8",
       "title": "リテラル文字列指定による許容文字集合定義",
-      "content": "定義したい文字集合の要素が、Unicodeコードポイント上に散在する場合、\nコードポイント範囲指定による許容文字集合定義 による集合定義は煩雑になるおそれがある。\nそのような場合には、本クラスを利用することで簡便に文字集合を定義できる。\n\n```xml\n<!-- \"A\"と\"1\"と\"あ\"を許容 -->\n<component name=\"literal\" class=\"nablarch.core.validation.validator.unicode.LiteralCharsetDef\">\n  <property name=\"allowedCharacters\" value=\"A1あ\" />\n  <property name=\"messageId\" value=\"MSG00092\" />\n</component>\n```\n\n> **Note:**\n> 上記の例では説明を簡略化するため、許容文字リテラルをvalue属性に直接記入しているが、\n> config-file要素を利用して外部化することを推奨する。（ [import 要素および config-file 要素による外部ファイル読み込み時の優先順位](../../component/libraries/libraries-02-04-Repository-override.md#import-要素および-config-file-要素による外部ファイル読み込み時の優先順位) を参照）",
+      "content": "定義したい文字集合の要素が、Unicodeコードポイント上に散在する場合、\nコードポイント範囲指定による許容文字集合定義 による集合定義は煩雑になるおそれがある。\nそのような場合には、本クラスを利用することで簡便に文字集合を定義できる。\n\n```xml\n<!-- \"A\"と\"1\"と\"あ\"を許容 -->\n<component name=\"literal\" class=\"nablarch.core.validation.validator.unicode.LiteralCharsetDef\">\n  <property name=\"allowedCharacters\" value=\"A1あ\" />\n  <property name=\"messageId\" value=\"MSG00092\" />\n</component>\n```\n\n> **Note:**\n> 上記の例では説明を簡略化するため、許容文字リテラルをvalue属性に直接記入しているが、\n> config-file要素を利用して外部化することを推奨する。（ [テスト用の設定ファイル(/opt/testconfig/testconfig.xml)](../../component/libraries/libraries-02-04-Repository-override.md#テスト用の設定ファイルopttestconfigtestconfigxml) を参照）",
       "level": 4
     },
     {
@@ -97,19 +97,19 @@
     {
       "id": "s16",
       "title": "nablarch.core.validation.convertor.BigDecimalConvertor",
-      "content": "| property名 | 設定内容 |\n|---|---|\n| invalidDigitsIntegerMessageId(必須) | 小数部を指定しなかった場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}には{1}桁の数値を入力してください。\" |\n| invalidDigitsFractionMessageId(必須) | 小数部を指定した場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}には整数部{1}桁、小数部{2}桁の数値を入力してください。\" |\n| multiInputMessageId(必須) | 入力値に複数の文字列が設定された場合のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}の値が不正です。\" |\n| allowNullValue | 詳細は、 StringConvertor#allowNullValue を参照。 |",
+      "content": "| property名 | 設定内容 |\n|---|---|\n| invalidDigitsIntegerMessageId(必須) | 小数部を指定しなかった場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}には{1}桁の数値を入力してください。\" |\n| invalidDigitsFractionMessageId(必須) | 小数部を指定した場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}には整数部{1}桁、小数部{2}桁の数値を入力してください。\" |\n| multiInputMessageId(必須) | 入力値に複数の文字列が設定された場合のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}の値が不正です。\" |\n| allowNullValue | 詳細は、 [StringConvertor#allowNullValue](../../component/libraries/libraries-validation-basic-validators.md#nablarchcorevalidationconvertorstringconvertor) を参照。 |",
       "level": 4
     },
     {
       "id": "s17",
       "title": "nablarch.core.validation.convertor.IntegerConvertor",
-      "content": "| property名 | 設定内容 |\n|---|---|\n| invalidDigitsIntegerMessageId(必須) | 小数部を指定しなかった場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}には{1}桁の数値を入力してください。\" |\n| multiInputMessageId(必須) | 入力値に複数の文字列が設定された場合のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}の値が不正です。\" |\n| allowNullValue | 詳細は、 StringConvertor#allowNullValue を参照。 |",
+      "content": "| property名 | 設定内容 |\n|---|---|\n| invalidDigitsIntegerMessageId(必須) | 小数部を指定しなかった場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}には{1}桁の数値を入力してください。\" |\n| multiInputMessageId(必須) | 入力値に複数の文字列が設定された場合のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}の値が不正です。\" |\n| allowNullValue | 詳細は、 [StringConvertor#allowNullValue](../../component/libraries/libraries-validation-basic-validators.md#nablarchcorevalidationconvertorstringconvertor) を参照。 |",
       "level": 4
     },
     {
       "id": "s18",
       "title": "nablarch.core.validation.convertor.LongConvertor",
-      "content": "| property名 | 設定内容 |\n|---|---|\n| invalidDigitsIntegerMessageId(必須) | 小数部を指定しなかった場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}には{1}桁の数値を入力してください。\" |\n| multiInputMessageId(必須) | 入力値に複数の文字列が設定された場合のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}の値が不正です。\" |\n| allowNullValue | 詳細は、 StringConvertor#allowNullValue を参照。 |",
+      "content": "| property名 | 設定内容 |\n|---|---|\n| invalidDigitsIntegerMessageId(必須) | 小数部を指定しなかった場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}には{1}桁の数値を入力してください。\" |\n| multiInputMessageId(必須) | 入力値に複数の文字列が設定された場合のデフォルトのエラーメッセージのメッセージIDを設定する。  例 : \"{0}の値が不正です。\" |\n| allowNullValue | 詳細は、 [StringConvertor#allowNullValue](../../component/libraries/libraries-validation-basic-validators.md#nablarchcorevalidationconvertorstringconvertor) を参照。 |",
       "level": 4
     },
     {

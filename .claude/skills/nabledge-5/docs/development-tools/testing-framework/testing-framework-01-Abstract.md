@@ -8,7 +8,7 @@
 各種アノテーション、assertメソッドやMatcherクラスなど、JUnit4で提供されている機能を使用する。
 
 > **Tip:**
-> JUnit 5の上で自動テストフレームワークを動かしたい場合は、 [JUnit 5で自動テストフレームワークを動かす](../../development-tools/testing-framework/testing-framework-01-Abstract.md#junit-5で自動テストフレームワークを動かす) を参照のこと。
+> JUnit 5の上で自動テストフレームワークを動かしたい場合は、 [複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する](../../development-tools/testing-framework/testing-framework-01-Abstract.md#複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する) を参照のこと。
 
 ### テストデータの外部化
 
@@ -51,7 +51,7 @@ public class SampleTest {
 > **Tip:**
 > @Beforeや@Afterなどのアノテーションも使用できる。これらのアノテーションを用いて、
 > テストメソッド前後にリソースの取得解放などの共通処理を行いたい場合は、
-> 次の項を参照（ [テスト実行前後に共通処理を行いたい。](../../development-tools/testing-framework/testing-framework-03-Tips.md#テスト実行前後に共通処理を行いたい) ）。
+> 次の項を参照（ [テストソースコード実装例](../../development-tools/testing-framework/testing-framework-03-Tips.md#テストソースコード実装例) ）。
 
 ## Excelによるテストデータ記述
 
@@ -113,7 +113,7 @@ Excelシートの記述方法関する規約について説明する。
 |---|---|---|
 | SETUP_TABLE | テスト実行前にデータベースに登録するデータ | 登録対象のテーブル名 |
 | EXPECTED_TABLE | テスト実行後の期待するデータベースのデータ 省略したカラムは、比較対象外となる。 | 確認対象のテーブル名 |
-| EXPECTED_COMPLETE_TABLE | テスト実行後の期待するデータベースのデータ 省略したカラムには [デフォルト値](../../development-tools/testing-framework/testing-framework-02-DbAccessTest.md#デフォルト値) が設定されているものとして扱われる。 | 確認対象のテーブル名 |
+| EXPECTED_COMPLETE_TABLE | テスト実行後の期待するデータベースのデータ 省略したカラムには [関係のあるカラムのみを記載した場合（良い例）](../../development-tools/testing-framework/testing-framework-02-DbAccessTest.md#関係のあるカラムのみを記載した場合良い例) が設定されているものとして扱われる。 | 確認対象のテーブル名 |
 | LIST_MAP | List<Map<String,String>>形式のデータ | シート内で一意になるID 期待値のID(任意の文字列) |
 | SETUP_FIXED | 事前準備用の固定長ファイル | 準備ファイルの配置場所 |
 | EXPECTED_FIXED | 期待値を示す固定長ファイル | 比較対象ファイルの配置場所 |

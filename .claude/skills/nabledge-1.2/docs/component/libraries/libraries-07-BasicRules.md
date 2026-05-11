@@ -121,7 +121,7 @@ HTMLエスケープ処理では、下記の文字変換を行う。
 
 ### HTMLエスケープせずに値を出力する方法
 
-業務アクションなどで設定された値をページ上に出力する場合は、 Webview_WriteTag を使用するが、
+業務アクションなどで設定された値をページ上に出力する場合は、 [writeタグ](../../component/libraries/libraries-07-TagReference.md#writeタグ) を使用するが、
 HTMLエスケープを行わず、変数内のHTMLタグを直接出力したい場合は、以下のタグを使用する。
 
 * [prettyPrintタグ](../../component/libraries/libraries-07-TagReference.md#prettyprintタグ)
@@ -164,7 +164,7 @@ HTMLエスケープを行わず、変数内のHTMLタグを直接出力したい
 * [scriptタグ](../../component/libraries/libraries-07-TagReference.md#scriptタグ)
 * [linkタグ](../../component/libraries/libraries-07-TagReference.md#linkタグ)
 * [confirmationPageタグ](../../component/libraries/libraries-07-TagReference.md#confirmationpageタグ)
-* [includeタグ](../../component/libraries/libraries-07-TagReference.md#includeタグ)
+* [setタグ](../../component/libraries/libraries-07-TagReference.md#setタグ)
 
 includeタグは動的なJSPインクルードを言語毎のリソースパスの切り替えに対応させるために提供している。
 [includeParamタグ](../../component/libraries/libraries-07-TagReference.md#includeparamタグ) を使用してインクルード時に追加するパラメータを指定する。

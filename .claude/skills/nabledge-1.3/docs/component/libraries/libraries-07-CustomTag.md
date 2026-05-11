@@ -112,7 +112,7 @@ public class MenuAction {
 * [フォーム内の入力要素を出力するカスタムタグ](../../component/libraries/libraries-07-FormTagList.md)
 
 > **Note:**
-> コードの入力に関するカスタムタグについては、 [コード値の表示](../../component/libraries/libraries-07-DisplayTag.md#コード値の表示) を参照。
+> コードの入力に関するカスタムタグについては、 [nameAlias属性の使用方法](../../component/libraries/libraries-07-DisplayTag.md#namealias属性の使用方法) を参照。
 
 ### 表示に関するカスタムタグ
 

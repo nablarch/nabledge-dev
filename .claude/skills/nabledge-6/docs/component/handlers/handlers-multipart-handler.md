@@ -158,7 +158,7 @@ web.xml へのエラーページ設定を省略した場合は、ウェブアプ
 
 > **Important:**
 > このハンドラは、[制約](../../component/handlers/handlers-SessionStoreHandler.md#制約) にあるとおり、 [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) より手前に設定する必要がある。
-> このため、 [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) の後続に設定される [HTTPエラー制御ハンドラ](../../component/handlers/handlers-HttpErrorHandler.md#httpエラー制御ハンドラ) の [デフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#デフォルトページの設定) は使用できない。
+> このため、 [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) の後続に設定される [HTTPエラー制御ハンドラ](../../component/handlers/handlers-HttpErrorHandler.md#httpエラー制御ハンドラ) の [nablarch.fw.Result.Errorのログ出力について](../../component/handlers/handlers-HttpErrorHandler.md#nablarchfwresulterrorのログ出力について) は使用できない。
 
 マルチパート解析エラーが発生するケース
 

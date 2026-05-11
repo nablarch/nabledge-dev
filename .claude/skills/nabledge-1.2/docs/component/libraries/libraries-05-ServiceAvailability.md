@@ -12,7 +12,7 @@
 
 > **Note:**
 > 「サービス提供可否状態の設定」とはサービス提供可否状態のON/OFFを切り替えることを示す。
-> サービス提供可否状態はデータベースのテーブルに格納されている。テーブル構造については、  [テーブル定義の例](../../component/libraries/libraries-05-ServiceAvailability.md#テーブル定義の例) を参照すること。
+> サービス提供可否状態はデータベースのテーブルに格納されている。テーブル構造については、  [画面オンライン](../../component/libraries/libraries-05-ServiceAvailability.md#画面オンライン) を参照すること。
 
 ### 概要図
 

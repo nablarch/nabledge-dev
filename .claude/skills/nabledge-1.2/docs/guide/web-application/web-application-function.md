@@ -1028,7 +1028,7 @@ public HttpResponse doRW11AC0602(HttpRequest req, ExecutionContext ctx) {
 
 ## 複合キーを使用したデータの一覧画面から、ラジオボタン・チェックボックスでデータを選択する
 
-[検索結果の一覧表示](../../guide/web-application/web-application-function.md#検索結果の一覧表示) で作成する一覧画面では、一括削除処理などのように一覧の中から一部の
+[データベース一括登録](../../guide/web-application/web-application-function.md#データベース一括登録) で作成する一覧画面では、一括削除処理などのように一覧の中から一部の
 データをチェックボックスあるいはラジオボタンで選択させて処理を行うUIがしばしば作られる。
 このようなUIを複合キーで実現する際の実装方法を以下に示す。
 

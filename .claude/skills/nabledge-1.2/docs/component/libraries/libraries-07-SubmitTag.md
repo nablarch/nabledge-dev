@@ -672,7 +672,7 @@ a.1) useToken属性の使用方法
 
 | 属性 | 説明 |
 |---|---|
-| useToken | トークンを設定するか否か。 トークンを設定する場合はtrue、設定しない場合はfalse。 デフォルトはfalse。 confirmationPageタグが指定された場合は、デフォルトがtrueとなる。 confirmationPageタグについては、 [入力画面と確認画面の共通化をサポートするカスタムタグ](../../component/libraries/libraries-07-FacilitateTag.md#入力画面と確認画面の共通化をサポートするカスタムタグ) を参照。 |
+| useToken | トークンを設定するか否か。 トークンを設定する場合はtrue、設定しない場合はfalse。 デフォルトはfalse。 confirmationPageタグが指定された場合は、デフォルトがtrueとなる。 confirmationPageタグについては、 [検索結果の一覧表示機能の画面表示のカスタマイズ方法](../../component/libraries/libraries-07-FacilitateTag.md#検索結果の一覧表示機能の画面表示のカスタマイズ方法) を参照。 |
 
 クライアント側のトークンの設定では、1つの画面内で複数のformタグのuseToken属性にtrueが指定された場合、
 画面内で一番最初に発行されたトークンを全てのformタグで使用する。
