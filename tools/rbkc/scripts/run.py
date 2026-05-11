@@ -165,6 +165,12 @@ def _convert_and_write(
             data["sheet_subtype"] = meta["sheet_subtype"]
         if "p2_raw_content" in meta:
             data["p2_raw_content"] = meta["p2_raw_content"]
+        if "p2_4_preamble" in meta:
+            data["p2_4_preamble"] = meta["p2_4_preamble"]
+        if "p2_4_header" in meta:
+            data["p2_4_header"] = meta["p2_4_header"]
+        if "p2_4_rows" in meta:
+            data["p2_4_rows"] = meta["p2_4_rows"]
 
     out_path = output_dir / fi.output_path
     out_path.parent.mkdir(parents=True, exist_ok=True)

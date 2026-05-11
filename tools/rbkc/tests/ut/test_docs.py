@@ -309,6 +309,49 @@ class TestRenderXlsxP2Subtypes:
         assert "ステップ1" in md
         assert "## " not in md
 
+    def test_p2_4_renders_preamble_and_md_table(self):
+        """P2-4: preamble as plain text, then Markdown table with <br> for LF."""
+        data = {
+            "id": "f", "title": "3.PCIDSS対応表",
+            "content": "前文1 前文2 PCI DSS 要件 2.チェックリストとの対応 6.5.1 対応内容A 詳細A 6.5.2 対応内容B",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "sheet_subtype": "P2-4",
+            "p2_4_preamble": "前文1\n前文2",
+            "p2_4_header": ["PCI DSS 要件", "2.チェックリストとの対応"],
+            "p2_4_rows": [
+                ["6.5.1", "対応内容A\n詳細A"],
+                ["6.5.2", "対応内容B"],
+            ],
+        }
+        md = self._render(data)
+        # Preamble appears as plain text
+        assert "前文1" in md
+        assert "前文2" in md
+        # Markdown table header
+        assert "| PCI DSS 要件 | 2.チェックリストとの対応 |" in md
+        # Separator row
+        assert "| --- | --- |" in md
+        # Data rows with <br> for embedded LF
+        assert "| 6.5.1 | 対応内容A<br>詳細A |" in md
+        assert "| 6.5.2 | 対応内容B |" in md
+
+    def test_p2_4_no_table_if_no_rows(self):
+        """P2-4: if p2_4_rows is empty, only preamble is rendered."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "前文のみ",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "sheet_subtype": "P2-4",
+            "p2_4_preamble": "前文のみ",
+            "p2_4_header": [],
+            "p2_4_rows": [],
+        }
+        md = self._render(data)
+        assert "前文のみ" in md
+        assert "| ---" not in md
+
 
 class TestReadmeUrlEncoding:
     """README.md link paths must URL-encode spaces so Markdown links resolve.

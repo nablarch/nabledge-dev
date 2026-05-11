@@ -324,6 +324,26 @@ def check_json_docs_md_consistency(
             if data.get("sheet_subtype") == "P2-3":
                 top_region = re.sub(r' {2,}', ' ', re.sub(r'  \n', ' ', top_region))
                 expected = re.sub(r' {2,}', ' ', re.sub(r'\n', ' ', expected))
+            if data.get("sheet_subtype") == "P2-4":
+                # P2-4: docs MD uses <br> for cell-level LF and | as table
+                # delimiters.  JSON content is row-per-line flat text using
+                # _flatten_ws (cell LF→space, multiple spaces→one space).
+                # Strategy: normalize docs MD (<br>→space, |→space, multi-LF→
+                # single LF), flatten whitespace per line, then check each
+                # content line as a substring — same model as P2-1 per-line
+                # containment but with the additional <br>/| stripping.
+                docs_norm = re.sub(r' {2,}', ' ',
+                    docs_md_text.replace("<br>", " ").replace("|", " "))
+                for line in expected.splitlines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    line_norm = re.sub(r' {2,}', ' ', line)
+                    if line_norm not in docs_norm:
+                        issues.append(
+                            f"[QO2] {file_id}: P2-4 content line not found in docs MD: {line_norm!r}"
+                        )
+                return issues
             if expected not in top_region:
                 issues.append(f"[QO2] {file_id}: top-level content not found verbatim directly below the # heading")
 

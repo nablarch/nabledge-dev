@@ -4436,6 +4436,58 @@ class TestSheetToResultP2Subtypes:
         assert "サブB" in texts
         assert "" not in texts
 
+    def test_p2_4_generates_meta_with_table_structure(self):
+        """P2-4: meta has sheet_subtype='P2-4', p2_4_preamble, p2_4_header, p2_4_rows."""
+        from scripts.create.converters.xlsx_common import sheet_to_result
+        # Mirrors the PCIDSS対応表 structure:
+        # rows 0-3: preamble (col A only), row 4: empty, row 5: header, rows 6+: data
+        sheet = self._make_sheet("3.PCIDSS対応表", [
+            ["■3.PCIDSS対応表"],
+            ["前文1"],
+            ["前文2"],
+            [""],
+            ["", "PCI DSS 要件", "2.チェックリストとの対応"],
+            ["", "6.5.1", "対応内容A\n詳細A"],
+            ["", "6.5.2", "対応内容B"],
+        ])
+        result, meta = sheet_to_result(sheet, sheet_subtype="P2-4")
+        assert meta["sheet_type"] == "P2"
+        assert meta.get("sheet_subtype") == "P2-4"
+        assert "p2_4_preamble" in meta
+        assert "p2_4_header" in meta
+        assert "p2_4_rows" in meta
+        # header should contain the column names
+        header = meta["p2_4_header"]
+        assert "PCI DSS 要件" in header
+        assert "2.チェックリストとの対応" in header
+        # rows should have 2 data rows
+        rows = meta["p2_4_rows"]
+        assert len(rows) == 2
+        # LF preserved in p2_4_rows (cell-level LF)
+        assert "\n" in rows[0][1]
+        # JSON content: cell-level LF must be flattened (not cell-LF artifacts)
+        assert "対応内容A\n詳細A" not in result.content
+        assert "対応内容A 詳細A" in result.content
+
+    def test_p2_4_load_sheet_subtype_map_parses_p2_4(self):
+        """load_sheet_subtype_map must return P2-4 entries from xlsx-sheet-mapping.md."""
+        from scripts.create.converters.xlsx_common import load_sheet_subtype_map
+        import tempfile, pathlib
+        mapping_text = (
+            "| File | Sheet | Pattern | Notes |\n"
+            "|------|-------|---------|-------|\n"
+            "| Nablarch機能のセキュリティ対応表.xlsx | 3.PCIDSS対応表 | P2-4 | 2-col table with LF |\n"
+        )
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False, encoding="utf-8") as f:
+            f.write(mapping_text)
+            tmp = pathlib.Path(f.name)
+        try:
+            result = load_sheet_subtype_map(tmp)
+            assert ("Nablarch機能のセキュリティ対応表.xlsx", "3.PCIDSS対応表") in result
+            assert result[("Nablarch機能のセキュリティ対応表.xlsx", "3.PCIDSS対応表")] == "P2-4"
+        finally:
+            tmp.unlink()
+
 
 # ---------------------------------------------------------------------------
 # QO2 P2-3: hard line break normalization
@@ -4498,6 +4550,62 @@ class TestCheckJsonDocsMdConsistency_QO2_P2_3:
         }
         docs = "# T\n\nテキスト\n"
         assert self._check(data, docs) == []
+
+
+# ---------------------------------------------------------------------------
+# QO2 P2-4: Markdown table with <br> normalization
+# ---------------------------------------------------------------------------
+
+class TestCheckJsonDocsMdConsistency_QO2_P2_4:
+    """QO2 for P2-4 sheets: content tokens must appear in docs MD table."""
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_pass_content_lines_in_table(self):
+        """P2-4: each content line must appear in normalized docs MD.
+
+        JSON content is row-per-line flat text; docs MD renders preamble rows
+        as plain text and data rows as table cells (with <br> for LF).
+        QO2 normalizes docs MD (<br>→space, |→space, LF→space) then checks
+        each content line as a substring.
+        """
+        # content has '\n' between rows (from _build_p2_content)
+        data = {
+            "id": "f", "title": "T",
+            "content": (
+                "前文1\n"
+                "前文2\n"
+                "PCI DSS 要件  2.チェックリストとの対応\n"
+                "6.5.1  対応内容A 詳細A\n"
+                "6.5.2  対応内容B"
+            ),
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "sheet_subtype": "P2-4",
+        }
+        docs = (
+            "# T\n\n前文1\n前文2\n\n"
+            "| PCI DSS 要件 | 2.チェックリストとの対応 |\n"
+            "| --- | --- |\n"
+            "| 6.5.1 | 対応内容A<br>詳細A |\n"
+            "| 6.5.2 | 対応内容B |\n"
+        )
+        assert self._check(data, docs) == []
+
+    def test_fail_content_line_missing_from_docs(self):
+        """P2-4: if a content line is missing from docs MD → QO2 FAIL."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "6.5.1  対応内容A 詳細A\n欠落した行",
+            "sections": [], "no_knowledge_content": False,
+            "sheet_type": "P2",
+            "sheet_subtype": "P2-4",
+        }
+        docs = "# T\n\n| header |\n| --- |\n| 6.5.1 | 対応内容A<br>詳細A |\n"
+        issues = self._check(data, docs)
+        assert any("QO2" in i for i in issues), issues
 
 
 # ---------------------------------------------------------------------------

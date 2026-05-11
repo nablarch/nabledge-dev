@@ -133,6 +133,16 @@ def _md_table_cell(s: str) -> str:
     return " ".join(s.replace("|", "\\|").split())
 
 
+def _md_table_cell_br(s: str) -> str:
+    """Escape a P2-4 cell value for a Markdown pipe table.
+
+    Unlike :func:`_md_table_cell`, preserves cell-level LF by converting
+    each ``\\n`` to ``<br>``.  Used by P2-4 sheets where embedded newlines
+    carry semantic structure (multi-line checklist entries).
+    """
+    return s.replace("|", "\\|").replace("\n", "<br>")
+
+
 def _render_xlsx_p1(data: dict) -> str:
     """Render an Excel P1 sheet as title + restored MD table."""
     title = data.get("title", "")
@@ -207,6 +217,24 @@ def _render_xlsx_p2(data: dict) -> str:
         if raw:
             converted = re.sub(r'\n', '  \n', raw.rstrip('\n'))
             lines.append(converted)
+            lines.append("")
+        return "\n".join(lines)
+
+    if data.get("sheet_subtype") == "P2-4":
+        # P2-4: preamble as plain text, then Markdown table with <br> for LF
+        preamble = data.get("p2_4_preamble", "")
+        if preamble:
+            lines.append(preamble)
+            lines.append("")
+        header = data.get("p2_4_header", [])
+        rows = data.get("p2_4_rows", [])
+        if header and rows:
+            lines.append("| " + " | ".join(header) + " |")
+            lines.append("| " + " | ".join("---" for _ in header) + " |")
+            for row in rows:
+                padded = list(row) + [""] * max(0, len(header) - len(row))
+                cells = [_md_table_cell_br(v) for v in padded[:len(header)]]
+                lines.append("| " + " | ".join(cells) + " |")
             lines.append("")
         return "\n".join(lines)
 
