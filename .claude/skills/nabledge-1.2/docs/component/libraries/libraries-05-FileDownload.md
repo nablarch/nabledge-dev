@@ -132,7 +132,7 @@ c) その他のクラス
 | nablarch.fw.web.ResponseBody | ダウンロードデータを保持するクラス。 ダウンロードデータのサイズが一定量を超えると、データの保存先をメモリから一時ファイルに変更し、メモリ消費量を抑制する機能を持つ。 |
 | nablarch.fw.web.HttpResponseSetting | レスポンスに関連する設定を保持するクラス。コンポーネント設定ファイルで本クラスを定義することで、設定の変更が可能となる。 具体的には、以下の設定を行うことができる。 ・ ダウンロードデータをメモリにバッファリングするサイズの上限 ・ 一時ファイルの出力先フォルダのパス ・ 一時ファイルの使用有無などの設定を保持するクラス コンポーネント設定ファイルについては、 [HTTPレスポンスの設定](../../component/libraries/libraries-05-FileDownload.md#httpレスポンスの設定) の項を参照すること。 |
 | nablarch.fw.web.download.encorder.DownloadFileNameEncoderEntry | User-Agentヘッダのパターン（例：「.*MSIE.*」）とダウンロードファイル名のエンコーダの関連を保持するエントリ。 |
-| nablarch.fw.web.download.encorder.DownloadFileNameEncoderFactory | ダウンロードファイル名のエンコーダを取得（生成）するクラス。User-Agentヘッダとエンコーダの関連は、コンポーネント設定ファイルで容易に編集が可能。 コンポーネント設定ファイルについては、 [nablarch.fw.web.HttpResponseの設定](../../component/libraries/libraries-05-FileDownload.md#nablarchfwwebhttpresponseの設定) の項を参照すること。 |
+| nablarch.fw.web.download.encorder.DownloadFileNameEncoderFactory | ダウンロードファイル名のエンコーダを取得（生成）するクラス。User-Agentヘッダとエンコーダの関連は、コンポーネント設定ファイルで容易に編集が可能。 コンポーネント設定ファイルについては、 [ファイル名のエンコーダの設定の記述](../../component/libraries/libraries-05-FileDownload.md#ファイル名のエンコーダの設定の記述) の項を参照すること。 |
 
 ### クラス詳細
 

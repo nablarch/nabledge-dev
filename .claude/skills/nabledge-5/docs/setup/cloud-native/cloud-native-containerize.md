@@ -77,7 +77,7 @@ Nablarchのログ出力設定については、 [ログ出力の設定](../../co
 
 Nablarchでは、Dockerコンテナ上で動かすことを前提としたウェブアプリケーションとバッチアプリケーションのアーキタイプを用意している。
 
-このアーキタイプを使って生成されるブランクプロジェクトには、 [The Twelve-Factor App](../../setup/cloud-native/cloud-native-containerize.md#the-twelve-factor-app) や [Nablarchバッチアプリケーションに必要な修正](../../setup/cloud-native/cloud-native-containerize.md#nablarchバッチアプリケーションに必要な修正) で説明した修正があらかじめ適用されている。
+このアーキタイプを使って生成されるブランクプロジェクトには、 [Nablarchウェブアプリケーションに必要な修正](../../setup/cloud-native/cloud-native-containerize.md#nablarchウェブアプリケーションに必要な修正) や [Nablarchバッチアプリケーションに必要な修正](../../setup/cloud-native/cloud-native-containerize.md#nablarchバッチアプリケーションに必要な修正) で説明した修正があらかじめ適用されている。
 また、 [Jib](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin) (外部サイト、英語)というDockerコンテナを簡単に生成するためのMavenプラグインが組み込まれているため、開発者はすぐにDockerコンテナ用のNablarchアプリケーションの開発を始めることができる。
 
 > **Tip:**
@@ -97,7 +97,7 @@ Nablarchでは、Dockerコンテナ上で動かすことを前提としたウェ
 
 Dockerコンテナ用のアーキタイプの説明については以下を参照。
 
-* [前提条件](../../setup/blank-project/blank-project-beforeFirstStep.md#ブランクプロジェクトの設計思想と留意事項)
-* [プロジェクトの構成](../../setup/blank-project/blank-project-MavenModuleStructures.md#本番環境へのリリースについて)
+* [前提条件](../../setup/blank-project/blank-project-beforeFirstStep.md#初期セットアップの前提)
+* [プロジェクトの構成](../../setup/blank-project/blank-project-MavenModuleStructures.md#pj-container-webプロジェクト)
 * [環境ごとの設定の切り替えについて](../../setup/blank-project/blank-project-CustomizeDB.md#コンテナの本番環境設定)
 * [初期セットアップ手順](../../setup/blank-project/blank-project-FirstStepContainer.md#初期セットアップ手順コンテナ)

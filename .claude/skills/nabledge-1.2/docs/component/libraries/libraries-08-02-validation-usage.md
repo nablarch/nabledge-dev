@@ -349,7 +349,7 @@ ValidationContext<User> result = ValidationUtil.validateAndConvertRequest("user"
 
 ユーザのパスワードとパスワードの確認入力のように、複数のプロパティを比較したバリデーションが必要な場合などには、
 Form に関連する任意のバリデーション処理が必要となる。
-このようなバリデーションは [テーブル構造とEntity](../../component/libraries/libraries-08-02-validation-usage.md#テーブル構造とentity) と同様に @ValidateFor アノテーションを設定したメソッド内で
+このようなバリデーションは [バリデーション対象のプロパティ指定](../../component/libraries/libraries-08-02-validation-usage.md#バリデーション対象のプロパティ指定) と同様に @ValidateFor アノテーションを設定したメソッド内で
 バリデーションの処理をハードコーディングすることで実現できる。
 
 下記に示すユーザのパスワード変更のHTMLフォームを例に取って使用方法を説明する。
@@ -365,8 +365,8 @@ Form に関連する任意のバリデーション処理が必要となる。
 ```
 
 ユーザのパスワードと新パスワード(確認)のバリデーションを行う Form は下記のようになる。
-この例でも、 User に対するバリデーションを [テーブル構造とEntity](../../component/libraries/libraries-08-02-validation-usage.md#テーブル構造とentity) と同様に行なっている。
-(ただし、 [テーブル構造とEntity](../../component/libraries/libraries-08-02-validation-usage.md#テーブル構造とentity) の例と異なり、ここではバリデーション対象とするプロパティを
+この例でも、 User に対するバリデーションを [バリデーション対象のプロパティ指定](../../component/libraries/libraries-08-02-validation-usage.md#バリデーション対象のプロパティ指定) と同様に行なっている。
+(ただし、 [バリデーション対象のプロパティ指定](../../component/libraries/libraries-08-02-validation-usage.md#バリデーション対象のプロパティ指定) の例と異なり、ここではバリデーション対象とするプロパティを
 指定する ValidationUtil クラスの validate メソッドを使用している。)
 
 通常のバリデーションの実行後、新パスワードと確認パスワードが異なった場合には ValidationContext クラスの addResultMessage メソッドで
@@ -474,7 +474,7 @@ public class User {
 
 validateForChangePassword メソッドに記述されたバリデーション処理は、下記のように
 ValidationUtil.validateAndConvertRequest を呼び出すことで実行される。
-この呼び出し方法は、 [テーブル構造とEntity](../../component/libraries/libraries-08-02-validation-usage.md#テーブル構造とentity) と同様である。
+この呼び出し方法は、 [バリデーション対象のプロパティ指定](../../component/libraries/libraries-08-02-validation-usage.md#バリデーション対象のプロパティ指定) と同様である。
 
 ```java
 ValidationContext result = ValidationUtil.validateAndConvertRequest("user", User.class, req, "changePassword");

@@ -2,7 +2,7 @@
 
 ## 概要
 
-本章では [想定されるプロジェクト構成ごとの設定例](../../component/ui-framework/ui-framework-plugin-build.md#想定されるプロジェクト構成ごとの設定例) および [デプロイ対象プロジェクト複数の場合(プラグインも個別)](../../component/ui-framework/ui-framework-plugin-build.md#デプロイ対象プロジェクト複数の場合プラグインも個別) を示す。
+本章では [想定されるプロジェクト構成ごとの設定例](../../component/ui-framework/ui-framework-plugin-build.md#想定されるプロジェクト構成ごとの設定例) および [プラグインビルドで使用するコマンドや設定ファイルの詳細仕様](../../component/ui-framework/ui-framework-plugin-build.md#プラグインビルドで使用するコマンドや設定ファイルの詳細仕様) を示す。
 
 プラグインビルドコマンドが使用されるプロジェクトの標準的な構成については [標準プロジェクト構成](../../component/ui-framework/ui-framework-directory-layout.md) を、
 開発時のフローについては [UI開発基盤の導入](../../component/ui-framework/ui-framework-initial-setup.md) を参照。
@@ -10,7 +10,7 @@
 ## 想定されるプロジェクト構成ごとの設定例
 
 想定されるプロジェクト構成について、プラグインビルドコマンドの設定ファイルや実行ファイルの具体的な設定例を示す。
-下記の設定例に示していない項目については、後述する [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル) や [外部ライブラリの展開](../../component/ui-framework/ui-framework-plugin-build.md#外部ライブラリの展開) を参照し、必要に応じて修正すること。
+下記の設定例に示していない項目については、後述する [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル) や [ビルドコマンド](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド) を参照し、必要に応じて修正すること。
 
 ### デプロイ対象プロジェクトが１つの場合
 
@@ -199,9 +199,9 @@ Nablarch標準UIプラグインがそれぞれ１つ、
 以降はプラグインビルドで使用するコマンドや設定ファイルについての詳細として、以下の項目について記述する。
 
 * [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル)
-* [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル)
-* [JavaScriptの自動生成](../../component/ui-framework/ui-framework-plugin-build.md#javascriptの自動生成)
-* [外部ライブラリの展開](../../component/ui-framework/ui-framework-plugin-build.md#外部ライブラリの展開)
+* [ファイルの自動生成](../../component/ui-framework/ui-framework-plugin-build.md#ファイルの自動生成)
+* [プラグイン、外部ライブラリの展開](../../component/ui-framework/ui-framework-plugin-build.md#プラグイン外部ライブラリの展開)
+* [ビルドコマンド](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド)
 
 ## 設定ファイル
 
@@ -438,7 +438,7 @@ css/
 | ui_test | UI開発基盤テスト用プロジェクト |
 
 ただし、各プラグインに含まれるlessファイルは展開されず、自動生成された*-minify.cssファイルのみ展開される。
-自動生成ファイルについては [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル) を参照。
+自動生成ファイルについては [ファイルの自動生成](../../component/ui-framework/ui-framework-plugin-build.md#ファイルの自動生成) を参照。
 
 > **Note:**
 > プラグイン間で同一の展開先となるファイルを検出した場合、重複ファイルとして下記フォーマットでコマンド終了時に該当ファイルの一覧が表示される。

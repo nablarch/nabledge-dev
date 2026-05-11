@@ -43,4 +43,4 @@
   画面オンライン処理用業務アクションハンドラ - [変数スコープの利用](../../../fw/reference/handler/HttpMethodBinding.html#web-scope)
 * カスタムタグを使用したウィンドウスコープの使用方法について
 
-  カスタムタグ実装例集 - [List型/配列の要素のプロパティを受け渡す場合](../../guide/web-application/web-application-basic.md#list型配列の要素のプロパティを受け渡す場合)
+  カスタムタグ実装例集 - [ウィンドウスコープの使用法](../../guide/web-application/web-application-basic.md#ウィンドウスコープの使用法)

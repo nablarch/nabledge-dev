@@ -90,7 +90,7 @@ HTTPアクセスログの出力に使用するクラスを下記に示す。
 | クラス名 | 概要 |
 |---|---|
 | nablarch.common.web.handler.HttpAccessLogHandler | HTTPアクセスログを出力するハンドラ。 リクエスト処理開始時と終了時のログを出力する。 |
-| nablarch.common.web.handler.NablarchTagHandler | Nablarchのカスタムタグ機能に必要なリクエスト処理を行うハンドラ。 [アクションの実装方法](../../component/libraries/libraries-07-FormTag.md#アクションの実装方法) 機能に対応する改竄チェックと復号を行う。 hiddenパラメータ復号後のログを出力する。 |
+| nablarch.common.web.handler.NablarchTagHandler | Nablarchのカスタムタグ機能に必要なリクエスト処理を行うハンドラ。 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能に対応する改竄チェックと復号を行う。 hiddenパラメータ復号後のログを出力する。 |
 | nablarch.fw.web.handler.HttpRequestJavaPackageMapping | URI中の部分文字列をJavaパッケージへマッピングすることで動的に委譲先を決定するディスパッチャ。 ディスパッチ先クラス決定後のログを出力する。 |
 | nablarch.fw.web.handler.HttpAccessLogUtil | HTTPアクセスログを出力するクラス。 |
 | nablarch.fw.web.handler.HttpAccessLogFormatter | HTTPアクセスログの個別項目をフォーマットするクラス。 |
@@ -202,7 +202,7 @@ httpAccessLogFormatter.endOutputEnabled=true
 | HTTPヘッダのUser-Agent | $clientUserAgent$ |
 | リクエストパラメータ | $parameters$ |
 
-リクエストパラメータは、 [アクションの実装方法](../../component/libraries/libraries-07-FormTag.md#アクションの実装方法) 機能の復号前の状態となる。
+リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号前の状態となる。
 
 デフォルトのフォーマット
 
@@ -221,7 +221,7 @@ httpAccessLogFormatter.endOutputEnabled=true
 プレースホルダ一覧
 
 [リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#リクエスト処理開始時のログ出力に使用するフォーマット) と同じ。
-ただし、リクエストパラメータは、 [アクションの実装方法](../../component/libraries/libraries-07-FormTag.md#アクションの実装方法) 機能の復号後の状態となる。
+ただし、リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号後の状態となる。
 
 デフォルトのフォーマット
 
@@ -235,7 +235,7 @@ httpAccessLogFormatter.endOutputEnabled=true
 プレースホルダ一覧
 
 [リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#リクエスト処理開始時のログ出力に使用するフォーマット) に加えて、下記のプレースホルダを指定できる。
-リクエストパラメータは、 [アクションの実装方法](../../component/libraries/libraries-07-FormTag.md#アクションの実装方法) 機能の復号後の状態となる。
+リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号後の状態となる。
 
 | 項目名 | プレースホルダ |
 |---|---|
@@ -252,7 +252,7 @@ httpAccessLogFormatter.endOutputEnabled=true
 プレースホルダ一覧
 
 [リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#リクエスト処理開始時のログ出力に使用するフォーマット) に加えて、下記のプレースホルダを指定できる。
-リクエストパラメータは、 [アクションの実装方法](../../component/libraries/libraries-07-FormTag.md#アクションの実装方法) 機能の復号後の状態となる。
+リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号後の状態となる。
 
 | 項目名 | プレースホルダ |
 |---|---|

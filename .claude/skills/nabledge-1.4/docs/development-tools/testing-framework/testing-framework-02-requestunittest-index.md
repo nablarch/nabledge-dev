@@ -76,19 +76,19 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 | context | そのテストケースで、どのリクエストIDにどのようなユーザでリクエストを送るかを記載する。 詳細は、 [ユーザ情報](../../development-tools/testing-framework/testing-framework-02-requestunittest-index.md#ユーザ情報) を参照。 | 必須 |
 | cookie | そのテストケースで必要となるCookie情報を記載する。 詳細は、 [Cookie情報](../../development-tools/testing-framework/testing-framework-02-requestunittest-index.md#cookie情報) を参照。 |  |
 | isValidToken | トークンを設定する場合にはtrueを設定する。トークンの詳細については、 [トークンを使用した二重サブミットの防止](../../guide/web-application/web-application-07-insert.md#トークンを使用した二重サブミットの防止)を参照。 |  |
-| setUpTable | 各テストケース実行前にデータベースに登録する場合は、同じシート内に記載したデータの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#excelファイル記述例) を記載する。データの投入は自動テストフレームワークに より行われる。 |  |
+| setUpTable | 各テストケース実行前にデータベースに登録する場合は、同じシート内に記載したデータの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。データの投入は自動テストフレームワークに より行われる。 |  |
 | expectedStatusCode | 期待するHTTPステータスコードを記載する。  [2] | 必須 |
 | expectedMessageId | メッセージが出力されること期待する場合は、その **メッセージID** を記載する。 複数のメッセージが出力される場合はカンマ区切りで列挙する。メッセージを 期待しない場合は空欄とする。空欄にしたが、実際にはメッセージが出力され た場合は、テスト失敗となる。 |  |
 | expectedSearch | データベース検索結果がリクエストスコープに設定されることを期待する場合 、 **期待する検索結果** を記載する。検索結果は、同じシート内のLIST_MAPデータ タイプのIDで指定する。リクエストスコープから取得する際のキーは **searchResult** である。 |  |
-| expectedTable | データベースの内容を比較する場合、期待するテーブルの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#excelファイル記述例) を記載する。 |  |
+| expectedTable | データベースの内容を比較する場合、期待するテーブルの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。 |  |
 | forwardUri | 期待するフォワード先URIを記載する。Actionクラスで指定したフォワード先JSPへの URIを記載する。空欄の場合はJSPへのフォワードが行われないものとしてアサートされる。 システムエラー画面や認証エラー画面へ遷移することを想定するテストケースでは、 その画面を描画するJSPへのURIを記載する。例えば、システムエラー画面に遷移する場合は、  /jsp/systemError.jsp が期待するフォワード先URIとなる（デフォルト値の場合）。 |  |
 | expectedContentLength | コンテンツレングス・ヘッダの期待値を記載する。 ファイルダウンロードをテストする場合にこのカラムに指定する。 |  |
 | expectedContentType | コンテンツタイプ・ヘッダの期待値を記載する。 ファイルダウンロードをテストする場合にこのカラムに指定する。 |  |
 | expectedContentFileName | コンテンツディスポジション・ヘッダに指定したファイル名の期待値を記載する。 ファイルダウンロードをテストする場合にこのカラムを指定する。 |  |
-| expectedMessage | メッセージ同期送信を行う場合、期待する要求電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#excelファイル記述例) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
-| responseMessage | メッセージ同期送信を行う場合、返却する応答電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#excelファイル記述例) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
-| expectedMessageByClient | HTTPメッセージ同期送信を行う場合、期待する要求電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#excelファイル記述例) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
-| responseMessageByClient | HTTPメッセージ同期送信を行う場合、返却する応答電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#excelファイル記述例) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| expectedMessage | メッセージ同期送信を行う場合、期待する要求電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| responseMessage | メッセージ同期送信を行う場合、返却する応答電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| expectedMessageByClient | HTTPメッセージ同期送信を行う場合、期待する要求電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| responseMessageByClient | HTTPメッセージ同期送信を行う場合、返却する応答電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
 
 そのテストケースにて送信するHTTP リクエストパラメータ ついては、この表ではなく別の表に記載する（ [後述](../../development-tools/testing-framework/testing-framework-02-requestunittest-index.md#リクエストパラメータ) ）。
 
@@ -361,7 +361,7 @@ public void testUsers00302Normal() {
 
 ( [記載しているサンプルプログラムソースコードの注意事項](../../about/about-nablarch/about-nablarch-aboutThis.md#注意事項) 参照)
 
-期待値は、エンティティのクラス単体テスト（ [Excelへの定義](../../development-tools/testing-framework/testing-framework-01-entityUnitTest.md#excelへの定義) ）と同様の書式で記述する。
+期待値は、エンティティのクラス単体テスト（ [setter、getterに対するテストケース](../../development-tools/testing-framework/testing-framework-01-entityUnitTest.md#settergetterに対するテストケース) ）と同様の書式で記述する。
 ただし、この場合はsetterの欄は不要である。
 
 ![assert_entity.png](../../../knowledge/assets/testing-framework-02-requestunittest-index/assert_entity.png)

@@ -215,7 +215,7 @@ public void setConfirmPassword(String confirmPassword) {
 
 ##### バリデーションメソッドの実装
 
-Formにバリデーションメソッドを追加し、 `@ValidateFor` アノテーションを付与する。このアノテーションの値はバリデーションを実施する際に使用する( [プロパティの表示名をカスタマイズしたい場合](../../guide/web-application/web-application-04-validation.md#プロパティの表示名をカスタマイズしたい場合) 参照)。
+Formにバリデーションメソッドを追加し、 `@ValidateFor` アノテーションを付与する。このアノテーションの値はバリデーションを実施する際に使用する( [Actionの作成](../../guide/web-application/web-application-04-validation.md#actionの作成) 参照)。
 
 処理に応じて精査対象のプロパティを切り替えたい場合は、処理ごとにバリデーションメソッドを用意すること。
 例えばパスワードは、登録時は自動で値を設定するため精査は不要だが、パスワード更新機能では画面から入力するため精査が必要なので、
@@ -330,7 +330,7 @@ public static void validate(ValidationContext<W11AC02Form> context) {
 登録処理時と更新処理時で精査内容が異なる場合など、独自の精査処理が複数必要になる場合がある。
 この場合、それぞれ処理に応じた精査メソッドを追加する。
 各メソッドに付与する `@ValidateFor` アノテーションの値は異なるものにしておき、
-バリデーションを実施する際( [プロパティの表示名をカスタマイズしたい場合](../../guide/web-application/web-application-04-validation.md#プロパティの表示名をカスタマイズしたい場合) 参照)に呼び分ける。
+バリデーションを実施する際( [Actionの作成](../../guide/web-application/web-application-04-validation.md#actionの作成) 参照)に呼び分ける。
 
 例えば、更新用に精査メソッドを追加する場合は以下のようになる。
 

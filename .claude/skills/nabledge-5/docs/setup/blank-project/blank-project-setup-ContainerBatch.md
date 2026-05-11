@@ -79,7 +79,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 ## 疎通確認
 
-疎通確認の仕組みや手順は通常のNablarchバッチプロジェクトと同じなので、 [Nablarchバッチプロジェクトの初期セットアップ手順](../../setup/blank-project/blank-project-setup-NablarchBatch.md#プロジェクト情報の入力) を参照。
+疎通確認の仕組みや手順は通常のNablarchバッチプロジェクトと同じなので、 [Nablarchバッチプロジェクトの初期セットアップ手順](../../setup/blank-project/blank-project-setup-NablarchBatch.md#疎通確認都度起動バッチ) を参照。
 
 > **Note:**
 > アーティファクトID が `myapp-container-batch` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
@@ -165,7 +165,7 @@ cd myapp-container-batch
 docker run --rm -v %CD%\\h2:/h2 -v %CD%\\src\\main\\format:/var/nablarch/format -v %CD%\\work\\output:/var/nablarch/output --name myapp-container-batch myapp-container-batch:latest -diConfig classpath:batch-boot.xml -requestPath SampleBatch -userId batch_user
 ```
 
-動作は [疎通確認(都度起動バッチ)](../../setup/blank-project/blank-project-setup-NablarchBatch.md#プロジェクト情報の入力) と同じである。
+動作は [疎通確認(都度起動バッチ)](../../setup/blank-project/blank-project-setup-NablarchBatch.md#疎通確認都度起動バッチ) と同じである。
 起動に成功すると、[都度起動バッチアプリケーションの起動](../../setup/blank-project/blank-project-setup-NablarchBatch.md#都度起動バッチアプリケーションの起動) と同様なログがコンソールに出力される。
 
 ### テーブルをキューとして使ったメッセージング
@@ -175,7 +175,7 @@ cd myapp-container-batch
 docker run -it --rm -v %CD%\\h2:/h2 --name myapp-container-batch myapp-container-batch:latest -diConfig classpath:resident-batch-boot.xml -requestPath SampleResiBatch -userId batch_user
 ```
 
-動作は [疎通確認(テーブルをキューとして使ったメッセージング)](../../setup/blank-project/blank-project-setup-NablarchBatch.md#都度起動バッチアプリケーションの起動) と同じである。
+動作は [疎通確認(テーブルをキューとして使ったメッセージング)](../../setup/blank-project/blank-project-setup-NablarchBatch.md#疎通確認テーブルをキューとして使ったメッセージング) と同じである。
 起動に成功すると、[アプリケーションの起動](../../setup/blank-project/blank-project-setup-NablarchBatch.md#アプリケーションの起動) と同様なログがコンソールに出力される。
 待機状態となるので、確認後はctrl+c等で強制終了させる。
 
@@ -197,7 +197,7 @@ docker run -it --rm -v %CD%\\h2:/h2 --name myapp-container-batch myapp-container
 
 Docker環境について
 
-Dockerの実行は、Docker Desktopを使用していることを [前提](../../setup/blank-project/blank-project-beforeFirstStep.md#ブランクプロジェクトの設計思想と留意事項) としている。
+Dockerの実行は、Docker Desktopを使用していることを [前提](../../setup/blank-project/blank-project-beforeFirstStep.md#初期セットアップの前提) としている。
 Docker Toolboxを使用している場合は、上記例のボリューム指定ではエラーになる。
 
 Docker Toolboxを使用している場合、DockerはVirtualBox上のVMで動いている。

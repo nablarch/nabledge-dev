@@ -60,7 +60,7 @@ b) 通信データ
 
 | クラス名 | 概要 |
 |---|---|
-| NMMessage | 通信のペイロード。本機能が想定するデータ形式のモデルは [シーケンス図](../../guide/biz-samples/biz-samples-01-ConnectionFramework.md#シーケンス図) に記載する。 |
+| NMMessage | 通信のペイロード。本機能が想定するデータ形式のモデルは [データモデル](../../guide/biz-samples/biz-samples-01-ConnectionFramework.md#データモデル) に記載する。 |
 
 c) データ変換
 
@@ -72,8 +72,8 @@ d) その他
 
 | クラス名 | 概要 |
 |---|---|
-| NMConnectionUtil | 通信機能に関するユーティリティをまとめたクラス。各ユーティリティの詳細については [newClassFromPropertyList詳解](../../guide/biz-samples/biz-samples-01-Utility.md#newclassfrompropertylist詳解) に記載する。 |
-| NMMockUtil | 通信モックに関するユーティリティをまとめたクラス。各ユーティリティの詳細については [機能一覧](../../guide/biz-samples/biz-samples-01-Utility.md#機能一覧) に記載する。 |
+| NMConnectionUtil | 通信機能に関するユーティリティをまとめたクラス。各ユーティリティの詳細については [NMConnectionUtil](../../guide/biz-samples/biz-samples-01-Utility.md#nmconnectionutil) に記載する。 |
+| NMMockUtil | 通信モックに関するユーティリティをまとめたクラス。各ユーティリティの詳細については [NMMockUtil](../../guide/biz-samples/biz-samples-01-Utility.md#nmmockutil) に記載する。 |
 
 ### シーケンス図
 

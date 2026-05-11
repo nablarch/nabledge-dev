@@ -20,8 +20,8 @@
 テストデータを記載したExcelファイルそのものの作成方法を説明する。テストデータを記載したExcelファイルは、テストソースコードと同じディレクトリに同じ名前で格納する(拡張子のみ異なる)。
 なお、後述する
  [精査のテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#文字種と文字列長の単項目精査テストケース) 、
- [コンストラクタのテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#テストメソッドの作成方法) 、
- [setter、getterに対するテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#excelへの定義)
+ [コンストラクタのテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#コンストラクタに対するテストケース) 、
+ [setter、getterに対するテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#settergetterに対するテストケース)
 のそれぞれが、1シートずつ使用する前提である。
 
 テストデータの記述方法詳細については、 [自動テストフレームワーク](../../development-tools/testing-framework/testing-framework-01-Abstract.md) 、 [データベースを使用するクラスのテスト](../../development-tools/testing-framework/testing-framework-02-DbAccessTest.md) を参照。
@@ -511,7 +511,7 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 
 ### setter、getterに対するテストケース
 
-[テストメソッドの作成方法](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#テストメソッドの作成方法) を参照。
+[setter、getterに対するテストケース](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#settergetterに対するテストケース) を参照。
 
 ### 自動テストフレームワーク設定値
 

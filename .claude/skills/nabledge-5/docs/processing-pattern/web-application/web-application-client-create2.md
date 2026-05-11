@@ -185,7 +185,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 この実装のポイント
 
-* [confirmationPageタグ](../../component/libraries/libraries-tag-reference.md#confirmationpageタグ) を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は [サーバ側のトークンをデータベースに保存する](../../component/libraries/libraries-tag.md#サーバ側のトークンをデータベースに保存する) を参照。
+* [confirmationPageタグ](../../component/libraries/libraries-tag-reference.md#confirmationpageタグ) を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は [入力画面と確認画面を共通化する](../../component/libraries/libraries-tag.md#入力画面と確認画面を共通化する) を参照。
 
 登録画面を修正する
 

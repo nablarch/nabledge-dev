@@ -56,7 +56,7 @@ a) nablarch.core.transaction.TransactionFactoryの実装クラス
 
 | クラス名 | 概要 |
 |---|---|
-| nablarch.core.db.transaction.JdbcTransactionFactory | JdbcTransactionを生成するクラス。 トランザクションタイムアウトの設定は本クラスに行う。  設定内容の詳細は、 [各処理の概要](../../component/libraries/libraries-04-TransactionTimeout.md#各処理の概要) を参照。 |
+| nablarch.core.db.transaction.JdbcTransactionFactory | JdbcTransactionを生成するクラス。 トランザクションタイムアウトの設定は本クラスに行う。  設定内容の詳細は、 [トランザクションタイムアウトを使用するための設定](../../component/libraries/libraries-04-TransactionTimeout.md#トランザクションタイムアウトを使用するための設定) を参照。 |
 
 b) nablarch.core.transaction.Transactionの実装クラス
 

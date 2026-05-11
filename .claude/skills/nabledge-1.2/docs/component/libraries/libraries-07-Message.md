@@ -8,7 +8,7 @@
 このため、本機能に必要な初期化処理は [リポジトリ](../../component/libraries/libraries-02-Repository.md#リポジトリ) が実行する。
 
 アプリケーションプログラマは、本機能を画面表示に使用するメッセージの取得に使用する。
-メッセージの取得方法については、 [テーブル定義の例](../../component/libraries/libraries-07-Message.md#テーブル定義の例) 以降に記述する。
+メッセージの取得方法については、 [メッセージの取得](../../component/libraries/libraries-07-Message.md#メッセージの取得) 以降に記述する。
 
 ## 特徴
 

@@ -74,7 +74,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 ## 疎通確認
 
-疎通確認の仕組みや手順は通常のNablarchバッチ（DB接続無し）プロジェクトと同じなので、 [Nablarchバッチ（DB接続無し）プロジェクトの初期セットアップ手順](../../setup/blank-project/blank-project-setup-NablarchBatch-Dbless.md#プロジェクト情報の入力) を参照。
+疎通確認の仕組みや手順は通常のNablarchバッチ（DB接続無し）プロジェクトと同じなので、 [Nablarchバッチ（DB接続無し）プロジェクトの初期セットアップ手順](../../setup/blank-project/blank-project-setup-NablarchBatch-Dbless.md#疎通確認都度起動バッチ) を参照。
 
 > **Note:**
 > アーティファクトID が `myapp-container-batch-dbless` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。

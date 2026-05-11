@@ -31,7 +31,7 @@
 
 ### テストデータとテストクラスの作成
 
-[事前準備データの作成処理](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#事前準備データの作成処理) 、 [処理終了後のデータベースの状況を確認しなければならないもの](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#処理終了後のデータベースの状況を確認しなければならないもの) 、 [テストデータ(想定結果)の作成](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#テストデータ想定結果の作成) のそれぞれについて、テストデータとテストクラスの作成方法を説明する。
+[事前準備データの作成処理](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#事前準備データの作成処理) 、 [処理終了後のデータベースの状況を確認しなければならないもの](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#処理終了後のデータベースの状況を確認しなければならないもの) 、 [メッセージIDを確認しなければならないもの](../../development-tools/testing-framework/testing-framework-02-componentUnitTest.md#メッセージidを確認しなければならないもの) のそれぞれについて、テストデータとテストクラスの作成方法を説明する。
 まず最初に、テストデータ(Excelファイル)そのもののと、テストクラスの作成方法(継承すべきクラスなど)を説明する。次に、各パターンごとのデータとテストメソッド作成方法を説明する。
 
 #### テストデータの作成
@@ -227,7 +227,7 @@ public void testRegisterUser1() {
 
 想定結果をテストケースごとに用意する。アプリケーションで設定する項目だけでなく、自動設定項目( [SQL実行時に共通的な値を自動的に設定したい](../../component/libraries/libraries-database.md#sql実行時に共通的な値を自動的に設定したい) 参照)も想定結果を用意する。検証には"assertTableEquals"メソッドを用いる。
 
-サンプルアプリケーションでは、グループID( [Excelファイル記述例](../../development-tools/testing-framework/testing-framework-03-Tips.md#excelファイル記述例) 参照)を定義したデータ(expected)を用意し、これをassertTableEqualsの
+サンプルアプリケーションでは、グループID( [一つのシートに複数テストケースのデータを記載したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) 参照)を定義したデータ(expected)を用意し、これをassertTableEqualsの
 引数に渡すことで、複数の想定結果に対応している。
 
 ![componentUnitTest_expectedDataNormal.png](../../../knowledge/assets/testing-framework-02-componentUnitTest/componentUnitTest_expectedDataNormal.png)

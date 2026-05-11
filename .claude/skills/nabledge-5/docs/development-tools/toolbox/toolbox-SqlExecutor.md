@@ -338,7 +338,7 @@ start java -Ddb.url=jdbc:h2:./h2/db/SAMPLE -Ddb.user=SAMPLE -Ddb.password=SAMPLE
 cmd /c start http://localhost:7979/index.html
 ```
 
-実行しても何も出力されずに異常終了する場合は、 [日付型の設定](../../development-tools/toolbox/toolbox-SqlExecutor.md#日付型の設定) を参照。
+実行しても何も出力されずに異常終了する場合は、 [FAQ](../../development-tools/toolbox/toolbox-SqlExecutor.md#faq) を参照。
 
 ## 操作方法
 

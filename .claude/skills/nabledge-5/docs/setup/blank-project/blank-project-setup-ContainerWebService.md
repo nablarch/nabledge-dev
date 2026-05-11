@@ -9,7 +9,7 @@
 
 ## 事前準備
 
-後の [プロジェクト情報の入力](../../setup/blank-project/blank-project-setup-ContainerWebService.md#プロジェクト情報の入力) で使用するため、以下のいずれかをインストールする。
+後の [疎通確認](../../setup/blank-project/blank-project-setup-ContainerWebService.md#疎通確認) で使用するため、以下のいずれかをインストールする。
 
 * Firefox
 * Chrome
@@ -83,7 +83,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 ## 疎通確認
 
-疎通確認の仕組みや手順は通常のRESTfulウェブサービスプロジェクトと同じなので、 [RESTfulウェブサービスプロジェクトの初期セットアップ](../../setup/blank-project/blank-project-setup-WebService.md#プロジェクト情報の入力) を参照。
+疎通確認の仕組みや手順は通常のRESTfulウェブサービスプロジェクトと同じなので、 [RESTfulウェブサービスプロジェクトの初期セットアップ](../../setup/blank-project/blank-project-setup-WebService.md#疎通確認) を参照。
 
 > **Note:**
 > アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。

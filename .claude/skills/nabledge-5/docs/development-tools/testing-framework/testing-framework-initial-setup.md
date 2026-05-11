@@ -9,7 +9,7 @@ UI開発基盤の導入時に以下の手順を実施すればよく、各担当
 > **Tip:**
 > 本節では、UI開発基盤用プロジェクトテンプレートを使用したUI開発基盤の導入手順を記載している。
 > UI開発基盤用プロジェクトテンプレートは [CSSフレームワーク](../../development-tools/testing-framework/testing-framework-css-framework.md) を使用しているため、
-> [マルチレイアウト用CSSフレームワーク](../../development-tools/testing-framework/testing-framework-multicol-css-framework.md) を使用する場合には、 [一部UI部品ウィジェットは出力幅の指定機能を提供しない](../../development-tools/testing-framework/testing-framework-multicol-css-framework.md#一部ui部品ウィジェットは出力幅の指定機能を提供しない)
+> [マルチレイアウト用CSSフレームワーク](../../development-tools/testing-framework/testing-framework-multicol-css-framework.md) を使用する場合には、 [マルチレイアウトモードの適用方法](../../development-tools/testing-framework/testing-framework-multicol-css-framework.md#マルチレイアウトモードの適用方法)
 > を参考に設定すること。
 
 > **Tip:**

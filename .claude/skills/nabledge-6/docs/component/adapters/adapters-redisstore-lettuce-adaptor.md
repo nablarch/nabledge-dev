@@ -340,7 +340,7 @@ LettuceでClusterのトポロジ更新を監視できるようにするには、
 各クライアントクラスは Initializable を実装しており、 `initialize()` メソッドを実行することでRedisへの接続が確立される。
 したがって、使用するクライアントクラスのコンポーネントは、 BasicApplicationInitializer の `initializeList` プロパティに設定しなければならない。
 
-実際の `initializeList` への設定は、以下のように [例：Clusterのトポロジ更新の監視を有効にする](../../component/adapters/adapters-redisstore-lettuce-adaptor.md#例clusterのトポロジ更新の監視を有効にする) で説明した `LettuceRedisClientProvider` のコンポーネントを使用する。
+実際の `initializeList` への設定は、以下のように [使用するクライアントクラスの決定の仕組み](../../component/adapters/adapters-redisstore-lettuce-adaptor.md#使用するクライアントクラスの決定の仕組み) で説明した `LettuceRedisClientProvider` のコンポーネントを使用する。
 
 ```xml
 <!-- 初期化が必要なコンポーネント -->

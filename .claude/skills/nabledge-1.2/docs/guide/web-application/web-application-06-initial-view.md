@@ -291,7 +291,7 @@ c) JSPの修正
 > ウィンドウスコープについては、以下のリンク先を参照
 
 > * >   [ウィンドウスコープの概念](../../../fw/reference/architectural_pattern/concept.html#windowscope)
-> * >   カスタムタグ実装例集 - [List型/配列の要素のプロパティを受け渡す場合](../../guide/web-application/web-application-basic.md#list型配列の要素のプロパティを受け渡す場合)
+> * >   カスタムタグ実装例集 - [ウィンドウスコープの使用法](../../guide/web-application/web-application-basic.md#ウィンドウスコープの使用法)
 
 ③その他、画面のタイトル、JSPインクルードで共通化された部分を修正する。
 
@@ -358,9 +358,9 @@ public void testRW11ACXX01() {
 
 > **Note:**
 > 上記ソースコードでは、BasicAdviceクラスを用いてリクエスト単体テストに固有の処理を追加している。
-> より詳しいテストメソッドの書き方については [テストメソッドの書き方](../../development-tools/testing-framework/testing-framework-02-requestunittest-index.md#期待するデータベースの状態) を参照。
+> より詳しいテストメソッドの書き方については [テストメソッドの書き方](../../development-tools/testing-framework/testing-framework-02-requestunittest-index.md#テストメソッドの書き方) を参照。
 
-> また、assertObjectPropertyEqualsメソッドについては、 [クラスのプロパティを検証したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#テストソースコード実装例) を参照。
+> また、assertObjectPropertyEqualsメソッドについては、 [クラスのプロパティを検証したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#クラスのプロパティを検証したい) を参照。
 
 b) リクエスト単体テストデータシート修正
 

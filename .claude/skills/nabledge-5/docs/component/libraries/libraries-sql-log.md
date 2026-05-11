@@ -344,7 +344,7 @@ sqlLogFormatter.endExecuteBatchFormat=$methodName$\n\texe:$executeTime$ms count:
 
 ### JSON形式の構造化ログとして出力する
 
-[ログの初期化メッセージを出力しないようにする](../../component/libraries/libraries-log.md#ログの初期化メッセージを出力しないようにする) 設定によりログをJSON形式で出力できるが、
+[JSON形式の構造化ログとして出力する](../../component/libraries/libraries-log.md#json形式の構造化ログとして出力する) 設定によりログをJSON形式で出力できるが、
 SqlLogFormatter では
 SQLログの各項目はmessageの値に文字列として出力される。
 SQLログの各項目もJSONの値として出力するには、

@@ -47,7 +47,7 @@
 * Antを使用して実行
 * Eclipse Pluginとして実行
 
-各使用方法についての詳細は [設定ファイル記述方法](../../development-tools/java-static-analysis/java-static-analysis-UnpublishedApi.md#設定ファイル記述方法) 、 [FindBugsのAntタスクとして使用](../../development-tools/java-static-analysis/java-static-analysis-UnpublishedApi.md#findbugsのantタスクとして使用) を参照のこと。
+各使用方法についての詳細は [Eclipse Pluginとして使用](../../development-tools/java-static-analysis/java-static-analysis-UnpublishedApi.md#eclipse-pluginとして使用) 、 [FindBugsのAntタスクとして使用](../../development-tools/java-static-analysis/java-static-analysis-UnpublishedApi.md#findbugsのantタスクとして使用) を参照のこと。
 
 本ツールが提供するFindBugsのカスタムルールのバグコード、バグタイプは次のとおりである。
 

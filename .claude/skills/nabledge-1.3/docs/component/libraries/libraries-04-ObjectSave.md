@@ -76,7 +76,7 @@ d) nablarch.core.db.statement.AutoPropertyHandlerの実装クラス
 |---|---|
 | nablarch.core.db.statement.autopropertyパッケージ |  |
 | FieldAnnotationHandlerSupport | フィールドのアノテーション情報を元に値を設定するクラスをサポートするクラス。 |
-| CurrentDateTimeAnnotationHandler | nablarch.core.db.statement.autoproperty.CurrentDateTimeアノテーションが 設定されているフィールドにシステム日時を設定するクラス。  システム日時は、下記ルールで設定される。  \| フィールドのデータ型 \| 設定方法 \| \|---\|---\| \| java.sql.Date \| システム日時をjava.sql.Dateに変換して設定する。 \| \| Timestamp \| システム日時をjava.sql.Timestampに変換して設定する。 \| \| Time \| システム日時をjava.sql.Timeに変換して設定する。 \| \| String \| CurrentDateTimeのformatプロパティに設定されている値で、 SimpleDateFormatを使用してフォーマットした値を設定する。 formatプロパティが指定されていない場合は、 [設定ファイル](../../component/libraries/libraries-04-ObjectSave.md#java実装例objectのフィールド値を登録する場合) に記述されたデフォルトのフォーマットを使用する。 \| \| Integer \|  \| \| Long \|  \|  > **Note:** > システム日時は、 [システム日時機能](../../component/libraries/libraries-06-SystemTimeProvider.md#システム日時機能) を使用して取得する。 |
+| CurrentDateTimeAnnotationHandler | nablarch.core.db.statement.autoproperty.CurrentDateTimeアノテーションが 設定されているフィールドにシステム日時を設定するクラス。  システム日時は、下記ルールで設定される。  \| フィールドのデータ型 \| 設定方法 \| \|---\|---\| \| java.sql.Date \| システム日時をjava.sql.Dateに変換して設定する。 \| \| Timestamp \| システム日時をjava.sql.Timestampに変換して設定する。 \| \| Time \| システム日時をjava.sql.Timeに変換して設定する。 \| \| String \| CurrentDateTimeのformatプロパティに設定されている値で、 SimpleDateFormatを使用してフォーマットした値を設定する。 formatプロパティが指定されていない場合は、 [設定ファイル](../../component/libraries/libraries-04-ObjectSave.md#設定ファイル例) に記述されたデフォルトのフォーマットを使用する。 \| \| Integer \|  \| \| Long \|  \|  > **Note:** > システム日時は、 [システム日時機能](../../component/libraries/libraries-06-SystemTimeProvider.md#システム日時機能) を使用して取得する。 |
 | UserIdAnnotationHandler | nablarch.core.db.statement.autoproperty.UserIdアノテーションが 設定されているフィールドにユーザIDを設定するクラス。  ユーザIDは、ThreadContextから取得する。  > **Note:** > ThreadContextに設定されるユーザIDについては、 [同一スレッド内でのデータ共有(スレッドコンテキスト)](../../component/libraries/libraries-thread-context.md#同一スレッド内でのデータ共有スレッドコンテキスト) を参照 |
 | RequestIdAnnotationHandler | nablarch.core.db.statement.autoproperty.RequestIdアノテーションが 設定されているフィールドにリクエストIDを設定するクラス。  リクエストIDは、ThreadContextから取得する。  > **Note:** > ThreadContextに設定されるリクエストIDについては、 [同一スレッド内でのデータ共有(スレッドコンテキスト)](../../component/libraries/libraries-thread-context.md#同一スレッド内でのデータ共有スレッドコンテキスト) を参照 |
 
@@ -208,7 +208,7 @@ insert.executeUpdateByObject(entity);
 
 > **Note:**
 > 本フレームワークではSQL文を外部化(外部ファイルに記述)することを推奨している。
-> SQL外部化した場合のの実装例は、 [処理概要](../../component/libraries/libraries-04-Statement.md#処理概要) を参照すること。
+> SQL外部化した場合のの実装例は、 [推奨するJavaの実装例(SQL文を外部ファイル化した場合)](../../component/libraries/libraries-04-Statement.md#推奨するjavaの実装例sql文を外部ファイル化した場合) を参照すること。
 
 ## 設定ファイル例
 

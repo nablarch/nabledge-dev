@@ -496,7 +496,7 @@ public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {
 ( [記載しているサンプルプログラムソースコードの注意事項](../../about/about-nablarch/about-nablarch-aboutThis.md#注意事項) 参照)
 
 > **Note:**
-> 本画面で使用している一覧表示用のカスタムタグも含め、検索結果の一覧表示を行う方法は、 [使用例集](../../guide/web-application/web-application-function.md#データベース一括登録) を参照。
+> 本画面で使用している一覧表示用のカスタムタグも含め、検索結果の一覧表示を行う方法は、 [使用例集](../../guide/web-application/web-application-function.md#検索結果の一覧表示) を参照。
 
 ## 次に読むもの
 

@@ -9,7 +9,7 @@ UI開発基盤の導入時に以下の手順を実施すればよく、各担当
 > **Note:**
 > 本節は、Nablarchのチュートリアルプロジェクトを例としてUI開発基盤の導入手順を記載している。
 > チュートリアルプロジェクトでは、 [CSSフレームワーク](../../component/ui-framework/ui-framework-css-framework.md) を使用しているが、
-> [マルチレイアウト用CSSフレームワーク](../../component/ui-framework/ui-framework-multicol-css-framework.md) を使用する場合には、 [一部UI部品ウィジェットは出力幅の指定機能を提供しない](../../component/ui-framework/ui-framework-multicol-css-framework.md#一部ui部品ウィジェットは出力幅の指定機能を提供しない)
+> [マルチレイアウト用CSSフレームワーク](../../component/ui-framework/ui-framework-multicol-css-framework.md) を使用する場合には、 [マルチレイアウトモードの適用方法](../../component/ui-framework/ui-framework-multicol-css-framework.md#マルチレイアウトモードの適用方法)
 > を参考に導入用の設定を行うこと。
 
 ## 0. 事前準備

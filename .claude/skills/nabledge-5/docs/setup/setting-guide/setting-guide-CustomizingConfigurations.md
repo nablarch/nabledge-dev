@@ -34,9 +34,9 @@ Nablarchの設定は、デフォルトコンフィグレーション内の設定
 PJ成果物の設定ファイルのカスタマイズ方法には、以下のパターンが存在する。
 
 * [環境設定値の書き換え](../../setup/setting-guide/setting-guide-CustomizingConfigurations.md#環境設定値の書き換え)
-* [デフォルト値でPJ要件を満たせない場合は、デフォルト値を変更する](../../setup/setting-guide/setting-guide-CustomizingConfigurations.md#デフォルト値でpj要件を満たせない場合はデフォルト値を変更する)
+* [環境設定値の上書き](../../setup/setting-guide/setting-guide-CustomizingConfigurations.md#環境設定値の上書き)
 * [コンポーネント定義の上書き](../../setup/setting-guide/setting-guide-CustomizingConfigurations.md#コンポーネント定義の上書き)
-* [(コンポーネント設定ファイルを作成した場合)作成したコンポーネント設定ファイルの読み込み](../../setup/setting-guide/setting-guide-CustomizingConfigurations.md#コンポーネント設定ファイルを作成した場合作成したコンポーネント設定ファイルの読み込み)
+* [ハンドラ構成のカスタマイズ](../../setup/setting-guide/setting-guide-CustomizingConfigurations.md#ハンドラ構成のカスタマイズ)
 
 詳細は以降に記載する。
 

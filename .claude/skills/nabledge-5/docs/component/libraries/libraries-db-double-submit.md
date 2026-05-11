@@ -56,7 +56,7 @@ DbTokenSchema のコンポーネントを定義する。
 
 `tokenManager` という名前でコンポーネント定義を追加する。
 これにより、トークンがデータベースで管理されるようになる。
-`tokenManager` は [初期化](../../component/libraries/libraries-repository.md#actionクラスをdiコンテナで管理する) が必要。
+`tokenManager` は [初期化](../../component/libraries/libraries-repository.md#オブジェクトの初期化処理を行う) が必要。
 
 ```xml
 <component name="tokenManager" class="nablarch.common.web.token.DbTokenManager">

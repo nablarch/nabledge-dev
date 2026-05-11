@@ -92,7 +92,7 @@ public class ProjectDownloadDto implements Serializable {
 
 * ダウンロードするCSVファイルの内容と、Beanのプロパティとの紐付けの設定は、 @Csv を使用する。
   受け付けるCSVのフォーマットの指定は、 @CsvFormat を使用する。
-  （ [デフォルトのフォーマットの指定](../../component/libraries/libraries-data-bind.md#java-beansクラスにバインドできるファイル形式を追加する) を使用する場合は、 @CsvFormat は不要）
+  （ [デフォルトのフォーマットの指定](../../component/libraries/libraries-data-bind.md#csvファイルのフォーマットとして指定できるフォーマットセット) を使用する場合は、 @CsvFormat は不要）
   アノテーションの設定方法の詳細は、 [CSVファイルをJava Beansクラスにバインドする場合のフォーマット指定方法](../../component/libraries/libraries-data-bind.md#csvファイルのフォーマットを指定する) を参照。
 
 業務アクションメソッドの作成

@@ -143,4 +143,4 @@ LIST_MAP=testShots
 
 > **Note:**
 > グループIDを利用することで1シートに複数ケースのテストデータを記述できる。
-> 詳細は、『 [Excelファイル記述例](../../development-tools/testing-framework/testing-framework-03-Tips.md#excelファイル記述例) 』の項を参照。
+> 詳細は、『 [一つのシートに複数テストケースのデータを記載したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) 』の項を参照。

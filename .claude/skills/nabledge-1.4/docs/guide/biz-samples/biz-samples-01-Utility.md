@@ -6,8 +6,8 @@ Nablarch Mobileが提供するユーティリティの仕様を解説する。
 | クラス名 | 概要 |
 |---|---|
 | [NMCommonUtil](../../guide/biz-samples/biz-samples-01-Utility.md#nmcommonutil) | 一般ユーティリティの集合クラス |
-| [newClassFromPropertyList詳解](../../guide/biz-samples/biz-samples-01-Utility.md#newclassfrompropertylist詳解) | 通信ユーティリティの集合クラス |
-| [機能一覧](../../guide/biz-samples/biz-samples-01-Utility.md#機能一覧) | 通信モックユーティリティの集合クラス |
+| [NMConnectionUtil](../../guide/biz-samples/biz-samples-01-Utility.md#nmconnectionutil) | 通信ユーティリティの集合クラス |
+| [NMMockUtil](../../guide/biz-samples/biz-samples-01-Utility.md#nmmockutil) | 通信モックユーティリティの集合クラス |
 
 ## NMCommonUtil
 

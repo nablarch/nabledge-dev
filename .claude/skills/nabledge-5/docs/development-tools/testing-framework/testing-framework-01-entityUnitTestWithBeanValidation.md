@@ -20,7 +20,7 @@
 テストデータを記載したExcelファイルそのものの作成方法を説明する。テストデータを記載したExcelファイルは、テストソースコードと同じディレクトリに同じ名前で格納する(拡張子のみ異なる)。
 なお、後述する 
  [精査のテストケース](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#文字種と文字列長の単項目精査テストケース)  、
- [setter、getterに対するテストケース](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#テストメソッドの作成方法)
+ [setter、getterに対するテストケース](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#settergetterに対するテストケース)
 のそれぞれが、1シートずつ使用する前提である。
 
 テストデータの記述方法詳細については、 [自動テストフレームワーク](../../development-tools/testing-framework/testing-framework-01-Abstract.md) 、 [データベースを使用するクラスのテスト](../../development-tools/testing-framework/testing-framework-02-DbAccessTest.md) を参照。
@@ -124,10 +124,10 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 Bean Validationのグループには、グループに指定するクラスをFQCNで指定する。
 内部クラスを指定する場合は、クラスを `$` で区切ること。
 
-messageIdWhenEmptyInputを省略した場合は、 [Excelへの定義](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#excelへの定義) で設定したemptyInputMessageId
+messageIdWhenEmptyInputを省略した場合は、 [自動テストフレームワーク設定値](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#自動テストフレームワーク設定値) で設定したemptyInputMessageId
 の値が使用される。
 
-messageIdWhenInvalidLengthを省略した場合は、 [Excelへの定義](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#excelへの定義) で
+messageIdWhenInvalidLengthを省略した場合は、 [自動テストフレームワーク設定値](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#自動テストフレームワーク設定値) で
 設定したデフォルト値が使用される。省略時にどのデフォルト値が使用されるかは、max欄及びmin欄の記載によって決まり、以下の通り。
 
 | max欄の記載 | min欄の記載 | maxとminの比較 | 省略時に使用されるデフォルト値 |

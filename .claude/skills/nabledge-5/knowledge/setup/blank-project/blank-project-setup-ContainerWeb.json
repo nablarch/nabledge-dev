@@ -31,7 +31,7 @@
     {
       "id": "s5",
       "title": "疎通確認",
-      "content": "疎通確認の仕組みや手順は通常のウェブプロジェクトと同じなので、 [ウェブプロジェクトの初期セットアップ手順](../../setup/blank-project/blank-project-setup-Web.md#プロジェクト情報の入力) を参照。\n\n> **Note:**\n> アーティファクトID が `myapp-container-web` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。",
+      "content": "疎通確認の仕組みや手順は通常のウェブプロジェクトと同じなので、 [ウェブプロジェクトの初期セットアップ手順](../../setup/blank-project/blank-project-setup-Web.md#疎通確認) を参照。\n\n> **Note:**\n> アーティファクトID が `myapp-container-web` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。",
       "level": 2
     },
     {
@@ -43,7 +43,7 @@
     {
       "id": "s7",
       "title": "コンテナイメージを実行する",
-      "content": "作成したコンテナイメージは、次のコマンドで実行できる。\n\n```text\ncd myapp-container-web\ndocker run -d -p 8080:8080 -v %CD%\\h2:/usr/local/tomcat/h2 --name myapp-container-web myapp-container-web\n```\n\nコンテナが起動したら、ウェブブラウザで `http://localhost:8080/` にアクセスすることで、アプリケーションの動作を確認できる。\n\n> **Tip:**\n> 上記コマンドは、データベースとしてブランクプロジェクトにあらかじめ組み込んでいるSAMPLE.h2.dbを使用する場合の例となっている。\n> SAMPLE.h2.dbを使用しない場合は、ボリュームの指定(`-v`)は不要になる。\n\n> **Tip:**\n> Dockerの実行は、Docker Desktopを使用していることを [前提](../../setup/blank-project/blank-project-beforeFirstStep.md#ブランクプロジェクトの設計思想と留意事項) としている。\n> Docker Toolboxを使用している場合は、上記例のボリューム指定ではエラーになる。\n\n> Docker Toolboxを使用している場合、DockerはVirtualBox上のVMで動いている。\n> このため、ボリュームのホスト側に指定できるパスは、VM上のパスになる。\n\n> Windowsの場合、デフォルトでは `C:\\Users` がVM上の `/c/users` にマウントされている。\n> したがって、Docker Toolboxを使用している場合は、ボリュームの指定を `-v /c/users/path/to/project/h2:/usr/local/tomcat/h2` のようにしなければならない。\n\nコンテナを終了するには、次のコマンドを実行する。\n\n```text\ndocker stop myapp-container-web\n```\n\nまた、コンテナを削除するには、次のコマンドを実行する。\n\n```text\ndocker rm myapp-container-web\n```",
+      "content": "作成したコンテナイメージは、次のコマンドで実行できる。\n\n```text\ncd myapp-container-web\ndocker run -d -p 8080:8080 -v %CD%\\h2:/usr/local/tomcat/h2 --name myapp-container-web myapp-container-web\n```\n\nコンテナが起動したら、ウェブブラウザで `http://localhost:8080/` にアクセスすることで、アプリケーションの動作を確認できる。\n\n> **Tip:**\n> 上記コマンドは、データベースとしてブランクプロジェクトにあらかじめ組み込んでいるSAMPLE.h2.dbを使用する場合の例となっている。\n> SAMPLE.h2.dbを使用しない場合は、ボリュームの指定(`-v`)は不要になる。\n\n> **Tip:**\n> Dockerの実行は、Docker Desktopを使用していることを [前提](../../setup/blank-project/blank-project-beforeFirstStep.md#初期セットアップの前提) としている。\n> Docker Toolboxを使用している場合は、上記例のボリューム指定ではエラーになる。\n\n> Docker Toolboxを使用している場合、DockerはVirtualBox上のVMで動いている。\n> このため、ボリュームのホスト側に指定できるパスは、VM上のパスになる。\n\n> Windowsの場合、デフォルトでは `C:\\Users` がVM上の `/c/users` にマウントされている。\n> したがって、Docker Toolboxを使用している場合は、ボリュームの指定を `-v /c/users/path/to/project/h2:/usr/local/tomcat/h2` のようにしなければならない。\n\nコンテナを終了するには、次のコマンドを実行する。\n\n```text\ndocker stop myapp-container-web\n```\n\nまた、コンテナを削除するには、次のコマンドを実行する。\n\n```text\ndocker rm myapp-container-web\n```",
       "level": 2
     },
     {

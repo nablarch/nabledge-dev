@@ -16,7 +16,7 @@
   * 使用方法
 
 Java Beansに関する以下機能を提供する。また、Java16より標準化されたレコードをJava Beansと同様に取り扱うことができる。
-詳細は [BeanUtil呼び出し時に許容するフォーマットを設定する](../../component/libraries/libraries-bean-util.md#beanutil呼び出し時に許容するフォーマットを設定する) を参照。
+詳細は [BeanUtilでレコードを使用する](../../component/libraries/libraries-bean-util.md#beanutilでレコードを使用する) を参照。
 
 * プロパティに対する値の設定と取得
 * 他のJava Beansへの値の移送

@@ -47,7 +47,7 @@ UI標準ではボタンやメニュー上にマウスが移動した場合に背
 
 ### 表示モードを変更したい
 
-[共通エラー・メッセージ表示領域の表示を調整したい](../../component/ui-framework/ui-framework-reference-ui-standard.md#共通エラーメッセージ表示領域の表示を調整したい) を参照。
+[UI標準2.1. 端末の画面サイズと表示モード](../../component/ui-framework/ui-framework-reference-ui-standard.md#ui標準21-端末の画面サイズと表示モード) を参照。
 
 ## UI標準1.2. 使用技術
 

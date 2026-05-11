@@ -164,7 +164,7 @@ HTMLエスケープを行わず、変数内のHTMLタグを直接出力したい
 * [scriptタグ](../../component/libraries/libraries-07-TagReference.md#scriptタグ)
 * [linkタグ](../../component/libraries/libraries-07-TagReference.md#linkタグ)
 * [confirmationPageタグ](../../component/libraries/libraries-07-TagReference.md#confirmationpageタグ)
-* [setタグ](../../component/libraries/libraries-07-TagReference.md#setタグ)
+* [includeタグ](../../component/libraries/libraries-07-TagReference.md#includeタグ)
 
 includeタグは動的なJSPインクルードを言語毎のリソースパスの切り替えに対応させるために提供している。
 [includeParamタグ](../../component/libraries/libraries-07-TagReference.md#includeparamタグ) を使用してインクルード時に追加するパラメータを指定する。

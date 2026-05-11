@@ -18,7 +18,7 @@
 * 例外(エラー)に応じたログ出力とレスポンスの生成を行う。
   詳細は、 [例外の種類に応じたログ出力とレスポンス生成](../../component/handlers/handlers-http-messaging-error-handler.md#例外の種類に応じたログ出力とレスポンス生成) を参照。
 * デフォルトのレスポンスボディを設定する。
-  詳細は、 [nablarch.fw.Result.Errorのログ出力について](../../component/handlers/handlers-http-messaging-error-handler.md#nablarchfwresulterrorのログ出力について) を参照。
+  詳細は、 [レスポンスボディが空の場合のデフォルトレスポンスの設定](../../component/handlers/handlers-http-messaging-error-handler.md#レスポンスボディが空の場合のデフォルトレスポンスの設定) を参照。
 
 処理の流れは以下のとおり。
 
@@ -96,4 +96,4 @@ writeFailureLogPattern に設定した値によって変わる。
 
 ## レスポンスボディが空の場合のデフォルトレスポンスの設定
 
-詳細は、 [HTTPエラー制御ハンドラのデフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#nablarchfwresulterrorのログ出力について) を参照。
+詳細は、 [HTTPエラー制御ハンドラのデフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#デフォルトページの設定) を参照。

@@ -727,7 +727,7 @@ public HttpResponse doRW11AC0101(HttpRequest req, ExecutionContext ctx) {
 検索結果の一覧表示機能のデフォルト値設定は、画面表示に関する設定と、一覧検索用の検索処理に関する設定に大別される。
 
 画面表示に関する設定は、タグファイル内で直接デフォルト値を指定している。
-画面表示に関する設定の詳細は、 [タグファイル内のプレフィックスの修正](../../guide/biz-samples/biz-samples-03-ListSearchResult.md#タグファイル内のプレフィックスの修正) を参照。
+画面表示に関する設定の詳細は、 [タグリファレンス](../../guide/biz-samples/biz-samples-03-ListSearchResult.md#タグリファレンス) を参照。
 
 ここでは、一覧検索用の検索処理に関する設定について解説する。
 
