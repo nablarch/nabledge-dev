@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev13)
+**Updated**: 2026-05-11 (rev14)
 
 ## In Progress
 
@@ -28,7 +28,25 @@
 - [ ] `labels.py`: `_next_section_for_node` を iterative multi-level climb に書き換え（段数制限なし、document root で停止）
 - [ ] GREEN 確認 → 全5バージョン create + verify FAIL diff 確認
 
-### Task 21: 横並びチェック・再生成・PR 更新
+### Task 21: Bug 3 修正 — `check_ql1_link_targets` の anchor 検証未実装
+**原因**: Issue #320 の本来の目的「ページ内リンクの anchor が意図した heading を指すか」が
+MD リンク出力側（`check_ql1_link_targets`）で検証されていない。
+`_collect_links()` は anchor を取得しているが `_anchor` として捨てており、
+ファイル存在チェックしか行っていない。`処理概要` のような誤アンカーも PASS してしまう。
+
+**修正内容**:
+- `seen` dedup を `(type, category, file_id)` → `(type, category, file_id, anchor)` に変更
+  （anchor が違えば別チェック対象）
+- anchor が空でない場合、`_heading_slugs_from_md` で docs MD の heading slug 照合を追加
+  （`_heading_slugs_from_md` はすでに verify.py にモジュールレベルで存在）
+- JSON side と docs MD side の両方に適用
+
+**Steps:**
+- [ ] TDD: `check_ql1_link_targets` に anchor 検証のテスト追加 → RED
+- [ ] `verify.py`: `seen` を `(type, category, file_id, anchor)` に変更し、anchor 非空時に slug 照合を追加
+- [ ] GREEN 確認 → 全5バージョン verify FAIL diff 確認（新規 FAIL が出た場合は RBKC バグとして Task 19/20 で対処）
+
+### Task 22: 横並びチェック・再生成・PR 更新
 **Steps:**
 - [ ] 横並びチェック: 同クラスのバグが他バージョン / 他ファイルに残っていないか確認
 - [ ] 全5バージョン再生成（`bash rbkc.sh create <v>`）
