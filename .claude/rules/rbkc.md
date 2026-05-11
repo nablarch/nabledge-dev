@@ -19,6 +19,15 @@ When changing RBKC (create side) or verify, run `bash rbkc.sh create <v> && bash
 - During investigation, check whether the hypothesized fix applies to the same structure in other versions before writing code. Predict the per-version diff, then confirm it empirically.
 - "Fix v1.4 → verify v1.4 only → commit → later find v1.3 broken → fix v1.3 → verify v1.3 only" is the anti-pattern this rule exists to prevent. It creates a cat-and-mouse loop and hides horizontal regressions.
 
+## No manual edits to RBKC-generated files
+
+RBKC-generated files (knowledge JSON and docs MD under `.claude/skills/nabledge-*/`) are
+overwritten by `rbkc.sh create` on every run. **Never edit these files manually.**
+
+- Manual edits to knowledge JSON or docs MD are silently discarded on the next `rbkc.sh create`
+- If the generated output is wrong, fix the RBKC pipeline (converters, verify, mapping)
+- If content formatting needs to change, add or update the appropriate pattern (P1/P2-1/P2-2/P2-3/P2-4) in xlsx-sheet-mapping.md and implement the handler
+
 ## Scope: content only
 
 RBKC generates **content only** — titles and body text derived from source (RST/Markdown/Excel).
