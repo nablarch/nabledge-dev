@@ -2789,6 +2789,35 @@ class TestCheckSourceLinks_JsonSide:
         json_fails = [i for i in issues if "QL1" in i and "missing-page" in i]
         assert len(json_fails) == 1, json_fails
 
+    def test_fail_different_labels_same_file_id_different_section_titles(self, tmp_path):
+        """Two labels point to the same file_id with different section_title values.
+        The file exists but only has セクションA. セクションB must still be checked
+        and reported FAIL — json_key dedup must not swallow the second section check."""
+        knowledge_dir = self._write_json(
+            tmp_path, "component", "web", "target-page",
+            [{"title": "セクションA", "content": "本文A", "level": 2}],
+        )
+        label_map = {
+            "label-a": self._label_target(
+                title="セクションA", file_id="target-page",
+                section_title="セクションA", category="web",
+                type_="component", anchor="セクションA",
+            ),
+            "label-b": self._label_target(
+                title="セクションB", file_id="target-page",
+                section_title="セクションB", category="web",
+                type_="component", anchor="セクションB",
+            ),
+        }
+        src = ":ref:`label-a`\n\n:ref:`label-b`\n"
+        data = self._data(content="セクションA セクションB")
+        issues = self._check(src, "rst", data, label_map, knowledge_dir=knowledge_dir)
+        st_fails = [i for i in issues if "QL1" in i and "セクションB" in i]
+        assert len(st_fails) == 1, (
+            "section_title check must run even when file_id was already visited; "
+            f"got: {issues}"
+        )
+
 
 class TestCheckSourceLinks_DocsMdSide:
     """QL1 cross-doc: docs MD side — target MD existence + anchor slug match.

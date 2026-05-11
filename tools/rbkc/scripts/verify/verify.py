@@ -2046,9 +2046,13 @@ def check_source_links(
     json_full = _all_text(data)
     issues: list[str] = []
 
-    # Cross-doc dedup sets: avoid re-checking the same (file_id, section_title)
-    # or (file_id, anchor) pair when referenced from multiple labels/sections.
-    _cross_doc_json_seen: set[tuple] = set()
+    # Cross-doc dedup sets: avoid re-checking the same target when referenced
+    # from multiple labels/sections.
+    # _cross_doc_file_seen: (type, category, file_id) — guards file existence check
+    # _cross_doc_st_seen: (type, category, file_id, section_title) — guards section check
+    # _cross_doc_md_seen: (type, category, file_id, anchor) — guards anchor check
+    _cross_doc_file_seen: set[tuple] = set()
+    _cross_doc_st_seen: set[tuple] = set()
     _cross_doc_md_seen: set[tuple] = set()
 
     def _check_cross_doc_target(label: str, target) -> None:
@@ -2069,30 +2073,34 @@ def check_source_links(
 
         if kdir is not None:
             json_key = (target.type, target.category, target.file_id)
-            if json_key not in _cross_doc_json_seen:
-                _cross_doc_json_seen.add(json_key)
-                json_path = (
-                    Path(kdir) / target.type / target.category
-                    / f"{target.file_id}.json"
-                )
+            json_path = (
+                Path(kdir) / target.type / target.category
+                / f"{target.file_id}.json"
+            )
+            file_missing = False
+            if json_key not in _cross_doc_file_seen:
+                _cross_doc_file_seen.add(json_key)
                 if not json_path.exists():
+                    file_missing = True
                     issues.append(
                         f"[QL1] :ref:`{label}` target JSON missing:"
                         f" {target.file_id}.json"
                         f" ({target.type}/{target.category})"
                     )
-                elif target.section_title:
-                    st_key = (target.type, target.category, target.file_id,
-                              target.section_title)
-                    if st_key not in _cross_doc_json_seen:
-                        _cross_doc_json_seen.add(st_key)
-                        titles = _section_titles_from_json(json_path)
-                        if target.section_title not in titles:
-                            issues.append(
-                                f"[QL1] :ref:`{label}` section_title"
-                                f" {target.section_title!r} not found in"
-                                f" {target.file_id}.json sections[]"
-                            )
+            elif not json_path.exists():
+                file_missing = True
+            if not file_missing and target.section_title:
+                st_key = (target.type, target.category, target.file_id,
+                          target.section_title)
+                if st_key not in _cross_doc_st_seen:
+                    _cross_doc_st_seen.add(st_key)
+                    titles = _section_titles_from_json(json_path)
+                    if target.section_title not in titles:
+                        issues.append(
+                            f"[QL1] :ref:`{label}` section_title"
+                            f" {target.section_title!r} not found in"
+                            f" {target.file_id}.json sections[]"
+                        )
 
         if ddir is not None and target.anchor:
             anchor_key = (target.type, target.category, target.file_id,
