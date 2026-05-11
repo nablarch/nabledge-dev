@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev10)
+**Updated**: 2026-05-11 (rev11)
 
 ## In Progress
 
@@ -10,22 +10,7 @@
 
 ## Not Started
 
-### Task 18: 横並びチェック — docutils を使わない RST 構造解析が他にないか
-
-**背景:**
-- `_scan_rst_labels` の自作行スキャンが今回の問題の原因
-- 同様の問題が他にないか確認し、あれば修正する
-- **調査済みの事実（本タスク着手不要の確認済み箇所）:**
-  - `verify.py` の `check_source_links` / `check_external_urls` → docutils AST 使用済み ✅
-  - `rst_ast_visitor.py` → docutils AST を基盤とする設計 ✅
-  - `verify.py` の `_RST_HEADING_UNDERLINE_RE` (QC5) → 目的が「RST 残存チェック」であり構造解析ではない（docutils 不要）✅
-  - `_scan_rst_labels` → Task 17 で修正済み ✅
-
-**Steps:**
-- [ ] `scripts/` 全体を grep して、RST ファイルを読み込んで自作 regex / 行スキャンで構造（heading / label / section）を解析している箇所を列挙
-- [ ] 各箇所について「docutils AST で代替すべきか」を判断
-- [ ] 要修正箇所があれば TDD で修正
-- [ ] 要修正なければ「なし」と記録して完了
+（なし）
 
 ## Done
 
@@ -41,3 +26,4 @@
 - [x] Task 17: `_scan_rst_labels` docutils AST 化 + subtitle sections[0] 修正 — 全5バージョン 0 FAIL、SE: 0 Findings、QA: 2 Findings fixed
 - [x] Task 17 完了: 設計書 §4 QL1 マトリクス ✅、PR #330 Success Criteria 全4項目 ✅ Met
 - [x] 設計書 P2-4 記述を復元 — ブランチ分岐点が #327 マージ前だったため消えていた — `21fd36c59`
+- [x] Task 18: 横並びチェック完了 — docutils 不使用の RST 構造解析なし（修正不要）
