@@ -19,9 +19,9 @@
 
 テストデータを記載したExcelファイルそのものの作成方法を説明する。テストデータを記載したExcelファイルは、テストソースコードと同じディレクトリに同じ名前で格納する(拡張子のみ異なる)。
 なお、後述する
- 精査のテストケース 、
- コンストラクタのテストケース 、
- setter、getterに対するテストケース
+ [精査のテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#文字種と文字列長の単項目精査テストケース) 、
+ [コンストラクタのテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#コンストラクタに対するテストケース) 、
+ [setter、getterに対するテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#settergetterに対するテストケース)
 のそれぞれが、1シートずつ使用する前提である。
 
 テストデータの記述方法詳細については、 [自動テストフレームワーク](../../development-tools/testing-framework/testing-framework-01-Abstract.md) 、 [データベースを使用するクラスのテスト](../../development-tools/testing-framework/testing-framework-02-DbAccessTest.md) を参照。
@@ -126,10 +126,10 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 | 全角記号その他 | 全角記号その他を許容するか |
 | 外字 | 外字を許容するか |
 
-messageIdWhenEmptyInputを省略した場合は、 entityUnitTest_EntityTestConfiguration で設定したemptyInputMessageId
+messageIdWhenEmptyInputを省略した場合は、 [自動テストフレームワーク設定値](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#自動テストフレームワーク設定値) で設定したemptyInputMessageId
 の値が使用される。
 
-messageIdWhenInvalidLengthを省略した場合は、 entityUnitTest_EntityTestConfiguration で
+messageIdWhenInvalidLengthを省略した場合は、 [自動テストフレームワーク設定値](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#自動テストフレームワーク設定値) で
 設定したデフォルト値が使用される。省略時にどのデフォルト値が使用されるかは、max欄及びmin欄の記載によって決まり、以下の通り。
 
 | min欄の記載 | maxとminの比較 | 省略時に使用されるデフォルト値 |
@@ -373,7 +373,7 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 
 ##### 項目間精査など
 
-項目間精査など、バリデーションメソッドの entityUnitTest_ValidationMethodSpecifyNormal
+項目間精査など、バリデーションメソッドの [精査対象確認](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#精査対象確認)
 で行った精査対象指定以外の動作確認を行うケースを作成する。
 
 下図では、"newPasswordとconfirmPasswordが等しいこと"というバリデーションメソッドに対する正常系のケースを作成している。
@@ -511,11 +511,11 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 
 ### setter、getterに対するテストケース
 
-entityUnitTest_SetterGetterCase_BeanValidation を参照。
+[setter、getterに対するテストケース](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#settergetterに対するテストケース) を参照。
 
 ### 自動テストフレームワーク設定値
 
-entityUnitTest_ValidationCase を実施する際に必要な初期値設定について説明する。
+[文字種と文字列長の単項目精査テストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#文字種と文字列長の単項目精査テストケース) を実施する際に必要な初期値設定について説明する。
 
 #### 設定項目一覧
 

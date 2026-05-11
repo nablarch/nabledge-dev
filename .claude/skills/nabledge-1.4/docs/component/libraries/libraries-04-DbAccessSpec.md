@@ -22,7 +22,7 @@ java.sql.DataSourceを使用する場合の接続方法。
 > 接続方式の切り替えは、設定ファイルで行えるためアプリケーションコードに影響を与えることはない。
 
 データベース接続は、本フレームワークの他の機能から初期化される。
-Webアプリケーションでは、 NablarchServletContextListener により初期化が行われる。
+Webアプリケーションでは、 [Nablarchサーブレットコンテキスト初期化リスナ](../../component/handlers/handlers-NablarchServletContextListener.md#nablarchサーブレットコンテキスト初期化リスナ) により初期化が行われる。
 
 アプリケーションプログラマは、本機能をSQL文の実行に使用する。
 SQL文の実行方法については、 [SQL文実行部品の構造とその使用方法](../../component/libraries/libraries-04-Statement.md#sql文実行部品の構造とその使用方法) 以降に記述する。
@@ -56,7 +56,7 @@ SQLログはロガー名に文字列で「SQL」(SQLロガー)を指定してロ
 SQLログをログ出力する場合は、このSQLロガーをログ出力対象に含める必要がある。
 
 ロガー名でのログ出力制御の設定方法は、 [ログ出力](../../component/libraries/libraries-01-Log.md) を参照すること。
-SQLログの詳細については、 SQLログの出力 を参照。
+SQLログの詳細については、 [SQLログの出力](../../component/libraries/libraries-02-SqlLog.md#sqlログの出力) を参照。
 
 > **Note:**
 > 出力される内容と、出力時に使用されるログレベル
@@ -355,7 +355,7 @@ SQLインジェクション対策として最も有効な手段となる。
   }
   ```
 
-詳細は、 [処理概要](../../component/libraries/libraries-04-Statement.md#処理概要) を参照すること。
+詳細は、 [推奨するJavaの実装例(SQL文を外部ファイル化した場合)](../../component/libraries/libraries-04-Statement.md#推奨するjavaの実装例sql文を外部ファイル化した場合) を参照すること。
 
 * SQLインジェクションの脆弱性を含んだ実装の例
 

@@ -11,7 +11,7 @@
 | SQLログ | 深刻なパフォーマンス劣化の要因となりやすいSQL文の実行について、パフォーマンスチューニングに使用するために、 SQL文の実行時間とSQL文を出力する。 |
 | 開発ログ | アプリケーションプログラマが開発時に必要な情報を出力する。 |
 
-HTTPアクセスログとSQLログの出力内容については、 HttpAccessLog 、 SqlLog を参照。
+HTTPアクセスログとSQLログの出力内容については、 [HTTPアクセスログの出力](../../component/libraries/libraries-04-HttpAccessLog.md#httpアクセスログの出力) 、 [SQLログの出力](../../component/libraries/libraries-02-SqlLog.md#sqlログの出力) を参照。
 
 ## 開発時のログ出力の設定方法
 
@@ -31,18 +31,18 @@ HTTPアクセスログとSQLログの出力内容については、 HttpAccessLo
 ## 開発時のログの見方
 
 サンプルアプリケーションを使用して、開発時のログの見方を説明する。
-ログ出力の設定は、 Web_Log_Settings の説明で使用した設定例を使用する。
+ログ出力の設定は、 [開発時のログ出力の設定方法](../../guide/web-application/web-application-Web-Log.md#開発時のログ出力の設定方法) の説明で使用した設定例を使用する。
 
 ここでは、下記のケースを取り上げる。
 
-* Web_Log_NormalLog
-* Web_Log_JspErrorLog
-* Web_Log_NoActionLog
-* Web_Log_NoActionMethodLog
+* [リクエスト処理を正常に完了した場合](../../guide/web-application/web-application-Web-Log.md#リクエスト処理を正常に完了した場合)
+* [JSPで例外が発生した場合](../../guide/web-application/web-application-Web-Log.md#jspで例外が発生した場合)
+* [リクエストURLに対応するアクションが見つからない場合](../../guide/web-application/web-application-Web-Log.md#リクエストurlに対応するアクションが見つからない場合)
+* [リクエストURLに対応するアクションのメソッドが見つからない場合](../../guide/web-application/web-application-Web-Log.md#リクエストurlに対応するアクションのメソッドが見つからない場合)
 
 > **Note:**
 > 上記ケースでエラーが発生するものについては、あくまで一例であり、全てのケースを網羅しているわけではない。
-> 実際の開発時は、 Web_Log_NormalLog を参考に、デバッグ作業に必要な情報を収集する。
+> 実際の開発時は、 [リクエスト処理を正常に完了した場合](../../guide/web-application/web-application-Web-Log.md#リクエスト処理を正常に完了した場合) を参考に、デバッグ作業に必要な情報を収集する。
 
 ### リクエスト処理を正常に完了した場合
 

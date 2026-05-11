@@ -26,7 +26,7 @@
 
 > **Tip:**
 > 本拡張機能を導入しても、JUnit 4で書かれた既存の自動テストフレームワークのテストを修正する必要はない。
-> JUnit 4で書かれたテストは、JUnit Vintageを使うことで引き続きJUnit 5上で実行できる（JUnit Vintageを使って自動テストフレームワークを動作させる方法については [複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する](../../development-tools/testing-framework/testing-framework-01-Abstract.md#複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する) を参照）。
+> JUnit 4で書かれたテストは、JUnit Vintageを使うことで引き続きJUnit 5上で実行できる（JUnit Vintageを使って自動テストフレームワークを動作させる方法については [JUnit 5で自動テストフレームワークを動かす](../../development-tools/testing-framework/testing-framework-01-Abstract.md#junit-5で自動テストフレームワークを動かす) を参照）。
 > したがって、既存のテストはJUnit 4のコードのままにしておき、新規テストだけJUnit 5を使ったコードにできる。
 
 ## 前提条件

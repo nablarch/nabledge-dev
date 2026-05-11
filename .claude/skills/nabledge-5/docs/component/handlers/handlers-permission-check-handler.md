@@ -77,7 +77,7 @@ PermissionCheckHandler.setUsesInternalRequestId
 ## 権限がない場合に表示するエラーページを指定する
 
 権限がない場合に表示するエラーページは、HTTPエラー制御ハンドラで指定する。
-指定方法は、 HttpErrorHandler_DefaultPage を参照。
+指定方法は、 [デフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#デフォルトページの設定) を参照。
 
 ## 特定のリクエストを認可チェックから除外する
 

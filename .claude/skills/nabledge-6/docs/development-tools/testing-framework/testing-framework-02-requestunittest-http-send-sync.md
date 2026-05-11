@@ -1,10 +1,10 @@
 # リクエスト単体テストの実施方法(HTTP同期応答メッセージ送信処理)
 
-リクエスト単体テスト実施方法は、 message_sendSyncMessage_test を参照すること。
+リクエスト単体テスト実施方法は、 [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#リクエスト単体テストの実施方法同期応答メッセージ送信処理) を参照すること。
 
 ただし、「送信キュー」「受信キュー」を「通信先」と読み替えること。
 
-本項では、 message_sendSyncMessage_test と異なる箇所を解説する。
+本項では、 [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#リクエスト単体テストの実施方法同期応答メッセージ送信処理) と異なる箇所を解説する。
 
 ## テストデータの書き方
 
@@ -34,7 +34,7 @@
 
 複数回電文を送信する場合のテストは、テスティングフレームワークの以下の仕様に注意をして記述すること。
 
-* 同一データタイプ(以下の例では `RESPONSE_HEADER_MESSAGES` と `RESPONSE_BODY_MESSAGES` )は、それぞれ、まとめて記述する。詳細は、  tips_groupId 及び、  [複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する](../../development-tools/testing-framework/testing-framework-01-Abstract.md#複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する) を参照。
+* 同一データタイプ(以下の例では `RESPONSE_HEADER_MESSAGES` と `RESPONSE_BODY_MESSAGES` )は、それぞれ、まとめて記述する。詳細は、  [一つのシートに複数テストケースのデータを記載したい](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) 及び、  [複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する](../../development-tools/testing-framework/testing-framework-01-Abstract.md#複数のデータタイプ使用時はデータタイプごとにまとめてデータを記述する) を参照。
 * 同一リクエストIDの電文については、noの値を変えてまとめて記述する。
 * 同一リクエストIDの電文の場合は、電文の長さを合わせる(電文を1回送信する場合と同様の制約である。テストケース上、同一の長さにできない場合は、手動でテストを行うこと)
 
@@ -65,13 +65,13 @@
 業務アクション内で、明示的に **MessagingException** を制御していないのであれば、
 個別のリクエスト単体テストにおいて障害系のテストを行う必要は無い。
 
- message_sendSyncMessage_test と異なるクラスを送出する。
+ [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#リクエスト単体テストの実施方法同期応答メッセージ送信処理) と異なるクラスを送出する。
 
 ### モックアップを使用するための記述
 
-testShotsに `expectedMessageByClient` および `responseMessageByClient` にグループIDを設定する。モックアップ自体については、 dealUnitTest_send_sync を参照。
+testShotsに `expectedMessageByClient` および `responseMessageByClient` にグループIDを設定する。モックアップ自体については、 [同期応答メッセージ送信処理を伴う取引単体テストの実施方法](../../development-tools/testing-framework/testing-framework-03-dealunittest-send-sync.md#同期応答メッセージ送信処理を伴う取引単体テストの実施方法) を参照。
 
-グループIDの関連については message_sendSyncMessage_test における `expectedMessage` および `responseMessage` の場合と同様であるため割愛する。
+グループIDの関連については [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#リクエスト単体テストの実施方法同期応答メッセージ送信処理) における `expectedMessage` および `responseMessage` の場合と同様であるため割愛する。
 
 ![http_send_sync_shot.png](../../../knowledge/assets/testing-framework-02-requestunittest-http-send-sync/http_send_sync_shot.png)
 

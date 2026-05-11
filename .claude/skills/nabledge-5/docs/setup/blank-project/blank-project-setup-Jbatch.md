@@ -156,7 +156,7 @@ mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main -Dexec.args="'sample-ba
 ```
 
 > **Tip:**
-> このbatchletはSAMPLE_USERテーブルのデータを全件削除している。削除したデータを復元したい場合は、 firstStepBatchEERunETL のコマンドを実行すること。
+> このbatchletはSAMPLE_USERテーブルのデータを全件削除している。削除したデータを復元したい場合は、 [ETL機能を使用するアプリケーションの起動](../../setup/blank-project/blank-project-setup-Jbatch.md#etl機能を使用するアプリケーションの起動) のコマンドを実行すること。
 
 #### ETL機能を使用するアプリケーションの起動
 
@@ -225,7 +225,7 @@ mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main -Dexec.args="'sample-ch
 
 原因は分からないが疎通確認に失敗する場合、どこかで手順を誤っている可能性がある。
 
-原因が分からない場合は、firstStepGenerateBatchEEBlankProject からやり直してみること。
+原因が分からない場合は、[ブランクプロジェクト作成](../../setup/blank-project/blank-project-setup-Jbatch.md#ブランクプロジェクト作成) からやり直してみること。
 
 ### 補足
 

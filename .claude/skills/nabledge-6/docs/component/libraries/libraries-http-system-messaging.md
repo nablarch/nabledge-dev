@@ -19,11 +19,11 @@
 
 HTTPを使ったメッセージの送受信を行う機能を提供する。
 
-HTTPメッセージングでは、 [HTTPメッセージ送信のHTTPクライアント処理を変更する](../../component/libraries/libraries-http-system-messaging.md#httpメッセージ送信のhttpクライアント処理を変更する) に示したデータモデルを前提としている。
+HTTPメッセージングでは、 [送受信電文のデータモデル](../../component/libraries/libraries-http-system-messaging.md#送受信電文のデータモデル) に示したデータモデルを前提としている。
 また、メッセージのフォーマットには、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット) を使用する。
 
 > **Important:**
-> [HTTPメッセージ送信のHTTPクライアント処理を変更する](../../component/libraries/libraries-http-system-messaging.md#httpメッセージ送信のhttpクライアント処理を変更する) の中で、
+> [送受信電文のデータモデル](../../component/libraries/libraries-http-system-messaging.md#送受信電文のデータモデル) の中で、
 > [フレームワーク制御ヘッダ](../../component/libraries/libraries-mom-system-messaging.md#送受信電文のデータモデル) については、
 > Nablarchで独自に規定している項目となり、 [メッセージボディ](../../component/libraries/libraries-http-system-messaging.md#送受信電文のデータモデル) に含めることを想定している。
 
@@ -264,7 +264,7 @@ HTTPリクエストのデータ領域をメッセージボディと呼ぶ。
 [リクエストディスパッチハンドラ](../../component/handlers/handlers-request-path-java-package-mapping.md#リクエストディスパッチハンドラ)
 [再送電文制御ハンドラ](../../component/handlers/handlers-message-resend-handler.md#再送電文制御ハンドラ)
 [認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md#認可チェックハンドラ)
-ServiceAvailabilityCheckHandler
+[サービス提供可否チェックハンドラ](../../component/handlers/handlers-ServiceAvailabilityCheckHandler.md#サービス提供可否チェックハンドラ)
 
 ユーザID
 

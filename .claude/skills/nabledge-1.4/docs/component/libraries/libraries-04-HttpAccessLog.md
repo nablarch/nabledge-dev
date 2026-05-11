@@ -75,10 +75,10 @@ HTTPアクセスログの出力項目を下記に示す。
 | 付加情報 | アプリケーションで追加する付加情報。 |
 
 HTTPアクセスログの個別項目は、リクエストID、ユーザID、URLから空きメモリ量(開始時)までとなる。
-残りの項目は、 Log_BasicLogFormatter の設定で指定する共通項目となる。
-共通項目と個別項目を組み合わせたフォーマットについては、 AppLog_Format を参照。
+残りの項目は、 [BasicLogFormatter](../../component/libraries/libraries-01-Log.md#basiclogformatter) の設定で指定する共通項目となる。
+共通項目と個別項目を組み合わせたフォーマットについては、 [各種ログの共通項目のフォーマット](../../component/libraries/libraries-01-Log.md#各種ログの共通項目のフォーマット) を参照。
 
-リクエストIDとユーザIDは、 Log_BasicLogFormatter が出力を提供する共通項目と重複するが、
+リクエストIDとユーザIDは、 [BasicLogFormatter](../../component/libraries/libraries-01-Log.md#basiclogformatter) が出力を提供する共通項目と重複するが、
 HTTPアクセスログのフォーマットの自由度を高めるために個別項目として指定できるようにしている。
 
 ## HTTPアクセスログの出力方法
@@ -90,7 +90,7 @@ HTTPアクセスログの出力に使用するクラスを下記に示す。
 | クラス名 | 概要 |
 |---|---|
 | nablarch.common.web.handler.HttpAccessLogHandler | HTTPアクセスログを出力するハンドラ。 リクエスト処理開始時と終了時のログを出力する。 |
-| nablarch.common.web.handler.NablarchTagHandler | Nablarchのカスタムタグ機能に必要なリクエスト処理を行うハンドラ。 WebView_HiddenEncryption 機能に対応する改竄チェックと復号を行う。 hiddenパラメータ復号後のログを出力する。 |
+| nablarch.common.web.handler.NablarchTagHandler | Nablarchのカスタムタグ機能に必要なリクエスト処理を行うハンドラ。 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能に対応する改竄チェックと復号を行う。 hiddenパラメータ復号後のログを出力する。 |
 | nablarch.fw.web.handler.HttpRequestJavaPackageMapping | URI中の部分文字列をJavaパッケージへマッピングすることで動的に委譲先を決定するディスパッチャ。 ディスパッチ先クラス決定後のログを出力する。 |
 | nablarch.fw.web.handler.HttpAccessLogUtil | HTTPアクセスログを出力するクラス。 |
 | nablarch.fw.web.handler.HttpAccessLogFormatter | HTTPアクセスログの個別項目をフォーマットするクラス。 |
@@ -102,7 +102,7 @@ HTTPアクセスログ出力時の処理シーケンスを下記に示す。
 
 上記処理シーケンスの通り、HTTPアクセスログを出力するには、下記の順番にハンドラを指定する必要がある。
 説明のために省略しているが、NablarchTagHandlerとHttpRequestJavaPackageMappingの間には、データベース接続管理、トランザクション管理、
-認可チェックなど、 CommonHandlers で記載したハンドラが入る。
+認可チェックなど、 [汎用のハンドラ](../../component/handlers/handlers-handler.md#汎用のハンドラ) で記載したハンドラが入る。
 
 ```bash
 ThreadContextHandler
@@ -138,7 +138,7 @@ HttpAccessLogHandlerはプロパティを持たないため、HttpAccessLogHandl
 
 HttpAccessLogUtilは、プロパティファイル(app-log.properties)を読み込み、
 HttpAccessLogFormatterオブジェクトを生成して、個別項目のフォーマット処理を委譲する。
-プロパティファイルのパス指定や実行時の設定値の変更方法は、 AppLog_Config を参照。
+プロパティファイルのパス指定や実行時の設定値の変更方法は、 [各種ログの設定](../../component/libraries/libraries-01-Log.md#各種ログの設定) を参照。
 HTTPアクセスログの設定例を下記に示す。
 
 app-log.propertiesの設定例
@@ -202,7 +202,7 @@ httpAccessLogFormatter.endOutputEnabled=true
 | HTTPヘッダのUser-Agent | $clientUserAgent$ |
 | リクエストパラメータ | $parameters$ |
 
-リクエストパラメータは、 WebView_HiddenEncryption 機能の復号前の状態となる。
+リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号前の状態となる。
 
 デフォルトのフォーマット
 
@@ -220,8 +220,8 @@ httpAccessLogFormatter.endOutputEnabled=true
 
 プレースホルダ一覧
 
-リクエスト処理開始時のプレースホルダ一覧 と同じ。
-ただし、リクエストパラメータは、 WebView_HiddenEncryption 機能の復号後の状態となる。
+[リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#リクエスト処理開始時のログ出力に使用するフォーマット) と同じ。
+ただし、リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号後の状態となる。
 
 デフォルトのフォーマット
 
@@ -234,8 +234,8 @@ httpAccessLogFormatter.endOutputEnabled=true
 
 プレースホルダ一覧
 
-リクエスト処理開始時のプレースホルダ一覧 に加えて、下記のプレースホルダを指定できる。
-リクエストパラメータは、 WebView_HiddenEncryption 機能の復号後の状態となる。
+[リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#リクエスト処理開始時のログ出力に使用するフォーマット) に加えて、下記のプレースホルダを指定できる。
+リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号後の状態となる。
 
 | 項目名 | プレースホルダ |
 |---|---|
@@ -251,8 +251,8 @@ httpAccessLogFormatter.endOutputEnabled=true
 
 プレースホルダ一覧
 
-リクエスト処理開始時のプレースホルダ一覧 に加えて、下記のプレースホルダを指定できる。
-リクエストパラメータは、 WebView_HiddenEncryption 機能の復号後の状態となる。
+[リクエスト処理開始時のプレースホルダ一覧](../../component/libraries/libraries-04-HttpAccessLog.md#リクエスト処理開始時のログ出力に使用するフォーマット) に加えて、下記のプレースホルダを指定できる。
+リクエストパラメータは、 [hiddenタグの暗号化](../../component/libraries/libraries-07-FormTag.md#hiddenタグの暗号化) 機能の復号後の状態となる。
 
 | 項目名 | プレースホルダ |
 |---|---|

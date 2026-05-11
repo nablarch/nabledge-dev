@@ -4,8 +4,8 @@
 * [自動テストフレームワークの使用方法](../../development-tools/testing-framework/testing-framework-guide-development-guide-06-TestFWGuide.md)
 * [プログラミング工程で使用するツール](../../development-tools/testing-framework/testing-framework-guide-development-guide-08-TestTools.md)
 
-テスティングフレームワークを使用して機能のテストを実装するテストの実装者は unitTestGuide を、
-テスティングフレームワークの導入をするアーキテクトは testFWGuide を参照してください。
+テスティングフレームワークを使用して機能のテストを実装するテストの実装者は [単体テスト実施方法](../../development-tools/testing-framework/testing-framework-guide-development-guide-05-UnitTestGuide.md#単体テスト実施方法) を、
+テスティングフレームワークの導入をするアーキテクトは [自動テストフレームワークの使用方法](../../development-tools/testing-framework/testing-framework-guide-development-guide-06-TestFWGuide.md#自動テストフレームワークの使用方法) を参照してください。
 
 > **Important:**
 > テスティングフレームワークは、以下の基盤やライブラリには対応していない。

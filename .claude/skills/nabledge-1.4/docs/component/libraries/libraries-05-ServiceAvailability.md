@@ -12,7 +12,7 @@
 
 > **Note:**
 > 「サービス提供可否状態の設定」とはサービス提供可否状態のON/OFFを切り替えることを示す。
-> サービス提供可否状態はデータベースのテーブルに格納されている。テーブル構造については、  tableDefinition を参照すること。
+> サービス提供可否状態はデータベースのテーブルに格納されている。テーブル構造については、  [テーブル定義の例](../../component/libraries/libraries-05-ServiceAvailability.md#テーブル定義の例) を参照すること。
 
 ### 概要図
 
@@ -102,7 +102,7 @@ b) その他のクラス
 画面オンライン時におけるシーケンス図を下記に示す。
 
 * ServiceAvailabilityCheckHandlerは、リクエストIDをもとにサービス提供可否状態を判定する。
-* リクエストIDは、ServiceAvailabilityCheckHandlerよりも先に処理を行うハンドラにより、ThreadContextに設定しておく必要がある。ThreadContextへの設定は、 ThreadContextHandler が行う。
+* リクエストIDは、ServiceAvailabilityCheckHandlerよりも先に処理を行うハンドラにより、ThreadContextに設定しておく必要がある。ThreadContextへの設定は、 [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-ThreadContextHandler.md#スレッドコンテキスト変数管理ハンドラ) が行う。
 * サービス提供不可の場合、一律サービス提供不可エラー画面へ遷移する。
 
 ![ServiceAvailability_SequenceDiagram.jpg](../../../knowledge/assets/libraries-05-ServiceAvailability/ServiceAvailability_SequenceDiagram.jpg)
@@ -128,7 +128,7 @@ b) その他のクラス
 「サービス提供可否状態」カラムには、サービス提供可能状態を表す値を設定する。
 標準ではサービス提供可否状態の値として"1"が設定されている場合に、サービス提供可能だと判定するが、
 設定ファイルを修正することでこの値を変更できる。
-詳細は basicServiceAvailabilityDetail を参照すること。
+詳細は [nablarch.core.web.service.BasicServiceAvailabilityクラスの設定](../../component/libraries/libraries-05-ServiceAvailability.md#nablarchcorewebservicebasicserviceavailabilityクラスの設定) を参照すること。
 
 ## 設定の記述
 

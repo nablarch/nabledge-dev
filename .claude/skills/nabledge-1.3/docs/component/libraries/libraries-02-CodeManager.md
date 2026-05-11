@@ -10,7 +10,7 @@
 なお、一般にコードという名称には「商品コード」や「企業コード」といった、コード値に紐付く値が動的に変化する数多くのデータのキー値も含まれる。
 しかし本機能では、これらのコードは対象としない。これらのコードはアプリケーションでマスタ用のテーブルを作成し、対処する。
 また、本機能を使用する場合、コードの名称を持つテーブルとコード値を持つテーブルにRDBMSの参照整合性制約を設定できない。
-このような制約のチェックには [nablarch.common.code.schema.CodeNameSchema クラスの設定](../../component/libraries/libraries-02-CodeManager.md#nablarchcommoncodeschemacodenameschema-クラスの設定) を使用すること。
+このような制約のチェックには [コード値の有効性をチェックするバリデーション](../../component/libraries/libraries-02-CodeManager.md#コード値の有効性をチェックするバリデーション) を使用すること。
 
 本機能は、あくまで先に示した性別区分や年代区分など、コードに含まれるコード値とコード名称の関係が静的なコードのみに使用すること。
 
@@ -142,7 +142,7 @@
 
 例えば、性別の区分(性別区分)を表すコードID "0001" のコードと、バッチの処理状態を表すコードID "0002" のコードを考える。
 
-これら2つのコードを CodeManager_TableDefinitionExample で示したテーブルで保持する場合、下記のようにデータを作成する。
+これら2つのコードを [テーブル定義の例](../../component/libraries/libraries-02-CodeManager.md#テーブル定義の例) で示したテーブルで保持する場合、下記のようにデータを作成する。
 
 CODE_PATTERN テーブルのデータ例
 
@@ -184,7 +184,7 @@ CODE_NAME テーブルのデータ例
 
 コード名称は、CodeUtilのgetNameメソッドで取得できる。
 
-例えば CodeManager_TableDataExample で設定した性別区分に対応するコード名称を取得する場合、下記のように実装する。
+例えば [コード値とコード名称のデータ](../../component/libraries/libraries-02-CodeManager.md#コード値とコード名称のデータ) で設定した性別区分に対応するコード名称を取得する場合、下記のように実装する。
 
 ```java
 // 性別区分(コードID:0001)、コード値 "1"に対応する文字列を取得する。
@@ -233,7 +233,7 @@ String shortMaleDisplayName = CodeUtil.getOptionalName("0001", "1", "NAME_WITH_V
 この機能を使用することで、例えば国名を選択する場面で、日本語では「アメリカ」「カナダ」「日本」とアイウエオ順で表示し、
 英語では「Canada」「Japan」「United States」のようにアルファベット順に表示するという表示の変更ができる。
 
-例えば CodeManager_TableDataExample で設定した性別区分とバッチの処理状態を意味するコード値を取得する場合、下記のように実装する。
+例えば [コード値とコード名称のデータ](../../component/libraries/libraries-02-CodeManager.md#コード値とコード名称のデータ) で設定した性別区分とバッチの処理状態を意味するコード値を取得する場合、下記のように実装する。
 
 ```java
 // 性別区分(コードID:0001) に対応するコード値を全て取得する。
@@ -250,7 +250,7 @@ List<String> executionStateCodeValues = CodeUtil.getValues("0002");
 画面やバッチ処理におけるファイルからの入力では、コード値として有効であるかチェックする必要がある。
 このようなチェックは CodeUtil の contains メソッドで行える。
 
-例えば CodeManager_TableDataExample で設定した性別区分として有効であるかチェックする場合、下記のようにコードが有効であるかチェックできる。
+例えば [コード値とコード名称のデータ](../../component/libraries/libraries-02-CodeManager.md#コード値とコード名称のデータ) で設定した性別区分として有効であるかチェックする場合、下記のようにコードが有効であるかチェックできる。
 
 ```java
 // 性別区分(コードID:0001) のコード値として有効であるかどうかチェックする
@@ -264,7 +264,7 @@ CodeUtil.contains("0001", "3");
 
 ## コード値のパターン
 
-CodeManager_TableDataExample のデータの例で示した、コードID 0001 の性別区分のうち、コード値 "9" 
+[コード値とコード名称のデータ](../../component/libraries/libraries-02-CodeManager.md#コード値とコード名称のデータ) のデータの例で示した、コードID 0001 の性別区分のうち、コード値 "9" 
 (不明)は外部システムから入力したデータに性別区分がなかった場合に使用する特殊なコード値を表わしている。
 このコード値は、画面から入力してほしくない。
 

@@ -13,19 +13,19 @@
     {
       "id": "s2",
       "title": "条件分岐",
-      "content": "**ワークフロー概要**\n\nある [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) での処理結果などに応じて進行先の [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) を変更する。\n\n**実現方法**\n\n[マルチインスタンス・タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#マルチインスタンスタスク) を利用し、進行先となる可能性のあるフローノードとそれらに進行する条件を定義する。\n3つ以上に条件分岐することも可能。\n\n**ワークフロー定義の例**\n\n![conditional_branch.png](assets/workflow-WorkflowProcessSample/conditional_branch.png)",
+      "content": "**ワークフロー概要**\n\nある [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) での処理結果などに応じて進行先の [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) を変更する。\n\n**実現方法**\n\n[XORゲートウェイ](../../extension/workflow/workflow-WorkflowProcessElement.md#xorゲートウェイ) を利用し、進行先となる可能性のあるフローノードとそれらに進行する条件を定義する。\n3つ以上に条件分岐することも可能。\n\n**ワークフロー定義の例**\n\n![conditional_branch.png](assets/workflow-WorkflowProcessSample/conditional_branch.png)",
       "level": 2
     },
     {
       "id": "s3",
       "title": "差戻",
-      "content": "**ワークフロー概要**\n\n確認などを行う [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) で、確認結果がNGだった場合に申請者に差戻しを行う。\n\nこのとき、差戻し後の [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) の [タスク担当ユーザ/タスク担当グループ](../../extension/workflow/workflow-WorkflowInstanceElement.md#タスク担当ユーザタスク担当グループ) は、\nその [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) を直前に実行したユーザとなる。\n\n**実現方法**\n\n確認結果がOKかどうかで進行先となるフローノードを切り替える [マルチインスタンス・タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#マルチインスタンスタスク) を利用し、\nOKの場合には承認タスクへ、NGの場合は前の申請タスクにワークフローを進行させる。\n\n一般に、既に一度実行されている [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) へワークフローを進行させる必要がある場合には、\n[マルチインスタンス・タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#マルチインスタンスタスク) を利用することで要件を実現できる。\nその場合の [タスク担当ユーザ/タスク担当グループ](../../extension/workflow/workflow-WorkflowInstanceElement.md#タスク担当ユーザタスク担当グループ) には、その [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) に最後に割り当てられていたユーザが設定される。\n\n**ワークフロー定義の例**\n\n![remand.png](assets/workflow-WorkflowProcessSample/remand.png)",
+      "content": "**ワークフロー概要**\n\n確認などを行う [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) で、確認結果がNGだった場合に申請者に差戻しを行う。\n\nこのとき、差戻し後の [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) の [タスク担当ユーザ/タスク担当グループ](../../extension/workflow/workflow-WorkflowInstanceElement.md#タスク担当ユーザタスク担当グループ) は、\nその [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) を直前に実行したユーザとなる。\n\n**実現方法**\n\n確認結果がOKかどうかで進行先となるフローノードを切り替える [XORゲートウェイ](../../extension/workflow/workflow-WorkflowProcessElement.md#xorゲートウェイ) を利用し、\nOKの場合には承認タスクへ、NGの場合は前の申請タスクにワークフローを進行させる。\n\n一般に、既に一度実行されている [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) へワークフローを進行させる必要がある場合には、\n[XORゲートウェイ](../../extension/workflow/workflow-WorkflowProcessElement.md#xorゲートウェイ) を利用することで要件を実現できる。\nその場合の [タスク担当ユーザ/タスク担当グループ](../../extension/workflow/workflow-WorkflowInstanceElement.md#タスク担当ユーザタスク担当グループ) には、その [タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#タスク) に最後に割り当てられていたユーザが設定される。\n\n**ワークフロー定義の例**\n\n![remand.png](assets/workflow-WorkflowProcessSample/remand.png)",
       "level": 2
     },
     {
       "id": "s4",
       "title": "再申請",
-      "content": "**ワークフロー概要**\n\n差し戻された申請を修正し、再申請を行う。\n\n上記の単純な差戻しフローとは異なり、初回の申請と再申請を明確に区別する。\n\n**実現方法**\n\n差戻しと同様に、確認結果がOKかどうかで進行先となるフローノードを切り替える [マルチインスタンス・タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#マルチインスタンスタスク) を利用する。\nただし、NGの場合には、申請タスクではなく、再申請タスクにワークフローを進行させる。\n\nなお、申請者は申請タスクを実施後に必ずしも再申請を行うわけではないため、\n申請タスクと再申請タスクを結ぶシーケンスフローは作成しないこと。\n\n**ワークフロー定義の例**\n\n![reapply.png](assets/workflow-WorkflowProcessSample/reapply.png)",
+      "content": "**ワークフロー概要**\n\n差し戻された申請を修正し、再申請を行う。\n\n上記の単純な差戻しフローとは異なり、初回の申請と再申請を明確に区別する。\n\n**実現方法**\n\n差戻しと同様に、確認結果がOKかどうかで進行先となるフローノードを切り替える [XORゲートウェイ](../../extension/workflow/workflow-WorkflowProcessElement.md#xorゲートウェイ) を利用する。\nただし、NGの場合には、申請タスクではなく、再申請タスクにワークフローを進行させる。\n\nなお、申請者は申請タスクを実施後に必ずしも再申請を行うわけではないため、\n申請タスクと再申請タスクを結ぶシーケンスフローは作成しないこと。\n\n**ワークフロー定義の例**\n\n![reapply.png](assets/workflow-WorkflowProcessSample/reapply.png)",
       "level": 2
     },
     {
@@ -37,7 +37,7 @@
     {
       "id": "s6",
       "title": "却下",
-      "content": "**ワークフロー概要**\n\n確認者や承認者が、申請を却下する。\n\n申請が却下された場合には、ワークフローを完了させる。\n\n**実現方法**\n\n[差戻](../../extension/workflow/workflow-WorkflowProcessSample.md#差戻) と同様に、確認結果がOKかどうかで進行先となるフローノードを切り替える\n[マルチインスタンス・タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#マルチインスタンスタスク) を利用し、却下の場合には、 [停止イベント](../../extension/workflow/workflow-WorkflowProcessElement.md#停止イベント) にワークフローを進行させる。\n\n**ワークフロー定義の例**\n\n![reject.png](assets/workflow-WorkflowProcessSample/reject.png)",
+      "content": "**ワークフロー概要**\n\n確認者や承認者が、申請を却下する。\n\n申請が却下された場合には、ワークフローを完了させる。\n\n**実現方法**\n\n[差戻](../../extension/workflow/workflow-WorkflowProcessSample.md#差戻) と同様に、確認結果がOKかどうかで進行先となるフローノードを切り替える\n[XORゲートウェイ](../../extension/workflow/workflow-WorkflowProcessElement.md#xorゲートウェイ) を利用し、却下の場合には、 [停止イベント](../../extension/workflow/workflow-WorkflowProcessElement.md#停止イベント) にワークフローを進行させる。\n\n**ワークフロー定義の例**\n\n![reject.png](assets/workflow-WorkflowProcessSample/reject.png)",
       "level": 2
     },
     {

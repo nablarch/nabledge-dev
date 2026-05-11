@@ -189,7 +189,7 @@ multicol.lessは、自動生成した雛形を修正する。
 自動生成方法及び修正方法の詳細は、以下を参照すること。
 
 * [lessインポート定義雛形生成コマンド](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義雛形生成コマンド)
-* lessImport_less
+* [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル)
 
 [サンプルのmulticol.lessのダウンロード](../../../knowledge/assets/ui-framework-multicol-css-framework/multicol.less)
 

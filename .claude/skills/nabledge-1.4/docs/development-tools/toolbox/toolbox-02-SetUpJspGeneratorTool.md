@@ -63,5 +63,5 @@ jspGenで開くことでツールを起動できる。
 
 ### 作成したファイルの表示
 
-SetUpJspGeneratorTool_howToExecuteFromEclipse の実行により、HTMLファイルと同一ディレクトリにJSPファイルが生成される。
+[HTMLファイルからの起動方法](../../development-tools/toolbox/toolbox-02-SetUpJspGeneratorTool.md#htmlファイルからの起動方法) の実行により、HTMLファイルと同一ディレクトリにJSPファイルが生成される。
 HTMLファイルと同一ディレクトリを右クリックしフレッシュ(Refresh)を選択することでJSPファイルが生成される。

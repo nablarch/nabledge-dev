@@ -186,13 +186,13 @@ mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main -Dexec.args="'sample-ba
 ```
 
 > **Tip:**
-> このbatchletはSAMPLE_USERテーブルのデータの全件削除を行っている。削除したデータを復元したい場合は、 firstStepBatchEEProjectStructure を参考に「SAMPLE.mv.db.org」を「SAMPLE.mv.db」にコピーすること。
+> このbatchletはSAMPLE_USERテーブルのデータの全件削除を行っている。削除したデータを復元したい場合は、 [プロジェクトの構成](../../setup/blank-project/blank-project-MavenModuleStructures.md#プロジェクトの構成) を参考に「SAMPLE.mv.db.org」を「SAMPLE.mv.db」にコピーすること。
 
 #### 疎通確認になぜか失敗する場合
 
 原因は分からないが疎通確認に失敗する場合、どこかで手順を誤っている可能性がある。
 
-原因が分からない場合は、firstStepGenerateBatchEEBlankProject からやり直してみること。
+原因が分からない場合は、[ブランクプロジェクト作成](../../setup/blank-project/blank-project-setup-Jbatch.md#ブランクプロジェクト作成) からやり直してみること。
 
 ### データベースに関する設定を行う
 

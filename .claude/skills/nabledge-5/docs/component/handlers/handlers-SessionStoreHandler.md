@@ -30,7 +30,7 @@
 > ![multi-thread.png](../../../knowledge/assets/handlers-SessionStoreHandler/multi-thread.png)
 
 > このため、使用するストアの特性をよく理解し、要件にあったストアを選択する必要がある。
-> ストアの詳細は、 [セッション変数の保存先を追加する](../../component/libraries/libraries-session-store.md#セッション変数の保存先を追加する) を参照。
+> ストアの詳細は、 [セッションストアの特長と選択基準](../../component/libraries/libraries-session-store.md#セッションストアの特長と選択基準) を参照。
 
 ## ハンドラクラス名
 
@@ -115,17 +115,17 @@ HIDDENストアの改竄を検知した場合
 
 セッションストアの改竄を検知した場合に表示するエラーページは web.xml に記載する必要がある。
 なぜなら、本ハンドラは [制約](../../component/handlers/handlers-SessionStoreHandler.md#制約) に記載の通り、 [内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md#内部フォーワードハンドラ) よりも前に設定する必要がある。
-この場合、以下の理由により本ハンドラで発生した例外に対して、 HttpErrorHandler_DefaultPage を適用できないため、
+この場合、以下の理由により本ハンドラで発生した例外に対して、 [デフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#デフォルトページの設定) を適用できないため、
 web.xml に対する設定が必要となる。
 
 理由
 
 [内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md#内部フォーワードハンドラ) は、 [HTTPエラー制御ハンドラ](../../component/handlers/handlers-HttpErrorHandler.md#httpエラー制御ハンドラ) よりも手前に設定する必要がある。
-これは、 [HTTPエラー制御ハンドラ](../../component/handlers/handlers-HttpErrorHandler.md#httpエラー制御ハンドラ)  の HttpErrorHandler_DefaultPage に対して指定した
+これは、 [HTTPエラー制御ハンドラ](../../component/handlers/handlers-HttpErrorHandler.md#httpエラー制御ハンドラ)  の [デフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#デフォルトページの設定) に対して指定した
 内部フォワードのパスを正しく扱うために必要な設定順となる。
 
 この結果、 [内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md#内部フォーワードハンドラ) より前に設定される本ハンドラで発生した例外に対しては、
-HttpErrorHandler_DefaultPage への設定値が適用できないため web.xml への設定が必要となる。
+[デフォルトページの設定](../../component/handlers/handlers-HttpErrorHandler.md#デフォルトページの設定) への設定値が適用できないため web.xml への設定が必要となる。
 
 ## セッションIDを保持するクッキーの名前や属性を変更する
 
@@ -212,7 +212,7 @@ ServletAPIのバージョンが3.0以上であれば使用する
 UserSessionSchema のコンポーネントを定義する。
 DBストアのテーブル・カラムも同じものに変更すること。
 
-また有効期間は [初期化](../../component/libraries/libraries-repository.md#actionクラスをdiコンテナで管理する) が必要になる。
+また有効期間は [初期化](../../component/libraries/libraries-repository.md#オブジェクトの初期化処理を行う) が必要になる。
 
 設定例を以下に示す。
 

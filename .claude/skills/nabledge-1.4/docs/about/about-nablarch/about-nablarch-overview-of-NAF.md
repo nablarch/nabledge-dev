@@ -23,7 +23,7 @@ NAF基盤ライブラリとは、 [ログ出力](../../component/libraries/libra
 NAF共通コンポーネントとは、業務機能の実装において共通的に必要となる機能を
 NAF実行制御基盤および、NAF基盤ライブラリを用いて実装したモジュール群である。
 
-これには、 [認可](../../component/libraries/libraries-04-Permission.md#認可) 、 開閉局 などの
+これには、 [認可](../../component/libraries/libraries-04-Permission.md#認可) 、 [開閉局](../../component/libraries/libraries-05-ServiceAvailability.md#開閉局) などの
 業務機能やアプリケーションの運用に関連したモジュールが含まれる。
 
 以下の図は、これらのモジュール群および、業務ロジックを実装する業務コンポーネントの依存関係を表した図である。

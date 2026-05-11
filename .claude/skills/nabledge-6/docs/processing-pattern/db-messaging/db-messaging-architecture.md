@@ -67,7 +67,7 @@ Nablarchでは、データベースをキューとして扱うメッセージン
 
 * [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ)
 * [スレッドコンテキスト変数削除ハンドラ](../../component/handlers/handlers-thread-context-clear-handler.md#スレッドコンテキスト変数削除ハンドラ)
-* ServiceAvailabilityCheckHandler
+* [サービス提供可否チェックハンドラ](../../component/handlers/handlers-ServiceAvailabilityCheckHandler.md#サービス提供可否チェックハンドラ)
 * [出力ファイル開放ハンドラ](../../component/handlers/handlers-file-record-writer-dispose-handler.md#出力ファイル開放ハンドラ)
 
 ## ハンドラの最小構成

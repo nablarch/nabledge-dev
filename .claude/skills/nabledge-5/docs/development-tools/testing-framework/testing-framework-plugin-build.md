@@ -2,7 +2,7 @@
 
 ## 概要
 
-本章では [想定されるプロジェクト構成ごとの設定例](../../development-tools/testing-framework/testing-framework-plugin-build.md#想定されるプロジェクト構成ごとの設定例) および [デプロイ対象プロジェクト複数の場合(プラグインも個別)](../../development-tools/testing-framework/testing-framework-plugin-build.md#デプロイ対象プロジェクト複数の場合プラグインも個別) を示す。
+本章では [想定されるプロジェクト構成ごとの設定例](../../development-tools/testing-framework/testing-framework-plugin-build.md#想定されるプロジェクト構成ごとの設定例) および [プラグインビルドで使用するコマンドや設定ファイルの詳細仕様](../../development-tools/testing-framework/testing-framework-plugin-build.md#プラグインビルドで使用するコマンドや設定ファイルの詳細仕様) を示す。
 
 プラグインビルドコマンドが使用されるプロジェクトの標準的な構成については [標準プロジェクト構成](../../development-tools/testing-framework/testing-framework-directory-layout.md) を、
 開発時のフローについては [UI開発基盤の導入](../../development-tools/testing-framework/testing-framework-initial-setup.md) を参照。
@@ -10,7 +10,7 @@
 ## 想定されるプロジェクト構成ごとの設定例
 
 想定されるプロジェクト構成について、プラグインビルドコマンドの設定ファイルや実行ファイルの具体的な設定例を示す。
-下記の設定例に示していない項目については、後述する [設定ファイル](../../development-tools/testing-framework/testing-framework-plugin-build.md#設定ファイル) や [外部ライブラリの展開](../../development-tools/testing-framework/testing-framework-plugin-build.md#外部ライブラリの展開) を参照し、必要に応じて修正すること。
+下記の設定例に示していない項目については、後述する [設定ファイル](../../development-tools/testing-framework/testing-framework-plugin-build.md#設定ファイル) や [ビルドコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#ビルドコマンド) を参照し、必要に応じて修正すること。
 
 ### デプロイ対象プロジェクトが１つの場合
 
@@ -26,7 +26,7 @@ Nablarch標準UIプラグイン、プロジェクト固有UIプラグイン、UI
 
 **設定例**
 
-* [Mavenのゴール](../../setup/blank-project/blank-project-maven.md#mavenのゴール) の設定
+* [インストールコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#インストールコマンド) の設定
 
   本構成では、以下のファイルとなる。
 
@@ -70,7 +70,7 @@ UIローカルデモ用プロジェクト、デプロイ対象プロジェクト
 
 **設定例**
 
-* [Mavenのゴール](../../setup/blank-project/blank-project-maven.md#mavenのゴール) の設定
+* [インストールコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#インストールコマンド) の設定
 
   本構成では、以下のファイルとなる。
 
@@ -151,7 +151,7 @@ Nablarch標準UIプラグインがそれぞれ１つ、
 
 **設定例**
 
-* [Mavenのゴール](../../setup/blank-project/blank-project-maven.md#mavenのゴール) の設定
+* [インストールコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#インストールコマンド) の設定
 
   本構成では、以下のファイルとなる。
 
@@ -199,9 +199,9 @@ Nablarch標準UIプラグインがそれぞれ１つ、
 以降はプラグインビルドで使用するコマンドや設定ファイルについての詳細として、以下の項目について記述する。
 
 * [設定ファイル](../../development-tools/testing-framework/testing-framework-plugin-build.md#設定ファイル)
-* [lessインポート定義ファイル](../../development-tools/testing-framework/testing-framework-plugin-build.md#lessインポート定義ファイル)
-* [JavaScriptの自動生成](../../development-tools/testing-framework/testing-framework-plugin-build.md#javascriptの自動生成)
-* [外部ライブラリの展開](../../development-tools/testing-framework/testing-framework-plugin-build.md#外部ライブラリの展開)
+* [ファイルの自動生成](../../development-tools/testing-framework/testing-framework-plugin-build.md#ファイルの自動生成)
+* [プラグイン、外部ライブラリの展開](../../development-tools/testing-framework/testing-framework-plugin-build.md#プラグイン外部ライブラリの展開)
+* [ビルドコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#ビルドコマンド)
 
 ## 設定ファイル
 
@@ -210,7 +210,7 @@ Nablarch標準UIプラグインがそれぞれ１つ、
 | ファイル名 | 実ファイル名 | ファイル概要 |
 |---|---|---|
 | [ビルドコマンド用設定ファイル](../../development-tools/testing-framework/testing-framework-plugin-build.md#ビルドコマンド用設定ファイル) | pjconf.json | 環境毎のファイル展開設定ファイル。 |
-| lessImport_less | ${cssMode}.less | 表示モードごとにインポートするファイルの定義。 |
+| [lessインポート定義ファイル](../../development-tools/testing-framework/testing-framework-plugin-build.md#lessインポート定義ファイル) | ${cssMode}.less | 表示モードごとにインポートするファイルの定義。 |
 
 ### ビルドコマンド用設定ファイル
 
@@ -218,7 +218,7 @@ Nablarch標準UIプラグインがそれぞれ１つ、
 
 | 配置フォルダ | ファイル名 |
 |---|---|
-| ui_plugins ( [Mavenのゴール](../../setup/blank-project/blank-project-maven.md#mavenのゴール) で任意のフォルダに変更可能) | pjconf.json ( [UIビルドコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#uiビルドコマンド) で任意のフォルダに変更可能) |
+| ui_plugins ( [インストールコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#インストールコマンド) で任意のフォルダに変更可能) | pjconf.json ( [UIビルドコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#uiビルドコマンド) で任意のフォルダに変更可能) |
 
 **ファイル概要**
 
@@ -310,7 +310,7 @@ Nablarch標準UIプラグインがそれぞれ１つ、
 
 | 配置フォルダ | ファイル名 |
 |---|---|
-| ui_plugins/css/${デプロイ先種別} ( [Mavenのゴール](../../setup/blank-project/blank-project-maven.md#mavenのゴール) で任意のフォルダに変更可能) | ${表示モード}.less |
+| ui_plugins/css/${デプロイ先種別} ( [インストールコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#インストールコマンド) で任意のフォルダに変更可能) | ${表示モード}.less |
 
 **ファイル概要**
 
@@ -374,7 +374,7 @@ lessファイルは以下の形式で定義する。
 
 | 生成先フォルダ | 生成ファイル | 元になるファイル |
 |---|---|---|
-| css/built | ${cssMode}-minify.css | lessImport_less で定義されたされたcssファイル。 |
+| css/built | ${cssMode}-minify.css | [lessインポート定義ファイル](../../development-tools/testing-framework/testing-framework-plugin-build.md#lessインポート定義ファイル) で定義されたされたcssファイル。 |
 
 **CSSファイル生成イメージ**
 
@@ -387,7 +387,7 @@ lessファイルは以下の形式で定義する。
 ファイル展開設定ファイルの"cssMode"で指定されたCSS表示モードのみが生成対象となる。
 （表示モードおよびlessファイルの内容については [CSSフレームワーク](../../development-tools/testing-framework/testing-framework-css-framework.md) 参照）
 
-プラグインに含まれるlessファイルをインポートした lessImport_less を参照し、各cssファイルを作成する。
+プラグインに含まれるlessファイルをインポートした [lessインポート定義ファイル](../../development-tools/testing-framework/testing-framework-plugin-build.md#lessインポート定義ファイル) を参照し、各cssファイルを作成する。
 例えば"cssMode"で["wide", "compact", "narrow"]を指定した場合、以下のファイルが生成される。
 
 ```bash
@@ -438,7 +438,7 @@ css/
 | ui_test | UI開発基盤テスト用プロジェクト |
 
 ただし、各プラグインに含まれるlessファイルは展開されず、自動生成された*-minify.cssファイルのみ展開される。
-自動生成ファイルについては [lessインポート定義ファイル](../../development-tools/testing-framework/testing-framework-plugin-build.md#lessインポート定義ファイル) を参照。
+自動生成ファイルについては [ファイルの自動生成](../../development-tools/testing-framework/testing-framework-plugin-build.md#ファイルの自動生成) を参照。
 
 > **Tip:**
 > プラグイン間で同一の展開先となるファイルを検出した場合、重複ファイルとして下記フォーマットでコマンド終了時に該当ファイルの一覧が表示される。
@@ -476,10 +476,10 @@ css/
 
 | コマンド名 | Windows用実行ファイル名 | 概要 |
 |---|---|---|
-| [Mavenのゴール](../../setup/blank-project/blank-project-maven.md#mavenのゴール) | install.bat | Nablarch提供プラグインおよび外部ライブラリをプロジェクトフォルダ配下に取り込む。 |
+| [インストールコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#インストールコマンド) | install.bat | Nablarch提供プラグインおよび外部ライブラリをプロジェクトフォルダ配下に取り込む。 |
 | [UIビルドコマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#uiビルドコマンド) | ui_build.bat | Nablarch提供プラグイン、プロジェクト開発プラグインおよび外部ライブラリをプロジェクトフォルダ内の各フォルダに展開する。  同時に各環境固有の自動生成ファイルを生成する。 |
 | [lessインポート定義雛形生成コマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#lessインポート定義雛形生成コマンド) | ui_genless.bat | 各表示モード毎のlessインポート定義ファイルの雛形を作成する。 |
-| localServer | ローカル画面確認.bat | ローカル動作確認用のサーバを起動する。 |
+| [ローカル動作確認用サーバ起動コマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#ローカル動作確認用サーバ起動コマンド) | ローカル画面確認.bat | ローカル動作確認用のサーバを起動する。 |
 | [サーバ動作確認用サーバ起動コマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#サーバ動作確認用サーバ起動コマンド) | サーバ動作確認.bat | サーバ動作確認用のサーバを起動する。 |
 
 それぞれのコマンドについて詳細を示す。

@@ -149,7 +149,7 @@ mvn jetty:run
 
 原因は分からないが疎通確認に失敗する場合、どこかで手順を誤っている可能性がある。
 
-原因が分からない場合は、firstStepGenerateWebBlankProject からやり直してみること。
+原因が分からない場合は、[ブランクプロジェクト作成](../../setup/blank-project/blank-project-setup-Web.md#ブランクプロジェクト作成) からやり直してみること。
 
 ## データベースに関する設定を行う
 

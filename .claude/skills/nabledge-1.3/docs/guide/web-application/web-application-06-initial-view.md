@@ -191,7 +191,7 @@ public class W11AC02Action extends DbAccessSupport {
 > ウィンドウスコープについては、以下のリンク先を参照
 
 > * >   [ウィンドウスコープの概念](../../../fw/reference/architectural_pattern/concept.html#windowscope)
-> * >   カスタムタグ実装例集 - [List型/配列の要素のプロパティを受け渡す場合](../../guide/web-application/web-application-basic.md#list型配列の要素のプロパティを受け渡す場合)
+> * >   カスタムタグ実装例集 - [ウィンドウスコープの使用法](../../guide/web-application/web-application-basic.md#ウィンドウスコープの使用法)
 
 ②入力項目・出力項目のname属性を指定する。
 

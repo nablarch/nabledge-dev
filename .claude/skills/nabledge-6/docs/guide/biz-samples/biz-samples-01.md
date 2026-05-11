@@ -166,7 +166,7 @@ SystemAccountAuthenticatorの使用方法について解説する。
 AuthenticaionUtilの使用方法について解説する。
 
 AuthenticationUtilでは、以下のユーティリティメソッドを実装している。なお、システムリポジトリからコンポーネントを取得する際の
-コンポーネント名は、上記の passwordAuth-settings-label で登録しているそれぞれのコンポーネント名と
+コンポーネント名は、上記の [SystemAccountAuthenticatorの使用方法](../../guide/biz-samples/biz-samples-01.md#systemaccountauthenticatorの使用方法) で登録しているそれぞれのコンポーネント名と
 あわせる必要があるため、上記の設定例と異なるコンポーネント名で登録している場合にはソースコードを修正すること。
 
 | メソッド |  |

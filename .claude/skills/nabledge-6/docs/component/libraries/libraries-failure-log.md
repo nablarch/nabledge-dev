@@ -557,7 +557,7 @@ failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\nInput 
 
 ### JSON形式の構造化ログとして出力する
 
-[ログの初期化メッセージを出力しないようにする](../../component/libraries/libraries-log.md#ログの初期化メッセージを出力しないようにする) 設定でログをJSON形式で出力できるが、
+[JSON形式の構造化ログとして出力する](../../component/libraries/libraries-log.md#json形式の構造化ログとして出力する) 設定でログをJSON形式で出力できるが、
 FailureLogFormatter では
 障害ログの各項目はmessageの値に文字列として出力される。
 障害ログの各項目もJSONの値として出力するには、

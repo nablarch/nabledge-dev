@@ -169,7 +169,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 * 登録画面の表示処理時と同様、業種情報をデータベースから取得してリクエストスコープに設定する。
 * [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) への保存は、SessionUtil を使用する。
-* [セッションストアにフォームは格納しない](../../component/libraries/libraries-session-store.md#入力確認完了画面間で入力情報を保持する) ため、
+* [セッションストアにフォームは格納しない](../../component/libraries/libraries-session-store.md#hiddenstoreのparameternameプロパティの値を設定) ため、
   BeanUtil を使用してフォームをエンティティに変換した上で [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) に登録する。
 * [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) を使用する際の詳しい実装例は [登録機能での実装例](../../component/libraries/libraries-create-example.md#登録機能での実装例) を参照。
 
@@ -189,7 +189,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 この実装のポイント
 
-* [confirmationPageタグ](../../component/libraries/libraries-tag-reference.md#confirmationpageタグ) を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は [サーバ側のトークンをデータベースに保存する](../../component/libraries/libraries-tag.md#サーバ側のトークンをデータベースに保存する) を参照。
+* [confirmationPageタグ](../../component/libraries/libraries-tag-reference.md#confirmationpageタグ) を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は [入力画面と確認画面を共通化する](../../component/libraries/libraries-tag.md#入力画面と確認画面を共通化する) を参照。
 
 登録画面を修正する
 

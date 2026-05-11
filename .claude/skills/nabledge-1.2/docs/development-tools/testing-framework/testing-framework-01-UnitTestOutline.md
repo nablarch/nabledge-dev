@@ -12,7 +12,7 @@ Nablarch Testing Frameworkでは、単体テストとして以下の３つのテ
 
 * [クラス単体テスト概要](../../development-tools/testing-framework/testing-framework-01-UnitTestOutline.md#クラス単体テスト概要)
 * [リクエスト単体テスト概要](../../development-tools/testing-framework/testing-framework-01-UnitTestOutline.md#リクエスト単体テスト概要)
-* [同期応答メッセージ送信処理・応答不要メッセージ送信処理におけるリクエスト単体テスト](../../development-tools/testing-framework/testing-framework-01-UnitTestOutline.md#同期応答メッセージ送信処理応答不要メッセージ送信処理におけるリクエスト単体テスト)
+* [取引単体テスト概要](../../development-tools/testing-framework/testing-framework-01-UnitTestOutline.md#取引単体テスト概要)
 
 それぞれのテストについて、概要を説明する。
 
@@ -128,7 +128,7 @@ HTMLファイルとして取得することができる。このHTMLファイル
 
 > **Note:**
 > リクエスト単体テストでは、HTTPリクエスト送信を擬似しているだけであり、実際にブラウザ上からサブミットしている訳ではない。
-> このため、以下の確認項目はリクエスト単体テストの対象外となる。（後述の  [取引単体テスト](../../development-tools/testing-framework/testing-framework-01-UnitTestOutline.md#同期応答メッセージ送信処理応答不要メッセージ送信処理におけるリクエスト単体テスト) で実施）。
+> このため、以下の確認項目はリクエスト単体テストの対象外となる。（後述の  [取引単体テスト](../../development-tools/testing-framework/testing-framework-01-UnitTestOutline.md#取引単体テスト概要) で実施）。
 
 > * >   formタグのaction属性が正しいか
 > * >   anchorタグのリンク先が正しいか

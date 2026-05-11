@@ -123,7 +123,7 @@ Nablarchでは、MOMメッセージングを構築するために必要なハン
 
 * [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ)
 * [スレッドコンテキスト変数削除ハンドラ](../../component/handlers/handlers-thread-context-clear-handler.md#スレッドコンテキスト変数削除ハンドラ)
-* ServiceAvailabilityCheckHandler
+* [サービス提供可否チェックハンドラ](../../component/handlers/handlers-ServiceAvailabilityCheckHandler.md#サービス提供可否チェックハンドラ)
 
 ### 同期応答メッセージングの最小ハンドラ構成
 

@@ -21,11 +21,11 @@
 MOMを使ったメッセージの送受信を行う機能を提供する。
 なお、ここでは、MOMメッセージングに使うメッセージキューのことをMQと称す。
 
-MOMメッセージングでは、 [フレームワーク制御ヘッダの読み書きを変更する](../../component/libraries/libraries-mom-system-messaging.md#フレームワーク制御ヘッダの読み書きを変更する) に示したデータモデルを前提としている。
+MOMメッセージングでは、 [送受信電文のデータモデル](../../component/libraries/libraries-mom-system-messaging.md#送受信電文のデータモデル) に示したデータモデルを前提としている。
 また、メッセージのフォーマットには、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット) を使用する。
 
 > **Important:**
-> [フレームワーク制御ヘッダの読み書きを変更する](../../component/libraries/libraries-mom-system-messaging.md#フレームワーク制御ヘッダの読み書きを変更する) の中で、
+> [送受信電文のデータモデル](../../component/libraries/libraries-mom-system-messaging.md#送受信電文のデータモデル) の中で、
 > [フレームワーク制御ヘッダ](../../component/libraries/libraries-mom-system-messaging.md#送受信電文のデータモデル) については、
 > Nablarchで独自に規定している項目となり、 [メッセージボディ](../../component/libraries/libraries-mom-system-messaging.md#送受信電文のデータモデル) に含めることを想定している。
 
@@ -951,7 +951,7 @@ MOMに依存する MessagingProvider は、
 [リクエストディスパッチハンドラ](../../component/handlers/handlers-request-path-java-package-mapping.md#リクエストディスパッチハンドラ)
 [再送電文制御ハンドラ](../../component/handlers/handlers-message-resend-handler.md#再送電文制御ハンドラ)
 [認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md#認可チェックハンドラ)
-ServiceAvailabilityCheckHandler
+[サービス提供可否チェックハンドラ](../../component/handlers/handlers-ServiceAvailabilityCheckHandler.md#サービス提供可否チェックハンドラ)
 
 ユーザID
 

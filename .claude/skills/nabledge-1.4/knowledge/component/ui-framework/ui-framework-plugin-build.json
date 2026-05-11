@@ -7,13 +7,13 @@
     {
       "id": "s1",
       "title": "概要",
-      "content": "本章では [想定されるプロジェクト構成ごとの設定例](../../component/ui-framework/ui-framework-plugin-build.md#想定されるプロジェクト構成ごとの設定例) および [デプロイ対象プロジェクト複数の場合(プラグインも個別)](../../component/ui-framework/ui-framework-plugin-build.md#デプロイ対象プロジェクト複数の場合プラグインも個別) を示す。\n\nプラグインビルドコマンドが使用されるプロジェクトの標準的な構成については [標準プロジェクト構成](../../component/ui-framework/ui-framework-directory-layout.md) を、\n開発時のフローについては [UI開発基盤の導入](../../component/ui-framework/ui-framework-initial-setup.md) を参照。",
+      "content": "本章では [想定されるプロジェクト構成ごとの設定例](../../component/ui-framework/ui-framework-plugin-build.md#想定されるプロジェクト構成ごとの設定例) および [プラグインビルドで使用するコマンドや設定ファイルの詳細仕様](../../component/ui-framework/ui-framework-plugin-build.md#プラグインビルドで使用するコマンドや設定ファイルの詳細仕様) を示す。\n\nプラグインビルドコマンドが使用されるプロジェクトの標準的な構成については [標準プロジェクト構成](../../component/ui-framework/ui-framework-directory-layout.md) を、\n開発時のフローについては [UI開発基盤の導入](../../component/ui-framework/ui-framework-initial-setup.md) を参照。",
       "level": 2
     },
     {
       "id": "s2",
       "title": "想定されるプロジェクト構成ごとの設定例",
-      "content": "想定されるプロジェクト構成について、プラグインビルドコマンドの設定ファイルや実行ファイルの具体的な設定例を示す。\n下記の設定例に示していない項目については、後述する [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル) や [外部ライブラリの展開](../../component/ui-framework/ui-framework-plugin-build.md#外部ライブラリの展開) を参照し、必要に応じて修正すること。",
+      "content": "想定されるプロジェクト構成について、プラグインビルドコマンドの設定ファイルや実行ファイルの具体的な設定例を示す。\n下記の設定例に示していない項目については、後述する [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル) や [ビルドコマンド](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド) を参照し、必要に応じて修正すること。",
       "level": 2
     },
     {
@@ -37,13 +37,13 @@
     {
       "id": "s6",
       "title": "プラグインビルドで使用するコマンドや設定ファイルの詳細仕様",
-      "content": "以降はプラグインビルドで使用するコマンドや設定ファイルについての詳細として、以下の項目について記述する。\n\n* [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル)\n* [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル)\n* [JavaScriptの自動生成](../../component/ui-framework/ui-framework-plugin-build.md#javascriptの自動生成)\n* [外部ライブラリの展開](../../component/ui-framework/ui-framework-plugin-build.md#外部ライブラリの展開)",
+      "content": "以降はプラグインビルドで使用するコマンドや設定ファイルについての詳細として、以下の項目について記述する。\n\n* [設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#設定ファイル)\n* [ファイルの自動生成](../../component/ui-framework/ui-framework-plugin-build.md#ファイルの自動生成)\n* [プラグイン、外部ライブラリの展開](../../component/ui-framework/ui-framework-plugin-build.md#プラグイン外部ライブラリの展開)\n* [ビルドコマンド](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド)",
       "level": 2
     },
     {
       "id": "s7",
       "title": "設定ファイル",
-      "content": "以下にプラグインビルドコマンドで使用する設定ファイルを示す。\n\n| ファイル名 | 実ファイル名 | ファイル概要 |\n|---|---|---|\n| [ビルドコマンド用設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド用設定ファイル) | pjconf.json | 環境毎のファイル展開設定ファイル。 |\n| lessImport_less | ${cssMode}.less | 表示モードごとにインポートするファイルの定義。 |",
+      "content": "以下にプラグインビルドコマンドで使用する設定ファイルを示す。\n\n| ファイル名 | 実ファイル名 | ファイル概要 |\n|---|---|---|\n| [ビルドコマンド用設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド用設定ファイル) | pjconf.json | 環境毎のファイル展開設定ファイル。 |\n| [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル) | ${cssMode}.less | 表示モードごとにインポートするファイルの定義。 |",
       "level": 2
     },
     {
@@ -67,7 +67,7 @@
     {
       "id": "s11",
       "title": "CSSの自動生成",
-      "content": "**CSS自動生成ファイル一覧**\n\n以下に自動生成されるCSSファイルの一覧を示す。\n\n| 生成先フォルダ | 生成ファイル | 元になるファイル | 備考 |\n|---|---|---|---|\n| css/built | ${cssMode}-minify.css | lessImport_less で定義されたされたcssファイル。 |  |\n\n**CSSファイル生成イメージ**\n\n以下に自動生成されるCSSファイルの生成イメージを示す。\n\n![build_css_gen.png](assets/ui-framework-plugin-build/build_css_gen.png)\n\n**CSSのモードについて**\n\nファイル展開設定ファイルの\"cssMode\"で指定されたCSS表示モードのみが生成対象となる。\n（表示モードおよびlessファイルの内容については [CSSフレームワーク](../../component/ui-framework/ui-framework-css-framework.md) 参照）\n\nプラグインに含まれるlessファイルをインポートした lessImport_less を参照し、各cssファイルを作成する。\n例えば\"cssMode\"で[\"wide\", \"compact\", \"narrow\"]を指定した場合、以下のファイルが生成される。\n\n```bash\ncss/\n └── built/\n      ├── wide-minify.css\n      ├── compact-minify.css\n      └── narrow-minify.css\n```",
+      "content": "**CSS自動生成ファイル一覧**\n\n以下に自動生成されるCSSファイルの一覧を示す。\n\n| 生成先フォルダ | 生成ファイル | 元になるファイル | 備考 |\n|---|---|---|---|\n| css/built | ${cssMode}-minify.css | [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル) で定義されたされたcssファイル。 |  |\n\n**CSSファイル生成イメージ**\n\n以下に自動生成されるCSSファイルの生成イメージを示す。\n\n![build_css_gen.png](assets/ui-framework-plugin-build/build_css_gen.png)\n\n**CSSのモードについて**\n\nファイル展開設定ファイルの\"cssMode\"で指定されたCSS表示モードのみが生成対象となる。\n（表示モードおよびlessファイルの内容については [CSSフレームワーク](../../component/ui-framework/ui-framework-css-framework.md) 参照）\n\nプラグインに含まれるlessファイルをインポートした [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル) を参照し、各cssファイルを作成する。\n例えば\"cssMode\"で[\"wide\", \"compact\", \"narrow\"]を指定した場合、以下のファイルが生成される。\n\n```bash\ncss/\n └── built/\n      ├── wide-minify.css\n      ├── compact-minify.css\n      └── narrow-minify.css\n```",
       "level": 3
     },
     {
@@ -85,7 +85,7 @@
     {
       "id": "s14",
       "title": "プラグインの展開",
-      "content": "**参照設定ファイル**\n\n* [ビルドコマンド用設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド用設定ファイル)\n\n**展開仕様**\n\n各プラグインに含まれるフォルダごとに以下のように展開する。\n\n| プラグイン内のフォルダ | プロジェクト上の配布先 |\n|---|---|\n| ui_public | UIローカルデモ用プロジェクト, UI開発基盤テスト用プロジェクト, デプロイ対象プロジェクト |\n| ui_local | UIローカルデモ用プロジェクト, UI開発基盤テスト用プロジェクト |\n| ui_test | UI開発基盤テスト用プロジェクト |\n\nただし、各プラグインに含まれるlessファイルは展開されず、自動生成された*-minify.cssファイルのみ展開される。\n自動生成ファイルについては [lessインポート定義ファイル](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義ファイル) を参照。\n\n> **Note:**\n> プラグイン間で同一の展開先となるファイルを検出した場合、重複ファイルとして下記フォーマットでコマンド終了時に該当ファイルの一覧が表示される。\n\n> ```json\n> duplicate file detected!!\n> {\n>   \"<展開先ファイル名>\": [\n>     \"<プラグイン1>\",\n>     \"<プラグイン2>\",\n>       :\n>     \"<プラグインn>\n>   ]\n> }\n> ```\n\n> 各ファイルの最後に表示されたプラグインに含まれるファイルが適用されている。\n> 問題がある場合は [ビルドコマンド用設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド用設定ファイル) を見直し反映順序を制御するか、プラグイン内のファイル構成を見直す必要がある。",
+      "content": "**参照設定ファイル**\n\n* [ビルドコマンド用設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド用設定ファイル)\n\n**展開仕様**\n\n各プラグインに含まれるフォルダごとに以下のように展開する。\n\n| プラグイン内のフォルダ | プロジェクト上の配布先 |\n|---|---|\n| ui_public | UIローカルデモ用プロジェクト, UI開発基盤テスト用プロジェクト, デプロイ対象プロジェクト |\n| ui_local | UIローカルデモ用プロジェクト, UI開発基盤テスト用プロジェクト |\n| ui_test | UI開発基盤テスト用プロジェクト |\n\nただし、各プラグインに含まれるlessファイルは展開されず、自動生成された*-minify.cssファイルのみ展開される。\n自動生成ファイルについては [ファイルの自動生成](../../component/ui-framework/ui-framework-plugin-build.md#ファイルの自動生成) を参照。\n\n> **Note:**\n> プラグイン間で同一の展開先となるファイルを検出した場合、重複ファイルとして下記フォーマットでコマンド終了時に該当ファイルの一覧が表示される。\n\n> ```json\n> duplicate file detected!!\n> {\n>   \"<展開先ファイル名>\": [\n>     \"<プラグイン1>\",\n>     \"<プラグイン2>\",\n>       :\n>     \"<プラグインn>\n>   ]\n> }\n> ```\n\n> 各ファイルの最後に表示されたプラグインに含まれるファイルが適用されている。\n> 問題がある場合は [ビルドコマンド用設定ファイル](../../component/ui-framework/ui-framework-plugin-build.md#ビルドコマンド用設定ファイル) を見直し反映順序を制御するか、プラグイン内のファイル構成を見直す必要がある。",
       "level": 3
     },
     {
@@ -97,7 +97,7 @@
     {
       "id": "s16",
       "title": "ビルドコマンド",
-      "content": "プラグインビルドコマンド用のコマンドとして以下のコマンドが提供されている。\n\n| コマンド名 | Windows用実行ファイル名 | 概要 |\n|---|---|---|\n| [インストールコマンド](../../component/ui-framework/ui-framework-plugin-build.md#インストールコマンド) | install.bat | Nablarch提供プラグインおよび外部ライブラリをプロジェクトフォルダ配下に取り込む。 |\n| [UIビルドコマンド](../../component/ui-framework/ui-framework-plugin-build.md#uiビルドコマンド) | ui_build.bat | Nablarch提供プラグイン、プロジェクト開発プラグインおよび外部ライブラリをプロジェクトフォルダ内の各フォルダに展開する。 同時に各環境固有の自動生成ファイルを生成する。 |\n| [lessインポート定義雛形生成コマンド](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義雛形生成コマンド) | ui_genless.bat | 各表示モード毎のlessインポート定義ファイルの雛形を作成する。 |\n| localServer | ローカル画面確認.bat | ローカル動作確認用のサーバを起動する。 |\n| [サーバ動作確認用サーバ起動コマンド](../../component/ui-framework/ui-framework-plugin-build.md#サーバ動作確認用サーバ起動コマンド) | サーバ動作確認.bat | サーバ動作確認用のサーバを起動する。 |\n\nそれぞれのコマンドについて詳細を示す。",
+      "content": "プラグインビルドコマンド用のコマンドとして以下のコマンドが提供されている。\n\n| コマンド名 | Windows用実行ファイル名 | 概要 |\n|---|---|---|\n| [インストールコマンド](../../component/ui-framework/ui-framework-plugin-build.md#インストールコマンド) | install.bat | Nablarch提供プラグインおよび外部ライブラリをプロジェクトフォルダ配下に取り込む。 |\n| [UIビルドコマンド](../../component/ui-framework/ui-framework-plugin-build.md#uiビルドコマンド) | ui_build.bat | Nablarch提供プラグイン、プロジェクト開発プラグインおよび外部ライブラリをプロジェクトフォルダ内の各フォルダに展開する。 同時に各環境固有の自動生成ファイルを生成する。 |\n| [lessインポート定義雛形生成コマンド](../../component/ui-framework/ui-framework-plugin-build.md#lessインポート定義雛形生成コマンド) | ui_genless.bat | 各表示モード毎のlessインポート定義ファイルの雛形を作成する。 |\n| [ローカル動作確認用サーバ起動コマンド](../../component/ui-framework/ui-framework-plugin-build.md#ローカル動作確認用サーバ起動コマンド) | ローカル画面確認.bat | ローカル動作確認用のサーバを起動する。 |\n| [サーバ動作確認用サーバ起動コマンド](../../component/ui-framework/ui-framework-plugin-build.md#サーバ動作確認用サーバ起動コマンド) | サーバ動作確認.bat | サーバ動作確認用のサーバを起動する。 |\n\nそれぞれのコマンドについて詳細を示す。",
       "level": 2
     },
     {

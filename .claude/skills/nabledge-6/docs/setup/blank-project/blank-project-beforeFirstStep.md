@@ -36,7 +36,7 @@
 * システムを構成するアプリケーションが複数(ウェブアプリケーションとバッチアプリケーション等)存在する。
 * アプリケーション間で共通の部品(例えば、Entityクラス)が存在する。
 
-プロジェクト構成を検討する際には、 mavenModuleStructuresModuleDivisionPolicy を参照してからプロジェクト構成を検討すること。
+プロジェクト構成を検討する際には、 [【参考】プロジェクト分割方針](../../setup/blank-project/blank-project-MavenModuleStructures.md#参考プロジェクト分割方針) を参照してからプロジェクト構成を検討すること。
 
 ## 初期セットアップの前提
 
@@ -66,10 +66,10 @@
 
 初期セットアップの前に、Nablarchと関連モジュールが使用可能なMavenリポジトリに接続できるように、Mavenのsettings.xmlに対して設定する。
 
-まだ設定していない場合は、 mvnSetting を参照して設定すること。
+まだ設定していない場合は、 [Mavenの設定](../../setup/blank-project/blank-project-maven.md#mavenの設定) を参照して設定すること。
 
 > **Important:**
-> 以降の手順で、Maven関連と思われるトラブルに遭遇した場合は、 mvnFrequentlyTrouble を参照すること。
+> 以降の手順で、Maven関連と思われるトラブルに遭遇した場合は、 [Mavenのよくあるトラブル](../../setup/blank-project/blank-project-maven.md#mavenのよくあるトラブル) を参照すること。
 
 ## 使用するNablarchのバージョンの指定
 

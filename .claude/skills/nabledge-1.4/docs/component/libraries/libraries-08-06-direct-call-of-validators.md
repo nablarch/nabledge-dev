@@ -51,4 +51,4 @@ public void setPrefectureCode(String value) {
 > ここで述べている方法でバリデータを利用するためには、バリデータ側の対応も必要となる。
 > 詳細については、下記の項を参照すること。
 
-> implementing_DirectCallable
+> [バリデータを明示的に呼び出す場合](../../component/libraries/libraries-08-05-custom-validator.md#バリデータを明示的に呼び出す場合)

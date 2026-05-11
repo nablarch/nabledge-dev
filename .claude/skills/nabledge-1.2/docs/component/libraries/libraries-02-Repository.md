@@ -16,7 +16,7 @@
 
 本機能を使用する際は初期化処理の呼び出しが必要となる。
 この初期化処理は、フレームワークの他の機能が行う。
-Web アプリケーションでは、 NablarchServletContextListener により初期化が行われる。
+Web アプリケーションでは、 [Nablarchサーブレットコンテキスト初期化リスナ](../../component/handlers/handlers-NablarchServletContextListener.md#nablarchサーブレットコンテキスト初期化リスナ) により初期化が行われる。
 
 アプリケーションプログラマは、本機能を環境設定の取得に使用する。
 環境設定の取得方法は、 [環境設定の取得](../../component/libraries/libraries-02-01-Repository-config.md#環境設定の取得) に記述する。

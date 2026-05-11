@@ -74,7 +74,7 @@ Batchletクラスに以下のインタフェースを実装してバッチ処理
 
 > **Tip:**
 > バッチ処理は、上記のインタフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。
-> リスナーの詳細は [バッチアプリケーションで使用するリスナー](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md#ログ出力) 及び [リスナーの指定方法](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md#リスナーの指定方法) を参照。
+> リスナーの詳細は [バッチアプリケーションで使用するリスナー](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md#バッチアプリケーションで使用するリスナー) 及び [リスナーの指定方法](../../processing-pattern/jakarta-batch/jakarta-batch-architecture.md#リスナーの指定方法) を参照。
 
 TruncateTableBatchlet.java
 

@@ -192,7 +192,7 @@ public HttpResponse confirmOfUpdate(HttpRequest request, ExecutionContext contex
 * データベース検索が必要なバリデーションは業務アクションメソッドに記述する。
   データの存在確認をする場合、 UniversalDao#exists
   を使用する。詳細は、 [データベース検索が必要なバリデーション](../../component/libraries/libraries-bean-validation.md#データベースとの相関バリデーションを行う) を参照。
-* 責務配置上 [フォームを直接セッションストアに格納すべきではない](../../component/libraries/libraries-session-store.md#入力確認完了画面間で入力情報を保持する) ため、Beanへ詰め替える。
+* 責務配置上 [フォームを直接セッションストアに格納すべきではない](../../component/libraries/libraries-session-store.md#hiddenstoreのparameternameプロパティの値を設定) ため、Beanへ詰め替える。
 
 SQLの作成
 
@@ -244,7 +244,7 @@ WHERE
 
 この実装のポイント
 
-* 更新画面を確認画面として使い回す方法は、 登録機能の確認画面作成 にて説明済みであるため省略する。
+* 更新画面を確認画面として使い回す方法は、 [登録機能の確認画面作成](../../processing-pattern/web-application/web-application-client-create2.md#登録内容の確認) にて説明済みであるため省略する。
 * 二重サブミットを防ぐJavaScriptを追加するために、 [submitタグ](../../component/libraries/libraries-tag-reference.md#submitタグ) の allowDoubleSubmission 属性にfalseを指定する。
   詳細は [二重サブミットを防ぐ](../../component/libraries/libraries-tag.md#二重サブミットを防ぐ) を参照。
 

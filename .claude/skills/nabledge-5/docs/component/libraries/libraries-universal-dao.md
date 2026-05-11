@@ -63,11 +63,11 @@ SQL文は、JPAアノテーションを元に実行時に構築する。
 * 主キーを指定した削除/一括削除
 * 主キーを指定した検索
 
-Entityに使用できるJPAアノテーションについては、 [ページング処理の件数取得用SQLを変更する](../../component/libraries/libraries-universal-dao.md#ページング処理の件数取得用sqlを変更する) を参照。
+Entityに使用できるJPAアノテーションについては、 [Entityに使用できるJPAアノテーション](../../component/libraries/libraries-universal-dao.md#entityに使用できるjpaアノテーション) を参照。
 
 > **Tip:**
 > ユニバーサルDAOの上記CRUD機能では、 `@Table` アノテーションを使ってスキーマを指定できる
-> （ [ページング処理の件数取得用SQLを変更する](../../component/libraries/libraries-universal-dao.md#ページング処理の件数取得用sqlを変更する) を参照）。
+> （ [Entityに使用できるJPAアノテーション](../../component/libraries/libraries-universal-dao.md#entityに使用できるjpaアノテーション) を参照）。
 > ただし、 [データベースアクセス(JDBCラッパー)](../../component/libraries/libraries-database.md#データベースアクセスjdbcラッパー) の [SQL文中のスキーマを環境毎に切り替える](../../component/libraries/libraries-database.md#sql文中のスキーマを環境毎に切り替える) 機能は、ユニバーサルDAOの上記CRUD機能では使用できない。
 > 環境毎にスキーマを切り替える用途には、ユニバーサルDAOではなく [データベースアクセス(JDBCラッパー)](../../component/libraries/libraries-database.md#データベースアクセスjdbcラッパー) を使用すること。
 

@@ -7,7 +7,7 @@
 * 制約
 * リクエストに対するサービス提供可否チェック
 
-本ハンドラでは、 ServiceAvailabilityCheckHandler-request_checking を行う。
+本ハンドラでは、 [リクエストに対するサービス提供可否チェック](../../component/handlers/handlers-ServiceAvailabilityCheckHandler.md#リクエストに対するサービス提供可否チェック) を行う。
 
 サービス提供可否チェックは、ライブラリの [サービス提供可否チェック](../../component/libraries/libraries-service-availability.md#サービス提供可否チェック) を使用して行う。
 そのため、本ハンドラを使用するには、
