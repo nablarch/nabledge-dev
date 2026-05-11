@@ -72,7 +72,10 @@ class TestBuildLabelDocMap:
     def test_label_map_resolves_to_labeltarget_with_file_id(self, tmp_path, monkeypatch):
         """Label declared in an RST file that maps to category=libraries
         must resolve to a LabelTarget with file_id='libraries-foo',
-        category='libraries', section_title='Usage'.
+        category='libraries'.
+
+        section_title is '' for h1-direct labels (spec §3-2-3: h1 maps to
+        JSON title field, not sections[] — verify skips the JSON section check).
         """
         from scripts.common.labels import build_label_doc_map, LabelTarget
 
@@ -106,7 +109,9 @@ class TestBuildLabelDocMap:
         lt = label_map["my-label"]
         assert isinstance(lt, LabelTarget)
         assert lt.title == "Usage"
-        assert lt.section_title == "Usage"
+        # h1-direct label: section_title="" because h1 maps to JSON title field
+        # (not sections[]), so verify §3-2-3 skips the JSON section check.
+        assert lt.section_title == ""
         assert lt.category == "libraries"
         assert lt.file_id == "libraries-foo"
         # Issue #316: anchor is github_slug(heading_title), not label name slug.
@@ -446,6 +451,10 @@ class TestEnclosingSectionResolution:
     def test_label_inside_block_quote_resolves_to_enclosing_section(self, tmp_path):
         """A label nested inside a block_quote under a section must
         resolve to that section's title (not to UNRESOLVED).
+
+        When the enclosing section is h1, section_title="" (h1 maps to JSON
+        title field, not sections[]).  This test verifies the label is not
+        dropped (UNRESOLVED) and that title is the h1 heading text.
         """
         from scripts.common.labels import build_label_map, LabelTarget
 
@@ -466,7 +475,8 @@ class TestEnclosingSectionResolution:
         lt = m["runtime_platform"]
         assert isinstance(lt, LabelTarget)
         assert lt.title == "様々な処理方式に対応できる"
-        assert lt.section_title == "様々な処理方式に対応できる"
+        # Enclosing section is h1 → section_title="" (h1 is not in JSON sections[]).
+        assert lt.section_title == ""
 
     def test_label_before_any_heading_remains_unresolved(self, tmp_path):
         """A label that appears before the first heading in a file has no
@@ -537,6 +547,153 @@ class TestEnclosingSectionResolution:
         assert lt.title == "直接の見出し"
 
 
+class TestScanRstLabelsDocutilsAST:
+    """Task 17: _scan_rst_labels must use docutils AST — not ad-hoc regex line scan.
+
+    Three correctness properties that the old line-scanner violated:
+
+    1. h1-direct label (label immediately before h1): parent=document in docutils AST
+       → section_title must be "" (not the h1 heading text).
+       The old scanner returned the h1 title, which caused 692 QL1 FAILs because
+       verify.py §3-2-3 checks section_title against JSON sections[].title.
+
+    2. section-inner label (label before sub-heading, under a parent section):
+       parent=section whose first child is the enclosing section's title.
+       → section_title must be the *enclosing* section title (not the sub-heading).
+
+    3. Non-RST chars (e.g. '-->') must NOT be treated as heading underlines.
+       The old _is_heading_underline() accepted any mix of _RST_HEADING_CHARS,
+       which includes '>' — so '-->' triggered the overline-style heading path
+       and corrupted section_title for 9 labels.
+    """
+
+    def test_h1_direct_label_gives_empty_section_title(self, tmp_path):
+        """Label immediately before h1 → section_title='' (docutils: parent=document).
+
+        This is the §3-2-3 fix for the 692-count QL1 'section_title not found'
+        failures: section_title="" means verify skips the section check.
+        """
+        from scripts.common.labels import build_label_map, UNRESOLVED
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(
+            ".. _universal_dao:\n\n"
+            "ユニバーサルDAO\n"
+            "================\n\n"
+            "本文。\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("universal_dao")
+
+        assert lt is not None
+        assert lt is not UNRESOLVED
+        assert lt.title == "ユニバーサルDAO"
+        # KEY assertion: h1-direct label → section_title must be "" so that
+        # verify.py skips the section check (no JSON section can have title=="").
+        assert lt.section_title == "", (
+            f"h1-direct label must have section_title='', got {lt.section_title!r}"
+        )
+
+    def test_section_inner_label_gives_enclosing_section_title(self, tmp_path):
+        """Label under an h2 section (not directly before any deeper heading)
+        → section_title = enclosing h2 title.
+
+        For h1-scope labels, section_title is "" (h1 maps to JSON title field,
+        not sections[]). This test uses an h2 to confirm the h2+ case.
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(
+            "ドキュメントタイトル\n"
+            "====================\n\n"
+            "h1 本文。\n\n"
+            "ユニバーサルDAO\n"
+            "----------------\n\n"
+            "h2 本文。\n\n"
+            ".. _inner_label:\n\n"
+            "Some paragraph inside the h2 section.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("inner_label")
+
+        assert lt is not None
+        # Label is inside h2 "ユニバーサルDAO" (not h1) → section_title = h2 title
+        assert lt.section_title == "ユニバーサルDAO"
+
+    def test_jsp_comment_arrow_does_not_corrupt_section_title(self, tmp_path):
+        """'-->' (JSP comment end) between a label and an h2 heading must NOT be
+        treated as a heading underline.  The old _is_heading_underline accepted '>'
+        from _RST_HEADING_CHARS — this test pins the correct docutils-parity behaviour.
+
+        RST layout mirrors the actual tag.rst pattern:
+        - h1 section "タグライブラリ"
+          - h2 section "二重サブミットを防ぐ"
+            - label tag-double_submission_server_side
+            - text with '-->'
+            - h3 section "サーバ側の二重サブミット防止"
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "tag.rst"
+        rst.write_text(
+            "タグライブラリ\n"
+            "==============\n\n"
+            "本文。\n\n"
+            "二重サブミットを防ぐ\n"
+            "--------------------\n\n"
+            "説明。\n\n"
+            ".. _tag-double_submission_server_side:\n\n"
+            "-->はJSPコメント終端ではない。\n\n"
+            "サーバ側の二重サブミット防止\n"
+            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+            "本文2。\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("tag-double_submission_server_side")
+
+        assert lt is not None
+        # The label is inside h2 "二重サブミットを防ぐ", not before h3.
+        # '-->' must NOT have been treated as a heading underline that
+        # corrupted section_title to something like 'はJSPコメント終端ではない。'.
+        assert lt.section_title == "二重サブミットを防ぐ", (
+            f"Expected '二重サブミットを防ぐ', got {lt.section_title!r}. "
+            "'-->' (or similar non-RST chars) must not be treated as a heading underline."
+        )
+        assert lt.title == "二重サブミットを防ぐ"
+
+    def test_label_before_subheading_resolves_to_subheading_title(self, tmp_path):
+        """Label immediately before a sub-heading → section_title = sub-heading title
+        (same behaviour as the old scanner for this case — must not regress).
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(
+            "親セクション\n"
+            "============\n\n"
+            "親の本文。\n\n"
+            ".. _direct_label:\n\n"
+            "直接の見出し\n"
+            "--------------\n\n"
+            "本文。\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("direct_label")
+
+        assert lt is not None
+        assert lt.title == "直接の見出し"
+        assert lt.section_title == "直接の見出し"
+
+
 class TestBuildLabelMapBackwardCompat:
     """The old ``build_label_map(source_dir) -> dict[label, str|UNRESOLVED]``
     must keep working so downstream callers that haven't migrated keep going.
@@ -562,7 +719,9 @@ class TestBuildLabelMapBackwardCompat:
         # Must expose .title for cross-doc consumers
         assert isinstance(v, LabelTarget)
         assert v.title == "Heading"
-        assert v.section_title == "Heading"
+        # h1-direct label: section_title="" (h1 maps to JSON title field, not
+        # sections[], so verify §3-2-3 section check is skipped).
+        assert v.section_title == ""
         # No file_id available in single-dir mode
         assert v.file_id == ""
         assert v.category == ""
