@@ -10,7 +10,7 @@
 - **変更前に影響範囲を網羅的に列挙**: サンプリングではなく、影響するすべてのファイル・行を特定してから着手する
 - **設計決定は根拠を明示**: 選択した理由とその根拠（ファイル名・行番号・仕様条文）を必ず記録する
 
-## In Progress (remaining steps)
+## Done (Task 7 all steps complete)
 
 ### Task 7: PCIDSS対応表専用の P2-4 パターンを追加する
 
@@ -56,9 +56,9 @@
 - [x] Step 8: `bash rbkc.sh verify 6/5` で FAIL 0件確認
 - [x] Step 9: 全5バージョン verify FAIL 0件確認
 - [x] Step 10: `rbkc.md` に手動編集禁止ルール追加 — `a7728e9a2`
-- [ ] Step 11: PRボディ更新
-- [ ] Step 12: PR変更差分チェック
-- [ ] Step 13: レビュー依頼
+- [x] Step 11: PRボディ更新
+- [x] Step 12: PR変更差分チェック（21ファイル変更、内容適切）
+- [x] Step 13: レビュー依頼（GitHub UI から kiyotis に依頼）
 
 ## Not Started
 
@@ -82,7 +82,7 @@
 
 | 基準 | 状態 |
 |------|------|
-| v5・v6 両ファイルが Markdown テーブル形式（RBKC自動生成） | 未達 — Task 7 完了後 |
-| 10要件（6.5.1〜6.5.10）とチェックリスト対応が全件保持 | 未達 — Task 7 完了後 |
-| `rbkc.sh create` 実行後も手動変更なしでMDテーブルが維持される | 未達 — Task 7 完了後 |
-| RBKC生成ファイルの手動編集禁止ルールが `rbkc.md` に追加される | 未達 — Task 7-Step 7 |
+| v5・v6 両ファイルが Markdown テーブル形式（RBKC自動生成） | ✅ Met — `8f18dd964` |
+| 10要件（6.5.1〜6.5.10）とチェックリスト対応が全件保持 | ✅ Met — security-check-3.PCIDSS対応表.md |
+| `rbkc.sh create` 実行後も手動変更なしでMDテーブルが維持される | ✅ Met — verify FAIL 0 (全5バージョン) |
+| RBKC生成ファイルの手動編集禁止ルールが `rbkc.md` に追加される | ✅ Met — `a7728e9a2` |
