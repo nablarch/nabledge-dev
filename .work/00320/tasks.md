@@ -2,34 +2,36 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev2)
+**Updated**: 2026-05-11 (rev3)
 
 ## In Progress
 
-### Task 17: labels.py h1 section_title バグ修正 ← 次のタスク
+### Task 17: `_scan_rst_labels` を docutils AST ベースに置き換え ← 次のタスク
 
 **調査結果（事実）:**
 - v6 FAIL 701件 = すべて QL1
   - 692件: `section_title not found in sections[]`（JSON side）
   - 9件: `anchor` 不一致（docs MD side）
-- 692件の根本原因: labels.py が h1 ラベルの `section_title` に h1 テキストをセットしているが、
-  設計書 §3-2-1 の仕様は「top-level なら空文字」— これが verify 誤検知の原因
-- 9件の anchor 不一致は genuine RBKC バグ（別途確認要）
-
-**修正方針（設計書 §3-2-1 準拠）:**
-- `labels.py`: h1 ラベルは `section_title = ""`（top-level は空文字）
-- `verify.py`: `section_title` が空のとき `sections[]` チェックをスキップ（JSON ファイル存在チェックのみ）
+- **共通の根本原因**: `_scan_rst_labels` の自作行スキャンが docutils 準拠でない
+  - `_is_heading_underline` は「全文字が HEADING_CHARS」でチェックするが、docutils は**同一文字の繰り返し**を要求
+  - これにより `-->` (JSP コメント終端) や `}` (Java コード) を heading underline として誤認
+  - `tag-double_submission_server_side` 等9件: 誤認 heading から誤った `title`/`anchor` が生成される → create 側リンクも壊れている
+  - `universal_dao` 等692件: h1 直前ラベルは docutils AST では `parent=document` → `section_title=""` が正しいが、自作スキャンは enclosing section title を返す
+- **修正方針**: `_scan_rst_labels` を廃止し docutils AST (`rst_ast.parse`) で実装し直す
+  - `nodes.target` を走査、`parent` が `nodes.document` → `section_title=""`、`nodes.section` → enclosing section の title
+  - docutils は既に依存に含まれており、他の RST 解析箇所（`verify.py`、`rst_ast_visitor.py`）は全て docutils AST を使用済み
 
 **Steps:**
-- [ ] TDD: labels.py h1 ラベルの `section_title` が `""` になるテスト追加（RED）
-- [ ] labels.py 修正: h1 ラベルの `section_title` を `""`（GREEN）
-- [ ] TDD: verify.py `section_title` 空のとき `sections[]` スキップするテスト追加（RED）
-- [ ] verify.py 修正（GREEN）
-- [ ] 全5バージョン verify 実行、FAIL diff 確認（692件が消えること、9件 anchor FAILの内容確認）
-- [ ] anchor 9件が genuine RBKC バグか verify 誤検知か確認・対処
-- [ ] 全 FAIL 0件を確認
+- [ ] TDD: `_scan_rst_labels` の docutils AST ベース実装に対するテスト追加（RED）
+  - h1 直前ラベル → `section_title=""`
+  - section 内ラベル → enclosing section title
+  - `-->` / `}` を含む RST → 誤認しないこと
+- [ ] `_scan_rst_labels` を docutils AST ベースに書き直し（GREEN）
+- [ ] 全テスト PASS 確認
+- [ ] 全5バージョン verify 実行、FAIL diff 確認（701件が全て消えること）
+- [ ] Expert review（Software Engineer + QA Engineer）
 - [ ] 設計書 §4 マトリクス QL1 を ✅ に更新
-- [ ] ユーザーに完了報告
+- [ ] PR 最終確認（Success Criteria チェック）
 
 ### Task 16: 実装（完了）
 
@@ -46,7 +48,24 @@
 
 ## Not Started
 
-### Task 17: PR 最終確認・マージ
+### Task 18: 横並びチェック — docutils を使わない RST 構造解析が他にないか
+
+**背景:**
+- `_scan_rst_labels` の自作行スキャンが今回の問題の原因
+- 同様の問題が他にないか確認し、あれば修正する
+- **調査済みの事実（本タスク着手不要の確認済み箇所）:**
+  - `verify.py` の `check_source_links` / `check_external_urls` → docutils AST 使用済み ✅
+  - `rst_ast_visitor.py` → docutils AST を基盤とする設計 ✅
+  - `verify.py` の `_RST_HEADING_UNDERLINE_RE` (QC5) → 目的が「RST 残存チェック」であり構造解析ではない（docutils 不要）✅
+  - `_scan_rst_labels` → Task 17 で修正済み ✅
+
+**Steps:**
+- [ ] `scripts/` 全体を grep して、RST ファイルを読み込んで自作 regex / 行スキャンで構造（heading / label / section）を解析している箇所を列挙
+- [ ] 各箇所について「docutils AST で代替すべきか」を判断
+- [ ] 要修正箇所があれば TDD で修正
+- [ ] 要修正なければ「なし」と記録して完了
+
+### Task 19: PR 最終確認・マージ
 
 **Steps:**
 - [ ] PR #330 の Success Criteria チェック
