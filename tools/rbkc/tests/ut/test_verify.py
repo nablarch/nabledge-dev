@@ -4554,7 +4554,8 @@ class TestCheckQL1LinkTargets:
             "content": "See [Foo](../../component/libraries/libraries-foo.md#nonexistent-anchor).",
             "sections": [],
         }
-        # Supply docs_md_text to trigger docs-side anchor check
+        # docs_md_text here is the target file's headings (no cross-doc links);
+        # the FAIL is triggered by the JSON-side anchor check.
         docs_md = (docs / "component" / "libraries" / "libraries-foo.md").read_text()
         issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
         assert any("QL1" in i and "anchor" in i.lower() and "nonexistent-anchor" in i for i in issues), (
@@ -4594,6 +4595,45 @@ class TestCheckQL1LinkTargets:
         # good-section exists → PASS; bad-anchor does not → FAIL
         assert len(issues) == 1
         assert "bad-anchor" in issues[0]
+
+    def test_docs_md_side_anchor_missing_fails(self, tmp_path):
+        """Bug 3 fix: docs-side anchor check — bad anchor in docs_md_text FAIL.
+
+        docs_md_text contains a cross-doc link with a nonexistent anchor.
+        The docs-side loop must detect it and report QL1.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        # Target docs MD has only "# Foo" — slug "foo" — no "nonexistent" heading
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\nContent.\n", encoding="utf-8"
+        )
+        # docs_md_text itself contains the cross-doc link with bad anchor
+        docs_md_text = (
+            "# Some Page\n\n"
+            "See [Foo](../../component/libraries/libraries-foo.md#nonexistent).\n"
+        )
+        data = {"content": "", "sections": []}
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md_text)
+        assert any("QL1" in i and "anchor" in i.lower() and "nonexistent" in i for i in issues), (
+            f"Expected docs-side anchor FAIL but got: {issues}"
+        )
+
+    def test_docs_md_side_anchor_exists_passes(self, tmp_path):
+        """Bug 3 fix: docs-side anchor check — matching anchor in docs_md_text PASS."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Foo Section\n\nContent.\n", encoding="utf-8"
+        )
+        # docs_md_text contains cross-doc link with matching anchor
+        docs_md_text = (
+            "# Some Page\n\n"
+            "See [Foo](../../component/libraries/libraries-foo.md#foo-section).\n"
+        )
+        data = {"content": "", "sections": []}
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md_text)
+        assert issues == [], f"Expected PASS but got: {issues}"
 
 
 # ---------------------------------------------------------------------------

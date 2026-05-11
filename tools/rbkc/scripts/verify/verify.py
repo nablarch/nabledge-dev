@@ -1917,14 +1917,13 @@ def check_ql1_link_targets(
                     f"{target_md.relative_to(docs_root.parent)} not on disk"
                 )
             elif anchor:
-                if target_md.exists():
-                    slugs = _heading_slugs_from_md(target_md)
-                    if anchor not in slugs:
-                        issues.append(
-                            f"[QL1] anchor not found in docs MD: "
-                            f"../../{type_}/{category}/{file_id}.md#{anchor} → "
-                            f"heading '{anchor}' missing from {target_md.relative_to(docs_root.parent)}"
-                        )
+                slugs = _heading_slugs_from_md(target_md)
+                if anchor not in slugs:
+                    issues.append(
+                        f"[QL1] anchor not found in docs MD: "
+                        f"../../{type_}/{category}/{file_id}.md#{anchor} → "
+                        f"heading '{anchor}' missing from {target_md.relative_to(docs_root.parent)}"
+                    )
 
     return issues
 
