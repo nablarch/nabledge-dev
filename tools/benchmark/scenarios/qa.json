@@ -1,0 +1,704 @@
+{
+  "description": "QA benchmark scenarios for nabledge search evaluation. Each scenario tests the full QA pipeline across 4 axes.",
+  "schema_version": "1.0",
+  "scenarios": [
+    {
+      "id": "pre-01",
+      "phase": "pre-benchmark",
+      "given": {
+        "usecase": "Nablarchバッチアプリケーションの起動方法を調べたい開発者",
+        "category": "batch-architecture",
+        "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+        "expected_hearing": "should_skip"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する",
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1"
+          },
+          {
+            "fact": "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する",
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pre-02",
+      "phase": "pre-benchmark",
+      "given": {
+        "usecase": "バリデーションの実装方法を調べたい開発者（処理方式未確定）",
+        "category": "validation",
+        "description": "入力バリデーションの実装方法を知りたいが、バッチかWebかRESTかが不明"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "入力チェック（バリデーション）の実装方法を教えてください",
+        "expected_hearing": "must_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "バリデーションルールはアノテーションをFieldかProperty（getter）に設定することで指定できる",
+            "section": "component/libraries/libraries-bean-validation.json:s8"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-bean-validation.json:s17"
+          },
+          {
+            "section": "component/libraries/libraries-bean-validation.json:s3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pre-03",
+      "phase": "pre-benchmark",
+      "given": {
+        "usecase": "データベースアクセスの方法を調べたい開発者",
+        "category": "db-access",
+        "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる",
+            "section": "component/libraries/libraries-universal-dao.json:s3"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-universal-dao.json:s2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-06",
+      "given": {
+        "usecase": "review",
+        "category": "rest-impl",
+        "description": "REST APIのリソースクラスでJaxRsHttpRequestからクエリーパラメータを取得する処理を書いている。URLパスの一部をパスパラメータとして使う箇所もある。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい",
+        "expected_hearing": "should_skip"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る",
+            "section": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s2"
+          },
+          {
+            "fact": "クエリーパラメータはJaxRsHttpRequestから取得する",
+            "section": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s3"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5"
+          },
+          {
+            "section": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-07",
+      "given": {
+        "usecase": "review",
+        "category": "security",
+        "description": "Web画面で外部サイトからの不正なPOSTリクエストを防ぐ必要がある。CSRF対策をNablarchの仕組みで実装したい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "外部サイトから不正にPOSTされるのを防ぎたい。NablarchにCSRF対策の仕組みはある？どう設定する？",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う",
+            "section": "component/handlers/handlers-csrf-token-verification-handler.json:s4"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/handlers/handlers-csrf-token-verification-handler.json:s5"
+          },
+          {
+            "section": "processing-pattern/web-application/web-application-feature-details.json:s19"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-08",
+      "given": {
+        "usecase": "review",
+        "category": "session",
+        "description": "Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
+        "expected_hearing": "should_skip"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う",
+            "section": "component/libraries/libraries-session-store.json:s9"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-session-store.json:s16"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-09",
+      "given": {
+        "usecase": "review",
+        "category": "security",
+        "description": "セキュリティ診断でContent Security Policyを有効にしろと指摘された。NablarchのWeb画面でCSPを設定したい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
+        "expected_hearing": "should_skip"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする",
+            "section": "component/handlers/handlers-secure-handler.json:s6"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-tag.json:s38"
+          },
+          {
+            "section": "processing-pattern/web-application/web-application-feature-details.json:s21"
+          }
+        ]
+      }
+    },
+    {
+      "id": "impact-01",
+      "given": {
+        "usecase": "impact",
+        "category": "db-access",
+        "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "SimpleDbTransactionManagerを使って個別トランザクションを定義する",
+            "section": "component/libraries/libraries-database.json:s29"
+          },
+          {
+            "fact": "コンポーネント設定ファイルにSimpleDbTransactionManagerを定義する",
+            "section": "component/libraries/libraries-database.json:s29"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/handlers/handlers-transaction-management-handler.json:s7"
+          },
+          {
+            "section": "component/libraries/libraries-universal-dao.json:s20"
+          }
+        ]
+      }
+    },
+    {
+      "id": "impact-03",
+      "given": {
+        "usecase": "impact",
+        "category": "validation",
+        "description": "REST APIで登録処理を実装している。入力されたメールアドレスがDB上で重複していないか、バリデーションの段階でチェックしたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "Bean Validationの中でDBに問い合わせて重複チェックしたい。カスタムバリデータでDB検索する実装でいいのか？",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する",
+            "section": "component/libraries/libraries-bean-validation.json:s12"
+          },
+          {
+            "fact": "Bean Validation実行中のオブジェクトの値は安全である保証がない",
+            "section": "component/libraries/libraries-bean-validation.json:s12"
+          }
+        ],
+        "acceptable": []
+      }
+    },
+    {
+      "id": "impact-06",
+      "given": {
+        "usecase": "impact",
+        "category": "session",
+        "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能",
+            "section": "component/libraries/libraries-session-store.json:s16"
+          },
+          {
+            "fact": "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する",
+            "section": "component/libraries/libraries-session-store.json:s16"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-session-store.json:s9"
+          }
+        ]
+      }
+    },
+    {
+      "id": "impact-08",
+      "given": {
+        "usecase": "impact",
+        "category": "date",
+        "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる",
+            "section": "component/libraries/libraries-date.json:s2"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-date.json:s12"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-01",
+      "given": {
+        "usecase": "qa",
+        "category": "db-access",
+        "description": "バッチで10万件のデータを読み込んで加工する処理を書いている。findAllBySqlFileで全件取得したらOutOfMemoryErrorが出た。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "UniversalDao.deferメソッドで遅延ロードを使用する",
+            "section": "component/libraries/libraries-universal-dao.json:s9"
+          },
+          {
+            "fact": "DeferredEntityListのcloseメソッドを呼び出す必要がある",
+            "section": "component/libraries/libraries-universal-dao.json:s9"
+          }
+        ],
+        "acceptable": []
+      }
+    },
+    {
+      "id": "qa-02",
+      "given": {
+        "usecase": "qa",
+        "category": "batch-impl",
+        "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+        "expected_hearing": "must_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "DatabaseRecordReaderでデータベースからデータを読み込む",
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7"
+          },
+          {
+            "fact": "BatchActionを継承したアクションクラスを実装する",
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5"
+          },
+          {
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4"
+          },
+          {
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-03",
+      "given": {
+        "usecase": "qa",
+        "category": "validation",
+        "description": "会員登録フォームで、メールアドレスと確認用メールアドレスの一致チェックが必要。Nablarchの入力チェックの仕組みでどうやるのかわからない。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "Jakarta Bean Validationの@AssertTrueを使って相関バリデーションを行う",
+            "section": "component/libraries/libraries-bean-validation.json:s11"
+          }
+        ],
+        "acceptable": []
+      }
+    },
+    {
+      "id": "qa-04",
+      "given": {
+        "usecase": "qa",
+        "category": "testing",
+        "description": "Bean Validationに対応したFormクラスの単体テストを書きたい。文字種や桁数のテストケースをどう準備すればいいかわからない。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "Bean ValidationのFormクラスの単体テストを書きたい。テストクラスの作り方とテストデータの準備方法を教えてほしい",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "EntityTestSupportを継承してテストクラスを作成する",
+            "section": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s3"
+          },
+          {
+            "fact": "テストデータはExcelファイルに記述する",
+            "section": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s2"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s4"
+          },
+          {
+            "section": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-05",
+      "given": {
+        "usecase": "qa",
+        "category": "rest-impl",
+        "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+        "expected_hearing": "should_skip"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "Formクラスでクライアントから送信された値を受け付ける",
+            "section": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1"
+          },
+          {
+            "fact": "プロパティは全てString型で宣言する",
+            "section": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-06",
+      "given": {
+        "usecase": "qa",
+        "category": "jsp-custom-tag",
+        "description": "Web画面で入力画面と確認画面をそれぞれ別のJSPで作っている。同じフォーム項目を2回書くのが面倒。共通化する方法があると聞いた。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？",
+        "expected_hearing": "should_skip"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する",
+            "section": "component/libraries/libraries-tag.json:s23"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-tag.json:s3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-07",
+      "given": {
+        "usecase": "qa",
+        "category": "file-io",
+        "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+        "expected_hearing": "must_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む",
+            "section": "component/libraries/libraries-data-bind.json:s7"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-data-bind.json:s15"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-08",
+      "given": {
+        "usecase": "qa",
+        "category": "message",
+        "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+        "expected_hearing": "should_skip"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する",
+            "section": "component/libraries/libraries-message.json:s8"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-message.json:s7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-09",
+      "given": {
+        "usecase": "qa",
+        "category": "date",
+        "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "BusinessDateUtilを使用して業務日付を取得する",
+            "section": "component/libraries/libraries-date.json:s8"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-date.json:s2"
+          },
+          {
+            "section": "component/libraries/libraries-date.json:s7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-10",
+      "given": {
+        "usecase": "qa",
+        "category": "db-access",
+        "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+        "expected_hearing": "nice_to_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される",
+            "section": "component/libraries/libraries-database.json:s21"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-database.json:s22"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-11",
+      "given": {
+        "usecase": "アプリケーションで例外が発生したときの画面遷移やレスポンス生成の仕組みを知りたい",
+        "category": "error-handling",
+        "description": "Nablarchのエラーハンドリングは処理方式（Web/REST/バッチ）ごとにハンドラ構成が異なる。Webでは HttpErrorHandler + OnError でエラー画面に遷移し、RESTでは JaxRsResponseHandler で例外に応じたJSONレスポンスを返す。処理方式が不明な質問にはヒアリングが必要"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+        "expected_hearing": "must_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "Webの場合はHttpErrorHandlerが例外種別に応じてエラーページに遷移する",
+            "section": "component/handlers/handlers-HttpErrorHandler.json:s4"
+          },
+          {
+            "fact": "RESTの場合はJaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
+            "section": "component/handlers/handlers-jaxrs-response-handler.json:s4"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/handlers/handlers-on-error.json:s3"
+          },
+          {
+            "section": "component/handlers/handlers-HttpErrorHandler.json:s5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-12",
+      "given": {
+        "usecase": "入力チェックでエラーがあった場合のエラーメッセージの返し方を知りたい",
+        "category": "validation",
+        "description": "バリデーションエラー時のレスポンスはWebとRESTで異なる。Webではエラーメッセージをリクエストスコープに設定して入力画面に戻す。RESTではエラー情報をJSONレスポンスとして返す。処理方式不明ならヒアリングが必要"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+        "expected_hearing": "must_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "Webの場合はバリデーションエラー時にリクエストスコープからメッセージを取得して画面表示する",
+            "section": "component/libraries/libraries-bean-validation.json:s16"
+          },
+          {
+            "fact": "RESTの場合は@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+            "section": "component/libraries/libraries-bean-validation.json:s17"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-bean-validation.json:s7"
+          },
+          {
+            "section": "component/libraries/libraries-bean-validation.json:s19"
+          },
+          {
+            "section": "component/libraries/libraries-tag.json:s29"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-13",
+      "given": {
+        "usecase": "受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+        "category": "db-access",
+        "description": "データ登録はREST/Web/バッチで実装パターンが異なる。RESTはリソースクラスで1件登録、Webは画面遷移を伴う登録フロー、バッチはBatchActionで一括登録。処理方式不明ならヒアリングが必要"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+        "expected_hearing": "must_ask"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "UniversalDaoを使ってエンティティをDBに登録する",
+            "section": "component/libraries/libraries-universal-dao.json:s14"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1"
+          },
+          {
+            "section": "processing-pattern/web-application/web-application-getting-started-client-create.json:s1"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,381 @@
+{
+  "description": "Keyword-search benchmark scenarios for nabledge search evaluation. Each scenario tests keyword-based document retrieval.",
+  "schema_version": "1.0",
+  "scenarios": [
+    {
+      "id": "review-01",
+      "given": {
+        "usecase": "review",
+        "category": "db-access",
+        "description": "REST APIの更新処理でUniversalDao.batchUpdateを使って複数レコードを一括更新しているコードをレビューしている。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "batchUpdate",
+          "UniversalDao"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "batchUpdateでは排他制御処理を行わない",
+            "section": "component/libraries/libraries-universal-dao.json:s14"
+          },
+          {
+            "fact": "更新対象のEntityとデータベースのバージョンが不一致でもレコードの更新は行われず正常終了する",
+            "section": "component/libraries/libraries-universal-dao.json:s14"
+          },
+          {
+            "fact": "排他制御が必要なら一括更新ではなく1レコードごとの更新処理を呼び出す",
+            "section": "component/libraries/libraries-universal-dao.json:s14"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-universal-dao.json:s15"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-02",
+      "given": {
+        "usecase": "review",
+        "category": "batch-impl",
+        "description": "CSVファイルを読み込んでDBテーブルに取り込む日次バッチを実装した。BatchActionを継承し、FileDataReaderで入力ファイルを読み込んでいる。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "BatchAction",
+          "FileDataReader"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "BatchActionは汎用的なバッチアクションのテンプレートクラス",
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8"
+          },
+          {
+            "fact": "FileDataReaderでファイルを読み込む",
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5"
+          },
+          {
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-03",
+      "given": {
+        "usecase": "review",
+        "category": "validation",
+        "description": "REST APIのリソースクラスで@Validアノテーションを付けてJSONリクエストのバリデーションを行っている。Beanクラスにドメインバリデーション用のアノテーションを設定している。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "@Valid",
+          "ドメインバリデーション"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "リソースクラスのメソッドにValidアノテーションを設定してバリデーションを実行する",
+            "section": "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4"
+          },
+          {
+            "fact": "ドメインBeanにドメインごとのバリデーションルールを定義する",
+            "section": "component/libraries/libraries-bean-validation.json:s9"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-bean-validation.json:s17"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-04",
+      "given": {
+        "usecase": "review",
+        "category": "testing",
+        "description": "バッチアクションのリクエスト単体テストで、BatchRequestTestSupportを継承したテストクラスを書いている。Excelにテストデータを定義している。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "BatchRequestTestSupport"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "BatchRequestTestSupportを継承してテストクラスを作成する",
+            "section": "development-tools/testing-framework/testing-framework-02-requestunittest-batch.json:s1"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "development-tools/testing-framework/testing-framework-02-requestunittest-batch.json:s3"
+          },
+          {
+            "section": "development-tools/testing-framework/testing-framework-01-Abstract.json:s3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-05",
+      "given": {
+        "usecase": "review",
+        "category": "jsp-custom-tag",
+        "description": "Web画面の入力→確認→完了の遷移で二重サブミット防止を実装している。useTokenタグとサーバ側トークンチェックを使用している。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "二重サブミット",
+          "useToken"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "二重サブミット防止はクライアント側とサーバ側の2つの方法を併用する",
+            "section": "component/libraries/libraries-tag.json:s21"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-tag.json:s22"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-10",
+      "given": {
+        "usecase": "review",
+        "category": "message",
+        "description": "業務例外発生時にMessageUtilでメッセージを取得してApplicationExceptionを送出するコードをレビューしている。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "MessageUtil",
+          "ApplicationException"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "MessageUtilからメッセージを取得しApplicationExceptionを生成して送出する",
+            "section": "component/libraries/libraries-message.json:s9"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-message.json:s7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "impact-02",
+      "given": {
+        "usecase": "impact",
+        "category": "batch-impl",
+        "description": "DataReadHandlerのソースを見ている。バッチでエラーが起きたときにどこまで処理済みか分からなくなることがある。リランや継続実行の仕組みを確認したい。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "DataReadHandler",
+          "リラン"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "Nablarchはリラン用の組込み機能を提供していない。処理対象レコードにステータスを持たせてアプリケーションで設計・実装する",
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.json:s1"
+          },
+          {
+            "fact": "エラー発生時の処理継続は常駐バッチのみ対応で都度起動バッチは対応していない",
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.json:s2"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.json:s3"
+          },
+          {
+            "section": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "impact-04",
+      "given": {
+        "usecase": "impact",
+        "category": "testing",
+        "description": "RESTfulウェブサービスのリクエスト単体テストを書きたい。RestTestSupportとSimpleRestTestSupportがあるらしいが、使い分けがわからない。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "RestTestSupport",
+          "SimpleRestTestSupport"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "テストクラスはRestTestSupportを継承する",
+            "section": "development-tools/testing-framework/testing-framework-02-requestunittest-rest.json:s3"
+          },
+          {
+            "fact": "テストデータの投入とデータベースのアサートが不要な場合はSimpleRestTestSupportを継承する",
+            "section": "development-tools/testing-framework/testing-framework-02-requestunittest-rest.json:s3"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "development-tools/testing-framework/testing-framework-02-requestunittest-rest.json:s2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "impact-05",
+      "given": {
+        "usecase": "impact",
+        "category": "rest-impl",
+        "description": "REST APIを別ドメインのフロントエンドから呼び出す構成にしている。ブラウザのCORS制約でプリフライトリクエストが飛んでくるはず。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "CORS"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "CORSを実現するにはCORSプリフライトリクエストハンドラとCorsResponseFinisherを設定する",
+            "section": "component/handlers/handlers-cors-preflight-request-handler.json:s4"
+          },
+          {
+            "fact": "BasicCorsクラスがCORSの基本実装として提供されている",
+            "section": "component/handlers/handlers-cors-preflight-request-handler.json:s4"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s14"
+          }
+        ]
+      }
+    },
+    {
+      "id": "impact-07",
+      "given": {
+        "usecase": "impact",
+        "category": "exclusive-control",
+        "description": "バッチ処理で複数レコードを更新する際に悲観的ロックを使いたい。ExclusiveControlUtil#updateVersionを呼んでロックを取得する実装を検討している。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "ExclusiveControlUtil",
+          "悲観的ロック"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "悲観的ロックにはExclusiveControlUtil#updateVersionを使用する",
+            "section": "component/libraries/libraries-exclusive-control.json:s8"
+          },
+          {
+            "fact": "排他制御用テーブルのバージョン番号を更新することでトランザクション完了まで対象行がロックされる",
+            "section": "component/libraries/libraries-exclusive-control.json:s8"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-exclusive-control.json:s5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "impact-09",
+      "given": {
+        "usecase": "impact",
+        "category": "releases",
+        "description": "Nablarch 6u1から6u2へのバージョンアップを検討している。6u2のリリースノートでCSPのscript-srcにnonce対応が入った変更の影響を確認したい。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "CSP",
+          "nonce"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "CSPのscript-srcにunsafe-inlineではなくnonceを使用したポリシーを設定できるようになった",
+            "section": "releases/releases/releases-nablarch6u2-releasenote-6u2 (6u1からの変更点).json:s5"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "releases/releases/releases-nablarch6u2-releasenote-6u2 (6u1からの変更点).json:s29"
+          }
+        ]
+      }
+    },
+    {
+      "id": "impact-10",
+      "given": {
+        "usecase": "impact",
+        "category": "file-io",
+        "description": "バッチ処理で固定長ファイルを出力する必要がある。@FixedLengthと@Fieldアノテーションで定義を書いているが、フォーマットの指定方法がよくわからない。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "FixedLength",
+          "Field"
+        ]
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "FixedLengthとFieldアノテーションで固定長ファイルのフォーマットを指定する",
+            "section": "component/libraries/libraries-data-bind.json:s16"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-data-bind.json:s8"
+          }
+        ]
+      }
+    }
+  ]
+}
