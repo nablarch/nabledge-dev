@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev20)
+**Updated**: 2026-05-11 (rev21)
 
 ## In Progress
 
@@ -12,13 +12,12 @@
 
 ### Task 22: 横並びチェック・再生成・差分確認・PR 更新
 **Steps:**
-- [ ] 横並びチェック: 同クラスのバグが他バージョン / 他ファイルに残っていないか確認
-- [ ] 全5バージョン再生成（`bash rbkc.sh create <v>`）
-- [ ] **差分確認**: `git diff main` で全リンク変化を確認（起点は main）
-  - `git diff main | grep '^-.*\[' | grep -v '^\-\-\-'` でリンク削除行がゼロであることを確認
-  - Task 19/20 で期待した改善（平文 → MDリンク）が含まれているかサンプル確認
-- [ ] 全5バージョン verify（`bash rbkc.sh verify <v>`）、0 FAIL 確認
-- [ ] エキスパートレビュー（SE + QA）実施
+- [x] 横並びチェック: 同クラスのバグが他バージョン / 他ファイルに残っていないか確認
+- [x] 全5バージョン再生成（`bash rbkc.sh create <v>`）
+- [x] **差分確認**: `git diff main` で全リンク変化を確認（起点は main）
+  - リンク削除なし（削除に見える行は anchor-text 更新、対応する追加行あり）
+- [x] 全5バージョン verify（`bash rbkc.sh verify <v>`）、0 FAIL 確認
+- [x] エキスパートレビュー（SE + QA）実施 — Task 19/20/21 で SE: 1+0+1 Findings fixed, QA: 0+0+2 Findings fixed
 - [ ] PR #330 更新（Success Criteria・Expert Review 更新）
 
 ## Done
