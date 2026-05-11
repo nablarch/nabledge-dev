@@ -1,7 +1,7 @@
 # Tasks: Search Improvement (Zero-base)
 
 **Branch**: search
-**Updated**: 2026-05-11
+**Updated**: 2026-05-12
 
 ## Rules
 
@@ -36,7 +36,9 @@
 
 各コンポーネントのベンチマーク実測に必要なインフラを先に構築する。
 
-- [ ] 0-1. シナリオ見直し — 既存シナリオをゼロベースで検討
+**シナリオ**: `tools/benchmark/scenarios/qa.json`（22件）、`tools/benchmark/scenarios/keyword-search.json`（12件）。これが作業対象。旧シナリオ（`.claude/skills/nabledge-test/scenarios/`）は参照しない。
+
+- [ ] 0-1. シナリオ見直し — 提供済みシナリオ（tools/benchmark/scenarios/）をレビュー
 - [ ] 0-2. 判定方式の設計 — LLM自動判定→人間最終判定のフロー
 - [ ] 0-3. メトリクス設計 — 実行時間・コスト（トークン量推定）・ツール呼び出し回数・ターン数
 - [ ] 0-4. 設計書レビュー（エキスパート→ユーザー）
