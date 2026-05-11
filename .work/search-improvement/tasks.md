@@ -1,7 +1,7 @@
 # Tasks: Search Improvement (Zero-base)
 
 **Branch**: search
-**Updated**: 2026-05-12
+**Updated**: 2026-05-13
 
 ## Rules
 
@@ -69,7 +69,7 @@
   - [x] **SE**: 2 Findings修正済（orphan L3スキップ、lambda→named fn）
   - [x] レビュー修正後のプロンプト・スクリプトをコミット
 - [ ] 1-5c. ベースライン測定
-  - [ ] 全24シナリオで3回実行
+  - [BLOCKED: claude CLIサブプロセスが未認証。`! claude /login` 実行後に再開] 全24シナリオで3回実行
   - [ ] シナリオごとの安定性を分類（安定OK / 安定MISS / 不安定）
   - [ ] 結果をユーザーに報告
 - [ ] 1-5d. 改善サイクル（安定MISSがある場合、繰り返し）
