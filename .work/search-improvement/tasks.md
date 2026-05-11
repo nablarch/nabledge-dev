@@ -30,21 +30,23 @@
 
 ## In Progress
 
-## Not Started
-
 ### 0. ベンチマークインフラ
 
 各コンポーネントのベンチマーク実測に必要なインフラを先に構築する。
 
 **シナリオ**: `tools/benchmark/scenarios/qa.json`（24件）、`tools/benchmark/scenarios/keyword-search.json`（12件）。これが作業対象。旧シナリオ（`.claude/skills/nabledge-test/scenarios/`）は参照しない。
 
-- [x] 0-1. シナリオ見直し — 提供済みシナリオ（tools/benchmark/scenarios/）をレビュー
-- [x] 0-2. 判定方式の設計 — LLM自動判定→人間最終判定のフロー
-- [x] 0-3. メトリクス設計 — 実行時間・コスト（トークン量推定）・ツール呼び出し回数・ターン数
-- [x] 0-4. 設計書レビュー（エキスパート→ユーザー）— QA Engineerレビュー: 6 Findings → 全件修正済み
+**設計書**: `.work/search-improvement/benchmark-design.md`
+
+- [x] 0-1. シナリオ見直し — 全83セクション参照確認、全48 must fact検証、5件修正 — committed `159ff91`
+- [x] 0-2. 判定方式の設計 — 2軸評価（回答精度 + ハルシネーション）+ 診断情報 + メトリクス
+- [x] 0-3. メトリクス設計 — duration_ms, total_tokens, tool_uses（Agentツールusageから自動取得）
+- [x] 0-4. 設計書レビュー — QA Engineer: 6 Findings全件修正 → ユーザーレビュー: 4軸→2軸に修正 — committed `44fa4a1`
 - [ ] 0-5. ベンチマークスクリプト実装
 - [ ] 0-6. エキスパートレビュー
 - [ ] 0-7. → ユーザーレビュー
+
+## Not Started
 
 ### 1. 意味検索
 
