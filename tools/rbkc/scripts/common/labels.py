@@ -151,6 +151,18 @@ def _parse_rst_without_transforms(text: str, rst_path: Path) -> "nodes.document"
 def _next_section_for_node(node: "nodes.Node"):
     """Return the ``section`` node that this target immediately precedes,
     or ``None``.  See :func:`_next_section_title_for_node` for the full rules.
+
+    Multi-level climb: when the target is the last meaningful item in its
+    parent section, climb to the parent's parent and look for the next
+    sibling section there.  Repeat until a sibling section is found or the
+    document root is reached.  This handles deeply-nested end-of-section
+    labels like::
+
+        section ``要求`` (h2)
+          section ``未検討`` (h3)
+            ...
+            .. _Log_LoggerProcess:   ← last in 未検討, 2 levels above
+        section ``ログ出力要求受付処理`` (h2)  ← correct target
     """
     from docutils import nodes as _nodes
 
@@ -163,6 +175,7 @@ def _next_section_for_node(node: "nodes.Node"):
     except ValueError:
         return None
 
+    # First check: direct siblings after the target node
     for sib in siblings[idx + 1:]:
         if isinstance(sib, _nodes.section):
             return sib
@@ -170,23 +183,42 @@ def _next_section_for_node(node: "nodes.Node"):
             continue
         break
 
+    # Multi-level climb: if the target is the last meaningful item in its
+    # section (only target nodes follow), walk up through ancestor sections
+    # looking for the next sibling section at each level.
     is_last_meaningful = all(
         isinstance(sib, _nodes.target) for sib in siblings[idx + 1:]
     )
-    if is_last_meaningful and isinstance(parent, _nodes.section):
-        grandparent = parent.parent
-        if grandparent is not None:
-            gp_siblings = list(grandparent.children)
-            try:
-                parent_idx = gp_siblings.index(parent)
-            except ValueError:
-                return None
-            for gp_sib in gp_siblings[parent_idx + 1:]:
-                if isinstance(gp_sib, _nodes.section):
-                    return gp_sib
-                if isinstance(gp_sib, _nodes.target):
-                    continue
-                break
+    if not is_last_meaningful:
+        return None
+
+    current = parent
+    while isinstance(current, _nodes.section):
+        ancestor = current.parent
+        if ancestor is None:
+            break
+        anc_siblings = list(ancestor.children)
+        try:
+            current_idx = anc_siblings.index(current)
+        except ValueError:
+            break
+        # Check siblings after current in ancestor
+        tail = anc_siblings[current_idx + 1:]
+        for sib in tail:
+            if isinstance(sib, _nodes.section):
+                return sib
+            if isinstance(sib, _nodes.target):
+                continue
+            break
+        # No next section found — keep climbing unless ancestor is document
+        # (document root has no further parent to climb to)
+        if isinstance(ancestor, _nodes.document):
+            break
+        # tail contained no section — keep climbing only if current is
+        # the last meaningful item in ancestor
+        if not all(isinstance(s, _nodes.target) for s in tail):
+            break
+        current = ancestor
 
     return None
 

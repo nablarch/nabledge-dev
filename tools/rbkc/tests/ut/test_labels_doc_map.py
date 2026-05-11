@@ -806,3 +806,96 @@ class TestCaseInsensitiveLabelLookup:
         assert isinstance(v, LabelTarget)
         assert v.title == "Window Scope"
         assert v.category == ""
+
+
+class TestNextSectionMultiLevelClimb:
+    """Bug 2 fix: _next_section_for_node must climb multiple levels.
+
+    Pattern: a label is the last item inside a deeply-nested section, but
+    the *next* section (the label's intended target) is a sibling of an
+    ancestor, not a direct sibling or immediate grandparent sibling.
+
+    Real example: v1.2 01_Log.rst
+    - section ``要求`` (h2)
+      - section ``未検討`` (h3)
+        - bullet_list
+        - ``.. _Log_LoggerProcess:``   ← target node, last in ``未検討``
+    - section ``ログ出力要求受付処理`` (h2, sibling of ``要求``)
+
+    One-level climb (grandparent = ``要求``) finds no next sibling.
+    Two-level climb (great-grandparent) finds ``ログ出力要求受付処理``.
+    """
+
+    def test_label_at_3level_nesting_end_resolves_to_ancestor_sibling(self, tmp_path):
+        """Label at the end of a 3-deep nest resolves to a section 2 levels up."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "deep.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Outer
+            -----
+
+            Inner
+            ~~~~~
+
+            Body text.
+
+            .. _deep-label:
+
+            Next Section
+            ------------
+
+            Content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "deep-label" in m
+        v = m["deep-label"]
+        assert isinstance(v, LabelTarget)
+        # Must resolve to the section it directly precedes, not the enclosing one
+        assert v.title == "Next Section", (
+            f"Expected 'Next Section' but got {v.title!r} — "
+            "multi-level climb not implemented"
+        )
+
+    def test_label_at_4level_nesting_end_resolves_correctly(self, tmp_path):
+        """Label at the end of a 4-deep nest resolves to the correct ancestor sibling."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "deep4.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            L2
+            --
+
+            L3
+            ~~
+
+            L4
+            ^^
+
+            Body.
+
+            .. _target-label:
+
+            Next L2
+            -------
+
+            More content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "target-label" in m
+        v = m["target-label"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "Next L2", (
+            f"Expected 'Next L2' but got {v.title!r} — "
+            "multi-level climb stops too early"
+        )
