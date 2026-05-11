@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev21)
+**Updated**: 2026-05-11 (rev22)
 
 ## In Progress
 
@@ -10,15 +10,7 @@
 
 ## Not Started
 
-### Task 22: 横並びチェック・再生成・差分確認・PR 更新
-**Steps:**
-- [x] 横並びチェック: 同クラスのバグが他バージョン / 他ファイルに残っていないか確認
-- [x] 全5バージョン再生成（`bash rbkc.sh create <v>`）
-- [x] **差分確認**: `git diff main` で全リンク変化を確認（起点は main）
-  - リンク削除なし（削除に見える行は anchor-text 更新、対応する追加行あり）
-- [x] 全5バージョン verify（`bash rbkc.sh verify <v>`）、0 FAIL 確認
-- [x] エキスパートレビュー（SE + QA）実施 — Task 19/20/21 で SE: 1+0+1 Findings fixed, QA: 0+0+2 Findings fixed
-- [ ] PR #330 更新（Success Criteria・Expert Review 更新）
+（なし）
 
 ## Done
 
@@ -38,4 +30,5 @@
 - [x] 最終エキスパートレビュー完了 — SE: 0 Findings、QA: 0 Findings — PR #330 Expert Review 更新済み — `f9b694bf5`
 - [x] Task 19: Bug 1 修正 — label_map lookup の case normalization — `rst_ast_visitor.py` / `verify.py` に `.lower()` 追加、全5バージョン 0 FAIL
 - [x] Task 20: Bug 2 修正 — `_next_section_for_node` の multi-level climb — iterative climb 実装（document root で停止）、全5バージョン 0 FAIL
-- [x] Task 21: Bug 3 修正 — `check_ql1_link_targets` の anchor 検証実装 — `seen` を4-tuple 化、anchor 非空時に `_heading_slugs_from_md` で slug 照合、JSON side + docs MD side 両方に適用、全5バージョン 0 FAIL
+- [x] Task 21: Bug 3 修正 — `check_ql1_link_targets` の anchor 検証実装 — `seen` を4-tuple 化、anchor 非空時に `_heading_slugs_from_md` で slug 照合、JSON side + docs MD side 両方に適用、全5バージョン 0 FAIL — SE: 1 Finding fixed, QA: 2 Findings fixed
+- [x] Task 22: 横並びチェック・再生成・差分確認・PR 更新 — 全5バージョン 0 FAIL、リンク削除なし、PR #330 更新済み
