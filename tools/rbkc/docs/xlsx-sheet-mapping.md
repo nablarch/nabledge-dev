@@ -9,7 +9,8 @@
 | P1 | 95 | Header detected → structured sections (existing behavior, no change) |
 | P2-1 | 16 | Column-indent → Markdown headings (col0=H1, col1=H2, col2=H3, col3+=body) |
 | P2-2 | 96 | Current behavior maintained (step tables, single-col lists, etc.) |
-| P2-3 | 5 | Embedded LF preserved as Markdown line breaks (`  \n`) |
+| P2-3 | 3 | Embedded LF preserved as Markdown line breaks (`  \n`) |
+| P2-4 | 2 | 2-col table with preamble: preamble as plain text, data as Markdown table (LF→`<br>`) |
 
 ## Sheet List
 
@@ -20,7 +21,7 @@
 | Nablarch機能のセキュリティ対応表.xlsx | 改訂履歴 | P1 |  |
 | Nablarch機能のセキュリティ対応表.xlsx | 1.概要 | P2-1 | column-indent structure |
 | Nablarch機能のセキュリティ対応表.xlsx | 2.チェックリスト | P1 |  |
-| Nablarch機能のセキュリティ対応表.xlsx | 3.PCIDSS対応表 | P2-3 | embedded LF cells |
+| Nablarch機能のセキュリティ対応表.xlsx | 3.PCIDSS対応表 | P2-4 | 2-col table with preamble and LF→<br> |
 | nablarch6-releasenote.xlsx | 6 | P1 |  |
 | nablarch6-releasenote.xlsx | バージョンアップ手順 | P2-2 | step table (No/適用手順) |
 | nablarch6-releasenote.xlsx | モジュールバージョン一覧 | P1 |  |
@@ -42,7 +43,7 @@
 | Nablarch機能のセキュリティ対応表.xlsx | 改訂履歴 | P1 |  |
 | Nablarch機能のセキュリティ対応表.xlsx | 1.概要 | P2-1 | column-indent structure |
 | Nablarch機能のセキュリティ対応表.xlsx | 2.チェックリスト | P1 |  |
-| Nablarch機能のセキュリティ対応表.xlsx | 3.PCIDSS対応表 | P2-3 | embedded LF cells |
+| Nablarch機能のセキュリティ対応表.xlsx | 3.PCIDSS対応表 | P2-4 | 2-col table with preamble and LF→<br> |
 | nablarch5-releasenote.xlsx | 5 | P1 |  |
 | nablarch5-releasenote.xlsx | 別紙_データベースアクセス機能の変更内容 | P1 |  |
 | nablarch5-releasenote.xlsx | 分類 | P2-2 | single-col classification list |

@@ -40,14 +40,14 @@ class RawSheet:
 def load_sheet_subtype_map(mapping_path: Path) -> dict[tuple[str, str], str]:
     """Parse xlsx-sheet-mapping.md and return (file_basename, sheet_name) → subtype.
 
-    Only P2-1 and P2-3 entries are returned (P1/P2-2 use default handling).
+    Only P2-1, P2-3, and P2-4 entries are returned (P1/P2-2 use default handling).
     Returns an empty dict if the file does not exist.
     """
     if not mapping_path.exists():
         return {}
     result: dict[tuple[str, str], str] = {}
     import re
-    row_re = re.compile(r'^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(P2-1|P2-3)\s*\|')
+    row_re = re.compile(r'^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(P2-1|P2-3|P2-4)\s*\|')
     for line in mapping_path.read_text(encoding="utf-8").splitlines():
         m = row_re.match(line)
         if m:
@@ -444,6 +444,13 @@ def sheet_to_result(
         meta["sheet_subtype"] = "P2-3"
         meta["p2_raw_content"] = _build_p2_content_raw(sheet, body_start)
 
+    elif sheet_subtype == "P2-4":
+        meta["sheet_subtype"] = "P2-4"
+        preamble, header, rows = _build_p2_4_meta(sheet, body_start)
+        meta["p2_4_preamble"] = preamble
+        meta["p2_4_header"] = header
+        meta["p2_4_rows"] = rows
+
     return result, meta
 
 
@@ -600,6 +607,49 @@ def _build_p2_content_raw(sheet: RawSheet, body_start: int) -> str:
             continue
         lines.append("  ".join(non_empty))
     return "\n".join(lines)
+
+
+def _build_p2_4_meta(
+    sheet: RawSheet, body_start: int
+) -> tuple[str, list[str], list[list[str]]]:
+    """Build preamble, header, and data rows for P2-4 sheets.
+
+    P2-4 is a 2-column table (col A empty, col B = key, col C = value) preceded
+    by free-text rows (preamble).  The header row is the first row where both
+    col B and col C are non-empty; rows before it are preamble; rows after it
+    are data.  Cell-level LF is preserved in data rows (docs.py converts to
+    <br>); preamble rows are whitespace-flattened.
+
+    Returns:
+        preamble: newline-joined preamble lines (flattened whitespace per line)
+        header: list of non-empty column labels from the header row
+        rows: list of data rows; each row is a list of cell values (LF preserved)
+    """
+    rows = sheet.rows
+    preamble_lines: list[str] = []
+    header: list[str] = []
+    data_rows: list[list[str]] = []
+
+    header_found = False
+    for r in rows[body_start:]:
+        non_empty = [v for v in r if v]
+        if not non_empty:
+            continue
+        if not header_found:
+            # Header row: ≥ 2 non-empty cells that look like labels (short, no LF)
+            flat_cells = [_flatten_ws(v) for v in r if v]
+            if len(flat_cells) >= 2 and all("\n" not in v for v in [v for v in r if v]):
+                header = flat_cells
+                header_found = True
+            else:
+                preamble_lines.append(_flatten_ws("  ".join(non_empty)))
+        else:
+            # Data row: preserve cell-level LF for docs.py <br> conversion
+            cells = [v for v in r if v]
+            if cells:
+                data_rows.append(cells)
+
+    return "\n".join(preamble_lines), header, data_rows
 
 
 def _build_p2_content(sheet: RawSheet, body_start: int, preamble: str) -> str:
