@@ -261,8 +261,27 @@ class TestExtractDocumentSubtitle:
         doctree, _ = parse(source)
         parts = extract_document(doctree)
         assert parts.top_title == "タイトル"
-        assert len(parts.sections) >= 1
+        assert len(parts.sections) == 2
         assert parts.sections[0].title == "セクション1"
+        assert "前文" in parts.sections[0].content
+        assert parts.sections[1].title == "セクション2"
+        assert "後文" in parts.sections[1].content
+
+    def test_subtitle_without_body_produces_empty_content(self):
+        """subtitle with no doc-level body: sections[0] exists with empty content."""
+        source = (
+            "利用規約\n"
+            "========\n\n"
+            "概要\n"
+            "----\n\n"
+        )
+        doctree, _ = parse(source)
+        parts = extract_document(doctree)
+        assert parts.top_title == "利用規約"
+        assert len(parts.sections) == 1
+        assert parts.sections[0].title == "概要"
+        assert parts.sections[0].level == 2
+        assert parts.sections[0].content == ""
 
     def test_no_subtitle_is_unchanged(self):
         """RST without DocTitle subtitle produces no section from subtitle."""
