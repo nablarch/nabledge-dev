@@ -4635,6 +4635,46 @@ class TestCheckQL1LinkTargets:
         issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md_text)
         assert issues == [], f"Expected PASS but got: {issues}"
 
+    def test_fail_anchor_missing_no_docs_md_text(self, tmp_path):
+        """JSON-side anchor FAIL is independent of docs_md_text (Bug 3 regression guard)."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Foo Section\n\nContent.\n", encoding="utf-8"
+        )
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#nonexistent-anchor).",
+            "sections": [],
+        }
+        # No docs_md_text — JSON-side must still detect the bad anchor.
+        issues = check_ql1_link_targets(data, kn)
+        assert any("QL1" in i and "anchor" in i.lower() and "nonexistent-anchor" in i for i in issues), (
+            f"Expected anchor FAIL but got: {issues}"
+        )
+
+    def test_fail_anchor_missing_in_section_content(self, tmp_path):
+        """Anchor validation applies to sections[].content, not only to content."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Real Section\n\nContent.\n", encoding="utf-8"
+        )
+        data = {
+            "content": "",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "Detail",
+                    "level": 2,
+                    "content": "See [Foo](../../component/libraries/libraries-foo.md#bad-anchor).",
+                }
+            ],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert any("QL1" in i and "anchor" in i.lower() and "bad-anchor" in i for i in issues), (
+            f"Expected anchor FAIL but got: {issues}"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Phase 22-B-12: Excel preamble + span-inherit header composition
