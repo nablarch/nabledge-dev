@@ -62,6 +62,10 @@
 
 ## Not Started
 
+(なし)
+
+## Done (Task 8 complete)
+
 ### Task 8: 設計書に P2-4 仕様を追記する
 
 **変更対象ファイル:**
@@ -74,11 +78,11 @@
   - テスト一覧テーブルに `QO2 P2-4` 行を追加
 
 **Steps:**
-- [ ] Step 1: `rbkc-converter-design.md` §8-4 更新（P2-4 JSON フィールド）
-- [ ] Step 2: `rbkc-converter-design.md` §8-5 更新（P2-4 docs MD 出力仕様）
-- [ ] Step 3: `rbkc-converter-design.md` §8-6 更新（P2-4 verify QO2 例外）
-- [ ] Step 4: `rbkc-verify-quality-design.md` 更新（QO2 P2-4 例外 + テスト一覧）
-- [ ] Step 5: コミット・プッシュ
+- [x] Step 1: `rbkc-converter-design.md` §8-4 更新（P2-4 JSON フィールド）
+- [x] Step 2: `rbkc-converter-design.md` §8-5 更新（P2-4 docs MD 出力仕様）
+- [x] Step 3: `rbkc-converter-design.md` §8-6 更新（P2-4 verify QO2 例外）
+- [x] Step 4: `rbkc-verify-quality-design.md` 更新（QO2 P2-4 例外 + テスト一覧）
+- [x] Step 5: コミット・プッシュ — `67d801271`
 
 ## Done
 
