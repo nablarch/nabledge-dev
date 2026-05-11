@@ -90,7 +90,7 @@ RotatePolicy
 
 > **Important:**
 > SynchronousFileLogWriter
-> を使う場合は、 [SynchronousFileLogWriterを使用するにあたっての注意事項](../../component/libraries/libraries-log.md#synchronousfilelogwriterを使用するにあたっての注意事項) を参照すること。
+> を使う場合は、 [CommitLoggerをJSON用に切り替える](../../component/libraries/libraries-log.md#commitloggerをjson用に切り替える) を参照すること。
 
 > **Tip:**
 > ログ出力機能で使用するログレベルについては、 [ログレベルの定義](../../component/libraries/libraries-log.md#ログレベルの定義) を参照。

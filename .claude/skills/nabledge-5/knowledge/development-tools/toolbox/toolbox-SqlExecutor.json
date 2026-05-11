@@ -43,7 +43,7 @@
     {
       "id": "s7",
       "title": "前提条件",
-      "content": "本ツールをビルドし配布するための前提条件を以下に示す。\n\n* FirefoxまたはChromeがインストール済みであること。\n* Nablarchの開発環境が設定済みであること。\n* Maven Central RepositoryにJDBCドライバが存在しないRDBMSを使用する場合は、Project Local RepositoryまたはLocal RepositoryにJDBCドライバを登録済みであること。\n  登録方法は、[Mavenリポジトリへのファイル登録](../../setup/blank-project/blank-project-CustomizeDB.md#mavenリポジトリへのファイル登録) を参照。",
+      "content": "本ツールをビルドし配布するための前提条件を以下に示す。\n\n* FirefoxまたはChromeがインストール済みであること。\n* Nablarchの開発環境が設定済みであること。\n* Maven Central RepositoryにJDBCドライバが存在しないRDBMSを使用する場合は、Project Local RepositoryまたはLocal RepositoryにJDBCドライバを登録済みであること。\n  登録方法は、customizeDBAddFileMavenRepo を参照。",
       "level": 3
     },
     {
@@ -121,7 +121,7 @@
     {
       "id": "s20",
       "title": "配布時に設定済みのDB以外に接続したい場合",
-      "content": "`sql-executor.bat` を編集する。設定項目は以下の通り。\n\n設定項目\n\n| db.url | データベースURL |\n|---|---|\n| db.user | 接続ユーザ |\n| db.password | パスワード |\n\n例として `db.url=jdbc:h2:./h2/db/SAMPLE` , `db.user=SAMPLE`, `db.password=SAMPLE` へ接続する場合の編集方法を以下に示す。\n\n```bat\ncd /d %~dp0\n\nstart java -Ddb.url=jdbc:h2:./h2/db/SAMPLE -Ddb.user=SAMPLE -Ddb.password=SAMPLE -jar sql-executor.jar （以降略）\ncmd /c start http://localhost:7979/index.html\n```\n\n実行しても何も出力されずに異常終了する場合は、 [FAQ](../../development-tools/toolbox/toolbox-SqlExecutor.md#faq) を参照。",
+      "content": "`sql-executor.bat` を編集する。設定項目は以下の通り。\n\n設定項目\n\n| db.url | データベースURL |\n|---|---|\n| db.user | 接続ユーザ |\n| db.password | パスワード |\n\n例として `db.url=jdbc:h2:./h2/db/SAMPLE` , `db.user=SAMPLE`, `db.password=SAMPLE` へ接続する場合の編集方法を以下に示す。\n\n```bat\ncd /d %~dp0\n\nstart java -Ddb.url=jdbc:h2:./h2/db/SAMPLE -Ddb.user=SAMPLE -Ddb.password=SAMPLE -jar sql-executor.jar （以降略）\ncmd /c start http://localhost:7979/index.html\n```\n\n実行しても何も出力されずに異常終了する場合は、 [日付型の設定](../../development-tools/toolbox/toolbox-SqlExecutor.md#日付型の設定) を参照。",
       "level": 3
     },
     {

@@ -26,7 +26,7 @@ ExampleはJava 17での実行を前提としている。
 Java 21で動かす場合は、個別にセットアップが必要となる。
 詳細は、以下のブランクプロジェクトの説明を参照のこと。
 
-[Java21で使用する場合のセットアップ方法](../../setup/blank-project/blank-project-setup-Java21.md#java21で使用する場合のセットアップ方法)
+setup_blank_project_for_Java21
 
 ## Exampleの一覧
 
@@ -45,8 +45,8 @@ Java 21で動かす場合は、個別にセットアップが必要となる。
 
 ### バッチアプリケーション
 
-* [Jakarta Batchに準拠したバッチアプリケーション](https://github.com/nablarch/nablarch-example-batch-ee) ([解説](../../processing-pattern/jakarta-batch/jakarta-batch-getting-started.md#getting-started))
-* [Nablarchバッチアプリケーション](https://github.com/nablarch/nablarch-example-batch) ([解説](../../processing-pattern/nablarch-batch/nablarch-batch-getting-started.md#getting-started))
+* [Jakarta Batchに準拠したバッチアプリケーション](https://github.com/nablarch/nablarch-example-batch-ee) (解説)
+* [Nablarchバッチアプリケーション](https://github.com/nablarch/nablarch-example-batch) (解説)
 
 ### メッセージング
 

@@ -82,7 +82,7 @@
 `redisstore-lettuce.xml` には、Redisストアを使用するために必要となるコンポーネントが定義されている。
 
 `redisstore-lettuce.xml` を使用すると、 `nablarch/webui/session-store.xml` は不要になる。
-[ウェブのアーキタイプ](../../setup/blank-project/blank-project-setup-Web.md#ブランクプロジェクト作成) でプロジェクトを生成している場合、デフォルトで `session-store.xml` を使用するように設定されているので、 `session-store.xml` のインポートを削除し、代わりに `redisstore-lettuce.xml` をインポートするように修正する。
+ウェブのアーキタイプ でプロジェクトを生成している場合、デフォルトで `session-store.xml` を使用するように設定されているので、 `session-store.xml` のインポートを削除し、代わりに `redisstore-lettuce.xml` をインポートするように修正する。
 
 ```xml
 <!-- 初期化が必要なコンポーネント -->
@@ -132,7 +132,7 @@ nablarch.sessionManager.defaultStoreName=redis
 プロジェクトの環境設定ファイルで、 `nablarch.sessionManager.defaultStoreName` という設定項目を定義し、値に `redis` と設定する。
 
 > **Tip:**
-> [ウェブのアーキタイプ](../../setup/blank-project/blank-project-setup-Web.md#ブランクプロジェクト作成) でプロジェクトを生成している場合は、 `src/main/resources/common.properties` に `nablarch.sessionManager.defaultStoreName` が宣言されている。
+> ウェブのアーキタイプ でプロジェクトを生成している場合は、 `src/main/resources/common.properties` に `nablarch.sessionManager.defaultStoreName` が宣言されている。
 
 以上で、 `localhost` の `6379` ポートで起動しているRedisをセッションストアとして使用できるようになる。
 
@@ -340,7 +340,7 @@ LettuceでClusterのトポロジ更新を監視できるようにするには、
 各クライアントクラスは Initializable を実装しており、 `initialize()` メソッドを実行することでRedisへの接続が確立される。
 したがって、使用するクライアントクラスのコンポーネントは、 BasicApplicationInitializer の `initializeList` プロパティに設定しなければならない。
 
-実際の `initializeList` への設定は、以下のように [使用するクライアントクラスの決定の仕組み](../../component/adapters/adapters-redisstore-lettuce-adaptor.md#使用するクライアントクラスの決定の仕組み) で説明した `LettuceRedisClientProvider` のコンポーネントを使用する。
+実際の `initializeList` への設定は、以下のように [例：Clusterのトポロジ更新の監視を有効にする](../../component/adapters/adapters-redisstore-lettuce-adaptor.md#例clusterのトポロジ更新の監視を有効にする) で説明した `LettuceRedisClientProvider` のコンポーネントを使用する。
 
 ```xml
 <!-- 初期化が必要なコンポーネント -->

@@ -69,7 +69,7 @@ HTTPセッションを抽象化した機能を提供する。
 * [HIDDENストア](../../component/libraries/libraries-session-store.md#セッションストアの特長と選択基準)
 * [HTTPセッションストア](../../component/libraries/libraries-session-store.md#セッションストアの特長と選択基準)
 
-セッションストアの特長や選択基準については、 [セッションストアの特長と選択基準](../../component/libraries/libraries-session-store.md#セッションストアの特長と選択基準) を参照。
+セッションストアの特長や選択基準については、 [セッション変数の保存先を追加する](../../component/libraries/libraries-session-store.md#セッション変数の保存先を追加する) を参照。
 
 また、 [Redisストア(Lettuce)アダプタ](../../component/adapters/adapters-redisstore-lettuce-adaptor.md#redisストアlettuceアダプタ) を使用することで、Redisを保存先として使用できる。
 

@@ -76,7 +76,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 ## 疎通確認
 
-疎通確認の仕組みや手順は通常のウェブプロジェクトと同じなので、 [ウェブプロジェクトの初期セットアップ手順](../../setup/blank-project/blank-project-setup-Web.md#疎通確認) を参照。
+疎通確認の仕組みや手順は通常のウェブプロジェクトと同じなので、 ウェブプロジェクトの初期セットアップ手順 を参照。
 
 > **Note:**
 > アーティファクトID が `myapp-container-web` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
@@ -168,7 +168,7 @@ docker run -d -p 8080:8080 -v %CD%\h2:/usr/local/tomcat/h2 --name myapp-containe
 > SAMPLE.h2.dbを使用しない場合は、ボリュームの指定(`-v`)は不要になる。
 
 > **Tip:**
-> Dockerの実行は、Docker Desktopを使用していることを [前提](../../setup/blank-project/blank-project-beforeFirstStep.md#初期セットアップの前提) としている。
+> Dockerの実行は、Docker Desktopを使用していることを 前提 としている。
 > Docker Toolboxを使用している場合は、上記例のボリューム指定ではエラーになる。
 
 > Docker Toolboxを使用している場合、DockerはVirtualBox上のVMで動いている。

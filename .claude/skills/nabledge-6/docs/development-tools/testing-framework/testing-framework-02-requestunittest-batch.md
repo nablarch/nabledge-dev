@@ -59,18 +59,18 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 | no | テストケース番号を1からの連番で記載する。 | 必須 |
 | description | そのテストケースの説明を記載する。 | 必須 |
 | expectedStatusCode | 期待するステータスコード | 必須 |
-| setUpTable | 各テストケース実行前にデータベースに登録する場合は、同じシート内に記載したデータの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する [1] 。データの投入は自動テストフレーム ワークにより行われる。 |  |
-| setUpFile | 各テストケース実行前に入力用ファイルを作成する場合は、同じシート内に記載したデータの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する [1] 。ファイルの作成は自動テストフレーム ワークにより行われる。 |  |
-| expectedFile | 出力ファイルの内容を比較する場合、期待するファイルの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する [1] 。 |  |
-| expectedTable | データベースの内容を比較する場合、期待するテーブルの [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する [1] 。 |  |
+| setUpTable | 各テストケース実行前にデータベースに登録する場合は、同じシート内に記載したデータの グループID を記載する [1] 。データの投入は自動テストフレーム ワークにより行われる。 |  |
+| setUpFile | 各テストケース実行前に入力用ファイルを作成する場合は、同じシート内に記載したデータの グループID を記載する [1] 。ファイルの作成は自動テストフレーム ワークにより行われる。 |  |
+| expectedFile | 出力ファイルの内容を比較する場合、期待するファイルの グループID を記載する [1] 。 |  |
+| expectedTable | データベースの内容を比較する場合、期待するテーブルの グループID を記載する [1] 。 |  |
 | expectedLog | 期待するログメッセージを記載したLIST_MAPデータのIDを記載する。 そのログメッセージが実際に出力されたかどうか、自動テストフレームワークにて検証される。 (『 ログの結果検証 』を参照) |  |
 | diConfig | バッチを実行する際のコンポーネント設定ファイルへのパスを記載する。 ( [コマンドライン引数](../../component/handlers/handlers-main.md#アプリケーションを起動する) を参照) | 必須 |
 | requestPath | バッチを実行する際のリクエストパスを記載する。 ( [コマンドライン引数](../../component/handlers/handlers-main.md#アプリケーションを起動する) を参照) | 必須 |
 | userId | バッチ実行ユーザIDを記載する。 ( [コマンドライン引数](../../component/handlers/handlers-main.md#アプリケーションを起動する) を参照) | 必須 |
-| expectedMessage | メッセージ同期送信処理を行う場合、期待する要求電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
-| responseMessage | メッセージ同期送信処理を行う場合、返却する応答電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
-| expectedMessageByClient | HTTPメッセージ同期送信処理を行う場合、期待する要求電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
-| responseMessageByClient | HTTPメッセージ同期送信処理を行う場合、返却する応答電文の [グループID](../../development-tools/testing-framework/testing-framework-03-Tips.md#一つのシートに複数テストケースのデータを記載したい) を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| expectedMessage | メッセージ同期送信処理を行う場合、期待する要求電文の グループID を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| responseMessage | メッセージ同期送信処理を行う場合、返却する応答電文の グループID を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| expectedMessageByClient | HTTPメッセージ同期送信処理を行う場合、期待する要求電文の グループID を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| responseMessageByClient | HTTPメッセージ同期送信処理を行う場合、返却する応答電文の グループID を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
 
 デフォルトのグループIDを使用したい（グループIDを使わない）場合は、 default と記載する。
 デフォルトのグループIDと個別のグループは併用可能である。

@@ -187,10 +187,10 @@ JSPファイルの先頭に下記のディレクティブを出力する。
 ## 使用方法
 
 ツールを使用する際は、 Eclipse の設定が必要になる。
-設定方法は [JSP自動生成ツール インストールガイド](../../development-tools/toolbox/toolbox-02-SetUpJspGeneratorTool.md#jsp自動生成ツール-インストールガイド) を参照。
+設定方法は SetUpJspGeneratorTool を参照。
 
 一度上記設定を行った後は、 Eclipse上からツールを実行できる。
-実行方法は、 [HTMLファイルからの起動方法](../../development-tools/toolbox/toolbox-02-SetUpJspGeneratorTool.md#htmlファイルからの起動方法) を参照。
+実行方法は、 SetUpJspGeneratorTool_howToExecuteFromEclipse を参照。
 
 HTMLファイルと同じ場所にJSPファイルが生成される。
 HTMLファイルが含まれるディレクトリをリフレッシュすることでEclipse上で参照できる。

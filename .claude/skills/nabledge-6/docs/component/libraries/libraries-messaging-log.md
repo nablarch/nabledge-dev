@@ -280,7 +280,7 @@ messagingLogFormatter.httpReceivedMessageFormat=@@@@ HTTP RECEIVED MESSAGE @@@@\
 
 ### JSON形式の構造化ログとして出力する
 
-[JSON形式の構造化ログとして出力する](../../component/libraries/libraries-log.md#json形式の構造化ログとして出力する) 設定によりログをJSON形式で出力できるが、
+[ログの初期化メッセージを出力しないようにする](../../component/libraries/libraries-log.md#ログの初期化メッセージを出力しないようにする) 設定によりログをJSON形式で出力できるが、
 MessagingLogFormatter では
 メッセージングログの各項目はmessageの値に文字列として出力される。
 メッセージングログの各項目もJSONの値として出力するには、

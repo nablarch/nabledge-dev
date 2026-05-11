@@ -82,7 +82,7 @@ public class MenuAction {
 全カスタムタグに関係する仕様について説明する。
 
 また、カスタムタグを使用する場合は、Webフロントコントローラのハンドラの設定が必須となる。
-ハンドラの設定方法については、 [NablarchTagHandlerの設定](../../component/libraries/libraries-07-HowToSettingCustomTag.md#nablarchtaghandlerの設定) を参照。
+ハンドラの設定方法については、 WebView_NablarchTagHandler を参照。
 
 * [命名ルール](../../component/libraries/libraries-07-BasicRules.md)
 
@@ -90,7 +90,7 @@ public class MenuAction {
 
 各カスタムタグの仕様について説明する。
 
-カスタムタグの一覧については、 [タグリファレンス](../../component/libraries/libraries-07-TagReference.md#タグリファレンス) を参照。
+カスタムタグの一覧については、 WebView_TagReference を参照。
 
 ### 入力に関するカスタムタグ
 
@@ -112,7 +112,7 @@ public class MenuAction {
 * [フォーム内の入力要素を出力するカスタムタグ](../../component/libraries/libraries-07-FormTagList.md)
 
 > **Note:**
-> コードの入力に関するカスタムタグについては、 [コード値の表示](../../component/libraries/libraries-07-DisplayTag.md#コード値の表示) を参照。
+> コードの入力に関するカスタムタグについては、 [nameAlias属性の使用方法](../../component/libraries/libraries-07-DisplayTag.md#namealias属性の使用方法) を参照。
 
 ### 表示に関するカスタムタグ
 

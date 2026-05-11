@@ -9,7 +9,7 @@
 
 ## 事前準備
 
-後の [疎通確認](../../setup/blank-project/blank-project-setup-ContainerWebService.md#疎通確認) で使用するため、以下のいずれかをインストールする。
+後の firstStepContainerWebServiceStartupTest で使用するため、以下のいずれかをインストールする。
 
 * Firefox
 * Chrome
@@ -83,21 +83,21 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 ## 疎通確認
 
-疎通確認の仕組みや手順は通常のRESTfulウェブサービスプロジェクトと同じなので、 [RESTfulウェブサービスプロジェクトの初期セットアップ](../../setup/blank-project/blank-project-setup-WebService.md#疎通確認) を参照。
+疎通確認の仕組みや手順は通常のRESTfulウェブサービスプロジェクトと同じなので、 RESTfulウェブサービスプロジェクトの初期セットアップ を参照。
 
 > **Note:**
 > アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
 ## コンテナイメージを作成する
 
-コンテナイメージの作成方法はコンテナ用のウェブプロジェクトと同じなので、 [コンテナ用ウェブプロジェクトの初期セットアップ](../../setup/blank-project/blank-project-setup-ContainerWeb.md#コンテナイメージを作成する) を参照。
+コンテナイメージの作成方法はコンテナ用のウェブプロジェクトと同じなので、 コンテナ用ウェブプロジェクトの初期セットアップ を参照。
 
 > **Note:**
 > アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
 ## コンテナイメージを実行する
 
-コンテナイメージの実行方法はコンテナ用のウェブプロジェクトと同じなので、 [コンテナ用ウェブプロジェクトの初期セットアップ](../../setup/blank-project/blank-project-setup-ContainerWeb.md#コンテナイメージを実行する) を参照。
+コンテナイメージの実行方法はコンテナ用のウェブプロジェクトと同じなので、 コンテナ用ウェブプロジェクトの初期セットアップ を参照。
 
 > **Note:**
 > アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。

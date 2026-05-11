@@ -48,7 +48,7 @@
 * hiddenタグの暗号化機能に対応する改竄チェックと復号を行う。
 * HTTPアクセスログのリクエストパラメータを出力する。
 * カスタムタグのデフォルト値をJSPで参照できるように、 CustomTagConfigをリクエストスコープに設定する。
-  設定可能なデフォルト値の詳細は [NablarchTagHandlerの設定](../../component/libraries/libraries-07-HowToSettingCustomTag.md#nablarchtaghandlerの設定) の項を参照すること。
+  設定可能なデフォルト値の詳細は WebView_NablarchTagHandler の項を参照すること。
 
 > **Note:**
 > 改竄チェックと復号は、カスタムタグのデフォルト値設定において、

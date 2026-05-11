@@ -13,7 +13,7 @@
     {
       "id": "s2",
       "title": "テストデータの作成",
-      "content": "テストデータを記載したExcelファイルそのものの作成方法を説明する。テストデータを記載したExcelファイルは、テストソースコードと同じディレクトリに同じ名前で格納する(拡張子のみ異なる)。\nなお、後述する\n [精査のテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#文字種と文字列長の単項目精査テストケース) 、\n [コンストラクタのテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#コンストラクタに対するテストケース) 、\n [setter、getterに対するテストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#settergetterに対するテストケース)\nのそれぞれが、1シートずつ使用する前提である。\n\nテストデータの記述方法詳細については、 [自動テストフレームワーク](../../development-tools/testing-framework/testing-framework-01-Abstract.md) 、 [データベースを使用するクラスのテスト](../../development-tools/testing-framework/testing-framework-02-DbAccessTest.md) を参照。\n\nなお、メッセージデータやコードマスタなどの、データベースに格納する静的マスタデータは、プロジェクトで管理されたデータがあらかじめ投入されている\n(これらのデータを個別のテストデータとして作成しない)前提である。",
+      "content": "テストデータを記載したExcelファイルそのものの作成方法を説明する。テストデータを記載したExcelファイルは、テストソースコードと同じディレクトリに同じ名前で格納する(拡張子のみ異なる)。\nなお、後述する\n 精査のテストケース 、\n コンストラクタのテストケース 、\n setter、getterに対するテストケース\nのそれぞれが、1シートずつ使用する前提である。\n\nテストデータの記述方法詳細については、 [自動テストフレームワーク](../../development-tools/testing-framework/testing-framework-01-Abstract.md) 、 [データベースを使用するクラスのテスト](../../development-tools/testing-framework/testing-framework-02-DbAccessTest.md) を参照。\n\nなお、メッセージデータやコードマスタなどの、データベースに格納する静的マスタデータは、プロジェクトで管理されたデータがあらかじめ投入されている\n(これらのデータを個別のテストデータとして作成しない)前提である。",
       "level": 3
     },
     {
@@ -31,7 +31,7 @@
     {
       "id": "s5",
       "title": "テストケース表の作成方法",
-      "content": "以下のカラムを用意する。\n\n| カラム名 | 記載内容 |\n|---|---|\n| propertyName | テスト対象のプロパティ名 |\n| allowEmpty | そのプロパティが未入力を許容するか |\n| min | そのプロパティが入力値として許容する最小文字列長（ 省略可） |\n| max | そのプロパティが入力値として許容する最大文字列長 |\n| messageIdWhenEmptyInput | 未入力時に期待するメッセージID（省略可）  [2] |\n| messageIdWhenInvalidLength | 文字列長不適合時に期待するメッセージID（省略可） [3] |\n| messageIdWhenNotApplicable | 文字種不適合時に期待するメッセージID |\n| 半角英字 | 半角英字を許容するか |\n| 半角数字 | 半角数字を許容するか |\n| 半角記号 | 半角記号を許容するか |\n| 半角カナ | 半角カナを許容するか |\n| 全角英字 | 全角英字を許容するか |\n| 全角数字 | 全角数字を許容するか |\n| 全角ひらがな | 全角ひらがなを許容するか |\n| 全角カタカナ | 全角カタカナを許容するか |\n| 全角漢字 | 全角漢字を許容するか |\n| 全角記号その他 | 全角記号その他を許容するか |\n| 外字 | 外字を許容するか |\n\nmessageIdWhenEmptyInputを省略した場合は、 [自動テストフレームワーク設定値](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#自動テストフレームワーク設定値) で設定したemptyInputMessageId\nの値が使用される。\n\nmessageIdWhenInvalidLengthを省略した場合は、 [自動テストフレームワーク設定値](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#自動テストフレームワーク設定値) で\n設定したデフォルト値が使用される。省略時にどのデフォルト値が使用されるかは、max欄及びmin欄の記載によって決まり、以下の通り。\n\n| min欄の記載 | maxとminの比較 | 省略時に使用されるデフォルト値 |\n|---|---|---|\n| なし | (該当なし) | maxMessageId |\n| あり | max > min | maxAndMinMessageId（超過時）、underLimitMessageId（不足時） |\n| あり | max = min | fixLengthMessageId |\n\n許容するかどうかを記入するカラムには、以下の値を設定する。\n\n| 設定内容 | 設定値 | 備考 |\n|---|---|---|\n| 許容する | o | 半角英小文字のオー |\n| 許容しない | x | 半角英小文字のエックス |\n\n具体例を以下に示す。\n\n![entityUnitTest_CharsetAndLengthExample.png](assets/testing-framework-02-entityUnitTestWithNablarchValidation/entityUnitTest_CharsetAndLengthExample.png)",
+      "content": "以下のカラムを用意する。\n\n| カラム名 | 記載内容 |\n|---|---|\n| propertyName | テスト対象のプロパティ名 |\n| allowEmpty | そのプロパティが未入力を許容するか |\n| min | そのプロパティが入力値として許容する最小文字列長（ 省略可） |\n| max | そのプロパティが入力値として許容する最大文字列長 |\n| messageIdWhenEmptyInput | 未入力時に期待するメッセージID（省略可）  [2] |\n| messageIdWhenInvalidLength | 文字列長不適合時に期待するメッセージID（省略可） [3] |\n| messageIdWhenNotApplicable | 文字種不適合時に期待するメッセージID |\n| 半角英字 | 半角英字を許容するか |\n| 半角数字 | 半角数字を許容するか |\n| 半角記号 | 半角記号を許容するか |\n| 半角カナ | 半角カナを許容するか |\n| 全角英字 | 全角英字を許容するか |\n| 全角数字 | 全角数字を許容するか |\n| 全角ひらがな | 全角ひらがなを許容するか |\n| 全角カタカナ | 全角カタカナを許容するか |\n| 全角漢字 | 全角漢字を許容するか |\n| 全角記号その他 | 全角記号その他を許容するか |\n| 外字 | 外字を許容するか |\n\nmessageIdWhenEmptyInputを省略した場合は、 entityUnitTest_EntityTestConfiguration で設定したemptyInputMessageId\nの値が使用される。\n\nmessageIdWhenInvalidLengthを省略した場合は、 entityUnitTest_EntityTestConfiguration で\n設定したデフォルト値が使用される。省略時にどのデフォルト値が使用されるかは、max欄及びmin欄の記載によって決まり、以下の通り。\n\n| min欄の記載 | maxとminの比較 | 省略時に使用されるデフォルト値 |\n|---|---|---|\n| なし | (該当なし) | maxMessageId |\n| あり | max > min | maxAndMinMessageId（超過時）、underLimitMessageId（不足時） |\n| あり | max = min | fixLengthMessageId |\n\n許容するかどうかを記入するカラムには、以下の値を設定する。\n\n| 設定内容 | 設定値 | 備考 |\n|---|---|---|\n| 許容する | o | 半角英小文字のオー |\n| 許容しない | x | 半角英小文字のエックス |\n\n具体例を以下に示す。\n\n![entityUnitTest_CharsetAndLengthExample.png](assets/testing-framework-02-entityUnitTestWithNablarchValidation/entityUnitTest_CharsetAndLengthExample.png)",
       "level": 4
     },
     {
@@ -85,7 +85,7 @@
     {
       "id": "s14",
       "title": "項目間精査など",
-      "content": "項目間精査など、バリデーションメソッドの [精査対象確認](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#精査対象確認)\nで行った精査対象指定以外の動作確認を行うケースを作成する。\n\n下図では、\"newPasswordとconfirmPasswordが等しいこと\"というバリデーションメソッドに対する正常系のケースを作成している。\n\n![entityUnitTest_RelationalValidation.png](assets/testing-framework-02-entityUnitTestWithNablarchValidation/entityUnitTest_RelationalValidation.png)",
+      "content": "項目間精査など、バリデーションメソッドの entityUnitTest_ValidationMethodSpecifyNormal\nで行った精査対象指定以外の動作確認を行うケースを作成する。\n\n下図では、\"newPasswordとconfirmPasswordが等しいこと\"というバリデーションメソッドに対する正常系のケースを作成している。\n\n![entityUnitTest_RelationalValidation.png](assets/testing-framework-02-entityUnitTestWithNablarchValidation/entityUnitTest_RelationalValidation.png)",
       "level": 5
     },
     {
@@ -109,13 +109,13 @@
     {
       "id": "s18",
       "title": "setter、getterに対するテストケース",
-      "content": "[setter、getterに対するテストケース](../../development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.md#settergetterに対するテストケース) を参照。",
+      "content": "entityUnitTest_SetterGetterCase_BeanValidation を参照。",
       "level": 3
     },
     {
       "id": "s19",
       "title": "自動テストフレームワーク設定値",
-      "content": "[文字種と文字列長の単項目精査テストケース](../../development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.md#文字種と文字列長の単項目精査テストケース) を実施する際に必要な初期値設定について説明する。",
+      "content": "entityUnitTest_ValidationCase を実施する際に必要な初期値設定について説明する。",
       "level": 3
     },
     {

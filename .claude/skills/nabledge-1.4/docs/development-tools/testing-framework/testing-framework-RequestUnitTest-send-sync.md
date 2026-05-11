@@ -7,7 +7,7 @@
 
 > **Note:**
 > リクエスト単体テストそのものの概要については、
-> [リクエスト単体テストの実施方法(同期応答メッセージ送信処理)](../../development-tools/testing-framework/testing-framework-02-requestunittest-send-sync.md#リクエスト単体テストの実施方法同期応答メッセージ送信処理)
+> message_sendSyncMessage_test
 > を参照。
 
 ### 全体像
@@ -101,4 +101,4 @@ Excelから読み込んだテストデータを編集するためのインタフ
 を参照。
 
 > **Note:**
-> パディングおよびバイナリデータの扱いは、 [固定長ファイル](../../development-tools/testing-framework/testing-framework-RequestUnitTest-batch.md#固定長ファイル) と同様である。
+> パディングおよびバイナリデータの扱いは、 [テストデータ](../../development-tools/testing-framework/testing-framework-RequestUnitTest-batch.md#テストデータ) と同様である。

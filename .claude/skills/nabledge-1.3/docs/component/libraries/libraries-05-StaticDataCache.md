@@ -76,7 +76,7 @@
 StaticDataCache インタフェースのメソッドを使用して静的データを取得する。
 
 この際、StaticDataCache インタフェースを実装したフィールドには、本機能が提供している StaticDataCache インタフェースの実装クラスを
-リポジトリの [リポジトリに保持するインスタンスの生成(DIコンテナ)](../../component/libraries/libraries-02-01-Repository-config.md#リポジトリに保持するインスタンスの生成diコンテナ) の機能で設定する。
+リポジトリの [環境設定の取得](../../component/libraries/libraries-02-01-Repository-config.md#環境設定の取得) の機能で設定する。
 
 以下に静的データを取得する実装方法について記述する。
 

@@ -22,7 +22,7 @@
 | [W11AC01Action.java](../../../knowledge/assets/web-application-03-listSearch/W11AC01Action.java) | Action | ユーザ一覧照会画面で指定された検索条件に一致する情報を、データベースから取得する。 結果をリクエストスコープに格納し、JSPに遷移させる。  本クラスから使用するSQLファイルは、下記リンク先のファイルを参照すること。 (右クリック->保存でダウンロード)  [W11AC01Action.sql](../../../knowledge/assets/web-application-03-listSearch/W11AC01Action.sql) |
 | [W11AC0101.jsp](../../../knowledge/assets/web-application-03-listSearch/W11AC0101.jsp) | View | ユーザ一覧照会画面に検索結果を表示する。 |
 
-ステレオタイプについては [業務コンポーネントの責務配置](../../about/about-nablarch/about-nablarch-01-NablarchOutline.md#業務コンポーネントの責務配置) を参照。
+ステレオタイプについては stereoType を参照。
 
 ## 作成手順
 
@@ -237,9 +237,9 @@ public class W11AC01Form extends W11AC01FormBase {
 本処理では、アプリケーションフレームワークが持つデータベースアクセス機能の中から、以下のものを使用している。
 
 * [Javaオブジェクトのフィールドの値をバインド変数に設定する機能](../../guide/web-application/web-application-03-listSearch.md#javaオブジェクトのフィールドの値をバインド変数に設定する機能)
-* [条件が可変のSQL文を組み立てる機能](../../guide/web-application/web-application-03-listSearch.md#条件が可変のsql文を組み立てる機能)
+* 03_SQL
 * [LIKE検索を簡易的に実装できる機能](../../guide/web-application/web-application-03-listSearch.md#like検索を簡易的に実装できる機能)
-* [ORDER BY句を動的に変更する機能](../../guide/web-application/web-application-03-listSearch.md#order-by句を動的に変更する機能)
+* 03_orderBy
 
 > **Note:**
 > 本処理で使用するビジネスロジックは他の処理では使用しない。
@@ -258,7 +258,7 @@ ParameterizedSqlPStatement#retrieveの引数に、バインド変数に指定し
 
 > **Note:**
 > サンプルでは、本機能を含んだ [一覧検索用の検索処理](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FacilitateTag.html#webview-listsearchresultdbaccesssupport) を用いて検索を行っている。
-> 実例は [メソッドの実装](../../guide/web-application/web-application-03-listSearch.md#メソッドの実装) を参照。
+> 実例は 03_methodCreate を参照。
 
 #### 条件が可変のSQL文を組み立てる機能
 
@@ -277,10 +277,10 @@ loginIdがnullもしくは空文字かどうかの判断は、SQL文を組み立
 WHERE $if (loginId)   {LOGIN_ID = :loginId}
 ```
 
-( [記載しているサンプルプログラムソースコードの注意事項](../../about/about-nablarch/about-nablarch-aboutThis.md#注意事項) 参照)
+( 記載しているサンプルプログラムソースコードの注意事項 参照)
 
 実際に検索条件として:loginIdに設定される値は、検索実行(ParameterizedSqlPStatement#retrieve実行)時に引き渡すオブジェクトの、フィールドの値である(この例では、loginIdフィールドの値)。
-実例は [メソッドの実装](../../guide/web-application/web-application-03-listSearch.md#メソッドの実装) を参照。
+実例は 03_methodCreate を参照。
 
 #### LIKE検索を簡易的に実装できる機能
 
@@ -290,14 +290,14 @@ LIKE検索を簡易的に実装できる機能とは、LIKE検索を実装する
 * Javaコードで条件に"%"を付加する必要がない("%"はSQL文に記述する)。
 
 下記のソースコードは、検索実行(ParameterizedSqlPStatement#retrieve実行)時に引き渡すオブジェクトの、kanjiNameフィールドの値で中間一致検索を行っている。
-エスケープ処理や、入力された検索条件に対する"%"を付加するJavaの処理は不要である。実例は [メソッドの実装](../../guide/web-application/web-application-03-listSearch.md#メソッドの実装) を参照。
+エスケープ処理や、入力された検索条件に対する"%"を付加するJavaの処理は不要である。実例は 03_methodCreate を参照。
 
 ```sql
 -- 【説明】SQL文を実行する際に渡されるオブジェクトの"kanjiName"フィールドの値で中間一致検索
 WHERE USR.KANJI_NAME LIKE :%kanjiName%
 ```
 
-( [記載しているサンプルプログラムソースコードの注意事項](../../about/about-nablarch/about-nablarch-aboutThis.md#注意事項) 参照)
+( 記載しているサンプルプログラムソースコードの注意事項 参照)
 
 #### ORDER BY句を動的に変更する機能
 
@@ -320,13 +320,13 @@ $sort (sortId) {
 }
 ```
 
-( [記載しているサンプルプログラムソースコードの注意事項](../../about/about-nablarch/about-nablarch-aboutThis.md#注意事項) 参照)
+( 記載しているサンプルプログラムソースコードの注意事項 参照)
 
-実例は [メソッドの実装](../../guide/web-application/web-application-03-listSearch.md#メソッドの実装) を参照。
+実例は 03_methodCreate を参照。
 
 #### メソッドの実装
 
-[Javaオブジェクトのフィールドの値をバインド変数に設定する機能](../../guide/web-application/web-application-03-listSearch.md#javaオブジェクトのフィールドの値をバインド変数に設定する機能) 、 [条件が可変のSQL文を組み立てる機能](../../guide/web-application/web-application-03-listSearch.md#条件が可変のsql文を組み立てる機能) 、 [LIKE検索を簡易的に実装できる機能](../../guide/web-application/web-application-03-listSearch.md#like検索を簡易的に実装できる機能) 、 [ORDER BY句を動的に変更する機能](../../guide/web-application/web-application-03-listSearch.md#order-by句を動的に変更する機能) を参考に、 *W11AC01Actionクラス* を作成し以下のメソッドを追加する。このメソッドの目的は、指定された検索条件に一致する情報を
+[Javaオブジェクトのフィールドの値をバインド変数に設定する機能](../../guide/web-application/web-application-03-listSearch.md#javaオブジェクトのフィールドの値をバインド変数に設定する機能) 、 03_SQL 、 [LIKE検索を簡易的に実装できる機能](../../guide/web-application/web-application-03-listSearch.md#like検索を簡易的に実装できる機能) 、 03_orderBy を参考に、 *W11AC01Actionクラス* を作成し以下のメソッドを追加する。このメソッドの目的は、指定された検索条件に一致する情報を
 データベースから取得することである。
 
 このメソッドでは、条件が可変のSQL文を組み立てる機能、LIKE検索を簡易的に実装できる機能、ORDER BY句を動的に変更する機能を組み合わせて使っている。
@@ -416,7 +416,7 @@ public class W11AC01Action extends DbAccessSupport {
 // ～後略～
 ```
 
-( [記載しているサンプルプログラムソースコードの注意事項](../../about/about-nablarch/about-nablarch-aboutThis.md#注意事項) 参照)
+( 記載しているサンプルプログラムソースコードの注意事項 参照)
 
 > **Note:**
 > [Javaオブジェクトのフィールドの値をバインド変数に設定する機能](../../guide/web-application/web-application-03-listSearch.md#javaオブジェクトのフィールドの値をバインド変数に設定する機能) を明示的に使用する場合、getParameterizedSqlStatementの第2引数(上記のサンプルではcondition)とretrieveの引数(同じくcondition)は、両方に同じインスタンスを渡すこと。
@@ -481,7 +481,7 @@ public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {
 }
 ```
 
-( [記載しているサンプルプログラムソースコードの注意事項](../../about/about-nablarch/about-nablarch-aboutThis.md#注意事項) 参照)
+( 記載しているサンプルプログラムソースコードの注意事項 参照)
 
 ### View(JSP)の作成
 
@@ -493,10 +493,10 @@ public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {
 
 ```
 
-( [記載しているサンプルプログラムソースコードの注意事項](../../about/about-nablarch/about-nablarch-aboutThis.md#注意事項) 参照)
+( 記載しているサンプルプログラムソースコードの注意事項 参照)
 
 > **Note:**
-> 本画面で使用している一覧表示用のカスタムタグも含め、検索結果の一覧表示を行う方法は、 [使用例集](../../guide/web-application/web-application-function.md#検索結果の一覧表示) を参照。
+> 本画面で使用している一覧表示用のカスタムタグも含め、検索結果の一覧表示を行う方法は、 [使用例集](../../guide/web-application/web-application-function.md#データベース一括登録) を参照。
 
 ## 次に読むもの
 

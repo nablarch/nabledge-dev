@@ -98,7 +98,7 @@
 
 1. JSPの作成
 
-JSPの実装については、登録画面初期表示の実装時と同じ手順のため、 [JSPの実装](../../guide/web-application/web-application-06-initial-view.md#jspの実装) を参照して行う。
+JSPの実装については、登録画面初期表示の実装時と同じ手順のため、 [JSPの実装](../../guide/web-application/web-application-06-initial-view.md#リクエスト単体テスト実施) を参照して行う。
 
 | コピー元 | コピー先 |
 |---|---|

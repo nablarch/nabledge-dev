@@ -317,7 +317,7 @@ public interface Handler<TData, TResult> {
 第二引数には、 **実行コンテキスト** と呼ばれる、アプリケーション実行中にサーバ側で使用する以下の制御情報を格納したオブジェクトが渡される。
 (各項目の詳細についてはリンク先の解説を参照)
 
-* [ハンドラキュー](../../about/about-nablarch/about-nablarch-architectural-pattern-concept.md#nafのアプリケーション動作モデル)
+* ハンドラキュー
 * [リクエストスコープ](../../about/about-nablarch/about-nablarch-architectural-pattern-concept.md#変数スコープ)
 * [セッションスコープ](../../about/about-nablarch/about-nablarch-architectural-pattern-concept.md#変数スコープ)
 * [データリーダ/データリーダファクトリ](../../about/about-nablarch/about-nablarch-architectural-pattern-concept.md#データリーダ)

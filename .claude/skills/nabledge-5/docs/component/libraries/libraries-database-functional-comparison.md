@@ -6,7 +6,7 @@
 * <a href="https://jcp.org/en/jsr/detail?id=317" target="_blank">JSR317(外部サイト、英語)</a>
 
 > **Important:**
-> ユニバーサルDAOでは、JPAで定義されているアノテーションのうち、 [Entityに使用できるJPAアノテーション](../../component/libraries/libraries-universal-dao.md#entityに使用できるjpaアノテーション) に記載のあるものだけをサポートしている。
+> ユニバーサルDAOでは、JPAで定義されているアノテーションのうち、 [ページング処理の件数取得用SQLを変更する](../../component/libraries/libraries-universal-dao.md#ページング処理の件数取得用sqlを変更する) に記載のあるものだけをサポートしている。
 > ここに記載のないアノテーションに関連する機能については、使用できない。
 
 機能比較（○：提供あり　△：一部提供あり　×：提供なし　－:対象外）

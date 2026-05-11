@@ -83,7 +83,7 @@
 
 ## 精査処理呼び出し実装
 
-[精査処理呼び出し実装](../../guide/web-application/web-application-07-confirm-view.md#精査処理呼び出し実装) で実装したのと同様に、Actionクラスに精査処理を実装する。
+[Actionクラスの実装](../../guide/web-application/web-application-07-confirm-view.md#actionクラスの実装) で実装したのと同様に、Actionクラスに精査処理を実装する。
 
 1. リクエスト単体データシートの修正
 

@@ -329,7 +329,7 @@ Java Beansクラスにバインドする場合
 * CsvFormat
 
 CSVファイルのフォーマットは予め用意したフォーマットセットの中から選択できる。
-フォーマットセットについては  [CSVファイルのフォーマットとして指定できるフォーマットセット](../../component/libraries/libraries-data-bind.md#csvファイルのフォーマットとして指定できるフォーマットセット) を参照。
+フォーマットセットについては  [Java Beansクラスにバインドできるファイル形式を追加する](../../component/libraries/libraries-data-bind.md#java-beansクラスにバインドできるファイル形式を追加する) を参照。
 
 以下に実装例を示す。
 

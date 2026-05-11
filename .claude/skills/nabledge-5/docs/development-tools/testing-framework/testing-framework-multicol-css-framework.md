@@ -189,7 +189,7 @@ multicol.lessは、自動生成した雛形を修正する。
 自動生成方法及び修正方法の詳細は、以下を参照すること。
 
 * [lessインポート定義雛形生成コマンド](../../development-tools/testing-framework/testing-framework-plugin-build.md#lessインポート定義雛形生成コマンド)
-* [lessインポート定義ファイル](../../development-tools/testing-framework/testing-framework-plugin-build.md#lessインポート定義ファイル)
+* lessImport_less
 
 [サンプルのmulticol.lessのダウンロード](../../../knowledge/assets/testing-framework-multicol-css-framework/multicol.less)
 

@@ -90,7 +90,7 @@ web/batch
 Apache Maven(以下Maven)のプロファイル [1] 機能により
 切り替えを行う。
 
-プロファイルは、アーキタイプから生成したプロジェクトに初期状態で定義されている。定義されているプロファイルについては、 [プロファイル一覧](../../setup/blank-project/blank-project-MavenModuleStructures.md#プロファイル一覧) を参照。
+プロファイルは、アーキタイプから生成したプロジェクトに初期状態で定義されている。定義されているプロファイルについては、 mavenModuleStructuresProfilesList を参照。
 
 以下に、プロファイルに本番環境を指定してMavenでビルドした際の動作を示す。
 
@@ -209,7 +209,7 @@ mvn test
 
 プロファイルの定義で指定したディレクトリを追加する。
 
-[プロファイルの定義](../../setup/setting-guide/setting-guide-ManagingEnvironmentalConfiguration.md#プロファイルの定義) の例の場合は、「src/env/ita/resources/」を作成する。
+addProfile の例の場合は、「src/env/ita/resources/」を作成する。
 
 ### アプリケーション設定ファイルの作成及び修正
 

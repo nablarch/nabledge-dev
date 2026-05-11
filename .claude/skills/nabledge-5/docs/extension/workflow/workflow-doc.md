@@ -324,7 +324,7 @@ XORゲートウェイの定義
 
 下記定義の用に、XORゲートウェイ(①)を用いて複数の遷移先を定義する。
 XORゲートウェイから伸びるシーケンスフローには、このシーケンスフローで遷移するための条件(②)を定義する。
-進行条件の定義方法などは、 [XORゲートウェイの進行先ノードの判定方法](../../extension/workflow/workflow-doc.md#xorゲートウェイの進行先ノードの判定方法) を参照。
+進行条件の定義方法などは、 [ワークフロー（ステートマシン）の定義を変更する](../../extension/workflow/workflow-doc.md#ワークフローステートマシンの定義を変更する) を参照。
 
 ![flow-condition.png](../../../knowledge/assets/workflow-doc/flow-condition.png)
 

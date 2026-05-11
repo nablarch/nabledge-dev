@@ -172,7 +172,7 @@ Thread Result:[200 Success] The request has succeeded.
 
 #### アプリケーションのビルド
 
-まだビルドしていない場合は、 [バッチアプリケーションのビルド](../../setup/blank-project/blank-project-setup-NablarchBatch.md#バッチアプリケーションのビルド) を参照してビルドする。
+まだビルドしていない場合は、 firstStepBatchBuild を参照してビルドする。
 
 #### アプリケーションの起動
 
@@ -211,7 +211,7 @@ mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
 
 原因は分からないが疎通確認に失敗する場合、どこかで手順を誤っている可能性がある。
 
-原因が分からない場合は、[ブランクプロジェクト作成](../../setup/blank-project/blank-project-setup-NablarchBatch.md#ブランクプロジェクト作成) からやり直してみること。
+原因が分からない場合は、firstStepGenerateBatchBlankProject からやり直してみること。
 
 ## 補足
 

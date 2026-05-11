@@ -18,7 +18,7 @@
 [monthタグ](../../component/libraries/libraries-tag-reference.md#monthタグ) (月)
 [weekタグ](../../component/libraries/libraries-tag-reference.md#weekタグ) (週)
 [timeタグ](../../component/libraries/libraries-tag-reference.md#timeタグ) (時間)
-[datetimeLocalタグ](../../component/libraries/libraries-tag-reference.md#datetimelocalタグ) (ローカル日時)
+tag-datetimeLocal_tag (ローカル日時)
 [numberタグ](../../component/libraries/libraries-tag-reference.md#numberタグ) (数値)
 [rangeタグ](../../component/libraries/libraries-tag-reference.md#rangeタグ) (レンジ)
 [colorタグ](../../component/libraries/libraries-tag-reference.md#colorタグ) (色)
