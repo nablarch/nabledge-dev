@@ -2,25 +2,34 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11
+**Updated**: 2026-05-11 (rev2)
 
 ## In Progress
 
-### Task 17: FAIL 内容の正当性確認 ← 次のタスク
+### Task 17: labels.py h1 section_title バグ修正 ← 次のタスク
 
-**背景（前回やり直しの教訓）:**
-- 前回は verify 追加 → FAIL 大量 → RBKC 修正 → 劣化、という最悪ループに陥り revert
-- 今回の 683 FAIL（v6）が genuine RBKC バグか、verify の誤検知かを確認してから次に進む
+**調査結果（事実）:**
+- v6 FAIL 701件 = すべて QL1
+  - 692件: `section_title not found in sections[]`（JSON side）
+  - 9件: `anchor` 不一致（docs MD side）
+- 692件の根本原因: labels.py が h1 ラベルの `section_title` に h1 テキストをセットしているが、
+  設計書 §3-2-1 の仕様は「top-level なら空文字」— これが verify 誤検知の原因
+- 9件の anchor 不一致は genuine RBKC バグ（別途確認要）
 
-**調査手順（推測禁止・事実確認のみ）:**
+**修正方針（設計書 §3-2-1 準拠）:**
+- `labels.py`: h1 ラベルは `section_title = ""`（top-level は空文字）
+- `verify.py`: `section_title` が空のとき `sections[]` チェックをスキップ（JSON ファイル存在チェックのみ）
 
 **Steps:**
-- [ ] FAIL サンプル1: `:ref:\`universal_dao\`` について — labels.py が返す `section_title` の実際の値を確認（コードを読む）
-- [ ] FAIL サンプル2: `libraries-universal-dao.json` の `sections[].title` 一覧を確認（ファイルを読む）
-- [ ] FAIL サンプル3: `universal_dao.rst` の先頭を確認（ラベルが h1 直前か h2 直前かを確認）
-- [ ] 上記3点の事実から FAIL が genuine RBKC バグか verify の誤検知かを判断
-- [ ] 判断結果をユーザーに提示（推測なし・事実のみ）
-- [ ] ユーザー承認後に fix 実施
+- [ ] TDD: labels.py h1 ラベルの `section_title` が `""` になるテスト追加（RED）
+- [ ] labels.py 修正: h1 ラベルの `section_title` を `""`（GREEN）
+- [ ] TDD: verify.py `section_title` 空のとき `sections[]` スキップするテスト追加（RED）
+- [ ] verify.py 修正（GREEN）
+- [ ] 全5バージョン verify 実行、FAIL diff 確認（692件が消えること、9件 anchor FAILの内容確認）
+- [ ] anchor 9件が genuine RBKC バグか verify 誤検知か確認・対処
+- [ ] 全 FAIL 0件を確認
+- [ ] 設計書 §4 マトリクス QL1 を ✅ に更新
+- [ ] ユーザーに完了報告
 
 ### Task 16: 実装（完了）
 
