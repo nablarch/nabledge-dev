@@ -2,11 +2,11 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev3)
+**Updated**: 2026-05-11 (rev4)
 
 ## In Progress
 
-### Task 17: `_scan_rst_labels` を docutils AST ベースに置き換え ← 次のタスク
+### Task 17: `_scan_rst_labels` を docutils AST ベースに置き換え
 
 **調査結果（事実）:**
 - v6 FAIL 701件 = すべて QL1
@@ -22,16 +22,45 @@
   - docutils は既に依存に含まれており、他の RST 解析箇所（`verify.py`、`rst_ast_visitor.py`）は全て docutils AST を使用済み
 
 **Steps:**
-- [ ] TDD: `_scan_rst_labels` の docutils AST ベース実装に対するテスト追加（RED）
-  - h1 直前ラベル → `section_title=""`
-  - section 内ラベル → enclosing section title
-  - `-->` / `}` を含む RST → 誤認しないこと
-- [ ] `_scan_rst_labels` を docutils AST ベースに書き直し（GREEN）
-- [ ] 全テスト PASS 確認
-- [ ] 全5バージョン verify 実行、FAIL diff 確認（701件が全て消えること）
+- [x] TDD: `_scan_rst_labels` の docutils AST ベース実装に対するテスト追加（RED）
+- [x] `_scan_rst_labels` を docutils AST ベースに書き直し（GREEN） — `51381d507`
+- [x] 全テスト PASS 確認（514 tests passed）
+- [x] インプット→アウトプット確認（JSON/MD 両方）:
+  - `universal_dao`（h1ラベル）: `section_title=""`, `title="ユニバーサルDAO"` ✅, MD アンカー実在 ✅
+  - `tag-double_submission_server_side`（-->誤認ケース）: `section_title="二重サブミットを防ぐ"` ✅, MD アンカー実在 ✅
+  - 元々 PASS していた h2 ラベル（`universal_dao-sql_file`）: JSON section 実在 ✅, MD アンカー実在 ✅
+- [ ] v1.4 残り2 FAIL 修正（BLOCKED: RBKC create バグ — `SampleApplicationExtension.rst` の h2 が `sections[]` に出ない）
+  - FAIL: `customize_flow_proceed_condition` → `section_title='進行先ノードの判定制御ロジックの実装'` が JSON sections[] に存在しない
+  - 原因調査中: create 側でどこが h2 を sections に出力しないかを特定する必要あり
+- [ ] 全5バージョン verify 実行、FAIL diff 確認（全バージョン0 FAIL になること）
 - [ ] Expert review（Software Engineer + QA Engineer）
 - [ ] 設計書 §4 マトリクス QL1 を ✅ に更新
 - [ ] PR 最終確認（Success Criteria チェック）
+
+**現在の FAIL カウント（Task 17 実装後）:**
+| Version | Task16後 | Task17後 | 残り |
+|---------|---------|---------|------|
+| v6      | 701     | 0       | 0 ✅ |
+| v5      | 688     | 0       | 0 ✅ |
+| v1.4    | 125     | 2       | 2 ❌ |
+| v1.3    | 113     | 0       | 0 ✅ |
+| v1.2    | 126     | 0       | 0 ✅ |
+
+**v1.4 残り2 FAIL 詳細:**
+```
+FAIL SampleApplicationDesign.rst: QL1 :ref:`customize_flow_proceed_condition`
+  section_title '進行先ノードの判定制御ロジックの実装' not found in
+  workflow-SampleApplicationExtension.json sections[]
+FAIL SampleApplicationDesign.rst: QL1 :ref:`customize_flow_proceed_condition`
+  anchor '進行先ノードの判定制御ロジックの実装' not found in
+  workflow-SampleApplicationExtension.md headings
+```
+- RST: h1「ゲートウェイの進行先ノード判定ロジックを変更する方法」+ h2「進行先ノードの判定制御ロジックの実装」
+- labels.py は正しく `section_title='進行先ノードの判定制御ロジックの実装'` を返す（新旧両方）
+- JSON: `sections[]` が空、`title` が「h1 — h2」で結合されている
+- MD: h2 が独立した `##` 見出しでなくファイルタイトルに折り畳まれている
+- Task 16 後の 125 FAIL に含まれていた既存 RBKC create バグ（labels.py 変更とは無関係）
+- RBKC create 側で単一 h2 ファイルの扱いを修正する必要あり
 
 ### Task 16: 実装（完了）
 

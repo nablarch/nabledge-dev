@@ -335,6 +335,15 @@ GitHub Web は Markdown の heading text を `github_slug()` で slug 化して 
 
 #### 3-2-3. QL1 抽出と検証
 
+**先送り理由と実装決定 (Issue #320, 2026-05-11)**:
+QL1 cross-doc 検証は Phase 22-B-16 で `LabelTarget` (`file_id`, `section_title`, `anchor`) が設計されて以来実装が保留されていた。保留理由は「create 側の link 生成 (#149) が完了するまで verify 側の対象範囲が確定しなかった」こと。#149 が完了した後も検証実装が先送りになっていたのは `check_source_links()` のリファクタリング (Phase 22-B-12 五分象限分類) との調整タイミングの問題であり、設計上の障壁はなかった。
+
+Issue #320 での実装決定:
+- `check_source_links()` に `knowledge_dir=` / `docs_dir=` を追加し、`LabelTarget.file_id` が非空のとき 4 点検証を実行する
+- bare label 形式 (`:ref:\`label\``) と display-text 形式 (`:ref:\`text <label>\``) の両方をカバーする
+- `_section_titles_from_json()` / `_heading_slugs_from_md()` はモジュールレベルヘルパーとして実装し、`check_ql1_link_targets()` と共有
+- h1 ラベルの `section_title` 問題 (labels.py が h1 heading text を `section_title` にセットするが、RBKC は h1 を JSON `title` フィールドに出力し `sections[]` には含めない) は別 issue でフィックスする
+
 ソース AST から内部リンク候補を収集し、JSON / docs MD の両側で下表の整合を検証する。
 
 | AST node | 抽出するもの | JSON content / docs MD 双方の期待形式 | verify 検証 (JSON side) | verify 検証 (docs MD side) |
