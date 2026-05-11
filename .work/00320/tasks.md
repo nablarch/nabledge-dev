@@ -6,27 +6,37 @@
 
 ## In Progress
 
-### Task 16: 実装
+### Task 17: FAIL 内容の正当性確認 ← 次のタスク
 
-**設計（Task 15 完了・ユーザー承認済み）:**
-- `labels.py` の `build_label_doc_map()` は `file_id`, `section_title`, `type`, `category`, `anchor` を持つ `LabelTarget` を返す（既存・main 済み）
-- `run.py` は verify パスで `build_label_doc_map()` を使い、`label_map` に完全な `LabelTarget` を持っている（既存）
-- `check_source_links()` にクロスドキュメント検証を追加:
-  - シグネチャに `knowledge_dir=None`, `docs_dir=None` を追加
-  - `:ref:` で `LabelTarget.file_id` が非空のとき、4 点検証（target JSON 存在・section_title 照合・target docs MD 存在・anchor slug 照合）
-  - display-text `:ref:` にも同じ 4 点チェックを適用
-- `run.py` に `knowledge_dir=output_dir, docs_dir=docs_dir` を `check_source_links()` 呼び出しに追加
-- ヘルパー（module レベル）: `_section_titles_from_json()`, `_heading_slugs_from_md()`
-- テストクラス: `TestCheckSourceLinks_JsonSide`, `TestCheckSourceLinks_DocsMdSide`（spec §4 対応テスト表の通り）
+**背景（前回やり直しの教訓）:**
+- 前回は verify 追加 → FAIL 大量 → RBKC 修正 → 劣化、という最悪ループに陥り revert
+- 今回の 683 FAIL（v6）が genuine RBKC バグか、verify の誤検知かを確認してから次に進む
+
+**疑問点:**
+- 全 FAIL が `section_title 'XXX' not found in yyy.json sections[]` パターン
+- 例: `:ref:\`universal_dao\`` → `section_title='ユニバーサルDAO'` が `libraries-universal-dao.json sections[]` にない
+- 原因仮説: `labels.py` が h1 ラベルに `section_title=h1タイトル` をセットするが、RBKC は h1 を `sections[]` ではなく JSON `title` フィールドに出力する
+- 前回の revert 前に `373a6d4cd fix: h1-level labels resolve to document-level reference (section_title="")` というコミットがあった（revert で消えた）
+- その fix が正しければ：h1 ラベルは `section_title=""` にすべきで、そうすれば section チェックがスキップされ FAIL は消える
+- verify のロジックが正しければ RBKC 側（labels.py）を fix すべき、verify を弱めてはいけない
 
 **Steps:**
+- [ ] FAIL サンプル調査: `:ref:\`universal_dao\`` の labels.py 解決値を確認（`section_title` が h1 か否か）
+- [ ] `about-nablarch-big-picture.json` の `sections[]` を確認（`全体像` がなぜ absent か）
+- [ ] 前回リバート前の `373a6d4cd` の内容を確認（h1 label fix の実装）
+- [ ] verify ロジックが正しいか / labels.py を fix すべきか判断してユーザーに提示
+- [ ] ユーザー承認後に labels.py 修正 or verify 修正
+
+### Task 16: 実装（完了）
+
+**Steps（完了済み）:**
 - [x] TDD: `TestCheckSourceLinks_JsonSide` テスト追加（RED）
 - [x] `verify.py` — `_section_titles_from_json()` + cross-doc JSON side 実装（GREEN）
 - [x] TDD: `TestCheckSourceLinks_DocsMdSide` テスト追加（RED）
 - [x] `verify.py` — `_heading_slugs_from_md()` + cross-doc docs MD side 実装（GREEN）
 - [x] `run.py` に `knowledge_dir`, `docs_dir` 引数追加
 - [x] 全5バージョン verify 実行、FAIL diff 確認・記録（v6:683, v5:688, v1.4:125, v1.3:113, v1.2:126）
-- [x] Expert review (Software Engineer + QA Engineer) — SE: 1 Finding fixed, QA: 0 Findings
+- [x] Expert review (Software Engineer + QA Engineer) — SE: 1 Finding fixed（json_key dedup バグ）, QA: 0 Findings
 - [x] 設計書 §4 マトリクス QL1 状態ノート追加（⚠️ 維持 — 条件3: RBKC fix 未完）
 - [x] CHANGELOG 更新不要（verify 内部改善、エンドユーザー向け変化なし）
 
