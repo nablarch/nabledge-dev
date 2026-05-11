@@ -4510,6 +4510,91 @@ class TestCheckQL1LinkTargets:
         issues = check_ql1_link_targets(data, kn)
         assert len(issues) == 1
 
+    # -----------------------------------------------------------------------
+    # Bug 3 fix: anchor validation in check_ql1_link_targets
+    # -----------------------------------------------------------------------
+
+    def test_pass_anchor_exists_in_docs_md(self, tmp_path):
+        """Bug 3 fix: anchor in link must match a heading slug in docs MD.
+
+        Link ../../component/libraries/libraries-foo.md#foo-section
+        → docs MD has ## Foo Section → slug = foo-section → PASS.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        # Overwrite the docs MD with a heading that matches the anchor
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Foo Section\n\nContent.\n", encoding="utf-8"
+        )
+
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#foo-section).",
+            "sections": [],
+        }
+        # Pass docs_md_text so the docs-side check runs; docs_root is
+        # derived as knowledge_dir.parent / "docs" → tmp_path / "docs"
+        docs_md = (docs / "component" / "libraries" / "libraries-foo.md").read_text()
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        assert issues == [], f"Expected PASS but got: {issues}"
+
+    def test_fail_anchor_missing_from_docs_md(self, tmp_path):
+        """Bug 3 fix: anchor not in docs MD heading slugs → QL1 FAIL.
+
+        Without this check, a wrong anchor like #処理概要 passes even
+        though the heading does not exist at that anchor.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        # docs MD has no heading with slug 'nonexistent-anchor'
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Foo Section\n\nContent.\n", encoding="utf-8"
+        )
+
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#nonexistent-anchor).",
+            "sections": [],
+        }
+        # Supply docs_md_text to trigger docs-side anchor check
+        docs_md = (docs / "component" / "libraries" / "libraries-foo.md").read_text()
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        assert any("QL1" in i and "anchor" in i.lower() and "nonexistent-anchor" in i for i in issues), (
+            f"Expected anchor FAIL but got: {issues}"
+        )
+
+    def test_pass_anchor_empty_no_check(self, tmp_path):
+        """Link with no anchor (#fragment) — no anchor check needed."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        docs_md = (docs / "component" / "libraries" / "libraries-foo.md").read_text()
+
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md).",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        assert issues == []
+
+    def test_dedup_same_file_different_anchors_checked_independently(self, tmp_path):
+        """Two links to same file but different anchors must both be checked."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Good Section\n\nContent.\n", encoding="utf-8"
+        )
+        docs_md = (docs / "component" / "libraries" / "libraries-foo.md").read_text()
+
+        data = {
+            "content": (
+                "[Foo](../../component/libraries/libraries-foo.md#good-section) "
+                "and [Foo](../../component/libraries/libraries-foo.md#bad-anchor)."
+            ),
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        # good-section exists → PASS; bad-anchor does not → FAIL
+        assert len(issues) == 1
+        assert "bad-anchor" in issues[0]
+
 
 # ---------------------------------------------------------------------------
 # Phase 22-B-12: Excel preamble + span-inherit header composition

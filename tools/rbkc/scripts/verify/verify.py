@@ -1861,13 +1861,13 @@ def check_ql1_link_targets(
     for sec in data.get("sections", []) or []:
         sources.append(sec.get("content", "") or "")
 
-    seen: set[tuple[str, str, str]] = set()
+    seen: set[tuple[str, str, str, str]] = set()
     seen_assets: set[tuple[str, str]] = set()
     issues: list[str] = []
 
     for text in sources:
-        for type_, category, file_id, _anchor in _collect_links(text):
-            key = (type_, category, file_id)
+        for type_, category, file_id, anchor in _collect_links(text):
+            key = (type_, category, file_id, anchor)
             if key in seen:
                 continue
             seen.add(key)
@@ -1878,6 +1878,16 @@ def check_ql1_link_targets(
                     f"../../{type_}/{category}/{file_id}.md → "
                     f"{target_json.relative_to(knowledge_root.parent)} not on disk"
                 )
+            elif anchor:
+                target_md = docs_root / type_ / category / f"{file_id}.md"
+                if target_md.exists():
+                    slugs = _heading_slugs_from_md(target_md)
+                    if anchor not in slugs:
+                        issues.append(
+                            f"[QL1] anchor not found in docs MD: "
+                            f"../../{type_}/{category}/{file_id}.md#{anchor} → "
+                            f"heading '{anchor}' missing from {target_md.relative_to(docs_root.parent)}"
+                        )
         # Phase 22-B-16c: asset existence check.  `assets/{file_id}/
         # {basename}` must exist under knowledge_dir/assets/...
         for asset_fid, basename in _collect_assets(text):
@@ -1893,9 +1903,9 @@ def check_ql1_link_targets(
                 )
 
     if docs_md_text is not None:
-        seen_md: set[tuple[str, str, str]] = set()
-        for type_, category, file_id, _anchor in _collect_links(docs_md_text):
-            key = (type_, category, file_id)
+        seen_md: set[tuple[str, str, str, str]] = set()
+        for type_, category, file_id, anchor in _collect_links(docs_md_text):
+            key = (type_, category, file_id, anchor)
             if key in seen_md:
                 continue
             seen_md.add(key)
@@ -1906,6 +1916,15 @@ def check_ql1_link_targets(
                     f"../../{type_}/{category}/{file_id}.md → "
                     f"{target_md.relative_to(docs_root.parent)} not on disk"
                 )
+            elif anchor:
+                if target_md.exists():
+                    slugs = _heading_slugs_from_md(target_md)
+                    if anchor not in slugs:
+                        issues.append(
+                            f"[QL1] anchor not found in docs MD: "
+                            f"../../{type_}/{category}/{file_id}.md#{anchor} → "
+                            f"heading '{anchor}' missing from {target_md.relative_to(docs_root.parent)}"
+                        )
 
     return issues
 
