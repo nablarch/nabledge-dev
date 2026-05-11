@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev4)
+**Updated**: 2026-05-11 (rev5)
 
 ## In Progress
 
@@ -29,12 +29,17 @@
   - `universal_dao`（h1ラベル）: `section_title=""`, `title="ユニバーサルDAO"` ✅, MD アンカー実在 ✅
   - `tag-double_submission_server_side`（-->誤認ケース）: `section_title="二重サブミットを防ぐ"` ✅, MD アンカー実在 ✅
   - 元々 PASS していた h2 ラベル（`universal_dao-sql_file`）: JSON section 実在 ✅, MD アンカー実在 ✅
-- [ ] v1.4 残り2 FAIL 修正（BLOCKED: RBKC create バグ — `SampleApplicationExtension.rst` の h2 が `sections[]` に出ない）
+- [ ] v1.4 残り2 FAIL 修正 — RBKC create バグ（`SampleApplicationExtension.rst` の h2 が `sections[]` に出ない）
   - FAIL: `customize_flow_proceed_condition` → `section_title='進行先ノードの判定制御ロジックの実装'` が JSON sections[] に存在しない
-  - 原因調査中: create 側でどこが h2 を sections に出力しないかを特定する必要あり
+  - 原因: RBKC create が h1+h2 1つだけの RST ファイルで h2 を `sections[]` に出力せず、title に「h1 — h2」として折り畳む
+  - 修正方針: create 側コードを特定して修正（未着手）
 - [ ] 全5バージョン verify 実行、FAIL diff 確認（全バージョン0 FAIL になること）
+- [x] 設計書整合確認・修正 — `f453cdf78`
+  - §3-2-1: LabelTarget フィールド定義更新（type/anchor 追加、section_title h1空文字仕様明記、build_label_doc_map シグネチャ修正）
+  - §3-2-3: 経緯記述を削除し現在の実装仕様のみ記述
+  - §4 QL1 ノート: 現状のみ記述（履歴・タスク参照を除去）
 - [ ] Expert review（Software Engineer + QA Engineer）
-- [ ] 設計書 §4 マトリクス QL1 を ✅ に更新
+- [ ] 設計書 §4 マトリクス QL1 を ✅ に更新（全バージョン 0 FAIL かつ Expert review 通過後）
 - [ ] PR 最終確認（Success Criteria チェック）
 
 **現在の FAIL カウント（Task 17 実装後）:**
