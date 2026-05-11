@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev15)
+**Updated**: 2026-05-11 (rev16)
 
 ## In Progress
 
@@ -18,7 +18,11 @@
 - [ ] TDD: `test_labels.py` に case-insensitive lookup のテスト追加 → RED
 - [ ] `rst_ast_visitor.py`: `:ref:` / `:numref:` の `label_map.get(target_label)` を `label_map.get(target_label.lower())` に変更（`_find_label_target` も同様）
 - [ ] `verify.py check_source_links()`: `label_map.get(label)` を `label_map.get(label.lower())` に変更
-- [ ] GREEN 確認 → 全5バージョン create + verify FAIL diff 確認
+- [ ] GREEN 確認
+- [ ] **即時差分確認**: 全5バージョン再生成（`bash rbkc.sh create <v>`）→ `git diff` でリンク変化を目視確認
+  - 平文だったラベルが MD リンクに戻っているか（`NablarchServletContextListener`、`guide_appendix_windowScope` 等）
+  - 意図しないリンク削除・変更が発生していないか
+- [ ] 全5バージョン verify FAIL diff 確認
 
 ### Task 20: Bug 2 修正 — `_next_section_for_node` の多段 climb
 **原因**: `_next_section_for_node` はセクション境界を1段しか遡らない（`is_last_meaningful` の grandparent 探索は1レベルのみ）。深いネスト末尾のラベル（例: `sql-gaibuka-label` が h4 内末尾 → 2段上の h3 を参照）で失敗し、`_enclosing_section_title_for_node` にフォールバック → 誤った section title（`処理概要`）を返す
@@ -26,7 +30,11 @@
 **Steps:**
 - [ ] TDD: 多段ネストのラベル解決テストを追加 → RED
 - [ ] `labels.py`: `_next_section_for_node` を iterative multi-level climb に書き換え（段数制限なし、document root で停止）
-- [ ] GREEN 確認 → 全5バージョン create + verify FAIL diff 確認
+- [ ] GREEN 確認
+- [ ] **即時差分確認**: 全5バージョン再生成（`bash rbkc.sh create <v>`）→ `git diff` でリンク変化を目視確認
+  - `sql-gaibuka-label` 等が正しいセクション（`推奨するJavaの実装例...`）へのリンクになっているか
+  - 意図しないリンク削除・変更が発生していないか
+- [ ] 全5バージョン verify FAIL diff 確認
 
 ### Task 21: Bug 3 修正 — `check_ql1_link_targets` の anchor 検証未実装
 **原因**: Issue #320 の本来の目的「ページ内リンクの anchor が意図した heading を指すか」が
