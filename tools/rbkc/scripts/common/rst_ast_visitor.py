@@ -1010,24 +1010,34 @@ def extract_document(
     )
 
     # Separate top-level content (before first section) from sections.
+    # DocTitle transform promotes a lone h1+h2 pair to document-level
+    # title+subtitle.  Treat subtitle as sections[0] (h2) so labels that
+    # target the subtitle heading resolve correctly in verify QL1.
     top_children: list[nodes.Node] = []
     section_children: list[nodes.section] = []
+    subtitle_title: str = ""
+    subtitle_body: list[nodes.Node] = []
     for child in doctree.children:
         if isinstance(child, nodes.title):
             parts.top_title = visitor.render_inline(child)
         elif isinstance(child, nodes.subtitle):
-            text = visitor.render_inline(child)
-            if parts.top_title:
-                parts.top_title = f"{parts.top_title} — {text}"
-            else:
-                parts.top_title = text
+            subtitle_title = visitor.render_inline(child)
         elif isinstance(child, nodes.section):
             section_children.append(child)
+        elif subtitle_title:
+            # Body nodes that appear after subtitle at document level belong
+            # to the subtitle section (DocTitle collapsed them out of their
+            # original section node).
+            subtitle_body.append(child)
         else:
             top_children.append(child)
 
     top_content = _join_blocks([visitor.render(c) for c in top_children])
     parts.top_content = top_content.strip()
+
+    if subtitle_title:
+        sub_content = _join_blocks([visitor.render(c) for c in subtitle_body]).strip()
+        parts.sections.append(Section(title=subtitle_title, content=sub_content, level=2))
 
     # Promote the first section to top-level when the document has no
     # explicit top-level title AND no document-level prose before any

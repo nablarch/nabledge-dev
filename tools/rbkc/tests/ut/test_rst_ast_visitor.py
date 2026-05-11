@@ -222,6 +222,65 @@ def _make_toctree_rst(entries: list[str]) -> str:
     return f"Page\n====\n\n.. toctree::\n   :maxdepth: 1\n\n{entry_lines}\n"
 
 
+class TestExtractDocumentSubtitle:
+    """extract_document: DocTitle-promoted subtitle must become sections[0]."""
+
+    def test_subtitle_only_file_produces_section(self):
+        """h1+h2 only RST: subtitle must appear in sections[], not merged into top_title."""
+        source = (
+            "====\n"
+            "ドキュメントタイトル\n"
+            "====\n\n"
+            "-------\n"
+            "サブセクション\n"
+            "-------\n\n"
+            "本文テキスト。\n"
+        )
+        doctree, _ = parse(source)
+        parts = extract_document(doctree)
+        assert parts.top_title == "ドキュメントタイトル"
+        assert len(parts.sections) == 1
+        assert parts.sections[0].title == "サブセクション"
+        assert parts.sections[0].level == 2
+        assert "本文テキスト" in parts.sections[0].content
+
+    def test_subtitle_with_subsequent_sections(self):
+        """subtitle + multiple h2 sections: subtitle becomes sections[0], others follow."""
+        source = (
+            "====\n"
+            "タイトル\n"
+            "====\n\n"
+            "-------\n"
+            "セクション1\n"
+            "-------\n\n"
+            "前文。\n\n"
+            "セクション2\n"
+            "==========\n\n"
+            "後文。\n"
+        )
+        doctree, _ = parse(source)
+        parts = extract_document(doctree)
+        assert parts.top_title == "タイトル"
+        assert len(parts.sections) >= 1
+        assert parts.sections[0].title == "セクション1"
+
+    def test_no_subtitle_is_unchanged(self):
+        """RST without DocTitle subtitle produces no section from subtitle."""
+        source = (
+            "タイトル\n"
+            "========\n\n"
+            "前文。\n\n"
+            "セクション1\n"
+            "----------\n\n"
+            "内容。\n"
+        )
+        doctree, _ = parse(source)
+        parts = extract_document(doctree)
+        assert "—" not in parts.top_title
+        assert len(parts.sections) == 1
+        assert parts.sections[0].title == "セクション1"
+
+
 class TestVisitContainerToctree:
     def test_toctree_resolved_entries_become_md_links(self):
         """toctree entries that resolve via doc_map are emitted as MD bullet links."""
