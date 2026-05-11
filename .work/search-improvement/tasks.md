@@ -1,7 +1,7 @@
 # Tasks: Search Improvement (Zero-base)
 
 **Branch**: search
-**Updated**: 2026-05-13
+**Updated**: 2026-05-11
 
 ## Rules
 
@@ -57,7 +57,7 @@
 - [x] 1-2. index.md調査 — 現在のindex.toon(index.md未作成)の構造・トークン予算分析
 - [x] 1-3. 意味検索方式の設計 — `semantic-search-design.md`
 - [x] 1-4. 設計書レビュー — PE: 3 Findings → 全件修正済。ユーザーレビュー待ち
-- [ ] 1-5a. シナリオに `hearing_answer` を追加 — must_ask/nice_to_ask 全件に「ヒアリング後の付加情報」を設定。意味検索には元の質問＋hearing_answerが入力される想定
+- [x] 1-5a. シナリオに `hearing_answer` を追加 — must_ask/nice_to_ask 全17件に追加 — committed `e9711b1`
 - [ ] 1-5b. シミュレーション（全件）→ 改善を繰り返し
 - [ ] 1-5c. 再現性確認 — 全件シミュレーションを3回実行し、セクション選定結果が安定していることを確認。ばらつきがある場合は原因を特定して改善する。**ユーザーレビューの必須ゲート**
 - [ ] 1-6. エキスパートレビュー → 改善
