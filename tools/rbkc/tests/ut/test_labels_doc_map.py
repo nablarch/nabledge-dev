@@ -724,4 +724,85 @@ class TestBuildLabelMapBackwardCompat:
         assert v.section_title == ""
         # No file_id available in single-dir mode
         assert v.file_id == ""
+
+
+class TestCaseInsensitiveLabelLookup:
+    """Bug 1 fix: docutils normalises label names to lowercase in names[].
+
+    build_label_map / build_label_doc_map keys are therefore lowercase.
+    Callers (rst_ast_visitor, verify) must look up labels with .lower()
+    to avoid UNRESOLVED → plain-text fallback on mixed-case labels like
+    ``NablarchServletContextListener`` or ``guide_appendix_windowScope``.
+    """
+
+    def test_mixed_case_label_stored_as_lowercase_key(self, tmp_path):
+        """docutils normalises names[] to lowercase → map key is lowercase."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(textwrap.dedent("""\
+            .. _NablarchServletContextListener:
+
+            NablarchServletContextListener
+            ================================
+
+            Body.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        # Key must be lowercase (docutils normalisation)
+        assert "nablarchservletcontextlistener" in m
+        # Original-case key must NOT be present
+        assert "NablarchServletContextListener" not in m
+
+    def test_caller_must_lowercase_before_lookup(self, tmp_path):
+        """rst_ast_visitor / verify must call label_map.get(label.lower()).
+
+        This test pins the required caller behaviour: looking up the
+        original-case label name returns None (miss); lowercased lookup
+        returns the correct LabelTarget.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "y.rst"
+        rst.write_text(textwrap.dedent("""\
+            .. _SqlLog:
+
+            SqlLog
+            ======
+
+            Body.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        # Caller with original case → miss (current bug behaviour to be fixed)
+        assert m.get("SqlLog") is None
+        # Caller with .lower() → hit (required behaviour after fix)
+        v = m.get("SqlLog".lower())
+        assert isinstance(v, LabelTarget)
+        assert v.title == "SqlLog"
+
+    def test_underscore_label_with_uppercase_chars(self, tmp_path):
+        """Labels like ``guide_appendix_windowScope`` are stored lowercase."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "z.rst"
+        rst.write_text(textwrap.dedent("""\
+            .. _guide_appendix_windowScope:
+
+            Window Scope
+            ============
+
+            Body.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "guide_appendix_windowscope" in m
+        assert "guide_appendix_windowScope" not in m
+        v = m.get("guide_appendix_windowScope".lower())
+        assert isinstance(v, LabelTarget)
+        assert v.title == "Window Scope"
         assert v.category == ""

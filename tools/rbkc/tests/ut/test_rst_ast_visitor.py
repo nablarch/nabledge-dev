@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+import textwrap
 from docutils import nodes
 from pathlib import Path
 
@@ -371,3 +372,80 @@ class TestVisitContainerToctree:
         )
         assert result.no_knowledge_content is False
         assert result.content.strip() != ""
+
+
+class TestRefRoleCaseInsensitiveLookup:
+    """:ref: role with mixed-case label names must resolve via label_map.
+
+    Bug 1 (Issue #320): docutils normalises target names to lowercase in
+    names[], so label_map keys are always lowercase.  Callers must look up
+    labels with .lower() — otherwise mixed-case labels like
+    ``NablarchServletContextListener`` fall through to the UNRESOLVED branch
+    and are emitted as plain text instead of MD links.
+
+    These tests are RED before the fix (rst_ast_visitor uses original-case
+    lookup) and GREEN after the fix (.lower() applied at lookup site).
+    """
+
+    def _make_label_map_with_mixed_case(self):
+        """Build a label_map that mirrors what build_label_map returns:
+        keys are lowercase (docutils normalisation), values are LabelTarget.
+        """
+        return {
+            "nablarchservletcontextlistener": LabelTarget(
+                title="NablarchServletContextListener",
+                file_id="libraries-servlet-context-listener",
+                section_title="",
+                category="libraries",
+                type="component",
+                anchor="nablarchservletcontextlistener",
+            ),
+            "sqllog": LabelTarget(
+                title="SqlLog",
+                file_id="libraries-sql-log",
+                section_title="",
+                category="libraries",
+                type="component",
+                anchor="sqllog",
+            ),
+        }
+
+    def test_mixed_case_ref_resolves_to_md_link(self):
+        """:ref:`NablarchServletContextListener` must emit a MD link, not plain text."""
+        from scripts.common.rst_ast import parse
+        from scripts.common.rst_ast_visitor import extract_document
+
+        label_map = self._make_label_map_with_mixed_case()
+        source = textwrap.dedent("""\
+            Title
+            =====
+
+            See :ref:`NablarchServletContextListener`.
+            """)
+        doctree, _ = parse(source, source_path=Path("/repo/ja/test.rst"))
+        parts = extract_document(doctree, label_map=label_map, source_path=Path("/repo/ja/test.rst"))
+        # After fix: must contain a MD link, not bare text
+        assert "[NablarchServletContextListener]" in parts.top_content or \
+               "NablarchServletContextListener" in parts.top_content
+        # The key assertion: a MD link bracket must appear (fix) vs plain text (bug)
+        assert "[NablarchServletContextListener](" in parts.top_content, (
+            "Expected MD link but got plain text — case-insensitive lookup not applied"
+        )
+
+    def test_mixed_case_ref_with_display_text_resolves_to_md_link(self):
+        """:ref:`display text <SqlLog>` must emit a MD link, not plain text."""
+        from scripts.common.rst_ast import parse
+        from scripts.common.rst_ast_visitor import extract_document
+
+        label_map = self._make_label_map_with_mixed_case()
+        source = textwrap.dedent("""\
+            Title
+            =====
+
+            See :ref:`SQLログ <SqlLog>`.
+            """)
+        doctree, _ = parse(source, source_path=Path("/repo/ja/test.rst"))
+        parts = extract_document(doctree, label_map=label_map, source_path=Path("/repo/ja/test.rst"))
+        assert "[SQLログ](" in parts.top_content, (
+            "Expected MD link but got plain text — case-insensitive lookup not applied"
+        )

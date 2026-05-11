@@ -727,7 +727,9 @@ class _MDVisitor:
                 display = ""
                 target_label = raw.strip()
             from scripts.common.labels import UNRESOLVED
-            target = self._label_map.get(target_label)
+            # docutils normalises label names to lowercase in names[],
+            # so label_map keys are always lowercase (spec §3-2-2).
+            target = self._label_map.get(target_label.lower())
             if target is None or target is UNRESOLVED:
                 self.warnings.append(
                     f"QL1 undefined label :ref:`{target_label}` — emitting display text only"

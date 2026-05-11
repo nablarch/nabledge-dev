@@ -1992,7 +1992,9 @@ def _resolve_title_inline(title_node, label_map: dict) -> str:
                         disp, _, _ = raw.rpartition("<")
                         parts.append(disp.strip())
                     else:
-                        parts.append(_resolved_text(label_map.get(raw), raw))
+                        # docutils normalises label names to lowercase in names[];
+                        # label_map keys are always lowercase (spec §3-2-2).
+                        parts.append(_resolved_text(label_map.get(raw.lower()), raw))
                     continue
                 # Other roles: render the raw text (converter does the same).
                 parts.append(raw)
@@ -2199,7 +2201,9 @@ def check_source_links(
                 )
             # Display-text form: also run cross-doc check on the resolved target
             if display:
-                _check_cross_doc_target(label, label_map.get(label))
+                # docutils normalises label names to lowercase; label_map keys
+                # are always lowercase (spec §3-2-2).
+                _check_cross_doc_target(label, label_map.get(label.lower()))
             # Bare label form: Phase 22-B-12 five-quadrant classification
             # (spec §3-2-2).  The quadrants:
             #   - Q1: label in label_map → resolved title must appear (PASS/FAIL)
@@ -2214,7 +2218,9 @@ def check_source_links(
             # label string as the required display text for Q3/Q4.
             if not display and label not in seen_labels:
                 seen_labels.add(label)
-                target = label_map.get(label)
+                # docutils normalises label names to lowercase; label_map keys
+                # are always lowercase (spec §3-2-2).
+                target = label_map.get(label.lower())
                 from scripts.common.labels import UNRESOLVED
                 if target is None or target is UNRESOLVED:
                     # Q3 / Q4 — label not resolvable within RBKC scope.

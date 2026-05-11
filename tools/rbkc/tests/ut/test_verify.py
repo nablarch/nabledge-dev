@@ -2588,6 +2588,37 @@ class TestCheckSourceLinks:
         data = self._data(content="us.")
         assert self._check(src, "rst", data, {}) == []
 
+    def test_pass_rst_ref_mixed_case_label_resolves_via_lowercase_key(self):
+        """Bug 1 fix: label_map keys are lowercase (docutils normalisation).
+
+        :ref:`SqlLog` in RST — the label_map key is 'sqllog' (lowercase),
+        but the resolved title is 'SQLログ機能' (different from the label name).
+        JSON has the resolved title.
+
+        Without fix: label_map.get("SqlLog") → None → Q4 path checks if
+        "SqlLog" is in content → FAIL (only "SQLログ機能" is there).
+        With fix: label_map.get("sqllog") → hit → Q1 path checks if
+        "SQLログ機能" is in content → PASS.
+        """
+        from scripts.common.labels import LabelTarget
+        src = "詳細は :ref:`SqlLog` を参照。\n"
+        label_map = {
+            "sqllog": LabelTarget(
+                title="SQLログ機能",
+                file_id="libraries-sql-log",
+                section_title="",
+                category="libraries",
+                type="component",
+                anchor="sqllog",
+            )
+        }
+        # JSON has the resolved title, NOT the label name
+        data = self._data(content="詳細は SQLログ機能 を参照。")
+        issues = self._check(src, "rst", data, label_map)
+        assert issues == [], (
+            f"Expected PASS but got: {issues} — case-insensitive lookup not applied"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Issue #320: QL1 cross-document link target validation
