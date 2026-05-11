@@ -605,7 +605,7 @@
     {
       "id": "qa-11",
       "given": {
-        "usecase": "アプリケーションで例外が発生したときの画面遷移やレスポンス生成の仕組みを知りたい",
+        "usecase": "qa",
         "category": "error-handling",
         "description": "Nablarchのエラーハンドリングは処理方式（Web/REST/バッチ）ごとにハンドラ構成が異なる。Webでは HttpErrorHandler + OnError でエラー画面に遷移し、RESTでは JaxRsResponseHandler で例外に応じたJSONレスポンスを返す。処理方式が不明な質問にはヒアリングが必要"
       },
@@ -617,7 +617,7 @@
       "then": {
         "must": [
           {
-            "fact": "Webの場合はHttpErrorHandlerが例外種別に応じてエラーページに遷移する",
+            "fact": "Webの場合はHttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する",
             "section": "component/handlers/handlers-HttpErrorHandler.json:s4"
           },
           {
@@ -638,7 +638,7 @@
     {
       "id": "qa-12",
       "given": {
-        "usecase": "入力チェックでエラーがあった場合のエラーメッセージの返し方を知りたい",
+        "usecase": "qa",
         "category": "validation",
         "description": "バリデーションエラー時のレスポンスはWebとRESTで異なる。Webではエラーメッセージをリクエストスコープに設定して入力画面に戻す。RESTではエラー情報をJSONレスポンスとして返す。処理方式不明ならヒアリングが必要"
       },
@@ -650,8 +650,8 @@
       "then": {
         "must": [
           {
-            "fact": "Webの場合はバリデーションエラー時にリクエストスコープからメッセージを取得して画面表示する",
-            "section": "component/libraries/libraries-bean-validation.json:s16"
+            "fact": "Webの場合はHttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する",
+            "section": "component/handlers/handlers-HttpErrorHandler.json:s4"
           },
           {
             "fact": "RESTの場合は@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
@@ -674,7 +674,7 @@
     {
       "id": "qa-13",
       "given": {
-        "usecase": "受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+        "usecase": "qa",
         "category": "db-access",
         "description": "データ登録はREST/Web/バッチで実装パターンが異なる。RESTはリソースクラスで1件登録、Webは画面遷移を伴う登録フロー、バッチはBatchActionで一括登録。処理方式不明ならヒアリングが必要"
       },
