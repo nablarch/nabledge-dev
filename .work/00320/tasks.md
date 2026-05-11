@@ -20,12 +20,12 @@
 - テストクラス: `TestCheckSourceLinks_JsonSide`, `TestCheckSourceLinks_DocsMdSide`（spec §4 対応テスト表の通り）
 
 **Steps:**
-- [ ] TDD: `TestCheckSourceLinks_JsonSide` テスト追加（RED）
-- [ ] `verify.py` — `_section_titles_from_json()` + cross-doc JSON side 実装（GREEN）
-- [ ] TDD: `TestCheckSourceLinks_DocsMdSide` テスト追加（RED）
-- [ ] `verify.py` — `_heading_slugs_from_md()` + cross-doc docs MD side 実装（GREEN）
-- [ ] `run.py` に `knowledge_dir`, `docs_dir` 引数追加
-- [ ] 全5バージョン create + verify 実行、FAIL diff 確認・記録
+- [x] TDD: `TestCheckSourceLinks_JsonSide` テスト追加（RED）
+- [x] `verify.py` — `_section_titles_from_json()` + cross-doc JSON side 実装（GREEN）
+- [x] TDD: `TestCheckSourceLinks_DocsMdSide` テスト追加（RED）
+- [x] `verify.py` — `_heading_slugs_from_md()` + cross-doc docs MD side 実装（GREEN）
+- [x] `run.py` に `knowledge_dir`, `docs_dir` 引数追加
+- [x] 全5バージョン verify 実行、FAIL diff 確認・記録（v6:683, v5:688, v1.4:125, v1.3:113, v1.2:126）
 - [ ] Expert review (Software Engineer + QA Engineer)
 - [ ] 設計書 §4 マトリクス QL1 を ✅ に更新
 - [ ] CHANGELOG 更新

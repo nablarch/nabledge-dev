@@ -1,5 +1,27 @@
 # Notes
 
+## 2026-05-11
+
+### Task 16: Implementation — FAIL diff
+
+**Setup**: All 5 versions ran verify with the new `check_source_links()` cross-doc check.
+Pre-change baseline was 0 cross-doc FAILs (check did not exist before revert).
+
+| Version | FAIL count | Pattern |
+|---------|-----------|---------|
+| v6      | 683       | section_title not found in sections[] + docs MD anchor missing |
+| v5      | 688       | same |
+| v1.4    | 125       | same |
+| v1.3    | 113       | same |
+| v1.2    | 126       | same |
+
+All FAILs are genuine RBKC bugs: `:ref:` labels pointing to document-level h1 headings
+have `section_title='HeadingText'` but h1 is JSON `title`, not `sections[]`. The h1-label
+fix from the reverted code (`h1-level labels resolve to document-level reference`) needs
+to be re-applied in `labels.py` as part of RBKC fix scope (separate from this verify task).
+
+verify correctly reports the mismatch. No false positives found.
+
 ## 2026-05-08
 
 ### Task 14: PR diff check
