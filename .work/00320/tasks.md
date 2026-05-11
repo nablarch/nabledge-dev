@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev5)
+**Updated**: 2026-05-11 (rev6)
 
 ## In Progress
 
@@ -29,11 +29,16 @@
   - `universal_dao`（h1ラベル）: `section_title=""`, `title="ユニバーサルDAO"` ✅, MD アンカー実在 ✅
   - `tag-double_submission_server_side`（-->誤認ケース）: `section_title="二重サブミットを防ぐ"` ✅, MD アンカー実在 ✅
   - 元々 PASS していた h2 ラベル（`universal_dao-sql_file`）: JSON section 実在 ✅, MD アンカー実在 ✅
-- [ ] v1.4 残り2 FAIL 修正 — RBKC create バグ（`SampleApplicationExtension.rst` の h2 が `sections[]` に出ない）
-  - FAIL: `customize_flow_proceed_condition` → `section_title='進行先ノードの判定制御ロジックの実装'` が JSON sections[] に存在しない
-  - 原因: RBKC create が h1+h2 1つだけの RST ファイルで h2 を `sections[]` に出力せず、title に「h1 — h2」として折り畳む
-  - 修正方針: create 側コードを特定して修正（未着手）
-- [ ] 全5バージョン verify 実行、FAIL diff 確認（全バージョン0 FAIL になること）
+- [x] v1.4 残り2 FAIL 修正 — `extract_document` が subtitle を `top_title` に結合するバグを修正
+  - 原因: DocTitle transform が h1+h2 を document-level title+subtitle に昇格させ、`extract_document` が subtitle を title に結合 → sections[] 空になる
+  - 修正: `rst_ast_visitor.py` で subtitle を `sections[0]`（level=2）として扱うよう変更
+  - 横断影響: v6/v5 の terms_of_use 等14ファイル（subtitle 持ち）も正しく修正。全バージョン PASS
+- [x] 全5バージョン verify 実行、FAIL diff 確認（全バージョン0 FAIL 達成）
+  - v6: All files verified OK ✅
+  - v5: All files verified OK ✅
+  - v1.4: All files verified OK ✅
+  - v1.3: All files verified OK ✅
+  - v1.2: All files verified OK ✅
 - [x] 設計書整合確認・修正 — `f453cdf78`
   - §3-2-1: LabelTarget フィールド定義更新（type/anchor 追加、section_title h1空文字仕様明記、build_label_doc_map シグネチャ修正）
   - §3-2-3: 経緯記述を削除し現在の実装仕様のみ記述
@@ -42,30 +47,14 @@
 - [ ] 設計書 §4 マトリクス QL1 を ✅ に更新（全バージョン 0 FAIL かつ Expert review 通過後）
 - [ ] PR 最終確認（Success Criteria チェック）
 
-**現在の FAIL カウント（Task 17 実装後）:**
-| Version | Task16後 | Task17後 | 残り |
+**最終 FAIL カウント（Task 17 完了後）:**
+| Version | Task16後 | Task17後（v1.4 fix前） | Task17後（v1.4 fix後） |
 |---------|---------|---------|------|
 | v6      | 701     | 0       | 0 ✅ |
 | v5      | 688     | 0       | 0 ✅ |
-| v1.4    | 125     | 2       | 2 ❌ |
+| v1.4    | 125     | 2       | 0 ✅ |
 | v1.3    | 113     | 0       | 0 ✅ |
 | v1.2    | 126     | 0       | 0 ✅ |
-
-**v1.4 残り2 FAIL 詳細:**
-```
-FAIL SampleApplicationDesign.rst: QL1 :ref:`customize_flow_proceed_condition`
-  section_title '進行先ノードの判定制御ロジックの実装' not found in
-  workflow-SampleApplicationExtension.json sections[]
-FAIL SampleApplicationDesign.rst: QL1 :ref:`customize_flow_proceed_condition`
-  anchor '進行先ノードの判定制御ロジックの実装' not found in
-  workflow-SampleApplicationExtension.md headings
-```
-- RST: h1「ゲートウェイの進行先ノード判定ロジックを変更する方法」+ h2「進行先ノードの判定制御ロジックの実装」
-- labels.py は正しく `section_title='進行先ノードの判定制御ロジックの実装'` を返す（新旧両方）
-- JSON: `sections[]` が空、`title` が「h1 — h2」で結合されている
-- MD: h2 が独立した `##` 見出しでなくファイルタイトルに折り畳まれている
-- Task 16 後の 125 FAIL に含まれていた既存 RBKC create バグ（labels.py 変更とは無関係）
-- RBKC create 側で単一 h2 ファイルの扱いを修正する必要あり
 
 ### Task 16: 実装（完了）
 
