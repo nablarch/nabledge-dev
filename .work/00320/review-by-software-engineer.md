@@ -1,46 +1,41 @@
 # Expert Review: Software Engineer
 
-**Date**: 2026-05-07
+**Date**: 2026-05-11
 **Reviewer**: AI Agent as Software Engineer
-**Files Reviewed**: 3 files (Task 10 changes)
+**Files Reviewed**: 3 files
 
 ## Summary
 
 0 Findings (after fix applied)
 
-## Findings (original — all fixed)
+Original review had 1 Finding (json_key dedup bug) — fixed before this record.
 
-### Finding 1: Display-text `:ref:` form skips cross-doc target validation
+## Findings
 
-**Violated clause**: Spec §3-2-3 table, row 2: `| inline role=ref | 同上 (label 側から解決) | ... | verify 検証 (JSON side) 同上 | verify 検証 (docs MD side) 同上 |` — "同上" means the same cross-doc check applies to all `inline role=ref` nodes, not only bare-label form.
+### Finding 1 (FIXED): `json_key` dedup silently skipped `section_title` checks
 
-**Description**: The entire cross-doc block sat inside `if not display and label not in seen_labels:`. When `:ref:`My Title <cross-doc-label>`` is used, `display` is non-empty, so target JSON existence, section_title, and anchor slug are never validated. A dangling cross-doc ref with explicit display text silently passes.
-
-**Fix applied**:
-- Extracted cross-doc validation into nested helper `_check_crossdoc_target(tgt)` inside `check_source_links()`, replacing the inline block.
-- Display-text path now resolves `label_map.get(label)` and calls `_check_crossdoc_target()` for non-`UNRESOLVED` targets (guarded by `seen_crossdoc_labels` for deduplication).
-- Bare-label path calls the same `_check_crossdoc_target()` helper.
-- Added `seen_crossdoc_labels` to prevent double-reporting when the same label appears in both forms.
-- Added test `test_fail_crossdoc_ref_display_text_form_json_missing` — confirmed RED before fix, GREEN after.
+- Violated clause: Spec `rbkc-verify-quality-design.md §3-2-3`: "target JSON の `sections[]` に section_title が実在" — verify 検証 (JSON side)
+- Description: `_cross_doc_json_seen` used a single set for both `json_key` (3-tuple: type/category/file_id) and `st_key` (4-tuple: + section_title). Once `json_key` was seen, all subsequent labels pointing to the same file_id — with different section_title values — skipped both the existence check and section_title check.
+- Fix applied: Separated into three distinct dedup sets — `_cross_doc_file_seen` (file existence), `_cross_doc_st_seen` (section_title), `_cross_doc_md_seen` (anchor). Section_title check now always runs when the file exists, guarded only by `st_key`.
+- Regression test added: `test_fail_different_labels_same_file_id_different_section_titles`
 
 ## Observations
 
-1. **`_section_titles_from_json` docstring inconsistency**: Line 1793 says "(lowercased for matching)" while line 1795 says "Returns titles as-is (not slugged)". The function body is correct; the first docstring line is a residue. No behavioral impact.
-
-2. **Silent exception swallowing**: `_section_titles_from_json` uses bare `except Exception: return set()`. A corrupt target JSON returns empty set, causing "section_title not found in sections[]" rather than "JSON failed to parse". No false negative — still produces a FAIL — but the diagnostic quality is reduced.
-
-3. **Thin wrapper functions in `check_ql1_link_targets`**: `_heading_slugs()` and `_json_section_slugs()` are now one-liners that delegate to module-level helpers. Could be inlined for less indirection. No behavioral impact.
+- `_section_titles_from_json` uses `import json as _json` inside function body while module already imports `json`. Redundant but harmless.
+- `_heading_slugs_from_md` compiles `_ATX_RE` on every call (local constant). Negligible for this use case.
+- `_ATX_RE` correctly handles optional trailing ATX close sequence (`## Foo ##`).
+- `test_pass_display_text_ref_with_valid_target` only tests PASS path; no FAIL test for "display-text :ref: where target JSON exists but section_title not found" — not reachable as a gap after Finding 1 fix.
 
 ## Positive Aspects
 
-- The promotion of `_heading_slugs_from_md` and `_section_titles_from_json` to module level correctly eliminates duplication between the two check functions.
-- The `_check_crossdoc_target` helper follows the principle of sharing logic via a single path — future changes to the four-check cascade need to be made in one place only.
-- `seen_crossdoc_labels` dedup is architecturally correct — it is keyed on label (the stable identifier), not on file_id, so same-file references with different display texts are still deduplicated.
-- The `run.py` change is minimal: reuses the already-computed `docs_dir` value with no new logic.
-- 313/313 tests pass.
+- Architecture: `_check_cross_doc_target` closure centralizes all cross-doc checks, avoiding duplication across display-text and bare-label branches.
+- Circular-avoidance: `_heading_slugs_from_md` independently computes slugs via `github_slug.py` rather than trusting create-side output.
+- Independence: `_section_titles_from_json` reads JSON directly, no create-side imports.
+- Dedup design intent is sound with three separate sets after fix.
+- `run.py` wiring is correct.
 
 ## Files Reviewed
 
-- `tools/rbkc/scripts/verify/verify.py` (source code)
-- `tools/rbkc/tests/ut/test_verify.py` (tests)
-- `tools/rbkc/scripts/run.py` (plumbing)
+- tools/rbkc/scripts/verify/verify.py (source code)
+- tools/rbkc/scripts/run.py (source code)
+- tools/rbkc/tests/ut/test_verify.py (test code)

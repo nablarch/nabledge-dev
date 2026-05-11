@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-08
+**Updated**: 2026-05-11
 
 ## In Progress
 
@@ -26,9 +26,9 @@
 - [x] `verify.py` — `_heading_slugs_from_md()` + cross-doc docs MD side 実装（GREEN）
 - [x] `run.py` に `knowledge_dir`, `docs_dir` 引数追加
 - [x] 全5バージョン verify 実行、FAIL diff 確認・記録（v6:683, v5:688, v1.4:125, v1.3:113, v1.2:126）
-- [ ] Expert review (Software Engineer + QA Engineer)
-- [ ] 設計書 §4 マトリクス QL1 を ✅ に更新
-- [ ] CHANGELOG 更新
+- [x] Expert review (Software Engineer + QA Engineer) — SE: 1 Finding fixed, QA: 0 Findings
+- [x] 設計書 §4 マトリクス QL1 状態ノート追加（⚠️ 維持 — 条件3: RBKC fix 未完）
+- [x] CHANGELOG 更新不要（verify 内部改善、エンドユーザー向け変化なし）
 
 ## Not Started
 
