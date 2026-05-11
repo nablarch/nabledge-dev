@@ -2,7 +2,7 @@
 
 **PR**: #332
 **Issue**: #327
-**Updated**: 2026-05-11 (session 3)
+**Updated**: 2026-05-11 (session 4)
 
 ## Rules
 
@@ -62,7 +62,23 @@
 
 ## Not Started
 
-(なし)
+### Task 8: 設計書に P2-4 仕様を追記する
+
+**変更対象ファイル:**
+- `tools/rbkc/docs/rbkc-converter-design.md`
+  - §8-4 P2 JSON スキーマ: `sheet_subtype`・`p2_4_preamble`・`p2_4_header`・`p2_4_rows` フィールド追記（現在 P2-3 のみ記述）
+  - §8-5 docs MD 出力: P2-4 のレンダリング仕様を追加（P2-3 セクションの直後）
+  - §8-6 verify との整合: P2-4 verify 例外 (QO2) を追加
+- `tools/rbkc/docs/rbkc-verify-quality-design.md`
+  - QO2 P2-3 例外の箇所に P2-4 例外を追加
+  - テスト一覧テーブルに `QO2 P2-4` 行を追加
+
+**Steps:**
+- [ ] Step 1: `rbkc-converter-design.md` §8-4 更新（P2-4 JSON フィールド）
+- [ ] Step 2: `rbkc-converter-design.md` §8-5 更新（P2-4 docs MD 出力仕様）
+- [ ] Step 3: `rbkc-converter-design.md` §8-6 更新（P2-4 verify QO2 例外）
+- [ ] Step 4: `rbkc-verify-quality-design.md` 更新（QO2 P2-4 例外 + テスト一覧）
+- [ ] Step 5: コミット・プッシュ
 
 ## Done
 
