@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev22)
+**Updated**: 2026-05-11 (rev23)
 
 ## In Progress
 
@@ -32,3 +32,16 @@
 - [x] Task 20: Bug 2 修正 — `_next_section_for_node` の multi-level climb — iterative climb 実装（document root で停止）、全5バージョン 0 FAIL
 - [x] Task 21: Bug 3 修正 — `check_ql1_link_targets` の anchor 検証実装 — `seen` を4-tuple 化、anchor 非空時に `_heading_slugs_from_md` で slug 照合、JSON side + docs MD side 両方に適用、全5バージョン 0 FAIL — SE: 1 Finding fixed, QA: 2 Findings fixed
 - [x] Task 22: 横並びチェック・再生成・差分確認・PR 更新 — 全5バージョン 0 FAIL、リンク削除なし、PR #330 更新済み
+- [x] PR #330 レビューFB対応 — コメント4件処理済み `21e4b8fec`
+  - #3216718388 (DbAccessSpec.md): 正常、差分なし（返信済み）
+  - #3216730068 (NablarchOutline.md): 正常、revert 済みで正しい状態（返信済み）
+  - #3217245104 (RequestPathJavaPackageMapping.md line 115): **修正** — `#ハンドラの構造と実装` → `#特殊なリクエスト処理`（docs MD + JSON 両方）
+  - #3217248788 (FailureLog.md line 582): 正常、`#クラス定義` が正しいアンカーと確認（返信済み）
+
+## 未解決事項
+
+- **#3217245104 の修正は知識ファイル直接編集のみ** — RBKC (create) 側は未修正。
+  `method_binding` ラベルは `concept.rst` の `特殊なリクエスト処理` セクション内 (v1.2/v1.3/v1.4) に定義されており、
+  再生成すると誤ったリンク (`#ハンドラの構造と実装`) が復活する可能性がある。
+  → RBKC create 側の修正 or verify でこのパターンを検出する仕組みが必要かどうか、ユーザー判断が必要。
+  [DECISION: RBKC create 側も修正すべきか？ それとも今回は知識ファイル直接編集で完結させるか？]
