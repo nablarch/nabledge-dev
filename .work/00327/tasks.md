@@ -2,7 +2,7 @@
 
 **PR**: #332
 **Issue**: #327
-**Updated**: 2026-05-08 (session 2)
+**Updated**: 2026-05-11 (session 3)
 
 ## Rules
 
@@ -10,7 +10,7 @@
 - **変更前に影響範囲を網羅的に列挙**: サンプリングではなく、影響するすべてのファイル・行を特定してから着手する
 - **設計決定は根拠を明示**: 選択した理由とその根拠（ファイル名・行番号・仕様条文）を必ず記録する
 
-## In Progress
+## In Progress (remaining steps)
 
 ### Task 7: PCIDSS対応表専用の P2-4 パターンを追加する
 
@@ -46,19 +46,16 @@
 
 **Steps:**
 - [x] Step 0: WIP stash 確認済み（`stash@{0}` は廃棄 — 不要）
-- [ ] Step 1: テスト作成（TDD — RED）
-  - `xlsx_common.py` の P2-4 meta 生成テスト
-  - `docs.py` の P2-4 MDテーブルレンダーテスト
-  - `verify.py` の P2-4 QO2 テスト
-- [ ] Step 2: `xlsx-sheet-mapping.md` 更新（P2-3 → P2-4 を v6/v5 の2行）
-- [ ] Step 3: `xlsx_common.py` に `_build_p2_4_meta()` + `sheet_to_result()` 分岐追加
-- [ ] Step 4: `docs.py` に P2-4 レンダラー追加（前文 + MDテーブル、セル内LF→`<br>`）
-- [ ] Step 5: `verify.py` に P2-4 QO2 対応追加
-- [ ] Step 6: テストが GREEN になることを確認
-- [ ] Step 7: `bash rbkc.sh create 6` および `bash rbkc.sh create 5` 実行 → MDテーブル確認
-- [ ] Step 8: `bash rbkc.sh verify 6` および `bash rbkc.sh verify 5` で FAIL 0件確認
-- [ ] Step 9: 全5バージョン verify（v6/v5/v1.4/v1.3/v1.2）FAIL count 変化なし確認
-- [ ] Step 10: `rbkc.md` に手動編集禁止ルール追加
+- [x] Step 1: テスト作成（TDD — RED）— `c309aa893`
+- [x] Step 2: `xlsx-sheet-mapping.md` 更新（P2-3 → P2-4 を v6/v5 の2行）— `ff9062009`
+- [x] Step 3: `xlsx_common.py` に `_build_p2_4_meta()` + `sheet_to_result()` 分岐追加 — `ff9062009`
+- [x] Step 4: `docs.py` に P2-4 レンダラー追加（前文 + MDテーブル、セル内LF→`<br>`）— `ff9062009`
+- [x] Step 5: `verify.py` に P2-4 QO2 対応追加 — `ff9062009`
+- [x] Step 6: テストが GREEN になることを確認（494 passed）
+- [x] Step 7: `bash rbkc.sh create 6/5` 実行 → MDテーブル確認 — `8f18dd964`
+- [x] Step 8: `bash rbkc.sh verify 6/5` で FAIL 0件確認
+- [x] Step 9: 全5バージョン verify FAIL 0件確認
+- [x] Step 10: `rbkc.md` に手動編集禁止ルール追加 — `a7728e9a2`
 - [ ] Step 11: PRボディ更新
 - [ ] Step 12: PR変更差分チェック
 - [ ] Step 13: レビュー依頼
