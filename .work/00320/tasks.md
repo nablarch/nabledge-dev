@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-11 (rev6)
+**Updated**: 2026-05-11 (rev7)
 
 ## In Progress
 
@@ -43,7 +43,7 @@
   - §3-2-1: LabelTarget フィールド定義更新（type/anchor 追加、section_title h1空文字仕様明記、build_label_doc_map シグネチャ修正）
   - §3-2-3: 経緯記述を削除し現在の実装仕様のみ記述
   - §4 QL1 ノート: 現状のみ記述（履歴・タスク参照を除去）
-- [ ] Expert review（Software Engineer + QA Engineer）
+- [x] Expert review（Software Engineer + QA Engineer）— SE: 0 Findings, QA: 2 Findings fixed（subtitle無body/弱アサーション）
 - [ ] 設計書 §4 マトリクス QL1 を ✅ に更新（全バージョン 0 FAIL かつ Expert review 通過後）
 - [ ] PR 最終確認（Success Criteria チェック）
 
