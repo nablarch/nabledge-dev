@@ -158,7 +158,6 @@ def call_llm(prompt: str, json_schema: str, model: str = "sonnet") -> dict:
     result = subprocess.run(
         [
             "claude", "-p",
-            "--bare",
             "--model", model,
             "--output-format", "json",
             "--json-schema", json_schema,
@@ -167,6 +166,7 @@ def call_llm(prompt: str, json_schema: str, model: str = "sonnet") -> dict:
         ],
         capture_output=True,
         text=True,
+        cwd="/tmp",
         timeout=120,
     )
     if result.returncode != 0:

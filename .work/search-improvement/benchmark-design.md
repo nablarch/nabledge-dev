@@ -277,6 +277,31 @@ LLM判定は知識ベースにマッチしないものをNGにする傾向があ
 | トークン量 | 12,000 | 10,000 | 25,000 | 40,000 |
 ```
 
+## CLI呼び出しパターン
+
+ベンチマーク・シミュレーションのLLM呼び出しは `claude -p` を使用する。
+
+```python
+subprocess.run(
+    [
+        "claude", "-p",
+        "--model", model,
+        "--output-format", "json",
+        "--json-schema", json_schema,
+        "--no-session-persistence",
+        prompt,
+    ],
+    capture_output=True,
+    text=True,
+    cwd="/tmp",
+    timeout=120,
+)
+```
+
+**必須ルール:**
+- `cwd="/tmp"` を指定する。プロジェクトディレクトリから実行すると、Claude Codeのセッション管理と干渉して認証エラーになる
+- `--bare` は使わない。`--bare` はOAuth/keychainを無効化し、`ANTHROPIC_API_KEY` 環境変数のみで認証する。CI以外では使えない
+
 ## ディレクトリ構成
 
 ```
