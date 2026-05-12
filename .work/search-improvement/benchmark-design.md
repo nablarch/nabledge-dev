@@ -287,9 +287,8 @@ subprocess.run(
         "claude", "-p",
         "--model", model,
         "--output-format", "json",
-        "--json-schema", json_schema,
         "--no-session-persistence",
-        prompt,
+        full_prompt,  # json_schemaはプロンプト末尾に追記
     ],
     capture_output=True,
     text=True,
@@ -301,6 +300,8 @@ subprocess.run(
 **必須ルール:**
 - `cwd="/tmp"` を指定する。プロジェクトディレクトリから実行すると、Claude Codeのセッション管理と干渉して認証エラーになる
 - `--bare` は使わない。`--bare` はOAuth/keychainを無効化し、`ANTHROPIC_API_KEY` 環境変数のみで認証する。CI以外では使えない
+- `--json-schema` は使わない。非bareモードでは正しく動作しない（resultが空になる）。JSON Schemaはプロンプト末尾に出力形式指示として追記する
+- レスポンスがmarkdownコードフェンスで囲まれる場合があるため、`extract_json_from_result()` でストリップしてからパースする
 
 ## ディレクトリ構成
 

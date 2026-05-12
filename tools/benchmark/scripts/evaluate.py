@@ -169,15 +169,25 @@ def extract_json_from_result(text: str) -> str:
 
 
 def call_llm(prompt: str, json_schema: str, model: str = "sonnet") -> dict:
-    """Call Claude CLI for LLM judgment."""
+    """Call Claude CLI for LLM judgment.
+
+    json_schema is appended to the prompt as output format instructions.
+    The model is expected to return valid JSON matching the schema.
+    """
+    full_prompt = (
+        f"{prompt}\n\n"
+        f"## 出力形式（厳守）\n"
+        f"以下のJSON Schemaに従ったJSONのみを出力してください。"
+        f"コードフェンス・説明文・その他のテキストは一切不要です。\n"
+        f"```\n{json_schema}\n```"
+    )
     result = subprocess.run(
         [
             "claude", "-p",
             "--model", model,
             "--output-format", "json",
-            "--json-schema", json_schema,
             "--no-session-persistence",
-            prompt,
+            full_prompt,
         ],
         capture_output=True,
         text=True,
