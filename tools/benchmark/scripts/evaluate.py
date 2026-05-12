@@ -153,6 +153,21 @@ def load_runner_output(run_dir: str, scenario_id: str) -> dict:
     return result
 
 
+def extract_json_from_result(text: str) -> str:
+    """Extract JSON from a result that may be wrapped in markdown code fences."""
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        lines = stripped.split("\n")
+        start = 1
+        end = len(lines)
+        for i in range(len(lines) - 1, 0, -1):
+            if lines[i].strip() == "```":
+                end = i
+                break
+        stripped = "\n".join(lines[start:end]).strip()
+    return stripped
+
+
 def call_llm(prompt: str, json_schema: str, model: str = "sonnet") -> dict:
     """Call Claude CLI for LLM judgment."""
     result = subprocess.run(
@@ -172,7 +187,7 @@ def call_llm(prompt: str, json_schema: str, model: str = "sonnet") -> dict:
     if result.returncode != 0:
         raise RuntimeError(f"claude CLI failed: {result.stderr}")
     data = json.loads(result.stdout)
-    return json.loads(data["result"])
+    return json.loads(extract_json_from_result(data["result"]))
 
 
 def evaluate_scenario(

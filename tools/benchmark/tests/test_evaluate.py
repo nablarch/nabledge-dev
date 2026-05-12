@@ -15,12 +15,36 @@ from tools.benchmark.scripts.evaluate import (
     determine_human_review_items,
     evaluate_all,
     evaluate_scenario,
+    extract_json_from_result,
     load_runner_output,
     load_section_content,
     parse_claim_response,
     parse_hallucination_response,
     parse_section_ref,
 )
+
+
+class TestExtractJsonFromResult:
+    def test_plain_json(self):
+        assert extract_json_from_result('{"a": 1}') == '{"a": 1}'
+
+    def test_json_in_code_fence(self):
+        text = '```json\n{"a": 1}\n```'
+        assert extract_json_from_result(text) == '{"a": 1}'
+
+    def test_json_in_plain_code_fence(self):
+        text = '```\n{"a": 1}\n```'
+        assert extract_json_from_result(text) == '{"a": 1}'
+
+    def test_whitespace_around(self):
+        text = '  \n```json\n{"a": 1}\n```\n  '
+        assert extract_json_from_result(text) == '{"a": 1}'
+
+    def test_multiline_json(self):
+        text = '```json\n{\n  "a": 1,\n  "b": 2\n}\n```'
+        result = extract_json_from_result(text)
+        parsed = json.loads(result)
+        assert parsed == {"a": 1, "b": 2}
 
 
 class TestParseSectionRef:
