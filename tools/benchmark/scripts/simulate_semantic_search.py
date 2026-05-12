@@ -54,7 +54,6 @@ def call_llm(prompt: str, model: str = "sonnet") -> dict:
     result = subprocess.run(
         [
             "claude", "-p",
-            "--bare",
             "--model", model,
             "--output-format", "json",
             "--json-schema", POINTER_JSON_SCHEMA,
@@ -64,10 +63,13 @@ def call_llm(prompt: str, model: str = "sonnet") -> dict:
         capture_output=True,
         text=True,
         timeout=180,
+        cwd="/tmp",
     )
     if result.returncode != 0:
         raise RuntimeError(f"claude CLI failed: {result.stderr}")
     data = json.loads(result.stdout)
+    if "structured_output" in data:
+        return data["structured_output"]
     return json.loads(data["result"])
 
 
