@@ -115,3 +115,20 @@ Verified all 24 QA scenarios by reading must section body text from v6 knowledge
 | qa-13 | s14→s2 | s14 is batchInsert/batchUpdate/batchDelete (bulk perf optimization). Question is about REST single-record registration. s2 describes basic CRUD including single-record insert. |
 
 All other scenarios verified correct — must sections are indispensable for answering each question, and no better alternative exists in the same file.
+
+## 2026-05-12
+
+### 1-5B: Must section re-verification (strict criteria)
+
+4 independent QA agents evaluated all 24 scenarios without seeing simulation results.
+Criteria: "Without this section, can the question be answered?" — only indispensable sections are must.
+
+**Result**: 19/24 unchanged, 5 changes applied.
+
+| Scenario | Change | Rationale |
+|----------|--------|-----------|
+| pre-02 | s8→acceptable, s16→must | Web validation requires InjectForm interceptor (s16), not just annotation syntax (s8) |
+| qa-09 | s7 promoted to must | s8 is only 33 chars (API name). s7 has DB table layout and BasicBusinessDateProvider setup — needed for implementation |
+| qa-11 | jaxrs:s5 added to must | Question explicitly asks about ログ出力. REST API logging mechanism is in s5, separate from s4 (response) |
+| qa-12 | tag:s29→must, jaxrs:s7 added to must | Error message return requires both Web display layer (s29) and REST response body (s7) |
+| qa-13 | rest-create:s1 promoted to must | Hearing says REST API. s2 alone (CRUD capability) doesn't give the REST implementation pattern |

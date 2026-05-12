@@ -50,11 +50,14 @@
       "then": {
         "must": [
           {
-            "fact": "バリデーションルールはアノテーションをFieldかProperty（getter）に設定することで指定できる",
-            "section": "component/libraries/libraries-bean-validation.json:s8"
+            "fact": "WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う",
+            "section": "component/libraries/libraries-bean-validation.json:s16"
           }
         ],
         "acceptable": [
+          {
+            "section": "component/libraries/libraries-bean-validation.json:s8"
+          },
           {
             "section": "component/libraries/libraries-bean-validation.json:s17"
           },
@@ -577,14 +580,15 @@
           {
             "fact": "BusinessDateUtilを使用して業務日付を取得する",
             "section": "component/libraries/libraries-date.json:s8"
+          },
+          {
+            "fact": "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要",
+            "section": "component/libraries/libraries-date.json:s7"
           }
         ],
         "acceptable": [
           {
             "section": "component/libraries/libraries-date.json:s2"
-          },
-          {
-            "section": "component/libraries/libraries-date.json:s7"
           }
         ]
       }
@@ -638,6 +642,10 @@
           {
             "fact": "RESTの場合はJaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
             "section": "component/handlers/handlers-jaxrs-response-handler.json:s4"
+          },
+          {
+            "fact": "RESTの場合はJaxRsErrorLogWriterが例外に応じたログ出力を行う",
+            "section": "component/handlers/handlers-jaxrs-response-handler.json:s5"
           }
         ],
         "acceptable": [
@@ -672,6 +680,14 @@
           {
             "fact": "RESTの場合は@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
             "section": "component/libraries/libraries-bean-validation.json:s17"
+          },
+          {
+            "fact": "Webの場合はエラー表示タグでリクエストスコープのエラーメッセージを表示する",
+            "section": "component/libraries/libraries-tag.json:s29"
+          },
+          {
+            "fact": "RESTの場合はErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する",
+            "section": "component/handlers/handlers-jaxrs-response-handler.json:s7"
           }
         ],
         "acceptable": [
@@ -680,9 +696,6 @@
           },
           {
             "section": "component/libraries/libraries-bean-validation.json:s19"
-          },
-          {
-            "section": "component/libraries/libraries-tag.json:s29"
           }
         ]
       }
@@ -705,12 +718,13 @@
           {
             "fact": "UniversalDaoを使ってエンティティをDBに登録する",
             "section": "component/libraries/libraries-universal-dao.json:s2"
+          },
+          {
+            "fact": "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する",
+            "section": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1"
           }
         ],
         "acceptable": [
-          {
-            "section": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1"
-          },
           {
             "section": "processing-pattern/web-application/web-application-getting-started-client-create.json:s1"
           }
