@@ -99,3 +99,19 @@ All sections is too big (~74K tokens for v6 alone). File-level misses the search
 3. **L2 section count per file**: median ~4, max 21. Most files have 2-6 L2 sections.
 4. **File-level content is TOC** — when sections exist, file content lists section titles hierarchically.
 5. **annotate-index.sh** in the search design: script adds ★ annotations to index.md based on query. This allows pre-filtering before AI selection.
+
+## 2026-05-12
+
+### Task 1-5c': Must Section Re-verification
+
+Verified all 24 QA scenarios by reading must section body text from v6 knowledge files.
+
+**Method**: For each scenario, read the question + hearing answer, read the must section content, read other sections in the same file, judged whether the must section is indispensable.
+
+**Result**: 23/24 correct, 1 change.
+
+| Scenario | Change | Rationale |
+|----------|--------|-----------|
+| qa-13 | s14→s2 | s14 is batchInsert/batchUpdate/batchDelete (bulk perf optimization). Question is about REST single-record registration. s2 describes basic CRUD including single-record insert. |
+
+All other scenarios verified correct — must sections are indispensable for answering each question, and no better alternative exists in the same file.
