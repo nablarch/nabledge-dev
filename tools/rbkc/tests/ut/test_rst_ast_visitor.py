@@ -449,3 +449,112 @@ class TestRefRoleCaseInsensitiveLookup:
         assert "[SQLログ](" in parts.top_content, (
             "Expected MD link but got plain text — case-insensitive lookup not applied"
         )
+
+
+class TestParagraphAnchorSyntheticSection:
+    """Issue #320 Task 25: anchor before a bold/italic paragraph inside a section
+    body should generate a synthetic subsection in parts.sections.
+
+    Real example (v1.x fw/architectural_pattern/*.rst):
+      .. _フローを表示:
+
+      **標準ハンドラ構成** (説明文...)
+
+      .. raw:: html  ← content that belongs to the synthetic section
+
+    The anchor+paragraph pair is lifted out of the parent section body and
+    emitted as a separate Section(title='標準ハンドラ構成', ...) entry.
+    """
+
+    def _parse_and_extract(self, rst_source: str) -> "DocumentParts":
+        from scripts.common.rst_ast import parse
+        from scripts.common.rst_ast_visitor import extract_document
+        doctree, _ = parse(rst_source, source_path=Path("/repo/test.rst"))
+        return extract_document(doctree, label_map={}, source_path=Path("/repo/test.rst"))
+
+    def test_bold_paragraph_anchor_creates_subsection(self):
+        """``.. _anchor:`` + ``**Title**`` paragraph → Section(title='Title').
+
+        Uses a 3-level structure so docutils transforms do not collapse
+        the h2 section body into the document root.
+        """
+        source = textwrap.dedent("""\
+            Doc Title
+            =========
+
+            Parent Section
+            --------------
+
+            Grandparent body.
+
+            Sub Section
+            ^^^^^^^^^^^
+
+            Body text.
+
+            .. _my_term:
+
+            **用語**
+
+            Definition content.
+            """)
+        parts = self._parse_and_extract(source)
+        titles = [s.title for s in parts.sections]
+        assert "用語" in titles, (
+            f"Expected synthetic section '用語' in sections, got: {titles}"
+        )
+
+    def test_bold_start_paragraph_anchor_creates_subsection(self):
+        """``**Term** (extra)`` paragraph → Section(title='Term')."""
+        source = textwrap.dedent("""\
+            Doc Title
+            =========
+
+            Parent Section
+            --------------
+
+            Body.
+
+            Sub Section
+            ^^^^^^^^^^^
+
+            .. _フローを表示:
+
+            **標準ハンドラ構成** (説明文をクリックすると詳細が表示されます。)
+
+            Inline content.
+            """)
+        parts = self._parse_and_extract(source)
+        titles = [s.title for s in parts.sections]
+        assert "標準ハンドラ構成" in titles, (
+            f"Expected synthetic section '標準ハンドラ構成' in sections, got: {titles}"
+        )
+
+    def test_plain_paragraph_anchor_does_not_create_subsection(self):
+        """Plain-text paragraph after anchor stays in parent section body."""
+        source = textwrap.dedent("""\
+            Doc Title
+            =========
+
+            Parent Section
+            --------------
+
+            Body.
+
+            Sub Section
+            ^^^^^^^^^^^
+
+            Body text.
+
+            .. _my_anchor:
+
+            plain text paragraph
+
+            More content.
+            """)
+        parts = self._parse_and_extract(source)
+        titles = [s.title for s in parts.sections]
+        assert "plain text paragraph" not in titles, (
+            "Plain-text paragraph must not create a synthetic section"
+        )
+        assert "Sub Section" in titles

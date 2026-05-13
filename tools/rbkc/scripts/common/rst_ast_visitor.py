@@ -17,6 +17,7 @@ from docutils import nodes
 
 from . import rst_admonition, rst_ast
 from .handler_js import parse_api_dict, parse_handler_dict, parse_handler_queue, render_handler_table
+from .labels import _paragraph_anchor_title
 
 
 # ---------------------------------------------------------------------------
@@ -1102,8 +1103,46 @@ def _walk_section(
             subsections.append(ch)
         else:
             body_children.append(ch)
-    content = _join_blocks([visitor.render(c) for c in body_children]).strip()
+
+    # Split body_children into synthetic subsections where an anchor is
+    # immediately followed by a bold/italic paragraph acting as a heading.
+    # Each synthetic subsection collects the nodes that follow until the
+    # next anchor+paragraph boundary or end of body.
+    main_body: list[nodes.Node] = []
+    synthetic_sections: list[tuple[str, list[nodes.Node]]] = []
+    i = 0
+    while i < len(body_children):
+        ch = body_children[i]
+        if isinstance(ch, nodes.target):
+            para_title = _paragraph_anchor_title(ch)
+            if para_title is not None:
+                # Consume the target + following skippable nodes + paragraph
+                j = i + 1
+                while j < len(body_children) and isinstance(
+                    body_children[j], (nodes.target, nodes.transition, nodes.line_block)
+                ):
+                    j += 1
+                # j now points at the paragraph (already verified by _paragraph_anchor_title)
+                j += 1  # skip the paragraph itself
+                # Collect subsequent nodes until next synthetic-boundary or end
+                syn_body: list[nodes.Node] = []
+                while j < len(body_children):
+                    nxt = body_children[j]
+                    if isinstance(nxt, nodes.target) and _paragraph_anchor_title(nxt) is not None:
+                        break
+                    syn_body.append(nxt)
+                    j += 1
+                synthetic_sections.append((para_title, syn_body))
+                i = j
+                continue
+        main_body.append(ch)
+        i += 1
+
+    content = _join_blocks([visitor.render(c) for c in main_body]).strip()
     parts.sections.append(Section(title=title, content=content, level=level))
+    for syn_title, syn_nodes in synthetic_sections:
+        syn_content = _join_blocks([visitor.render(c) for c in syn_nodes]).strip()
+        parts.sections.append(Section(title=syn_title, content=syn_content, level=level + 1))
     for sub in subsections:
         _walk_section(sub, visitor, parts, level=level + 1)
 
