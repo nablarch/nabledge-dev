@@ -143,7 +143,7 @@
 | 境界イベントトリガーID | java.lang.String | PK |
 | 境界イベントトリガー名 | java.lang.String |  |
 
-**シーケンスフローテーブル定義**
+#### シーケンスフローテーブル定義
 
 [シーケンスフロー](../../extension/workflow/workflow-WorkflowProcessElement.md#シーケンスフロー) の定義を管理するテーブル。
 
@@ -190,7 +190,7 @@
 | ワークフローID | java.lang.String |  |
 | バージョン | java.lang.Integer (int) |  |
 
-**タスク担当ユーザテーブル**
+#### タスク担当ユーザテーブル
 
 タスクに割り当てられた担当ユーザを管理するテーブル。 [1]
 
@@ -203,7 +203,7 @@
 | 担当ユーザID | java.lang.String | PK |
 | 実行順 | java.lang.Integer (int) | **順次** [マルチインスタンス・タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#マルチインスタンスタスク) の場合に ユーザの処理実行順を管理するために使用する。  非マルチインスタンスタスクや並行 [マルチインスタンス・タスク](../../extension/workflow/workflow-WorkflowProcessElement.md#マルチインスタンスタスク) の場合には、 本属性値は使用しない。 |
 
-**タスク担当グループテーブル**
+#### タスク担当グループテーブル
 
 タスクに割り当てられた担当グループを管理するテーブル。 [1]
 
@@ -228,7 +228,7 @@
 | インスタンスID | java.lang.String | PK |
 | フローノードID | java.lang.String | PK |
 
-**アクティブユーザタスクテーブル**
+#### アクティブユーザタスクテーブル
 
 ユーザが実行可能なタスクを管理するテーブル。
 
@@ -239,9 +239,9 @@
 | インスタンスID | java.lang.String | PK |
 | フローノードID | java.lang.String | PK |
 | 担当ユーザID | java.lang.String | PK |
-| 実行順 | java.lang.Integer (int) | [タスク担当ユーザテーブル](../../extension/workflow/workflow-WorkflowArchitecture.md#ワークフローの進行状態を管理するテーブル) を参照 |
+| 実行順 | java.lang.Integer (int) | [タスク担当ユーザテーブル](../../extension/workflow/workflow-WorkflowArchitecture.md#タスク担当ユーザテーブル) を参照 |
 
-**アクティブグループタスクテーブル**
+#### アクティブグループタスクテーブル
 
 グループが実行可能なタスクを管理するテーブル。
 
@@ -252,7 +252,7 @@
 | インスタンスID | java.lang.String | PK |
 | フローノードID | java.lang.String | PK |
 | 担当グループID | java.lang.String | PK |
-| 実行順 | java.lang.Integer (int) | [タスク担当グループテーブル](../../extension/workflow/workflow-WorkflowArchitecture.md#ワークフローの進行状態を管理するテーブル) を参照 |
+| 実行順 | java.lang.Integer (int) | [タスク担当グループテーブル](../../extension/workflow/workflow-WorkflowArchitecture.md#タスク担当グループテーブル) を参照 |
 
 #### テーブル定義の例
 
