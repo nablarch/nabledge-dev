@@ -2,33 +2,29 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-13 (rev37)
+**Updated**: 2026-05-14 (rev38)
 
 ## In Progress
-
-（なし）
-
-## Not Started
 
 ### Task 26: `\X)` パターン paragraph anchor 対応
 
 RST の `\e) テキスト` 形式（バックスラッシュエスケープ + 英数字 + `)` で始まるプレーンテキスト段落）がターゲット直後に来るケースを合成見出しとして認識する。
 
-**背景**: `sql-load-class-label` → `#クラス定義`（親セクション）に解決されており、リンクがセクション先頭に飛ぶ問題。v1.2/v1.3/v1.4 の 4 RST ファイルに計 11 件（バージョン合計 33 件）存在。
+**背景**: `sql-load-class-label` → `#クラス定義`（親セクション）に解決されており、リンクがセクション先頭に飛ぶ問題。v1.2/v1.3/v1.4 の 4 RST ファイルに計 11 件（バージョン合計 33 件）存在（v5/v6: 0件）。
 
-**[DECISION: 以下の修正方針をユーザーが承認済み]** — 承認待ち
-
-提案内容:
+**承認済み方針** (2026-05-14):
 - `_paragraph_anchor_title`（labels.py）に `X) テキスト` パターンを追加
 - `_walk_section`（rst_ast_visitor.py）の合成セクション境界判定も同様に更新
 - 対象: `re.match(r'^[a-zA-Z0-9]\) ', first.astext())` にマッチするプレーンテキスト段落
+- 設計書 §3-2-2 に Rule 6 として追記
 
 **Steps:**
-- [DECISION: 提案した修正方針（_paragraph_anchor_title と _walk_section に X) パターン追加）を承認しますか？] ユーザー承認確認
+- [x] ユーザー承認確認 (2026-05-14)
 - [ ] TDD: テスト RED (labels.py + rst_ast_visitor.py)
 - [ ] `_paragraph_anchor_title` に `X) ` パターン追加 → GREEN
 - [ ] `_walk_section` の合成境界判定に同パターン追加
-- [ ] 全5バージョン `rbkc.sh create + verify` 実行・FAIL 0 確認
+- [ ] 設計書 §3-2-2 に Rule 6 追記
+- [ ] 全5バージョン `rbkc.sh create + verify` 実行・FAIL diff 確認
 - [ ] 知識ファイル再生成・差分確認
 - [ ] SE/QA エキスパートレビュー
 - [ ] tasks.md 更新・PR 更新
