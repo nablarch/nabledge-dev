@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-13 (rev31)
+**Updated**: 2026-05-13 (rev32)
 
 ## In Progress
 
@@ -10,7 +10,34 @@
 
 ## Not Started
 
-（なし）
+### Task 25: 非見出しアンカー → 合成見出し生成の実装
+
+**方針（ユーザー承認済み）**:
+- Option B: `_walk_section` で非見出しアンカー直後の paragraph を合成セクションとして分割し、JSON sections[] にも追加する
+- docs MD の見出し増加は人の閲覧にもポジティブ（原文の意図を正確に反映）
+- verify は変更不要 — 既存の anchor/section_title チェックが自動検証
+
+**事前確認が必要なケース**:
+- `フローを表示` アンカー (`**標準ハンドラ構成** (説明文をクリックすると...)`) — JavaScript 用アンカーで静的 MD では意味が薄い見出し。当該ファイルが knowledge file の対象かどうか確認してから着手
+
+**実装箇所**:
+1. `tools/rbkc/scripts/common/labels.py` — `_scan_rst_labels`: アンカー直後ノードが paragraph の場合、テキストを `title` に採用（bold剥がし・italic剥がし・plain-text）
+2. `tools/rbkc/scripts/common/rst_ast_visitor.py` — `_walk_section`: アンカー+paragraph ペアを合成セクションとして分割
+
+**paragraph テキスト → 見出しテキスト変換ルール**:
+- `**テキスト**` (bold-only) → `テキスト`（bold マーカー除去）
+- `*テキスト*` (italic) → `テキスト`（italic マーカー除去）
+- `**テキスト**：その他` (bold-start) → `テキスト`（bold部分のみ抽出）
+- plain-text → そのまま
+- `|` (table-continuation, 6件) → 変換不可、親見出しフォールバック維持
+
+**Steps:**
+- [DECISION: `フローを表示` 系アンカーが付くファイルが knowledge file 対象か確認し、対象なら合成見出し化、対象外ならスキップ] Step 0
+- [ ] Step 1: `_scan_rst_labels` に非見出し paragraph テキスト採用ロジック追加 (TDD)
+- [ ] Step 2: `_walk_section` に合成セクション分割ロジック追加
+- [ ] Step 3: 全5バージョン verify FAIL 0 確認
+- [ ] Step 4: SE + QA エキスパートレビュー
+- [ ] Step 5: 再生成・差分確認・PR 更新
 
 ## Done
 
