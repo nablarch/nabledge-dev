@@ -54,9 +54,22 @@ STAGE2_JSON_SCHEMA = json.dumps({
 })
 
 
-def build_stage1_prompt(question: str, hearing_answer: str | None, index_content: str) -> str:
+def format_hearing_answer(hearing_answer: dict | None) -> str:
+    if not hearing_answer:
+        return "なし"
+    processing_type = hearing_answer.get("processing_type")
+    goal = hearing_answer.get("goal", "")
+    lines = []
+    if processing_type:
+        lines.append(f"処理方式: {processing_type}")
+    if goal:
+        lines.append(f"やりたいこと: {goal}")
+    return "\n".join(lines) if lines else "なし"
+
+
+def build_stage1_prompt(question: str, hearing_answer: dict | None, index_content: str) -> str:
     template = (PROMPTS_DIR / "semantic-search-stage1.md").read_text(encoding="utf-8")
-    ha = hearing_answer if hearing_answer else "なし"
+    ha = format_hearing_answer(hearing_answer)
     return (
         template
         .replace("{question}", question)
@@ -65,9 +78,9 @@ def build_stage1_prompt(question: str, hearing_answer: str | None, index_content
     )
 
 
-def build_stage2_prompt(question: str, hearing_answer: str | None, files_content: str) -> str:
+def build_stage2_prompt(question: str, hearing_answer: dict | None, files_content: str) -> str:
     template = (PROMPTS_DIR / "semantic-search-stage2.md").read_text(encoding="utf-8")
-    ha = hearing_answer if hearing_answer else "なし"
+    ha = format_hearing_answer(hearing_answer)
     return (
         template
         .replace("{question}", question)

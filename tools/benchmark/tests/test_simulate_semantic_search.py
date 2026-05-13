@@ -12,6 +12,7 @@ from tools.benchmark.scripts.simulate_semantic_search import (
     compare_results,
     format_file_content,
     format_files_content,
+    format_hearing_answer,
     parse_stage1_response,
     parse_stage2_response,
     simulate_all,
@@ -51,11 +52,39 @@ class TestAggregateStageMetrics:
         assert result["total_output_tokens"] == 0
 
 
+class TestFormatHearingAnswer:
+    def test_none(self):
+        assert format_hearing_answer(None) == "なし"
+
+    def test_empty_dict(self):
+        assert format_hearing_answer({}) == "なし"
+
+    def test_both_axes(self):
+        ha = {"processing_type": "Web", "goal": "バリデーションする"}
+        result = format_hearing_answer(ha)
+        assert "処理方式: Web" in result
+        assert "やりたいこと: バリデーションする" in result
+
+    def test_null_processing_type(self):
+        ha = {"processing_type": None, "goal": "テストを書く"}
+        result = format_hearing_answer(ha)
+        assert "処理方式" not in result
+        assert "やりたいこと: テストを書く" in result
+
+    def test_goal_only(self):
+        ha = {"goal": "テストを書く"}
+        result = format_hearing_answer(ha)
+        assert "処理方式" not in result
+        assert "やりたいこと: テストを書く" in result
+
+
 class TestBuildStage1Prompt:
     def test_substitutes_all_placeholders(self):
-        prompt = build_stage1_prompt("質問文", "回答文", "インデックス内容")
+        ha = {"processing_type": "Web", "goal": "回答文"}
+        prompt = build_stage1_prompt("質問文", ha, "インデックス内容")
         assert "質問文" in prompt
-        assert "回答文" in prompt
+        assert "処理方式: Web" in prompt
+        assert "やりたいこと: 回答文" in prompt
         assert "インデックス内容" in prompt
 
     def test_no_hearing_answer(self):
@@ -64,11 +93,12 @@ class TestBuildStage1Prompt:
         assert "{hearing_answer}" not in prompt
 
     def test_empty_hearing_answer(self):
-        prompt = build_stage1_prompt("質問文", "", "インデックス内容")
+        prompt = build_stage1_prompt("質問文", {}, "インデックス内容")
         assert "なし" in prompt
 
     def test_no_unreplaced_placeholders(self):
-        prompt = build_stage1_prompt("Q", "A", "I")
+        ha = {"processing_type": "REST API", "goal": "登録する"}
+        prompt = build_stage1_prompt("Q", ha, "I")
         assert "{question}" not in prompt
         assert "{hearing_answer}" not in prompt
         assert "{index_content}" not in prompt
@@ -76,9 +106,11 @@ class TestBuildStage1Prompt:
 
 class TestBuildStage2Prompt:
     def test_substitutes_all_placeholders(self):
-        prompt = build_stage2_prompt("質問文", "回答文", "ファイル内容")
+        ha = {"processing_type": "Nablarchバッチ", "goal": "回答文"}
+        prompt = build_stage2_prompt("質問文", ha, "ファイル内容")
         assert "質問文" in prompt
-        assert "回答文" in prompt
+        assert "処理方式: Nablarchバッチ" in prompt
+        assert "やりたいこと: 回答文" in prompt
         assert "ファイル内容" in prompt
 
     def test_no_hearing_answer(self):
@@ -86,7 +118,8 @@ class TestBuildStage2Prompt:
         assert "なし" in prompt
 
     def test_no_unreplaced_placeholders(self):
-        prompt = build_stage2_prompt("Q", "A", "C")
+        ha = {"processing_type": "Web", "goal": "検索する"}
+        prompt = build_stage2_prompt("Q", ha, "C")
         assert "{question}" not in prompt
         assert "{hearing_answer}" not in prompt
         assert "{files_content}" not in prompt
@@ -390,7 +423,7 @@ class TestSimulateScenario:
             "id": "test-01",
             "when": {
                 "input": "テスト質問",
-                "hearing_answer": "回答",
+                "hearing_answer": {"processing_type": "Web", "goal": "回答"},
             },
             "then": {
                 "must": [{"fact": "f1", "section": "component/libs/test.json:s1"}],
@@ -474,7 +507,7 @@ class TestSimulateScenario:
     def test_output_structure(self):
         scenario = {
             "id": "test-04",
-            "when": {"input": "Q", "hearing_answer": "A"},
+            "when": {"input": "Q", "hearing_answer": {"processing_type": "Web", "goal": "A"}},
             "then": {"must": [], "acceptable": []},
         }
 
@@ -517,7 +550,7 @@ class TestSimulateAll:
             "scenarios": [
                 {
                     "id": "s-01",
-                    "when": {"input": "質問1", "hearing_answer": "回答1"},
+                    "when": {"input": "質問1", "hearing_answer": {"processing_type": "Web", "goal": "回答1"}},
                     "then": {
                         "must": [{"fact": "f1", "section": "component/libs/test.json:s1"}],
                         "acceptable": [],

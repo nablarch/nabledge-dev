@@ -1,6 +1,6 @@
 {
   "description": "QA benchmark scenarios for nabledge search evaluation. Each scenario tests the full QA pipeline across 4 axes.",
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "scenarios": [
     {
       "id": "pre-01",
@@ -45,7 +45,10 @@
         "workflow": "qa",
         "input": "入力チェック（バリデーション）の実装方法を教えてください",
         "expected_hearing": "must_ask",
-        "hearing_answer": "Webアプリケーションの入力画面のフォームで使います"
+        "hearing_answer": {
+          "processing_type": "Web",
+          "goal": "入力画面のフォームでバリデーションする"
+        }
       },
       "then": {
         "must": [
@@ -79,7 +82,10 @@
         "workflow": "qa",
         "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "バッチ処理でマスタテーブルを検索します"
+        "hearing_answer": {
+          "processing_type": "Nablarchバッチ",
+          "goal": "マスタテーブルをUniversalDaoで検索する"
+        }
       },
       "then": {
         "must": [
@@ -139,7 +145,10 @@
         "workflow": "qa",
         "input": "外部サイトから不正にPOSTされるのを防ぎたい。NablarchにCSRF対策の仕組みはある？どう設定する？",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "NablarchのカスタムタグでJSP画面を作っています"
+        "hearing_answer": {
+          "processing_type": "Web",
+          "goal": "JSP画面でCSRF対策を実装する"
+        }
       },
       "then": {
         "must": [
@@ -224,7 +233,10 @@
         "workflow": "qa",
         "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "都度起動バッチで、業務エラー時にエラーログをDBに書き込みたいです"
+        "hearing_answer": {
+          "processing_type": "都度起動バッチ",
+          "goal": "業務エラー時にエラーログをDBに書き込む"
+        }
       },
       "then": {
         "must": [
@@ -258,7 +270,10 @@
         "workflow": "qa",
         "input": "Bean Validationの中でDBに問い合わせて重複チェックしたい。カスタムバリデータでDB検索する実装でいいのか？",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "REST APIで会員登録処理を実装しています"
+        "hearing_answer": {
+          "processing_type": "REST API",
+          "goal": "会員登録処理でDB重複チェックする"
+        }
       },
       "then": {
         "must": [
@@ -285,7 +300,10 @@
         "workflow": "qa",
         "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "Webアプリケーションで、APサーバを3台に増やす予定です"
+        "hearing_answer": {
+          "processing_type": "Web",
+          "goal": "APサーバを3台にスケールアウトする"
+        }
       },
       "then": {
         "must": [
@@ -316,7 +334,10 @@
         "workflow": "qa",
         "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "月次バッチの締め処理のテストで、特定の日付で動作確認したいです"
+        "hearing_answer": {
+          "processing_type": "Nablarchバッチ",
+          "goal": "締め処理のテストで特定の日付で動作確認する"
+        }
       },
       "then": {
         "must": [
@@ -343,7 +364,10 @@
         "workflow": "qa",
         "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "Nablarchバッチ処理です。10万件のレコードを処理しています"
+        "hearing_answer": {
+          "processing_type": "Nablarchバッチ",
+          "goal": "10万件のレコードを処理する"
+        }
       },
       "then": {
         "must": [
@@ -370,7 +394,10 @@
         "workflow": "qa",
         "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
         "expected_hearing": "must_ask",
-        "hearing_answer": "月次の定期処理で、データベースのテーブルから対象データを読み込んで集計し、結果を別のテーブルに書き込みます"
+        "hearing_answer": {
+          "processing_type": "Nablarchバッチ",
+          "goal": "テーブルからデータを読み込んで集計し、結果を別テーブルに書き込む"
+        }
       },
       "then": {
         "must": [
@@ -407,7 +434,10 @@
         "workflow": "qa",
         "input": "2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "Webの会員登録画面のFormクラスです"
+        "hearing_answer": {
+          "processing_type": "Web",
+          "goal": "会員登録画面で相関バリデーションする"
+        }
       },
       "then": {
         "must": [
@@ -430,7 +460,10 @@
         "workflow": "qa",
         "input": "Bean ValidationのFormクラスの単体テストを書きたい。テストクラスの作り方とテストデータの準備方法を教えてほしい",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "Nablarchの自動テストフレームワークを使っています"
+        "hearing_answer": {
+          "processing_type": null,
+          "goal": "Nablarchの自動テストフレームワークでBean ValidationのFormクラスをテストする"
+        }
       },
       "then": {
         "must": [
@@ -520,7 +553,10 @@
         "workflow": "qa",
         "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
         "expected_hearing": "must_ask",
-        "hearing_answer": "Nablarchバッチ処理です。固定フォーマットのCSVファイルを取り込みます"
+        "hearing_answer": {
+          "processing_type": "Nablarchバッチ",
+          "goal": "固定フォーマットのCSVファイルを取り込む"
+        }
       },
       "then": {
         "must": [
@@ -573,7 +609,10 @@
         "workflow": "qa",
         "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "バッチの月次締め処理で使います"
+        "hearing_answer": {
+          "processing_type": "Nablarchバッチ",
+          "goal": "月次締め処理で業務日付を使う"
+        }
       },
       "then": {
         "must": [
@@ -604,7 +643,10 @@
         "workflow": "qa",
         "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
         "expected_hearing": "nice_to_ask",
-        "hearing_answer": "Web画面の検索機能で使います"
+        "hearing_answer": {
+          "processing_type": "Web",
+          "goal": "検索画面で動的SQLを使う"
+        }
       },
       "then": {
         "must": [
@@ -621,31 +663,26 @@
       }
     },
     {
-      "id": "qa-11",
+      "id": "qa-11a",
       "given": {
         "usecase": "qa",
         "category": "error-handling",
-        "description": "Nablarchのエラーハンドリングは処理方式（Web/REST/バッチ）ごとにハンドラ構成が異なる。Webでは HttpErrorHandler + OnError でエラー画面に遷移し、RESTでは JaxRsResponseHandler で例外に応じたJSONレスポンスを返す。処理方式が不明な質問にはヒアリングが必要"
+        "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。"
       },
       "when": {
         "workflow": "qa",
         "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
         "expected_hearing": "must_ask",
-        "hearing_answer": "WebアプリケーションとREST APIの両方があります"
+        "hearing_answer": {
+          "processing_type": "Web",
+          "goal": "エラー画面の表示とログ出力の仕組みを知りたい"
+        }
       },
       "then": {
         "must": [
           {
-            "fact": "Webの場合はHttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する",
+            "fact": "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する",
             "section": "component/handlers/handlers-HttpErrorHandler.json:s4"
-          },
-          {
-            "fact": "RESTの場合はJaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
-            "section": "component/handlers/handlers-jaxrs-response-handler.json:s4"
-          },
-          {
-            "fact": "RESTの場合はJaxRsErrorLogWriterが例外に応じたログ出力を行う",
-            "section": "component/handlers/handlers-jaxrs-response-handler.json:s5"
           }
         ],
         "acceptable": [
@@ -659,34 +696,93 @@
       }
     },
     {
-      "id": "qa-12",
+      "id": "qa-11b",
+      "given": {
+        "usecase": "qa",
+        "category": "error-handling",
+        "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+        "expected_hearing": "must_ask",
+        "hearing_answer": {
+          "processing_type": "REST API",
+          "goal": "エラーレスポンスとログ出力の仕組みを知りたい"
+        }
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
+            "section": "component/handlers/handlers-jaxrs-response-handler.json:s4"
+          },
+          {
+            "fact": "JaxRsErrorLogWriterが例外に応じたログ出力を行う",
+            "section": "component/handlers/handlers-jaxrs-response-handler.json:s5"
+          }
+        ],
+        "acceptable": []
+      }
+    },
+    {
+      "id": "qa-12a",
       "given": {
         "usecase": "qa",
         "category": "validation",
-        "description": "バリデーションエラー時のレスポンスはWebとRESTで異なる。Webではエラーメッセージをリクエストスコープに設定して入力画面に戻す。RESTではエラー情報をJSONレスポンスとして返す。処理方式不明ならヒアリングが必要"
+        "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。"
       },
       "when": {
         "workflow": "qa",
         "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
         "expected_hearing": "must_ask",
-        "hearing_answer": "WebアプリケーションとREST APIの両方で使います"
+        "hearing_answer": {
+          "processing_type": "Web",
+          "goal": "バリデーションエラーメッセージをユーザーに返す"
+        }
       },
       "then": {
         "must": [
           {
-            "fact": "Webの場合はHttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する",
+            "fact": "HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する",
             "section": "component/handlers/handlers-HttpErrorHandler.json:s4"
           },
           {
-            "fact": "RESTの場合は@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+            "fact": "エラー表示タグでリクエストスコープのエラーメッセージを表示する",
+            "section": "component/libraries/libraries-tag.json:s29"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-bean-validation.json:s7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-12b",
+      "given": {
+        "usecase": "qa",
+        "category": "validation",
+        "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+        "expected_hearing": "must_ask",
+        "hearing_answer": {
+          "processing_type": "REST API",
+          "goal": "バリデーションエラーメッセージをユーザーに返す"
+        }
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
             "section": "component/libraries/libraries-bean-validation.json:s17"
           },
           {
-            "fact": "Webの場合はエラー表示タグでリクエストスコープのエラーメッセージを表示する",
-            "section": "component/libraries/libraries-tag.json:s29"
-          },
-          {
-            "fact": "RESTの場合はErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する",
+            "fact": "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する",
             "section": "component/handlers/handlers-jaxrs-response-handler.json:s7"
           }
         ],
@@ -705,13 +801,16 @@
       "given": {
         "usecase": "qa",
         "category": "db-access",
-        "description": "データ登録はREST/Web/バッチで実装パターンが異なる。RESTはリソースクラスで1件登録、Webは画面遷移を伴う登録フロー、バッチはBatchActionで一括登録。処理方式不明ならヒアリングが必要"
+        "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。"
       },
       "when": {
         "workflow": "qa",
         "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
         "expected_hearing": "must_ask",
-        "hearing_answer": "REST APIで登録処理を実装しています"
+        "hearing_answer": {
+          "processing_type": "REST API",
+          "goal": "フォームから受け取ったデータをDBに登録する"
+        }
       },
       "then": {
         "must": [
