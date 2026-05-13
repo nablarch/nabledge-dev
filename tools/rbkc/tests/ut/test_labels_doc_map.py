@@ -899,3 +899,52 @@ class TestNextSectionMultiLevelClimb:
             f"Expected 'Next L2' but got {v.title!r} — "
             "multi-level climb stops too early"
         )
+
+
+class TestNextSectionTransitionSkip:
+    """Issue #320: label directly before a transition resolves to the section
+    after the transition.
+
+    Real example: v1.2/v1.3/v1.4 architectural_pattern/concept.rst
+      .. _method_binding:
+      ++++++++++++          ← transition
+      .. _request_processing:
+      リクエストの識別と業務処理の実行  ← correct target
+
+    Sphinx PropagateTargets moves the label id past the transition because
+    transition cannot hold an HTML id.
+    """
+
+    def test_label_before_transition_then_section(self, tmp_path):
+        """Label followed by transition then section resolves to that section."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "transition.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            First Section
+            -------------
+
+            Body text.
+
+            .. _method_binding:
+
+            +++++++++++++++
+
+            Second Section
+            --------------
+
+            Content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "method_binding" in m
+        v = m["method_binding"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "Second Section", (
+            f"Expected 'Second Section' but got {v.title!r} — "
+            "transition node must be skipped when searching for next section"
+        )

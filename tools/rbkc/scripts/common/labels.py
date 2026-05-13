@@ -175,19 +175,23 @@ def _next_section_for_node(node: "nodes.Node"):
     except ValueError:
         return None
 
-    # First check: direct siblings after the target node
+    # First check: direct siblings after the target node.
+    # Skip over other target nodes and transition nodes (horizontal rules like
+    # +++ in RST).  Sphinx PropagateTargets moves a label's id past a
+    # transition because transition cannot hold an HTML id — so the label
+    # effectively points to the section that follows the transition.
     for sib in siblings[idx + 1:]:
         if isinstance(sib, _nodes.section):
             return sib
-        if isinstance(sib, _nodes.target):
+        if isinstance(sib, (_nodes.target, _nodes.transition)):
             continue
         break
 
     # Multi-level climb: if the target is the last meaningful item in its
-    # section (only target nodes follow), walk up through ancestor sections
-    # looking for the next sibling section at each level.
+    # section (only target/transition nodes follow), walk up through ancestor
+    # sections looking for the next sibling section at each level.
     is_last_meaningful = all(
-        isinstance(sib, _nodes.target) for sib in siblings[idx + 1:]
+        isinstance(sib, (_nodes.target, _nodes.transition)) for sib in siblings[idx + 1:]
     )
     if not is_last_meaningful:
         return None
