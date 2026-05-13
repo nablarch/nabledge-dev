@@ -334,6 +334,7 @@ GitHub Web は Markdown の heading text を `github_slug()` で slug 化して 
 2. **display text (bare `:ref:\`label\``)**: label 直下の要素から推定した短い title 文字列 (heading の場合は heading text、definition-list の場合は最初の term、他は直近の enclosing section title)
 3. **display text (`:ref:\`text <label>\``)**: `text` をそのまま使う
 4. **ファイル内に heading が一切無い位置の label のみ** `UNRESOLVED` → それでも dangling として WARNING 扱い (§3-2-2 の真性 dangling と同じ)
+5. **`transition`（区切り線）直後の見出し (Issue #320)**: label の直後の兄弟ノードが `transition`（RST の `+++` 等の横罫線）の場合、その `transition` をスキップして次の `section` を「label が指す見出し」として使う。Sphinx の `PropagateTargets` transform と同じ動作 — `transition` は HTML `id` を持てないため label の id が次の要素へ伝播する。
 
 この規則により、v6 の `big_picture.rst:20` `.. _runtime_platform:` (block_quote 内) の例では enclosing section の heading text（`様々な処理方式に対応できる`）を slug 化した `anchor=様々な処理方式に対応できる` となる。なお、この場合の display text は直近の enclosing section title を使う。
 
