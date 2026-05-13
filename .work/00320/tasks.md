@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-13 (rev35)
+**Updated**: 2026-05-13 (rev36)
 
 ## In Progress
 
@@ -10,38 +10,7 @@
 
 ## Not Started
 
-### Task 25: 非見出しアンカー → 合成見出し生成の実装
-
-**方針（ユーザー承認済み）**:
-- Option B: `_walk_section` で非見出しアンカー直後の paragraph を合成セクションとして分割し、JSON sections[] にも追加する
-- verify は変更不要 — 既存の anchor/section_title チェックが自動検証
-
-**table_row アンカー全件確認済み（このセッション）**:
-- `flow-table` (17件) → 親見出し `標準ハンドラ構成と主要処理フロー` = テーブル内容そのもの → 親見出しフォールバックで精度損失ゼロ
-- `default-interface-label` (9件) → 親見出し `インタフェース定義` = テーブル内容そのもの → 同様に OK
-- `ListSearchResult_Structure` (5件) → **問題あり**。`| ` (line_block ノード) が挟まるため `_next_section_for_node` が `構成` セクションを取れず親見出し `概要` にフォールバック。Task 23 と同根 — `_next_section_for_node` の skip 対象に `line_block` を追加で修正可能
-
-**実装箇所**:
-1. `tools/rbkc/scripts/common/labels.py` — `_scan_rst_labels`: paragraph アンカーの title 解決ロジック追加
-2. `tools/rbkc/scripts/common/rst_ast_visitor.py` — `_walk_section`: アンカー+paragraph ペアを合成セクションとして分割
-3. `tools/rbkc/scripts/common/labels.py` — `_next_section_for_node`: skip 対象に `line_block` 追加（`ListSearchResult_Structure` 修正）
-
-**paragraph テキスト → 見出しテキスト変換ルール**:
-- `**テキスト**` (bold-only, 458件) → bold マーカー除去
-- `*テキスト*` (italic, 40件) → italic マーカー除去
-- `**テキスト**：その他` (bold-start, 33件) → bold 部分のみ抽出
-- plain-text (467+38件) → そのまま
-- `|` line_block (6件) → 変換不可、親見出しフォールバック維持
-- `フローを表示` 系 → knowledge file 対象外なら変換不要（要確認）
-
-**Steps:**
-- [x] Step 0: `フローを表示` 系アンカーが付くファイルが knowledge file 対象 — v1.x `fw/architectural_pattern/` は対象
-- [x] Step 1: `_next_section_for_node` に `line_block` スキップ追加（`ListSearchResult_Structure` 修正、TDD）
-- [x] Step 2: `_scan_rst_labels` に paragraph アンカー title 解決ロジック追加 (TDD) — bold/italic のみ対象、plain-text・h1 scope は除外
-- [x] Step 3: `_walk_section` に合成セクション分割ロジック追加 — 543 tests passed
-- [x] Step 4: 全5バージョン verify FAIL 0 確認 — v6/v5/v1.4/v1.3/v1.2 全 OK
-- [x] Step 5: SE + QA エキスパートレビュー — SE 1 Finding fixed, QA 2 Findings fixed
-- [ ] Step 6: 再生成・差分確認・PR 更新
+（なし）
 
 ## Done
 
