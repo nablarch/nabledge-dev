@@ -1,7 +1,7 @@
 # Tasks: Search Improvement (Zero-base)
 
 **Branch**: search
-**Updated**: 2026-05-14 (0-7 complete)
+**Updated**: 2026-05-14 (1-7 benchmark run-001 complete)
 
 ## Rules
 
@@ -43,7 +43,7 @@
 
 **残MISS**: qa-12a — Stage 1でHttpErrorHandler.jsonが10枠に入らない構造的問題。
 
-- [ ] 1-7. ベンチマーク（5件程度で実測）→ 改善を繰り返し
+- [x] 1-7. ベンチマーク run-001: 5件実測 — 検索90%(9/10), 回答精度100%(10/10), ハルシネ全件要レビュー
 - [ ] 1-8. → ユーザーレビュー
 
 ## Not Started
