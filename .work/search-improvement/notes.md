@@ -133,37 +133,3 @@ Criteria: "Without this section, can the question be answered?" — only indispe
 | qa-12 | tag:s29→must, jaxrs:s7 added to must | Error message return requires both Web display layer (s29) and REST response body (s7) |
 | qa-13 | rest-create:s1 promoted to must | Hearing says REST API. s2 alone (CRUD capability) doesn't give the REST implementation pattern |
 
-## 2026-05-13
-
-### 1-7: Benchmark run-001 (5 scenarios)
-
-First end-to-end benchmark using run.py (semantic search Stage1+2 + answer generation Stage3).
-
-**Scenarios**: pre-01, pre-02, qa-01, qa-05, qa-12a
-
-**Results**:
-
-| Metric | Value |
-|--------|-------|
-| Must section search HIT | 9/10 (90%) |
-| Answer accuracy (auto) | 10/10 PRESENT (100%) |
-| Hallucination (auto) | 0/5 PASS (all human review) |
-| Avg execution time | 39s |
-| Avg cost | ~$0.14/scenario |
-
-**Search miss**: qa-12a — `handlers-HttpErrorHandler.json:s4` not in search results (known structural issue: file doesn't make it into Stage 1 top-10 pages).
-
-**Answer accuracy despite search miss**: qa-12a scored 100% because both must facts were covered via `web-application-error-message.json:s1` and `handlers-on-error.json:s3` which describe the same error handling flow from a different angle.
-
-**Hallucination all-FAIL**: Expected by design. The judge's gold standard is must+acceptable sections only. The answer includes information from other found sections (e.g., `handlers-main.json:s3` in pre-01). These are real knowledge file contents, not fabrications, but the judge can't verify them against its limited gold standard. Human review needed.
-
-### Decision: Hallucination evaluation scope
-
-The current hallucination gold standard (must+acceptable only) is too narrow for the benchmark. When the answer correctly uses information from searched-and-found sections beyond must/acceptable, the auto-judge flags them as hallucinations. This produces 100% false-positive rate, making the auto-judgment useless.
-
-Options considered:
-- A: Expand gold standard to include all actually-searched sections → breaks search/hallucination independence
-- B: Accept the status quo, rely on human review → every scenario needs review, high manual burden
-- C: Use all sections from the same files as must/acceptable → preserves independence while expanding coverage
-
-Decision deferred to user review (1-8).
