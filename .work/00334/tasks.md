@@ -2,7 +2,7 @@
 
 **PR**: #340
 **Issue**: #334
-**Updated**: 2026-05-11
+**Updated**: 2026-05-13
 
 ## Fact-Based Investigation Rule
 
@@ -46,10 +46,18 @@
 ### Task 3: 水平チェック — 同じ escape hatch パターンが設計書の他箇所に存在しないか確認
 
 **事実確認**:
-- [ ] `rbkc-verify-quality-design.md` 全文を検索: `PASS + WARNING` パターンが他にないか
-- [ ] `WARNING 扱い` / `Sphinx 追従` / `避ける` のパターンで全箇所を列挙
-- [ ] 列挙結果を `.work/00334/notes.md` に記録
-- [ ] 追加修正が必要な箇所があれば Task 1/2 に反映
+- [x] `rbkc-verify-quality-design.md` 全文を検索: `PASS + WARNING` パターンが他にないか
+- [x] `WARNING 扱い` / `Sphinx 追従` / `避ける` のパターンで全箇所を列挙
+- [ ] 列挙結果を `.work/00334/notes.md` に記録（本セッションで実施済み・コミットなし）
+- [x] 追加修正が必要な箇所があれば Task 1/2 に反映（追加漏れなし）
+
+**調査結果（2026-05-13）**:
+escape hatch は以下の5箇所のみ。全て Task 1/2 の対象と一致し、追加修正不要:
+- L144: §3-1 level 3 warning 継続
+- L263: §3-2 Sphinx 追従原則「verify が独自に厳しくして...避ける」
+- L270: §3-2-2 docutils system_message 段落（level ≤ 3 継続）
+- L314: §3-2-2 象限3 PASS+WARNING
+- L315: §3-2-2 象限4 PASS+WARNING
 
 ### Task 4: verify実装変更 — §3-2-2 象限3/4 を FAIL (QL1) に変更
 
@@ -71,9 +79,19 @@
 - [ ] 対応するverifyテストの場所を特定
 
 **Steps:**
-- [ ] TDD: level 3 (ERROR) が QC1 FAIL を返すことを確認するテストを追加 (RED)
+- [DECISION: 既存ホワイトリストテストとの整合性確認が必要（下記参照）] TDD: level 3 (ERROR) が QC1 FAIL を返すことを確認するテストを追加 (RED)
 - [ ] verify実装: level 3 (ERROR) を QC1 FAIL に変更 (GREEN)
 - [ ] 既存のverifyテストが全てパスすることを確認
+
+**要確認（2026-05-13 調査結果）**:
+既存テストに以下の「ERROR/3 でも PASS」をpinするテストが存在し、Issue #334 SC「level 3 → QC1 FAIL」と矛盾する:
+- `test_pass_qc1_rst_unknown_target_name_not_promoted_to_fail` (L1459): 「nablarch_」trailing underscore が Unknown target name (ERROR/3) を発生させるが PASS
+- `test_pass_qc1_rst_inconsistent_title_style_not_promoted_to_fail` (L1495): v1.4 corpus 実例の title style 混在が ERROR/3 を発生させるが PASS
+- `test_pass_qc1_rst_unknown_directive_drops_body_like_sphinx` (L1405): 未登録 directive の body drop が ERROR/3 を発生させるが PASS
+- `test_pass_qc1_rst_unknown_role_text_fallback` (L1426): 未登録 role が ERROR/3 を発生させるが PASS
+
+これらは実際の corpus に存在するパターン。「全 ERROR/3 → FAIL」にすると実 corpus の RBKC 出力が全て FAIL になる可能性がある。
+Issue #334 で本当に意図しているのは「doctree が不完全になるケースのみ FAIL」なのか、「全 ERROR/3 → FAIL」なのか確認が必要。
 
 ### Task 6: 全5バージョンで create/verify 実行、FAIL 0件確認
 
