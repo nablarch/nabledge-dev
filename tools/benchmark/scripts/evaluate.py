@@ -194,19 +194,24 @@ def call_llm(prompt: str, json_schema: str, model: str = "sonnet") -> dict:
         capture_output=True,
         text=True,
         cwd="/tmp",
-        timeout=120,
+        timeout=300,
     )
     if result.returncode != 0:
         raise RuntimeError(f"claude CLI failed: {result.stderr}")
     data = json.loads(result.stdout)
     parsed_result = json.loads(extract_json_from_result(data["result"]))
     usage = data.get("usage", {})
+    input_tokens = (
+        usage.get("input_tokens", 0)
+        + usage.get("cache_creation_input_tokens", 0)
+        + usage.get("cache_read_input_tokens", 0)
+    )
     metrics = {
         "duration_ms": data.get("duration_ms", 0),
         "duration_api_ms": data.get("duration_api_ms", 0),
         "total_cost_usd": data.get("total_cost_usd", 0.0),
         "usage": {
-            "input_tokens": usage.get("input_tokens", 0),
+            "input_tokens": input_tokens,
             "output_tokens": usage.get("output_tokens", 0),
         },
     }
