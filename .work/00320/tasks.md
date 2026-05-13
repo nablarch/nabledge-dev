@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-13 (rev33)
+**Updated**: 2026-05-13 (rev35)
 
 ## In Progress
 
@@ -35,12 +35,12 @@
 - `フローを表示` 系 → knowledge file 対象外なら変換不要（要確認）
 
 **Steps:**
-- [ ] Step 0: `フローを表示` 系アンカーが付くファイルが knowledge file 対象かどうか確認
-- [ ] Step 1: `_next_section_for_node` に `line_block` スキップ追加（`ListSearchResult_Structure` 修正、TDD）
-- [ ] Step 2: `_scan_rst_labels` に paragraph アンカー title 解決ロジック追加 (TDD)
-- [ ] Step 3: `_walk_section` に合成セクション分割ロジック追加
-- [ ] Step 4: 全5バージョン verify FAIL 0 確認
-- [ ] Step 5: SE + QA エキスパートレビュー
+- [x] Step 0: `フローを表示` 系アンカーが付くファイルが knowledge file 対象 — v1.x `fw/architectural_pattern/` は対象
+- [x] Step 1: `_next_section_for_node` に `line_block` スキップ追加（`ListSearchResult_Structure` 修正、TDD）
+- [x] Step 2: `_scan_rst_labels` に paragraph アンカー title 解決ロジック追加 (TDD) — bold/italic のみ対象、plain-text・h1 scope は除外
+- [x] Step 3: `_walk_section` に合成セクション分割ロジック追加 — 543 tests passed
+- [x] Step 4: 全5バージョン verify FAIL 0 確認 — v6/v5/v1.4/v1.3/v1.2 全 OK
+- [x] Step 5: SE + QA エキスパートレビュー — SE 1 Finding fixed, QA 2 Findings fixed
 - [ ] Step 6: 再生成・差分確認・PR 更新
 
 ## Done
