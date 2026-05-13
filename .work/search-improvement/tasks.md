@@ -1,7 +1,7 @@
 # Tasks: Search Improvement (Zero-base)
 
 **Branch**: search
-**Updated**: 2026-05-13
+**Updated**: 2026-05-14
 
 ## Rules
 
@@ -111,11 +111,12 @@
   - qa-02: Stage 1でファイル選定済、Stage 2のセクション選定が不安定（Run1:25件中s7/s8入り、Run3:18件中s7/s8漏れ）
   - qa-12: Stage 1で10枠を使い切ってもhandlers-HttpErrorHandler.json, libraries-tag.jsonが未選定（安定的構造問題）
   - 前回比: 90.0-92.5% → 90.0-95.0%、qa-02は安定MISS→不安定に改善
-- [ ] 1-5K. シナリオ見直し（ヒアリング2軸テンプレート対応）
-  - [ ] ヒアリング方針を設計書に反映（2軸: 処理方式 + やりたいこと）
-  - [ ] 全シナリオの `hearing_answer` を2軸構造化データに更新
-  - [ ] `expected_hearing` を再判定（質問文から2軸が読み取れるか）
-  - [ ] 処理方式を1つに絞る方針をシナリオに反映（Web+REST両方の場合は分割）
+- [x] 1-5K. シナリオ見直し（ヒアリング2軸テンプレート対応）
+  - [x] ヒアリング方針を設計書に反映（2軸: 処理方式 + やりたいこと）
+  - [x] 全シナリオの `hearing_answer` を2軸構造化データに更新（`{processing_type, goal}`）
+  - [x] `expected_hearing` を再判定 → 全件変更なし（全シナリオ適切に分類済み）
+  - [x] qa-11, qa-12を処理方式別に分割: qa-11a(Web)/qa-11b(REST), qa-12a(Web)/qa-12b(REST)
+  - 24シナリオ → 26シナリオ、must fact 40件（変更なし）
 - [ ] 1-5L. ベースライン再測定（ヒアリング変更後）
   - [ ] 全件シミュレーション3回実行
   - [ ] qa-02, qa-12の挙動変化を確認
