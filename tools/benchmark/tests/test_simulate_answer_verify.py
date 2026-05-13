@@ -202,12 +202,16 @@ class TestBuildVerifyPrompt:
 
 class TestParseAnswerResponse:
     def test_valid_response(self):
-        result = parse_answer_response({"answer": "回答テキスト"})
+        result = parse_answer_response({"answer": "回答テキスト", "trace": {"user_intent": "i", "sections": []}})
         assert result == "回答テキスト"
 
     def test_missing_answer_key(self):
         with pytest.raises(ValueError, match="answer"):
             parse_answer_response({"text": "wrong key"})
+
+    def test_response_without_trace_still_works(self):
+        result = parse_answer_response({"answer": "回答テキスト"})
+        assert result == "回答テキスト"
 
 
 class TestParseVerifyResponse:
@@ -316,9 +320,18 @@ class TestSimulateScenario:
             },
         }
 
+    def _answer_with_trace(self, answer_text="SQLファイルで検索します"):
+        return _wrap_llm_response({
+            "answer": answer_text,
+            "trace": {
+                "user_intent": "検索方法を知りたい",
+                "sections": [{"section": "libs/dao.json:s3", "used": True, "extracted": "SQLファイルで検索する", "mapped_to": "結論"}],
+            },
+        })
+
     def test_verify_pass_no_retry(self, scenario, knowledge_dir):
         responses = [
-            _wrap_llm_response({"answer": "SQLファイルで検索します"}),
+            self._answer_with_trace(),
             _wrap_llm_response({
                 "result": "PASS",
                 "claims": [{"claim": "SQLファイルで検索", "supported": True, "evidence": "libs/dao.json:s3"}],
@@ -339,9 +352,25 @@ class TestSimulateScenario:
         assert result["retry_answer"] is None
         assert call_idx[0] == 2
 
+    def test_trace_in_result(self, scenario, knowledge_dir):
+        responses = [
+            self._answer_with_trace(),
+            _wrap_llm_response({"result": "PASS", "claims": [], "issues": []}),
+        ]
+        call_idx = [0]
+
+        def mock_llm(prompt, schema):
+            i = call_idx[0]
+            call_idx[0] += 1
+            return responses[i]
+
+        result = simulate_scenario(scenario, knowledge_dir, llm_fn=mock_llm)
+        assert result["trace"]["user_intent"] == "検索方法を知りたい"
+        assert result["trace"]["sections"][0]["extracted"] == "SQLファイルで検索する"
+
     def test_verify_fail_triggers_retry(self, scenario, knowledge_dir):
         responses = [
-            _wrap_llm_response({"answer": "スレッドセーフに検索します"}),
+            self._answer_with_trace("スレッドセーフに検索します"),
             _wrap_llm_response({
                 "result": "FAIL",
                 "claims": [
@@ -349,7 +378,7 @@ class TestSimulateScenario:
                 ],
                 "issues": [{"claim": "スレッドセーフ", "quote": "スレッドセーフに"}],
             }),
-            _wrap_llm_response({"answer": "SQLファイルで検索します"}),
+            self._answer_with_trace("SQLファイルで検索します"),
         ]
         call_idx = [0]
 
@@ -365,7 +394,7 @@ class TestSimulateScenario:
 
     def test_output_structure(self, scenario, knowledge_dir):
         responses = [
-            _wrap_llm_response({"answer": "回答"}),
+            self._answer_with_trace("回答"),
             _wrap_llm_response({"result": "PASS", "claims": [], "issues": []}),
         ]
         call_idx = [0]
@@ -379,13 +408,14 @@ class TestSimulateScenario:
         assert "scenario_id" in result
         assert "sections_input" in result
         assert "answer" in result
+        assert "trace" in result
         assert "verify" in result
         assert "retry_answer" in result
         assert "metrics" in result
 
     def test_verify_fail_empty_issues_no_retry(self, scenario, knowledge_dir):
         responses = [
-            _wrap_llm_response({"answer": "some answer"}),
+            self._answer_with_trace("some answer"),
             _wrap_llm_response({
                 "result": "FAIL",
                 "claims": [{"claim": "c", "supported": False, "evidence": ""}],
@@ -415,7 +445,7 @@ class TestSimulateScenario:
             },
         }
         responses = [
-            _wrap_llm_response({"answer": "回答"}),
+            self._answer_with_trace("回答"),
             _wrap_llm_response({"result": "PASS", "claims": [], "issues": []}),
         ]
         call_idx = [0]
@@ -475,7 +505,13 @@ class TestSimulateAll:
     def _mock_llm_factory(self):
         call_idx = [0]
         pass_response = _wrap_llm_response({"result": "PASS", "claims": [], "issues": []})
-        answer_response = _wrap_llm_response({"answer": "回答"})
+        answer_response = _wrap_llm_response({
+            "answer": "回答",
+            "trace": {
+                "user_intent": "テストの意図",
+                "sections": [{"section": "f.json:s1", "used": True, "extracted": "C", "mapped_to": "結論"}],
+            },
+        })
 
         def mock_llm(prompt, schema):
             i = call_idx[0]
@@ -520,8 +556,25 @@ class TestSimulateAll:
         out = Path(setup["output_dir"])
         assert (out / "sc-01" / "answer.md").exists()
         assert (out / "sc-01" / "verify.json").exists()
+        assert (out / "sc-01" / "trace.json").exists()
         assert (out / "sc-01" / "metrics.json").exists()
         assert (out / "summary.json").exists()
+
+    def test_trace_json_content(self, setup):
+        mock_llm, _ = self._mock_llm_factory()
+        simulate_all(
+            setup["scenarios_path"],
+            setup["knowledge_dir"],
+            setup["output_dir"],
+            llm_fn=mock_llm,
+        )
+        out = Path(setup["output_dir"])
+        trace = json.loads((out / "sc-01" / "trace.json").read_text(encoding="utf-8"))
+        assert "user_intent" in trace
+        assert "sections" in trace
+        assert trace["sections"][0]["section"] == "f.json:s1"
+        assert trace["sections"][0]["used"] is True
+        assert trace["sections"][0]["extracted"] == "C"
 
     def test_summary_structure(self, setup):
         mock_llm, _ = self._mock_llm_factory()
@@ -538,15 +591,16 @@ class TestSimulateAll:
         assert "per_scenario" in summary
 
     def test_retry_writes_retry_answer(self, setup):
+        dummy_trace = {"user_intent": "t", "sections": []}
         responses = [
-            _wrap_llm_response({"answer": "bad answer"}),
+            _wrap_llm_response({"answer": "bad answer", "trace": dummy_trace}),
             _wrap_llm_response({
                 "result": "FAIL",
                 "claims": [{"claim": "c", "supported": False, "evidence": ""}],
                 "issues": [{"claim": "c", "quote": "q"}],
             }),
-            _wrap_llm_response({"answer": "good answer"}),
-            _wrap_llm_response({"answer": "answer2"}),
+            _wrap_llm_response({"answer": "good answer", "trace": dummy_trace}),
+            _wrap_llm_response({"answer": "answer2", "trace": dummy_trace}),
             _wrap_llm_response({"result": "PASS", "claims": [], "issues": []}),
         ]
         call_idx = [0]

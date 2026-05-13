@@ -216,6 +216,13 @@ class TestEvaluateAnswer:
         assert "libs/dao.json:s3" in loader_calls
 
 
+DUMMY_TRACE = {"user_intent": "検索方法を知りたい", "sections": [{"section": "libs/dao.json:s3", "used": True, "extracted": "SQLファイルで検索する", "mapped_to": "結論"}]}
+
+
+def _answer_with_trace(text="回答"):
+    return _wrap_llm_response({"answer": text, "trace": DUMMY_TRACE})
+
+
 class TestSimulateScenario:
     @pytest.fixture
     def knowledge_dir(self, tmp_path):
@@ -242,7 +249,7 @@ class TestSimulateScenario:
 
     def test_output_structure(self, scenario, knowledge_dir):
         responses = [
-            _wrap_llm_response({"answer": "SQLファイルで検索します"}),
+            _answer_with_trace("SQLファイルで検索します"),
             _claim_present(),
             _hallucination_pass(),
         ]
@@ -261,10 +268,28 @@ class TestSimulateScenario:
         assert "hallucination" in result
         assert "scores" in result
         assert "metrics" in result
+        assert "trace" in result
+
+    def test_trace_content(self, scenario, knowledge_dir):
+        responses = [
+            _answer_with_trace("回答"),
+            _claim_present(),
+            _hallucination_pass(),
+        ]
+        call_idx = [0]
+
+        def mock_llm(prompt, schema):
+            i = call_idx[0]
+            call_idx[0] += 1
+            return responses[i]
+
+        result = simulate_scenario(scenario, knowledge_dir, llm_fn=mock_llm)
+        assert result["trace"]["user_intent"] == "検索方法を知りたい"
+        assert result["trace"]["sections"][0]["extracted"] == "SQLファイルで検索する"
 
     def test_scores_correct(self, scenario, knowledge_dir):
         responses = [
-            _wrap_llm_response({"answer": "回答テキスト"}),
+            _answer_with_trace("回答テキスト"),
             _claim_present(),
             _hallucination_pass(),
         ]
@@ -281,7 +306,7 @@ class TestSimulateScenario:
 
     def test_llm_call_count(self, scenario, knowledge_dir):
         responses = [
-            _wrap_llm_response({"answer": "回答"}),
+            _answer_with_trace("回答"),
             _claim_present(),
             _hallucination_pass(),
         ]
@@ -314,7 +339,7 @@ class TestSimulateScenario:
             },
         }
         responses = [
-            _wrap_llm_response({"answer": "回答"}),
+            _answer_with_trace("回答"),
             _claim_present(),
             _claim_absent(),
             _hallucination_pass(),
@@ -342,7 +367,7 @@ class TestSimulateScenario:
             },
         }
         responses = [
-            _wrap_llm_response({"answer": "回答"}),
+            _answer_with_trace("回答"),
             _claim_present(),
             _hallucination_pass(),
         ]
@@ -361,7 +386,7 @@ class TestSimulateScenario:
         m2 = {"duration_ms": 50, "total_cost_usd": 0.002, "usage": {"input_tokens": 300, "output_tokens": 20}}
         m3 = {"duration_ms": 60, "total_cost_usd": 0.003, "usage": {"input_tokens": 400, "output_tokens": 25}}
         responses = [
-            _wrap_llm_response({"answer": "回答"}, m1),
+            _wrap_llm_response({"answer": "回答", "trace": DUMMY_TRACE}, m1),
             _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"}, m2),
             _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"}, m3),
         ]
@@ -424,7 +449,7 @@ class TestSimulateAll:
     def _mock_llm_factory(self):
         """Create mock LLM that returns answer → claim PRESENT → hallucination PASS."""
         call_idx = [0]
-        answer_resp = _wrap_llm_response({"answer": "回答"})
+        answer_resp = _answer_with_trace("回答")
         claim_resp = _claim_present()
         hall_resp = _hallucination_pass()
 
@@ -475,8 +500,22 @@ class TestSimulateAll:
         out = Path(setup["output_dir"])
         assert (out / "sc-01" / "answer.md").exists()
         assert (out / "sc-01" / "evaluation.json").exists()
+        assert (out / "sc-01" / "trace.json").exists()
         assert (out / "sc-01" / "metrics.json").exists()
         assert (out / "summary.json").exists()
+
+    def test_trace_json_content(self, setup):
+        mock_llm, _ = self._mock_llm_factory()
+        simulate_all(
+            setup["scenarios_path"],
+            setup["knowledge_dir"],
+            setup["output_dir"],
+            llm_fn=mock_llm,
+        )
+        out = Path(setup["output_dir"])
+        trace = json.loads((out / "sc-01" / "trace.json").read_text(encoding="utf-8"))
+        assert "user_intent" in trace
+        assert "sections" in trace
 
     def test_summary_structure(self, setup):
         mock_llm, _ = self._mock_llm_factory()
@@ -526,10 +565,10 @@ class TestSimulateAll:
 
     def test_summary_with_failures(self, setup):
         responses = [
-            _wrap_llm_response({"answer": "回答1"}),
+            _answer_with_trace("回答1"),
             _claim_absent(),
             _hallucination_fail(),
-            _wrap_llm_response({"answer": "回答2"}),
+            _answer_with_trace("回答2"),
             _claim_present(),
             _hallucination_pass(),
         ]
@@ -591,7 +630,7 @@ class TestSimulateAll:
         output_dir = tmp_path / "output"
 
         responses = [
-            _wrap_llm_response({"answer": "回答"}),
+            _answer_with_trace("回答"),
             _hallucination_pass(),
         ]
         call_idx = [0]

@@ -19,8 +19,29 @@ ANSWER_JSON_SCHEMA = json.dumps({
     "type": "object",
     "properties": {
         "answer": {"type": "string"},
+        "trace": {
+            "type": "object",
+            "properties": {
+                "user_intent": {"type": "string"},
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "section": {"type": "string"},
+                            "used": {"type": "boolean"},
+                            "extracted": {"type": "string"},
+                            "mapped_to": {"type": "string"},
+                            "reason": {"type": "string"},
+                        },
+                        "required": ["section", "used"],
+                    },
+                },
+            },
+            "required": ["user_intent", "sections"],
+        },
     },
-    "required": ["answer"],
+    "required": ["answer", "trace"],
 })
 
 VERIFY_JSON_SCHEMA = json.dumps({
@@ -238,6 +259,7 @@ def simulate_scenario(
     answer_prompt = build_answer_prompt(question, hearing_answer, sections_content)
     answer_response = llm_fn(answer_prompt, ANSWER_JSON_SCHEMA)
     answer_text = parse_answer_response(answer_response["result"])
+    trace = answer_response["result"].get("trace")
     answer_metrics = answer_response.get("metrics", {})
 
     verify_prompt = build_verify_prompt(answer_text, sections_content)
@@ -260,6 +282,7 @@ def simulate_scenario(
         "scenario_id": scenario["id"],
         "sections_input": section_refs,
         "answer": answer_text,
+        "trace": trace,
         "verify": verify_result,
         "retry_answer": retry_answer,
         "metrics": metrics,
@@ -297,6 +320,10 @@ def simulate_all(
         scenario_dir.mkdir(parents=True, exist_ok=True)
 
         (scenario_dir / "answer.md").write_text(result["answer"], encoding="utf-8")
+        if result.get("trace"):
+            (scenario_dir / "trace.json").write_text(
+                json.dumps(result["trace"], ensure_ascii=False, indent=2), encoding="utf-8"
+            )
         (scenario_dir / "verify.json").write_text(
             json.dumps(result["verify"], ensure_ascii=False, indent=2), encoding="utf-8"
         )

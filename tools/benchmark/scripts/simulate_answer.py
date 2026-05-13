@@ -114,6 +114,7 @@ def simulate_scenario(
     answer_prompt = build_answer_prompt(question, hearing_answer, sections_content)
     answer_response = llm_fn(answer_prompt, ANSWER_JSON_SCHEMA)
     answer_text = parse_answer_response(answer_response["result"])
+    trace = answer_response["result"].get("trace")
     answer_metrics = answer_response.get("metrics", {})
 
     evaluation = evaluate_answer(
@@ -127,6 +128,7 @@ def simulate_scenario(
         "scenario_id": scenario["id"],
         "sections_input": section_refs,
         "answer": answer_text,
+        "trace": trace,
         "claim_verdicts": evaluation["claim_verdicts"],
         "hallucination": evaluation["hallucination"],
         "scores": evaluation["scores"],
@@ -165,6 +167,10 @@ def simulate_all(
         scenario_dir.mkdir(parents=True, exist_ok=True)
 
         (scenario_dir / "answer.md").write_text(result["answer"], encoding="utf-8")
+        if result.get("trace"):
+            (scenario_dir / "trace.json").write_text(
+                json.dumps(result["trace"], ensure_ascii=False, indent=2), encoding="utf-8"
+            )
         eval_data = {
             "claim_verdicts": result["claim_verdicts"],
             "hallucination": result["hallucination"],
