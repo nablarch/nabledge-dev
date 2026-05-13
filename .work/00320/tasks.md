@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-13 (rev32)
+**Updated**: 2026-05-13 (rev33)
 
 ## In Progress
 
@@ -14,30 +14,34 @@
 
 **方針（ユーザー承認済み）**:
 - Option B: `_walk_section` で非見出しアンカー直後の paragraph を合成セクションとして分割し、JSON sections[] にも追加する
-- docs MD の見出し増加は人の閲覧にもポジティブ（原文の意図を正確に反映）
 - verify は変更不要 — 既存の anchor/section_title チェックが自動検証
 
-**事前確認が必要なケース**:
-- `フローを表示` アンカー (`**標準ハンドラ構成** (説明文をクリックすると...)`) — JavaScript 用アンカーで静的 MD では意味が薄い見出し。当該ファイルが knowledge file の対象かどうか確認してから着手
+**table_row アンカー全件確認済み（このセッション）**:
+- `flow-table` (17件) → 親見出し `標準ハンドラ構成と主要処理フロー` = テーブル内容そのもの → 親見出しフォールバックで精度損失ゼロ
+- `default-interface-label` (9件) → 親見出し `インタフェース定義` = テーブル内容そのもの → 同様に OK
+- `ListSearchResult_Structure` (5件) → **問題あり**。`| ` (line_block ノード) が挟まるため `_next_section_for_node` が `構成` セクションを取れず親見出し `概要` にフォールバック。Task 23 と同根 — `_next_section_for_node` の skip 対象に `line_block` を追加で修正可能
 
 **実装箇所**:
-1. `tools/rbkc/scripts/common/labels.py` — `_scan_rst_labels`: アンカー直後ノードが paragraph の場合、テキストを `title` に採用（bold剥がし・italic剥がし・plain-text）
+1. `tools/rbkc/scripts/common/labels.py` — `_scan_rst_labels`: paragraph アンカーの title 解決ロジック追加
 2. `tools/rbkc/scripts/common/rst_ast_visitor.py` — `_walk_section`: アンカー+paragraph ペアを合成セクションとして分割
+3. `tools/rbkc/scripts/common/labels.py` — `_next_section_for_node`: skip 対象に `line_block` 追加（`ListSearchResult_Structure` 修正）
 
 **paragraph テキスト → 見出しテキスト変換ルール**:
-- `**テキスト**` (bold-only) → `テキスト`（bold マーカー除去）
-- `*テキスト*` (italic) → `テキスト`（italic マーカー除去）
-- `**テキスト**：その他` (bold-start) → `テキスト`（bold部分のみ抽出）
-- plain-text → そのまま
-- `|` (table-continuation, 6件) → 変換不可、親見出しフォールバック維持
+- `**テキスト**` (bold-only, 458件) → bold マーカー除去
+- `*テキスト*` (italic, 40件) → italic マーカー除去
+- `**テキスト**：その他` (bold-start, 33件) → bold 部分のみ抽出
+- plain-text (467+38件) → そのまま
+- `|` line_block (6件) → 変換不可、親見出しフォールバック維持
+- `フローを表示` 系 → knowledge file 対象外なら変換不要（要確認）
 
 **Steps:**
-- [DECISION: `フローを表示` 系アンカーが付くファイルが knowledge file 対象か確認し、対象なら合成見出し化、対象外ならスキップ] Step 0
-- [ ] Step 1: `_scan_rst_labels` に非見出し paragraph テキスト採用ロジック追加 (TDD)
-- [ ] Step 2: `_walk_section` に合成セクション分割ロジック追加
-- [ ] Step 3: 全5バージョン verify FAIL 0 確認
-- [ ] Step 4: SE + QA エキスパートレビュー
-- [ ] Step 5: 再生成・差分確認・PR 更新
+- [ ] Step 0: `フローを表示` 系アンカーが付くファイルが knowledge file 対象かどうか確認
+- [ ] Step 1: `_next_section_for_node` に `line_block` スキップ追加（`ListSearchResult_Structure` 修正、TDD）
+- [ ] Step 2: `_scan_rst_labels` に paragraph アンカー title 解決ロジック追加 (TDD)
+- [ ] Step 3: `_walk_section` に合成セクション分割ロジック追加
+- [ ] Step 4: 全5バージョン verify FAIL 0 確認
+- [ ] Step 5: SE + QA エキスパートレビュー
+- [ ] Step 6: 再生成・差分確認・PR 更新
 
 ## Done
 
