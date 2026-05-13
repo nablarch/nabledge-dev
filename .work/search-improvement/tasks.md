@@ -1,7 +1,7 @@
 # Tasks: Search Improvement (Zero-base)
 
 **Branch**: search
-**Updated**: 2026-05-14
+**Updated**: 2026-05-13
 
 ## Rules
 
@@ -101,11 +101,16 @@
   - [x] `summary.json` にシナリオ別・全体のメトリクス集計を追加
   - [x] SE レビュー → 0 Findings
   - [x] タイムアウト120s→300s（Stage 2の大きなプロンプト対応）+ キャッシュトークン含める — committed `48f4c6d`
-- [ ] 1-5I. ベースライン再測定（上限変更後）
-  - [ ] 全件シミュレーション3回実行。安定性確認（run1実行中 → .tmp/simulation-baseline-v2/run1）
-  - [ ] qa-02, qa-12が解決されたか確認
-  - 初回run1はqa-12 Stage 2でタイムアウト(120s)→タイムアウト300sに修正して再実行中
-  - qa-02のrun1暫定結果: s8 MISS（ファイルは選定済、セクション選定で漏れ）→ 前回と同じ傾向
+- [x] 1-5I. ベースライン再測定（上限変更後）
+  - [x] 全件シミュレーション3回実行。安定性確認 → .tmp/simulation-baseline-v2/{run1,run2,run3}
+  - [x] qa-02, qa-12が解決されたか確認
+  - Run1: 95.0% (38/40) — qa-12 MISS (2/4)
+  - Run2: 95.0% (38/40) — qa-12 MISS (2/4)
+  - Run3: 90.0% (36/40) — qa-02 MISS (0/2), qa-12 MISS (2/4)
+  - 安定OK: 22シナリオ、安定MISS: 1 (qa-12)、不安定: 1 (qa-02)
+  - qa-02: Stage 1でファイル選定済、Stage 2のセクション選定が不安定（Run1:25件中s7/s8入り、Run3:18件中s7/s8漏れ）
+  - qa-12: Stage 1で10枠を使い切ってもhandlers-HttpErrorHandler.json, libraries-tag.jsonが未選定（安定的構造問題）
+  - 前回比: 90.0-92.5% → 90.0-95.0%、qa-02は安定MISS→不安定に改善
 - [ ] 1-5J. 再現性確認（最終）
   - [ ] 全件シミュレーション3回実行。安定性確認
   - [ ] **ユーザーレビューの必須ゲート**
