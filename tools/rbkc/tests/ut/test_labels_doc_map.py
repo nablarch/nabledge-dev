@@ -948,3 +948,228 @@ class TestNextSectionTransitionSkip:
             f"Expected 'Second Section' but got {v.title!r} — "
             "transition node must be skipped when searching for next section"
         )
+
+
+class TestNextSectionLineBlockSkip:
+    """Issue #320 Task 25: label separated from next section by a line_block (``|``)
+    must still resolve to that section.
+
+    Real example: v5/v6 biz_samples/03/index.rst
+      .. _ListSearchResult_Structure:
+
+      |
+
+      ------------
+      構成
+      ------------
+    """
+
+    def test_label_before_line_block_then_section(self, tmp_path):
+        """Label followed by line_block then section resolves to that section."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "line_block.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            First Section
+            -------------
+
+            Body text.
+
+            .. _list_structure:
+
+            |
+
+            Second Section
+            --------------
+
+            Content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "list_structure" in m
+        v = m["list_structure"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "Second Section", (
+            f"Expected 'Second Section' but got {v.title!r} — "
+            "line_block node must be skipped when searching for next section"
+        )
+
+
+class TestParagraphAnchorTitleResolution:
+    """Issue #320 Task 25: anchors directly before a paragraph (non-heading)
+    must resolve to a title derived from the paragraph text, not fall back
+    to the enclosing section.
+
+    Real examples from RST sources:
+    - ``**標準ハンドラ構成** (説明文...)`` → ``標準ハンドラ構成``  (bold-start)
+    - ``**用語**``                          → ``用語``              (bold-only)
+    - ``*クラス名*``                        → ``クラス名``          (italic-only)
+    - ``plain text``                        → enclosing section     (excluded — only explicit markup signals heading use)
+
+    h1-scoped anchors (file has only h1, no h2+) always fall back to enclosing section
+    even for bold/italic paragraphs, because DocTitle-promoted structure has no
+    _walk_section call and no synthetic section is generated.
+    """
+
+    def test_bold_only_paragraph(self, tmp_path):
+        """``**Term**`` paragraph → title = 'Term'."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "bold_only.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Section
+            -------
+
+            .. _my_anchor:
+
+            **用語**
+
+            Definition text here.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "my_anchor" in m
+        v = m["my_anchor"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "用語", (
+            f"Expected '用語' but got {v.title!r} — "
+            "bold-only paragraph should be resolved as title"
+        )
+        assert v.section_title == "用語"
+
+    def test_italic_only_paragraph(self, tmp_path):
+        """``*ClassName*`` paragraph → title = 'ClassName'."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "italic_only.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Section
+            -------
+
+            .. _my_anchor:
+
+            *ClassName*
+
+            Description text.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "my_anchor" in m
+        v = m["my_anchor"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "ClassName", (
+            f"Expected 'ClassName' but got {v.title!r} — "
+            "italic-only paragraph should be resolved as title"
+        )
+
+    def test_bold_start_paragraph(self, tmp_path):
+        """``**Term** (extra text)`` paragraph → title = 'Term'."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "bold_start.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Section
+            -------
+
+            .. _my_anchor:
+
+            **標準ハンドラ構成** (説明文をクリックすると詳細が表示されます。)
+
+            Content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "my_anchor" in m
+        v = m["my_anchor"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "標準ハンドラ構成", (
+            f"Expected '標準ハンドラ構成' but got {v.title!r} — "
+            "bold-start paragraph should use bold portion as title"
+        )
+
+    def test_plain_text_paragraph_falls_back_to_enclosing(self, tmp_path):
+        """Plain text paragraph (no inline markup) falls back to enclosing section.
+
+        Only bold/italic-marked paragraphs signal intentional heading use.
+        A plain paragraph is regular body text that should not override the
+        enclosing section title.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "plain_text.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Section
+            -------
+
+            .. _my_anchor:
+
+            リクエスト単体テスト
+
+            Body.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "my_anchor" in m
+        v = m["my_anchor"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "Section", (
+            f"Expected 'Section' (enclosing) but got {v.title!r} — "
+            "plain-text paragraph must not override enclosing section title"
+        )
+
+    def test_h1_scope_bold_paragraph_falls_back_to_h1(self, tmp_path):
+        """In h1-scoped files (only h1, no h2+), bold paragraph after anchor
+        must NOT create a synthetic section — falls back to h1 title.
+
+        Guard: h1-scoped files use DocTitle-promoted structure where
+        _walk_section is never called, so no synthetic section would be
+        generated and the anchor would not exist in docs MD.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "h1_scope.rst"
+        rst.write_text(textwrap.dedent("""\
+            H1 Title
+            ========
+
+            Body text.
+
+            .. _my_anchor:
+
+            **Bold Heading**
+
+            Content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "my_anchor" in m
+        v = m["my_anchor"]
+        assert isinstance(v, LabelTarget)
+        # h1-scope: section_title must be "" (h1 maps to JSON title, not sections[])
+        assert v.section_title == "", (
+            f"Expected section_title='' (h1 scope) but got {v.section_title!r} — "
+            "h1-scoped bold paragraph must not set section_title to para_title"
+        )
+        # Title may be the para_title or h1 title — the key constraint is section_title=""
+        # which prevents verify from looking up the synthetic section in JSON sections[].

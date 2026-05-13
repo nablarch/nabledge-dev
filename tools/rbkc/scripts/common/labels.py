@@ -176,22 +176,27 @@ def _next_section_for_node(node: "nodes.Node"):
         return None
 
     # First check: direct siblings after the target node.
-    # Skip over other target nodes and transition nodes (horizontal rules like
-    # +++ in RST).  Sphinx PropagateTargets moves a label's id past a
-    # transition because transition cannot hold an HTML id — so the label
-    # effectively points to the section that follows the transition.
+    # Skip over other target nodes, transition nodes (horizontal rules like
+    # +++ in RST), and line_block nodes (bare ``|`` lines).  Sphinx
+    # PropagateTargets moves a label's id past a transition because transition
+    # cannot hold an HTML id — so the label effectively points to the section
+    # that follows the transition.  line_block (``|``) is a visual spacer
+    # with no semantic content and should be treated similarly.
+    def _is_skippable(n) -> bool:
+        return isinstance(n, (_nodes.target, _nodes.transition, _nodes.line_block))
+
     for sib in siblings[idx + 1:]:
         if isinstance(sib, _nodes.section):
             return sib
-        if isinstance(sib, (_nodes.target, _nodes.transition)):
+        if _is_skippable(sib):
             continue
         break
 
     # Multi-level climb: if the target is the last meaningful item in its
-    # section (only target/transition nodes follow), walk up through ancestor
-    # sections looking for the next sibling section at each level.
+    # section (only target/transition/line_block nodes follow), walk up through
+    # ancestor sections looking for the next sibling section at each level.
     is_last_meaningful = all(
-        isinstance(sib, (_nodes.target, _nodes.transition)) for sib in siblings[idx + 1:]
+        _is_skippable(sib) for sib in siblings[idx + 1:]
     )
     if not is_last_meaningful:
         return None
@@ -211,7 +216,7 @@ def _next_section_for_node(node: "nodes.Node"):
         for sib in tail:
             if isinstance(sib, _nodes.section):
                 return sib
-            if isinstance(sib, _nodes.target):
+            if _is_skippable(sib):
                 continue
             break
         # No next section found — keep climbing unless ancestor is document
@@ -220,7 +225,7 @@ def _next_section_for_node(node: "nodes.Node"):
             break
         # tail contained no section — keep climbing only if current is
         # the last meaningful item in ancestor
-        if not all(isinstance(s, _nodes.target) for s in tail):
+        if not all(_is_skippable(s) for s in tail):
             break
         current = ancestor
 
@@ -239,6 +244,57 @@ def _next_section_title_for_node(node: "nodes.Node") -> str | None:
         return None
     t = sec[0]
     return t.astext() if isinstance(t, _nodes.title) else None
+
+
+def _paragraph_anchor_title(node: "nodes.Node") -> str | None:
+    """Return a title derived from a paragraph that immediately follows a target.
+
+    Resolution rules (matches Task 25 paragraph → heading text conversion):
+    - bold-only (``**text**``): single ``strong`` child → its text
+    - italic-only (``*text*``): single ``emphasis`` child → its text
+    - bold-start (``**text** rest``): first child is ``strong`` → its text only
+    - plain text (no inline markup) → ``None`` (caller falls back to enclosing section;
+      only explicit bold/italic markup signals intentional heading use)
+    - anything else (line_block, image, etc.) → ``None`` (caller falls back to enclosing)
+
+    Called from :func:`_scan_rst_labels` after exhausting heading-based resolution.
+    """
+    from docutils import nodes as _nodes
+
+    parent = node.parent
+    if parent is None:
+        return None
+    siblings = list(parent.children)
+    try:
+        idx = siblings.index(node)
+    except ValueError:
+        return None
+
+    # Find the first non-skippable sibling after the target
+    for sib in siblings[idx + 1:]:
+        if isinstance(sib, (_nodes.target, _nodes.transition, _nodes.line_block)):
+            continue
+        if not isinstance(sib, _nodes.paragraph):
+            return None
+        # sib is a paragraph — extract title from its inline content
+        children = list(sib.children)
+        if not children:
+            return None
+        first = children[0]
+        if isinstance(first, _nodes.strong) and len(children) == 1:
+            # bold-only: **text**
+            return first.astext()
+        if isinstance(first, _nodes.emphasis) and len(children) == 1:
+            # italic-only: *text*
+            return first.astext()
+        if isinstance(first, _nodes.strong):
+            # bold-start: **text** (optional trailing text)
+            return first.astext()
+        # plain-text paragraphs (no inline markup) are not treated as synthetic
+        # headings — they are regular body text that happens to follow an anchor.
+        # Only explicit markup (bold/italic) signals intentional heading use.
+        return None
+    return None
 
 
 def _scan_rst_labels(
@@ -316,6 +372,22 @@ def _scan_rst_labels(
             and isinstance(next_node.parent, _nodes.document)
         )
 
+        # Only attempt paragraph-anchor resolution when:
+        # 1. no next section found (otherwise heading takes priority)
+        # 2. parent is a section node (not block_quote, list, etc.)
+        # 3. NOT in h1 scope — h1-scoped files have DocTitle-promoted structure
+        #    where _walk_section is never called, so no synthetic section is
+        #    generated and the anchor would not exist in docs MD.
+        para_title = (
+            _paragraph_anchor_title(node)
+            if (
+                next_node is None
+                and isinstance(node.parent, _nodes.section)
+                and not in_h1_scope
+            )
+            else None
+        )
+
         if next_sec_title and not next_is_h1:
             # Label directly before an h2+ heading.
             # Target = that heading.  section_title = heading title.
@@ -326,6 +398,13 @@ def _scan_rst_labels(
             # H1 maps to JSON title field, not sections[].
             title = next_sec_title
             section_title = ""
+        elif para_title:
+            # Label directly before a bold/italic paragraph (non-heading),
+            # inside an h2+ section.  para_title is None for h1-scoped labels
+            # (h1 DocTitle-promoted structure has no _walk_section call, so no
+            # synthetic section would be generated).
+            title = para_title
+            section_title = para_title
         elif enclosing and not in_h1_scope:
             # Label inside an h2+ section, not directly before a heading.
             title = enclosing
