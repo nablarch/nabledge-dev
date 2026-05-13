@@ -96,9 +96,9 @@
   - [x] PE レビュー → 0 Findings
   - [x] SE レビュー → 1 Finding（境界テスト不足）→ 修正済
 - [ ] 1-5H. シミュレーションスクリプトにメトリクス記録を追加
-  - [ ] `call_llm()` の戻り値に `duration_ms`, `total_cost_usd`, `usage` (input/output tokens) を含める
-  - [ ] 各ステージの出力JSONにメトリクスを記録
-  - [ ] `summary.json` にシナリオ別・全体のメトリクス集計を追加
+  - [x] `call_llm()` の戻り値に `duration_ms`, `total_cost_usd`, `usage` (input/output tokens) を含める
+  - [x] 各ステージの出力JSONにメトリクスを記録
+  - [x] `summary.json` にシナリオ別・全体のメトリクス集計を追加
   - [ ] SE レビュー → 修正
 - [ ] 1-5I. ベースライン再測定（上限変更後）
   - [ ] 全件シミュレーション3回実行。安定性確認

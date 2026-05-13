@@ -121,6 +121,24 @@ def parse_stage2_response(response: dict) -> list[dict]:
     return response["results"][:30]
 
 
+def _aggregate_stage_metrics(stage1: dict, stage2: dict) -> dict:
+    """Combine metrics from both stages into scenario-level totals."""
+    if not stage1 and not stage2:
+        return {}
+    return {
+        "total_duration_ms": stage1.get("duration_ms", 0) + stage2.get("duration_ms", 0),
+        "total_cost_usd": stage1.get("total_cost_usd", 0.0) + stage2.get("total_cost_usd", 0.0),
+        "total_input_tokens": (
+            stage1.get("usage", {}).get("input_tokens", 0)
+            + stage2.get("usage", {}).get("input_tokens", 0)
+        ),
+        "total_output_tokens": (
+            stage1.get("usage", {}).get("output_tokens", 0)
+            + stage2.get("usage", {}).get("output_tokens", 0)
+        ),
+    }
+
+
 def compare_results(
     results: list[dict],
     must_sections: list[dict],
@@ -187,23 +205,26 @@ def simulate_scenario(
     acceptable = scenario["then"].get("acceptable", [])
 
     stage1_prompt = build_stage1_prompt(question, hearing_answer, index_content)
-    stage1_raw = llm_fn(stage1_prompt, STAGE1_JSON_SCHEMA)
-    stage1_files = parse_stage1_response(stage1_raw)
+    stage1_response = llm_fn(stage1_prompt, STAGE1_JSON_SCHEMA)
+    stage1_files = parse_stage1_response(stage1_response["result"])
+    stage1_metrics = stage1_response.get("metrics", {})
 
     file_paths = [f["path"] for f in stage1_files]
     files_content = format_files_content(knowledge_dir, file_paths)
 
     stage2_prompt = build_stage2_prompt(question, hearing_answer, files_content)
-    stage2_raw = llm_fn(stage2_prompt, STAGE2_JSON_SCHEMA)
-    stage2_results = parse_stage2_response(stage2_raw)
+    stage2_response = llm_fn(stage2_prompt, STAGE2_JSON_SCHEMA)
+    stage2_results = parse_stage2_response(stage2_response["result"])
+    stage2_metrics = stage2_response.get("metrics", {})
 
     comparison = compare_results(stage2_results, must, acceptable)
 
     return {
         "scenario_id": scenario_id,
-        "stage1": {"files": stage1_files},
-        "stage2": {"results": stage2_results},
+        "stage1": {"files": stage1_files, "metrics": stage1_metrics},
+        "stage2": {"results": stage2_results, "metrics": stage2_metrics},
         "comparison": comparison,
+        "metrics": _aggregate_stage_metrics(stage1_metrics, stage2_metrics),
     }
 
 
@@ -241,22 +262,47 @@ def simulate_all(
         (scenario_dir / "comparison.json").write_text(
             json.dumps(result["comparison"], ensure_ascii=False, indent=2), encoding="utf-8"
         )
+        if result.get("metrics"):
+            (scenario_dir / "metrics.json").write_text(
+                json.dumps(result["metrics"], ensure_ascii=False, indent=2), encoding="utf-8"
+            )
         results.append(result)
 
     total_must = sum(r["comparison"]["must_total"] for r in results)
     total_hit = sum(r["comparison"]["must_hit"] for r in results)
+
+    scenarios_with_metrics = [r for r in results if r.get("metrics")]
+    if scenarios_with_metrics:
+        total_duration = sum(r["metrics"]["total_duration_ms"] for r in scenarios_with_metrics)
+        total_cost = sum(r["metrics"]["total_cost_usd"] for r in scenarios_with_metrics)
+        total_in = sum(r["metrics"]["total_input_tokens"] for r in scenarios_with_metrics)
+        total_out = sum(r["metrics"]["total_output_tokens"] for r in scenarios_with_metrics)
+        n = len(scenarios_with_metrics)
+        aggregate_metrics = {
+            "total_duration_ms": total_duration,
+            "total_cost_usd": round(total_cost, 6),
+            "total_input_tokens": total_in,
+            "total_output_tokens": total_out,
+            "avg_duration_ms": round(total_duration / n),
+            "avg_cost_usd": round(total_cost / n, 6),
+        }
+    else:
+        aggregate_metrics = {}
+
     summary = {
         "total_scenarios": len(results),
         "total_must": total_must,
         "total_hit": total_hit,
         "total_miss": total_must - total_hit,
         "overall_hit_rate": total_hit / total_must if total_must > 0 else 1.0,
+        "metrics": aggregate_metrics,
         "per_scenario": [
             {
                 "id": r["scenario_id"],
                 "must_hit": r["comparison"]["must_hit"],
                 "must_miss": r["comparison"]["must_miss"],
                 "hit_rate": r["comparison"]["hit_rate"],
+                "metrics": r.get("metrics", {}),
             }
             for r in results
         ],

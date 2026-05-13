@@ -23,6 +23,17 @@ from tools.benchmark.scripts.evaluate import (
     parse_section_ref,
 )
 
+DUMMY_METRICS = {
+    "duration_ms": 100,
+    "duration_api_ms": 90,
+    "total_cost_usd": 0.001,
+    "usage": {"input_tokens": 500, "output_tokens": 50},
+}
+
+
+def _wrap_llm_response(result, metrics=None):
+    return {"result": result, "metrics": metrics or DUMMY_METRICS}
+
 
 class TestExtractJsonFromResult:
     def test_plain_json(self):
@@ -317,10 +328,10 @@ class TestEvaluateScenario:
         def mock_llm(prompt, json_schema):
             if "ファクトチェック" in prompt:
                 call_count["claim"] += 1
-                return {"verdict": "PRESENT", "reason": "含まれている"}
+                return _wrap_llm_response({"verdict": "PRESENT", "reason": "含まれている"})
             else:
                 call_count["hallucination"] += 1
-                return {"verdict": "PASS", "claims": [], "reason": "問題なし"}
+                return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "問題なし"})
 
         def mock_load_section(knowledge_dir, ref):
             return "セクション内容"
@@ -350,9 +361,9 @@ class TestEvaluateScenario:
         runner_output = {"answer": "回答", "hearing": {}, "search": {}, "metrics": {}}
 
         responses = iter([
-            {"verdict": "PRESENT", "reason": "ok"},
-            {"verdict": "UNCERTAIN", "reason": "unclear"},
-            {"verdict": "PASS", "claims": [], "reason": "ok"},
+            _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"}),
+            _wrap_llm_response({"verdict": "UNCERTAIN", "reason": "unclear"}),
+            _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"}),
         ])
 
         def mock_llm(prompt, json_schema):
@@ -377,7 +388,7 @@ class TestEvaluateScenario:
         runner_output = {"answer": "回答", "hearing": {}, "search": {}, "metrics": {}}
 
         def mock_llm(prompt, json_schema):
-            return {"verdict": "PASS", "claims": [], "reason": "ok"}
+            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
 
         def mock_load_section(knowledge_dir, ref):
             return "内容"
@@ -427,7 +438,7 @@ class TestEvaluateAll:
         }), encoding="utf-8")
 
         def mock_llm(prompt, schema, model="sonnet"):
-            return {"verdict": "PASS", "claims": [], "reason": "ok"}
+            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
 
         with patch("tools.benchmark.scripts.evaluate.call_llm", mock_llm):
             results = evaluate_all(tmpdir, str(scenarios_path), "/dummy", "sonnet")
@@ -464,7 +475,7 @@ class TestEvaluateAll:
         }), encoding="utf-8")
 
         def mock_llm(prompt, schema, model="sonnet"):
-            return {"verdict": "PASS", "claims": [], "reason": "ok"}
+            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
 
         with patch("tools.benchmark.scripts.evaluate.call_llm", mock_llm):
             evaluate_all(tmpdir, str(scenarios_path), "/dummy", "sonnet")

@@ -173,6 +173,8 @@ def call_llm(prompt: str, json_schema: str, model: str = "sonnet") -> dict:
 
     json_schema is appended to the prompt as output format instructions.
     The model is expected to return valid JSON matching the schema.
+
+    Returns dict with "result" (parsed JSON) and "metrics" keys.
     """
     full_prompt = (
         f"{prompt}\n\n"
@@ -197,7 +199,18 @@ def call_llm(prompt: str, json_schema: str, model: str = "sonnet") -> dict:
     if result.returncode != 0:
         raise RuntimeError(f"claude CLI failed: {result.stderr}")
     data = json.loads(result.stdout)
-    return json.loads(extract_json_from_result(data["result"]))
+    parsed_result = json.loads(extract_json_from_result(data["result"]))
+    usage = data.get("usage", {})
+    metrics = {
+        "duration_ms": data.get("duration_ms", 0),
+        "duration_api_ms": data.get("duration_api_ms", 0),
+        "total_cost_usd": data.get("total_cost_usd", 0.0),
+        "usage": {
+            "input_tokens": usage.get("input_tokens", 0),
+            "output_tokens": usage.get("output_tokens", 0),
+        },
+    }
+    return {"result": parsed_result, "metrics": metrics}
 
 
 def evaluate_scenario(
@@ -223,7 +236,7 @@ def evaluate_scenario(
         section_content = section_loader(knowledge_dir, mf["section"])
         prompt = build_claim_prompt(mf["fact"], answer, section_content)
         response = llm_fn(prompt, CLAIM_JSON_SCHEMA)
-        parsed = parse_claim_response(response)
+        parsed = parse_claim_response(response["result"])
         parsed["fact"] = mf["fact"]
         claim_verdicts.append(parsed)
 
@@ -239,7 +252,7 @@ def evaluate_scenario(
 
     h_prompt = build_hallucination_prompt(answer, sections_text)
     h_response = llm_fn(h_prompt, HALLUCINATION_JSON_SCHEMA)
-    hallucination = parse_hallucination_response(h_response)
+    hallucination = parse_hallucination_response(h_response["result"])
 
     accuracy = calculate_accuracy_score(claim_verdicts)
     h_score = calculate_hallucination_score(hallucination)

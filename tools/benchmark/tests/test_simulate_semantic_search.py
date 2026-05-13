@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from tools.benchmark.scripts.simulate_semantic_search import (
+    _aggregate_stage_metrics,
     build_stage1_prompt,
     build_stage2_prompt,
     compare_results,
@@ -16,6 +17,38 @@ from tools.benchmark.scripts.simulate_semantic_search import (
     simulate_all,
     simulate_scenario,
 )
+
+DUMMY_METRICS = {
+    "duration_ms": 100,
+    "duration_api_ms": 90,
+    "total_cost_usd": 0.001,
+    "usage": {"input_tokens": 500, "output_tokens": 50},
+}
+
+
+def _wrap_llm_response(result, metrics=None):
+    return {"result": result, "metrics": metrics or DUMMY_METRICS}
+
+
+class TestAggregateStageMetrics:
+    def test_combines_two_stages(self):
+        s1 = {"duration_ms": 100, "total_cost_usd": 0.01, "usage": {"input_tokens": 500, "output_tokens": 50}}
+        s2 = {"duration_ms": 200, "total_cost_usd": 0.02, "usage": {"input_tokens": 1000, "output_tokens": 100}}
+        result = _aggregate_stage_metrics(s1, s2)
+        assert result["total_duration_ms"] == 300
+        assert result["total_cost_usd"] == 0.03
+        assert result["total_input_tokens"] == 1500
+        assert result["total_output_tokens"] == 150
+
+    def test_both_empty(self):
+        assert _aggregate_stage_metrics({}, {}) == {}
+
+    def test_missing_fields_default_to_zero(self):
+        result = _aggregate_stage_metrics({"duration_ms": 50}, {"duration_ms": 30})
+        assert result["total_duration_ms"] == 80
+        assert result["total_cost_usd"] == 0.0
+        assert result["total_input_tokens"] == 0
+        assert result["total_output_tokens"] == 0
 
 
 class TestBuildStage1Prompt:
@@ -376,8 +409,8 @@ class TestSimulateScenario:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
-                return stage1_response
-            return stage2_response
+                return _wrap_llm_response(stage1_response)
+            return _wrap_llm_response(stage2_response)
 
         result = simulate_scenario(
             scenario, "index content", self.tmpdir, llm_fn=mock_llm
@@ -387,6 +420,10 @@ class TestSimulateScenario:
         assert result["comparison"]["hit_rate"] == 1.0
         assert len(result["stage1"]["files"]) == 1
         assert len(result["stage2"]["results"]) == 1
+        assert "metrics" in result["stage1"]
+        assert "metrics" in result["stage2"]
+        assert result["metrics"]["total_duration_ms"] == 200
+        assert result["metrics"]["total_cost_usd"] == 0.002
 
     def test_no_hearing_answer(self):
         scenario = {
@@ -404,8 +441,8 @@ class TestSimulateScenario:
             call_count += 1
             if call_count == 1:
                 assert "なし" in prompt
-                return {"files": [{"path": "component/libs/test.json", "reason": "r"}]}
-            return {"results": [{"file": "component/libs/test.json", "section_id": "s1", "relevance": "high"}]}
+                return _wrap_llm_response({"files": [{"path": "component/libs/test.json", "reason": "r"}]})
+            return _wrap_llm_response({"results": [{"file": "component/libs/test.json", "section_id": "s1", "relevance": "high"}]})
 
         result = simulate_scenario(scenario, "idx", self.tmpdir, llm_fn=mock_llm)
         assert result["comparison"]["must_hit"] == 1
@@ -425,11 +462,11 @@ class TestSimulateScenario:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
-                return {"files": [
+                return _wrap_llm_response({"files": [
                     {"path": "nonexistent.json", "reason": "r"},
                     {"path": "component/libs/test.json", "reason": "r2"},
-                ]}
-            return {"results": []}
+                ]})
+            return _wrap_llm_response({"results": []})
 
         result = simulate_scenario(scenario, "idx", self.tmpdir, llm_fn=mock_llm)
         assert result["stage1"]["files"][0]["path"] == "nonexistent.json"
@@ -443,16 +480,19 @@ class TestSimulateScenario:
 
         def mock_llm(prompt, schema, model="sonnet"):
             if "インデックス" in prompt or "index" in prompt.lower():
-                return {"files": []}
-            return {"results": []}
+                return _wrap_llm_response({"files": []})
+            return _wrap_llm_response({"results": []})
 
         result = simulate_scenario(scenario, "idx", self.tmpdir, llm_fn=mock_llm)
         assert "scenario_id" in result
         assert "stage1" in result
         assert "stage2" in result
         assert "comparison" in result
+        assert "metrics" in result
         assert "files" in result["stage1"]
+        assert "metrics" in result["stage1"]
         assert "results" in result["stage2"]
+        assert "metrics" in result["stage2"]
 
 
 class TestSimulateAll:
@@ -496,10 +536,10 @@ class TestSimulateAll:
 
     def _mock_llm(self, prompt, schema, model="sonnet"):
         if "インデックス" in prompt or "index" in prompt.lower():
-            return {"files": [{"path": "component/libs/test.json", "reason": "r"}]}
-        return {"results": [
+            return _wrap_llm_response({"files": [{"path": "component/libs/test.json", "reason": "r"}]})
+        return _wrap_llm_response({"results": [
             {"file": "component/libs/test.json", "section_id": "s1", "relevance": "high"},
-        ]}
+        ]})
 
     def test_writes_output_files(self):
         from unittest.mock import patch
@@ -518,6 +558,7 @@ class TestSimulateAll:
         assert (out / "s-01" / "stage1.json").exists()
         assert (out / "s-01" / "stage2.json").exists()
         assert (out / "s-01" / "comparison.json").exists()
+        assert (out / "s-01" / "metrics.json").exists()
         assert (out / "s-02" / "stage1.json").exists()
         assert (out / "summary.json").exists()
 
@@ -525,6 +566,10 @@ class TestSimulateAll:
             saved_summary = json.load(f)
         assert saved_summary["total_scenarios"] == 2
         assert saved_summary["overall_hit_rate"] == 1.0
+        assert "metrics" in saved_summary
+        assert saved_summary["metrics"]["total_duration_ms"] == 400
+        assert saved_summary["metrics"]["avg_duration_ms"] == 200
+        assert saved_summary["per_scenario"][0]["metrics"]["total_duration_ms"] == 200
 
     def test_scenario_id_filtering(self):
         from unittest.mock import patch
