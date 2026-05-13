@@ -1,7 +1,7 @@
 # Tasks: Search Improvement (Zero-base)
 
 **Branch**: search
-**Updated**: 2026-05-14
+**Updated**: 2026-05-13
 
 ## Rules
 
@@ -87,14 +87,14 @@
     - Stage 2: 10セクション → **30セクション**
     - ヒアリング（コンポーネント3）: 処理パターンの絞り込みを必須にする
     - Stage 1候補が10件超: 超過原因を分析し、適切な絞り込み観点を提示して依頼
-- [ ] 1-5G. 設計変更の反映（上限変更）
-  - [ ] 設計書 (semantic-search-design.md) を更新: Stage 1上限5→10、Stage 2上限10→30、超過時フロー追加
-  - [ ] Stage 1プロンプト更新: 最大5→10ページ
-  - [ ] Stage 2プロンプト更新: 最大10→30セクション
-  - [ ] シミュレーションスクリプト更新: parse_stage1_response max 5→10、parse_stage2_response max 10→30
-  - [ ] テスト更新: 上限値に関するテストケース修正
-  - [ ] PE レビュー → 修正
-  - [ ] SE レビュー → 修正
+- [x] 1-5G. 設計変更の反映（上限変更）
+  - [x] 設計書 (semantic-search-design.md) を更新: Stage 1上限5→10、Stage 2上限10→30、超過時フロー追加
+  - [x] Stage 1プロンプト更新: 最大5→10ページ
+  - [x] Stage 2プロンプト更新: 最大10→30セクション
+  - [x] シミュレーションスクリプト更新: parse_stage1_response max 5→10、parse_stage2_response max 10→30
+  - [x] テスト更新: 上限値に関するテストケース修正 + 境界テスト追加
+  - [x] PE レビュー → 0 Findings
+  - [x] SE レビュー → 1 Finding（境界テスト不足）→ 修正済
 - [ ] 1-5H. シミュレーションスクリプトにメトリクス記録を追加
   - [ ] `call_llm()` の戻り値に `duration_ms`, `total_cost_usd`, `usage` (input/output tokens) を含める
   - [ ] 各ステージの出力JSONにメトリクスを記録

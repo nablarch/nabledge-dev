@@ -177,10 +177,15 @@ class TestParseStage1Response:
         with pytest.raises(ValueError, match="must be a list"):
             parse_stage1_response({"files": {"path": "a.json"}})
 
-    def test_max_5_files(self):
-        files = [{"path": f"f{i}.json", "reason": "r"} for i in range(7)]
+    def test_exactly_10_files(self):
+        files = [{"path": f"f{i}.json", "reason": "r"} for i in range(10)]
         result = parse_stage1_response({"files": files})
-        assert len(result) == 5
+        assert len(result) == 10
+
+    def test_max_10_files(self):
+        files = [{"path": f"f{i}.json", "reason": "r"} for i in range(12)]
+        result = parse_stage1_response({"files": files})
+        assert len(result) == 10
 
 
 class TestParseStage2Response:
@@ -213,13 +218,21 @@ class TestParseStage2Response:
                 "results": [{"file": "a.json", "section_id": "s1", "relevance": "low"}]
             })
 
-    def test_max_10_results(self):
+    def test_exactly_30_results(self):
         results = [
             {"file": "a.json", "section_id": f"s{i}", "relevance": "high"}
-            for i in range(12)
+            for i in range(30)
         ]
         result = parse_stage2_response({"results": results})
-        assert len(result) == 10
+        assert len(result) == 30
+
+    def test_max_30_results(self):
+        results = [
+            {"file": "a.json", "section_id": f"s{i}", "relevance": "high"}
+            for i in range(35)
+        ]
+        result = parse_stage2_response({"results": results})
+        assert len(result) == 30
 
 
 class TestCompareResults:

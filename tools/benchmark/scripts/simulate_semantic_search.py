@@ -107,7 +107,7 @@ def parse_stage1_response(response: dict) -> list[dict]:
         raise ValueError("Response missing 'files' key")
     if not isinstance(response["files"], list):
         raise ValueError(f"'files' must be a list, got {type(response['files']).__name__!r}")
-    return response["files"][:5]
+    return response["files"][:10]
 
 
 def parse_stage2_response(response: dict) -> list[dict]:
@@ -118,7 +118,7 @@ def parse_stage2_response(response: dict) -> list[dict]:
     for r in response["results"]:
         if r.get("relevance") not in ("high", "partial"):
             raise ValueError(f"Invalid relevance: {r.get('relevance')!r}")
-    return response["results"][:10]
+    return response["results"][:30]
 
 
 def compare_results(
