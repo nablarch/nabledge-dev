@@ -133,3 +133,18 @@ Criteria: "Without this section, can the question be answered?" — only indispe
 | qa-12 | tag:s29→must, jaxrs:s7 added to must | Error message return requires both Web display layer (s29) and REST response body (s7) |
 | qa-13 | rest-create:s1 promoted to must | Hearing says REST API. s2 alone (CRUD capability) doesn't give the REST implementation pattern |
 
+## 2026-05-14
+
+### Investigation 2-1: Current Answer Generation Flow
+
+Analyzed qa.md and all sub-workflows across all 5 versions. All versions are logically identical (path substitution only).
+
+**Current flow**: search → read-sections.sh (max 10 sections) → LLM generates answer in fixed format (結論/根拠/注意点/参照), 500-800 tokens, knowledge-only rule.
+
+**No verification exists**: Anti-hallucination is purely structural — source isolation instructions repeated in 3 places, mandatory citation, no-match honesty message. No post-generation fact-check.
+
+**Key constraints for redesign**:
+- Section cap: 10 sections read into answer generation context
+- Token budget: 500 target, 800 ceiling
+- Citation format: `filename.json#section-id`
+- Search pipeline delivers Pointer JSON with high/partial relevance classification
