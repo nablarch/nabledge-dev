@@ -35,6 +35,7 @@ from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, s
 from scripts.create.docs import generate_docs
 from scripts.create.index import generate_index
 from scripts.create.resolver import collect_asset_refs, copy_assets
+from scripts.create.terms import generate_terms
 from scripts.common.labels import build_label_doc_map, build_label_map  # noqa: F401
 from scripts.verify.verify import (
     verify_file,
@@ -259,6 +260,7 @@ def create(
 
     copy_assets(all_asset_refs, output_dir)
     generate_index(file_infos, output_dir, version, index_path)
+    generate_terms(output_dir, output_dir / "terms.json")
     generate_docs(output_dir, docs_dir, version)
 
     snap = make_snapshot(file_infos, repo_root, version)
@@ -308,6 +310,7 @@ def update(
 
     copy_assets(changed_asset_refs, output_dir)
     generate_index(file_infos, output_dir, version, output_dir / "index.toon")
+    generate_terms(output_dir, output_dir / "terms.json")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 
     # Update snapshot to reflect current state
@@ -350,6 +353,7 @@ def delete(
                 count += 1
 
     generate_index(file_infos, output_dir, version, output_dir / "index.toon")
+    generate_terms(output_dir, output_dir / "terms.json")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 
     # Update snapshot
