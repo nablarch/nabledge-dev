@@ -168,7 +168,7 @@ def extract_json_from_result(text: str) -> str:
             if lines[i].strip() == "```":
                 fence_end = i
                 break
-        return "\n".join(lines[fence_start + 1:fence_end]).strip()
+        stripped = "\n".join(lines[fence_start + 1:fence_end]).strip()
     obj_start = stripped.find("{")
     if obj_start >= 0:
         decoder = json.JSONDecoder()
