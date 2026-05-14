@@ -14,7 +14,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-KNOWLEDGE_DIR="$SKILL_DIR/knowledge"
+KNOWLEDGE_DIR="${KNOWLEDGE_DIR:-$SKILL_DIR/knowledge}"
 TERMS_FILE="$KNOWLEDGE_DIR/terms.json"
 
 if [ $# -eq 0 ]; then
