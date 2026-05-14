@@ -2,7 +2,7 @@
 
 **PR**: #330
 **Issue**: #320
-**Updated**: 2026-05-14 (rev39)
+**Updated**: 2026-05-14 (rev40)
 
 ## In Progress
 
@@ -10,7 +10,29 @@
 
 ## Not Started
 
-（なし）
+### Task 27: `entry`-parent ラベルの paragraph anchor 解決（Issue #320 追加バグ）
+
+**背景**:
+Task 26 で `\X)` paragraph anchor を対応したが、ラベルが `entry`（テーブルセル）の親を持つ場合、
+`_scan_rst_labels` の `para_title` 計算条件 `isinstance(node.parent, nodes.section)` を
+満たさず、正しい paragraph anchor でなく enclosing section（`#クラス定義`）に誤解決している。
+
+**影響範囲**: v1.2/v1.3/v1.4 のみ（v5/v6 は該当なし）
+- `04_ObjectSave.rst`: 4 ラベル（`basic-sql-parameter-parser-label`、`variable_condition/in/order_by_syntax_convertor-label`）
+- `04_Connection.rst`: 3 ラベル（`basicdbconnectionfactoryforjndi/datasource-class-label`、`db-connection-name-label`）
+- docs MD リンク 27 件（各バージョン 9 件）が `#クラス定義` に誤リンク
+
+**AST構造**: `target → entry → row → tbody → tgroup → table → block_quote → section(クラス定義)`
+**正しい解決先**: `block_quote`/`table` の直前 sibling の `X)` paragraph anchor
+
+**Steps:**
+- [ ] 設計書 §3-2-2 に Rule 7 追記（entry-parent ラベルの paragraph anchor 解決）
+- [ ] `test_labels_doc_map.py` に entry-parent ケースのテストを追加（TDD: RED）
+- [ ] `labels.py` `_scan_rst_labels` に entry-parent 分岐を実装（GREEN）
+- [ ] 全5バージョン create → verify（FAIL 0 確認）
+- [ ] 知識ファイル再生成・差分確認（v1.2/v1.3/v1.4 の該当ファイルのみ変化）
+- [ ] エキスパートレビュー（SE + QA）
+- [ ] tasks.md 更新・コミット・プッシュ
 
 ## Done
 
