@@ -6,23 +6,12 @@
 
 ## In Progress
 
----
-
-### Task 4: 変更差分チェック（全タスク統合・PRレビュー依頼前）
-
-**目的**: PRレビュー依頼前に変更差分が Task 1〜3 の想定範囲のみかを確認する。
-
-**Steps:**
-- [ ] `git diff main` を実行して全変更差分を確認
-- [ ] 想定外の変更（対象ファイル以外、意図しない削除等）がないかチェック
-- [ ] チェック結果を `.work/00321/diff-check.md` に記録
-- [ ] ユーザーに確認
-
 ## Done
 
 - [x] Task 1: シンボル統一（⚠️ 廃止、§3-x と §4 を ✅/❌/— に揃える） — committed `8466ac7`
 - [x] Task 2: 全 ✅ 項目の bias-avoidance QA レビュー実施 — v6 FAIL 0 確認、QA レビュー 0 Findings、test fixes committed `436798e`
 - [x] Task 3: 設計書に §0「この文書を読む前に」追加 — 3 文書に全体像・用語定義・前提知識を補完、committed `2bf704f`
+- [x] Task 4: 変更差分チェック + PR 作成 — 想定外変更なし確認済、PR #342 更新、hints 参照削除 committed `896c1cc`
 
 ---
 
