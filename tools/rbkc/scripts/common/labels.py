@@ -249,13 +249,15 @@ def _next_section_title_for_node(node: "nodes.Node") -> str | None:
 def _paragraph_anchor_title(node: "nodes.Node") -> str | None:
     """Return a title derived from a paragraph that immediately follows a target.
 
-    Resolution rules (matches Task 25 paragraph → heading text conversion):
+    Resolution rules:
     - bold-only (``**text**``): single ``strong`` child → its text
     - italic-only (``*text*``): single ``emphasis`` child → its text
     - bold-start (``**text** rest``): first child is ``strong`` → its text only
-    - plain text (no inline markup) → ``None`` (caller falls back to enclosing section;
-      only explicit bold/italic markup signals intentional heading use)
-    - anything else (line_block, image, etc.) → ``None`` (caller falls back to enclosing)
+    - letter/digit + ``)`` + space (Issue #320): ``nodes.Text`` child matching
+      ``^[a-zA-Z0-9]\\) `` (Nablarch 1.x ``\\e)`` / ``\\1)`` subsection convention —
+      backslash stripped by docutils → plain paragraph) → full paragraph text
+    - anything else (unmarked plain text, line_block, image, etc.) → ``None``
+      (caller falls back to enclosing section)
 
     Called from :func:`_scan_rst_labels` after exhausting heading-based resolution.
     """
@@ -290,9 +292,13 @@ def _paragraph_anchor_title(node: "nodes.Node") -> str | None:
         if isinstance(first, _nodes.strong):
             # bold-start: **text** (optional trailing text)
             return first.astext()
-        # plain-text paragraphs (no inline markup) are not treated as synthetic
-        # headings — they are regular body text that happens to follow an anchor.
-        # Only explicit markup (bold/italic) signals intentional heading use.
+        if isinstance(first, _nodes.Text):
+            import re as _re
+            # letter/digit + ")" + space: Nablarch 1.x subsection list convention
+            # (e.g. RST source ``\e) SQL文のロードクラス`` → plain paragraph ``e) SQL…``).
+            # This structural pattern signals intentional heading use.
+            if _re.match(r'^[a-zA-Z0-9]\) ', first.astext()):
+                return sib.astext()
         return None
     return None
 
