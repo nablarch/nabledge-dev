@@ -65,6 +65,14 @@ class TestExtractJsonFromResult:
         text = 'Explanation.\n\n```json\n{"a": 1}\n```\n\nMore text.'
         assert extract_json_from_result(text) == '{"a": 1}'
 
+    def test_raw_json_with_trailing_text(self):
+        text = '{"a": 1}\n\nSome explanation after.'
+        assert extract_json_from_result(text) == '{"a": 1}'
+
+    def test_raw_json_no_trailing(self):
+        text = '{"a": 1, "b": "hello"}'
+        assert extract_json_from_result(text) == '{"a": 1, "b": "hello"}'
+
 
 class TestParseSectionRef:
     def test_standard_ref(self):
