@@ -1044,28 +1044,10 @@ def _check_md_content_completeness(
 # Excel QC1/QC2/QC3: verify_file(fmt="xlsx")
 # ---------------------------------------------------------------------------
 
-_MD_SYNTAX_RE = re.compile(
-    r'\|[-:]+\|(?:[-:]+\|)*'
-    r'|\|'
-    # Spec §3-1 Excel 節 explicitly names `---` as an allowed residue.
-    # Match 3+ hyphens as a standalone token (GFM table separator or
-    # horizontal rule residue that lost its flanking pipes).
-    r'|-{3,}'
-    r'|\*\*|\*|__(?![\w])|(?<![\w])__'
-    r'|^#+\s*'
-    r'|^>\s*'
-    r'|^\d+\.\s+'
-    r'|`'
-    # Phase 22-B P1 structural delimiter: §8-4 specifies section.content
-    # as `{列名}: {値}` per line.  The ": " separator is a structural
-    # artifact of the JSON schema, not derived from any source cell, and
-    # must not trigger QC2 residue.  Matches a lone `:` surrounded by
-    # whitespace (already the case after token removal — JSON text is
-    # split by whitespace further down, so any `:` that survives as its
-    # own token here is structural).
-    r'|:'
-    , re.MULTILINE
-)
+# Per spec §3-1 Excel 節 手順 3 P1 コロン例外 (rbkc-verify-quality-design.md §3-1):
+# P1 section.content は `{列名}: {値}` 形式 (rbkc-converter-design.md §8-4) で
+# `:` は JSON スキーマ由来のアーティファクト。P1 シート限定でコロンをスペースに置換する。
+_P1_COLON_RE = re.compile(r':')
 
 
 def _read_sheet_matrix(source_path, sheet_name: str | None) -> list[list[list[str]]]:
@@ -1700,8 +1682,11 @@ def _verify_xlsx(source_path, data: dict, sheet_name: str | None = None) -> list
     # Per spec §3-1 Excel 節 手順 3: anything other than whitespace/empty
     # remaining after deleting source cells is QC2 (捏造). No length
     # tolerance — a 1-char residue is still a fabrication.
-    residual_plain = _MD_SYNTAX_RE.sub(" ", residual)
-    for token in residual_plain.split():
+    # P1 exception: `:` is a structural artifact of the JSON schema (§8-4),
+    # not derived from any cell value — strip it only for P1 sheets.
+    if data.get("sheet_type") == "P1":
+        residual = _P1_COLON_RE.sub(" ", residual)
+    for token in residual.split():
         t = token.strip()
         if t:
             issues.append(f"[QC2] JSON token not found in Excel source: {token!r}")

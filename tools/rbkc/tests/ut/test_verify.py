@@ -1836,11 +1836,25 @@ class TestVerifyFileExcel:
         issues = self._check(str(xlsx_path), data)
         assert any("QC2" in i for i in issues)
 
-    def test_pass_qc2_standalone_triple_dash_is_tolerance_allowed(self, tmp_path):
-        """Z-1 r8 QC2 F-QC2-1: spec §3-1 Excel 節 lists `---` explicitly
-        as an allowed residue. A JSON field containing `---` (e.g. from
-        a GFM table separator that lost its flanking pipes, or a
-        horizontal rule fragment) must NOT trigger QC2."""
+    def test_fail_qc2_pipe_char_fabrication(self, tmp_path):
+        """Spec §3-1 Excel 節 手順 3: `|` not present in any source cell must
+        trigger QC2. Previously _MD_SYNTAX_RE silently stripped `|` before
+        the residue check, masking this fabrication (the pipe was the only
+        extra token — using 'Hello |' ensures | alone is the residue)."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "Hello"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        data = {"id": "f", "title": "Hello |", "content": "", "sections": []}
+        issues = self._check(str(xlsx_path), data)
+        assert any("QC2" in i for i in issues), issues
+
+    def test_fail_qc2_triple_dash_fabrication(self, tmp_path):
+        """Spec §3-1 Excel 節 手順 3: `---` not present in any source cell must
+        trigger QC2. The old comment 'spec §3-1 explicitly names --- as an
+        allowed residue' was a fabricated citation — no such clause exists."""
         import openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
@@ -1849,7 +1863,20 @@ class TestVerifyFileExcel:
         wb.save(xlsx_path)
         data = {"id": "f", "title": "Hello", "content": "---", "sections": []}
         issues = self._check(str(xlsx_path), data)
-        assert not any("QC2" in i for i in issues), issues
+        assert any("QC2" in i for i in issues), issues
+
+    def test_fail_p2_colon_residue_detected_as_qc2(self, tmp_path):
+        """Spec §3-1 Excel 節 手順 3 P1 コロン例外: P1 限定であり P2 には適用しない。
+        P2 シートで `:` が残存した場合は捏造として QC2 FAIL しなければならない。"""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "値A"
+        xlsx_path = tmp_path / "p2colon.xlsx"
+        wb.save(xlsx_path)
+        data = {"id": "f", "title": "値A:", "content": "", "sections": [], "sheet_type": "P2"}
+        issues = self._check(str(xlsx_path), data)
+        assert any("QC2" in i for i in issues), issues
 
     def test_fail_qc2_one_char_fabrication_detected(self, tmp_path):
         """Spec §3-1 Excel 節 手順 3: 空白・空行以外の残存は QC2.
