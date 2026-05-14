@@ -1865,6 +1865,19 @@ class TestVerifyFileExcel:
         issues = self._check(str(xlsx_path), data)
         assert any("QC2" in i for i in issues), issues
 
+    def test_fail_p2_colon_residue_detected_as_qc2(self, tmp_path):
+        """Spec §3-1 Excel 節 手順 3 P1 コロン例外: P1 限定であり P2 には適用しない。
+        P2 シートで `:` が残存した場合は捏造として QC2 FAIL しなければならない。"""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "値A"
+        xlsx_path = tmp_path / "p2colon.xlsx"
+        wb.save(xlsx_path)
+        data = {"id": "f", "title": "値A:", "content": "", "sections": [], "sheet_type": "P2"}
+        issues = self._check(str(xlsx_path), data)
+        assert any("QC2" in i for i in issues), issues
+
     def test_fail_qc2_one_char_fabrication_detected(self, tmp_path):
         """Spec §3-1 Excel 節 手順 3: 空白・空行以外の残存は QC2.
         1-char residue used to be silently dropped — must FAIL now."""
