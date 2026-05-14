@@ -6,48 +6,6 @@
 
 ## In Progress
 
-### Task 2: 全 ✅ 項目の bias-avoidance QA レビュー実施
-
-**目的**: 前回レビュー以降に実装変更が多数入っているため、全 ✅ 項目を再検証して現状でも ✅ が成立しているかを確認する。QO1 section level と QP は初回レビューとして実施する。
-
-**対象項目（Task 1 完了後、❌ になるものは除く）**:
-
-| 項目 | RST | MD | Excel |
-|------|-----|----|-------|
-| QC1 完全性 | ✅ | ✅ | ✅ |
-| QC2 正確性 | ✅ | ✅ | ✅ |
-| QC3 非重複性 | ✅ | ✅ | ✅ |
-| QC4 配置正確性 | ✅ | ✅ | — |
-| QC5 形式純粋性 | ✅ | ✅ | — |
-| QL1 JSON side | ✅ | ✅ | — |
-| QL1 docs MD side | ✅ | ✅ | — |
-| QL2 外部リンク | ✅ | ✅ | — |
-| QO1 title+section title+順序 | ✅ | ✅ | ✅ |
-| QO1 section level (初回) | ❌→✅ | ❌→✅ | — |
-| QO2 本文整合性 | ✅ | ✅ | ✅ |
-| QO3 存在確認 | ✅ | ✅ | ✅ |
-| QO4 index.toon 網羅性 | ✅ | ✅ | ✅ |
-| QP P1 列-値ペアリング (初回) | — | — | ❌→✅ |
-
-**レビュー方法**: `.claude/rules/expert-review.md` の QA エンジニア役エージェントを別コンテキストで起動し、各項目の実装・テストを検証する。
-
-**✅ 成立条件（§4 より）**:
-1. verify に実装が存在する（silent fallback・不認可 skip なし）
-2. 主要 FAIL ケースとエッジケースが unit test で RED→GREEN 固定（circular test 不可）
-3. v6 実データに対して verify FAIL 0 件
-4. QA エキスパートレビュー (bias-avoidance) 通過
-
-**Steps:**
-- [ ] v6 実データで `bash rbkc.sh verify v6` を実行し FAIL 0 件を確認（条件 3）
-- [ ] QA エンジニア役エージェントを起動し全対象項目をレビュー（条件 4）
-- [ ] レビュー結果を `.work/00321/review-by-qa-engineer.md` に保存
-- [ ] Finding があれば修正し再レビュー
-- [ ] Finding 0 件になった項目を §4 マトリクスで ✅ に更新
-- [ ] 変更差分チェックして `.work/00321/diff-check.md` に記録
-- [ ] コミット
-
----
-
 ### Task 3: rbkc 設計書全般を実装を知らない読者にも分かるように更新
 
 **目的**: 実装を知らないユーザーが設計書を読んで理解できるよう、前提知識の説明・用語定義・構造説明を補完する。情報は落とさない。
@@ -79,6 +37,7 @@
 ## Done
 
 - [x] Task 1: シンボル統一（⚠️ 廃止、§3-x と §4 を ✅/❌/— に揃える） — committed `8466ac7`
+- [x] Task 2: 全 ✅ 項目の bias-avoidance QA レビュー実施 — v6 FAIL 0 確認、QA レビュー 0 Findings、test fixes committed `436798e`
 
 ---
 
