@@ -27,8 +27,26 @@ STAGE1_JSON_SCHEMA = json.dumps({
                 "required": ["path", "reason"],
             },
         },
+        "trace": {
+            "type": "object",
+            "properties": {
+                "user_intent": {"type": "string"},
+                "excluded": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "path": {"type": "string"},
+                            "reason": {"type": "string"},
+                        },
+                        "required": ["path", "reason"],
+                    },
+                },
+            },
+            "required": ["user_intent", "excluded"],
+        },
     },
-    "required": ["files"],
+    "required": ["files", "trace"],
 })
 
 STAGE2_JSON_SCHEMA = json.dumps({
@@ -49,8 +67,26 @@ STAGE2_JSON_SCHEMA = json.dumps({
                 "required": ["file", "section_id", "relevance"],
             },
         },
+        "trace": {
+            "type": "object",
+            "properties": {
+                "excluded": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "file": {"type": "string"},
+                            "section_id": {"type": "string"},
+                            "reason": {"type": "string"},
+                        },
+                        "required": ["file", "section_id", "reason"],
+                    },
+                },
+            },
+            "required": ["excluded"],
+        },
     },
-    "required": ["results"],
+    "required": ["results", "trace"],
 })
 
 
@@ -220,6 +256,7 @@ def simulate_scenario(
     stage1_prompt = build_stage1_prompt(question, hearing_answer, index_content)
     stage1_response = llm_fn(stage1_prompt, STAGE1_JSON_SCHEMA)
     stage1_files = parse_stage1_response(stage1_response["result"])
+    stage1_trace = stage1_response["result"].get("trace")
     stage1_metrics = stage1_response.get("metrics", {})
 
     file_paths = [f["path"] for f in stage1_files]
@@ -228,14 +265,15 @@ def simulate_scenario(
     stage2_prompt = build_stage2_prompt(question, hearing_answer, files_content)
     stage2_response = llm_fn(stage2_prompt, STAGE2_JSON_SCHEMA)
     stage2_results = parse_stage2_response(stage2_response["result"])
+    stage2_trace = stage2_response["result"].get("trace")
     stage2_metrics = stage2_response.get("metrics", {})
 
     comparison = compare_results(stage2_results, must, acceptable)
 
     return {
         "scenario_id": scenario_id,
-        "stage1": {"files": stage1_files, "metrics": stage1_metrics},
-        "stage2": {"results": stage2_results, "metrics": stage2_metrics},
+        "stage1": {"files": stage1_files, "trace": stage1_trace, "metrics": stage1_metrics},
+        "stage2": {"results": stage2_results, "trace": stage2_trace, "metrics": stage2_metrics},
         "comparison": comparison,
         "metrics": _aggregate_stage_metrics(stage1_metrics, stage2_metrics),
     }

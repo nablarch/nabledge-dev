@@ -523,9 +523,53 @@ class TestSimulateScenario:
         assert "comparison" in result
         assert "metrics" in result
         assert "files" in result["stage1"]
+        assert "trace" in result["stage1"]
         assert "metrics" in result["stage1"]
         assert "results" in result["stage2"]
+        assert "trace" in result["stage2"]
         assert "metrics" in result["stage2"]
+
+    def test_trace_captured_from_response(self):
+        scenario = {
+            "id": "test-05",
+            "when": {"input": "Q"},
+            "then": {"must": [], "acceptable": []},
+        }
+        stage1_trace = {
+            "user_intent": "テスト意図",
+            "excluded": [{"path": "other/file.json", "reason": "処理方式が異なる"}],
+        }
+        stage2_trace = {
+            "excluded": [{"file": "component/libs/test.json", "section_id": "s2", "reason": "概念定義のみ"}],
+        }
+        call_count = 0
+
+        def mock_llm(prompt, schema, model="sonnet"):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return _wrap_llm_response({"files": [], "trace": stage1_trace})
+            return _wrap_llm_response({"results": [], "trace": stage2_trace})
+
+        result = simulate_scenario(scenario, "idx", self.tmpdir, llm_fn=mock_llm)
+        assert result["stage1"]["trace"] == stage1_trace
+        assert result["stage2"]["trace"] == stage2_trace
+
+    def test_trace_none_when_missing(self):
+        scenario = {
+            "id": "test-06",
+            "when": {"input": "Q"},
+            "then": {"must": [], "acceptable": []},
+        }
+
+        def mock_llm(prompt, schema, model="sonnet"):
+            if "インデックス" in prompt or "index" in prompt.lower():
+                return _wrap_llm_response({"files": []})
+            return _wrap_llm_response({"results": []})
+
+        result = simulate_scenario(scenario, "idx", self.tmpdir, llm_fn=mock_llm)
+        assert result["stage1"]["trace"] is None
+        assert result["stage2"]["trace"] is None
 
 
 class TestSimulateAll:
