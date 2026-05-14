@@ -156,15 +156,19 @@ def load_runner_output(run_dir: str, scenario_id: str) -> dict:
 def extract_json_from_result(text: str) -> str:
     """Extract JSON from a result that may be wrapped in markdown code fences."""
     stripped = text.strip()
-    if stripped.startswith("```"):
-        lines = stripped.split("\n")
-        start = 1
-        end = len(lines)
-        for i in range(len(lines) - 1, 0, -1):
+    lines = stripped.split("\n")
+    fence_start = None
+    for i, line in enumerate(lines):
+        if line.strip().startswith("```"):
+            fence_start = i
+            break
+    if fence_start is not None:
+        fence_end = len(lines)
+        for i in range(len(lines) - 1, fence_start, -1):
             if lines[i].strip() == "```":
-                end = i
+                fence_end = i
                 break
-        stripped = "\n".join(lines[start:end]).strip()
+        stripped = "\n".join(lines[fence_start + 1:fence_end]).strip()
     return stripped
 
 

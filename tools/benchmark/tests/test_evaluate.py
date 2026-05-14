@@ -57,6 +57,14 @@ class TestExtractJsonFromResult:
         parsed = json.loads(result)
         assert parsed == {"a": 1, "b": 2}
 
+    def test_text_before_code_fence(self):
+        text = 'Some preamble text.\n\n```json\n{"a": 1}\n```'
+        assert extract_json_from_result(text) == '{"a": 1}'
+
+    def test_text_before_and_after_code_fence(self):
+        text = 'Explanation.\n\n```json\n{"a": 1}\n```\n\nMore text.'
+        assert extract_json_from_result(text) == '{"a": 1}'
+
 
 class TestParseSectionRef:
     def test_standard_ref(self):
