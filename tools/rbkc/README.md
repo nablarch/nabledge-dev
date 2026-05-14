@@ -88,8 +88,6 @@ Detailed rules and rationale live under `tools/rbkc/docs/`:
 | `rbkc-converter-design.md` | Per-format conversion rules (RST / MD / Excel) |
 | `rbkc-json-schema-design.md` | Output JSON schema and section granularity rules |
 | `rbkc-verify-quality-design.md` | verify quality gate specification |
-| `rbkc-hints-file-design.md` | Hints handoff (hints generation is a separate pipeline) |
-| `evaluation/` | Empirical studies that shaped the design |
 
 ## Verify — the Quality Gate
 
