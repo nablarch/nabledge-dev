@@ -49,9 +49,9 @@
 
 各主張について、以下の順で判定してください:
 
-1. セクション内容に直接記載がある → supported: true, evidence: セクション参照
-2. セクション内容の直接的な言い換え（パラフレーズ・略称・同義表現）→ supported: true, evidence: セクション参照
-3. セクション内容に明示されていない属性・動作・制約 → supported: false, evidence: なし
+1. セクション内容に直接記載がある → supported: true, evidence: セクション参照（file.json:sN 形式）
+2. セクション内容の直接的な言い換え（パラフレーズ・略称・同義表現）→ supported: true, evidence: セクション参照（file.json:sN 形式）
+3. セクション内容に明示されていない属性・動作・制約 → supported: false, evidence: ""（空文字）
 
 境界ルール: 推論が有効なのは、セクション内容の直接的な言い換えのみ。明示されていない属性・動作・制約は、技術的に妥当であっても supported: false とする。
 
@@ -61,6 +61,8 @@
 
 - result: "PASS" または "FAIL"
 - claims: 抽出した全主張のリスト（各主張: claim, supported, evidence）
+  - supported: true の場合、evidence にセクションID（file.json:sN 形式）を記載
+  - supported: false の場合、evidence は空文字 ""
 - issues: supported: false の主張のリスト。PASS時は空配列。各エントリ:
     - claim: 裏付けのない主張の内容
     - quote: 回答テキスト中の該当箇所の原文
