@@ -2231,14 +2231,15 @@ def check_source_links(
             # (spec §3-2-2).  The quadrants:
             #   - Q1: label in label_map → resolved title must appear (PASS/FAIL)
             #   - Q2: label in label_map, title missing from JSON → FAIL
-            #   - Q3: label NOT in label_map, IS in corpus → PASS (mapping
-            #         scope gap, Sphinx parity)
-            #   - Q4: label NOT in corpus → PASS (Sphinx-parity dangling)
+            #   - Q3: label NOT in label_map, IS in corpus → PASS + WARNING
+            #   - Q4: label NOT in corpus → PASS + WARNING
             #   - Q5: display text absent from JSON entirely → FAIL
-            # Bare refs emit ``label`` as the display text, so the label
-            # name itself is the reader-visible fallback (Sphinx emits
-            # ``<span class="xref">label</span>``).  Verify treats the
-            # label string as the required display text for Q3/Q4.
+            # Q3/Q4: create cannot emit a MD link when the target knowledge file
+            # does not exist (scope-outside) or the label has no corpus definition
+            # (dangling).  Emitting display text only is correct behaviour, not a
+            # bug.  Sphinx also emits display text only in these cases (same
+            # output parity).  verify requires the display text is present in
+            # JSON (Q5 guard); absence is data loss.
             if not display and label not in seen_labels:
                 seen_labels.add(label)
                 # docutils normalises label names to lowercase; label_map keys
@@ -2246,10 +2247,7 @@ def check_source_links(
                 target = label_map.get(label.lower())
                 from scripts.common.labels import UNRESOLVED
                 if target is None or target is UNRESOLVED:
-                    # Q3 / Q4 — label not resolvable within RBKC scope.
-                    # Under Sphinx parity, create emits display text only;
-                    # verify requires the display text (= label name) is in
-                    # JSON, otherwise Q5 (data loss) applies.
+                    # Q3 / Q4 — display text (= label name) must appear in JSON.
                     if label not in json_full:
                         issues.append(
                             f"[QL1] :ref:`{label}` dangling and display text missing from JSON"
