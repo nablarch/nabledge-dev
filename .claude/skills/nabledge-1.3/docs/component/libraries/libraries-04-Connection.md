@@ -15,14 +15,14 @@
 | インタフェース名 | 概要 |
 |---|---|
 | nablarch.core.db.connectionパッケージ |  |
-| ConnectionFactory | データベース接続を生成するインターフェース。  データベース接続方式を追加する場合や、 [実装クラス](../../component/libraries/libraries-04-Connection.md#クラス定義) で生成されるBasicDbConnectionを入れ替える場合には、 本インタフェースの実装クラスを追加する必要がある。 |
+| ConnectionFactory | データベース接続を生成するインターフェース。  データベース接続方式を追加する場合や、 [実装クラス](../../component/libraries/libraries-04-Connection.md#a-nablarchcoredbconnectionconnectionfactoryの実装クラス) で生成されるBasicDbConnectionを入れ替える場合には、 本インタフェースの実装クラスを追加する必要がある。 |
 | AppDbConnection | データベース接続を保持したインタフェース。  アプリケーションでは、本インタフェースを使用して、SQL文実行用オブジェクトを取得する。 |
 | TransactionManagerConnection | トランザクション制御を行うインタフェース(AppDbConnectionのサブインタフェース)。  本機能の特徴である [リソース解放機能](../../component/libraries/libraries-04-DbAccessSpec.md#頻繁に使用するデータベースリソースの自動解放機能) は、本インタフェースの実装クラスで提供される。 |
 | DbAccessExceptionFactory | データベースへのアクセス例外に応じたDbAccessExceptionを生成するインタフェース。  データベースアクセス時に発生したSQLExceptionの内容（エラーコードなど）を元に、 DbAccessExceptionを生成する。 |
 
 #### クラス定義
 
-a) nablarch.core.db.connection.ConnectionFactoryの実装クラス
+##### a) nablarch.core.db.connection.ConnectionFactoryの実装クラス
 
 | クラス名 | 概要 |
 |---|---|
@@ -164,7 +164,7 @@ SqlResultSet resultSet = new SimpleDbTransactionExecutor<SqlResultSet>(
 
 ### 設定内容詳細
 
-a) SimpleDbTransactionManagerの設定
+#### a) SimpleDbTransactionManagerの設定
 
 | property名 | 設定内容 |
 |---|---|
@@ -172,7 +172,7 @@ a) SimpleDbTransactionManagerの設定
 | transactionFactory(必須) | nablarch.core.transaction.TransactionFactoryを実装したクラスの設定を行う。  本サンプルでは、「nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource」を設定している。 |
 | dbTransactionName | データベーストランザクション名を任意の値で設定する。  設定を行わない場合、デフォルトのデータベーストランザクション名が本プロパティに自動的に設定される。 |
 
-b) nablarch.core.db.connection.BasicDbConnectionFactoryForDataSourceの設定
+#### b) nablarch.core.db.connection.BasicDbConnectionFactoryForDataSourceの設定
 
 | property名 | 設定内容 |
 |---|---|
@@ -181,7 +181,7 @@ b) nablarch.core.db.connection.BasicDbConnectionFactoryForDataSourceの設定
 | statementFactory(必須) | nablarch.core.statement.StatementFactoryを実装したクラスを設定する。  本サンプルでは、「nablarch.core.db.statement.BasicStatementFactory」を設定している。  > **Note:** > statementFactoryの設定は、後述の [SQL文実行部品の構造とその使用方法](../../component/libraries/libraries-04-Statement.md#sql文実行部品の構造とその使用方法) を参照 |
 | dbAccessExceptionFactory(必須) | データベースへのアクセス例外が発生した際に本クラスが送出する例外を生成するクラスを設定する。  設定できるクラスは、DbAccessExceptionFactoryを実装したクラスである。 |
 
-c) nablarch.core.db.transaction.JdbcTransactionFactoryへの設定
+#### c) nablarch.core.db.transaction.JdbcTransactionFactoryへの設定
 
 | property名 | 設定内容 |
 |---|---|
@@ -241,8 +241,8 @@ JNDIに関連のない設定については、 [設定ファイル例(DataSource
 
 | property名 | 設定内容 |
 |---|---|
-| statementReuse(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#設定内容詳細) の同一項目を参照すること。 |
-| statementFactory(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#設定内容詳細) の同一項目を参照すること。 |
-| dbAccessExceptionFactory(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#設定内容詳細) の同一項目を参照すること。 |
+| statementReuse(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#b-nablarchcoredbconnectionbasicdbconnectionfactoryfordatasourceの設定) の同一項目を参照すること。 |
+| statementFactory(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#b-nablarchcoredbconnectionbasicdbconnectionfactoryfordatasourceの設定) の同一項目を参照すること。 |
+| dbAccessExceptionFactory(必須) | [BasicDbConnectionFactoryForDataSourceへの設定](../../component/libraries/libraries-04-Connection.md#b-nablarchcoredbconnectionbasicdbconnectionfactoryfordatasourceの設定) の同一項目を参照すること。 |
 | jndiProperties | JNDI経由でDataSourceを取得するための、環境設定を行う。 Webサーバ上で稼働する場合や、クラスパス配下に「jndi.properties」を配置している場合には、本設定値は省略して良い。  > **Note:** > 設定に関する詳細は、Webサーバのベンダーマニュアルなどを参照すること。  > 本設定例は、WebLogicサーバ上にDataSourceが登録されていることを想定した設定例となっている。 |
 | jndiResourceName(必須) | JNDIリソース名を設定する。  > **Note:** > 設定に関する詳細は、Webサーバのベンダーマニュアルなどを参照すること。  > 例えば、WebLogicサーバの場合は、管理コンソールからDataSourceを登録する際に「JNDI Name」に入力した値を設定する。 |

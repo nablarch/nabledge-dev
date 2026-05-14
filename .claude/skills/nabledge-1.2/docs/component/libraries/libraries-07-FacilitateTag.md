@@ -40,7 +40,7 @@
 ### DbAccessSupportクラス
 
 DbAccessSupportクラスは、データベースアクセス機能が提供するデータベースアクセス処理を簡易的に実装するためのサポートクラスである。
-DbAccessSupportの詳細については、 [DbAccessSupportクラス](../../component/libraries/libraries-04-Statement.md#クラス定義) を参照。
+DbAccessSupportの詳細については、 [DbAccessSupportクラス](../../component/libraries/libraries-04-Statement.md#f-サポートクラス業務アプリケーションを簡易的に実装するためのサポートクラス) を参照。
 
 DbAccessSupportは、一覧検索用の検索を実行するsearchメソッドを提供する。
 searchメソッドは、SQL_IDとListSearchInfoを受け取り、下記の処理を行う。
