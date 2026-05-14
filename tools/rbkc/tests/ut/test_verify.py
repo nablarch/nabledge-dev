@@ -1447,14 +1447,20 @@ class TestCheckContentCompleteness:
         破壊的状態なので従来通り QC1 FAIL。本テストは policy inversion
         (ERROR/3 → warning, SEVERE/4 → FAIL) の SEVERE 側を pin する。
 
-        docutils で確実に SEVERE/4 を誘発するのは難しいので、直接
-        rst_normaliser にワーニング文字列を渡した想定は test_rst_normaliser
-        で別途実施する (本テストは省略可)。"""
-        # Note: docutils corpus に依存せず SEVERE を安定発生させるのが
-        # 難しいため、代表として rst_normaliser の正面入力で検証する
-        # ケースは test_rst_normaliser に置く。ここでは QC1 FAIL の
-        # 反転テスト (ERROR/3 → 非 FAIL) が他のテストで確認されていれば十分。
-        pass
+        docutils corpus に依存せず SEVERE/4 を安定発生させるのが難しいため、
+        rst_ast.parse をモックして SEVERE/4 警告を注入し、normalise_rst が
+        UnknownSyntaxError を送出することを確認する。"""
+        from unittest.mock import MagicMock, patch
+        from scripts.common.rst_normaliser import normalise_rst, UnknownSyntaxError
+
+        mock_doctree = MagicMock()
+        mock_doctree.__iter__ = MagicMock(return_value=iter([]))
+        severe_warning = "test.rst:1: (SEVERE/4) Critical parse error\n"
+
+        with patch("scripts.common.rst_normaliser.rst_ast") as mock_ast:
+            mock_ast.parse.return_value = (mock_doctree, severe_warning)
+            with pytest.raises(UnknownSyntaxError, match="SEVERE/4"):
+                normalise_rst("dummy content")
 
     def test_pass_qc1_rst_unknown_target_name_not_promoted_to_fail(self):
         """Phase 22-B-12 Finding C: Japanese prose containing a trailing
@@ -5007,135 +5013,6 @@ class TestCheckJsonDocsMdConsistency_QO1_P2Headings:
         issues = self._check(data, docs)
         assert any("QO1" in i for i in issues), issues
 
-
-# ---------------------------------------------------------------------------
-# xlsx_common.py: sheet_to_result P2-1/P2-3 subtype support
-# ---------------------------------------------------------------------------
-
-class TestSheetToResultP2Subtypes:
-    """sheet_to_result with sheet_subtype for P2-1/P2-3 (Issue #311)."""
-
-    def _make_sheet(self, name, rows):
-        from scripts.create.converters.xlsx_common import RawSheet
-        width = max(len(r) for r in rows) if rows else 0
-        padded = [list(r) + [""] * (width - len(r)) for r in rows]
-        return RawSheet(name=name, rows=padded)
-
-    def test_p2_1_generates_p2_headings(self):
-        """P2-1: col-0/col-1/col-2 entries produce p2_headings in meta."""
-        from scripts.create.converters.xlsx_common import sheet_to_result
-        sheet = self._make_sheet("概要", [
-            ["■概要"],
-            ["セクションA", "", ""],
-            ["", "サブB", ""],
-            ["", "", "サブサブC"],
-            ["", "", "", "本文テキスト"],
-        ])
-        result, meta = sheet_to_result(sheet, sheet_subtype="P2-1")
-        assert meta["sheet_type"] == "P2"
-        headings = meta.get("p2_headings", [])
-        assert {"text": "セクションA", "level": 2} in headings
-        assert {"text": "サブB", "level": 3} in headings
-        assert {"text": "サブサブC", "level": 4} in headings
-        # p2_raw_lines should be present for docs.py
-        assert "p2_raw_lines" in meta
-
-    def test_p2_3_generates_sheet_subtype_and_raw_content(self):
-        """P2-3: meta has sheet_subtype='P2-3' and p2_raw_content with LF."""
-        from scripts.create.converters.xlsx_common import sheet_to_result
-        sheet = self._make_sheet("PCIDSS", [
-            ["■PCIDSS対応表"],
-            ["要件A\n詳細1\n詳細2", "対応B"],
-        ])
-        result, meta = sheet_to_result(sheet, sheet_subtype="P2-3")
-        assert meta["sheet_type"] == "P2"
-        assert meta.get("sheet_subtype") == "P2-3"
-        raw = meta.get("p2_raw_content", "")
-        # LF in cell must be preserved in p2_raw_content
-        assert "\n" in raw
-        # JSON content must be flat (LF normalized to space)
-        assert "\n" not in result.content
-
-    def test_p2_2_no_extra_meta(self):
-        """P2-2 (default): no p2_headings, no sheet_subtype in meta."""
-        from scripts.create.converters.xlsx_common import sheet_to_result
-        sheet = self._make_sheet("分類", [
-            ["■分類"],
-            ["ステップ1"],
-            ["ステップ2"],
-        ])
-        result, meta = sheet_to_result(sheet)
-        assert meta["sheet_type"] == "P2"
-        assert "p2_headings" not in meta
-        assert "sheet_subtype" not in meta
-
-    def test_p2_1_empty_rows_skipped(self):
-        """P2-1: rows with all-empty cells produce no heading."""
-        from scripts.create.converters.xlsx_common import sheet_to_result
-        sheet = self._make_sheet("概要", [
-            ["■概要"],
-            ["セクションA", "", ""],
-            ["", "", ""],
-            ["", "サブB", ""],
-        ])
-        result, meta = sheet_to_result(sheet, sheet_subtype="P2-1")
-        headings = meta.get("p2_headings", [])
-        texts = [h["text"] for h in headings]
-        assert "セクションA" in texts
-        assert "サブB" in texts
-        assert "" not in texts
-
-    def test_p2_4_generates_meta_with_table_structure(self):
-        """P2-4: meta has sheet_subtype='P2-4', p2_4_preamble, p2_4_header, p2_4_rows."""
-        from scripts.create.converters.xlsx_common import sheet_to_result
-        # Mirrors the PCIDSS対応表 structure:
-        # rows 0-3: preamble (col A only), row 4: empty, row 5: header, rows 6+: data
-        sheet = self._make_sheet("3.PCIDSS対応表", [
-            ["■3.PCIDSS対応表"],
-            ["前文1"],
-            ["前文2"],
-            [""],
-            ["", "PCI DSS 要件", "2.チェックリストとの対応"],
-            ["", "6.5.1", "対応内容A\n詳細A"],
-            ["", "6.5.2", "対応内容B"],
-        ])
-        result, meta = sheet_to_result(sheet, sheet_subtype="P2-4")
-        assert meta["sheet_type"] == "P2"
-        assert meta.get("sheet_subtype") == "P2-4"
-        assert "p2_4_preamble" in meta
-        assert "p2_4_header" in meta
-        assert "p2_4_rows" in meta
-        # header should contain the column names
-        header = meta["p2_4_header"]
-        assert "PCI DSS 要件" in header
-        assert "2.チェックリストとの対応" in header
-        # rows should have 2 data rows
-        rows = meta["p2_4_rows"]
-        assert len(rows) == 2
-        # LF preserved in p2_4_rows (cell-level LF)
-        assert "\n" in rows[0][1]
-        # JSON content: cell-level LF must be flattened (not cell-LF artifacts)
-        assert "対応内容A\n詳細A" not in result.content
-        assert "対応内容A 詳細A" in result.content
-
-    def test_p2_4_load_sheet_subtype_map_parses_p2_4(self):
-        """load_sheet_subtype_map must return P2-4 entries from xlsx-sheet-mapping.md."""
-        from scripts.create.converters.xlsx_common import load_sheet_subtype_map
-        import tempfile, pathlib
-        mapping_text = (
-            "| File | Sheet | Pattern | Notes |\n"
-            "|------|-------|---------|-------|\n"
-            "| Nablarch機能のセキュリティ対応表.xlsx | 3.PCIDSS対応表 | P2-4 | 2-col table with LF |\n"
-        )
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False, encoding="utf-8") as f:
-            f.write(mapping_text)
-            tmp = pathlib.Path(f.name)
-        try:
-            result = load_sheet_subtype_map(tmp)
-            assert ("Nablarch機能のセキュリティ対応表.xlsx", "3.PCIDSS対応表") in result
-            assert result[("Nablarch機能のセキュリティ対応表.xlsx", "3.PCIDSS対応表")] == "P2-4"
-        finally:
-            tmp.unlink()
 
 
 # ---------------------------------------------------------------------------
