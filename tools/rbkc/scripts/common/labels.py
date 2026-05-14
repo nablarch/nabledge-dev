@@ -441,6 +441,15 @@ def _scan_rst_labels(
         label = names[0] if names else (ids[0] if ids else None)
         if label is None:
             continue
+        # Skip external hyperlink definitions (`.. _Label: URL`).
+        # These have a `refuri` attribute and are not section anchors.
+        # Sphinx does not create an HTML anchor for them, so they must not
+        # be registered in label_map (spec §3-2-2: label_map covers section
+        # labels only).  Including them caused same-named section labels in
+        # other files to be blocked by setdefault (v1.4 Bug 1: link.rst
+        # `.. _ResponseMessage: ../../javadoc/...` blocked 01_Utility.rst).
+        if node.get("refuri"):
+            continue
         enclosing = _enclosing_section_title_for_node(node)
         in_h1_scope = _enclosing_section_is_h1(node)
         next_node = _next_section_for_node(node)

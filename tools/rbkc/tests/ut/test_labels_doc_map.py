@@ -183,6 +183,66 @@ class TestBuildLabelDocMap:
         assert lt.category == "libraries"
         assert lt.section_title == ""
 
+    def test_external_url_target_does_not_pollute_label_map(self, tmp_path):
+        """Issue #334 / Bug 1: `.. _Label: URL` is an external hyperlink
+        definition, not a section label.  It must NOT be registered in
+        label_map, so that a same-named section label in another file
+        resolves correctly instead of being blocked by UNRESOLVED via
+        ``dict.setdefault``.
+
+        Reproduction: v1.4 link.rst had `.. _ResponseMessage: ../../javadoc/...`
+        which caused the real section label `.. _responseMessage:` in
+        01_Utility.rst to remain UNRESOLVED.
+        """
+        import textwrap
+        from scripts.common.labels import build_label_doc_map, LabelTarget, UNRESOLVED
+
+        src_root = (
+            tmp_path / ".lw/nab-official/v6/nablarch-document/ja/"
+            "application_framework/application_framework/libraries/foo"
+        )
+        src_root.mkdir(parents=True)
+
+        # File 1: external URL hyperlink definition (should be ignored)
+        (src_root / "link.rst").write_text(textwrap.dedent("""\
+            Links
+            =====
+
+            .. _MyLabel: https://example.com/javadoc/MyLabel.html
+
+            Body.
+            """), encoding="utf-8")
+
+        # File 2: real section label with same name
+        (src_root / "usage.rst").write_text(textwrap.dedent("""\
+            Guide
+            =====
+
+            .. _MyLabel:
+
+            My Section
+            ----------
+
+            Content.
+            """), encoding="utf-8")
+
+        mappings_dir = tmp_path / "tools/rbkc/mappings"
+        mappings_dir.mkdir(parents=True)
+        (mappings_dir / "v6.json").write_text(
+            '{"rst":[{"pattern":"application_framework/application_framework/libraries/",'
+            '"type":"component","category":"libraries"}],"md":{},"xlsx":{},"xlsx_patterns":[]}',
+            encoding="utf-8",
+        )
+
+        label_map, _ = build_label_doc_map("6", tmp_path)
+
+        lt = label_map.get("mylabel")
+        assert lt is not None, "mylabel must be in label_map"
+        assert lt is not UNRESOLVED, (
+            "mylabel must resolve to real section, not be polluted by external URL target"
+        )
+        assert lt.title == "My Section", f"Expected 'My Section', got {lt.title!r}"
+
 
 class TestCommonLayering:
     """F1 regression (review-22-b-16b-step3-4-16c.md): scripts/common/
