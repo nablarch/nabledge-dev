@@ -1,6 +1,6 @@
 # キーワード検索 設計書
 
-**Status**: Draft
+**Status**: Approved
 **Date**: 2026-05-15
 
 ## 目的
