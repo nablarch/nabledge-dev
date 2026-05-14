@@ -36,3 +36,30 @@ None.
 - `tools/rbkc/scripts/create/docs.py` (source code)
 - `tools/rbkc/scripts/run.py` (source code)
 - `tools/rbkc/docs/rbkc-verify-quality-design.md` (documentation)
+
+---
+
+# Expert Review: Software Engineer (Task 27)
+
+**Date**: 2026-05-14
+**Reviewer**: AI Agent as Software Engineer
+**Files Reviewed**: 3 files (labels.py, test_labels_doc_map.py, rbkc-verify-quality-design.md)
+
+## Summary
+
+0 Findings
+
+## Findings
+
+None.
+
+## Observations
+
+- `_RE_XPAREN = re.compile(...)` module-level constant could avoid duplication of the same regex in `_paragraph_anchor_title` and `_entry_parent_xparen_title` (cosmetic, no spec violation).
+- `_entry_parent_xparen_title` requires strict adjacency for skippable nodes between target and X) paragraph, which is theoretically stricter than `_walk_section` — no actual v1.x source has skippable nodes here, so no real mismatch.
+
+## Positive Aspects
+
+- Spec–code alignment is exact: the `target` pre-condition mirrors `_walk_section`'s synthetic-section boundary detection precisely.
+- Fallback correctness preserved: returns `None` → caller falls back to enclosing section title.
+- Clean separation: new function does not modify `_paragraph_anchor_title`.

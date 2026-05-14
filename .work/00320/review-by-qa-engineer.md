@@ -35,3 +35,32 @@ None.
 - `tools/rbkc/tests/ut/test_labels_doc_map.py` (test)
 - `tools/rbkc/tests/ut/test_rst_ast_visitor.py` (test)
 - `tools/rbkc/tests/ut/test_verify.py` (test)
+
+---
+
+# Expert Review: QA Engineer (Task 27)
+
+**Date**: 2026-05-14
+**Reviewer**: AI Agent as QA Engineer
+**Files Reviewed**: 1 file (test_labels_doc_map.py)
+
+## Summary
+
+1 Finding fixed (branch 8 coverage added during review)
+
+## Findings
+
+1. **Branch 8 of `_entry_parent_xparen_title` had no test coverage** (fixed)
+   - Violated clause: `.claude/rules/development.md` — "Bug-revealing cases: Input that exercises each specific failure mode"
+   - X) paragraph present but no preceding target was not tested
+   - Fix: Added `test_entry_parent_label_xparen_without_target_falls_back_to_enclosing_section`
+
+## Observations
+
+- `idx < 2` guard (fewer than 2 preceding siblings) untested in isolation — behaviorally equivalent to other None-returning branches.
+
+## Positive Aspects
+
+- Test 1 modeled on real production RST structure from 04_ObjectSave.rst.
+- Both fields (`title` and `section_title`) verified in positive test.
+- Meaningful failure messages in all assertions.
