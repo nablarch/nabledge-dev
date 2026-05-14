@@ -1173,3 +1173,75 @@ class TestParagraphAnchorTitleResolution:
         )
         # Title may be the para_title or h1 title — the key constraint is section_title=""
         # which prevents verify from looking up the synthetic section in JSON sections[].
+
+    def test_letter_paren_paragraph(self, tmp_path):
+        """``e) SQL文のロードクラス`` paragraph (backslash-escaped letter + ')') → title = text.
+
+        Real example from v1.x 04_Statement.rst:
+            .. _sql-load-class-label:
+
+            \\e) SQL文のロードクラス
+
+        Docutils strips the backslash and parses as plain paragraph 'e) SQL文…'.
+        This Nablarch 1.x convention (a)/b)/c)… subsection list) is a structural
+        pattern — not arbitrary body text — and must be treated as heading.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "letter_paren.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Section
+            -------
+
+            .. _sql-load-class-label:
+
+            \\e) SQL文のロードクラス
+
+            BasicSqlLoader description.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "sql-load-class-label" in m
+        v = m["sql-load-class-label"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "e) SQL文のロードクラス", (
+            f"Expected 'e) SQL文のロードクラス' but got {v.title!r} — "
+            "letter+paren paragraph must resolve as title"
+        )
+        assert v.section_title == "e) SQL文のロードクラス"
+
+    def test_digit_paren_paragraph(self, tmp_path):
+        r"""``\2) Formクラスの精査処理実装`` paragraph (backslash + digit + ')') → title = text.
+
+        Real example from v1.2 guide/05_create_form.rst:
+            .. _form_validation:
+
+            \2) Formクラスの精査処理実装
+
+        Docutils strips the backslash and parses as plain paragraph '2) Formクラス…'.
+        Without the backslash, docutils would treat '2) text' as an enumerated list.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "digit_paren.rst"
+        # Use raw string so \2 is written literally to the file (backslash + 2)
+        rst.write_text(
+            "Title\n=====\n\nSection\n-------\n\n.. _form_validation:\n\n"
+            "\\2) Formクラスの精査処理実装\n\nContent.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        assert "form_validation" in m
+        v = m["form_validation"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "2) Formクラスの精査処理実装", (
+            f"Expected '2) Formクラスの精査処理実装' but got {v.title!r} — "
+            "digit+paren paragraph must resolve as title"
+        )
+        assert v.section_title == "2) Formクラスの精査処理実装"

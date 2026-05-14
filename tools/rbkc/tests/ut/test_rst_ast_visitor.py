@@ -558,3 +558,58 @@ class TestParagraphAnchorSyntheticSection:
             "Plain-text paragraph must not create a synthetic section"
         )
         assert "Sub Section" in titles
+
+    def test_letter_paren_paragraph_anchor_creates_subsection(self):
+        """``\\e) SQL文のロードクラス`` paragraph → Section(title='e) SQL文のロードクラス').
+
+        Real example from v1.x 04_Statement.rst:
+            .. _sql-load-class-label:
+            \\e) SQL文のロードクラス
+
+        Docutils strips the backslash and parses as 'e) SQL文…' (plain paragraph).
+        This Nablarch 1.x letter+paren convention is a structural subsection list
+        and must produce a synthetic section like bold/italic paragraphs do.
+        """
+        source = textwrap.dedent("""\
+            Doc Title
+            =========
+
+            Parent Section
+            --------------
+
+            Body.
+
+            Sub Section
+            ^^^^^^^^^^^
+
+            Body text.
+
+            .. _sql-load-class-label:
+
+            \\e) SQL文のロードクラス
+
+            BasicSqlLoader description.
+            """)
+        parts = self._parse_and_extract(source)
+        titles = [s.title for s in parts.sections]
+        assert "e) SQL文のロードクラス" in titles, (
+            f"Expected synthetic section 'e) SQL文のロードクラス' in sections, got: {titles}"
+        )
+
+    def test_digit_paren_paragraph_anchor_creates_subsection(self):
+        r"""``\2) Formクラスの精査処理実装`` paragraph → synthetic section.
+
+        Real example from v1.2 guide/05_create_form.rst.
+        Without the backslash, docutils treats '2) text' as an enumerated list.
+        """
+        # Use explicit string concatenation to write the literal backslash + 2
+        source = (
+            "Doc Title\n=========\n\nParent Section\n--------------\n\nBody.\n\n"
+            "Sub Section\n^^^^^^^^^^^\n\n.. _form_validation:\n\n"
+            "\\2) Formクラスの精査処理実装\n\nContent.\n"
+        )
+        parts = self._parse_and_extract(source)
+        titles = [s.title for s in parts.sections]
+        assert "2) Formクラスの精査処理実装" in titles, (
+            f"Expected synthetic section '2) Formクラスの精査処理実装' in sections, got: {titles}"
+        )
