@@ -1,13 +1,14 @@
 #!/bin/bash
 # Keyword search using terms.json inverted index.
 #
-# 3-stage matching per keyword:
-#   1. Exact match in terms.json
-#   2. Case-insensitive match
-#   3. Partial match (substring, only if keyword > 5 chars)
+# - Case-insensitive partial match (substring)
+# - Multiple keywords: page-level AND, section-level OR
+#   (page must have hits for ALL keywords; return all hit sections)
+# - Minimum keyword length: 2
+# - No result limit
 #
-# Arguments: keywords (one or more)
-# Output: JSON — category > page > section hierarchy (top 30)
+# Arguments: keywords (one or more, each 2+ chars)
+# Output: JSON — category > page > section hierarchy
 
 set -euo pipefail
 
@@ -15,7 +16,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 KNOWLEDGE_DIR="$SKILL_DIR/knowledge"
 TERMS_FILE="$KNOWLEDGE_DIR/terms.json"
-MAX_RESULTS=30
 
 if [ $# -eq 0 ]; then
   echo "Usage: $0 <keyword1> [keyword2] ..." >&2
@@ -27,48 +27,54 @@ if [ ! -f "$TERMS_FILE" ]; then
   exit 1
 fi
 
-python3 - "$KNOWLEDGE_DIR" "$MAX_RESULTS" "$@" << 'PYEOF'
+python3 - "$KNOWLEDGE_DIR" "$@" << 'PYEOF'
 import sys
 import json
 from collections import defaultdict
 from pathlib import Path
 
 knowledge_dir = Path(sys.argv[1])
-max_results = int(sys.argv[2])
-keywords = sys.argv[3:]
+keywords = [kw for kw in sys.argv[2:] if len(kw) >= 2]
+
+if not keywords:
+    print(json.dumps([], ensure_ascii=False))
+    sys.exit(0)
 
 terms_path = knowledge_dir / "terms.json"
 terms = json.loads(terms_path.read_text(encoding="utf-8"))
 
 terms_lower = {k.lower(): k for k in terms}
 
-section_scores = defaultdict(int)
+def page_of(sec_id):
+    return sec_id.rsplit(":", 1)[0]
 
+per_kw_sections = []
 for kw in keywords:
-    matched_sections = set()
+    matched = set()
+    kw_lower = kw.lower()
+    for term_key, original_key in terms_lower.items():
+        if kw_lower in term_key:
+            matched.update(terms[original_key])
+    per_kw_sections.append(matched)
 
-    if kw in terms:
-        matched_sections.update(terms[kw])
-    elif kw.lower() in terms_lower:
-        matched_sections.update(terms[terms_lower[kw.lower()]])
-    elif len(kw) > 5:
-        kw_lower = kw.lower()
-        for term_key, original_key in terms_lower.items():
-            if kw_lower in term_key:
-                matched_sections.update(terms[original_key])
+per_kw_pages = [set(page_of(s) for s in secs) for secs in per_kw_sections]
+valid_pages = per_kw_pages[0]
+for p in per_kw_pages[1:]:
+    valid_pages &= p
 
-    for sec_id in matched_sections:
-        section_scores[sec_id] += 1
-
-if not section_scores:
+if not valid_pages:
     print(json.dumps([], ensure_ascii=False))
     sys.exit(0)
 
-ranked = sorted(section_scores.items(), key=lambda x: (-x[1], x[0]))[:max_results]
+all_hit_sections = set()
+for secs in per_kw_sections:
+    for s in secs:
+        if page_of(s) in valid_pages:
+            all_hit_sections.add(s)
 
 file_cache = {}
 results = []
-for sec_id, score in ranked:
+for sec_id in sorted(all_hit_sections):
     parts = sec_id.rsplit(":", 1)
     if len(parts) != 2:
         continue
@@ -98,17 +104,13 @@ for sec_id, score in ranked:
         "page_title": data.get("title", ""),
         "page_path": rel_path,
         "category": category,
-        "score": score,
     })
 
 cat_map = defaultdict(lambda: defaultdict(list))
 for r in results:
     cat_map[r["category"]][(r["page_path"], r["page_title"])].append(r)
 
-cat_max = {cat: max(r["score"] for secs in pages.values() for r in secs)
-           for cat, pages in cat_map.items()}
-
-sorted_cats = sorted(cat_map.keys(), key=lambda c: (-cat_max[c], c))
+sorted_cats = sorted(cat_map.keys())
 
 output = []
 for cat in sorted_cats:
@@ -117,7 +119,7 @@ for cat in sorted_cats:
     page_list = []
     for (page_path, page_title) in sorted_pages:
         secs = pages[(page_path, page_title)]
-        sorted_secs = sorted(secs, key=lambda s: (-s["score"], s["section_id"]))
+        sorted_secs = sorted(secs, key=lambda s: s["section_id"])
         section_list = [
             {"section_id": s["section_id"], "section_title": s["section_title"]}
             for s in sorted_secs
