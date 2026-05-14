@@ -33,6 +33,7 @@
 使用セクション（answerで引用したセクション）:
 - section: セクションID（file.json:sN 形式）
 - used: true
+- reason: このセクションを使った理由（1行。質問との関連を明記）
 - extracted: セクション本文から抽出した情報（原文そのまま転記。言い換えしない）
 - mapped_to: answerの「結論」「根拠」「注意点」のどこに使ったか
 

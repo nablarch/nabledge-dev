@@ -54,5 +54,5 @@
 
 ## 出力
 
-選定したセクションをJSON形式で出力してください。resultsはrelevance降順（high → partial）でソートしてください。
+選定したセクションをJSON形式で出力してください。各セクションにrelevance（high/partial）と選定理由（reason、1行）を含めてください。resultsはrelevance降順（high → partial）でソートしてください。
 該当するセクションがない場合、resultsを空配列にしてください。traceフィールドを含めてください。

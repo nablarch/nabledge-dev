@@ -63,8 +63,9 @@ STAGE2_JSON_SCHEMA = json.dumps({
                         "type": "string",
                         "enum": ["high", "partial"],
                     },
+                    "reason": {"type": "string"},
                 },
-                "required": ["file", "section_id", "relevance"],
+                "required": ["file", "section_id", "relevance", "reason"],
             },
         },
         "trace": {
