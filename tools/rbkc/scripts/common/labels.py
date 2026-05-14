@@ -303,6 +303,81 @@ def _paragraph_anchor_title(node: "nodes.Node") -> str | None:
     return None
 
 
+def _entry_parent_xparen_title(node: "nodes.Node") -> str | None:
+    """Return an X) paragraph anchor title for a label whose parent is a table entry.
+
+    Handles Rule 7 (§3-2-2): when a label lives inside a table cell (entry),
+    the normal ``isinstance(node.parent, nodes.section)`` guard in
+    ``_scan_rst_labels`` prevents ``_paragraph_anchor_title`` from running.
+
+    Walk up from the label to the direct child of the enclosing section
+    (``block_quote`` or ``table``), then look at the sibling immediately before
+    it.  If that sibling is an X) paragraph (letter/digit + `)` + space), AND
+    the sibling before that paragraph is a ``target`` node (meaning
+    ``_walk_section`` will generate a synthetic section for this X) paragraph),
+    return the paragraph text.  Otherwise return ``None`` so that the caller
+    falls back to the enclosing section title.
+
+    The ``target`` pre-condition mirrors ``_walk_section``'s synthetic-section
+    boundary detection: only ``target + X) paragraph`` pairs produce a synthetic
+    section in the knowledge JSON.  X) paragraphs with no preceding target are
+    not turned into synthetic sections and therefore cannot serve as valid anchor
+    targets.
+
+    Applies only to v1.x sources (v5/v6 do not have this structure).
+    """
+    from docutils import nodes as _nodes
+    import re as _re
+
+    # Only handles entry-parent labels
+    if not isinstance(node.parent, _nodes.entry):
+        return None
+
+    # Walk up to find the enclosing section
+    p = node.parent
+    while p is not None and not isinstance(p, _nodes.section):
+        p = p.parent
+    if p is None:
+        return None
+    enclosing_section = p
+
+    # Find the direct child of the section that contains the label
+    p2 = node.parent
+    while p2 is not None and p2.parent is not enclosing_section:
+        p2 = p2.parent
+    if p2 is None:
+        return None
+
+    # Look at the sibling immediately before p2 (should be the X) paragraph)
+    section_children = list(enclosing_section.children)
+    try:
+        idx = section_children.index(p2)
+    except ValueError:
+        return None
+    if idx < 2:
+        return None
+
+    prev_sib = section_children[idx - 1]
+    if not isinstance(prev_sib, _nodes.paragraph):
+        return None
+    children = list(prev_sib.children)
+    if not children:
+        return None
+    first = children[0]
+    if not (isinstance(first, _nodes.Text) and _re.match(r'^[a-zA-Z0-9]\) ', first.astext())):
+        return None
+
+    # Verify that the X) paragraph is preceded by a target node.
+    # Only target + X) paragraph pairs cause _walk_section to generate a
+    # synthetic section; X) paragraphs without a preceding target are plain
+    # body text and must not be treated as anchor titles.
+    prev_prev_sib = section_children[idx - 2]
+    if not isinstance(prev_prev_sib, _nodes.target):
+        return None
+
+    return prev_sib.astext()
+
+
 def _scan_rst_labels(
     rst_path: Path,
 ) -> tuple[list[tuple[list[str], str, str]], str]:
@@ -381,18 +456,21 @@ def _scan_rst_labels(
         # Only attempt paragraph-anchor resolution when:
         # 1. no next section found (otherwise heading takes priority)
         # 2. parent is a section node (not block_quote, list, etc.)
+        #    — OR — parent is entry (Rule 7: table-cell label, see below)
         # 3. NOT in h1 scope — h1-scoped files have DocTitle-promoted structure
         #    where _walk_section is never called, so no synthetic section is
         #    generated and the anchor would not exist in docs MD.
-        para_title = (
-            _paragraph_anchor_title(node)
-            if (
-                next_node is None
-                and isinstance(node.parent, _nodes.section)
-                and not in_h1_scope
-            )
-            else None
-        )
+        if next_node is None and not in_h1_scope:
+            if isinstance(node.parent, _nodes.section):
+                para_title = _paragraph_anchor_title(node)
+            elif isinstance(node.parent, _nodes.entry):
+                # Rule 7: label inside table cell — look for X) paragraph
+                # before the enclosing block_quote/table in the parent section.
+                para_title = _entry_parent_xparen_title(node)
+            else:
+                para_title = None
+        else:
+            para_title = None
 
         if next_sec_title and not next_is_h1:
             # Label directly before an h2+ heading.
