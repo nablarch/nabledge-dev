@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+import textwrap
 from docutils import nodes
 from pathlib import Path
 
@@ -222,6 +223,84 @@ def _make_toctree_rst(entries: list[str]) -> str:
     return f"Page\n====\n\n.. toctree::\n   :maxdepth: 1\n\n{entry_lines}\n"
 
 
+class TestExtractDocumentSubtitle:
+    """extract_document: DocTitle-promoted subtitle must become sections[0]."""
+
+    def test_subtitle_only_file_produces_section(self):
+        """h1+h2 only RST: subtitle must appear in sections[], not merged into top_title."""
+        source = (
+            "====\n"
+            "ドキュメントタイトル\n"
+            "====\n\n"
+            "-------\n"
+            "サブセクション\n"
+            "-------\n\n"
+            "本文テキスト。\n"
+        )
+        doctree, _ = parse(source)
+        parts = extract_document(doctree)
+        assert parts.top_title == "ドキュメントタイトル"
+        assert len(parts.sections) == 1
+        assert parts.sections[0].title == "サブセクション"
+        assert parts.sections[0].level == 2
+        assert "本文テキスト" in parts.sections[0].content
+
+    def test_subtitle_with_subsequent_sections(self):
+        """subtitle + multiple h2 sections: subtitle becomes sections[0], others follow."""
+        source = (
+            "====\n"
+            "タイトル\n"
+            "====\n\n"
+            "-------\n"
+            "セクション1\n"
+            "-------\n\n"
+            "前文。\n\n"
+            "セクション2\n"
+            "==========\n\n"
+            "後文。\n"
+        )
+        doctree, _ = parse(source)
+        parts = extract_document(doctree)
+        assert parts.top_title == "タイトル"
+        assert len(parts.sections) == 2
+        assert parts.sections[0].title == "セクション1"
+        assert "前文" in parts.sections[0].content
+        assert parts.sections[1].title == "セクション2"
+        assert "後文" in parts.sections[1].content
+
+    def test_subtitle_without_body_produces_empty_content(self):
+        """subtitle with no doc-level body: sections[0] exists with empty content."""
+        source = (
+            "利用規約\n"
+            "========\n\n"
+            "概要\n"
+            "----\n\n"
+        )
+        doctree, _ = parse(source)
+        parts = extract_document(doctree)
+        assert parts.top_title == "利用規約"
+        assert len(parts.sections) == 1
+        assert parts.sections[0].title == "概要"
+        assert parts.sections[0].level == 2
+        assert parts.sections[0].content == ""
+
+    def test_no_subtitle_is_unchanged(self):
+        """RST without DocTitle subtitle produces no section from subtitle."""
+        source = (
+            "タイトル\n"
+            "========\n\n"
+            "前文。\n\n"
+            "セクション1\n"
+            "----------\n\n"
+            "内容。\n"
+        )
+        doctree, _ = parse(source)
+        parts = extract_document(doctree)
+        assert "—" not in parts.top_title
+        assert len(parts.sections) == 1
+        assert parts.sections[0].title == "セクション1"
+
+
 class TestVisitContainerToctree:
     def test_toctree_resolved_entries_become_md_links(self):
         """toctree entries that resolve via doc_map are emitted as MD bullet links."""
@@ -293,3 +372,244 @@ class TestVisitContainerToctree:
         )
         assert result.no_knowledge_content is False
         assert result.content.strip() != ""
+
+
+class TestRefRoleCaseInsensitiveLookup:
+    """:ref: role with mixed-case label names must resolve via label_map.
+
+    Bug 1 (Issue #320): docutils normalises target names to lowercase in
+    names[], so label_map keys are always lowercase.  Callers must look up
+    labels with .lower() — otherwise mixed-case labels like
+    ``NablarchServletContextListener`` fall through to the UNRESOLVED branch
+    and are emitted as plain text instead of MD links.
+
+    These tests are RED before the fix (rst_ast_visitor uses original-case
+    lookup) and GREEN after the fix (.lower() applied at lookup site).
+    """
+
+    def _make_label_map_with_mixed_case(self):
+        """Build a label_map that mirrors what build_label_map returns:
+        keys are lowercase (docutils normalisation), values are LabelTarget.
+        """
+        return {
+            "nablarchservletcontextlistener": LabelTarget(
+                title="NablarchServletContextListener",
+                file_id="libraries-servlet-context-listener",
+                section_title="",
+                category="libraries",
+                type="component",
+                anchor="nablarchservletcontextlistener",
+            ),
+            "sqllog": LabelTarget(
+                title="SqlLog",
+                file_id="libraries-sql-log",
+                section_title="",
+                category="libraries",
+                type="component",
+                anchor="sqllog",
+            ),
+        }
+
+    def test_mixed_case_ref_resolves_to_md_link(self):
+        """:ref:`NablarchServletContextListener` must emit a MD link, not plain text."""
+        from scripts.common.rst_ast import parse
+        from scripts.common.rst_ast_visitor import extract_document
+
+        label_map = self._make_label_map_with_mixed_case()
+        source = textwrap.dedent("""\
+            Title
+            =====
+
+            See :ref:`NablarchServletContextListener`.
+            """)
+        doctree, _ = parse(source, source_path=Path("/repo/ja/test.rst"))
+        parts = extract_document(doctree, label_map=label_map, source_path=Path("/repo/ja/test.rst"))
+        # After fix: must contain a MD link, not bare text
+        assert "[NablarchServletContextListener]" in parts.top_content or \
+               "NablarchServletContextListener" in parts.top_content
+        # The key assertion: a MD link bracket must appear (fix) vs plain text (bug)
+        assert "[NablarchServletContextListener](" in parts.top_content, (
+            "Expected MD link but got plain text — case-insensitive lookup not applied"
+        )
+
+    def test_mixed_case_ref_with_display_text_resolves_to_md_link(self):
+        """:ref:`display text <SqlLog>` must emit a MD link, not plain text."""
+        from scripts.common.rst_ast import parse
+        from scripts.common.rst_ast_visitor import extract_document
+
+        label_map = self._make_label_map_with_mixed_case()
+        source = textwrap.dedent("""\
+            Title
+            =====
+
+            See :ref:`SQLログ <SqlLog>`.
+            """)
+        doctree, _ = parse(source, source_path=Path("/repo/ja/test.rst"))
+        parts = extract_document(doctree, label_map=label_map, source_path=Path("/repo/ja/test.rst"))
+        assert "[SQLログ](" in parts.top_content, (
+            "Expected MD link but got plain text — case-insensitive lookup not applied"
+        )
+
+
+class TestParagraphAnchorSyntheticSection:
+    """Issue #320 Task 25: anchor before a bold/italic paragraph inside a section
+    body should generate a synthetic subsection in parts.sections.
+
+    Real example (v1.x fw/architectural_pattern/*.rst):
+      .. _フローを表示:
+
+      **標準ハンドラ構成** (説明文...)
+
+      .. raw:: html  ← content that belongs to the synthetic section
+
+    The anchor+paragraph pair is lifted out of the parent section body and
+    emitted as a separate Section(title='標準ハンドラ構成', ...) entry.
+    """
+
+    def _parse_and_extract(self, rst_source: str) -> "DocumentParts":
+        from scripts.common.rst_ast import parse
+        from scripts.common.rst_ast_visitor import extract_document
+        doctree, _ = parse(rst_source, source_path=Path("/repo/test.rst"))
+        return extract_document(doctree, label_map={}, source_path=Path("/repo/test.rst"))
+
+    def test_bold_paragraph_anchor_creates_subsection(self):
+        """``.. _anchor:`` + ``**Title**`` paragraph → Section(title='Title').
+
+        Uses a 3-level structure so docutils transforms do not collapse
+        the h2 section body into the document root.
+        """
+        source = textwrap.dedent("""\
+            Doc Title
+            =========
+
+            Parent Section
+            --------------
+
+            Grandparent body.
+
+            Sub Section
+            ^^^^^^^^^^^
+
+            Body text.
+
+            .. _my_term:
+
+            **用語**
+
+            Definition content.
+            """)
+        parts = self._parse_and_extract(source)
+        titles = [s.title for s in parts.sections]
+        assert "用語" in titles, (
+            f"Expected synthetic section '用語' in sections, got: {titles}"
+        )
+
+    def test_bold_start_paragraph_anchor_creates_subsection(self):
+        """``**Term** (extra)`` paragraph → Section(title='Term')."""
+        source = textwrap.dedent("""\
+            Doc Title
+            =========
+
+            Parent Section
+            --------------
+
+            Body.
+
+            Sub Section
+            ^^^^^^^^^^^
+
+            .. _フローを表示:
+
+            **標準ハンドラ構成** (説明文をクリックすると詳細が表示されます。)
+
+            Inline content.
+            """)
+        parts = self._parse_and_extract(source)
+        titles = [s.title for s in parts.sections]
+        assert "標準ハンドラ構成" in titles, (
+            f"Expected synthetic section '標準ハンドラ構成' in sections, got: {titles}"
+        )
+
+    def test_plain_paragraph_anchor_does_not_create_subsection(self):
+        """Plain-text paragraph after anchor stays in parent section body."""
+        source = textwrap.dedent("""\
+            Doc Title
+            =========
+
+            Parent Section
+            --------------
+
+            Body.
+
+            Sub Section
+            ^^^^^^^^^^^
+
+            Body text.
+
+            .. _my_anchor:
+
+            plain text paragraph
+
+            More content.
+            """)
+        parts = self._parse_and_extract(source)
+        titles = [s.title for s in parts.sections]
+        assert "plain text paragraph" not in titles, (
+            "Plain-text paragraph must not create a synthetic section"
+        )
+        assert "Sub Section" in titles
+
+    def test_letter_paren_paragraph_anchor_creates_subsection(self):
+        """``\\e) SQL文のロードクラス`` paragraph → Section(title='e) SQL文のロードクラス').
+
+        Real example from v1.x 04_Statement.rst:
+            .. _sql-load-class-label:
+            \\e) SQL文のロードクラス
+
+        Docutils strips the backslash and parses as 'e) SQL文…' (plain paragraph).
+        This Nablarch 1.x letter+paren convention is a structural subsection list
+        and must produce a synthetic section like bold/italic paragraphs do.
+        """
+        source = textwrap.dedent("""\
+            Doc Title
+            =========
+
+            Parent Section
+            --------------
+
+            Body.
+
+            Sub Section
+            ^^^^^^^^^^^
+
+            Body text.
+
+            .. _sql-load-class-label:
+
+            \\e) SQL文のロードクラス
+
+            BasicSqlLoader description.
+            """)
+        parts = self._parse_and_extract(source)
+        titles = [s.title for s in parts.sections]
+        assert "e) SQL文のロードクラス" in titles, (
+            f"Expected synthetic section 'e) SQL文のロードクラス' in sections, got: {titles}"
+        )
+
+    def test_digit_paren_paragraph_anchor_creates_subsection(self):
+        r"""``\2) Formクラスの精査処理実装`` paragraph → synthetic section.
+
+        Real example from v1.2 guide/05_create_form.rst.
+        Without the backslash, docutils treats '2) text' as an enumerated list.
+        """
+        # Use explicit string concatenation to write the literal backslash + 2
+        source = (
+            "Doc Title\n=========\n\nParent Section\n--------------\n\nBody.\n\n"
+            "Sub Section\n^^^^^^^^^^^\n\n.. _form_validation:\n\n"
+            "\\2) Formクラスの精査処理実装\n\nContent.\n"
+        )
+        parts = self._parse_and_extract(source)
+        titles = [s.title for s in parts.sections]
+        assert "2) Formクラスの精査処理実装" in titles, (
+            f"Expected synthetic section '2) Formクラスの精査処理実装' in sections, got: {titles}"
+        )

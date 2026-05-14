@@ -2588,6 +2588,475 @@ class TestCheckSourceLinks:
         data = self._data(content="us.")
         assert self._check(src, "rst", data, {}) == []
 
+    def test_pass_rst_ref_mixed_case_label_resolves_via_lowercase_key(self):
+        """Bug 1 fix: label_map keys are lowercase (docutils normalisation).
+
+        :ref:`SqlLog` in RST — the label_map key is 'sqllog' (lowercase),
+        but the resolved title is 'SQLログ機能' (different from the label name).
+        JSON has the resolved title.
+
+        Without fix: label_map.get("SqlLog") → None → Q4 path checks if
+        "SqlLog" is in content → FAIL (only "SQLログ機能" is there).
+        With fix: label_map.get("sqllog") → hit → Q1 path checks if
+        "SQLログ機能" is in content → PASS.
+        """
+        from scripts.common.labels import LabelTarget
+        src = "詳細は :ref:`SqlLog` を参照。\n"
+        label_map = {
+            "sqllog": LabelTarget(
+                title="SQLログ機能",
+                file_id="libraries-sql-log",
+                section_title="",
+                category="libraries",
+                type="component",
+                anchor="sqllog",
+            )
+        }
+        # JSON has the resolved title, NOT the label name
+        data = self._data(content="詳細は SQLログ機能 を参照。")
+        issues = self._check(src, "rst", data, label_map)
+        assert issues == [], (
+            f"Expected PASS but got: {issues} — case-insensitive lookup not applied"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Issue #320: QL1 cross-document link target validation
+# ---------------------------------------------------------------------------
+
+
+class TestCheckSourceLinks_JsonSide:
+    """QL1 cross-doc: JSON side — target JSON existence + section_title match.
+
+    Spec §3-2-3: When a :ref: label resolves to a cross-doc LabelTarget
+    (file_id non-empty), verify must check:
+      1. target JSON ({knowledge_dir}/{type}/{category}/{file_id}.json) exists
+      2. target JSON sections[].title contains section_title
+    """
+
+    def _check(self, source_text, fmt, data, label_map, knowledge_dir=None, docs_dir=None):
+        from scripts.verify.verify import check_source_links
+        return check_source_links(
+            source_text, fmt, data,
+            label_map,
+            knowledge_dir=knowledge_dir,
+            docs_dir=docs_dir,
+        )
+
+    def _data(self, content="", sections=None):
+        return {
+            "id": "f", "title": "T", "content": content,
+            "sections": sections or []
+        }
+
+    def _label_target(self, title, file_id, section_title, category="web",
+                      type_="component", anchor=""):
+        from scripts.common.labels import LabelTarget
+        return LabelTarget(
+            title=title,
+            file_id=file_id,
+            section_title=section_title,
+            category=category,
+            type=type_,
+            anchor=anchor,
+        )
+
+    def _write_json(self, tmp_path, type_, category, file_id, sections):
+        import json
+        target_dir = tmp_path / type_ / category
+        target_dir.mkdir(parents=True, exist_ok=True)
+        target_file = target_dir / f"{file_id}.json"
+        target_file.write_text(json.dumps({
+            "id": file_id, "title": "TargetTitle",
+            "content": "", "sections": sections,
+        }), encoding="utf-8")
+        return str(tmp_path)
+
+    # --- JSON existence check ---
+
+    def test_pass_target_json_exists_with_matching_section(self, tmp_path):
+        """Target JSON exists and sections[].title contains section_title → PASS."""
+        knowledge_dir = self._write_json(
+            tmp_path, "component", "web", "target-page",
+            [{"title": "使い方", "content": "本文", "level": 2}],
+        )
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="target-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content="使い方")
+        issues = self._check(src, "rst", data, label_map, knowledge_dir=knowledge_dir)
+        assert issues == [], issues
+
+    def test_fail_target_json_missing(self, tmp_path):
+        """Target JSON does not exist → QL1 FAIL."""
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="missing-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content="使い方")
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir=str(tmp_path))
+        assert any("QL1" in i and "missing-page" in i for i in issues), issues
+
+    def test_fail_section_title_not_in_target_json(self, tmp_path):
+        """Target JSON exists but section_title not in sections[].title → FAIL."""
+        knowledge_dir = self._write_json(
+            tmp_path, "component", "web", "target-page",
+            [{"title": "他のセクション", "content": "本文", "level": 2}],
+        )
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="target-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content="使い方")
+        issues = self._check(src, "rst", data, label_map, knowledge_dir=knowledge_dir)
+        assert any("QL1" in i and "target-page" in i for i in issues), issues
+
+    def test_pass_no_knowledge_dir_skips_cross_doc_check(self):
+        """When knowledge_dir is None, cross-doc check is skipped (back-compat)."""
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="target-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content="使い方")
+        issues = self._check(src, "rst", data, label_map, knowledge_dir=None)
+        assert issues == [], issues
+
+    def test_pass_local_label_no_file_id_skips_cross_doc_check(self):
+        """LabelTarget with empty file_id (same-doc label) → cross-doc check skipped."""
+        from scripts.common.labels import LabelTarget
+        label_map = {
+            "local-label": LabelTarget(
+                title="使い方", file_id="", section_title="使い方",
+                category="", type="", anchor="",
+            )
+        }
+        src = ":ref:`local-label`\n"
+        data = self._data(content="使い方")
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir="/some/dir")
+        assert not any("missing-page" in i for i in issues), issues
+
+    def test_pass_empty_section_title_skips_section_check(self, tmp_path):
+        """When section_title is empty (document-level label), section check skipped."""
+        knowledge_dir = self._write_json(
+            tmp_path, "component", "web", "target-page", [],
+        )
+        label_map = {
+            "target-label": self._label_target(
+                title="ターゲット", file_id="target-page",
+                section_title="", category="web",
+                type_="component", anchor="",
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content="ターゲット")
+        issues = self._check(src, "rst", data, label_map, knowledge_dir=knowledge_dir)
+        assert issues == [], issues
+
+    def test_pass_display_text_ref_with_valid_target(self, tmp_path):
+        """Display-text :ref: also triggers cross-doc check for JSON side."""
+        knowledge_dir = self._write_json(
+            tmp_path, "component", "web", "target-page",
+            [{"title": "使い方", "content": "本文", "level": 2}],
+        )
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="target-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = "詳細は :ref:`使い方の詳細 <target-label>` を参照。\n"
+        data = self._data(content="詳細は 使い方の詳細 を参照。")
+        issues = self._check(src, "rst", data, label_map, knowledge_dir=knowledge_dir)
+        assert issues == [], issues
+
+    def test_fail_display_text_ref_target_json_missing(self, tmp_path):
+        """Display-text :ref: with missing target JSON → FAIL."""
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="missing-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = "詳細は :ref:`使い方の詳細 <target-label>` を参照。\n"
+        data = self._data(content="詳細は 使い方の詳細 を参照。")
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir=str(tmp_path))
+        assert any("QL1" in i and "missing-page" in i for i in issues), issues
+
+    def test_dedup_same_label_in_multiple_sections_reported_once(self, tmp_path):
+        """Same cross-doc label referenced twice → JSON side FAIL reported once."""
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="missing-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = ":ref:`target-label`\n\n追加で :ref:`target-label` を参照。\n"
+        data = self._data(content="使い方")
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir=str(tmp_path))
+        json_fails = [i for i in issues if "QL1" in i and "missing-page" in i]
+        assert len(json_fails) == 1, json_fails
+
+    def test_fail_different_labels_same_file_id_different_section_titles(self, tmp_path):
+        """Two labels point to the same file_id with different section_title values.
+        The file exists but only has セクションA. セクションB must still be checked
+        and reported FAIL — json_key dedup must not swallow the second section check."""
+        knowledge_dir = self._write_json(
+            tmp_path, "component", "web", "target-page",
+            [{"title": "セクションA", "content": "本文A", "level": 2}],
+        )
+        label_map = {
+            "label-a": self._label_target(
+                title="セクションA", file_id="target-page",
+                section_title="セクションA", category="web",
+                type_="component", anchor="セクションA",
+            ),
+            "label-b": self._label_target(
+                title="セクションB", file_id="target-page",
+                section_title="セクションB", category="web",
+                type_="component", anchor="セクションB",
+            ),
+        }
+        src = ":ref:`label-a`\n\n:ref:`label-b`\n"
+        data = self._data(content="セクションA セクションB")
+        issues = self._check(src, "rst", data, label_map, knowledge_dir=knowledge_dir)
+        st_fails = [i for i in issues if "QL1" in i and "セクションB" in i]
+        assert len(st_fails) == 1, (
+            "section_title check must run even when file_id was already visited; "
+            f"got: {issues}"
+        )
+
+
+class TestCheckSourceLinks_DocsMdSide:
+    """QL1 cross-doc: docs MD side — target MD existence + anchor slug match.
+
+    Spec §3-2-3: When a :ref: label resolves to a cross-doc LabelTarget
+    (file_id non-empty), verify must also check:
+      3. target docs MD ({docs_dir}/{type}/{category}/{file_id}.md) exists
+      4. target docs MD heading slugs contain anchor
+    """
+
+    def _check(self, source_text, fmt, data, label_map, knowledge_dir=None, docs_dir=None):
+        from scripts.verify.verify import check_source_links
+        return check_source_links(
+            source_text, fmt, data,
+            label_map,
+            knowledge_dir=knowledge_dir,
+            docs_dir=docs_dir,
+        )
+
+    def _data(self, content="", sections=None):
+        return {
+            "id": "f", "title": "T", "content": content,
+            "sections": sections or []
+        }
+
+    def _label_target(self, title, file_id, section_title, category="web",
+                      type_="component", anchor=""):
+        from scripts.common.labels import LabelTarget
+        return LabelTarget(
+            title=title,
+            file_id=file_id,
+            section_title=section_title,
+            category=category,
+            type=type_,
+            anchor=anchor,
+        )
+
+    def _write_json(self, tmp_path, type_, category, file_id, sections):
+        import json
+        target_dir = tmp_path / "knowledge" / type_ / category
+        target_dir.mkdir(parents=True, exist_ok=True)
+        target_file = target_dir / f"{file_id}.json"
+        target_file.write_text(json.dumps({
+            "id": file_id, "title": "TargetTitle",
+            "content": "", "sections": sections,
+        }), encoding="utf-8")
+
+    def _write_docs_md(self, tmp_path, type_, category, file_id, headings):
+        docs_dir = tmp_path / "docs"
+        target_dir = docs_dir / type_ / category
+        target_dir.mkdir(parents=True, exist_ok=True)
+        lines = [f"# TopTitle\n"]
+        for h in headings:
+            lines.append(f"## {h}\n\n本文\n")
+        (target_dir / f"{file_id}.md").write_text("".join(lines), encoding="utf-8")
+        return str(docs_dir)
+
+    def _setup_dirs(self, tmp_path, type_, category, file_id,
+                    json_sections, md_headings):
+        self._write_json(tmp_path, type_, category, file_id, json_sections)
+        docs_dir = self._write_docs_md(tmp_path, type_, category, file_id, md_headings)
+        knowledge_dir = str(tmp_path / "knowledge")
+        return knowledge_dir, docs_dir
+
+    # --- docs MD existence check ---
+
+    def test_pass_docs_md_exists_with_matching_anchor(self, tmp_path):
+        """Target docs MD exists and heading slug matches anchor → PASS."""
+        knowledge_dir, docs_dir = self._setup_dirs(
+            tmp_path, "component", "web", "target-page",
+            json_sections=[{"title": "使い方", "content": "本文", "level": 2}],
+            md_headings=["使い方"],
+        )
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="target-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content="使い方")
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir=knowledge_dir, docs_dir=docs_dir)
+        assert issues == [], issues
+
+    def test_fail_docs_md_missing(self, tmp_path):
+        """Target docs MD does not exist → QL1 FAIL."""
+        # Write only the JSON, not the docs MD
+        self._write_json(tmp_path, "component", "web", "target-page",
+                        [{"title": "使い方", "content": "本文", "level": 2}])
+        knowledge_dir = str(tmp_path / "knowledge")
+        docs_dir = str(tmp_path / "docs")  # empty — no MD files
+
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="target-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content="使い方")
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir=knowledge_dir, docs_dir=docs_dir)
+        assert any("QL1" in i and "target-page" in i for i in issues), issues
+
+    def test_fail_anchor_not_in_docs_md_headings(self, tmp_path):
+        """Target docs MD exists but no heading slugs to anchor → FAIL."""
+        knowledge_dir, docs_dir = self._setup_dirs(
+            tmp_path, "component", "web", "target-page",
+            json_sections=[{"title": "使い方", "content": "本文", "level": 2}],
+            md_headings=["別のセクション"],
+        )
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="target-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",  # slug for "使い方"
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content="使い方")
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir=knowledge_dir, docs_dir=docs_dir)
+        assert any("QL1" in i and "target-page" in i for i in issues), issues
+
+    def test_pass_no_docs_dir_skips_docs_md_check(self, tmp_path):
+        """When docs_dir is None, docs MD side check is skipped."""
+        self._write_json(tmp_path, "component", "web", "target-page",
+                        [{"title": "使い方", "content": "本文", "level": 2}])
+        knowledge_dir = str(tmp_path / "knowledge")
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="target-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content="使い方")
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir=knowledge_dir, docs_dir=None)
+        assert issues == [], issues
+
+    def test_pass_empty_anchor_skips_anchor_check(self, tmp_path):
+        """When anchor is empty (document-level ref), heading slug check skipped."""
+        knowledge_dir, docs_dir = self._setup_dirs(
+            tmp_path, "component", "web", "target-page",
+            json_sections=[],
+            md_headings=[],
+        )
+        label_map = {
+            "target-label": self._label_target(
+                title="ターゲット", file_id="target-page",
+                section_title="", category="web",
+                type_="component", anchor="",
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content="ターゲット")
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir=knowledge_dir, docs_dir=docs_dir)
+        assert issues == [], issues
+
+    def test_pass_anchor_slug_matches_ascii_heading(self, tmp_path):
+        """Anchor derived via github_slug matches ASCII heading text in docs MD."""
+        from scripts.common.github_slug import github_slug
+        heading = "Getting Started"
+        anchor = github_slug(heading)
+        knowledge_dir, docs_dir = self._setup_dirs(
+            tmp_path, "component", "web", "target-page",
+            json_sections=[{"title": heading, "content": "", "level": 2}],
+            md_headings=[heading],
+        )
+        label_map = {
+            "target-label": self._label_target(
+                title=heading, file_id="target-page",
+                section_title=heading, category="web",
+                type_="component", anchor=anchor,
+            )
+        }
+        src = ":ref:`target-label`\n"
+        data = self._data(content=heading)
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir=knowledge_dir, docs_dir=docs_dir)
+        assert issues == [], issues
+
+    def test_fail_display_text_ref_docs_md_missing(self, tmp_path):
+        """Display-text :ref: with missing docs MD → docs MD side FAIL."""
+        self._write_json(tmp_path, "component", "web", "target-page",
+                        [{"title": "使い方", "content": "本文", "level": 2}])
+        knowledge_dir = str(tmp_path / "knowledge")
+        docs_dir = str(tmp_path / "docs")  # no MD files
+
+        label_map = {
+            "target-label": self._label_target(
+                title="使い方", file_id="target-page",
+                section_title="使い方", category="web",
+                type_="component", anchor="使い方",
+            )
+        }
+        src = "詳細は :ref:`使い方の詳細 <target-label>` を参照。\n"
+        data = self._data(content="詳細は 使い方の詳細 を参照。")
+        issues = self._check(src, "rst", data, label_map,
+                             knowledge_dir=knowledge_dir, docs_dir=docs_dir)
+        assert any("QL1" in i and "target-page" in i for i in issues), issues
+
 
 # ---------------------------------------------------------------------------
 # Phase 22-B-5a-r3a: P1 header row expansion
@@ -4040,6 +4509,171 @@ class TestCheckQL1LinkTargets:
         }
         issues = check_ql1_link_targets(data, kn)
         assert len(issues) == 1
+
+    # -----------------------------------------------------------------------
+    # Bug 3 fix: anchor validation in check_ql1_link_targets
+    # -----------------------------------------------------------------------
+
+    def test_pass_anchor_exists_in_docs_md(self, tmp_path):
+        """Bug 3 fix: anchor in link must match a heading slug in docs MD.
+
+        Link ../../component/libraries/libraries-foo.md#foo-section
+        → docs MD has ## Foo Section → slug = foo-section → PASS.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        # Overwrite the docs MD with a heading that matches the anchor
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Foo Section\n\nContent.\n", encoding="utf-8"
+        )
+
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#foo-section).",
+            "sections": [],
+        }
+        # Pass docs_md_text so the docs-side check runs; docs_root is
+        # derived as knowledge_dir.parent / "docs" → tmp_path / "docs"
+        docs_md = (docs / "component" / "libraries" / "libraries-foo.md").read_text()
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        assert issues == [], f"Expected PASS but got: {issues}"
+
+    def test_fail_anchor_missing_from_docs_md(self, tmp_path):
+        """Bug 3 fix: anchor not in docs MD heading slugs → QL1 FAIL.
+
+        Without this check, a wrong anchor like #処理概要 passes even
+        though the heading does not exist at that anchor.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        # docs MD has no heading with slug 'nonexistent-anchor'
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Foo Section\n\nContent.\n", encoding="utf-8"
+        )
+
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#nonexistent-anchor).",
+            "sections": [],
+        }
+        # docs_md_text here is the target file's headings (no cross-doc links);
+        # the FAIL is triggered by the JSON-side anchor check.
+        docs_md = (docs / "component" / "libraries" / "libraries-foo.md").read_text()
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        assert any("QL1" in i and "anchor" in i.lower() and "nonexistent-anchor" in i for i in issues), (
+            f"Expected anchor FAIL but got: {issues}"
+        )
+
+    def test_pass_anchor_empty_no_check(self, tmp_path):
+        """Link with no anchor (#fragment) — no anchor check needed."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        docs_md = (docs / "component" / "libraries" / "libraries-foo.md").read_text()
+
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md).",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        assert issues == []
+
+    def test_dedup_same_file_different_anchors_checked_independently(self, tmp_path):
+        """Two links to same file but different anchors must both be checked."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Good Section\n\nContent.\n", encoding="utf-8"
+        )
+        docs_md = (docs / "component" / "libraries" / "libraries-foo.md").read_text()
+
+        data = {
+            "content": (
+                "[Foo](../../component/libraries/libraries-foo.md#good-section) "
+                "and [Foo](../../component/libraries/libraries-foo.md#bad-anchor)."
+            ),
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        # good-section exists → PASS; bad-anchor does not → FAIL
+        assert len(issues) == 1
+        assert "bad-anchor" in issues[0]
+
+    def test_docs_md_side_anchor_missing_fails(self, tmp_path):
+        """Bug 3 fix: docs-side anchor check — bad anchor in docs_md_text FAIL.
+
+        docs_md_text contains a cross-doc link with a nonexistent anchor.
+        The docs-side loop must detect it and report QL1.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        # Target docs MD has only "# Foo" — slug "foo" — no "nonexistent" heading
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\nContent.\n", encoding="utf-8"
+        )
+        # docs_md_text itself contains the cross-doc link with bad anchor
+        docs_md_text = (
+            "# Some Page\n\n"
+            "See [Foo](../../component/libraries/libraries-foo.md#nonexistent).\n"
+        )
+        data = {"content": "", "sections": []}
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md_text)
+        assert any("QL1" in i and "anchor" in i.lower() and "nonexistent" in i for i in issues), (
+            f"Expected docs-side anchor FAIL but got: {issues}"
+        )
+
+    def test_docs_md_side_anchor_exists_passes(self, tmp_path):
+        """Bug 3 fix: docs-side anchor check — matching anchor in docs_md_text PASS."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Foo Section\n\nContent.\n", encoding="utf-8"
+        )
+        # docs_md_text contains cross-doc link with matching anchor
+        docs_md_text = (
+            "# Some Page\n\n"
+            "See [Foo](../../component/libraries/libraries-foo.md#foo-section).\n"
+        )
+        data = {"content": "", "sections": []}
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md_text)
+        assert issues == [], f"Expected PASS but got: {issues}"
+
+    def test_fail_anchor_missing_no_docs_md_text(self, tmp_path):
+        """JSON-side anchor FAIL is independent of docs_md_text (Bug 3 regression guard)."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Foo Section\n\nContent.\n", encoding="utf-8"
+        )
+        data = {
+            "content": "See [Foo](../../component/libraries/libraries-foo.md#nonexistent-anchor).",
+            "sections": [],
+        }
+        # No docs_md_text — JSON-side must still detect the bad anchor.
+        issues = check_ql1_link_targets(data, kn)
+        assert any("QL1" in i and "anchor" in i.lower() and "nonexistent-anchor" in i for i in issues), (
+            f"Expected anchor FAIL but got: {issues}"
+        )
+
+    def test_fail_anchor_missing_in_section_content(self, tmp_path):
+        """Anchor validation applies to sections[].content, not only to content."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs = self._setup(tmp_path)
+        (docs / "component" / "libraries" / "libraries-foo.md").write_text(
+            "# Foo\n\n## Real Section\n\nContent.\n", encoding="utf-8"
+        )
+        data = {
+            "content": "",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "Detail",
+                    "level": 2,
+                    "content": "See [Foo](../../component/libraries/libraries-foo.md#bad-anchor).",
+                }
+            ],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert any("QL1" in i and "anchor" in i.lower() and "bad-anchor" in i for i in issues), (
+            f"Expected anchor FAIL but got: {issues}"
+        )
 
 
 # ---------------------------------------------------------------------------

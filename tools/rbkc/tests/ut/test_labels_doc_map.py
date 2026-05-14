@@ -72,7 +72,10 @@ class TestBuildLabelDocMap:
     def test_label_map_resolves_to_labeltarget_with_file_id(self, tmp_path, monkeypatch):
         """Label declared in an RST file that maps to category=libraries
         must resolve to a LabelTarget with file_id='libraries-foo',
-        category='libraries', section_title='Usage'.
+        category='libraries'.
+
+        section_title is '' for h1-direct labels (spec §3-2-3: h1 maps to
+        JSON title field, not sections[] — verify skips the JSON section check).
         """
         from scripts.common.labels import build_label_doc_map, LabelTarget
 
@@ -106,7 +109,9 @@ class TestBuildLabelDocMap:
         lt = label_map["my-label"]
         assert isinstance(lt, LabelTarget)
         assert lt.title == "Usage"
-        assert lt.section_title == "Usage"
+        # h1-direct label: section_title="" because h1 maps to JSON title field
+        # (not sections[]), so verify §3-2-3 skips the JSON section check.
+        assert lt.section_title == ""
         assert lt.category == "libraries"
         assert lt.file_id == "libraries-foo"
         # Issue #316: anchor is github_slug(heading_title), not label name slug.
@@ -446,6 +451,10 @@ class TestEnclosingSectionResolution:
     def test_label_inside_block_quote_resolves_to_enclosing_section(self, tmp_path):
         """A label nested inside a block_quote under a section must
         resolve to that section's title (not to UNRESOLVED).
+
+        When the enclosing section is h1, section_title="" (h1 maps to JSON
+        title field, not sections[]).  This test verifies the label is not
+        dropped (UNRESOLVED) and that title is the h1 heading text.
         """
         from scripts.common.labels import build_label_map, LabelTarget
 
@@ -466,7 +475,8 @@ class TestEnclosingSectionResolution:
         lt = m["runtime_platform"]
         assert isinstance(lt, LabelTarget)
         assert lt.title == "様々な処理方式に対応できる"
-        assert lt.section_title == "様々な処理方式に対応できる"
+        # Enclosing section is h1 → section_title="" (h1 is not in JSON sections[]).
+        assert lt.section_title == ""
 
     def test_label_before_any_heading_remains_unresolved(self, tmp_path):
         """A label that appears before the first heading in a file has no
@@ -537,6 +547,153 @@ class TestEnclosingSectionResolution:
         assert lt.title == "直接の見出し"
 
 
+class TestScanRstLabelsDocutilsAST:
+    """Task 17: _scan_rst_labels must use docutils AST — not ad-hoc regex line scan.
+
+    Three correctness properties that the old line-scanner violated:
+
+    1. h1-direct label (label immediately before h1): parent=document in docutils AST
+       → section_title must be "" (not the h1 heading text).
+       The old scanner returned the h1 title, which caused 692 QL1 FAILs because
+       verify.py §3-2-3 checks section_title against JSON sections[].title.
+
+    2. section-inner label (label before sub-heading, under a parent section):
+       parent=section whose first child is the enclosing section's title.
+       → section_title must be the *enclosing* section title (not the sub-heading).
+
+    3. Non-RST chars (e.g. '-->') must NOT be treated as heading underlines.
+       The old _is_heading_underline() accepted any mix of _RST_HEADING_CHARS,
+       which includes '>' — so '-->' triggered the overline-style heading path
+       and corrupted section_title for 9 labels.
+    """
+
+    def test_h1_direct_label_gives_empty_section_title(self, tmp_path):
+        """Label immediately before h1 → section_title='' (docutils: parent=document).
+
+        This is the §3-2-3 fix for the 692-count QL1 'section_title not found'
+        failures: section_title="" means verify skips the section check.
+        """
+        from scripts.common.labels import build_label_map, UNRESOLVED
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(
+            ".. _universal_dao:\n\n"
+            "ユニバーサルDAO\n"
+            "================\n\n"
+            "本文。\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("universal_dao")
+
+        assert lt is not None
+        assert lt is not UNRESOLVED
+        assert lt.title == "ユニバーサルDAO"
+        # KEY assertion: h1-direct label → section_title must be "" so that
+        # verify.py skips the section check (no JSON section can have title=="").
+        assert lt.section_title == "", (
+            f"h1-direct label must have section_title='', got {lt.section_title!r}"
+        )
+
+    def test_section_inner_label_gives_enclosing_section_title(self, tmp_path):
+        """Label under an h2 section (not directly before any deeper heading)
+        → section_title = enclosing h2 title.
+
+        For h1-scope labels, section_title is "" (h1 maps to JSON title field,
+        not sections[]). This test uses an h2 to confirm the h2+ case.
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(
+            "ドキュメントタイトル\n"
+            "====================\n\n"
+            "h1 本文。\n\n"
+            "ユニバーサルDAO\n"
+            "----------------\n\n"
+            "h2 本文。\n\n"
+            ".. _inner_label:\n\n"
+            "Some paragraph inside the h2 section.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("inner_label")
+
+        assert lt is not None
+        # Label is inside h2 "ユニバーサルDAO" (not h1) → section_title = h2 title
+        assert lt.section_title == "ユニバーサルDAO"
+
+    def test_jsp_comment_arrow_does_not_corrupt_section_title(self, tmp_path):
+        """'-->' (JSP comment end) between a label and an h2 heading must NOT be
+        treated as a heading underline.  The old _is_heading_underline accepted '>'
+        from _RST_HEADING_CHARS — this test pins the correct docutils-parity behaviour.
+
+        RST layout mirrors the actual tag.rst pattern:
+        - h1 section "タグライブラリ"
+          - h2 section "二重サブミットを防ぐ"
+            - label tag-double_submission_server_side
+            - text with '-->'
+            - h3 section "サーバ側の二重サブミット防止"
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "tag.rst"
+        rst.write_text(
+            "タグライブラリ\n"
+            "==============\n\n"
+            "本文。\n\n"
+            "二重サブミットを防ぐ\n"
+            "--------------------\n\n"
+            "説明。\n\n"
+            ".. _tag-double_submission_server_side:\n\n"
+            "-->はJSPコメント終端ではない。\n\n"
+            "サーバ側の二重サブミット防止\n"
+            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+            "本文2。\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("tag-double_submission_server_side")
+
+        assert lt is not None
+        # The label is inside h2 "二重サブミットを防ぐ", not before h3.
+        # '-->' must NOT have been treated as a heading underline that
+        # corrupted section_title to something like 'はJSPコメント終端ではない。'.
+        assert lt.section_title == "二重サブミットを防ぐ", (
+            f"Expected '二重サブミットを防ぐ', got {lt.section_title!r}. "
+            "'-->' (or similar non-RST chars) must not be treated as a heading underline."
+        )
+        assert lt.title == "二重サブミットを防ぐ"
+
+    def test_label_before_subheading_resolves_to_subheading_title(self, tmp_path):
+        """Label immediately before a sub-heading → section_title = sub-heading title
+        (same behaviour as the old scanner for this case — must not regress).
+        """
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(
+            "親セクション\n"
+            "============\n\n"
+            "親の本文。\n\n"
+            ".. _direct_label:\n\n"
+            "直接の見出し\n"
+            "--------------\n\n"
+            "本文。\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("direct_label")
+
+        assert lt is not None
+        assert lt.title == "直接の見出し"
+        assert lt.section_title == "直接の見出し"
+
+
 class TestBuildLabelMapBackwardCompat:
     """The old ``build_label_map(source_dir) -> dict[label, str|UNRESOLVED]``
     must keep working so downstream callers that haven't migrated keep going.
@@ -562,7 +719,677 @@ class TestBuildLabelMapBackwardCompat:
         # Must expose .title for cross-doc consumers
         assert isinstance(v, LabelTarget)
         assert v.title == "Heading"
-        assert v.section_title == "Heading"
+        # h1-direct label: section_title="" (h1 maps to JSON title field, not
+        # sections[], so verify §3-2-3 section check is skipped).
+        assert v.section_title == ""
         # No file_id available in single-dir mode
         assert v.file_id == ""
+
+
+class TestCaseInsensitiveLabelLookup:
+    """Bug 1 fix: docutils normalises label names to lowercase in names[].
+
+    build_label_map / build_label_doc_map keys are therefore lowercase.
+    Callers (rst_ast_visitor, verify) must look up labels with .lower()
+    to avoid UNRESOLVED → plain-text fallback on mixed-case labels like
+    ``NablarchServletContextListener`` or ``guide_appendix_windowScope``.
+    """
+
+    def test_mixed_case_label_stored_as_lowercase_key(self, tmp_path):
+        """docutils normalises names[] to lowercase → map key is lowercase."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(textwrap.dedent("""\
+            .. _NablarchServletContextListener:
+
+            NablarchServletContextListener
+            ================================
+
+            Body.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        # Key must be lowercase (docutils normalisation)
+        assert "nablarchservletcontextlistener" in m
+        # Original-case key must NOT be present
+        assert "NablarchServletContextListener" not in m
+
+    def test_caller_must_lowercase_before_lookup(self, tmp_path):
+        """rst_ast_visitor / verify must call label_map.get(label.lower()).
+
+        This test pins the required caller behaviour: looking up the
+        original-case label name returns None (miss); lowercased lookup
+        returns the correct LabelTarget.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "y.rst"
+        rst.write_text(textwrap.dedent("""\
+            .. _SqlLog:
+
+            SqlLog
+            ======
+
+            Body.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        # Caller with original case → miss (current bug behaviour to be fixed)
+        assert m.get("SqlLog") is None
+        # Caller with .lower() → hit (required behaviour after fix)
+        v = m.get("SqlLog".lower())
+        assert isinstance(v, LabelTarget)
+        assert v.title == "SqlLog"
+
+    def test_underscore_label_with_uppercase_chars(self, tmp_path):
+        """Labels like ``guide_appendix_windowScope`` are stored lowercase."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "z.rst"
+        rst.write_text(textwrap.dedent("""\
+            .. _guide_appendix_windowScope:
+
+            Window Scope
+            ============
+
+            Body.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "guide_appendix_windowscope" in m
+        assert "guide_appendix_windowScope" not in m
+        v = m.get("guide_appendix_windowScope".lower())
+        assert isinstance(v, LabelTarget)
+        assert v.title == "Window Scope"
         assert v.category == ""
+
+
+class TestNextSectionMultiLevelClimb:
+    """Bug 2 fix: _next_section_for_node must climb multiple levels.
+
+    Pattern: a label is the last item inside a deeply-nested section, but
+    the *next* section (the label's intended target) is a sibling of an
+    ancestor, not a direct sibling or immediate grandparent sibling.
+
+    Real example: v1.2 01_Log.rst
+    - section ``要求`` (h2)
+      - section ``未検討`` (h3)
+        - bullet_list
+        - ``.. _Log_LoggerProcess:``   ← target node, last in ``未検討``
+    - section ``ログ出力要求受付処理`` (h2, sibling of ``要求``)
+
+    One-level climb (grandparent = ``要求``) finds no next sibling.
+    Two-level climb (great-grandparent) finds ``ログ出力要求受付処理``.
+    """
+
+    def test_label_at_3level_nesting_end_resolves_to_ancestor_sibling(self, tmp_path):
+        """Label at the end of a 3-deep nest resolves to a section 2 levels up."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "deep.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Outer
+            -----
+
+            Inner
+            ~~~~~
+
+            Body text.
+
+            .. _deep-label:
+
+            Next Section
+            ------------
+
+            Content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "deep-label" in m
+        v = m["deep-label"]
+        assert isinstance(v, LabelTarget)
+        # Must resolve to the section it directly precedes, not the enclosing one
+        assert v.title == "Next Section", (
+            f"Expected 'Next Section' but got {v.title!r} — "
+            "multi-level climb not implemented"
+        )
+
+    def test_label_at_4level_nesting_end_resolves_correctly(self, tmp_path):
+        """Label at the end of a 4-deep nest resolves to the correct ancestor sibling."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "deep4.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            L2
+            --
+
+            L3
+            ~~
+
+            L4
+            ^^
+
+            Body.
+
+            .. _target-label:
+
+            Next L2
+            -------
+
+            More content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "target-label" in m
+        v = m["target-label"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "Next L2", (
+            f"Expected 'Next L2' but got {v.title!r} — "
+            "multi-level climb stops too early"
+        )
+
+
+class TestNextSectionTransitionSkip:
+    """Issue #320: label directly before a transition resolves to the section
+    after the transition.
+
+    Real example: v1.2/v1.3/v1.4 architectural_pattern/concept.rst
+      .. _method_binding:
+      ++++++++++++          ← transition
+      .. _request_processing:
+      リクエストの識別と業務処理の実行  ← correct target
+
+    Sphinx PropagateTargets moves the label id past the transition because
+    transition cannot hold an HTML id.
+    """
+
+    def test_label_before_transition_then_section(self, tmp_path):
+        """Label followed by transition then section resolves to that section."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "transition.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            First Section
+            -------------
+
+            Body text.
+
+            .. _method_binding:
+
+            +++++++++++++++
+
+            Second Section
+            --------------
+
+            Content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "method_binding" in m
+        v = m["method_binding"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "Second Section", (
+            f"Expected 'Second Section' but got {v.title!r} — "
+            "transition node must be skipped when searching for next section"
+        )
+
+
+class TestNextSectionLineBlockSkip:
+    """Issue #320 Task 25: label separated from next section by a line_block (``|``)
+    must still resolve to that section.
+
+    Real example: v5/v6 biz_samples/03/index.rst
+      .. _ListSearchResult_Structure:
+
+      |
+
+      ------------
+      構成
+      ------------
+    """
+
+    def test_label_before_line_block_then_section(self, tmp_path):
+        """Label followed by line_block then section resolves to that section."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "line_block.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            First Section
+            -------------
+
+            Body text.
+
+            .. _list_structure:
+
+            |
+
+            Second Section
+            --------------
+
+            Content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "list_structure" in m
+        v = m["list_structure"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "Second Section", (
+            f"Expected 'Second Section' but got {v.title!r} — "
+            "line_block node must be skipped when searching for next section"
+        )
+
+
+class TestParagraphAnchorTitleResolution:
+    """Issue #320 Task 25: anchors directly before a paragraph (non-heading)
+    must resolve to a title derived from the paragraph text, not fall back
+    to the enclosing section.
+
+    Real examples from RST sources:
+    - ``**標準ハンドラ構成** (説明文...)`` → ``標準ハンドラ構成``  (bold-start)
+    - ``**用語**``                          → ``用語``              (bold-only)
+    - ``*クラス名*``                        → ``クラス名``          (italic-only)
+    - ``plain text``                        → enclosing section     (excluded — only explicit markup signals heading use)
+
+    h1-scoped anchors (file has only h1, no h2+) always fall back to enclosing section
+    even for bold/italic paragraphs, because DocTitle-promoted structure has no
+    _walk_section call and no synthetic section is generated.
+    """
+
+    def test_bold_only_paragraph(self, tmp_path):
+        """``**Term**`` paragraph → title = 'Term'."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "bold_only.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Section
+            -------
+
+            .. _my_anchor:
+
+            **用語**
+
+            Definition text here.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "my_anchor" in m
+        v = m["my_anchor"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "用語", (
+            f"Expected '用語' but got {v.title!r} — "
+            "bold-only paragraph should be resolved as title"
+        )
+        assert v.section_title == "用語"
+
+    def test_italic_only_paragraph(self, tmp_path):
+        """``*ClassName*`` paragraph → title = 'ClassName'."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "italic_only.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Section
+            -------
+
+            .. _my_anchor:
+
+            *ClassName*
+
+            Description text.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "my_anchor" in m
+        v = m["my_anchor"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "ClassName", (
+            f"Expected 'ClassName' but got {v.title!r} — "
+            "italic-only paragraph should be resolved as title"
+        )
+
+    def test_bold_start_paragraph(self, tmp_path):
+        """``**Term** (extra text)`` paragraph → title = 'Term'."""
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "bold_start.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Section
+            -------
+
+            .. _my_anchor:
+
+            **標準ハンドラ構成** (説明文をクリックすると詳細が表示されます。)
+
+            Content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "my_anchor" in m
+        v = m["my_anchor"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "標準ハンドラ構成", (
+            f"Expected '標準ハンドラ構成' but got {v.title!r} — "
+            "bold-start paragraph should use bold portion as title"
+        )
+
+    def test_plain_text_paragraph_falls_back_to_enclosing(self, tmp_path):
+        """Plain text paragraph (no inline markup) falls back to enclosing section.
+
+        Only bold/italic-marked paragraphs signal intentional heading use.
+        A plain paragraph is regular body text that should not override the
+        enclosing section title.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "plain_text.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Section
+            -------
+
+            .. _my_anchor:
+
+            リクエスト単体テスト
+
+            Body.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "my_anchor" in m
+        v = m["my_anchor"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "Section", (
+            f"Expected 'Section' (enclosing) but got {v.title!r} — "
+            "plain-text paragraph must not override enclosing section title"
+        )
+
+    def test_h1_scope_bold_paragraph_falls_back_to_h1(self, tmp_path):
+        """In h1-scoped files (only h1, no h2+), bold paragraph after anchor
+        must NOT create a synthetic section — falls back to h1 title.
+
+        Guard: h1-scoped files use DocTitle-promoted structure where
+        _walk_section is never called, so no synthetic section would be
+        generated and the anchor would not exist in docs MD.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "h1_scope.rst"
+        rst.write_text(textwrap.dedent("""\
+            H1 Title
+            ========
+
+            Body text.
+
+            .. _my_anchor:
+
+            **Bold Heading**
+
+            Content.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "my_anchor" in m
+        v = m["my_anchor"]
+        assert isinstance(v, LabelTarget)
+        # h1-scope: section_title must be "" (h1 maps to JSON title, not sections[])
+        assert v.section_title == "", (
+            f"Expected section_title='' (h1 scope) but got {v.section_title!r} — "
+            "h1-scoped bold paragraph must not set section_title to para_title"
+        )
+        # Title may be the para_title or h1 title — the key constraint is section_title=""
+        # which prevents verify from looking up the synthetic section in JSON sections[].
+
+    def test_letter_paren_paragraph(self, tmp_path):
+        """``e) SQL文のロードクラス`` paragraph (backslash-escaped letter + ')') → title = text.
+
+        Real example from v1.x 04_Statement.rst:
+            .. _sql-load-class-label:
+
+            \\e) SQL文のロードクラス
+
+        Docutils strips the backslash and parses as plain paragraph 'e) SQL文…'.
+        This Nablarch 1.x convention (a)/b)/c)… subsection list) is a structural
+        pattern — not arbitrary body text — and must be treated as heading.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "letter_paren.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            Section
+            -------
+
+            .. _sql-load-class-label:
+
+            \\e) SQL文のロードクラス
+
+            BasicSqlLoader description.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "sql-load-class-label" in m
+        v = m["sql-load-class-label"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "e) SQL文のロードクラス", (
+            f"Expected 'e) SQL文のロードクラス' but got {v.title!r} — "
+            "letter+paren paragraph must resolve as title"
+        )
+        assert v.section_title == "e) SQL文のロードクラス"
+
+    def test_digit_paren_paragraph(self, tmp_path):
+        r"""``\2) Formクラスの精査処理実装`` paragraph (backslash + digit + ')') → title = text.
+
+        Real example from v1.2 guide/05_create_form.rst:
+            .. _form_validation:
+
+            \2) Formクラスの精査処理実装
+
+        Docutils strips the backslash and parses as plain paragraph '2) Formクラス…'.
+        Without the backslash, docutils would treat '2) text' as an enumerated list.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "digit_paren.rst"
+        # Use raw string so \2 is written literally to the file (backslash + 2)
+        rst.write_text(
+            "Title\n=====\n\nSection\n-------\n\n.. _form_validation:\n\n"
+            "\\2) Formクラスの精査処理実装\n\nContent.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+
+        assert "form_validation" in m
+        v = m["form_validation"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "2) Formクラスの精査処理実装", (
+            f"Expected '2) Formクラスの精査処理実装' but got {v.title!r} — "
+            "digit+paren paragraph must resolve as title"
+        )
+        assert v.section_title == "2) Formクラスの精査処理実装"
+
+    def test_entry_parent_label_resolves_to_preceding_xparen_paragraph(self, tmp_path):
+        """Label inside a table cell (entry) resolves via preceding X) paragraph.
+
+        Real example from v1.x 04_ObjectSave.rst:
+
+            .. _sql-parameter-parser-label:
+
+            b) nablarch.core.db.statement.SqlParameterParserの実装クラス
+
+            .. table-like RST ..
+               (inside a table cell)
+               .. _basic-sql-parameter-parser-label:
+
+        AST structure: target → entry → row → tbody → tgroup → table → block_quote → section
+        The enclosing section's direct child is block_quote at index N.
+        At N-1: the X) paragraph 'b) …'.
+        At N-2: a target node (sql-parameter-parser-label) — this is the
+        _walk_section synthetic-section trigger; its presence guarantees
+        the X) paragraph becomes a synthetic section in the knowledge JSON.
+        The label must resolve to 'b) …' (not the enclosing section title).
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "entry_parent.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            クラス定義
+            ----------
+
+            .. _sql-parameter-parser-factory-label:
+
+            \\a) nablarch.core.db.statement.SqlParameterParserFactoryの実装クラス
+
+            .. list-table::
+
+               * - BasicSqlParameterParserFactory
+                 - ファクトリクラス。
+
+            .. _sql-parameter-parser-label:
+
+            \\b) nablarch.core.db.statement.SqlParameterParserの実装クラス
+
+            .. list-table::
+
+               * - BasicSqlParameterParser
+
+                   .. _basic-sql-parameter-parser-label:
+
+                 - パーサクラス。
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "basic-sql-parameter-parser-label" in m
+        v = m["basic-sql-parameter-parser-label"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "b) nablarch.core.db.statement.SqlParameterParserの実装クラス", (
+            f"Expected 'b) nablarch…' but got {v.title!r} — "
+            "entry-parent label must resolve to preceding X) paragraph"
+        )
+        assert v.section_title == "b) nablarch.core.db.statement.SqlParameterParserの実装クラス"
+
+    def test_entry_parent_label_no_xparen_falls_back_to_enclosing_section(self, tmp_path):
+        """Label in table cell with no preceding X) paragraph falls back to enclosing section.
+
+        When the table is not preceded by an X) paragraph, the label should
+        resolve to the enclosing section title (existing behaviour, not regressed).
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "entry_parent_fallback.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            クラス定義
+            ----------
+
+            Some intro text without X) pattern.
+
+            .. list-table::
+
+               * - BasicFoo
+
+                   .. _basic-foo-label:
+
+                 - Foo description.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "basic-foo-label" in m
+        v = m["basic-foo-label"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "クラス定義", (
+            f"Expected 'クラス定義' but got {v.title!r} — "
+            "entry-parent label without X) paragraph must fall back to enclosing section"
+        )
+        assert v.section_title == "クラス定義"
+
+    def test_entry_parent_label_xparen_without_target_falls_back_to_enclosing_section(
+        self, tmp_path
+    ):
+        """X) paragraph before table with no preceding target → fall back to enclosing section.
+
+        When the X) paragraph is present but has no preceding target node,
+        _walk_section does NOT generate a synthetic section for it — so the
+        X) paragraph cannot be a valid anchor target.  The label must resolve
+        to the enclosing section title (not the X) text).
+
+        This exercises branch 8 of _entry_parent_xparen_title:
+          prev_sib IS an X) paragraph (regex matches) but prev_prev_sib is NOT
+          a target node → the function returns None.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "entry_parent_no_target.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            クラス定義
+            ----------
+
+            \\b) some text
+
+            .. list-table::
+
+               * - BasicFoo
+
+                   .. _basic-foo-label:
+
+                 - Foo description.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "basic-foo-label" in m
+        v = m["basic-foo-label"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "クラス定義", (
+            f"Expected 'クラス定義' but got {v.title!r} — "
+            "X) paragraph without preceding target must not be used as anchor title"
+        )
+        assert v.section_title == "クラス定義"

@@ -1881,13 +1881,13 @@ def check_ql1_link_targets(
     for sec in data.get("sections", []) or []:
         sources.append(sec.get("content", "") or "")
 
-    seen: set[tuple[str, str, str]] = set()
+    seen: set[tuple[str, str, str, str]] = set()
     seen_assets: set[tuple[str, str]] = set()
     issues: list[str] = []
 
     for text in sources:
-        for type_, category, file_id, _anchor in _collect_links(text):
-            key = (type_, category, file_id)
+        for type_, category, file_id, anchor in _collect_links(text):
+            key = (type_, category, file_id, anchor)
             if key in seen:
                 continue
             seen.add(key)
@@ -1898,6 +1898,16 @@ def check_ql1_link_targets(
                     f"../../{type_}/{category}/{file_id}.md → "
                     f"{target_json.relative_to(knowledge_root.parent)} not on disk"
                 )
+            elif anchor:
+                target_md = docs_root / type_ / category / f"{file_id}.md"
+                if target_md.exists():
+                    slugs = _heading_slugs_from_md(target_md)
+                    if anchor not in slugs:
+                        issues.append(
+                            f"[QL1] anchor not found in docs MD: "
+                            f"../../{type_}/{category}/{file_id}.md#{anchor} → "
+                            f"heading '{anchor}' missing from {target_md.relative_to(docs_root.parent)}"
+                        )
         # Phase 22-B-16c: asset existence check.  `assets/{file_id}/
         # {basename}` must exist under knowledge_dir/assets/...
         for asset_fid, basename in _collect_assets(text):
@@ -1913,9 +1923,9 @@ def check_ql1_link_targets(
                 )
 
     if docs_md_text is not None:
-        seen_md: set[tuple[str, str, str]] = set()
-        for type_, category, file_id, _anchor in _collect_links(docs_md_text):
-            key = (type_, category, file_id)
+        seen_md: set[tuple[str, str, str, str]] = set()
+        for type_, category, file_id, anchor in _collect_links(docs_md_text):
+            key = (type_, category, file_id, anchor)
             if key in seen_md:
                 continue
             seen_md.add(key)
@@ -1926,6 +1936,14 @@ def check_ql1_link_targets(
                     f"../../{type_}/{category}/{file_id}.md → "
                     f"{target_md.relative_to(docs_root.parent)} not on disk"
                 )
+            elif anchor:
+                slugs = _heading_slugs_from_md(target_md)
+                if anchor not in slugs:
+                    issues.append(
+                        f"[QL1] anchor not found in docs MD: "
+                        f"../../{type_}/{category}/{file_id}.md#{anchor} → "
+                        f"heading '{anchor}' missing from {target_md.relative_to(docs_root.parent)}"
+                    )
 
     return issues
 
@@ -1933,6 +1951,37 @@ def check_ql1_link_targets(
 # ---------------------------------------------------------------------------
 # QL1: check_source_links
 # ---------------------------------------------------------------------------
+
+
+def _section_titles_from_json(json_path: "Path") -> set[str]:
+    """Return {section title, ...} from a target knowledge JSON file.
+
+    Returns empty set if the file is missing or unreadable.
+    """
+    import json as _json
+    try:
+        with open(json_path, encoding="utf-8") as fh:
+            data = _json.load(fh)
+        return {s["title"] for s in data.get("sections", []) if s.get("title")}
+    except (OSError, ValueError, KeyError):
+        return set()
+
+
+def _heading_slugs_from_md(md_path: "Path") -> set[str]:
+    """Return {github_slug(heading), ...} for all ATX headings in a docs MD.
+
+    Computes slugs independently from create (circular-avoidance per spec §3-2-3).
+    Returns empty set if the file is missing or unreadable.
+    """
+    import re as _re
+    from scripts.common.github_slug import github_slug
+    _ATX_RE = _re.compile(r"^#{1,6}\s+(.+?)(?:\s+#+)?$", _re.MULTILINE)
+    try:
+        text = Path(md_path).read_text(encoding="utf-8")
+    except OSError:
+        return set()
+    return {github_slug(m.group(1).strip()) for m in _ATX_RE.finditer(text)}
+
 
 def _resolve_title_inline(title_node, label_map: dict) -> str:
     r"""Render an RST section title to plain text, resolving any embedded
@@ -1981,7 +2030,9 @@ def _resolve_title_inline(title_node, label_map: dict) -> str:
                         disp, _, _ = raw.rpartition("<")
                         parts.append(disp.strip())
                     else:
-                        parts.append(_resolved_text(label_map.get(raw), raw))
+                        # docutils normalises label names to lowercase in names[];
+                        # label_map keys are always lowercase (spec §3-2-2).
+                        parts.append(_resolved_text(label_map.get(raw.lower()), raw))
                     continue
                 # Other roles: render the raw text (converter does the same).
                 parts.append(raw)
@@ -2006,6 +2057,8 @@ def check_source_links(
     label_map: dict,
     source_path=None,
     corpus_label_map: dict | None = None,
+    knowledge_dir=None,
+    docs_dir=None,
 ) -> list[str]:
     """QL1: Internal links in source must be reflected in JSON.
 
@@ -2020,6 +2073,10 @@ def check_source_links(
     5-quadrant dangling classification.  When ``None``, corpus is assumed
     identical to ``label_map`` (back-compat for callers that have not yet
     been wired up).
+
+    ``knowledge_dir`` / ``docs_dir``: when provided, cross-document link
+    targets are validated per spec §3-2-3 (target JSON existence + section
+    title match; target docs MD existence + anchor slug match).
     """
     if corpus_label_map is None:
         corpus_label_map = label_map
@@ -2028,6 +2085,85 @@ def check_source_links(
 
     json_full = _all_text(data)
     issues: list[str] = []
+
+    # Cross-doc dedup sets: avoid re-checking the same target when referenced
+    # from multiple labels/sections.
+    # _cross_doc_file_seen: (type, category, file_id) — guards file existence check
+    # _cross_doc_st_seen: (type, category, file_id, section_title) — guards section check
+    # _cross_doc_md_seen: (type, category, file_id, anchor) — guards anchor check
+    _cross_doc_file_seen: set[tuple] = set()
+    _cross_doc_st_seen: set[tuple] = set()
+    _cross_doc_md_seen: set[tuple] = set()
+
+    def _check_cross_doc_target(label: str, target) -> None:
+        """Validate cross-doc LabelTarget against knowledge JSON and docs MD.
+
+        Spec §3-2-3:
+          1. target JSON must exist
+          2. target JSON sections[].title must contain section_title (if non-empty)
+          3. target docs MD must exist (when docs_dir provided)
+          4. target docs MD heading slugs must contain anchor (if non-empty)
+        """
+        from scripts.common.labels import LabelTarget
+        if not isinstance(target, LabelTarget) or not target.file_id:
+            return
+
+        kdir = knowledge_dir
+        ddir = docs_dir
+
+        if kdir is not None:
+            json_key = (target.type, target.category, target.file_id)
+            json_path = (
+                Path(kdir) / target.type / target.category
+                / f"{target.file_id}.json"
+            )
+            file_missing = False
+            if json_key not in _cross_doc_file_seen:
+                _cross_doc_file_seen.add(json_key)
+                if not json_path.exists():
+                    file_missing = True
+                    issues.append(
+                        f"[QL1] :ref:`{label}` target JSON missing:"
+                        f" {target.file_id}.json"
+                        f" ({target.type}/{target.category})"
+                    )
+            elif not json_path.exists():
+                file_missing = True
+            if not file_missing and target.section_title:
+                st_key = (target.type, target.category, target.file_id,
+                          target.section_title)
+                if st_key not in _cross_doc_st_seen:
+                    _cross_doc_st_seen.add(st_key)
+                    titles = _section_titles_from_json(json_path)
+                    if target.section_title not in titles:
+                        issues.append(
+                            f"[QL1] :ref:`{label}` section_title"
+                            f" {target.section_title!r} not found in"
+                            f" {target.file_id}.json sections[]"
+                        )
+
+        if ddir is not None and target.anchor:
+            anchor_key = (target.type, target.category, target.file_id,
+                          target.anchor)
+            if anchor_key not in _cross_doc_md_seen:
+                _cross_doc_md_seen.add(anchor_key)
+                md_path = (
+                    Path(ddir) / target.type / target.category
+                    / f"{target.file_id}.md"
+                )
+                if not md_path.exists():
+                    issues.append(
+                        f"[QL1] :ref:`{label}` target docs MD missing:"
+                        f" {target.file_id}.md"
+                        f" ({target.type}/{target.category})"
+                    )
+                else:
+                    slugs = _heading_slugs_from_md(md_path)
+                    if target.anchor not in slugs:
+                        issues.append(
+                            f"[QL1] :ref:`{label}` anchor {target.anchor!r}"
+                            f" not found in {target.file_id}.md headings"
+                        )
 
     if fmt == "rst":
         from docutils import nodes
@@ -2101,6 +2237,11 @@ def check_source_links(
                 issues.append(
                     f"[QL1] :ref: display text missing from JSON: {display!r}"
                 )
+            # Display-text form: also run cross-doc check on the resolved target
+            if display:
+                # docutils normalises label names to lowercase; label_map keys
+                # are always lowercase (spec §3-2-2).
+                _check_cross_doc_target(label, label_map.get(label.lower()))
             # Bare label form: Phase 22-B-12 five-quadrant classification
             # (spec §3-2-2).  The quadrants:
             #   - Q1: label in label_map → resolved title must appear (PASS/FAIL)
@@ -2115,7 +2256,9 @@ def check_source_links(
             # label string as the required display text for Q3/Q4.
             if not display and label not in seen_labels:
                 seen_labels.add(label)
-                target = label_map.get(label)
+                # docutils normalises label names to lowercase; label_map keys
+                # are always lowercase (spec §3-2-2).
+                target = label_map.get(label.lower())
                 from scripts.common.labels import UNRESOLVED
                 if target is None or target is UNRESOLVED:
                     # Q3 / Q4 — label not resolvable within RBKC scope.
@@ -2135,6 +2278,8 @@ def check_source_links(
                     issues.append(
                         f"[QL1] :ref:`{label}` target title missing from JSON: {title!r}"
                     )
+                # Cross-doc target validation (spec §3-2-3)
+                _check_cross_doc_target(label, target)
 
         def _under_substitution(node) -> bool:
             """True if *node* lives under a substitution_definition subtree.
