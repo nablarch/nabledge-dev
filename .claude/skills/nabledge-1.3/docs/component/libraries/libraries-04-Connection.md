@@ -99,8 +99,8 @@ SqlResultSet resultSet = new SimpleDbTransactionExecutor<SqlResultSet>(
 
 ## 設定ファイル例(DataSourceを使用してデータベース接続を行う場合)
 
-本設定ファイルは、 [DataSourceからデータベース接続を取得する場合の](../../component/libraries/libraries-04-Connection.md#クラス定義) 設定例となっている。
-[JNDI経由でデータベース接続を取得する場合](../../component/libraries/libraries-04-Connection.md#クラス定義) は、 [設定ファイル例(JNDIを使用してデータベース接続を行う場合)](../../component/libraries/libraries-04-Connection.md#設定ファイル例jndiを使用してデータベース接続を行う場合) を参照すること。
+本設定ファイルは、 [DataSourceからデータベース接続を取得する場合の](../../component/libraries/libraries-04-Connection.md#a-nablarchcoredbconnectionconnectionfactoryの実装クラス) 設定例となっている。
+[JNDI経由でデータベース接続を取得する場合](../../component/libraries/libraries-04-Connection.md#a-nablarchcoredbconnectionconnectionfactoryの実装クラス) は、 [設定ファイル例(JNDIを使用してデータベース接続を行う場合)](../../component/libraries/libraries-04-Connection.md#設定ファイル例jndiを使用してデータベース接続を行う場合) を参照すること。
 
 ```xml
 <!-- SimpleDbTransactionManagerの設定 -->

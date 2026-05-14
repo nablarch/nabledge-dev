@@ -58,7 +58,7 @@ a) nablarch.core.db.statement.SqlParameterParserFactoryの実装クラス
 | クラス名 | 概要 |
 |---|---|
 | nablarch.core.db.statementパッケージ |  |
-| BasicSqlParameterParser | SqlParameterParserのBasic実装クラス。  本クラスでは、下記ルールにしたがいSQL文の解析、及びJDBC実行用のSQL文の変換処理を行う。  * 名前付きバインド変数は、コロン(":")で開始され英(大文字、小文字)数字、   アンダースコア("_")、パーセント("%")で構成されている。 * LIKE検索条件の構築    本機能でサポートする部分一致検索のパターンは下記の3パターンとなっている。    > **Note:** > a) 前方一致検索    > バインド変数名の末尾にパーセントを付加する。   > 例：「:userName%」    > b) 後方一致検索の場合    > バインド変数名の先頭にパーセントを付加する。   > 例：「:%userName」    > c) 部分一致検索の場合    > バインド変数名の前後にパーセントを付加する。   > 例：「:%userName%」    > > **Warning:** > > 後方、部分一致検索は、顧客要件で回避不可能である場合に、顧客と下記デメリットを合意した上で使用すること。    > > デメリット    > > ```   > > 後方、部分一致検索では、インデックスが使用されずにテーブルフルスキャンとなる。   > > これにより、極端な性能劣化が発生する。   > > ``` * Nablarchの拡張構文が埋め込まれたSQL文をJDBC標準のSQL文に変換する。    デフォルトでは、下記の拡張構文を変換する。    * [可変条件構文](../../component/libraries/libraries-04-ObjectSave.md#クラス定義)   * [可変IN構文](../../component/libraries/libraries-04-ObjectSave.md#クラス定義)   * [可変ORDER BY構文](../../component/libraries/libraries-04-ObjectSave.md#クラス定義) |
+| BasicSqlParameterParser | SqlParameterParserのBasic実装クラス。  本クラスでは、下記ルールにしたがいSQL文の解析、及びJDBC実行用のSQL文の変換処理を行う。  * 名前付きバインド変数は、コロン(":")で開始され英(大文字、小文字)数字、   アンダースコア("_")、パーセント("%")で構成されている。 * LIKE検索条件の構築    本機能でサポートする部分一致検索のパターンは下記の3パターンとなっている。    > **Note:** > a) 前方一致検索    > バインド変数名の末尾にパーセントを付加する。   > 例：「:userName%」    > b) 後方一致検索の場合    > バインド変数名の先頭にパーセントを付加する。   > 例：「:%userName」    > c) 部分一致検索の場合    > バインド変数名の前後にパーセントを付加する。   > 例：「:%userName%」    > > **Warning:** > > 後方、部分一致検索は、顧客要件で回避不可能である場合に、顧客と下記デメリットを合意した上で使用すること。    > > デメリット    > > ```   > > 後方、部分一致検索では、インデックスが使用されずにテーブルフルスキャンとなる。   > > これにより、極端な性能劣化が発生する。   > > ``` * Nablarchの拡張構文が埋め込まれたSQL文をJDBC標準のSQL文に変換する。    デフォルトでは、下記の拡張構文を変換する。    * [可変条件構文](../../component/libraries/libraries-04-ObjectSave.md#c-nablarchcoredbstatementsqlconvertorの実装クラス)   * [可変IN構文](../../component/libraries/libraries-04-ObjectSave.md#c-nablarchcoredbstatementsqlconvertorの実装クラス)   * [可変ORDER BY構文](../../component/libraries/libraries-04-ObjectSave.md#c-nablarchcoredbstatementsqlconvertorの実装クラス) |
 
 ##### c) nablarch.core.db.statement.SqlConvertorの実装クラス
 
@@ -110,7 +110,7 @@ SQL文のバインド変数部分には、JDBC標準の「?」を記述するの
 * バインド変数「?」に対応するバインド変数名
 
 > **Note:**
-> BasicSqlParameterParserの仕様に付いては、 [BasicSqlParameterParserの概要](../../component/libraries/libraries-04-ObjectSave.md#クラス定義) を参照すること。
+> BasicSqlParameterParserの仕様に付いては、 [BasicSqlParameterParserの概要](../../component/libraries/libraries-04-ObjectSave.md#b-nablarchcoredbstatementsqlparameterparserの実装クラス) を参照すること。
 > BasicSqlParameterParserの仕様では不十分な場合は、 [SqlParameterParser](../../component/libraries/libraries-04-ObjectSave.md#b-nablarchcoredbstatementsqlparameterparserの実装クラス) の実装クラスを追加し、実装を置き換えて使用すること。
 
 No3.BasicSqlPStatement#executeUpdateByObjectを呼び出しオブジェクトのフィールドの値を登録する。
