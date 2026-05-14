@@ -3458,6 +3458,17 @@ class TestCheckXlsxP1Pairing:
         issues = self._call(str(xlsx_path), data, "Sheet1")
         assert any("[QP]" in i for i in issues), issues
 
+    def test_fail_pair_extra_column_not_in_header(self, tmp_path):
+        """JSON section has a {列名}: {値} line whose column name is absent
+        from the Excel header — converter leakage must be caught as QP FAIL
+        (pair_extra path, verify.py L1588-1595)."""
+        xlsx = self._sheet(tmp_path)
+        data = self._good_json()
+        # Inject a column 'D' that does not exist in the sheet header (A/B/C).
+        data["sections"][0]["content"] += "\nD: 余計な値"
+        issues = self._call(str(xlsx), data, "Sheet1")
+        assert any("[QP]" in i and "unexpected" in i for i in issues), issues
+
 
 # ---------------------------------------------------------------------------
 # Phase 22-B-5a-r3 QA review Findings (7 blockers)

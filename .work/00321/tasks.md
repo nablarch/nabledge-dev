@@ -6,21 +6,13 @@
 
 ## In Progress
 
-### Task 5: QO1 level / QP の bias-avoidance QA レビュー → ✅ 昇格
-
-**Steps:**
-- [ ] QA エキスパートレビュー実施（bias-avoidance、独立コンテキスト）
-- [ ] 全5バージョン verify FAIL 0 確認
-- [ ] レビュー結果を `.work/00321/review-qa-qo1level-qp.md` に保存
-- [ ] マトリクスの ❌ → ✅ に更新
-- [ ] tasks.md 更新 + commit + push
-
 ## Done
 
 - [x] Task 1: シンボル統一（⚠️ 廃止、§3-x と §4 を ✅/❌/— に揃える） — committed `8466ac7`
 - [x] Task 2: 全 ✅ 項目の bias-avoidance QA レビュー実施 — v6 FAIL 0 確認、QA レビュー 0 Findings、test fixes committed `436798e`
 - [x] Task 3: 設計書に §0「この文書を読む前に」追加 — 3 文書に全体像・用語定義・前提知識を補完、committed `2bf704f`
 - [x] Task 4: 変更差分チェック + PR 作成 — 想定外変更なし確認済、PR #342 更新、hints 参照削除 committed `896c1cc`
+- [x] Task 5: QO1 level / QP の bias-avoidance QA レビュー → ✅ 昇格 — Finding 1件（pair_extra テスト欠落）修正済、全5バージョン verify FAIL 0、レビュー結果 `.work/00321/review-qa-qo1level-qp.md`
 
 ---
 
