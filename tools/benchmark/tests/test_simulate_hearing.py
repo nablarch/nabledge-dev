@@ -71,7 +71,11 @@ path: development-tools/testing-framework/testing-framework-01-Abstract.json
 class TestExtractProcessingTypes:
     def test_extracts_from_processing_pattern_h2(self):
         types = extract_processing_types(SAMPLE_INDEX)
-        assert types == ["web-application", "restful-web-service", "nablarch-batch"]
+        assert types == ["ウェブアプリケーション", "RESTfulウェブサービス", "Nablarchバッチ"]
+
+    def test_unknown_slug_falls_back_to_raw(self):
+        index = "# Knowledge Index\n\n## processing-pattern/new-type\n\n### Title\npath: x.json\n"
+        assert extract_processing_types(index) == ["new-type"]
 
     def test_excludes_non_processing_pattern(self):
         types = extract_processing_types(SAMPLE_INDEX)

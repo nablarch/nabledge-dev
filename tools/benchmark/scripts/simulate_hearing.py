@@ -13,6 +13,16 @@ from tools.benchmark.scripts.evaluate import call_llm
 
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 
+SLUG_TO_DISPLAY_NAME = {
+    "web-application": "ウェブアプリケーション",
+    "restful-web-service": "RESTfulウェブサービス",
+    "nablarch-batch": "Nablarchバッチ",
+    "db-messaging": "テーブルをキューとして使ったメッセージング",
+    "http-messaging": "HTTPメッセージング",
+    "jakarta-batch": "Jakartaバッチ",
+    "mom-messaging": "MOMメッセージング",
+}
+
 CLASSIFY_JSON_SCHEMA = json.dumps({
     "type": "object",
     "properties": {
@@ -76,7 +86,7 @@ def extract_processing_types(index_content: str) -> list[str]:
     for line in index_content.splitlines():
         if line.startswith("## processing-pattern/"):
             slug = line[len("## processing-pattern/"):].strip()
-            types.append(slug)
+            types.append(SLUG_TO_DISPLAY_NAME.get(slug, slug))
     return types
 
 
