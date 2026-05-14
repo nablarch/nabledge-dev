@@ -1,8 +1,8 @@
 # Tasks: fix: verify QC2 Excel residue check silently exempts MD structural tokens not authorized by spec
 
-**PR**: TBD
+**PR**: #341
 **Issue**: #335
-**Updated**: 2026-05-11
+**Updated**: 2026-05-14
 
 ## Rules
 
