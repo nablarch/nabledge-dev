@@ -2246,14 +2246,12 @@ def check_source_links(
             # (spec §3-2-2).  The quadrants:
             #   - Q1: label in label_map → resolved title must appear (PASS/FAIL)
             #   - Q2: label in label_map, title missing from JSON → FAIL
-            #   - Q3: label NOT in label_map, IS in corpus → PASS (mapping
-            #         scope gap, Sphinx parity)
-            #   - Q4: label NOT in corpus → PASS (Sphinx-parity dangling)
+            #   - Q3: label NOT in label_map, IS in corpus → FAIL (QL1)
+            #   - Q4: label NOT in corpus → FAIL (QL1)
             #   - Q5: display text absent from JSON entirely → FAIL
-            # Bare refs emit ``label`` as the display text, so the label
-            # name itself is the reader-visible fallback (Sphinx emits
-            # ``<span class="xref">label</span>``).  Verify treats the
-            # label string as the required display text for Q3/Q4.
+            # Q3/Q4: RBKC can access the full corpus and must resolve :ref: to
+            # a MD link.  Emitting display text only is a RBKC bug (spec §3-2-2,
+            # Issue #334).
             if not display and label not in seen_labels:
                 seen_labels.add(label)
                 # docutils normalises label names to lowercase; label_map keys
@@ -2261,14 +2259,13 @@ def check_source_links(
                 target = label_map.get(label.lower())
                 from scripts.common.labels import UNRESOLVED
                 if target is None or target is UNRESOLVED:
-                    # Q3 / Q4 — label not resolvable within RBKC scope.
-                    # Under Sphinx parity, create emits display text only;
-                    # verify requires the display text (= label name) is in
-                    # JSON, otherwise Q5 (data loss) applies.
-                    if label not in json_full:
-                        issues.append(
-                            f"[QL1] :ref:`{label}` dangling and display text missing from JSON"
-                        )
+                    # Q3 / Q4 — label not resolvable as MD link within RBKC
+                    # scope.  This is a FAIL regardless of whether the display
+                    # text (= label name) is present in JSON (spec §3-2-2
+                    # Issue #334: PASS+WARNING escape hatch removed).
+                    issues.append(
+                        f"[QL1] :ref:`{label}` unresolved (Q3/Q4): RBKC emitted display text only"
+                    )
                     continue
                 # Q1 / Q2 — resolvable within RBKC scope.  Title must
                 # appear in JSON; otherwise create failed to emit the link
