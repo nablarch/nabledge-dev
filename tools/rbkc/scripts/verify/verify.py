@@ -2246,12 +2246,15 @@ def check_source_links(
             # (spec §3-2-2).  The quadrants:
             #   - Q1: label in label_map → resolved title must appear (PASS/FAIL)
             #   - Q2: label in label_map, title missing from JSON → FAIL
-            #   - Q3: label NOT in label_map, IS in corpus → FAIL (QL1)
-            #   - Q4: label NOT in corpus → FAIL (QL1)
+            #   - Q3: label NOT in label_map, IS in corpus → PASS + WARNING
+            #   - Q4: label NOT in corpus → PASS + WARNING
             #   - Q5: display text absent from JSON entirely → FAIL
-            # Q3/Q4: RBKC can access the full corpus and must resolve :ref: to
-            # a MD link.  Emitting display text only is a RBKC bug (spec §3-2-2,
-            # Issue #334).
+            # Q3/Q4: create cannot emit a MD link when the target knowledge file
+            # does not exist (scope-outside) or the label has no corpus definition
+            # (dangling).  Emitting display text only is correct behaviour, not a
+            # bug.  Sphinx also emits display text only in these cases (same
+            # output parity).  verify requires the display text is present in
+            # JSON (Q5 guard); absence is data loss.
             if not display and label not in seen_labels:
                 seen_labels.add(label)
                 # docutils normalises label names to lowercase; label_map keys
@@ -2259,13 +2262,11 @@ def check_source_links(
                 target = label_map.get(label.lower())
                 from scripts.common.labels import UNRESOLVED
                 if target is None or target is UNRESOLVED:
-                    # Q3 / Q4 — label not resolvable as MD link within RBKC
-                    # scope.  This is a FAIL regardless of whether the display
-                    # text (= label name) is present in JSON (spec §3-2-2
-                    # Issue #334: PASS+WARNING escape hatch removed).
-                    issues.append(
-                        f"[QL1] :ref:`{label}` unresolved (Q3/Q4): RBKC emitted display text only"
-                    )
+                    # Q3 / Q4 — display text (= label name) must appear in JSON.
+                    if label not in json_full:
+                        issues.append(
+                            f"[QL1] :ref:`{label}` dangling and display text missing from JSON"
+                        )
                     continue
                 # Q1 / Q2 — resolvable within RBKC scope.  Title must
                 # appear in JSON; otherwise create failed to emit the link

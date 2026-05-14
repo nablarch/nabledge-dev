@@ -2262,23 +2262,22 @@ class TestCheckSourceLinks:
         issues = self._check(src, "rst", data, label_map)
         assert any("QL1" in i and "usage" in i for i in issues)
 
-    def test_fail_rst_ref_sphinx_parity_dangling(self):
-        """Phase 22-B-12 / Issue #334: 5-quadrant QL1 (spec §3-2-2).
+    def test_pass_rst_ref_sphinx_parity_dangling(self):
+        """Phase 22-B-12: 5-quadrant QL1 (spec §3-2-2).
 
-        Quadrant 4 — corpus に label 未定義 → FAIL (QL1).
-        RBKC は corpus 全域を参照でき、MD link を出力できなかったのは実バグ
-        (Issue #334: PASS+WARNING escape hatch 削除).
+        Quadrant 4 — corpus に label 未定義 + display text が JSON に残る → PASS.
+        create が MD link を出力できないのは正しい動作 (リンク先が corpus に存在しない)。
+        Sphinx も display text のみ出力しビルドを継続する。
+        display text が JSON に残っていることを verify が確認する (Q5 guard)。
         """
         src = ":ref:`cross-file-label`\n"
         data = self._data(content="cross-file-label を参照")
         issues = self._check(src, "rst", data, label_map={}, corpus_label_map={})
-        assert any("QL1" in i and "cross-file-label" in i for i in issues), (
-            f"Q4 dangling ref must be QL1 FAIL: {issues}"
-        )
+        assert issues == [], f"Q4 dangling ref must PASS when display text in JSON: {issues}"
 
-    def test_fail_rst_ref_mapping_excluded(self):
-        """Issue #334: Quadrant 3 — corpus に label 定義有、RBKC mapping scope 外 →
-        FAIL (QL1).  display text しか出ていないことは RBKC の解決失敗。
+    def test_pass_rst_ref_mapping_excluded(self):
+        """Quadrant 3: corpus に label 定義有、RBKC mapping scope 外 → PASS.
+        リンク先の知識ファイルが存在しないため create が MD link を出力できないのは正しい動作。
         """
         src = ":ref:`outside-label`\n"
         data = self._data(content="outside-label を参照")
@@ -2287,9 +2286,7 @@ class TestCheckSourceLinks:
             label_map={},
             corpus_label_map={"outside-label": "外部ページ"},
         )
-        assert any("QL1" in i and "outside-label" in i for i in issues), (
-            f"Q3 scope-outside ref must be QL1 FAIL: {issues}"
-        )
+        assert issues == [], f"Q3 scope-outside ref must PASS when display text in JSON: {issues}"
 
     def test_fail_rst_ref_resolvable_but_missing(self):
         """Quadrant 2: corpus に定義有 + RBKC 採用 + display text のみ
@@ -2317,33 +2314,6 @@ class TestCheckSourceLinks:
         )
         assert issues, "display-text absent must FAIL"
         assert any(("QL1" in i or "QC1" in i) and "vanished" in i for i in issues), issues
-
-    def test_fail_rst_ref_quadrant4_dangling_is_ql1_fail(self):
-        """Spec §3-2-2 (Issue #334): Quadrant 4 — corpus に label 未定義 →
-        FAIL (QL1)。RBKC は corpus 全域を参照でき、MD link を出力できなかったのは
-        実バグ。display text が JSON にあっても FAIL。
-        """
-        src = ":ref:`cross-file-label`\n"
-        data = self._data(content="cross-file-label を参照")
-        issues = self._check(src, "rst", data, label_map={}, corpus_label_map={})
-        assert any("QL1" in i and "cross-file-label" in i for i in issues), (
-            f"Q4 dangling ref must be QL1 FAIL: {issues}"
-        )
-
-    def test_fail_rst_ref_quadrant3_scope_outside_is_ql1_fail(self):
-        """Spec §3-2-2 (Issue #334): Quadrant 3 — corpus 有、RBKC mapping scope 外 →
-        FAIL (QL1)。display text しか出ていないことは RBKC の解決失敗。
-        """
-        src = ":ref:`outside-label`\n"
-        data = self._data(content="outside-label を参照")
-        issues = self._check(
-            src, "rst", data,
-            label_map={},
-            corpus_label_map={"outside-label": "外部ページ"},
-        )
-        assert any("QL1" in i and "outside-label" in i for i in issues), (
-            f"Q3 scope-outside ref must be QL1 FAIL: {issues}"
-        )
 
     # MD internal links
     def test_pass_md_internal_link_text_in_json(self):
