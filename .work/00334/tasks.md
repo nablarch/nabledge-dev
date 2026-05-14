@@ -2,7 +2,7 @@
 
 **PR**: #340
 **Issue**: #334
-**Updated**: 2026-05-13
+**Updated**: 2026-05-14
 
 ## Fact-Based Investigation Rule
 
