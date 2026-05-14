@@ -193,9 +193,17 @@ class TestBuildLabelDocMap:
         Reproduction: v1.4 link.rst had `.. _ResponseMessage: ../../javadoc/...`
         which caused the real section label `.. _responseMessage:` in
         01_Utility.rst to remain UNRESOLVED.
+
+        The scanner-level assertion (`_scan_rst_labels` returns nothing for
+        the URL-only file) is order-independent and unconditionally exercises
+        the failure mode regardless of `rglob` traversal order.
         """
         import textwrap
-        from scripts.common.labels import build_label_doc_map, LabelTarget, UNRESOLVED
+        from scripts.common.labels import (
+            _scan_rst_labels,
+            build_label_doc_map,
+            UNRESOLVED,
+        )
 
         src_root = (
             tmp_path / ".lw/nab-official/v6/nablarch-document/ja/"
@@ -204,7 +212,8 @@ class TestBuildLabelDocMap:
         src_root.mkdir(parents=True)
 
         # File 1: external URL hyperlink definition (should be ignored)
-        (src_root / "link.rst").write_text(textwrap.dedent("""\
+        link_rst = src_root / "link.rst"
+        link_rst.write_text(textwrap.dedent("""\
             Links
             =====
 
@@ -225,6 +234,15 @@ class TestBuildLabelDocMap:
 
             Content.
             """), encoding="utf-8")
+
+        # Scanner-level check (order-independent): the refuri target in link.rst
+        # must produce zero label entries — the skip fires before setdefault.
+        # Without the fix, `_scan_rst_labels` returns [(['mylabel'], '', ...)]
+        # (UNRESOLVED) which setdefault would then register before usage.rst runs.
+        found, _ = _scan_rst_labels(link_rst)
+        assert found == [], (
+            f"External URL target must not produce any label entries: {found}"
+        )
 
         mappings_dir = tmp_path / "tools/rbkc/mappings"
         mappings_dir.mkdir(parents=True)
