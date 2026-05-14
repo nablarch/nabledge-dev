@@ -1245,3 +1245,151 @@ class TestParagraphAnchorTitleResolution:
             "digit+paren paragraph must resolve as title"
         )
         assert v.section_title == "2) Formクラスの精査処理実装"
+
+    def test_entry_parent_label_resolves_to_preceding_xparen_paragraph(self, tmp_path):
+        """Label inside a table cell (entry) resolves via preceding X) paragraph.
+
+        Real example from v1.x 04_ObjectSave.rst:
+
+            .. _sql-parameter-parser-label:
+
+            b) nablarch.core.db.statement.SqlParameterParserの実装クラス
+
+            .. table-like RST ..
+               (inside a table cell)
+               .. _basic-sql-parameter-parser-label:
+
+        AST structure: target → entry → row → tbody → tgroup → table → block_quote → section
+        The enclosing section's direct child is block_quote at index N.
+        At N-1: the X) paragraph 'b) …'.
+        At N-2: a target node (sql-parameter-parser-label) — this is the
+        _walk_section synthetic-section trigger; its presence guarantees
+        the X) paragraph becomes a synthetic section in the knowledge JSON.
+        The label must resolve to 'b) …' (not the enclosing section title).
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "entry_parent.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            クラス定義
+            ----------
+
+            .. _sql-parameter-parser-factory-label:
+
+            \\a) nablarch.core.db.statement.SqlParameterParserFactoryの実装クラス
+
+            .. list-table::
+
+               * - BasicSqlParameterParserFactory
+                 - ファクトリクラス。
+
+            .. _sql-parameter-parser-label:
+
+            \\b) nablarch.core.db.statement.SqlParameterParserの実装クラス
+
+            .. list-table::
+
+               * - BasicSqlParameterParser
+
+                   .. _basic-sql-parameter-parser-label:
+
+                 - パーサクラス。
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "basic-sql-parameter-parser-label" in m
+        v = m["basic-sql-parameter-parser-label"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "b) nablarch.core.db.statement.SqlParameterParserの実装クラス", (
+            f"Expected 'b) nablarch…' but got {v.title!r} — "
+            "entry-parent label must resolve to preceding X) paragraph"
+        )
+        assert v.section_title == "b) nablarch.core.db.statement.SqlParameterParserの実装クラス"
+
+    def test_entry_parent_label_no_xparen_falls_back_to_enclosing_section(self, tmp_path):
+        """Label in table cell with no preceding X) paragraph falls back to enclosing section.
+
+        When the table is not preceded by an X) paragraph, the label should
+        resolve to the enclosing section title (existing behaviour, not regressed).
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "entry_parent_fallback.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            クラス定義
+            ----------
+
+            Some intro text without X) pattern.
+
+            .. list-table::
+
+               * - BasicFoo
+
+                   .. _basic-foo-label:
+
+                 - Foo description.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "basic-foo-label" in m
+        v = m["basic-foo-label"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "クラス定義", (
+            f"Expected 'クラス定義' but got {v.title!r} — "
+            "entry-parent label without X) paragraph must fall back to enclosing section"
+        )
+        assert v.section_title == "クラス定義"
+
+    def test_entry_parent_label_xparen_without_target_falls_back_to_enclosing_section(
+        self, tmp_path
+    ):
+        """X) paragraph before table with no preceding target → fall back to enclosing section.
+
+        When the X) paragraph is present but has no preceding target node,
+        _walk_section does NOT generate a synthetic section for it — so the
+        X) paragraph cannot be a valid anchor target.  The label must resolve
+        to the enclosing section title (not the X) text).
+
+        This exercises branch 8 of _entry_parent_xparen_title:
+          prev_sib IS an X) paragraph (regex matches) but prev_prev_sib is NOT
+          a target node → the function returns None.
+        """
+        from scripts.common.labels import build_label_map, LabelTarget
+
+        rst = tmp_path / "entry_parent_no_target.rst"
+        rst.write_text(textwrap.dedent("""\
+            Title
+            =====
+
+            クラス定義
+            ----------
+
+            \\b) some text
+
+            .. list-table::
+
+               * - BasicFoo
+
+                   .. _basic-foo-label:
+
+                 - Foo description.
+            """), encoding="utf-8")
+
+        m = build_label_map(tmp_path)
+
+        assert "basic-foo-label" in m
+        v = m["basic-foo-label"]
+        assert isinstance(v, LabelTarget)
+        assert v.title == "クラス定義", (
+            f"Expected 'クラス定義' but got {v.title!r} — "
+            "X) paragraph without preceding target must not be used as anchor title"
+        )
+        assert v.section_title == "クラス定義"
