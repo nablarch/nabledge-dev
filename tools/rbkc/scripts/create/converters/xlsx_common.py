@@ -47,7 +47,7 @@ def load_sheet_subtype_map(mapping_path: Path) -> dict[tuple[str, str], str]:
         return {}
     result: dict[tuple[str, str], str] = {}
     import re
-    row_re = re.compile(r'^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(P2-1|P2-3|P2-4)\s*\|')
+    row_re = re.compile(r'^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(P1-group|P2-1|P2-3|P2-4)\s*\|')
     for line in mapping_path.read_text(encoding="utf-8").splitlines():
         m = row_re.match(line)
         if m:
@@ -410,7 +410,10 @@ def sheet_to_result(
         preamble = _collect_preamble(
             sheet.rows, body_start, header_start, title_row_extras
         )
-        sections, data_rows = _build_p1_sections(sheet, data_start, columns)
+        if sheet_subtype == "P1-group":
+            sections, data_rows = _build_p1_group_sections(sheet, data_start, columns)
+        else:
+            sections, data_rows = _build_p1_sections(sheet, data_start, columns)
         result = RSTResult(
             title=title,
             no_knowledge_content=False,
@@ -557,6 +560,70 @@ def _pick_title_col(columns: list[str]) -> int:
 
 def _first_non_empty(cells: list[str]) -> str:
     return next((c for c in cells if c), "")
+
+
+def _find_group_key_col(columns: list[str]) -> int:
+    """Find the column used as group key (typically the "No" column)."""
+    for cx, name in enumerate(columns):
+        if name in ("No", "No.", "№", "#"):
+            return cx
+    return -1
+
+
+def _build_p1_group_sections(
+    sheet: RawSheet,
+    data_start: int,
+    columns: list[str],
+) -> tuple[list[Section], list[list[str]]]:
+    """Group consecutive rows by the No column into one section per group.
+
+    Rows where the group key column is non-empty start a new group.
+    Rows where it is empty belong to the preceding group.
+    Rows before the first group key are discarded from sections.
+    """
+    sections: list[Section] = []
+    data_rows: list[list[str]] = []
+    group_key_col = _find_group_key_col(columns)
+    title_col = _pick_title_col(columns)
+    width = len(columns)
+
+    current_title = ""
+    current_lines: list[str] = []
+
+    def _flush_group():
+        if current_title and current_lines:
+            sections.append(Section(
+                title=current_title,
+                content="\n\n".join(current_lines),
+            ))
+
+    for r in sheet.rows[data_start:]:
+        cells = [c for c in r[:width]] + [""] * max(0, width - len(r))
+        if not any(cells):
+            continue
+        data_rows.append(cells)
+
+        has_group_key = (
+            group_key_col >= 0
+            and group_key_col < len(cells)
+            and cells[group_key_col]
+        )
+        if has_group_key:
+            _flush_group()
+            raw_title = cells[title_col] if 0 <= title_col < width else ""
+            current_title = _flatten_ws(raw_title or _first_non_empty(cells))
+            current_lines = []
+
+        content_parts = []
+        for cx, col in enumerate(columns):
+            if cx >= len(cells) or not cells[cx] or not col:
+                continue
+            content_parts.append(f"{col}: {_flatten_ws(cells[cx])}")
+        if content_parts:
+            current_lines.append("\n".join(content_parts))
+
+    _flush_group()
+    return sections, data_rows
 
 
 def _build_p2_1_meta(
