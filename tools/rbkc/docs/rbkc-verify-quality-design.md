@@ -56,8 +56,6 @@ RBKC（RST/Markdown/Excel → JSON 知識ファイル変換）の出力品質を
 
 RBKC の内部実装（converters、resolver 等）の正しさ。verify はソースと出力だけを見る。独立性の詳細は 2-2 参照。
 
-hints（キーワード索引）は RBKC のスコープ外である。RBKC は content（タイトル + 本文）のみを生成し、hints は別 Issue の AI 駆動フローで扱う。したがって verify も hints を検証しない。
-
 ---
 
 ## 2. 品質基準
