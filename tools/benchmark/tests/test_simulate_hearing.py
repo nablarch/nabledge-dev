@@ -40,21 +40,25 @@ path: component/libraries/libraries-universal-dao.json
 
 ## processing-pattern/web-application
 
-### ウェブアプリケーション
+### アプリケーションの責務配置
+path: processing-pattern/web-application/web-application-application-design.json
+- s1: 概要
+
+### アーキテクチャ概要
 path: processing-pattern/web-application/web-application-architecture.json
-- s1: アーキテクチャ概要
+- s1: 概要
 
 ## processing-pattern/restful-web-service
 
-### RESTfulウェブサービス
-path: processing-pattern/restful-web-service/restful-web-service-architecture.json
-- s1: アーキテクチャ概要
+### RESTFulウェブサービスの責務配置
+path: processing-pattern/restful-web-service/restful-web-service-application-design.json
+- s1: 概要
 
 ## processing-pattern/nablarch-batch
 
-### Nablarchバッチ
-path: processing-pattern/nablarch-batch/nablarch-batch-architecture.json
-- s1: アーキテクチャ概要
+### アプリケーションの責務配置
+path: processing-pattern/nablarch-batch/nablarch-batch-application-design.json
+- s1: 概要
 
 ## development-tools/testing-framework
 
@@ -65,14 +69,14 @@ path: development-tools/testing-framework/testing-framework-01-Abstract.json
 
 
 class TestExtractProcessingTypes:
-    def test_extracts_from_processing_pattern_categories(self):
+    def test_extracts_from_processing_pattern_h2(self):
         types = extract_processing_types(SAMPLE_INDEX)
-        assert types == ["ウェブアプリケーション", "RESTfulウェブサービス", "Nablarchバッチ"]
+        assert types == ["web-application", "restful-web-service", "nablarch-batch"]
 
     def test_excludes_non_processing_pattern(self):
         types = extract_processing_types(SAMPLE_INDEX)
-        assert "ユニバーサルDAO" not in types
-        assert "テスティングフレームワーク" not in types
+        assert "component/libraries" not in types
+        assert "development-tools/testing-framework" not in types
 
     def test_empty_index(self):
         assert extract_processing_types("# Knowledge Index\n") == []

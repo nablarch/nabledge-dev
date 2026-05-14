@@ -68,19 +68,15 @@ EXTRACT_JSON_SCHEMA = json.dumps({
 
 
 def extract_processing_types(index_content: str) -> list[str]:
-    """Extract processing type names from index.md processing-pattern H3 headings."""
+    """Extract processing type category names from index.md H2 headings.
+
+    Extracts the subcategory part from headings like '## processing-pattern/web-application'.
+    """
     types = []
-    in_processing_pattern = False
     for line in index_content.splitlines():
         if line.startswith("## processing-pattern/"):
-            in_processing_pattern = True
-            continue
-        if line.startswith("## ") and not line.startswith("## processing-pattern/"):
-            in_processing_pattern = False
-            continue
-        if in_processing_pattern and line.startswith("### "):
-            title = line[4:].strip()
-            types.append(title)
+            slug = line[len("## processing-pattern/"):].strip()
+            types.append(slug)
     return types
 
 
