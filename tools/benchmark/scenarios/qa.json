@@ -852,6 +852,79 @@
           }
         ]
       }
+    },
+    {
+      "id": "qa-14",
+      "given": {
+        "usecase": "qa",
+        "category": "release-notes",
+        "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+        "expected_hearing": "should_skip",
+        "hearing_answer": {
+          "processing_type": null,
+          "goal": "Nablarch 5からNablarch 6へのバージョンアップでJakarta EE 10対応の影響を調べる"
+        }
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある",
+            "section": "releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s2"
+          },
+          {
+            "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている",
+            "section": "releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s3"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s4"
+          },
+          {
+            "section": "releases/releases/releases-nablarch6-releasenote-6.json:s2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-15",
+      "given": {
+        "usecase": "qa",
+        "category": "security-check",
+        "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+        "expected_hearing": "should_skip",
+        "hearing_answer": {
+          "processing_type": "ウェブアプリケーション",
+          "goal": "XSS対策のNablarch対応状況を確認する"
+        }
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能",
+            "section": "check/security-check/security-check-2.チェックリスト.json:s21"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "check/security-check/security-check-2.チェックリスト.json:s22"
+          },
+          {
+            "section": "check/security-check/security-check-2.チェックリスト.json:s25"
+          },
+          {
+            "section": "check/security-check/security-check-2.チェックリスト.json:s26"
+          }
+        ]
+      }
     }
   ]
 }
