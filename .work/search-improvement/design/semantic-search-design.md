@@ -19,7 +19,7 @@
 
 ### プロンプト構成
 
-部品: `tools/benchmark/prompts/semantic-search-stage1.md`, `semantic-search-stage2.md`
+部品: `tools/benchmark/components/prompts/semantic-search-stage1.md`, `semantic-search-stage2.md`
 スキルワークフロー: `workflows/semantic-search.md`（フェーズBで作成）
 
 ```

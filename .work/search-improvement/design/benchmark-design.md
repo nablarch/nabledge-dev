@@ -504,40 +504,45 @@ subprocess.run(
 
 ```
 tools/benchmark/
+  components/
+    prompts/
+      hearing-classify.md          ← ヒアリング分類プロンプト
+      hearing-extract.md           ← ヒアリング抽出プロンプト
+      semantic-search-stage1.md    ← 意味検索Stage1プロンプト
+      semantic-search-stage2.md    ← 意味検索Stage2プロンプト
+      answer.md                    ← 回答生成プロンプト（トレース付）
+      answer-generation.md         ← 回答生成プロンプト（run.py用）
+      verify.md                    ← 根拠検証プロンプト
+    scripts/
+      keyword-search.sh           ← キーワード検索スクリプト
+      read-sections.sh            ← セクション本文取得
   prompts/
-    hearing-classify.md          ← ヒアリング分類プロンプト
-    hearing-extract.md           ← ヒアリング抽出プロンプト
-    semantic-search-stage1.md    ← 意味検索Stage1プロンプト
-    semantic-search-stage2.md    ← 意味検索Stage2プロンプト
-    answer.md                    ← 回答生成プロンプト（トレース付）
-    answer-generation.md         ← 回答生成プロンプト（run.py用）
-    verify.md                    ← 根拠検証プロンプト
-    c-claim-judge.md             ← 回答精度LLM判定プロンプト
-    hallucination-judge.md       ← ハルシネーション判定プロンプト
+    c-claim-judge.md               ← 回答精度LLM判定プロンプト
+    hallucination-judge.md         ← ハルシネーション判定プロンプト
   scenarios/
-    qa.json                      ← QAシナリオ定義（15件）
-    keyword-search.json          ← キーワード検索シナリオ定義（12件）
+    qa.json                        ← QAシナリオ定義（15件）
+    keyword-search.json            ← キーワード検索シナリオ定義（12件）
   scripts/
-    simulate_hearing.py          ← ヒアリング部品ベンチマーク
-    simulate_semantic_search.py  ← 意味検索部品ベンチマーク
-    simulate_answer.py           ← 回答生成部品ベンチマーク
-    simulate_verify.py           ← 検証部品ベンチマーク
-    simulate_answer_verify.py    ← 回答+検証部品ベンチマーク
-    run.py                       ← 部品チェーン実行（hearing→search→answer）
-    run_e2e.py                   ← E2Eベンチマーク実行（フェーズBで追加）
-    evaluate.py                  ← 評価（ルールベース + LLM判定）
-    report.py                    ← レポート生成（比較レポート含む）
-    generate_index.py            ← index.md生成（ベンチマーク用）
+    simulate_hearing.py            ← ヒアリング部品ベンチマーク
+    simulate_semantic_search.py    ← 意味検索部品ベンチマーク
+    simulate_answer.py             ← 回答生成部品ベンチマーク
+    simulate_verify.py             ← 検証部品ベンチマーク
+    simulate_answer_verify.py      ← 回答+検証部品ベンチマーク
+    run.py                         ← 部品チェーン実行（hearing→search→answer）
+    run_e2e.py                     ← E2Eベンチマーク実行（フェーズBで追加）
+    evaluate.py                    ← 評価（ルールベース + LLM判定）
+    report.py                      ← レポート生成（比較レポート含む）
+    generate_index.py              ← index.md生成（ベンチマーク用）
   results/
-    {run-label}/                 ← 実行結果（gitコミットして比較可能にする）
+    {run-label}/                   ← 実行結果（gitコミットして比較可能にする）
       {scenario-id}/
-        hearing.json             ← 診断: ヒアリング結果
-        search.json              ← 診断: 検索結果（セクションIDリスト）
-        answer.md                ← 診断: 回答テキスト
-        metrics.json             ← パフォーマンスメトリクス
-        evaluation.json          ← 自動判定結果
-        final.json               ← 人間確定後の最終結果
-      report.md                  ← 集計レポート
+        hearing.json               ← 診断: ヒアリング結果
+        search.json                ← 診断: 検索結果（セクションIDリスト）
+        answer.md                  ← 診断: 回答テキスト
+        metrics.json               ← パフォーマンスメトリクス
+        evaluation.json            ← 自動判定結果
+        final.json                 ← 人間確定後の最終結果
+      report.md                    ← 集計レポート
 ```
 
 ### metrics.jsonスキーマ
