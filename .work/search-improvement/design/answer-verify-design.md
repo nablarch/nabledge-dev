@@ -46,7 +46,7 @@ verify.jsonは診断情報として、改善サイクルの原因切り分けに
 ## answer.md（回答生成）
 
 部品: `tools/benchmark/prompts/answer.md`（トレース付きJSON出力）
-スキルワークフロー: `workflows/qa/answer.md`（fork元で作成）
+スキルワークフロー: `workflows/qa/answer.md`（フェーズBで作成）
 
 ### 入出力
 
@@ -138,7 +138,7 @@ verify.jsonは診断情報として、改善サイクルの原因切り分けに
 ## verify.md（根拠検証）
 
 部品: `tools/benchmark/prompts/verify.md`
-スキルワークフロー: `workflows/qa/verify.md`（fork元で作成）
+スキルワークフロー: `workflows/qa/verify.md`（フェーズBで作成）
 
 ### 入出力
 

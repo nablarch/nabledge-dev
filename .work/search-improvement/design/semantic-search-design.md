@@ -20,7 +20,7 @@
 ### プロンプト構成
 
 部品: `tools/benchmark/prompts/semantic-search-stage1.md`, `semantic-search-stage2.md`
-スキルワークフロー: `workflows/semantic-search.md`（fork元で作成）
+スキルワークフロー: `workflows/semantic-search.md`（フェーズBで作成）
 
 ```
 入力: 質問文, ヒアリング回答（あれば）
