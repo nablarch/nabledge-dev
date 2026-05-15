@@ -217,6 +217,7 @@ def run_e2e_all(
     model: str = "sonnet",
     scenario_ids: list[str] | None = None,
     knowledge_dir: str | None = None,
+    timeout: int = 180,
 ) -> dict:
     """Run all scenarios end-to-end and save results.
 
@@ -226,6 +227,8 @@ def run_e2e_all(
         output_dir: Directory to save results.
         model: Claude model to use.
         scenario_ids: Optional list of scenario IDs to run (runs all if None).
+        knowledge_dir: Path to knowledge directory; enables evaluate_scenario step.
+        timeout: Subprocess timeout in seconds per scenario.
 
     Returns:
         Summary dict with total_scenarios and per-scenario info.
@@ -243,7 +246,7 @@ def run_e2e_all(
             continue
 
         print(f"Running {sid}...", file=sys.stderr)
-        result = run_e2e_scenario(scenario, skill_dir, model=model)
+        result = run_e2e_scenario(scenario, skill_dir, model=model, timeout=timeout)
         save_e2e_results(str(out), sid, result)
 
         if knowledge_dir is not None:
@@ -285,6 +288,7 @@ def main():
     parser.add_argument("--model", default="sonnet", help="LLM model (default: sonnet)")
     parser.add_argument("--scenario-ids", help="Comma-separated scenario IDs to run")
     parser.add_argument("--knowledge-dir", help="Knowledge directory for LLM evaluation (enables evaluate.py step)")
+    parser.add_argument("--timeout", type=int, default=180, help="Subprocess timeout in seconds per scenario (default: 180)")
     args = parser.parse_args()
 
     scenario_ids = args.scenario_ids.split(",") if args.scenario_ids else None
@@ -296,6 +300,7 @@ def main():
         model=args.model,
         scenario_ids=scenario_ids,
         knowledge_dir=args.knowledge_dir,
+        timeout=args.timeout,
     )
 
     print(f"\nCompleted: {summary['total_scenarios']} scenarios", file=sys.stderr)
