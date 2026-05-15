@@ -127,7 +127,7 @@ def _extract_metrics(claude_output: dict) -> dict:
             "cache_read_input_tokens": usage.get("cache_read_input_tokens", 0),
             "cache_creation_input_tokens": usage.get("cache_creation_input_tokens", 0),
         },
-        "model_usage": claude_output.get("model_usage", {}),
+        "model_usage": claude_output.get("modelUsage", {}),
     }
 
 

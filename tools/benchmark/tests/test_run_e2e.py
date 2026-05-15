@@ -461,7 +461,7 @@ class TestRunE2eScenario:
                 "total_cost_usd": 0.01,
                 "usage": {"input_tokens": 5000, "output_tokens": 1000,
                           "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
-                "model_usage": {"claude-sonnet-4-6": {"input_tokens": 5000, "cost_usd": 0.01}},
+                "modelUsage": {"claude-sonnet-4-6": {"input_tokens": 5000, "cost_usd": 0.01}},
             }
             mock_proc = type("P", (), {
                 "returncode": 0,
