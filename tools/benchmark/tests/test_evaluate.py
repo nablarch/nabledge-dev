@@ -149,12 +149,13 @@ class TestCalculateAccuracyScore:
         ]
         assert calculate_accuracy_score(verdicts) == 0.0
 
-    def test_uncertain_not_counted_as_present(self):
+    def test_uncertain_returns_none(self):
+        # Design spec: UNCERTAIN-containing scenarios are excluded from aggregation (score=None)
         verdicts = [
             {"verdict": "PRESENT"},
             {"verdict": "UNCERTAIN"},
         ]
-        assert calculate_accuracy_score(verdicts) == 0.5
+        assert calculate_accuracy_score(verdicts) is None
 
     def test_empty_returns_none(self):
         assert calculate_accuracy_score([]) is None
@@ -392,7 +393,8 @@ class TestEvaluateScenario:
             scenario, runner_output, "/dummy", mock_llm,
             section_loader=mock_load_section,
         )
-        assert result["scores"]["accuracy"] == 0.5
+        # UNCERTAIN present → score is None (excluded from aggregation per design spec)
+        assert result["scores"]["accuracy"] is None
         assert result["needs_human_review"] is True
         assert len(result["human_review_items"]) == 1
 
@@ -457,7 +459,7 @@ class TestEvaluateAll:
             return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
 
         with patch("tools.benchmark.scripts.evaluate.call_llm", mock_llm):
-            results = evaluate_all(tmpdir, str(scenarios_path), "/dummy", "sonnet")
+            results = evaluate_all(tmpdir, str(scenarios_path), "/dummy")
 
         assert len(results) == 1
         assert results[0]["scenario_id"] == "pre-01"
@@ -494,7 +496,7 @@ class TestEvaluateAll:
             return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
 
         with patch("tools.benchmark.scripts.evaluate.call_llm", mock_llm):
-            evaluate_all(tmpdir, str(scenarios_path), "/dummy", "sonnet")
+            evaluate_all(tmpdir, str(scenarios_path), "/dummy")
 
         eval_path = scenario_dir / "evaluation.json"
         with open(eval_path, encoding="utf-8") as f:

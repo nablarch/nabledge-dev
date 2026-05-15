@@ -40,7 +40,12 @@ def _make_evaluation(
             "hearing": hearing or {"status": "skipped", "questions": []},
             "search_sections": search or ["a.json:s1"],
         },
-        "metrics": metrics or {"duration_ms": 1000, "total_tokens": 500, "tool_uses": 3},
+        "metrics": metrics or {
+            "duration_ms": 1000, "duration_api_ms": 900, "num_turns": 3,
+            "total_cost_usd": 0.01,
+            "usage": {"input_tokens": 400, "output_tokens": 100, "cache_read_input_tokens": 200, "cache_creation_input_tokens": 50},
+            "model_usage": {},
+        },
     }
 
 
@@ -74,11 +79,15 @@ class TestFormatScenarioReport:
 
     def test_report_includes_metrics(self):
         evaluation = _make_evaluation(
-            metrics={"duration_ms": 45000, "total_tokens": 15000, "tool_uses": 8}
+            metrics={
+                "duration_ms": 45000, "duration_api_ms": 42000, "num_turns": 8,
+                "total_cost_usd": 0.045,
+                "usage": {"input_tokens": 12500, "output_tokens": 2500, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+                "model_usage": {},
+            }
         )
         report = format_scenario_report(evaluation)
         assert "45" in report or "45000" in report
-        assert "15" in report or "15000" in report
 
 
 class TestFormatSummaryReport:
@@ -124,20 +133,21 @@ class TestFormatSummaryReport:
         assert "| 回答精度 | 1 | 0 | 1" in report
 
     def test_summary_metrics_section(self):
+        def _m(duration_ms):
+            return {
+                "duration_ms": duration_ms, "duration_api_ms": duration_ms - 1000,
+                "num_turns": 5, "total_cost_usd": 0.04,
+                "usage": {"input_tokens": 10000, "output_tokens": 2000, "cache_read_input_tokens": 500, "cache_creation_input_tokens": 100},
+                "model_usage": {},
+            }
         evaluations = [
-            _make_evaluation(
-                scenario_id="pre-01",
-                metrics={"duration_ms": 30000, "total_tokens": 10000, "tool_uses": 5},
-            ),
-            _make_evaluation(
-                scenario_id="pre-02",
-                metrics={"duration_ms": 50000, "total_tokens": 20000, "tool_uses": 10},
-            ),
+            _make_evaluation(scenario_id="pre-01", metrics=_m(30000)),
+            _make_evaluation(scenario_id="pre-02", metrics=_m(50000)),
         ]
         report = format_summary_report(evaluations)
-        assert "メトリクスサマリー" in report
+        assert "パフォーマンスサマリー" in report
         assert "実行時間" in report
-        assert "トークン量" in report
+        assert "コスト" in report
 
     def test_empty_evaluations(self):
         report = format_summary_report([])

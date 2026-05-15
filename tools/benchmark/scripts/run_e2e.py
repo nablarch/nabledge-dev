@@ -163,7 +163,6 @@ def save_e2e_results(output_dir: str | Path, scenario_id: str, data: dict) -> No
 def run_e2e_scenario(
     scenario: dict,
     skill_dir: str | Path,
-    model: str = "sonnet",
     timeout: int = 180,
     mode: str = "new",
 ) -> dict:
@@ -172,7 +171,6 @@ def run_e2e_scenario(
     Args:
         scenario: Scenario definition dict.
         skill_dir: Path to the skill directory (e.g. .claude/skills/nabledge-6/).
-        model: Claude model to use.
         timeout: Subprocess timeout in seconds.
         mode: "current" — no hearing context (measures current skill as-is).
               "new"     — hearing context injected for new skill.
@@ -191,7 +189,7 @@ def run_e2e_scenario(
     proc = subprocess.run(
         [
             "claude", "-p",
-            "--model", model,
+            "--model", "sonnet",
             "--output-format", "json",
             "--no-session-persistence",
             "--allowedTools", "Bash(keyword-search.sh *) Bash(read-sections.sh *) Read",
@@ -227,7 +225,6 @@ def run_e2e_all(
     scenarios_path: str,
     skill_dir: str | Path,
     output_dir: str | Path,
-    model: str = "sonnet",
     scenario_ids: list[str] | None = None,
     knowledge_dir: str | None = None,
     timeout: int = 180,
@@ -239,9 +236,8 @@ def run_e2e_all(
         scenarios_path: Path to scenarios JSON file.
         skill_dir: Path to the skill directory.
         output_dir: Directory to save results.
-        model: Claude model to use.
         scenario_ids: Optional list of scenario IDs to run (runs all if None).
-        knowledge_dir: Path to knowledge directory; enables evaluate_scenario step.
+        knowledge_dir: Path to knowledge directory (required for evaluation step).
         timeout: Subprocess timeout in seconds per scenario.
         mode: "current" — no hearing context. "new" — hearing context injected.
 
@@ -261,7 +257,7 @@ def run_e2e_all(
             continue
 
         print(f"Running {sid}...", file=sys.stderr)
-        result = run_e2e_scenario(scenario, skill_dir, model=model, timeout=timeout, mode=mode)
+        result = run_e2e_scenario(scenario, skill_dir, timeout=timeout, mode=mode)
         save_e2e_results(str(out), sid, result)
 
         if knowledge_dir is not None:
@@ -300,9 +296,8 @@ def main():
     parser.add_argument("--scenarios", required=True, help="Path to scenarios JSON")
     parser.add_argument("--skill-dir", required=True, help="Path to skill directory")
     parser.add_argument("--output-dir", default=None, help="Output directory for results (default: tools/benchmark/results/YYYYMMDD-HHMMSS/)")
-    parser.add_argument("--model", default="sonnet", help="LLM model (default: sonnet)")
     parser.add_argument("--scenario-ids", help="Comma-separated scenario IDs to run")
-    parser.add_argument("--knowledge-dir", help="Knowledge directory for LLM evaluation (enables evaluate.py step)")
+    parser.add_argument("--knowledge-dir", required=True, help="Knowledge directory for quality evaluation (accuracy + hallucination)")
     parser.add_argument("--timeout", type=int, default=180, help="Subprocess timeout in seconds per scenario (default: 180)")
     parser.add_argument("--mode", default="new", choices=["current", "new"], help="'current': no hearing context (baseline). 'new': hearing context injected (default: new)")
     args = parser.parse_args()
@@ -315,7 +310,6 @@ def main():
         args.scenarios,
         args.skill_dir,
         output_dir,
-        model=args.model,
         scenario_ids=scenario_ids,
         knowledge_dir=args.knowledge_dir,
         timeout=args.timeout,

@@ -93,38 +93,31 @@ def parse_answer_response(response: dict) -> str:
 
 
 def aggregate_all_metrics(stage1: dict, stage2: dict, answer: dict) -> dict:
-    """Combine metrics from all three stages."""
+    """Combine metrics from all three stages into the design-spec metrics.json schema."""
     def _get(d: dict, key: str, default=0):
         return d.get(key, default)
 
-    def _usage(d: dict) -> tuple[int, int]:
-        u = d.get("usage", {})
-        return u.get("input_tokens", 0), u.get("output_tokens", 0)
+    def _usage(d: dict) -> dict:
+        return d.get("usage", {})
 
-    s1_in, s1_out = _usage(stage1)
-    s2_in, s2_out = _usage(stage2)
-    a_in, a_out = _usage(answer)
+    u1, u2, ua = _usage(stage1), _usage(stage2), _usage(answer)
 
     return {
         "duration_ms": _get(stage1, "duration_ms") + _get(stage2, "duration_ms") + _get(answer, "duration_ms"),
+        "duration_api_ms": _get(stage1, "duration_api_ms") + _get(stage2, "duration_api_ms") + _get(answer, "duration_api_ms"),
+        "num_turns": _get(stage1, "num_turns") + _get(stage2, "num_turns") + _get(answer, "num_turns"),
         "total_cost_usd": _get(stage1, "total_cost_usd", 0.0) + _get(stage2, "total_cost_usd", 0.0) + _get(answer, "total_cost_usd", 0.0),
-        "total_tokens": s1_in + s1_out + s2_in + s2_out + a_in + a_out,
+        "usage": {
+            "input_tokens": u1.get("input_tokens", 0) + u2.get("input_tokens", 0) + ua.get("input_tokens", 0),
+            "output_tokens": u1.get("output_tokens", 0) + u2.get("output_tokens", 0) + ua.get("output_tokens", 0),
+            "cache_read_input_tokens": u1.get("cache_read_input_tokens", 0) + u2.get("cache_read_input_tokens", 0) + ua.get("cache_read_input_tokens", 0),
+            "cache_creation_input_tokens": u1.get("cache_creation_input_tokens", 0) + u2.get("cache_creation_input_tokens", 0) + ua.get("cache_creation_input_tokens", 0),
+        },
+        "model_usage": {},
         "stages": {
-            "stage1": {
-                "duration_ms": _get(stage1, "duration_ms"),
-                "input_tokens": s1_in,
-                "output_tokens": s1_out,
-            },
-            "stage2": {
-                "duration_ms": _get(stage2, "duration_ms"),
-                "input_tokens": s2_in,
-                "output_tokens": s2_out,
-            },
-            "answer": {
-                "duration_ms": _get(answer, "duration_ms"),
-                "input_tokens": a_in,
-                "output_tokens": a_out,
-            },
+            "stage1": {"duration_ms": _get(stage1, "duration_ms"), "usage": u1},
+            "stage2": {"duration_ms": _get(stage2, "duration_ms"), "usage": u2},
+            "answer": {"duration_ms": _get(answer, "duration_ms"), "usage": ua},
         },
     }
 
@@ -151,15 +144,14 @@ def run_scenario(
     index_content: str,
     knowledge_dir: str | Path,
     llm_fn=None,
-    model: str = "sonnet",
 ) -> dict:
     """Run a single scenario through the full pipeline.
 
     Returns dict with: scenario_id, hearing, search, answer, metrics.
     """
     if llm_fn is None:
-        def llm_fn(prompt, schema, model=model):
-            return call_llm(prompt, schema, model)
+        def llm_fn(prompt, schema):
+            return call_llm(prompt, schema)
 
     question = scenario["when"]["input"]
     hearing_answer = scenario["when"].get("hearing_answer")
@@ -215,7 +207,6 @@ def run_all(
     knowledge_dir: str,
     output_dir: str,
     index_path: str | None = None,
-    model: str = "sonnet",
     scenario_ids: list[str] | None = None,
 ) -> dict:
     """Run all scenarios and save results."""
@@ -238,7 +229,7 @@ def run_all(
             continue
 
         print(f"Running {sid}...", file=sys.stderr)
-        result = run_scenario(scenario, index_content, knowledge_dir, model=model)
+        result = run_scenario(scenario, index_content, knowledge_dir)
         save_scenario_results(output_dir, sid, result)
         results.append(result)
 
@@ -266,7 +257,6 @@ def main():
     parser.add_argument("--knowledge-dir", required=True, help="Path to knowledge directory")
     parser.add_argument("--index", help="Path to index.md (default: generate from knowledge-dir)")
     parser.add_argument("--output-dir", required=True, help="Output directory for results")
-    parser.add_argument("--model", default="sonnet", help="LLM model (default: sonnet)")
     parser.add_argument("--scenario-ids", help="Comma-separated scenario IDs to run")
     args = parser.parse_args()
 
@@ -277,7 +267,6 @@ def main():
         args.knowledge_dir,
         args.output_dir,
         index_path=args.index,
-        model=args.model,
         scenario_ids=scenario_ids,
     )
 

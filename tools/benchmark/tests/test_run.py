@@ -137,13 +137,19 @@ class TestParseAnswerResponse:
 
 class TestAggregateAllMetrics:
     def test_three_stages(self):
-        s1 = {"duration_ms": 100, "total_cost_usd": 0.01, "usage": {"input_tokens": 500, "output_tokens": 50}}
-        s2 = {"duration_ms": 200, "total_cost_usd": 0.02, "usage": {"input_tokens": 1000, "output_tokens": 100}}
-        s3 = {"duration_ms": 150, "total_cost_usd": 0.015, "usage": {"input_tokens": 800, "output_tokens": 200}}
+        s1 = {"duration_ms": 100, "duration_api_ms": 90, "num_turns": 1, "total_cost_usd": 0.01,
+              "usage": {"input_tokens": 500, "output_tokens": 50, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}}
+        s2 = {"duration_ms": 200, "duration_api_ms": 180, "num_turns": 1, "total_cost_usd": 0.02,
+              "usage": {"input_tokens": 1000, "output_tokens": 100, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}}
+        s3 = {"duration_ms": 150, "duration_api_ms": 130, "num_turns": 1, "total_cost_usd": 0.015,
+              "usage": {"input_tokens": 800, "output_tokens": 200, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}}
         result = aggregate_all_metrics(s1, s2, s3)
         assert result["duration_ms"] == 450
-        assert result["total_cost_usd"] == 0.045
-        assert result["total_tokens"] == 2650
+        assert result["duration_api_ms"] == 400
+        assert result["num_turns"] == 3
+        assert result["total_cost_usd"] == pytest.approx(0.045)
+        assert result["usage"]["input_tokens"] == 2300
+        assert result["usage"]["output_tokens"] == 350
         assert result["stages"]["stage1"]["duration_ms"] == 100
         assert result["stages"]["stage2"]["duration_ms"] == 200
         assert result["stages"]["answer"]["duration_ms"] == 150
@@ -151,7 +157,8 @@ class TestAggregateAllMetrics:
     def test_all_empty(self):
         result = aggregate_all_metrics({}, {}, {})
         assert result["duration_ms"] == 0
-        assert result["total_tokens"] == 0
+        assert result["usage"]["input_tokens"] == 0
+        assert result["usage"]["output_tokens"] == 0
 
 
 class TestSaveScenarioResults:

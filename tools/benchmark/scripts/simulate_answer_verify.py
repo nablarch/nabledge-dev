@@ -243,11 +243,10 @@ def simulate_scenario(
     scenario: dict,
     knowledge_dir: str | Path,
     llm_fn=None,
-    model: str = "sonnet",
 ) -> dict:
     if llm_fn is None:
-        def llm_fn(prompt, schema, model=model):
-            return call_llm(prompt, schema, model)
+        def llm_fn(prompt, schema):
+            return call_llm(prompt, schema)
 
     question = scenario["when"]["input"]
     hearing_answer = scenario["when"].get("hearing_answer")
@@ -293,7 +292,6 @@ def simulate_all(
     scenarios_path: str,
     knowledge_dir: str,
     output_dir: str,
-    model: str = "sonnet",
     scenario_ids: list[str] | None = None,
     llm_fn=None,
 ) -> dict:
@@ -311,10 +309,7 @@ def simulate_all(
 
         print(f"Simulating {sid}...", file=sys.stderr)
 
-        if llm_fn is not None:
-            result = simulate_scenario(scenario, knowledge_dir, llm_fn=llm_fn)
-        else:
-            result = simulate_scenario(scenario, knowledge_dir, model=model)
+        result = simulate_scenario(scenario, knowledge_dir, llm_fn=llm_fn)
 
         scenario_dir = out_path / sid
         scenario_dir.mkdir(parents=True, exist_ok=True)
@@ -375,7 +370,6 @@ def main():
     parser.add_argument("--scenarios", required=True, help="Path to scenarios JSON")
     parser.add_argument("--knowledge-dir", required=True, help="Path to knowledge directory")
     parser.add_argument("--output-dir", required=True, help="Output directory")
-    parser.add_argument("--model", default="sonnet", help="LLM model (default: sonnet)")
     parser.add_argument("--scenario-ids", help="Comma-separated scenario IDs to run")
     args = parser.parse_args()
 
@@ -385,7 +379,6 @@ def main():
         args.scenarios,
         args.knowledge_dir,
         args.output_dir,
-        model=args.model,
         scenario_ids=scenario_ids,
     )
 

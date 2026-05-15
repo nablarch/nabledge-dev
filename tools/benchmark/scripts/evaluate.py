@@ -60,8 +60,14 @@ def load_section_content(knowledge_dir: str, section_ref: str) -> str:
 
 
 def calculate_accuracy_score(verdicts: list[dict]) -> float | None:
-    """Calculate accuracy score: PRESENT count / total. Returns None if no verdicts."""
+    """Calculate accuracy score: PRESENT count / total. Returns None if no verdicts or any UNCERTAIN.
+
+    Design spec: UNCERTAIN-containing scenarios are excluded from aggregation (score=None).
+    Returning None signals the caller to treat this scenario as unconfirmed.
+    """
     if not verdicts:
+        return None
+    if any(v["verdict"] == "UNCERTAIN" for v in verdicts):
         return None
     present = sum(1 for v in verdicts if v["verdict"] == "PRESENT")
     return present / len(verdicts)
@@ -300,14 +306,13 @@ def evaluate_all(
     run_dir: str,
     scenarios_path: str,
     knowledge_dir: str,
-    model: str = "sonnet",
 ) -> list[dict]:
     """Evaluate all scenarios in a run directory."""
     with open(scenarios_path, encoding="utf-8") as f:
         data = json.load(f)
 
     def llm_fn(prompt, schema):
-        return call_llm(prompt, schema, model)
+        return call_llm(prompt, schema)
 
     results = []
     for scenario in data["scenarios"]:
@@ -330,10 +335,9 @@ def main():
     parser.add_argument("--run-dir", required=True, help="Path to benchmark run directory")
     parser.add_argument("--scenarios", required=True, help="Path to scenarios JSON file")
     parser.add_argument("--knowledge-dir", required=True, help="Path to knowledge directory")
-    parser.add_argument("--model", default="sonnet", help="LLM model for evaluation (default: sonnet)")
     args = parser.parse_args()
 
-    results = evaluate_all(args.run_dir, args.scenarios, args.knowledge_dir, args.model)
+    results = evaluate_all(args.run_dir, args.scenarios, args.knowledge_dir)
     print(f"Evaluated {len(results)} scenarios", file=sys.stderr)
 
 
