@@ -55,26 +55,17 @@
 - [x] E2Eベンチマーク設計を確定（benchmark-design.md のE2Eセクション）
 - [x] E2Eベンチマークランナー（`run_e2e.py`）のテストを書く（RED）
 - [x] `run_e2e.py` を実装（GREEN）— committed `a4d4403f1`
-- [ ] **ベンチマーク実行前QAエキスパートレビュー**（目的: 実行コストを無駄にしないための事前品質ゲート）
-  - QAエキスパート（別エージェント）に以下を確認させる
-    - `run_e2e.py` の `build_e2e_prompt()` に `hearing_answer` が渡らないこと（現行スキルはヒアリングなし）
-    - シナリオ `expected_hearing=must_ask` の質問が、ヒアリングなしで「意味のある検索」ができるほど具体的かどうか（曖昧な質問でヒアリングなしだと検索が外れるリスク）
-    - must factsが「キーワードが出れば通る」レベルの簡単すぎる基準になっていないか
-    - 評価 `evaluate.py` がLLMに判定させる際のバイアスリスク
-  - 確認観点と確認結果をユーザーに提示し [BLOCKED: ユーザー承認] 取得
-- [ ] **出力データ品質を修正**（全件実行前に直す。壊れたデータでベースラインを取ると比較が無意味になる）
-  - [ ] `model_usage` キー名を修正: `claude -p` のJSON出力は `modelUsage`（camelCase）で返すが、コードは `model_usage`（snake_case）で取得しているため常に `{}`。`claude_output.get("modelUsage", {})` に変更（テストも `modelUsage` キーで更新）
-  - [ ] `usage.input_tokens` の実態を確認: pre-01は8ターンで `input_tokens: 9` — これがシングルターンのみなのか全ターン合算なのかを `claude -p --output-format json` のrawレスポンスで実測確認。全ターン合算でなければ設計書のパフォーマンスメトリクス比較（現行 vs 新）で正しい比較ができない。合算フィールドが別にあれば切り替える
-  - [ ] `pytest tools/benchmark/tests/ -x` がグリーン
-- [ ] **1シナリオ動作確認**（目的: E2Eランナーがワークフローを正しく実行し、設計書で定義した全メトリクスをキャプチャできていること）
-  - `hearing.json` に `status` フィールドがある — ヒアリング診断が壊れていないこと
-  - `search.json` の `section_ids` が1件以上 — 現行検索は必ずセクションを返すはず。0件は検索が動いていないサイン
-  - `answer.md` が日本語の回答テキストを含む（`参照:` セクションがある） — 「空でない」ではなく、エラーメッセージではなく正常回答が入っていることの確認
-  - `metrics.json` の `model_usage` にモデルキー（`claude-sonnet-4-6` 等）が入っている — コスト比較レポートにモデル別内訳が必要。`{}` だとコスト分析が死ぬ
-  - `metrics.json` の `usage.input_tokens` が実態として全ターン合算値になっている — 現行 vs 新の検索コスト比較に使うため、1ターン分しか取れていないと比較が歪む
-  - `benchmark-design.md` のパフォーマンスメトリクス一覧（duration_ms, duration_api_ms, num_turns, total_cost_usd, usage.input_tokens, usage.output_tokens, usage.cache_read_input_tokens, usage.cache_creation_input_tokens, model_usage）が全フィールド揃っていること
+- [x] **ベンチマーク実行前QAエキスパートレビュー** — committed `02d1949f9`
+  - Finding 1: `hearing_answer` が現行スキルに渡る → `mode="current"/"new"` パラメータ追加で修正
+  - Finding 2: `must_ask` シナリオが不公平 → 誤り（現行の欠点を計測するのが目的）
+  - Finding 3: LLMジャッジバイアス → 設計書仕様どおりのため変更不要
+- [x] **出力データ品質を修正**
+  - `model_usage` キー名: 既修正（`modelUsage`、commit `b2f1d0d6a`）
+  - `usage.input_tokens`: 新規トークンのみ（キャッシュ分は`cache_creation_input_tokens`）。コスト比較は`total_cost_usd`を使用
+  - `pytest tools/benchmark/tests/`: 303 passed
+- [x] **1シナリオ動作確認**（pre-01, mode=current）— hearing/search/answer/metrics全項目クリア
 - [ ] **全QAシナリオ実行**（目的: 現行検索の品質・パフォーマンスをベースラインとして記録し、新検索との比較基準を確立する）
-  - コマンド: `python3 -m tools.benchmark.scripts.run_e2e --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6 --output-dir tools/benchmark/results/baseline-current`
+  - コマンド: `python3 -m tools.benchmark.scripts.run_e2e --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6 --output-dir tools/benchmark/results/baseline-current --mode current`
   - 終了コード0（途中エラーで中断したシナリオがないこと）
   - `summary.json` の `total_scenarios` = 28
   - 全シナリオの `metrics.json` に `model_usage` が `{}` でない（キー名修正が正しく効いていること）— `for d in tools/benchmark/results/baseline-current/*/metrics.json; do python3 -c "import json; d=json.load(open('$d')); assert d['model_usage'], f'empty: $d'"; done`
