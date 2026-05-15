@@ -596,3 +596,66 @@ class TestRunE2eAll:
             assert summary_path.exists()
             summary = json.loads(summary_path.read_text())
             assert summary["total_scenarios"] == 1
+
+    def test_calls_evaluate_scenario_for_each_scenario(self):
+        """run_e2e_all must call evaluate_scenario (step 4 in design doc E2E flow)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = Path(tmpdir) / "skill"
+            skill_dir.mkdir()
+            (skill_dir / "workflows").mkdir()
+            (skill_dir / "workflows" / "qa.md").write_text("# QA", encoding="utf-8")
+            knowledge_dir = Path(tmpdir) / "knowledge"
+            knowledge_dir.mkdir()
+
+            output_dir = Path(tmpdir) / "results"
+            scenarios_data = {"scenarios": [SAMPLE_SCENARIO]}
+            scenarios_path = Path(tmpdir) / "qa.json"
+            scenarios_path.write_text(json.dumps(scenarios_data), encoding="utf-8")
+
+            mock_proc = type("P", (), {
+                "returncode": 0,
+                "stdout": self._make_claude_output(self._make_valid_e2e_response()),
+                "stderr": "",
+            })()
+
+            fake_eval = {"scenario_id": "pre-01", "scores": {"accuracy": 1.0, "hallucination": 1}}
+
+            with patch("subprocess.run", return_value=mock_proc), \
+                 patch("tools.benchmark.scripts.run_e2e.evaluate_scenario", return_value=fake_eval) as mock_eval:
+                run_e2e_all(str(scenarios_path), str(skill_dir), str(output_dir),
+                            knowledge_dir=str(knowledge_dir))
+
+            assert mock_eval.call_count == 1
+
+    def test_saves_evaluation_json(self):
+        """run_e2e_all must save evaluation.json per scenario."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = Path(tmpdir) / "skill"
+            skill_dir.mkdir()
+            (skill_dir / "workflows").mkdir()
+            (skill_dir / "workflows" / "qa.md").write_text("# QA", encoding="utf-8")
+            knowledge_dir = Path(tmpdir) / "knowledge"
+            knowledge_dir.mkdir()
+
+            output_dir = Path(tmpdir) / "results"
+            scenarios_data = {"scenarios": [SAMPLE_SCENARIO]}
+            scenarios_path = Path(tmpdir) / "qa.json"
+            scenarios_path.write_text(json.dumps(scenarios_data), encoding="utf-8")
+
+            mock_proc = type("P", (), {
+                "returncode": 0,
+                "stdout": self._make_claude_output(self._make_valid_e2e_response()),
+                "stderr": "",
+            })()
+
+            fake_eval = {"scenario_id": "pre-01", "scores": {"accuracy": 1.0, "hallucination": 1}}
+
+            with patch("subprocess.run", return_value=mock_proc), \
+                 patch("tools.benchmark.scripts.run_e2e.evaluate_scenario", return_value=fake_eval):
+                run_e2e_all(str(scenarios_path), str(skill_dir), str(output_dir),
+                            knowledge_dir=str(knowledge_dir))
+
+            eval_path = output_dir / "pre-01" / "evaluation.json"
+            assert eval_path.exists()
+            eval_data = json.loads(eval_path.read_text())
+            assert eval_data["scenario_id"] == "pre-01"

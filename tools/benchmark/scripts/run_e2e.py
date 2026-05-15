@@ -16,6 +16,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from tools.benchmark.scripts.evaluate import evaluate_scenario
+
 WORKFLOW_FILE = "workflows/qa.md"
 
 MARKER_HEARING_START = "<<<BENCHMARK_HEARING>>>"
@@ -214,6 +216,7 @@ def run_e2e_all(
     output_dir: str | Path,
     model: str = "sonnet",
     scenario_ids: list[str] | None = None,
+    knowledge_dir: str | None = None,
 ) -> dict:
     """Run all scenarios end-to-end and save results.
 
@@ -242,6 +245,13 @@ def run_e2e_all(
         print(f"Running {sid}...", file=sys.stderr)
         result = run_e2e_scenario(scenario, skill_dir, model=model)
         save_e2e_results(str(out), sid, result)
+
+        if knowledge_dir is not None:
+            evaluation = evaluate_scenario(scenario, result, knowledge_dir)
+            (out / sid / "evaluation.json").write_text(
+                json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+
         results.append(result)
 
     summary = {
@@ -274,6 +284,7 @@ def main():
     parser.add_argument("--output-dir", required=True, help="Output directory for results")
     parser.add_argument("--model", default="sonnet", help="LLM model (default: sonnet)")
     parser.add_argument("--scenario-ids", help="Comma-separated scenario IDs to run")
+    parser.add_argument("--knowledge-dir", help="Knowledge directory for LLM evaluation (enables evaluate.py step)")
     args = parser.parse_args()
 
     scenario_ids = args.scenario_ids.split(",") if args.scenario_ids else None
@@ -284,6 +295,7 @@ def main():
         args.output_dir,
         model=args.model,
         scenario_ids=scenario_ids,
+        knowledge_dir=args.knowledge_dir,
     )
 
     print(f"\nCompleted: {summary['total_scenarios']} scenarios", file=sys.stderr)
