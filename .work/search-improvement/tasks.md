@@ -28,108 +28,151 @@
 
 ### A-1. RBKC変更のリバート
 
-searchブランチに混入したRBKC変更を除去する。RBKCはフェーズBスコープ。
+searchブランチに混入したRBKC変更を除去する。ベンチマークからの参照なし — 影響はRBKCテストのみ。
 
-- [ ] `git revert 46893d39f` — P1-group subtype（xlsx_common.py, xlsx-sheet-mapping.md, test_xlsx_common.py）
-- [ ] `tools/rbkc/scripts/create/terms.py` を削除（`03e20a535`で追加）
-- [ ] `tools/rbkc/tests/ut/test_terms.py` を削除
+**影響範囲:**
+- `tools/rbkc/scripts/create/converters/xlsx_common.py` — P1-group追加分
+- `tools/rbkc/docs/xlsx-sheet-mapping.md` — P1-group記述
+- `tools/rbkc/tests/ut/test_xlsx_common.py` — P1-groupテスト
+- `tools/rbkc/scripts/create/terms.py` — 新規ファイル
+- `tools/rbkc/tests/ut/test_terms.py` — 新規ファイル
+- `tools/rbkc/scripts/run.py` — terms関連の変更
+
+**Steps:**
+- [ ] `git revert --no-commit 46893d39f`（P1-group subtype）
+- [ ] 既存RBKCテストパス確認: `pytest tools/rbkc/tests/ -x`
+- [ ] コミット・プッシュ
+- [ ] `tools/rbkc/scripts/create/terms.py` と `tools/rbkc/tests/ut/test_terms.py` を削除
 - [ ] `tools/rbkc/scripts/run.py` のterms関連変更をリバート
-- [ ] 既存RBKCテスト全件パス確認（`pytest tools/rbkc/tests/`）
+- [ ] 既存RBKCテストパス確認: `pytest tools/rbkc/tests/ -x`
+- [ ] コミット・プッシュ
 
-### A-2. 現行スキル変更のリバート
+### A-2. 設計書の整合（ディレクトリ構成）
 
-searchブランチから現行スキルへの変更を除去する。
+実装前に設計書を確定する。`search-design.md` の `components/` 構造に他の設計書を合わせる。
 
+**影響範囲:**
+- `benchmark-design.md` 503-541行 — ディレクトリ構成セクションが旧構造のまま
+- 各コンポーネント設計書 — ファイルパス参照があれば更新
+
+**Steps:**
+- [ ] `benchmark-design.md` のディレクトリ構成を `components/` 構造に更新
+- [ ] `answer-generation.md` の位置づけを確認（部品 → `components/prompts/` or ベンチマーク専用 → `prompts/`）
+- [ ] コンポーネント設計書4本のファイルパス参照を確認・必要なら更新
+- [ ] コミット・プッシュ
+
+### A-3. 部品プロンプトの移動
+
+設計書に合わせ、部品プロンプトを `components/prompts/` に移動する。
+ベンチマーク専用（judge）は `prompts/` に残す。
+
+**影響範囲（PROMPTS_DIR参照ファイル）:**
+- `simulate_hearing.py` → `hearing-classify.md`, `hearing-extract.md`
+- `simulate_semantic_search.py` → `semantic-search-stage1.md`, `semantic-search-stage2.md`
+- `simulate_answer_verify.py` → `answer.md`, `verify.md`
+- `run.py` → `answer-generation.md`（A-2で位置づけ確定後）
+- `evaluate.py` → `c-claim-judge.md`, `hallucination-judge.md`（変更不要 — `prompts/` に残る）
+
+**Steps（段階的に — 1件で動作確認後に残り）:**
+- [ ] `tools/benchmark/components/prompts/` ディレクトリ作成
+- [ ] `hearing-classify.md`, `hearing-extract.md` を `components/prompts/` に移動
+- [ ] `simulate_hearing.py` のプロンプトパスを `components/prompts/` に変更
+- [ ] テスト確認: `pytest tools/benchmark/tests/test_simulate_hearing.py -x`
+- [ ] コミット・プッシュ
+- [ ] 残り4件を移動: `semantic-search-stage1.md`, `semantic-search-stage2.md`, `answer.md`, `verify.md`
+- [ ] `simulate_semantic_search.py`, `simulate_answer_verify.py` のプロンプトパスを変更
+- [ ] テスト確認: `pytest tools/benchmark/tests/ -x`
+- [ ] `answer-generation.md` をA-2の決定に従い配置、`run.py` のパスを更新
+- [ ] テスト確認: `pytest tools/benchmark/tests/test_run.py -x`
+- [ ] 全テスト確認: `pytest tools/benchmark/tests/ -x`
+- [ ] コミット・プッシュ
+
+### A-4. 部品スクリプトの移動
+
+`keyword-search.sh` と `read-sections.sh`（変更版）を `components/scripts/` に配置し、現行スキルへの変更をリバートする。
+
+**影響範囲:**
+- `.claude/skills/nabledge-6/scripts/keyword-search.sh` — 新規追加（mainに存在しない）
+- `.claude/skills/nabledge-6/scripts/read-sections.sh` — タイトル出力追加（mainと差分あり）
+- `tools/tests/test_keyword_search.py` — スキルディレクトリの `keyword-search.sh` を直接参照（20テスト）
+
+**ベンチマークPythonスクリプトへの影響: なし。** `simulate_*.py` と `run.py` は `keyword-search.sh` も `read-sections.sh` も参照していない（セクション読み込みは `evaluate.py` の `load_section_content()` でJSON直接読み）。
+
+**Steps（段階的に）:**
+- [ ] `tools/benchmark/components/scripts/` ディレクトリ作成
+- [ ] `keyword-search.sh` を `.claude/skills/nabledge-6/scripts/` から `components/scripts/` にコピー
+- [ ] `read-sections.sh`（変更版）を `.claude/skills/nabledge-6/scripts/` から `components/scripts/` にコピー
+- [ ] `tools/tests/test_keyword_search.py` の `SCRIPT_PATH` を `components/scripts/keyword-search.sh` に変更
+- [ ] テスト確認: `pytest tools/tests/test_keyword_search.py -x`
+- [ ] コミット・プッシュ
 - [ ] `.claude/skills/nabledge-6/scripts/keyword-search.sh` を削除
-- [ ] `.claude/skills/nabledge-6/scripts/read-sections.sh` を `git checkout main -- .claude/skills/nabledge-6/scripts/read-sections.sh` でリバート
-- [ ] keyword-search.shのテスト（`tools/tests/test-keyword-search.sh` 等）を `tools/benchmark/tests/` に移動（あれば）
+- [ ] `git checkout main -- .claude/skills/nabledge-6/scripts/read-sections.sh` でリバート
+- [ ] コミット・プッシュ
+- [ ] 全テスト確認: `pytest tools/benchmark/tests/ tools/tests/test_keyword_search.py -x`
 
-### A-3. 部品ディレクトリ整理
+### A-5. マージ
 
-部品ファイルを `tools/benchmark/components/` に集約する。
-
-- [ ] `tools/benchmark/components/prompts/` を作成
-- [ ] 部品プロンプト6件を `tools/benchmark/prompts/` から `components/prompts/` に移動: hearing-classify.md, hearing-extract.md, semantic-search-stage1.md, semantic-search-stage2.md, answer.md, verify.md
-- [ ] `tools/benchmark/prompts/` にはベンチマーク専用（c-claim-judge.md, hallucination-judge.md）のみ残す
-- [ ] `tools/benchmark/components/scripts/` を作成
-- [ ] `keyword-search.sh` を `components/scripts/` に配置（A-2で削除したスキル版をベースに）
-- [ ] `read-sections.sh`（変更版: タイトル出力付き）を `components/scripts/` に配置
-- [ ] `answer-generation.md` の扱いを確認（部品 or ベンチマーク専用）→ 適切なディレクトリに配置
-
-### A-4. パス参照の更新
-
-A-3のファイル移動に伴い、参照元を全て更新する。
-
-- [ ] `simulate_hearing.py` — プロンプトパスを `components/prompts/` に変更
-- [ ] `simulate_semantic_search.py` — プロンプトパスを `components/prompts/` に変更
-- [ ] `simulate_answer.py` — プロンプトパスを `components/prompts/` に変更
-- [ ] `simulate_verify.py` — プロンプトパスを `components/prompts/` に変更
-- [ ] `simulate_answer_verify.py` — プロンプトパスを `components/prompts/` に変更
-- [ ] `run.py` — プロンプトパス + read-sections.sh/keyword-search.shパスを `components/` に変更
-- [ ] テスト全件パス確認（`pytest tools/benchmark/tests/`）
-
-### A-5. 設計書の整合
-
-- [ ] `benchmark-design.md` のディレクトリ構成セクションを `search-design.md` の `components/` 構造に合わせて更新
-- [ ] 各コンポーネント設計書のファイルパス参照を確認・更新（semantic-search-design.md, hearing-design.md, answer-verify-design.md, keyword-search-design.md）
-
-### A-6. マージ
-
+- [ ] 全テスト最終確認
 - [ ] searchブランチの成果物をフェーズBブランチにマージ
 
 ## マージ後（フェーズB）
 
-依存関係: B-1 → B-2 → B-3 → B-4 → B-5 → B-6。順序を守ること。
+依存関係: B-1 → B-2 → B-3 → B-4 → B-5 → B-6。順序厳守。
 
 ### B-1. 現行検索E2Eベースライン取得
 
-**RBKC変更・スキルデプロイの前に実施すること。** 現行検索を変更した後ではベースラインが取れなくなる。
+**RBKC変更・スキルデプロイの前に実施すること。** 変更後はベースラインが取れなくなる。
 
-- [ ] E2Eベンチマークランナー（`run_e2e.py`）を実装
-- [ ] 現行検索（現行qa.md）でE2Eベンチマーク実行（v6、全QAシナリオ）
+- [ ] E2Eベンチマーク設計を確定（benchmark-design.md のE2Eセクション）
+- [ ] E2Eベンチマークランナー（`run_e2e.py`）のテストを書く（RED）
+- [ ] `run_e2e.py` を実装（GREEN）
+- [ ] 現行検索（現行qa.md）で1シナリオ実行して動作確認
+- [ ] 全QAシナリオでE2Eベンチマーク実行（v6）
 - [ ] 結果を `results/baseline-current/` に保存・コミット
 - [ ] ベースラインレポートをユーザーに報告
 
 ### B-2. RBKC変更
 
-B-1のベースライン取得完了後に実施。
+B-1完了後に実施。
 
-- [ ] セキュリティチェックExcel P1-group subtype — ユーザーレビュー（コードは `46893d39f` を再適用）
-- [ ] セキュリティチェックExcel P1-group subtype — コード再適用
-- [ ] index.md生成（index.py: index.toon → index.md変更）
-- [ ] terms.json出力（terms.py再適用）
+- [ ] セキュリティチェックExcel P1-group subtype — A-1でリバートしたコードを再適用
+- [ ] P1-group subtype — ユーザーレビュー
+- [ ] terms.py — A-1で削除したコードを再適用
+- [ ] index.md生成（index.py: index.toon → index.md変更）のテストを書く（RED）
+- [ ] index.py を実装（GREEN）
 - [ ] 全5バージョンで `rbkc.sh create` + `rbkc.sh verify` 実行
 - [ ] FAIL数の差分確認、リグレッションなし確認
 
 ### B-3. スキルデプロイ
 
-B-2のRBKC変更完了後に実施。
+B-2完了後に実施。
 
-- [ ] `components/prompts/` → `.claude/skills/nabledge-6/assets/` にプロンプトをデプロイ
-- [ ] `components/scripts/` → `.claude/skills/nabledge-6/scripts/` にスクリプトをデプロイ
-- [ ] `qa.md` ワークフロー作成（オーケストレーション）
+- [ ] `components/prompts/` → `.claude/skills/nabledge-6/assets/` にデプロイ
+- [ ] `components/scripts/` → `.claude/skills/nabledge-6/scripts/` にデプロイ
+- [ ] `qa/hearing.md` ワークフロー作成
 - [ ] `semantic-search.md` ワークフロー作成
 - [ ] `keyword-search.md` ワークフロー作成
-- [ ] `qa/hearing.md` ワークフロー作成
 - [ ] `qa/answer.md` ワークフロー作成
 - [ ] `qa/verify.md` ワークフロー作成
+- [ ] `qa.md` ワークフロー作成（オーケストレーション）
 - [ ] `code-analysis.md` ワークフロー作成
-- [ ] 各ワークフローが正常動作することを手動確認
+- [ ] 1シナリオで手動動作確認
 
 ### B-4. 新検索E2Eベンチマーク
 
-B-3のスキルデプロイ完了後に実施。
+B-3完了後に実施。
 
-- [ ] 新検索（新qa.md）でE2Eベンチマーク実行（v6、全QAシナリオ）
+- [ ] 新検索（新qa.md）で1シナリオ実行して動作確認
+- [ ] 全QAシナリオでE2Eベンチマーク実行（v6）
 - [ ] 結果を `results/v1-new-search/` に保存・コミット
 - [ ] 比較レポート生成（baseline-current vs v1-new-search）
 - [ ] ユーザーに報告
 
 ### B-5. 改善サイクル
 
-B-4の比較で現行未満の項目がある場合に実施。
+B-4の比較で現行未満の項目がある場合に実施。改善は部品→E2Eの順。
 
-- [ ] 劣化箇所の原因を部品ベンチマークで特定（部品→E2Eの順で改善）
+- [ ] 劣化箇所の原因を部品ベンチマークで特定
 - [ ] 部品プロンプト・スクリプトを修正
 - [ ] 部品ベンチマーク再実行で改善確認
 - [ ] E2Eベンチマーク再実行（`results/v{N}-new-search/`）
@@ -137,7 +180,7 @@ B-4の比較で現行未満の項目がある場合に実施。
 
 ### B-6. バージョン展開
 
-B-5完了後、v6で確定した検索をv5/v1.4/v1.3/v1.2に展開。
+B-5完了後、v6で確定した検索を展開。
 
 - [ ] v5に展開
 - [ ] v1.4に展開
