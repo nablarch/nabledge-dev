@@ -3,6 +3,15 @@
 **Branch**: search
 **Updated**: 2026-05-15
 
+## Done
+
+- [x] A-1. RBKC変更のリバート — committed `5bf479e1c`, `f0249fea0`
+- [x] A-2. 設計書の整合（ディレクトリ構成） — committed `b3819fb94`
+- [x] A-3. 部品プロンプトの移動 — committed `eea31f065`, `426b9a0f4`
+- [x] A-4. read-sections.sh テスト追加 — committed `b65064dce` (jq bugfix included, all 5 versions)
+- [x] A-5. 部品スクリプトの移動 — committed `d2e6db620`, `0724b3faa`
+- [x] A-6. マージ準備完了 — 284 tests pass, diff clean (no skill/RBKC changes)
+
 ## Rules
 
 - **数字を実際に読め**: ログや diff を目で確認する。サイズや形から推測しない。
@@ -26,109 +35,9 @@
 
 フェーズAの原則: 現行スキル・RBKCは一切変更しない。部品はすべて `tools/benchmark/` 内。
 
-### A-1. RBKC変更のリバート
-
-searchブランチに混入したRBKC変更を除去する。ベンチマークからの参照なし — 影響はRBKCテストのみ。
-
-**影響範囲:**
-- `tools/rbkc/scripts/create/converters/xlsx_common.py` — P1-group追加分
-- `tools/rbkc/docs/xlsx-sheet-mapping.md` — P1-group記述
-- `tools/rbkc/tests/ut/test_xlsx_common.py` — P1-groupテスト
-- `tools/rbkc/scripts/create/terms.py` — 新規ファイル
-- `tools/rbkc/tests/ut/test_terms.py` — 新規ファイル
-- `tools/rbkc/scripts/run.py` — terms関連の変更
-
-**Steps:**
-- [ ] `git revert --no-commit 46893d39f`（P1-group subtype）
-- [ ] 既存RBKCテストパス確認: `pytest tools/rbkc/tests/ -x`
-- [ ] コミット・プッシュ
-- [ ] `tools/rbkc/scripts/create/terms.py` と `tools/rbkc/tests/ut/test_terms.py` を削除
-- [ ] `tools/rbkc/scripts/run.py` のterms関連変更をリバート
-- [ ] 既存RBKCテストパス確認: `pytest tools/rbkc/tests/ -x`
-- [ ] コミット・プッシュ
-
-### A-2. 設計書の整合（ディレクトリ構成）
-
-実装前に設計書を確定する。`search-design.md` の `components/` 構造に他の設計書を合わせる。
-
-**影響範囲:**
-- `benchmark-design.md` 503-541行 — ディレクトリ構成セクションが旧構造のまま
-- 各コンポーネント設計書 — ファイルパス参照があれば更新
-
-**Steps:**
-- [ ] `benchmark-design.md` のディレクトリ構成を `components/` 構造に更新
-- [ ] `answer-generation.md` の位置づけを確認（部品 → `components/prompts/` or ベンチマーク専用 → `prompts/`）
-- [ ] コンポーネント設計書4本のファイルパス参照を確認・必要なら更新
-- [ ] コミット・プッシュ
-
-### A-3. 部品プロンプトの移動
-
-設計書に合わせ、部品プロンプトを `components/prompts/` に移動する。
-ベンチマーク専用（judge）は `prompts/` に残す。
-
-**影響範囲（PROMPTS_DIR参照ファイル）:**
-- `simulate_hearing.py` → `hearing-classify.md`, `hearing-extract.md`
-- `simulate_semantic_search.py` → `semantic-search-stage1.md`, `semantic-search-stage2.md`
-- `simulate_answer_verify.py` → `answer.md`, `verify.md`
-- `run.py` → `answer-generation.md`（A-2で位置づけ確定後）
-- `evaluate.py` → `c-claim-judge.md`, `hallucination-judge.md`（変更不要 — `prompts/` に残る）
-
-**Steps（段階的に — 1件で動作確認後に残り）:**
-- [ ] `tools/benchmark/components/prompts/` ディレクトリ作成
-- [ ] `hearing-classify.md`, `hearing-extract.md` を `components/prompts/` に移動
-- [ ] `simulate_hearing.py` のプロンプトパスを `components/prompts/` に変更
-- [ ] テスト確認: `pytest tools/benchmark/tests/test_simulate_hearing.py -x`
-- [ ] コミット・プッシュ
-- [ ] 残り4件を移動: `semantic-search-stage1.md`, `semantic-search-stage2.md`, `answer.md`, `verify.md`
-- [ ] `simulate_semantic_search.py`, `simulate_answer_verify.py` のプロンプトパスを変更
-- [ ] テスト確認: `pytest tools/benchmark/tests/ -x`
-- [ ] `answer-generation.md` をA-2の決定に従い配置、`run.py` のパスを更新
-- [ ] テスト確認: `pytest tools/benchmark/tests/test_run.py -x`
-- [ ] 全テスト確認: `pytest tools/benchmark/tests/ -x`
-- [ ] コミット・プッシュ
-
-### A-4. read-sections.sh テスト追加
-
-read-sections.sh は機能変更（タイトル出力追加）があるがテストが存在しない。TDDに従いテストを先に書く。
-
-**Steps:**
-- [ ] `tools/tests/test_read_sections.py` を作成（RED）: タイトル+本文出力、SECTION_NOT_FOUND、FILE_NOT_FOUND
-- [ ] テスト確認: `pytest tools/tests/test_read_sections.py -x`（RED確認）
-- [ ] `components/scripts/read-sections.sh` でGREEN確認
-- [ ] コミット・プッシュ
-
-### A-5. 部品スクリプトの移動
-
-`keyword-search.sh` と `read-sections.sh`（変更版）を `components/scripts/` に配置し、全バージョンの現行スキルへの変更をリバートする。
-
-**影響範囲:**
-- `.claude/skills/nabledge-6/scripts/keyword-search.sh` — 新規追加（mainに存在しない）
-- `.claude/skills/nabledge-{6,5,1.4,1.3,1.2}/scripts/read-sections.sh` — 全5バージョンにタイトル出力追加（mainと差分あり、commit `e469e8913`）
-- `tools/tests/test_keyword_search.py` — スキルディレクトリの `keyword-search.sh` を直接参照（20テスト）
-
-**ベンチマークPythonスクリプトへの影響: なし。** `simulate_*.py` と `run.py` は `keyword-search.sh` も `read-sections.sh` も参照していない（セクション読み込みは `evaluate.py` の `load_section_content()` でJSON直接読み）。
-
-**Steps（段階的に）:**
-- [ ] `tools/benchmark/components/scripts/` ディレクトリ作成
-- [ ] `keyword-search.sh` を `.claude/skills/nabledge-6/scripts/` から `components/scripts/` にコピー
-- [ ] `read-sections.sh`（変更版）を `.claude/skills/nabledge-6/scripts/` から `components/scripts/` にコピー
-- [ ] `tools/tests/test_keyword_search.py` の `SCRIPT_PATH` を `components/scripts/keyword-search.sh` に変更
-- [ ] `tools/tests/test_read_sections.py` の `SCRIPT_PATH` を `components/scripts/read-sections.sh` に変更
-- [ ] テスト確認: `pytest tools/tests/test_keyword_search.py tools/tests/test_read_sections.py -x`
-- [ ] コミット・プッシュ
-- [ ] `.claude/skills/nabledge-6/scripts/keyword-search.sh` を削除
-- [ ] 全5バージョンの read-sections.sh をリバート:
-  - `git checkout main -- .claude/skills/nabledge-6/scripts/read-sections.sh`
-  - `git checkout main -- .claude/skills/nabledge-5/scripts/read-sections.sh`
-  - `git checkout main -- .claude/skills/nabledge-1.4/scripts/read-sections.sh`
-  - `git checkout main -- .claude/skills/nabledge-1.3/scripts/read-sections.sh`
-  - `git checkout main -- .claude/skills/nabledge-1.2/scripts/read-sections.sh`
-- [ ] コミット・プッシュ
-- [ ] 全テスト確認: `pytest tools/benchmark/tests/ tools/tests/ -x`
-
 ### A-6. マージ
 
-- [ ] 全テスト最終確認: `pytest tools/benchmark/tests/ tools/tests/ -x`
+- [x] 全テスト最終確認: 284 passed
 - [ ] searchブランチの成果物をフェーズBブランチにマージ
 
 ## マージ後（フェーズB）
