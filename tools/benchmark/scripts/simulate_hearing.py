@@ -11,7 +11,7 @@ from pathlib import Path
 
 from tools.benchmark.scripts.evaluate import call_llm
 
-PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
+PROMPTS_DIR = Path(__file__).parent.parent / "components" / "prompts"
 
 SLUG_TO_DISPLAY_NAME = {
     "web-application": "ウェブアプリケーション",
