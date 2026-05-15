@@ -1,7 +1,25 @@
 # Nabledge 検索アーキテクチャ設計
 
 **Status**: Draft
-**Date**: 2026-05-11
+**Date**: 2026-05-15
+
+## スコープ
+
+本設計はfork先（searchブランチ）とfork元（本家ブランチ）の2段階で実現する。
+
+**fork先（部品実装+部品ベンチマーク）**:
+- 新検索の各コンポーネント設計・実装（`tools/benchmark/prompts/`にプロンプト、`scripts/`にスクリプト）
+- 部品単位のベンチマーク（`simulate_*.py`で各コンポーネントを個別評価）
+- RBKC変更は要件設計のみ（ソースデータがfork元にしかないため実装不可）
+- 現行検索は一切変更しない
+
+**fork元（RBKC変更+新検索デプロイ+E2Eベンチマーク）**:
+- RBKCの変更（index.md生成、terms.json出力、セキュリティチェックExcel修正）
+- 新検索のスキルへのデプロイ（ワークフロー、アセット）
+- 現行検索のE2Eベンチマーク（v6のみ）
+- 新検索のE2Eベンチマーク（v6のみ）
+- 現行vs新の比較、現行以上になるまで改善
+- 残りバージョンへの展開
 
 ## 検索要件
 
@@ -88,6 +106,41 @@ keyword-searchは既知の用語で確実にヒットさせる（precision重視
 
 ## ディレクトリ構成
 
+### fork先: 部品実装+部品ベンチマーク
+
+```
+tools/benchmark/
+  prompts/
+    hearing-classify.md               ← ヒアリング分類プロンプト
+    hearing-extract.md                ← ヒアリング抽出プロンプト
+    semantic-search-stage1.md         ← 意味検索Stage1プロンプト
+    semantic-search-stage2.md         ← 意味検索Stage2プロンプト
+    answer.md                         ← 回答生成プロンプト
+    verify.md                         ← 根拠検証プロンプト
+    c-claim-judge.md                  ← 回答精度LLM判定プロンプト
+    hallucination-judge.md            ← ハルシネーション判定プロンプト
+  scripts/
+    simulate_hearing.py               ← ヒアリング部品ベンチマーク
+    simulate_semantic_search.py       ← 意味検索部品ベンチマーク
+    simulate_answer.py                ← 回答生成部品ベンチマーク
+    simulate_verify.py                ← 検証部品ベンチマーク
+    simulate_answer_verify.py         ← 回答+検証部品ベンチマーク
+    run.py                            ← 部品チェーン実行（hearing→search→answer）
+    evaluate.py                       ← 評価（ルールベース+LLM判定）
+    report.py                         ← レポート生成
+    generate_index.py                 ← index.md生成（ベンチマーク用）
+  scenarios/
+    qa.json                           ← QAシナリオ（15件）
+    keyword-search.json               ← キーワード検索シナリオ（12件）
+
+.claude/skills/nabledge-6/
+  scripts/
+    keyword-search.sh                 ← キーワード検索スクリプト
+    read-sections.sh                  ← セクション本文取得
+```
+
+### fork元: スキルデプロイ（新検索実装時）
+
 ```
 .claude/skills/nabledge-6/
   knowledge/
@@ -108,14 +161,14 @@ keyword-searchは既知の用語で確実にヒットさせる（precision重視
     read-sections.sh                  ← セクション本文取得
   assets/
     hearing-prompt.md                 ← ヒアリング判定LLMプロンプト
-    c-claim-judge-prompt.md           ← C-claim判定LLMプロンプト
 
 tools/rbkc/
   scripts/create/
-    step{N}_create_index_md.py        ← index.md生成
-    step{N}_create_terms.py           ← terms.json生成
+    index.py                          ← index.md生成（index.toon → index.mdへ変更）
+    terms.py                          ← terms.json生成
 ```
 
 - keyword-search.md、semantic-search.mdは公開ワークフロー。PJ側で独自ワークフローから直接呼べる
 - qa/配下もベンチマークから個別に呼べるよう公開
 - プロンプトはassets/に配置。ワークフローMDから参照する
+- fork先のベンチマークプロンプトをfork元でスキルワークフロー化する
