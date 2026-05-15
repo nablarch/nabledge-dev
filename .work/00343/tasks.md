@@ -3,6 +3,19 @@
 **Branch**: 343-improve-search-quality
 **Updated**: 2026-05-15
 
+## In Progress
+
+### B-1. 現行検索E2Eベースライン取得（事後評価）
+
+**Steps:**
+- [ ] **3 run分の事後評価（evaluation.json生成）**
+  - run-1: `python3 -m tools.benchmark.scripts.evaluate --run-dir tools/benchmark/results/20260515-171300 --scenarios tools/benchmark/scenarios/qa.json --knowledge-dir .claude/skills/nabledge-6/knowledge`
+  - run-2: 同上（`20260515-181817`）
+  - run-3: 同上（`20260515-194124`）
+  - 受入条件: 各runの全28シナリオに `evaluation.json` が存在し、`scores.accuracy` が null でない（UNCERTAINのみnull許容）
+- [ ] evaluation.json を `results/` にコミット
+- [ ] **ベースラインレポートをユーザーに報告**（品質指標＋パフォーマンス指標）
+
 ## Done
 
 - [x] A-1. RBKC変更のリバート — committed `5bf479e1c`, `f0249fea0`
@@ -64,12 +77,10 @@
   - `usage.input_tokens`: 新規トークンのみ（キャッシュ分は`cache_creation_input_tokens`）。コスト比較は`total_cost_usd`を使用
   - `pytest tools/benchmark/tests/`: 303 passed
 - [x] **1シナリオ動作確認**（pre-01, mode=current）— hearing/search/answer/metrics全項目クリア
-- [ ] **全QAシナリオ 3回実行**（目的: ベースラインの再現性も含めて記録する。LLM応答のばらつきを把握し、比較時に有意差か誤差かを判断できるようにする）
-  - `--output-dir` 省略で `tools/benchmark/results/YYYYMMDD-HHMMSS/` に自動保存（commit `52c9f785c`）
+- [x] **全QAシナリオ 3回実行**（目的: ベースラインの再現性も含めて記録する。LLM応答のばらつきを把握し、比較時に有意差か誤差かを判断できるようにする）
   - [x] run-1完了: `tools/benchmark/results/20260515-171300/`（28シナリオ、summary.json再生成済み）
   - [x] run-2完了: `tools/benchmark/results/20260515-181817/`（28シナリオ、summary.json再生成済み）
-  - [x] run-3完了確認: `tools/benchmark/results/20260515-194124/`（28シナリオ、summary.json再生成済み）
-  - 各runの受入条件: `summary.json` の `total_scenarios` = 28、全シナリオの `metrics.json` の `model_usage` が `{}` でない
+  - [x] run-3完了: `tools/benchmark/results/20260515-194124/`（28シナリオ、summary.json再生成済み）
 - [x] 結果を `results/` にコミット（3 run 分まとめて）— committed `efbc320ef`
 - [ ] **3 run分の事後評価（evaluation.json生成）**（設計書実行フローstep4: evaluate.pyで品質指標を取得）
   - 設計書どおり `--knowledge-dir` を渡していなかったため evaluation.json が未生成。事後実行で補完する
