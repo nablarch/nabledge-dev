@@ -8,7 +8,7 @@
 本設計は2フェーズで実現する。
 
 **フェーズA（部品実装+部品ベンチマーク）**:
-- 新検索の各コンポーネント設計・実装（`tools/benchmark/prompts/`にプロンプト、`scripts/`にスクリプト）
+- 新検索の各コンポーネント設計・実装（`tools/benchmark/components/prompts/`にプロンプト、`tools/benchmark/components/scripts/`にスクリプト）
 - 部品単位のベンチマーク（`simulate_*.py`で各コンポーネントを個別評価）
 - RBKC変更は要件設計のみ
 - 現行検索は一切変更しない

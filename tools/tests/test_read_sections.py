@@ -110,3 +110,40 @@ class TestFileNotFound:
         output = _run(knowledge_dir, "no-such-file.json:s1")
         assert "FILE_NOT_FOUND" in output
         assert "=== END ===" in output
+
+
+class TestErrorHandling:
+    """Error handling for invalid inputs."""
+
+    def test_no_arguments(self, knowledge_dir):
+        script = knowledge_dir / "scripts" / "read-sections.sh"
+        result = subprocess.run(
+            ["bash", str(script)],
+            capture_output=True,
+            text=True,
+            env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin"},
+        )
+        assert result.returncode == 1
+        assert "Usage" in result.stderr
+
+    def test_path_traversal_rejected(self, knowledge_dir):
+        script = knowledge_dir / "scripts" / "read-sections.sh"
+        result = subprocess.run(
+            ["bash", str(script), "../etc/passwd:s1"],
+            capture_output=True,
+            text=True,
+            env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin"},
+        )
+        assert result.returncode == 1
+        assert "Invalid file path" in result.stderr
+
+    def test_absolute_path_rejected(self, knowledge_dir):
+        script = knowledge_dir / "scripts" / "read-sections.sh"
+        result = subprocess.run(
+            ["bash", str(script), "/etc/passwd:s1"],
+            capture_output=True,
+            text=True,
+            env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin"},
+        )
+        assert result.returncode == 1
+        assert "Invalid file path" in result.stderr
