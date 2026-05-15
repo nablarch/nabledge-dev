@@ -31,6 +31,9 @@
 - **やり直し時は旧成果物を削除**: 作業をやり直す場合、旧成果物（プロンプト、レビュー結果、中間ファイル等）を全て削除してプッシュしてから再開する。ノイズを残さない。
 - **プロンプトは手順型で書く**: ルールベース（判断基準の羅列）ではなく、作業手順（明確な命令で実行順序を記述）で書く。LLMが何をどの順番でやるか迷わない形にする。
 - **シナリオのmustは本文で検証**: mustセクションの妥当性はタイトルではなく本文を読んで判断する。タイトルだけで「必須」と設定しない。
+- **現行検索ベンチはヒアリング結果なし**: 現行スキルにはヒアリング機能がない。`run_e2e.py` に `hearing_answer` を渡してはならない。ヒアリングコンテキストを外部から与えると現行スキルの実力ではなく「答えを教えた結果」になる。
+- **新検索ベンチはヒアリング結果あり**: 新スキルはヒアリングで処理方式を特定してから検索する設計。`hearing_answer` を渡してスキル内ヒアリングと同等のコンテキストで実行することで、現行との公平比較ができる。
+- **ベンチマーク実行前にQAエキスパートレビュー必須**: ベンチマーク実行前に「このベンチが測りたいものを正しく測れているか」をQAエキスパート（別エージェント）に確認させてユーザーに報告する。実行コストを無駄にしないための事前品質ゲート。確認観点と確認結果をユーザーに提示し承認を得てから実行する。
 
 ## マージ前（フェーズA残タスク）
 
@@ -52,36 +55,51 @@
 - [x] E2Eベンチマーク設計を確定（benchmark-design.md のE2Eセクション）
 - [x] E2Eベンチマークランナー（`run_e2e.py`）のテストを書く（RED）
 - [x] `run_e2e.py` を実装（GREEN）— committed `a4d4403f1`
-- [x] **出力データ品質を修正** — committed `7e30bc862`
-- [x] **1シナリオ動作確認** — pre-01: hearing/search/answer/metrics/evaluation 全OK、evaluate.py統合バグも修正 — committed `c46bb224b`
-- [x] **全QAシナリオ実行** — 28シナリオ完了、終了コード0 — committed `e8b2da257`
-- [x] 結果を `results/baseline-current/` にコミット — `e8b2da257`
-- [x] **ベースラインレポート**: accuracy avg=0.96, hallucination PASS率=0.19(5/26), 総コスト$19.04, 平均7.1ターン, 平均6.4セクション
-- [ ] **ベースライン結果の妥当性検証**（目的: accuracy=0.96が実態を正しく反映しているかを確認する。ヒアリングなしでこのスコアは高すぎる可能性があり、must/fact設計やLLM判定の問題を見逃すとベースライン自体が無意味になる）
-  - [ ] 全28シナリオについて、回答・参照セクション内容・must fact・PRESENT判定理由を並べてユーザーに提示する
-  - [ ] ユーザーが全件を目視確認する（判定基準: 「その回答を読んだ人間がfactを確認できるか」「参照セクションに根拠があるか」）
-  - [ ] must factの設計自体に問題がないか確認する（キーワードが出れば通るだけの簡単すぎるfactになっていないか）
-  - [ ] 問題があればQAエキスパートに評価させ、シナリオ修正または再測定の判断を行う
-  - 合格基準: ユーザーが全28件を確認し、問題なしまたは修正方針が確定すること
+- [ ] **ベンチマーク実行前QAエキスパートレビュー**（目的: 実行コストを無駄にしないための事前品質ゲート）
+  - QAエキスパート（別エージェント）に以下を確認させる
+    - `run_e2e.py` の `build_e2e_prompt()` に `hearing_answer` が渡らないこと（現行スキルはヒアリングなし）
+    - シナリオ `expected_hearing=must_ask` の質問が、ヒアリングなしで「意味のある検索」ができるほど具体的かどうか（曖昧な質問でヒアリングなしだと検索が外れるリスク）
+    - must factsが「キーワードが出れば通る」レベルの簡単すぎる基準になっていないか
+    - 評価 `evaluate.py` がLLMに判定させる際のバイアスリスク
+  - 確認観点と確認結果をユーザーに提示し [BLOCKED: ユーザー承認] 取得
+- [ ] **出力データ品質を修正**（全件実行前に直す。壊れたデータでベースラインを取ると比較が無意味になる）
+  - [ ] `model_usage` キー名を修正: `claude -p` のJSON出力は `modelUsage`（camelCase）で返すが、コードは `model_usage`（snake_case）で取得しているため常に `{}`。`claude_output.get("modelUsage", {})` に変更（テストも `modelUsage` キーで更新）
+  - [ ] `usage.input_tokens` の実態を確認: pre-01は8ターンで `input_tokens: 9` — これがシングルターンのみなのか全ターン合算なのかを `claude -p --output-format json` のrawレスポンスで実測確認。全ターン合算でなければ設計書のパフォーマンスメトリクス比較（現行 vs 新）で正しい比較ができない。合算フィールドが別にあれば切り替える
+  - [ ] `pytest tools/benchmark/tests/ -x` がグリーン
+- [ ] **1シナリオ動作確認**（目的: E2Eランナーがワークフローを正しく実行し、設計書で定義した全メトリクスをキャプチャできていること）
+  - `hearing.json` に `status` フィールドがある — ヒアリング診断が壊れていないこと
+  - `search.json` の `section_ids` が1件以上 — 現行検索は必ずセクションを返すはず。0件は検索が動いていないサイン
+  - `answer.md` が日本語の回答テキストを含む（`参照:` セクションがある） — 「空でない」ではなく、エラーメッセージではなく正常回答が入っていることの確認
+  - `metrics.json` の `model_usage` にモデルキー（`claude-sonnet-4-6` 等）が入っている — コスト比較レポートにモデル別内訳が必要。`{}` だとコスト分析が死ぬ
+  - `metrics.json` の `usage.input_tokens` が実態として全ターン合算値になっている — 現行 vs 新の検索コスト比較に使うため、1ターン分しか取れていないと比較が歪む
+  - `benchmark-design.md` のパフォーマンスメトリクス一覧（duration_ms, duration_api_ms, num_turns, total_cost_usd, usage.input_tokens, usage.output_tokens, usage.cache_read_input_tokens, usage.cache_creation_input_tokens, model_usage）が全フィールド揃っていること
+- [ ] **全QAシナリオ実行**（目的: 現行検索の品質・パフォーマンスをベースラインとして記録し、新検索との比較基準を確立する）
+  - コマンド: `python3 -m tools.benchmark.scripts.run_e2e --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6 --output-dir tools/benchmark/results/baseline-current`
+  - 終了コード0（途中エラーで中断したシナリオがないこと）
+  - `summary.json` の `total_scenarios` = 28
+  - 全シナリオの `metrics.json` に `model_usage` が `{}` でない（キー名修正が正しく効いていること）— `for d in tools/benchmark/results/baseline-current/*/metrics.json; do python3 -c "import json; d=json.load(open('$d')); assert d['model_usage'], f'empty: $d'"; done`
+- [ ] 結果を `results/baseline-current/` にコミット
+- [ ] **ベースラインレポートをユーザーに報告**（目的: 現行品質を数値で把握し、新検索デプロイ後の比較基準とする）
+  - シナリオ別: `search_sections` 件数、`hearing_status`、コスト・ターン数
+  - 集計: 平均コスト・ターン数・検索ヒット件数（設計書のパフォーマンスサマリー形式）
 
 ### B-2. RBKC変更
 
 B-1完了後に実施。目的: 意味検索が使う `terms.json`（検索語辞書）と `index.md`（知識ファイル一覧）を生成できる状態にする。これがないと新検索のスキルが動かない。
 
-- [x] cherry-pickコミットが存在しないため、`index.md` と `terms.json` を新規実装する方針に変更
-- [x] index.md生成: `generate_index_md()` を `index.py` に追加（Option A: index.toon維持、並行生成）— committed `0aefe7168`
-  - SEエキスパート推奨: index.toonとQO4 verifyへの影響ゼロ
-  - 12テスト追加、567テスト全GREEN、v6 create+verify FAIL=0確認
-- [ ] 全5バージョンで `rbkc.sh create` を実行し `index.md` が生成されることを確認
-  - v6: ✅ 確認済み（`.claude/skills/nabledge-6/knowledge/index.md` 生成）
-  - v5: 実行中断（セッション終了のため）
-  - v1.4/v1.3/v1.2: 未実行
-  - コマンド: `for v in 5 1.4 1.3 1.2; do (cd tools/rbkc && bash rbkc.sh create $v); done`
-  - 各バージョンで `.claude/skills/nabledge-$v/knowledge/index.md` が存在すること
-- [ ] 全5バージョンで `bash rbkc.sh verify <v>` を実行し FAIL=0 確認（変更前FAIL=0）
-- [ ] [DECISION: terms.jsonの実装が必要か確認] terms.py（terms.json生成）を新規実装する — 設計書: `keyword-search-design.md` §terms.json
-  - TDD: test_terms.py を書く（RED）→ 実装（GREEN）
-  - 全5バージョン create+verify FAIL=0 確認
+- [ ] `git cherry-pick 46893d39f` — P1-group subtype再適用（xlsx_common.py, xlsx-sheet-mapping.md, test_xlsx_common.py）
+  - `git diff HEAD~1 --stat` で3ファイルのみ変更されていること（他のファイルが混入していないこと）
+- [ ] `pytest tools/rbkc/tests/ut/test_xlsx_common.py -x` がグリーン（cherry-pick が壊していないこと）
+- [ ] P1-group subtype の変更内容をユーザーに提示し承認取得（承認なしで次に進まない）
+- [ ] `git cherry-pick 03e20a535` — terms.py + test_terms.py + run.py terms統合を再適用
+  - `git diff HEAD~1 --stat` で対象3ファイルのみ変更されていること
+- [ ] `pytest tools/rbkc/tests/ut/test_terms.py -x` がグリーン
+- [ ] index.md生成（index.py: index.toon → index.md変更）のテストを書く（RED）
+  - 目的: 意味検索Stage1がカテゴリ一覧として参照するindex.mdをRBKCが生成できること。index.toonのままでは新検索ワークフローが読み込めない
+  - `pytest tools/rbkc/tests/ut/test_index.py` が FAIL（実装前なのでFAILが正しい）
+- [ ] index.py を実装（GREEN）: `pytest tools/rbkc/tests/ut/test_index.py` が PASS
+- [ ] 全5バージョンで `bash rbkc.sh create <v> && bash rbkc.sh verify <v>` を実行（v6/v5/v1.4/v1.3/v1.2）
+  - 変更前のFAIL数を記録してから変更後と比較。想定外のFAIL増は横展開ミスのサイン
 
 ### B-3. スキルデプロイ
 
@@ -108,6 +126,13 @@ B-2完了後に実施。目的: ベンチマークで検証済みの部品プロ
 
 B-3完了後に実施。目的: 新検索が現行と比べて品質・パフォーマンスがどう変わったかを定量把握する。ここで「現行以上かどうか」の判断材料を作る。
 
+- [ ] **ベンチマーク実行前QAエキスパートレビュー**（目的: 新検索ベンチが現行との公平比較になっているかの事前確認）
+  - QAエキスパート（別エージェント）に以下を確認させる
+    - `run_e2e.py` の `build_e2e_prompt()` に `hearing_answer` が正しく渡されること（新スキルはヒアリングあり）
+    - ヒアリング結果のコンテキストが現行ベンチ（hearing_answerなし）と対称的に設計されているか
+    - must factsがヒアリング有無で有利/不利にならないか（同じmust factsで両方を評価できるか）
+    - 比較レポートの軸が「同じ質問・同じmust facts・異なるヒアリング有無」になっているか
+  - 確認観点と確認結果をユーザーに提示し [BLOCKED: ユーザー承認] 取得
 - [ ] 新検索で1シナリオ動作確認（B-1の合格基準に加えて新検索固有の確認）
   - B-1と同じ: hearing.json/search.json/answer.md/metrics.json が揃い、answer.mdに`参照:`があり、model_usageが`{}`でない
   - 新検索固有: `search.json` の `section_ids` の内容が現行検索（baseline-current）と異なること — 同じなら新検索が使われていない
