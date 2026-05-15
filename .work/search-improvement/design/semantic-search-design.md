@@ -17,7 +17,10 @@
 
 2段階方式: インデックスで絞り込み、本文で精密選定。
 
-### ワークフロー (semantic-search.md)
+### プロンプト構成
+
+部品: `tools/benchmark/prompts/semantic-search-stage1.md`, `semantic-search-stage2.md`
+スキルワークフロー: `workflows/semantic-search.md`（fork元で作成）
 
 ```
 入力: 質問文, ヒアリング回答（あれば）

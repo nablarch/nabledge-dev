@@ -43,7 +43,10 @@ Step 6: 最終回答を出力
 
 verify.jsonは診断情報として、改善サイクルの原因切り分けに使う。FAIL時のissues（除外された主張リスト）は「answer.mdのプロンプトが知識外の情報をどの程度補完するか」の傾向分析に使える。
 
-## answer.md ワークフロー（回答生成）
+## answer.md（回答生成）
+
+部品: `tools/benchmark/prompts/answer.md`（トレース付きJSON出力）
+スキルワークフロー: `workflows/qa/answer.md`（fork元で作成）
 
 ### 入出力
 
@@ -53,7 +56,15 @@ verify.jsonは診断情報として、改善サイクルの原因切り分けに
   - hearing_answer: ヒアリング回答（あれば）
   - sections_content: read-sections.shの出力（セクション本文）
 
-出力: 日本語の回答テキスト（下記フォーマット）
+出力: JSON
+  {
+    "answer": "日本語の回答テキスト（下記フォーマット）",
+    "trace": {
+      "intent": "ユーザーの意図（1文）",
+      "key_sections": ["使用したセクションID"],
+      "approach": "回答の構成方針"
+    }
+  }
 ```
 
 ### 処理手順
@@ -124,7 +135,10 @@ verify.jsonは診断情報として、改善サイクルの原因切り分けに
 - qa.mdがanswer.mdを呼ばずに直接「この情報は知識ファイルに含まれていません」を返す
 - answer.mdは検索結果がある場合のみ呼ばれる
 
-## verify.md ワークフロー（根拠検証）
+## verify.md（根拠検証）
+
+部品: `tools/benchmark/prompts/verify.md`
+スキルワークフロー: `workflows/qa/verify.md`（fork元で作成）
 
 ### 入出力
 
