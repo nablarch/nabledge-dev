@@ -114,6 +114,18 @@ B-5完了後、v6で確定した検索を展開。
 - [ ] v1.3に展開
 - [ ] v1.2に展開
 
+### B-7. nabledge-test削除
+
+B-6完了後に実施。新ベンチマーク基盤で置き換え済みのため不要。
+
+- [ ] `tools/tests/test-setup.sh`: `_scenario_field`関数を削除、質問・キーワードをハードコード（各バージョン1問ずつ）
+- [ ] `.claude/skills/nabledge-test/` ディレクトリ削除
+- [ ] `.claude/agents/nabledge-test-runner.md` 削除
+- [ ] `.claude/settings.json` から `Skill(nabledge-test)` 行を削除
+- [ ] `.claude/rules/` 内のnabledge-test固有の記述を削除（`temporary-files.md`, `nabledge-skill.md`）
+- [ ] 動作確認: `bash tools/tests/test-setup.sh` を実行し全バージョンのverify成功を確認
+- [ ] 動作確認: `python3 -m pytest tools/ -x` で全テストパス
+
 ## Done
 
 ### ベンチマーク基盤
