@@ -108,15 +108,22 @@ keyword-searchは既知の用語で確実にヒットさせる（precision重視
 
 ### フェーズA: 部品実装+部品ベンチマーク
 
+フェーズAでは現行スキルを一切変更しない。部品（プロンプト・スクリプト）はすべて `tools/benchmark/` 内に配置する。
+
 ```
 tools/benchmark/
+  components/
+    prompts/
+      hearing-classify.md             ← ヒアリング分類プロンプト
+      hearing-extract.md              ← ヒアリング抽出プロンプト
+      semantic-search-stage1.md       ← 意味検索Stage1プロンプト
+      semantic-search-stage2.md       ← 意味検索Stage2プロンプト
+      answer.md                       ← 回答生成プロンプト
+      verify.md                       ← 根拠検証プロンプト
+    scripts/
+      keyword-search.sh              ← キーワード検索スクリプト
+      read-sections.sh               ← セクション本文取得
   prompts/
-    hearing-classify.md               ← ヒアリング分類プロンプト
-    hearing-extract.md                ← ヒアリング抽出プロンプト
-    semantic-search-stage1.md         ← 意味検索Stage1プロンプト
-    semantic-search-stage2.md         ← 意味検索Stage2プロンプト
-    answer.md                         ← 回答生成プロンプト
-    verify.md                         ← 根拠検証プロンプト
     c-claim-judge.md                  ← 回答精度LLM判定プロンプト
     hallucination-judge.md            ← ハルシネーション判定プロンプト
   scripts/
@@ -132,14 +139,15 @@ tools/benchmark/
   scenarios/
     qa.json                           ← QAシナリオ（15件）
     keyword-search.json               ← キーワード検索シナリオ（12件）
-
-.claude/skills/nabledge-6/
-  scripts/
-    keyword-search.sh                 ← キーワード検索スクリプト
-    read-sections.sh                  ← セクション本文取得
 ```
 
-### フェーズB: スキルデプロイ（新検索実装時）
+- `components/` はフェーズBでスキルにデプロイする部品。ベンチマーク内で開発・評価する
+- `prompts/` はベンチマーク専用（LLM判定用）。スキルにはデプロイしない
+- `scripts/` はベンチマーク実行インフラ。スキルにはデプロイしない
+
+### フェーズB: RBKC変更+スキルデプロイ+E2Eベンチマーク
+
+フェーズAの部品をスキルにデプロイし、RBKC変更を実施する。
 
 ```
 .claude/skills/nabledge-6/
@@ -157,8 +165,8 @@ tools/benchmark/
     semantic-search.md                ← 意味検索（公開）
     code-analysis.md                  ← コード分析
   scripts/
-    keyword-search.sh                 ← キーワード検索スクリプト
-    read-sections.sh                  ← セクション本文取得
+    keyword-search.sh                 ← components/scripts/ からデプロイ
+    read-sections.sh                  ← components/scripts/ からデプロイ
   assets/
     hearing-prompt.md                 ← ヒアリング判定LLMプロンプト
 
@@ -171,4 +179,4 @@ tools/rbkc/
 - keyword-search.md、semantic-search.mdは公開ワークフロー。PJ側で独自ワークフローから直接呼べる
 - qa/配下もベンチマークから個別に呼べるよう公開
 - プロンプトはassets/に配置。ワークフローMDから参照する
-- フェーズAのベンチマークプロンプトをフェーズBでスキルワークフロー化する
+- フェーズAの `components/` をフェーズBでスキルにデプロイする
