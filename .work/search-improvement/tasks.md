@@ -94,7 +94,15 @@ qa-14: Nablarch 5→6バージョンアップ（Jakarta EE 10影響）、qa-15: 
 
 ### P2. RBKC：セキュリティチェックExcelのセクション構造修正（実装）
 
-P1-group subtype: No列をグループキー、脆弱性単位でセクション統合。50セクション→11に削減。11テストGREEN、596テスト既存パス。committed `46893d39f`。ソースExcelがworktreeにないためRBKC create+verify実行はfork元で必要。
+P1-group subtype: No列をグループキー、脆弱性単位でセクション統合。50セクション→11に削減。11テストGREEN、596テスト既存パス。committed `46893d39f`。ソースExcelがworktreeにないためRBKC create+verify実行はフェーズBで必要。
+
+### D. 設計書整理・最新化
+
+- 設計書6本を`design/`サブディレクトリに分離 — `445488aeb`
+- スコープ追加（フェーズA/B）: search-design.md, benchmark-design.md — `445488aeb`
+- E2Eベンチマーク実行設計、全メトリクス定義、評価エンジン抽象化、比較レポート追加 — `445488aeb`
+- コンポーネント設計書4本を実装に合わせて最新化 — `fc5bf0c26`
+- fork先/fork元 → フェーズA/B用語統一 — `1e537812a`
 
 ## Fork元スコープ（このブランチの対象外）
 
