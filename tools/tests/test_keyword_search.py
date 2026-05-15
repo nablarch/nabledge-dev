@@ -9,9 +9,9 @@ import pytest
 
 SCRIPT_PATH = (
     Path(__file__).resolve().parents[2]
-    / ".claude"
-    / "skills"
-    / "nabledge-6"
+    / "tools"
+    / "benchmark"
+    / "components"
     / "scripts"
     / "keyword-search.sh"
 )
