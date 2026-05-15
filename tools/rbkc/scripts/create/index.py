@@ -1,22 +1,15 @@
 """Index generator for RBKC.
 
-Scans a directory of knowledge JSON files and generates an ``index.toon``
-file in TOON format — the format used by Nabledge skills for knowledge lookup.
+Generates two index formats from classified knowledge JSON files:
 
-**Entry format** (one per data line):
-    {title}, {type}, {category}, {processing_patterns}, {relative_path}
+1. ``index.toon`` (TOON format) — used by the current skill's keyword search.
+2. ``index.md`` (Markdown format) — used by the new semantic search Stage1.
 
-Where:
-- ``title``: from JSON ``title`` field
-- ``type``: from classified FileInfo (mapping-driven)
-- ``category``: from classified FileInfo (mapping-driven)
-- ``processing_patterns``: ``category`` when ``type == "processing-pattern"``, else empty
-- ``relative_path``: path relative to *knowledge_dir*
-
-Files with ``no_knowledge_content: true`` are excluded.
+Files with ``no_knowledge_content: true`` are excluded from both formats.
 
 Public API:
     generate_index(file_infos, knowledge_dir, version, output_path) -> int
+    generate_index_md(file_infos, knowledge_dir, output_path) -> None
 """
 from __future__ import annotations
 
@@ -104,3 +97,83 @@ def generate_index(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(lines), encoding="utf-8")
     return len(entries)
+
+
+_SKIP_SECTION_TITLES = frozenset([
+    "モジュール一覧",
+    "アプリケーションフレームワーク",
+    "制約",
+    "ハンドラクラス名",
+])
+
+
+def generate_index_md(
+    file_infos: list,
+    knowledge_dir: Path,
+    output_path: Path,
+) -> None:
+    """Write ``index.md`` to *output_path* from classified file infos.
+
+    Format (for semantic search Stage1):
+      # Knowledge Index
+
+      ## {category_path}
+
+      ### {file_title}
+      path: {relative_path}
+      - sN: {section_title}        (level 2)
+        - sN: {section_title}      (level 3, indented)
+
+    Sections at level 4+ are omitted. Sections without a level field
+    (Excel-derived) appear as flat list items (level 2 equivalent).
+    Section titles in _SKIP_SECTION_TITLES are omitted.
+    """
+    # Build entries, skip no_knowledge_content files
+    entries: list[dict] = []
+    for fi in file_infos:
+        json_path = knowledge_dir / fi.output_path
+        if not json_path.exists():
+            continue
+        data = _load_json(json_path)
+        if data.get("no_knowledge_content") is True:
+            continue
+        rel_path = fi.output_path.replace("\\", "/")
+        # category = parent directory of the file (e.g. "component/libraries")
+        parts = Path(rel_path).parts
+        category = "/".join(parts[:-1]) if len(parts) > 1 else parts[0]
+        entries.append({
+            "title": data.get("title", Path(rel_path).stem),
+            "path": rel_path,
+            "category": category,
+            "sections": data.get("sections", []),
+        })
+
+    entries.sort(key=lambda e: e["path"])
+
+    # Group by category
+    from itertools import groupby
+    lines = ["# Knowledge Index"]
+    for category, group in groupby(entries, key=lambda e: e["category"]):
+        lines.append("")
+        lines.append(f"## {category}")
+        for entry in group:
+            lines.append("")
+            lines.append(f"### {entry['title']}")
+            lines.append(f"path: {entry['path']}")
+            for sec in entry["sections"]:
+                title = sec.get("title", "")
+                if title in _SKIP_SECTION_TITLES:
+                    continue
+                sid = sec.get("id", "")
+                level = sec.get("level")
+                if level is None:
+                    lines.append(f"- {sid}: {title}")
+                elif level == 2:
+                    lines.append(f"- {sid}: {title}")
+                elif level == 3:
+                    lines.append(f"  - {sid}: {title}")
+                # level 4+ omitted
+
+    lines.append("")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(lines), encoding="utf-8")
