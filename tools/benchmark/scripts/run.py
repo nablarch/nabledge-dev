@@ -27,7 +27,7 @@ from tools.benchmark.scripts.simulate_semantic_search import (
     parse_stage2_response,
 )
 
-PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
+PROMPTS_DIR = Path(__file__).parent.parent / "components" / "prompts"
 
 ANSWER_JSON_SCHEMA = json.dumps({
     "type": "object",

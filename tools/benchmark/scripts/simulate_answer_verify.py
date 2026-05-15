@@ -13,7 +13,7 @@ from pathlib import Path
 from tools.benchmark.scripts.evaluate import call_llm, parse_section_ref
 from tools.benchmark.scripts.simulate_semantic_search import format_hearing_answer
 
-PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
+PROMPTS_DIR = Path(__file__).parent.parent / "components" / "prompts"
 
 ANSWER_JSON_SCHEMA = json.dumps({
     "type": "object",

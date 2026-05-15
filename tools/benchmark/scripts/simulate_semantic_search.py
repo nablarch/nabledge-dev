@@ -11,7 +11,7 @@ from pathlib import Path
 
 from tools.benchmark.scripts.evaluate import call_llm, parse_section_ref
 
-PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
+PROMPTS_DIR = Path(__file__).parent.parent / "components" / "prompts"
 
 STAGE1_JSON_SCHEMA = json.dumps({
     "type": "object",
