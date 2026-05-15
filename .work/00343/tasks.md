@@ -68,19 +68,20 @@
 
 B-1完了後に実施。目的: 意味検索が使う `terms.json`（検索語辞書）と `index.md`（知識ファイル一覧）を生成できる状態にする。これがないと新検索のスキルが動かない。
 
-- [ ] `git cherry-pick 46893d39f` — P1-group subtype再適用（xlsx_common.py, xlsx-sheet-mapping.md, test_xlsx_common.py）
-  - `git diff HEAD~1 --stat` で3ファイルのみ変更されていること（他のファイルが混入していないこと）
-- [ ] `pytest tools/rbkc/tests/ut/test_xlsx_common.py -x` がグリーン（cherry-pick が壊していないこと）
-- [ ] P1-group subtype の変更内容をユーザーに提示し承認取得（承認なしで次に進まない）
-- [ ] `git cherry-pick 03e20a535` — terms.py + test_terms.py + run.py terms統合を再適用
-  - `git diff HEAD~1 --stat` で対象3ファイルのみ変更されていること
-- [ ] `pytest tools/rbkc/tests/ut/test_terms.py -x` がグリーン
-- [ ] index.md生成（index.py: index.toon → index.md変更）のテストを書く（RED）
-  - 目的: 意味検索Stage1がカテゴリ一覧として参照するindex.mdをRBKCが生成できること。index.toonのままでは新検索ワークフローが読み込めない
-  - `pytest tools/rbkc/tests/ut/test_index.py` が FAIL（実装前なのでFAILが正しい）
-- [ ] index.py を実装（GREEN）: `pytest tools/rbkc/tests/ut/test_index.py` が PASS
-- [ ] 全5バージョンで `bash rbkc.sh create <v> && bash rbkc.sh verify <v>` を実行（v6/v5/v1.4/v1.3/v1.2）
-  - 変更前のFAIL数を記録してから変更後と比較。想定外のFAIL増は横展開ミスのサイン
+- [x] cherry-pickコミットが存在しないため、`index.md` と `terms.json` を新規実装する方針に変更
+- [x] index.md生成: `generate_index_md()` を `index.py` に追加（Option A: index.toon維持、並行生成）— committed `0aefe7168`
+  - SEエキスパート推奨: index.toonとQO4 verifyへの影響ゼロ
+  - 12テスト追加、567テスト全GREEN、v6 create+verify FAIL=0確認
+- [ ] 全5バージョンで `rbkc.sh create` を実行し `index.md` が生成されることを確認
+  - v6: ✅ 確認済み（`.claude/skills/nabledge-6/knowledge/index.md` 生成）
+  - v5: 実行中断（セッション終了のため）
+  - v1.4/v1.3/v1.2: 未実行
+  - コマンド: `for v in 5 1.4 1.3 1.2; do (cd tools/rbkc && bash rbkc.sh create $v); done`
+  - 各バージョンで `.claude/skills/nabledge-$v/knowledge/index.md` が存在すること
+- [ ] 全5バージョンで `bash rbkc.sh verify <v>` を実行し FAIL=0 確認（変更前FAIL=0）
+- [ ] [DECISION: terms.jsonの実装が必要か確認] terms.py（terms.json生成）を新規実装する — 設計書: `keyword-search-design.md` §terms.json
+  - TDD: test_terms.py を書く（RED）→ 実装（GREEN）
+  - 全5バージョン create+verify FAIL=0 確認
 
 ### B-3. スキルデプロイ
 
