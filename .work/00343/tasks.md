@@ -68,14 +68,10 @@
   - `--output-dir` 省略で `tools/benchmark/results/YYYYMMDD-HHMMSS/` に自動保存（commit `52c9f785c`）
   - [x] run-1完了: `tools/benchmark/results/20260515-171300/`（28シナリオ、summary.json再生成済み）
   - [x] run-2完了: `tools/benchmark/results/20260515-181817/`（28シナリオ、summary.json再生成済み）
-  - [ ] run-3完了確認: `tools/benchmark/results/20260515-194124/`（実行中、11/28完了）
-    - `ls tools/benchmark/results/20260515-194124/ | wc -l` = 29 になったら完了
-    - summary.json 再生成: `python3 -c "import json; from pathlib import Path; d=Path('tools/benchmark/results/20260515-194124'); s=[{'id':p.name,'search_sections':len(json.loads((p/'search.json').read_text())['section_ids']),'hearing_status':json.loads((p/'hearing.json').read_text()).get('status','unknown')} for p in sorted(d.iterdir()) if p.is_dir()]; (d/'summary.json').write_text(json.dumps({'total_scenarios':len(s),'scenarios':s},ensure_ascii=False,indent=2)); print(len(s))"`
+  - [x] run-3完了確認: `tools/benchmark/results/20260515-194124/`（28シナリオ、summary.json再生成済み）
   - 各runの受入条件: `summary.json` の `total_scenarios` = 28、全シナリオの `metrics.json` の `model_usage` が `{}` でない
-- [ ] 結果を `results/` にコミット（3 run 分まとめて）
-- [ ] **ベースラインレポートをユーザーに報告**（目的: 現行品質と再現性を数値で把握し、新検索デプロイ後の比較基準とする）
-  - シナリオ別: 3 run の `search_sections` 件数・`hearing_status`・コスト・ターン数
-  - 集計: 平均・分散（ばらつきが大きいシナリオを明示）
+- [x] 結果を `results/` にコミット（3 run 分まとめて）— committed `efbc320ef`
+- [x] **ベースラインレポートをユーザーに報告**（目的: 現行品質と再現性を数値で把握し、新検索デプロイ後の比較基準とする）
 
 ### B-2. RBKC変更
 
