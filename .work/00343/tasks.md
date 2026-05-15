@@ -1,6 +1,6 @@
 # Tasks: 検索改善
 
-**Branch**: search
+**Branch**: 343-improve-search-quality
 **Updated**: 2026-05-15
 
 ## Done
@@ -65,13 +65,13 @@
   - `pytest tools/benchmark/tests/`: 303 passed
 - [x] **1シナリオ動作確認**（pre-01, mode=current）— hearing/search/answer/metrics全項目クリア
 - [ ] **全QAシナリオ 3回実行**（目的: ベースラインの再現性も含めて記録する。LLM応答のばらつきを把握し、比較時に有意差か誤差かを判断できるようにする）
-  - `--output-dir` 省略で `tools/benchmark/results/YYYYMMDD-HHMMSS/` に自動保存（commit済み）
-  - **注意**: 現在 `baseline-current/` 直下（run-1相当、17:13開始）に実行中。完了後 `20260515-171300/` 相当のディレクトリに移動する
-  - [ ] run-1完了確認: `ls tools/benchmark/results/baseline-current/ | wc -l` = 29（28シナリオ + summary.json）
-  - [ ] run-1を日時ディレクトリに移動: `mv tools/benchmark/results/baseline-current tools/benchmark/results/20260515-171300`
-  - [ ] run-2実行: `python3 -m tools.benchmark.scripts.run_e2e --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6 --mode current --timeout 300`（出力先自動生成）
-  - [ ] run-3実行: 同上
-  - 各runの受入条件: 終了コード0、`summary.json` の `total_scenarios` = 28、全シナリオの `metrics.json` の `model_usage` が `{}` でない
+  - `--output-dir` 省略で `tools/benchmark/results/YYYYMMDD-HHMMSS/` に自動保存（commit `52c9f785c`）
+  - [x] run-1完了: `tools/benchmark/results/20260515-171300/`（28シナリオ、summary.json再生成済み）
+  - [x] run-2完了: `tools/benchmark/results/20260515-181817/`（28シナリオ、summary.json再生成済み）
+  - [ ] run-3完了確認: `tools/benchmark/results/20260515-194124/`（実行中、11/28完了）
+    - `ls tools/benchmark/results/20260515-194124/ | wc -l` = 29 になったら完了
+    - summary.json 再生成: `python3 -c "import json; from pathlib import Path; d=Path('tools/benchmark/results/20260515-194124'); s=[{'id':p.name,'search_sections':len(json.loads((p/'search.json').read_text())['section_ids']),'hearing_status':json.loads((p/'hearing.json').read_text()).get('status','unknown')} for p in sorted(d.iterdir()) if p.is_dir()]; (d/'summary.json').write_text(json.dumps({'total_scenarios':len(s),'scenarios':s},ensure_ascii=False,indent=2)); print(len(s))"`
+  - 各runの受入条件: `summary.json` の `total_scenarios` = 28、全シナリオの `metrics.json` の `model_usage` が `{}` でない
 - [ ] 結果を `results/` にコミット（3 run 分まとめて）
 - [ ] **ベースラインレポートをユーザーに報告**（目的: 現行品質と再現性を数値で把握し、新検索デプロイ後の比較基準とする）
   - シナリオ別: 3 run の `search_sections` 件数・`hearing_status`・コスト・ターン数
