@@ -39,18 +39,25 @@ def _extract_between_markers(text: str, start_marker: str, end_marker: str) -> s
     return text[start_idx + len(start_marker):end_idx].strip()
 
 
-def build_e2e_prompt(scenario: dict, workflow_content: str) -> str:
-    """Build the E2E prompt that instructs the model to follow qa.md and output diagnostic markers."""
+def build_e2e_prompt(scenario: dict, workflow_content: str, mode: str = "new") -> str:
+    """Build the E2E prompt that instructs the model to follow qa.md and output diagnostic markers.
+
+    Args:
+        mode: "current" — no hearing context injected (measures current skill as-is).
+              "new"     — hearing context injected so new skill can skip hearing step.
+    """
     question = scenario["when"]["input"]
     hearing_answer = scenario["when"].get("hearing_answer")
 
-    if hearing_answer:
-        hearing_context = (
+    if mode == "new" and hearing_answer:
+        hearing_section = (
+            f"\n## コンテキスト（ヒアリング結果）\n"
             f"処理方式: {hearing_answer.get('processing_type', '')}\n"
-            f"目的: {hearing_answer.get('goal', '')}"
+            f"目的: {hearing_answer.get('goal', '')}\n\n"
+            f"ヒアリング結果が提供されている場合、ワークフローのヒアリングステップはスキップして検索から開始してください。\n"
         )
     else:
-        hearing_context = "（ヒアリング結果なし）"
+        hearing_section = ""
 
     return f"""以下のワークフロー（qa.md）に従って質問に回答してください。
 
@@ -59,12 +66,7 @@ def build_e2e_prompt(scenario: dict, workflow_content: str) -> str:
 
 ## 質問
 {question}
-
-## コンテキスト（ヒアリング結果）
-{hearing_context}
-
-ヒアリング結果が提供されている場合、ワークフローのヒアリングステップはスキップして検索から開始してください。
-
+{hearing_section}
 ## 出力要件
 
 回答を出力した後、以下のマーカー形式でベンチマーク診断情報を出力してください。全マーカーの出力は必須です。
@@ -155,6 +157,7 @@ def run_e2e_scenario(
     skill_dir: str | Path,
     model: str = "sonnet",
     timeout: int = 180,
+    mode: str = "new",
 ) -> dict:
     """Run a single scenario through the skill workflow end-to-end.
 
@@ -163,6 +166,8 @@ def run_e2e_scenario(
         skill_dir: Path to the skill directory (e.g. .claude/skills/nabledge-6/).
         model: Claude model to use.
         timeout: Subprocess timeout in seconds.
+        mode: "current" — no hearing context (measures current skill as-is).
+              "new"     — hearing context injected for new skill.
 
     Returns:
         Dict with scenario_id, hearing, search, answer, metrics.
@@ -173,7 +178,7 @@ def run_e2e_scenario(
     """
     skill_dir = Path(skill_dir)
     workflow_content = (skill_dir / WORKFLOW_FILE).read_text(encoding="utf-8")
-    prompt = build_e2e_prompt(scenario, workflow_content)
+    prompt = build_e2e_prompt(scenario, workflow_content, mode=mode)
 
     proc = subprocess.run(
         [
@@ -218,6 +223,7 @@ def run_e2e_all(
     scenario_ids: list[str] | None = None,
     knowledge_dir: str | None = None,
     timeout: int = 180,
+    mode: str = "new",
 ) -> dict:
     """Run all scenarios end-to-end and save results.
 
@@ -229,6 +235,7 @@ def run_e2e_all(
         scenario_ids: Optional list of scenario IDs to run (runs all if None).
         knowledge_dir: Path to knowledge directory; enables evaluate_scenario step.
         timeout: Subprocess timeout in seconds per scenario.
+        mode: "current" — no hearing context. "new" — hearing context injected.
 
     Returns:
         Summary dict with total_scenarios and per-scenario info.
@@ -246,7 +253,7 @@ def run_e2e_all(
             continue
 
         print(f"Running {sid}...", file=sys.stderr)
-        result = run_e2e_scenario(scenario, skill_dir, model=model, timeout=timeout)
+        result = run_e2e_scenario(scenario, skill_dir, model=model, timeout=timeout, mode=mode)
         save_e2e_results(str(out), sid, result)
 
         if knowledge_dir is not None:
@@ -289,6 +296,7 @@ def main():
     parser.add_argument("--scenario-ids", help="Comma-separated scenario IDs to run")
     parser.add_argument("--knowledge-dir", help="Knowledge directory for LLM evaluation (enables evaluate.py step)")
     parser.add_argument("--timeout", type=int, default=180, help="Subprocess timeout in seconds per scenario (default: 180)")
+    parser.add_argument("--mode", default="new", choices=["current", "new"], help="'current': no hearing context (baseline). 'new': hearing context injected (default: new)")
     args = parser.parse_args()
 
     scenario_ids = args.scenario_ids.split(",") if args.scenario_ids else None
@@ -301,6 +309,7 @@ def main():
         scenario_ids=scenario_ids,
         knowledge_dir=args.knowledge_dir,
         timeout=args.timeout,
+        mode=args.mode,
     )
 
     print(f"\nCompleted: {summary['total_scenarios']} scenarios", file=sys.stderr)

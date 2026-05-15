@@ -96,6 +96,26 @@ class TestBuildE2ePrompt:
         assert "{workflow}" not in prompt
         assert "{hearing_answer}" not in prompt
 
+    def test_mode_current_excludes_hearing_answer(self):
+        # current skill has no hearing — hearing_answer must not be injected
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, mode="current")
+        assert "Nablarchバッチ" not in prompt
+        assert "バッチを起動する" not in prompt
+
+    def test_mode_current_excludes_skip_instruction(self):
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, mode="current")
+        assert "ヒアリングステップはスキップ" not in prompt
+
+    def test_mode_new_includes_hearing_answer(self):
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, mode="new")
+        assert "Nablarchバッチ" in prompt
+        assert "バッチを起動する" in prompt
+
+    def test_default_mode_is_new(self):
+        # backward compat: default behaviour unchanged
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
+        assert "Nablarchバッチ" in prompt
+
 
 class TestParseE2eResponse:
     def _make_response(self, hearing_json, search_json, answer_text):
@@ -491,6 +511,51 @@ class TestRunE2eScenario:
 
             assert "model_usage" in result["metrics"]
             assert result["metrics"]["model_usage"] == {}
+
+
+    def test_mode_current_passed_to_build_prompt(self):
+        with tempfile.TemporaryDirectory() as skill_dir:
+            Path(skill_dir, "workflows").mkdir(parents=True)
+            (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
+
+            mock_proc = type("P", (), {
+                "returncode": 0,
+                "stdout": self._make_claude_output(self._make_valid_e2e_response()),
+                "stderr": "",
+            })()
+
+            captured_prompts = []
+
+            def capture_run(*args, **kwargs):
+                captured_prompts.append(kwargs.get("input", ""))
+                return mock_proc
+
+            with patch("subprocess.run", side_effect=capture_run):
+                run_e2e_scenario(SAMPLE_SCENARIO, skill_dir, mode="current")
+
+            assert "Nablarchバッチ" not in captured_prompts[0]
+
+    def test_mode_new_passed_to_build_prompt(self):
+        with tempfile.TemporaryDirectory() as skill_dir:
+            Path(skill_dir, "workflows").mkdir(parents=True)
+            (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
+
+            mock_proc = type("P", (), {
+                "returncode": 0,
+                "stdout": self._make_claude_output(self._make_valid_e2e_response()),
+                "stderr": "",
+            })()
+
+            captured_prompts = []
+
+            def capture_run(*args, **kwargs):
+                captured_prompts.append(kwargs.get("input", ""))
+                return mock_proc
+
+            with patch("subprocess.run", side_effect=capture_run):
+                run_e2e_scenario(SAMPLE_SCENARIO, skill_dir, mode="new")
+
+            assert "Nablarchバッチ" in captured_prompts[0]
 
 
 class TestRunE2eAll:
