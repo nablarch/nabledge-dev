@@ -4,64 +4,64 @@ Rules for writing tasks in `.work/xxxxx/tasks.md`.
 
 ## Granularity
 
-1タスク＝1コミット。各ステップは迷わず実行できる具体的な作業指示とする。
+One task = one commit. Each step must be a concrete instruction that can be executed without ambiguity.
 
-- 曖昧な動詞を使わない（「再適用」「整理」「確認」→ 具体的なコマンドやファイル名で書く）
-- git操作はcommit hashやコマンドを明記（例: `git cherry-pick 46893d39f`, `git checkout main -- path/to/file`）
-- テスト確認は実行コマンドを明記（例: `pytest tools/tests/ -x`）
-- 「全テスト」「全件確認」は禁止 — 対象を列挙するか具体的なコマンドを書く
+- Avoid vague verbs ("re-apply", "clean up", "confirm" → use specific commands and file names)
+- Git operations: specify commit hash or exact command (e.g. `git cherry-pick 46893d39f`, `git checkout main -- path/to/file`)
+- Test verification: specify the exact command (e.g. `pytest tools/tests/ -x`)
+- "All tests" or "all items" is forbidden — enumerate targets or give a specific command
 
-## 影響範囲の調査
+## Impact analysis
 
-タスク定義前に影響範囲を調査し、影響ファイルをタスクに明記する。
+Before defining tasks, investigate the impact scope and list affected files in the task.
 
-- grepで実際の参照を確認する（推測で影響範囲を決めない）
-- 全バージョン（v6/v5/v1.4/v1.3/v1.2）を対象に調査する
-- 「影響なし」の場合もその根拠を記載する（例: `simulate_*.py`はread-sections.shを参照していない — セクション読み込みはJSON直接読み）
+- Use grep to confirm actual references (do not guess impact scope)
+- Cover all versions (v6/v5/v1.4/v1.3/v1.2)
+- Document "no impact" cases too, with evidence (e.g. `simulate_*.py` does not reference read-sections.sh — section loading reads JSON directly)
 
-## 順序
+## Order
 
-1. **設計書を更新** — 実装の前に設計書でターゲット状態を確定する
-2. **テストを書く**（RED） — TDDに従い、テストが存在しないコード変更は先にテストを追加する
-3. **実装**（GREEN） — 設計書とテストに合わせて実装する
-4. **テスト確認** — 各コミット前にテストパスを確認する
+1. **Update the design doc** — finalize the target state before implementing
+2. **Write the test** (RED) — per TDD, add a test before any code change that lacks one
+3. **Implement** (GREEN) — implement to match the design doc and test
+4. **Verify tests pass** — before each commit
 
-テストが存在しない変更対象を見つけたら、実装タスクの前にテスト追加タスクを挿入する。
+If you find a change target with no test, insert a test-addition task before the implementation task.
 
-## 段階的に進める
+## Incremental execution
 
-いきなり全件やらない。1件やって動作確認してから残りをバッチ処理する。
+Never run all at once. Do one, verify, then batch the rest.
 
-- ファイル移動: 1件移動→パス更新→テスト確認→残りバッチ
-- リバート: 1件リバート→テスト確認→残りバッチ
-- 新規実装: 1シナリオ動作確認→全件実行
+- File move: move 1 → update references → verify tests → batch the rest
+- Revert: revert 1 → verify tests → batch the rest
+- New implementation: verify 1 scenario → run all
 
-## 依存関係
+## Dependencies
 
-タスク間の依存関係を明示し、順序を厳守する。
+Make dependencies between tasks explicit and enforce order strictly.
 
-- 依存関係がある場合は「B-1完了後に実施」等を記載する
-- 不可逆な操作（ベースライン取得→コード変更）は特に明記する（例: 「変更後はベースラインが取れなくなる」）
-- スコープの混在を防ぐ（例: フェーズAでフェーズBのコードを変更しない）
+- If a task depends on another, state it: "Do after B-1 is complete"
+- Irreversible operations (e.g. baseline capture → code change) must be called out explicitly (e.g. "baseline cannot be taken after this change")
+- Do not mix scopes (e.g. do not touch Phase B code during Phase A)
 
-## 動作確認ステップ
+## Verification steps
 
-動作確認には必ず「目的（何を保証したいか）」と「合格基準（Pass/Failを機械的に判定できる条件）」を書く。
+Every verification step must state: the **intent** (what guarantee is being made) and an **acceptance criterion** (a condition that can be evaluated mechanically — exit code, file content, command output).
 
-**目的**: 「〜が壊れていないこと」「〜が正しく動いていること」を一文で書く。
-**合格基準**: 終了コード、ファイルの存在・内容、コマンド出力で判定できる形にする。
+**Intent**: one sentence — "X is not broken", "Y is working correctly".
+**Acceptance criterion**: exit code, file existence/content, or command output. Not subjective observation.
 
-悪い例:
-- `answer.md` が空でない — 意図（正常回答が入っている）を保証できない。エラーメッセージでもPassする
-- BASHエラーなく完了する — 「BASHエラー」の定義が主観に依存する
+Bad examples:
+- `answer.md` is not empty — does not guarantee the intent (normal response present); an error message also passes
+- Completes without BASH errors — "BASH error" depends on the reader's judgment
 
-良い例:
-- `answer.md` に `参照:` セクションがある — 知識ファイルから引用していることの証拠
-- `python3 -m ... --scenario-ids pre-01` が終了コード0かつ `metrics.json` の `model_usage` が `{}` でない
+Good examples:
+- `answer.md` contains a `参照:` section — proves the workflow cited a knowledge file
+- `python3 -m ... --scenario-ids pre-01` exits 0 and `metrics.json` has `model_usage` non-empty
 
-## 中間状態の安全性
+## Intermediate state safety
 
-どのコミット時点でも全テストがパスする状態を維持する。
+Every commit must leave all tests passing.
 
-- ファイル移動は「コピー→参照更新→テスト確認→旧ファイル削除」の順で行う（先に削除しない）
-- リバートと移動を同時にやらない — 参照先が存在する状態を常に保つ
+- File move: copy → update references → verify tests → delete old file (never delete first)
+- Do not revert and move simultaneously — always keep referenced paths resolvable
