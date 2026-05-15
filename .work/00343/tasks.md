@@ -3,21 +3,11 @@
 **Branch**: 343-improve-search-quality
 **Updated**: 2026-05-15
 
-## In Progress
-
-### B-1. 現行検索E2Eベースライン取得（事後評価）
-
-**Steps:**
-- [ ] **3 run分の事後評価（evaluation.json生成）**
-  - run-1: `python3 -m tools.benchmark.scripts.evaluate --run-dir tools/benchmark/results/20260515-171300 --scenarios tools/benchmark/scenarios/qa.json --knowledge-dir .claude/skills/nabledge-6/knowledge`
-  - run-2: 同上（`20260515-181817`）
-  - run-3: 同上（`20260515-194124`）
-  - 受入条件: 各runの全28シナリオに `evaluation.json` が存在し、`scores.accuracy` が null でない（UNCERTAINのみnull許容）
-- [ ] evaluation.json を `results/` にコミット
-- [ ] **ベースラインレポートをユーザーに報告**（品質指標＋パフォーマンス指標）
+## Done (B-1)
 
 ## Done
 
+- [x] B-1. 現行検索E2Eベースライン取得 — evaluation.json生成（3 run）、committed `f57b78581`
 - [x] A-1. RBKC変更のリバート — committed `5bf479e1c`, `f0249fea0`
 - [x] A-2. 設計書の整合（ディレクトリ構成） — committed `b3819fb94`
 - [x] A-3. 部品プロンプトの移動 — committed `eea31f065`, `426b9a0f4`
