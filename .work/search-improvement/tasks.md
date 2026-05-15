@@ -1,12 +1,7 @@
-# Tasks: Search Improvement (Zero-base)
+# Tasks: 検索改善
 
 **Branch**: search
 **Updated**: 2026-05-15
-
-## スコープ
-
-**fork先（このブランチ）**: 新検索の部品実装 + 部品ベンチマーク
-**fork元（本家ブランチ）**: RBKC変更、新検索デプロイ、E2Eベンチマーク
 
 ## Rules
 
@@ -27,89 +22,84 @@
 - **プロンプトは手順型で書く**: ルールベース（判断基準の羅列）ではなく、作業手順（明確な命令で実行順序を記述）で書く。LLMが何をどの順番でやるか迷わない形にする。
 - **シナリオのmustは本文で検証**: mustセクションの妥当性はタイトルではなく本文を読んで判断する。タイトルだけで「必須」と設定しない。
 
-## 作業の進め方
+## マージ前（フェーズA残タスク）
 
-1タスク＝1コミット粒度。各コンポーネントを以下のサイクルで進める：
+### ディレクトリ整理
 
-1. 調査（全バージョン・全タイプ）
-2. 設計
-3. シミュレーション（全件）→ 改善を繰り返し
-4. エキスパートレビュー（別コンテキスト）→ 改善（別コンテキスト）
-5. メインエージェント最終判断
-6. → ユーザーレビュー（コンポーネント単位）
+設計書に合わせ、部品ファイルを `tools/benchmark/components/` に集約する。現行スキルへの変更をリバートする。
 
-## In Progress
+- [ ] `tools/benchmark/components/prompts/` を作成、部品プロンプト6件を `prompts/` から移動（hearing-classify, hearing-extract, semantic-search-stage1, semantic-search-stage2, answer, verify）
+- [ ] `tools/benchmark/components/scripts/` を作成、`keyword-search.sh` と `read-sections.sh`（変更版）を配置
+- [ ] `.claude/skills/nabledge-6/scripts/keyword-search.sh` を削除
+- [ ] `.claude/skills/nabledge-6/scripts/read-sections.sh` をmainの状態にリバート
+- [ ] シミュレーションスクリプト（`simulate_*.py`, `run.py`）のパス参照を更新
+- [ ] `benchmark-design.md` のディレクトリ構成を `search-design.md` に合わせて更新
+- [ ] テスト全件パス確認
 
-## Not Started
+### セキュリティチェックExcel — ユーザーレビュー
 
-### P2-4. RBKC：セキュリティチェックExcel — ユーザーレビュー
+P1-group subtype実装済み（`46893d39f`）。create+verify実行はフェーズB。
 
-P2-1〜P2-3（調査・設計・TDD実装）は完了済み。committed `46893d39f`
+- [ ] ユーザーレビュー
 
-- [ ] → ユーザーレビュー
+### マージ
 
-### M. fork元ブランチへマージ
+- [ ] search ブランチの成果物をフェーズBブランチにマージ
 
-全タスク完了後、searchブランチの成果物をfork元のフィーチャーブランチにマージする。
+## マージ後（フェーズB）
 
-- [ ] M-1. マージ実施
+### RBKC変更
+
+- [ ] index.md生成（index.py: index.toon → index.md）
+- [ ] terms.json出力（terms.py）
+- [ ] セキュリティチェックExcel — 全5バージョンで create+verify 実行
+
+### スキルデプロイ
+
+- [ ] `components/` から `.claude/skills/nabledge-6/` へ部品をデプロイ（prompts → assets/, scripts → scripts/）
+- [ ] ワークフロー作成（qa.md, semantic-search.md, keyword-search.md, qa/hearing.md, qa/answer.md, qa/verify.md）
+- [ ] code-analysis.md 作成
+
+### E2Eベンチマーク
+
+- [ ] 現行検索ベースライン取得（v6）
+- [ ] 新検索E2E実行（v6）
+- [ ] 現行 vs 新 比較 → 現行以上になるまで改善（部品→E2Eの順）
+
+### バージョン展開
+
+- [ ] v5/v1.4/v1.3/v1.2 に展開
 
 ## Done
 
-### 0. ベンチマークインフラ
+### ベンチマーク基盤
 
-シナリオ見直し・判定方式・メトリクス設計、評価ロジック実装（54テストGREEN）、ランナー実装（23テストGREEN）。SE/QA全件修正済。
+評価エンジン（`evaluate.py`, 54テストGREEN）とランナー群（`simulate_*.py`, `run.py`, 23テストGREEN）。QAシナリオ15件、キーワード検索シナリオ12件。SE/QAレビュー済。
 
-### 1. 意味検索
+### 意味検索
 
-2段階方式設計、シミュレーション+改善サイクル。最終: **97.4% (37/38 must)、3回完全一致、不安定0**。ユーザー承認済。
+2段階方式（Stage1: カテゴリ選定 → Stage2: セクション選定）。プロンプト: `semantic-search-stage1.md`, `semantic-search-stage2.md`。部品ベンチマーク: 97.4%（37/38 must）。ユーザー承認済。
 
-### 1b. 意味検索トレース追加
+### 回答生成
 
-Stage2 reason + 回答reason追加。ユーザー承認済 — `7299aa98`
+知識セクションから引用付き回答を生成。プロンプト: `answer.md`。部品ベンチマーク: 18/26 Stable PASS, 1 Stable FAIL（既知）, 7 Unstable。PE/SEレビュー済、ユーザー承認済。
 
-### 2. 回答生成
+### 根拠検証
 
-知識セクションから正確な回答を生成。トレース追加で改善、汎用的改善策なし判断。最終: **18/26 Stable PASS, 1 Stable FAIL (qa-12b: 既知), 7 Unstable**。PE/SE全件修正済、ユーザー承認済。
+回答のハルシネーションを検出。プロンプト: `verify.md`。部品ベンチマーク: FP率5%, FN率0%。PEレビュー済、ユーザー承認済。
 
-### V. 検証（verify）
+### ヒアリング
 
-ハルシネーション検出。FP率5%, FN率0%で改善不要と判断。最終: **15/26 Stable PASS, 8 Stable FAIL (回答側ハルシネーションの正しい検出), 3 Unstable**。PE: 0F、ユーザー承認済。
+事実ベース分類（明示キーワードリスト照合、推測禁止）。プロンプト: `hearing-classify.md`, `hearing-extract.md`。部品ベンチマーク: 分類100%, 処理方式100% × 3回完全一致。PEレビュー済、ユーザー承認済。
 
-### 3. ヒアリング
+### キーワード検索
 
-事実ベース分類方式（明示キーワードリスト照合、推測禁止）。最終: **cls 100%, pt 100% × 3回完全一致**。PE: 0F、ユーザー承認済。
+terms.jsonによるキーワードマッチ。case-insensitive部分一致、ページAND+セクションOR。スクリプト: `keyword-search.sh`（20テストGREEN）。
 
-### 5. キーワード検索
+### RBKC: セキュリティチェックExcel構造修正（コード実装）
 
-terms.jsonとキーワードマッチによる検索方式。簡易仕様: case-insensitive部分一致、ページAND+セクションOR、2文字以上、上限なし。20テストGREEN。設計書更新済。
+P1-group subtype: No列をグループキーに脆弱性単位でセクション統合（50→11セクション）。11テストGREEN, 596既存テストパス。create+verify実行はフェーズB。
 
-### S. シナリオ追加（リリースノート・セキュリティ）
+### 設計書
 
-qa-14: Nablarch 5→6バージョンアップ（Jakarta EE 10影響）、qa-15: XSS対策のNablarch対応状況。committed `8d1de46f1`
-
-### P1. index.md設計：releases除外の撤廃
-
-設計書（design/semantic-search-design.md 194行目）に既に反映済み。releasesカテゴリも他と同じルールで出力する方針。構成ルール・省略ルールにreleases除外の記述なし。
-
-### P2. RBKC：セキュリティチェックExcelのセクション構造修正（実装）
-
-P1-group subtype: No列をグループキー、脆弱性単位でセクション統合。50セクション→11に削減。11テストGREEN、596テスト既存パス。committed `46893d39f`。ソースExcelがworktreeにないためRBKC create+verify実行はフェーズBで必要。
-
-### D. 設計書整理・最新化
-
-- 設計書6本を`design/`サブディレクトリに分離 — `445488aeb`
-- スコープ追加（フェーズA/B）: search-design.md, benchmark-design.md — `445488aeb`
-- E2Eベンチマーク実行設計、全メトリクス定義、評価エンジン抽象化、比較レポート追加 — `445488aeb`
-- コンポーネント設計書4本を実装に合わせて最新化 — `fc5bf0c26`
-- fork先/fork元 → フェーズA/B用語統一 — `1e537812a`
-
-## Fork元スコープ（このブランチの対象外）
-
-以下はfork元へのマージ後に実施する。
-
-- **RBKC変更**: index.md生成（index.py変更）、terms.json出力、P2のcreate+verify実行
-- **新検索デプロイ**: ベンチマークプロンプト → スキルワークフロー化（semantic-search.md、keyword-search.md、qa/hearing.md、qa/answer.md、qa/verify.md、assets/hearing-prompt.md）
-- **E2Eベンチマーク**: 現行検索ベースライン → 新検索デプロイ → 比較 → 改善（部品→E2Eの順）
-- **deepeval LLM判定**: 別Issueとして対応
-- **残りバージョン展開**: v6で確定後にv5/v1.4/v1.3/v1.2に展開
+`design/` に6本整理: search-design.md, benchmark-design.md, semantic-search-design.md, hearing-design.md, answer-verify-design.md, keyword-search-design.md。
