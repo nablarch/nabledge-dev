@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: search
-**Updated**: 2026-05-15 (B-1 run_e2e.py実装完了)
+**Updated**: 2026-05-15
 
 ## Done
 
