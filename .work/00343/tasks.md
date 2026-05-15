@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: search
-**Updated**: 2026-05-15
+**Updated**: 2026-05-15 (B-1 run_e2e.py実装完了)
 
 ## Done
 
@@ -48,9 +48,9 @@
 
 **RBKC変更・スキルデプロイの前に実施すること。** 変更後はベースラインが取れなくなる。
 
-- [ ] E2Eベンチマーク設計を確定（benchmark-design.md のE2Eセクション）
-- [ ] E2Eベンチマークランナー（`run_e2e.py`）のテストを書く（RED）
-- [ ] `run_e2e.py` を実装（GREEN）
+- [x] E2Eベンチマーク設計を確定（benchmark-design.md のE2Eセクション）
+- [x] E2Eベンチマークランナー（`run_e2e.py`）のテストを書く（RED）
+- [x] `run_e2e.py` を実装（GREEN）— committed `a4d4403f1`
 - [ ] 現行検索（現行qa.md）で1シナリオ実行して動作確認
 - [ ] 全QAシナリオでE2Eベンチマーク実行（v6）
 - [ ] 結果を `results/baseline-current/` に保存・コミット
