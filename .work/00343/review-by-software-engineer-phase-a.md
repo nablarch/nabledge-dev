@@ -30,4 +30,4 @@
 
 - tools/benchmark/scripts/*.py (source code)
 - tools/benchmark/components/scripts/*.sh (shell scripts)
-- .work/search-improvement/design/*.md (design docs)
+- .work/00343/design/*.md (design docs)
