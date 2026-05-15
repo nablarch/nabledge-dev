@@ -1,0 +1,126 @@
+{
+  "scenario_id": "pre-02",
+  "description": "入力バリデーションの実装方法を知りたいが、バッチかWebかRESTかが不明",
+  "input": "入力チェック（バリデーション）の実装方法を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の結論部分に「`@InjectForm` インターセプタと Bean Validation を組み合わせて実装する」と明記されており、業務アクションメソッドに `@InjectForm` を設定することでバリデーションが実行されることが説明されている。これは「WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う」という事実と同等の情報を含んでいる。",
+      "fact": "WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "InjectFormインターセプタとBean Validationを組み合わせてバリデーションを実装する",
+        "supported": true
+      },
+      {
+        "claim": "BeanValidationStrategyをvalidationStrategyという名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "フォームクラスに@Required、@Domainアノテーションを付与する",
+        "supported": true
+      },
+      {
+        "claim": "フォームのプロパティは全てString型で宣言すること",
+        "supported": true
+      },
+      {
+        "claim": "個別アノテーションよりも@Domain（ドメインバリデーション）を推奨する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorアノテーションを業務アクションメソッドに設定する",
+        "supported": false
+      },
+      {
+        "claim": "@OnErrorを設定しない場合、バリデーションエラーがシステムエラー扱いになる",
+        "supported": false
+      },
+      {
+        "claim": "context.getRequestScopedVar(\"form\")でフォームオブジェクトを取得する",
+        "supported": false
+      },
+      {
+        "claim": "<n:text>タグと<n:error>タグでJSP側の入力フィールドとエラー表示を実装する",
+        "supported": false
+      },
+      {
+        "claim": "Bean Validation内でDBアクセスを行うと脆弱性の原因となる",
+        "supported": false
+      },
+      {
+        "claim": "相関バリデーションの実行順序は保証されず、項目単体のバリデーション前に相関バリデーションが呼ばれる場合がある",
+        "supported": false
+      },
+      {
+        "claim": "ドメインBeanの@Requiredは個別フォーム側に設定すること",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有の主張が知識セクションで裏付けられない。特に以下が問題である：(1) @OnErrorアノテーションの存在・動作仕様（設定しない場合にシステムエラー扱いになるという挙動）は知識セクションに記載がない。(2) context.getRequestScopedVar(\"form\")というAPIの使用方法は知識セクションに記載がない。(3) <n:text>/<n:error>JSPタグは知識セクションに記載がない。(4) 「Bean Validation内でDBアクセスを行うと脆弱性の原因となる」という主張は知識セクションに記載がなく、一般的にDBアクセスは設計・パフォーマンス上の問題であり「脆弱性」と断言するのは誤解を招く可能性がある。(5) 相関バリデーションの実行順序に関する仕様説明は知識セクションに記載がない。これらはNablarch固有のAPI・動作仕様に関する主張であり、裏付けのないハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のNablarch固有の主張が知識セクションで裏付けられない。特に以下が問題である：(1) @OnErrorアノテーションの存在・動作仕様（設定しない場合にシステムエラー扱いになるという挙動）は知識セクションに記載がない。(2) context.getRequestScopedVar(\"form\")というAPIの使用方法は知識セクションに記載がない。(3) <n:text>/<n:error>JSPタグは知識セクションに記載がない。(4) 「Bean Validation内でDBアクセスを行うと脆弱性の原因となる」という主張は知識セクションに記載がなく、一般的にDBアクセスは設計・パフォーマンス上の問題であり「脆弱性」と断言するのは誤解を招く可能性がある。(5) 相関バリデーションの実行順序に関する仕様説明は知識セクションに記載がない。これらはNablarch固有のAPI・動作仕様に関する主張であり、裏付けのないハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/libraries/libraries-bean-validation.json:s6",
+      "component/libraries/libraries-bean-validation.json:s8",
+      "processing-pattern/web-application/web-application-client-create2.json:s1",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s9",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/libraries/libraries-bean-validation.json:s11",
+      "processing-pattern/web-application/web-application-feature-details.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 146209,
+    "duration_api_ms": 144836,
+    "num_turns": 7,
+    "total_cost_usd": 0.9895724,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 4122,
+      "cache_read_input_tokens": 225347,
+      "cache_creation_input_tokens": 36769
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1263,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001388,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11339,
+        "outputTokens": 9943,
+        "cacheReadInputTokens": 879583,
+        "cacheCreationInputTokens": 144306,
+        "webSearchRequests": 0,
+        "costUSD": 0.9881844000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

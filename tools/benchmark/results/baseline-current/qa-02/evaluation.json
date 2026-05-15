@@ -1,0 +1,161 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のセクション3「データリーダ」に「DBから読み込む場合は`DatabaseRecordReader`を使用する」と明記されており、さらにコード例の`createReader`メソッド内でも`new DatabaseRecordReader()`を使用してデータベースから読み込む実装が示されている。事実の内容が回答に含まれている。",
+      "fact": "DatabaseRecordReaderでデータベースからデータを読み込む"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のコード例に`public class AggregateAction extends BatchAction<InputEntity>`と明示されており、BatchActionを継承したアクションクラスを実装することが示されている。",
+      "fact": "BatchActionを継承したアクションクラスを実装する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "DB to DBパターンの都度起動バッチとして実装する",
+        "supported": true
+      },
+      {
+        "claim": "DatabaseRecordReaderで入力テーブルをSELECT読み込みする",
+        "supported": true
+      },
+      {
+        "claim": "BatchActionのhandleメソッド内で集計ロジックを実装する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDaoで結果テーブルに書き込む",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成No.1: ステータスコード→プロセス終了コード変換ハンドラ",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成No.2: グローバルエラーハンドラ",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成No.3: データベース接続管理ハンドラ（初期処理用）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成No.4: トランザクション制御ハンドラ（初期処理用）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成No.5: リクエストディスパッチハンドラ",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成No.6: マルチスレッド実行制御ハンドラ",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成No.7: データベース接続管理ハンドラ（業務処理用）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成No.8: トランザクションループ制御ハンドラ",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成No.9: データリードハンドラ",
+        "supported": true
+      },
+      {
+        "claim": "DBから読み込む場合はDatabaseRecordReaderを使用する",
+        "supported": true
+      },
+      {
+        "claim": "BatchActionはDataReader<InputEntity>のcreateReaderメソッドをオーバーライドする",
+        "supported": true
+      },
+      {
+        "claim": "大量データの場合はUniversalDao.defer()による遅延ロードを検討する",
+        "supported": true
+      },
+      {
+        "claim": "遅延ロード中にトランザクション制御を行うとカーソルがクローズされる場合がある",
+        "supported": true
+      },
+      {
+        "claim": "LoopHandlerのcommitIntervalプロパティでコミット間隔を調整できる",
+        "supported": true
+      },
+      {
+        "claim": "handleメソッドは1レコードずつ呼ばれる",
+        "supported": true
+      },
+      {
+        "claim": "都度起動バッチのスケジューリング自体はNablarch外の仕組みで行う",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有の主張（ハンドラ構成・順序・役割、DatabaseRecordReader、BatchAction、UniversalDao、LoopHandlerのcommitInterval、遅延ロードの注意点）はすべて知識セクションの内容と一致しており、裏付けのない捏造情報は確認されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+      "component/handlers/handlers-loop-handler.json:s5",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 229255,
+    "duration_api_ms": 224388,
+    "num_turns": 5,
+    "total_cost_usd": 0.86993375,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 5171,
+      "cache_read_input_tokens": 188601,
+      "cache_creation_input_tokens": 33212
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1303,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0014479999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9284,
+        "outputTokens": 15838,
+        "cacheReadInputTokens": 592300,
+        "cacheCreationInputTokens": 113433,
+        "webSearchRequests": 0,
+        "costUSD": 0.8684857500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

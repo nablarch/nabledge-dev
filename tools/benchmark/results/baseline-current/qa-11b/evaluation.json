@@ -1,0 +1,137 @@
+{
+  "scenario_id": "qa-11b",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. エラーレスポンスの生成 — JaxRsResponseHandler」セクションに、後続ハンドラで例外・エラーが発生すると`JaxRsResponseHandler`がレスポンスを構築してクライアントに返すこと、`errorResponseBuilder`プロパティに設定した`ErrorResponseBuilder`がレスポンスを生成すること、発生例外が`HttpErrorResponse`の場合は`HttpErrorResponse#getResponse()`の戻り値がそのままクライアントへ返ることが明記されており、事実の内容が含まれている。",
+      "fact": "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のセクション2「エラー時のログ出力 — JaxRsResponseHandler の errorLogWriter」において、「例外・エラー発生時のログ出力は、errorLogWriter プロパティに設定した JaxRsErrorLogWriter が行います」と明記されており、事実の内容（JaxRsErrorLogWriterが例外に応じたログ出力を行う）が含まれている。",
+      "fact": "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "JaxRsResponseHandlerがエラーレスポンスの生成を担う",
+        "supported": true
+      },
+      {
+        "claim": "errorResponseBuilderプロパティに設定したErrorResponseBuilderがレスポンスを生成する",
+        "supported": true
+      },
+      {
+        "claim": "設定省略時はデフォルト実装のErrorResponseBuilderが使用される",
+        "supported": true
+      },
+      {
+        "claim": "発生例外がHttpErrorResponseの場合はHttpErrorResponse#getResponse()の戻り値がクライアントへ返る",
+        "supported": true
+      },
+      {
+        "claim": "errorLogWriterプロパティに設定したJaxRsErrorLogWriterが例外・エラー発生時のログ出力を行う",
+        "supported": true
+      },
+      {
+        "claim": "errorLogWriter省略時はデフォルト実装のJaxRsErrorLogWriterが使用される",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderの処理中に例外が発生した場合、フレームワークはWARNログを出力してステータスコード500を返す",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerのクラス名はnablarch.fw.handler.GlobalErrorHandler",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandlerはServiceError/Result.Error/その他例外/OutOfMemoryErrorに対して特定のログレベルと処理を行う（表の内容）",
+        "supported": false
+      },
+      {
+        "claim": "JaxRsAccessLogHandlerのクラス名はnablarch.fw.jaxrs.JaxRsAccessLogHandler",
+        "supported": false
+      },
+      {
+        "claim": "JaxRsAccessLogHandlerのログレベルはINFO、ロガー名はHTTP_ACCESS",
+        "supported": false
+      },
+      {
+        "claim": "JaxRsAccessLogHandlerはスレッドコンテキスト変数管理ハンドラより後ろかつHttpErrorHandlerより前に配置する必要がある",
+        "supported": false
+      },
+      {
+        "claim": "FailureLogUtilを使用してアプリケーションコードから明示的に障害ログを出力できる",
+        "supported": false
+      },
+      {
+        "claim": "障害ログには障害通知ログ（ロガー名MONITOR）と障害解析ログの2種類がある",
+        "supported": false
+      }
+    ],
+    "reason": "JaxRsResponseHandlerのerrorResponseBuilderおよびerrorLogWriterに関する主要な説明は知識セクションで裏付けられている。しかし、GlobalErrorHandlerの詳細な動作仕様（ServiceError・Result.Error・OutOfMemoryError別の処理表）、JaxRsAccessLogHandlerのクラス名・ログ設定・配置制約、FailureLogUtilの使用方法と障害ログの種別（MONITORロガー等）は知識セクションに一切記載がなく、Nablarch固有の主張として裏付けのないハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — JaxRsResponseHandlerのerrorResponseBuilderおよびerrorLogWriterに関する主要な説明は知識セクションで裏付けられている。しかし、GlobalErrorHandlerの詳細な動作仕様（ServiceError・Result.Error・OutOfMemoryError別の処理表）、JaxRsAccessLogHandlerのクラス名・ログ設定・配置制約、FailureLogUtilの使用方法と障害ログの種別（MONITORロガー等）は知識セクションに一切記載がなく、Nablarch固有の主張として裏付けのないハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-response-handler.json:s8",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-jaxrs-access-log-handler.json:s3",
+      "component/libraries/libraries-jaxrs-access-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 87179,
+    "duration_api_ms": 87200,
+    "num_turns": 15,
+    "total_cost_usd": 0.4509151,
+    "usage": {
+      "input_tokens": 6322,
+      "output_tokens": 6089,
+      "cache_read_input_tokens": 473192,
+      "cache_creation_input_tokens": 52602
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1284,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001399,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6322,
+        "outputTokens": 6089,
+        "cacheReadInputTokens": 473192,
+        "cacheCreationInputTokens": 52602,
+        "webSearchRequests": 0,
+        "costUSD": 0.4495161,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

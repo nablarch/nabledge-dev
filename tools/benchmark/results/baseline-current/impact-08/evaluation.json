@@ -1,0 +1,110 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「このクラスをコンポーネント定義で差し替えるだけで動作を切り替えられる」という記述があり、事実の内容（コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる）と同じ情報が含まれている。",
+      "fact": "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "SystemTimeProviderインターフェースの実装クラスをコンポーネント定義で差し替えることでシステム日時の切り替えができる",
+        "supported": true
+      },
+      {
+        "claim": "テストや一時的な切り替えにコンポーネント定義の差し替えを使用できる",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.test.FixedSystemTimeProviderというクラスが存在し、テスト用に利用できる",
+        "supported": false
+      },
+      {
+        "claim": "nablarch.core.date.BasicSystemTimeProviderというクラスが本番用として存在する",
+        "supported": false
+      },
+      {
+        "claim": "fixedDateプロパティでyyyyMMddHHmmss（14桁）またはyyyyMMddHHmmssSSS（17桁）のフォーマットを指定できる",
+        "supported": false
+      },
+      {
+        "claim": "コンポーネント名はsystemTimeProviderで固定でなければならない",
+        "supported": false
+      },
+      {
+        "claim": "FixedSystemTimeProviderはnablarch-testingライブラリに含まれる",
+        "supported": false
+      },
+      {
+        "claim": "業務日付はBusinessDateProviderで管理されシステム日時とは別管理である",
+        "supported": false
+      },
+      {
+        "claim": "テスト時にSystemTimeProviderを実装したクラスを作成して差し替える",
+        "supported": true
+      }
+    ],
+    "reason": "知識セクションでは「SystemTimeProviderを実装したクラスを作成する」と明記されており、既成の FixedSystemTimeProvider を使う方法は記載されていない。FixedSystemTimeProvider クラス名・BasicSystemTimeProvider クラス名・fixedDate プロパティ・日付フォーマット（14桁/17桁）・コンポーネント名の固定要件・nablarch-testing ライブラリへの帰属・BusinessDateProvider クラス名はいずれも知識セクションに裏付けがなくハルシネーションと判定される。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションでは「SystemTimeProviderを実装したクラスを作成する」と明記されており、既成の FixedSystemTimeProvider を使う方法は記載されていない。FixedSystemTimeProvider クラス名・BasicSystemTimeProvider クラス名・fixedDate プロパティ・日付フォーマット（14桁/17桁）・コンポーネント名の固定要件・nablarch-testing ライブラリへの帰属・BusinessDateProvider クラス名はいずれも知識セクションに裏付けがなくハルシネーションと判定される。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s12",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s11",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s12",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s13"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 125937,
+    "duration_api_ms": 121856,
+    "num_turns": 5,
+    "total_cost_usd": 0.5725834499999999,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 2916,
+      "cache_read_input_tokens": 184634,
+      "cache_creation_input_tokens": 28342
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1277,
+        "outputTokens": 20,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001377,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1971,
+        "outputTokens": 7885,
+        "cacheReadInputTokens": 374424,
+        "cacheCreationInputTokens": 89251,
+        "webSearchRequests": 0,
+        "costUSD": 0.5712064499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

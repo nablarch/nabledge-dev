@@ -1,0 +1,135 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のセクション1「メッセージの多言語化」において、「言語ごとのプロパティファイルを用意し、`PropertiesStringResourceLoader` にサポート言語を設定します」と明記されており、さらにXMLの設定例で`<property name=\"locales\">`にサポート言語を設定する方法が示されている。これは事実の内容と一致している。",
+      "fact": "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "PropertiesStringResourceLoader の locales プロパティでサポート言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "defaultLocale プロパティでデフォルト言語を明示設定する",
+        "supported": true
+      },
+      {
+        "claim": "defaultLocale 未設定時は Locale.getDefault().getLanguage() が使われ障害の原因になる",
+        "supported": true
+      },
+      {
+        "claim": "デフォルト言語のプロパティファイルは messages.properties（言語なし）として作成する",
+        "supported": true
+      },
+      {
+        "claim": "messages.properties が存在しない場合は起動時にエラーとなる",
+        "supported": true
+      },
+      {
+        "claim": "n:message タグに language 属性を指定して言語を個別に指定できる",
+        "supported": false
+      },
+      {
+        "claim": "LanguageAttributeInHttpCookie クラスが存在し、コンポーネント名は 'languageAttribute' 固定",
+        "supported": false
+      },
+      {
+        "claim": "LanguageAttributeInHttpSession クラスが存在する",
+        "supported": false
+      },
+      {
+        "claim": "LanguageAttributeInHttpUtil.keepLanguage メソッドが存在する",
+        "supported": false
+      },
+      {
+        "claim": "supportedLanguages プロパティで対応言語を設定する",
+        "supported": false
+      },
+      {
+        "claim": "DirectoryBasedResourcePathRule クラスが存在し JSP をディレクトリベースで切り替えられる",
+        "supported": false
+      },
+      {
+        "claim": "HttpResponseHandler の contentPathRule プロパティで JSP 切り替えルールを設定できる",
+        "supported": false
+      },
+      {
+        "claim": "CodeUtil.getName(String, String, Locale) でロケール別コード名称を取得できる",
+        "supported": false
+      },
+      {
+        "claim": "JSP カスタムタグライブラリのコード値表示タグは言語指定による値取得ができない",
+        "supported": false
+      },
+      {
+        "claim": "カスタムレスポンスライター使用時は contentPathRule による JSP 切り替えが使用不可",
+        "supported": false
+      }
+    ],
+    "reason": "Section 1（メッセージの多言語化）の主要な設定方法は知識セクションで裏付けられているが、Section 2（言語選択 UI の実装）で登場する LanguageAttributeInHttpCookie・LanguageAttributeInHttpSession・LanguageAttributeInHttpUtil・supportedLanguages プロパティ・コンポーネント名固定の制約、Section 3（JSP ファイル切り替え）の DirectoryBasedResourcePathRule・contentPathRule、Section 4（コード名称）の CodeUtil.getName シグネチャ、および n:message タグの language 属性はいずれも知識セクションに記載がなく、Nablarch 固有の API・クラス・動作仕様として裏付けなしの主張と判定されるため FAIL。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — Section 1（メッセージの多言語化）の主要な設定方法は知識セクションで裏付けられているが、Section 2（言語選択 UI の実装）で登場する LanguageAttributeInHttpCookie・LanguageAttributeInHttpSession・LanguageAttributeInHttpUtil・supportedLanguages プロパティ・コンポーネント名固定の制約、Section 3（JSP ファイル切り替え）の DirectoryBasedResourcePathRule・contentPathRule、Section 4（コード名称）の CodeUtil.getName シグネチャ、および n:message タグの language 属性はいずれも知識セクションに記載がなく、Nablarch 固有の API・クラス・動作仕様として裏付けなしの主張と判定されるため FAIL。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/libraries/libraries-code.json:s8",
+      "component/handlers/handlers-http-response-handler.json:s7",
+      "component/libraries/libraries-tag.json:s31",
+      "component/handlers/handlers-thread-context-handler.json:s2",
+      "component/handlers/handlers-thread-context-handler.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 266922,
+    "duration_api_ms": 263596,
+    "num_turns": 4,
+    "total_cost_usd": 1.3286251999999996,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 4132,
+      "cache_read_input_tokens": 141966,
+      "cache_creation_input_tokens": 31218
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1282,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0014119999999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 47,
+        "outputTokens": 16418,
+        "cacheReadInputTokens": 1722049,
+        "cacheCreationInputTokens": 150450,
+        "webSearchRequests": 0,
+        "costUSD": 1.3272131999999996,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

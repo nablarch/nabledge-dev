@@ -1,0 +1,139 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「注意点」セクションに「後方互換性が維持されないため、Jakarta EE 10対応のアプリケーションサーバが必要です」と明記されており、事実の「Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある」という情報が含まれている。",
+      "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「2. Java EEのAPIをJakarta EEのAPIに置き換える」および「4. javax名前空間 → jakarta名前空間の変更」のセクションで、Java EEの仕様名およびパッケージ名（javax.*）がJakarta EEのもの（jakarta.*）に変更されていることが明確に記述されている。",
+      "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Nablarch BOMのバージョンを6u2に変更する",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta EE 10対応によりjavax→jakarta名前空間の変更が必要",
+        "supported": true
+      },
+      {
+        "claim": "Java 17以上が必要",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta EE 10対応のアプリケーションサーバが必要",
+        "supported": true
+      },
+      {
+        "claim": "hibernate-validator:8.0.0.Finalへの更新",
+        "supported": false
+      },
+      {
+        "claim": "jersey-bom:3.1.8への更新",
+        "supported": false
+      },
+      {
+        "claim": "artemis-jakarta-server/artemis-jakarta-client各2.37.0への更新",
+        "supported": false
+      },
+      {
+        "claim": "waitt-maven-pluginをjetty-ee10-maven-plugin:12.0.12に差し替える",
+        "supported": false
+      },
+      {
+        "claim": "nablarch-testing-jetty6をnablarch-testing-jetty12に変更する（Nablarch固有モジュール名）",
+        "supported": false
+      },
+      {
+        "claim": "コンポーネント定義をHttpServerFactoryJetty12に変更する（Nablarch固有クラス名）",
+        "supported": false
+      },
+      {
+        "claim": "gsp-dba-maven-pluginをバージョン5.1.0に更新",
+        "supported": false
+      },
+      {
+        "claim": "jberet-core:2.1.4.Final、weld-core-impl:5.0.1.FinalへのJakarta EE対応版更新",
+        "supported": false
+      },
+      {
+        "claim": "JSPタグライブラリをjakarta.tags.coreに変更する",
+        "supported": false
+      },
+      {
+        "claim": "web.xmlのスキーマをversion=6.0、xmlns=https://jakarta.ee/xml/ns/jakartaeeに変更",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションはJakarta EE 10対応・Java 17必須・パッケージ名変更の必要性という高レベルの事実のみを裏付けている。一方、回答にはNablarch固有のモジュール名（nablarch-testing-jetty6→nablarch-testing-jetty12）、Nablarch固有クラス名（HttpServerFactoryJetty12）、および多数の具体的なサードパーティライブラリバージョン（hibernate-validator:8.0.0.Final、jersey-bom:3.1.8、artemis 2.37.0、jberet-core:2.1.4.Final等）が含まれているが、これらはいずれも知識セクションに裏付けがない。判定基準に従い、Nablarch固有の主張（クラス名・モジュール名）に根拠がないためFAILと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションはJakarta EE 10対応・Java 17必須・パッケージ名変更の必要性という高レベルの事実のみを裏付けている。一方、回答にはNablarch固有のモジュール名（nablarch-testing-jetty6→nablarch-testing-jetty12）、Nablarch固有クラス名（HttpServerFactoryJetty12）、および多数の具体的なサードパーティライブラリバージョン（hibernate-validator:8.0.0.Final、jersey-bom:3.1.8、artemis 2.37.0、jberet-core:2.1.4.Final等）が含まれているが、これらはいずれも知識セクションに裏付けがない。判定基準に従い、Nablarch固有の主張（クラス名・モジュール名）に根拠がないためFAILと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "about/migration/migration-migration.json:s2",
+      "about/migration/migration-migration.json:s3",
+      "about/migration/migration-migration.json:s5",
+      "about/migration/migration-migration.json:s7",
+      "about/migration/migration-migration.json:s9",
+      "about/migration/migration-migration.json:s10",
+      "about/migration/migration-migration.json:s11",
+      "about/migration/migration-migration.json:s12",
+      "about/migration/migration-migration.json:s13",
+      "about/migration/migration-migration.json:s14"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 93712,
+    "duration_api_ms": 92605,
+    "num_turns": 12,
+    "total_cost_usd": 0.5002996,
+    "usage": {
+      "input_tokens": 13,
+      "output_tokens": 6014,
+      "cache_read_input_tokens": 597082,
+      "cache_creation_input_tokens": 61184
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1301,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0014860000000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13,
+        "outputTokens": 6014,
+        "cacheReadInputTokens": 597082,
+        "cacheCreationInputTokens": 61184,
+        "webSearchRequests": 0,
+        "costUSD": 0.49881359999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

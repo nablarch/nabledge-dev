@@ -1,0 +1,134 @@
+{
+  "scenario_id": "review-08",
+  "description": "Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。",
+  "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の表中に「複数タブを許容しない → DBストア」「複数タブを許容する → HIDDENストア」と明記されており、事実の内容が正確に含まれている。",
+      "fact": "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "複数タブでの画面操作を許容しない場合はDBストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "複数タブでの画面操作を許容する場合はHIDDENストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはデータベース上のテーブルにセッション変数を保存する",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはクライアントサイドのhiddenタグで画面間でセッション変数を引き回す",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはローリングメンテナンス等でAPサーバが停止してもセッション変数を復元可能",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは同一セッションが複数スレッドで実行された場合は後勝ちとなる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数タブでの操作を許容できる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数スレッドで実行された場合、スレッドごとに独立してデータが保存される",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアを使う場合、入力・確認画面のJSPにn:hiddenStoreタグを配置する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアにはFormではなくEntityを格納すること",
+        "supported": true
+      },
+      {
+        "claim": "Formを格納するとバリデーション前の信頼できない値が保持されるセキュリティリスクがある",
+        "supported": true
+      },
+      {
+        "claim": "DBストアを使用する場合USER_SESSIONテーブルの作成が必要",
+        "supported": false
+      },
+      {
+        "claim": "ブラウザが閉じられた際にテーブルにセッション情報が残るため期限切れデータの定期削除が必要",
+        "supported": false
+      },
+      {
+        "claim": "検索条件・検索結果一覧・画面表示項目・エラーメッセージの保持にはセッションストアを使用しない",
+        "supported": true
+      }
+    ],
+    "reason": "ほとんどの主張は知識セクションで裏付けられているが、2点に裏付けがない。(1)「USER_SESSIONテーブルの作成が必要」というテーブル名の具体的な記述は知識セクションに存在しない。(2)「ブラウザが閉じられた際にテーブルにセッション情報が残るため定期削除が必要」という説明も知識セクションに記載がない。これらはNablarch固有の仕様に関する主張であり裏付けがないためハルシネーションの可能性があるが、他の主要な主張はすべて正確であるため、全体としてFAILとする。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 83768,
+    "duration_api_ms": 83055,
+    "num_turns": 5,
+    "total_cost_usd": 0.37373524999999996,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 2412,
+      "cache_read_input_tokens": 184111,
+      "cache_creation_input_tokens": 30119
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1304,
+        "outputTokens": 33,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001469,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1125,
+        "outputTokens": 4999,
+        "cacheReadInputTokens": 351150,
+        "cacheCreationInputTokens": 50283,
+        "webSearchRequests": 0,
+        "costUSD": 0.37226624999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

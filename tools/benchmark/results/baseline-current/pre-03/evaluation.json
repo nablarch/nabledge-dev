@@ -1,0 +1,109 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「SQLファイルを作成してfindAllBySqlFile()でSQL IDを指定した検索ができる」旨が明示されており（セクション2、3）、「検索結果はBeanにマッピングされる」点も「SQLファイルのパスはマッピングするBeanのクラスから自動導出される」「検索結果のマッピングはBeanのプロパティ名とSELECT句の名前が一致する項目のみ対象」として記載されている。事実の3要素（SQLファイル作成・SQL ID指定検索・Beanへのマッピング）がすべて回答に含まれている。",
+      "fact": "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "UniversalDao.findById()で主キー検索ができる",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao.findAllBySqlFile()で任意のSQL検索ができる",
+        "supported": false
+      },
+      {
+        "claim": "Jakarta PersistenceアノテーションをEntityに付けるだけでSQLなしに主キー検索できる",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta Persistenceアノテーションで登録・更新・削除・主キー検索のCRUDが可能",
+        "supported": true
+      },
+      {
+        "claim": "SQLファイルのパスはマッピングするBeanクラスから自動導出され、sample.entity.UserならクラスパスのSample/entity/User.sqlが対象",
+        "supported": false
+      },
+      {
+        "claim": "Beanのプロパティ名とSELECT句の名前が一致する項目がマッピングされる",
+        "supported": true
+      },
+      {
+        "claim": "BasicDaoContextFactoryのコンポーネント定義が必要",
+        "supported": false
+      },
+      {
+        "claim": "主キー以外の条件を指定した更新/削除はUniversalDAOでは不可",
+        "supported": true
+      },
+      {
+        "claim": "使用できるデータタイプはString, Integer, Long, BigDecimal, java.sql.Date, java.sql.Timestamp, LocalDate, LocalDateTime等に限定される",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有の主張が知識セクションに裏付けられない。具体的には、メソッド名findById()およびfindAllBySqlFile()は知識セクションに記載がない。BasicDaoContextFactoryというクラス名も知識セクションに一切記載がない。SQLファイルパスの自動導出規則（クラスのパッケージ構造からsql拡張子ファイルのパスを決定する）も知識セクションには記載がない。データタイプの具体的な列挙も知識セクションでは別ページへの参照のみで、個別の型名は確認できない。これらはNablarch固有の主張であり裏付けがないためハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のNablarch固有の主張が知識セクションに裏付けられない。具体的には、メソッド名findById()およびfindAllBySqlFile()は知識セクションに記載がない。BasicDaoContextFactoryというクラス名も知識セクションに一切記載がない。SQLファイルパスの自動導出規則（クラスのパッケージ構造からsql拡張子ファイルのパスを決定する）も知識セクションには記載がない。データタイプの具体的な列挙も知識セクションでは別ページへの参照のみで、個別の型名は確認できない。これらはNablarch固有の主張であり裏付けがないためハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "component/libraries/libraries-universal-dao.json:s3",
+      "component/libraries/libraries-universal-dao.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 55692,
+    "duration_api_ms": 55266,
+    "num_turns": 10,
+    "total_cost_usd": 0.3176429,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 3690,
+      "cache_read_input_tokens": 318248,
+      "cache_creation_input_tokens": 44106
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1261,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013909999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 3690,
+        "cacheReadInputTokens": 318248,
+        "cacheCreationInputTokens": 44106,
+        "webSearchRequests": 0,
+        "costUSD": 0.31625190000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

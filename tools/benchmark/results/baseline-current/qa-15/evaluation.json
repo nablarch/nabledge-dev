@@ -1,0 +1,114 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の結論部分に「NablarchのカスタムタグはデフォルトでHTMLエスケープ（サニタイジング）を行うため、カスタムタグを使って出力している限り、XSSの根本的解決（IPA 5-(i)）が可能です」と明記されており、事実の内容（カスタムタグのサニタイジングによりXSSの根本的解決が可能）が含まれている。",
+      "fact": "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "NablarchのカスタムタグはデフォルトでHTMLエスケープ（サニタイジング）を行う",
+        "supported": true
+      },
+      {
+        "claim": "カスタムタグを使うことでIPA 5-(i)の根本的解決が可能",
+        "supported": true
+      },
+      {
+        "claim": "JSP静的解析ツール（nablarch-testing-XXX.jar）でカスタムタグ以外のタグ使用をチェックできる",
+        "supported": true
+      },
+      {
+        "claim": "5-(ii) URLをhttp://またはhttps://のみ許可する対策はNablarch未対応（×）",
+        "supported": true
+      },
+      {
+        "claim": "5-(v) 入力値のチェック（バリデーション）はNablarchが対応（〇）",
+        "supported": true
+      },
+      {
+        "claim": "5-(vi) HTMLテキスト入力時のHTMLパーサによる無害化はNablarch未対応（×）",
+        "supported": true
+      },
+      {
+        "claim": "5-(viii) Content-Typeに文字コード(charset)を指定する対策をHTTP文字エンコード制御ハンドラで対応（〇）",
+        "supported": false
+      },
+      {
+        "claim": "5-(x) XSS対策ブラウザ機能を有効にするレスポンスヘッダをセキュアハンドラ（X-XSS-Protectionなど）で対応（〇）",
+        "supported": false
+      },
+      {
+        "claim": "5-(iii) <script>内容を動的に生成しないことをプロジェクトで実装が必要（×）",
+        "supported": false
+      }
+    ],
+    "reason": "5-(viii)（HTTP文字エンコード制御ハンドラによるcharset指定）および5-(x)（セキュアハンドラによるX-XSS-Protectionヘッダ）の対応状況〇という主張は、提供された知識セクションに一切記載がなく裏付けが存在しない。また5-(iii)をNablarch未対応の項目として表に掲載している点も知識セクションに記載がない。これらはNablarch固有の主張であり、知識セクションで裏付けられないためハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 5-(viii)（HTTP文字エンコード制御ハンドラによるcharset指定）および5-(x)（セキュアハンドラによるX-XSS-Protectionヘッダ）の対応状況〇という主張は、提供された知識セクションに一切記載がなく裏付けが存在しない。また5-(iii)をNablarch未対応の項目として表に掲載している点も知識セクションに記載がない。これらはNablarch固有の主張であり、知識セクションで裏付けられないためハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s21",
+      "component/libraries/libraries-tag.json:s2",
+      "check/security-check/security-check-2.チェックリスト.json:s28",
+      "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1",
+      "check/security-check/security-check-2.チェックリスト.json:s22",
+      "check/security-check/security-check-2.チェックリスト.json:s23",
+      "check/security-check/security-check-2.チェックリスト.json:s25",
+      "check/security-check/security-check-2.チェックリスト.json:s26",
+      "check/security-check/security-check-2.チェックリスト.json:s30",
+      "component/handlers/handlers-secure-handler.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 215041,
+    "duration_api_ms": 211761,
+    "num_turns": 5,
+    "total_cost_usd": 1.2063037,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 4413,
+      "cache_read_input_tokens": 186628,
+      "cache_creation_input_tokens": 31290
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1299,
+        "outputTokens": 32,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001459,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 17173,
+        "outputTokens": 14910,
+        "cacheReadInputTokens": 1010594,
+        "cacheCreationInputTokens": 167066,
+        "webSearchRequests": 0,
+        "costUSD": 1.2048447,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

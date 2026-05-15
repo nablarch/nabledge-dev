@@ -1,0 +1,130 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返す」ことが表形式で明示されており（NoMoreHandlerException→404、HttpErrorResponse→HttpErrorResponse#getResponse()、StackOverflowError→500など）、さらに「HttpErrorResponseの原因例外がApplicationExceptionの場合は、エラーメッセージをリクエストスコープ（デフォルトキー: errors）に設定してビューで参照できるようにします」と明記されている。これは事実の両要素（例外種別に応じたステータスコードのレスポンス＋ApplicationExceptionのエラーメッセージをリクエストスコープに設定）を包含している。",
+      "fact": "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "NoMoreHandlerExceptionはINFOレベル・404を返す",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseはログ出力なし・HttpErrorResponse#getResponse()のステータスを使う",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseの原因例外がApplicationExceptionの場合、エラーメッセージをリクエストスコープ（デフォルトキー: errors）に設定する",
+        "supported": true
+      },
+      {
+        "claim": "Result.ErrorはwriteFailureLogPatternの正規表現マッチでFATALレベルのログを出力する",
+        "supported": true
+      },
+      {
+        "claim": "StackOverflowErrorはFATAL・500を返す",
+        "supported": true
+      },
+      {
+        "claim": "上記以外の例外・エラーはFATAL・500を返す（ThreadDeath/VirtualMachineError含む扱いを示唆）",
+        "supported": false
+      },
+      {
+        "claim": "HttpErrorHandlerにdefaultPagesプロパティがあり、ステータスコードパターンに対応したページをXMLで設定できる",
+        "supported": false
+      },
+      {
+        "claim": "defaultPagesを使う場合はweb.xmlのerror-page要素にも同様の設定が必要であり、推奨はweb.xmlでの設定",
+        "supported": false
+      },
+      {
+        "claim": "@OnError アノテーションのtype属性にはRuntimeExceptionおよびそのサブクラスのみ指定できる",
+        "supported": true
+      },
+      {
+        "claim": "type属性に指定した例外のサブクラスも処理対象となる",
+        "supported": true
+      },
+      {
+        "claim": "障害通知ログのロガー名はMONITOR、障害解析ログのロガー名はクラス名",
+        "supported": false
+      },
+      {
+        "claim": "FailureLogUtil.logError()メソッドで障害ログを出力できる",
+        "supported": false
+      },
+      {
+        "claim": "障害ログに出力されるメッセージはメッセージ管理から障害コードで取得し、見つからない場合はWARNレベルで別途ログが出力される",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有の主張が知識セクションに裏付けられていない。(1) ThreadDeath/VirtualMachineError（StackOverflowError以外）は知識セクションでは「何もせず上位ハンドラに再送出」と明記されているが、回答の表では「上記以外の例外・エラー → FATAL, 500」に暗黙的に含めており不正確。(2) HttpErrorHandlerのdefaultPagesプロパティおよびweb.xmlとの併用要件は知識セクションに記載なし。(3) MONITORロガー名、FailureLogUtil.logError()、障害コードとWARNログの挙動はいずれも知識セクションに裏付けなし。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のNablarch固有の主張が知識セクションに裏付けられていない。(1) ThreadDeath/VirtualMachineError（StackOverflowError以外）は知識セクションでは「何もせず上位ハンドラに再送出」と明記されているが、回答の表では「上記以外の例外・エラー → FATAL, 500」に暗黙的に含めており不正確。(2) HttpErrorHandlerのdefaultPagesプロパティおよびweb.xmlとの併用要件は知識セクションに記載なし。(3) MONITORロガー名、FailureLogUtil.logError()、障害コードとWARNログの挙動はいずれも知識セクションに裏付けなし。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/libraries/libraries-failure-log.json:s1",
+      "processing-pattern/web-application/web-application-feature-details.json:s16",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/libraries/libraries-failure-log.json:s3",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 243998,
+    "duration_api_ms": 242542,
+    "num_turns": 5,
+    "total_cost_usd": 0.9325019,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 5182,
+      "cache_read_input_tokens": 185643,
+      "cache_creation_input_tokens": 33293
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1285,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0014,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 20352,
+        "outputTokens": 16307,
+        "cacheReadInputTokens": 542953,
+        "cacheCreationInputTokens": 123348,
+        "webSearchRequests": 0,
+        "costUSD": 0.9311019,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

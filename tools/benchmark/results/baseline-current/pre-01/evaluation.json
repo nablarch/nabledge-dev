@@ -1,0 +1,123 @@
+{
+  "scenario_id": "pre-01",
+  "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい",
+  "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「javaコマンドでの起動例」セクションに `java nablarch.fw.launcher.Main ...` というコマンド例が示されており、javaコマンドから直接起動するスタンドアロンアプリケーションとして実行することが明示されている。",
+      "fact": "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「-requestPathオプションで実行するアクションクラス名とリクエストIDを指定する」という情報が明確に含まれており、書式例（アクションのクラス名/リクエストID）や具体的な指定例（com.sample.SampleBatchAction/BATCH0001）も示されている。事実の内容と一致している。",
+      "fact": "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "nablarch.fw.launcher.Mainクラスがエントリポイントである",
+        "supported": true
+      },
+      {
+        "claim": "-requestPathオプションで実行するアクションクラス名とリクエストIDを指定する",
+        "supported": true
+      },
+      {
+        "claim": "-requestPathの書式は「アクションクラス名/リクエストID」である",
+        "supported": true
+      },
+      {
+        "claim": "起動に必要なオプションは-diConfig、-requestPath、-userIdの3つであり、すべて必須である",
+        "supported": false
+      },
+      {
+        "claim": "オプションが欠けると終了コード127で即座に異常終了する",
+        "supported": false
+      },
+      {
+        "claim": "-diConfigはシステムリポジトリ設定ファイルのパスを指定するオプションである",
+        "supported": false
+      },
+      {
+        "claim": "-userIdはユーザIDを指定するオプションである",
+        "supported": false
+      },
+      {
+        "claim": "クラス名のみ（リクエストIDなし）での-requestPath指定も可能である",
+        "supported": false
+      },
+      {
+        "claim": "常駐バッチの停止はBATCH_REQUESTテーブルのPROCESS_HALT_FLGに1をセットするのが正式な方法である",
+        "supported": false
+      },
+      {
+        "claim": "DispatchHandlerが-requestPathで指定されたリクエストパスを元にアクションクラスを特定する",
+        "supported": true
+      },
+      {
+        "claim": "リクエストIDは各バッチプロセスの識別子として使われ、同一アクションクラスを複数プロセスで起動する場合の識別に利用される",
+        "supported": true
+      }
+    ],
+    "reason": "複数のNablarch固有の主張が知識セクションに裏付けられない。特に①必須オプションとして-diConfigと-userIdを列挙している点、②オプション欠落時の終了コード127という具体的な動作仕様、③BATCH_REQUESTテーブルのPROCESS_HALT_FLGによる常駐バッチ停止方法、④リクエストIDなしでの-requestPath指定が可能という主張は、知識セクションに一切記載がなくハルシネーションと判定される。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のNablarch固有の主張が知識セクションに裏付けられない。特に①必須オプションとして-diConfigと-userIdを列挙している点、②オプション欠落時の終了コード127という具体的な動作仕様、③BATCH_REQUESTテーブルのPROCESS_HALT_FLGによる常駐バッチ停止方法、④リクエストIDなしでの-requestPath指定が可能という主張は、知識セクションに一切記載がなくハルシネーションと判定される。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-main.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2",
+      "setup/blank-project/blank-project-setup-NablarchBatch.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "setup/blank-project/blank-project-setup-NablarchBatch.json:s13"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 158015,
+    "duration_api_ms": 156707,
+    "num_turns": 6,
+    "total_cost_usd": 0.56646125,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 3320,
+      "cache_read_input_tokens": 253761,
+      "cache_creation_input_tokens": 5727
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1282,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001397,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6425,
+        "outputTokens": 11299,
+        "cacheReadInputTokens": 560435,
+        "cacheCreationInputTokens": 55513,
+        "webSearchRequests": 0,
+        "costUSD": 0.56506425,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

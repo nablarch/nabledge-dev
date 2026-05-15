@@ -1,0 +1,118 @@
+{
+  "scenario_id": "review-09",
+  "description": "セキュリティ診断でContent Security Policyを有効にしろと指摘された。NablarchのWeb画面でCSPを設定したい。",
+  "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答では「SecureHandler」「ContentSecurityPolicyHeader」「カスタムタグのCSP対応（nonce方式）」の3つを組み合わせてCSPを有効にする方法が明確に説明されており、事実の内容が完全に含まれている。",
+      "fact": "セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "SecureHandlerにContentSecurityPolicyHeaderを設定することでCSPヘッダを出力できる",
+        "supported": true
+      },
+      {
+        "claim": "secureResponseHeaderListプロパティにContentSecurityPolicyHeaderを追加する",
+        "supported": true
+      },
+      {
+        "claim": "ContentSecurityPolicyHeaderにpolicyプロパティを設定する",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandlerにgenerateCspNonceプロパティ(value=\"true\")を設定してnonceを生成する",
+        "supported": false
+      },
+      {
+        "claim": "$cspNonceSource$というプレースホルダーがnonceに置換される",
+        "supported": false
+      },
+      {
+        "claim": "nonce有効化後にn:formが生成するJavaScriptがscript要素にまとめられnonce属性が自動設定される",
+        "supported": true
+      },
+      {
+        "claim": "nonce有効化後にn:scriptが生成するscript要素のnonce属性に自動設定される",
+        "supported": true
+      },
+      {
+        "claim": "n:cspNonceタグでnonceを任意の要素に埋め込める",
+        "supported": true
+      },
+      {
+        "claim": "ContentSecurityPolicyHeaderにreportOnlyプロパティを設定するとContent-Security-Policy-Report-Onlyヘッダが出力される",
+        "supported": false
+      },
+      {
+        "claim": "n:cspNonceタグのsourceFormat属性をtrueにするとnonce-[nonce値]フォーマットで出力される",
+        "supported": false
+      },
+      {
+        "claim": "CSPをレスポンスヘッダで設定できない場合にmeta要素での設定が可能",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションはCSP対応の概要とカスタムタグの動作変化を記述しているが、具体的なプロパティ名（generateCspNonce、policy、reportOnly）、プレースホルダー構文（$cspNonceSource$）、n:cspNonceのsourceFormat属性、meta要素でのCSP設定についての記述がなく、これらはNablarch固有のAPI・仕様として裏付けのないハルシネーションと判定される。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションはCSP対応の概要とカスタムタグの動作変化を記述しているが、具体的なプロパティ名（generateCspNonce、policy、reportOnly）、プレースホルダー構文（$cspNonceSource$）、n:cspNonceのsourceFormat属性、meta要素でのCSP設定についての記述がなく、これらはNablarch固有のAPI・仕様として裏付けのないハルシネーションと判定される。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "component/libraries/libraries-tag.json:s38",
+      "component/libraries/libraries-tag.json:s39"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 170730,
+    "duration_api_ms": 169625,
+    "num_turns": 7,
+    "total_cost_usd": 0.5549157,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 4304,
+      "cache_read_input_tokens": 226658,
+      "cache_creation_input_tokens": 30945
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1278,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001413,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 3176,
+        "outputTokens": 12264,
+        "cacheReadInputTokens": 489399,
+        "cacheCreationInputTokens": 56852,
+        "webSearchRequests": 0,
+        "costUSD": 0.5535027,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
