@@ -65,14 +65,14 @@
   - `pytest tools/benchmark/tests/`: 303 passed
 - [x] **1シナリオ動作確認**（pre-01, mode=current）— hearing/search/answer/metrics全項目クリア
 - [ ] **全QAシナリオ 3回実行**（目的: ベースラインの再現性も含めて記録する。LLM応答のばらつきを把握し、比較時に有意差か誤差かを判断できるようにする）
-  - 出力先: `results/baseline-current/run-1/`, `run-2/`, `run-3/`
-  - **注意**: 現在 `baseline-current/` 直下（run-1相当）に実行中。完了後 `run-1/` に移動してから run-2, run-3 を実行する
-  - [ ] run-1完了確認: `ls tools/benchmark/results/baseline-current/ | wc -l` が 28 ディレクトリ + summary.json
-  - [ ] run-1を `run-1/` サブディレクトリに移動: `mkdir -p tools/benchmark/results/baseline-current/run-1 && mv tools/benchmark/results/baseline-current/{pre-01,pre-02,...,qa-15,summary.json} tools/benchmark/results/baseline-current/run-1/`
-  - [ ] run-2実行: `python3 -m tools.benchmark.scripts.run_e2e --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6 --output-dir tools/benchmark/results/baseline-current/run-2 --mode current --timeout 300`
-  - [ ] run-3実行: 同上 `run-3`
+  - `--output-dir` 省略で `tools/benchmark/results/YYYYMMDD-HHMMSS/` に自動保存（commit済み）
+  - **注意**: 現在 `baseline-current/` 直下（run-1相当、17:13開始）に実行中。完了後 `20260515-171300/` 相当のディレクトリに移動する
+  - [ ] run-1完了確認: `ls tools/benchmark/results/baseline-current/ | wc -l` = 29（28シナリオ + summary.json）
+  - [ ] run-1を日時ディレクトリに移動: `mv tools/benchmark/results/baseline-current tools/benchmark/results/20260515-171300`
+  - [ ] run-2実行: `python3 -m tools.benchmark.scripts.run_e2e --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6 --mode current --timeout 300`（出力先自動生成）
+  - [ ] run-3実行: 同上
   - 各runの受入条件: 終了コード0、`summary.json` の `total_scenarios` = 28、全シナリオの `metrics.json` の `model_usage` が `{}` でない
-- [ ] 結果を `results/baseline-current/` にコミット
+- [ ] 結果を `results/` にコミット（3 run 分まとめて）
 - [ ] **ベースラインレポートをユーザーに報告**（目的: 現行品質と再現性を数値で把握し、新検索デプロイ後の比較基準とする）
   - シナリオ別: 3 run の `search_sections` 件数・`hearing_status`・コスト・ターン数
   - 集計: 平均・分散（ばらつきが大きいシナリオを明示）

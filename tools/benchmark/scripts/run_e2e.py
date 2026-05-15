@@ -14,7 +14,15 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
+
+_RESULTS_BASE = Path(__file__).parent.parent / "results"
+
+
+def default_output_dir() -> Path:
+    """Return a timestamped output directory under tools/benchmark/results/."""
+    return _RESULTS_BASE / datetime.now().strftime("%Y%m%d-%H%M%S")
 
 from tools.benchmark.scripts.evaluate import evaluate_scenario
 
@@ -291,7 +299,7 @@ def main():
     )
     parser.add_argument("--scenarios", required=True, help="Path to scenarios JSON")
     parser.add_argument("--skill-dir", required=True, help="Path to skill directory")
-    parser.add_argument("--output-dir", required=True, help="Output directory for results")
+    parser.add_argument("--output-dir", default=None, help="Output directory for results (default: tools/benchmark/results/YYYYMMDD-HHMMSS/)")
     parser.add_argument("--model", default="sonnet", help="LLM model (default: sonnet)")
     parser.add_argument("--scenario-ids", help="Comma-separated scenario IDs to run")
     parser.add_argument("--knowledge-dir", help="Knowledge directory for LLM evaluation (enables evaluate.py step)")
@@ -300,11 +308,13 @@ def main():
     args = parser.parse_args()
 
     scenario_ids = args.scenario_ids.split(",") if args.scenario_ids else None
+    output_dir = args.output_dir or str(default_output_dir())
+    print(f"Output dir: {output_dir}", file=sys.stderr)
 
     summary = run_e2e_all(
         args.scenarios,
         args.skill_dir,
-        args.output_dir,
+        output_dir,
         model=args.model,
         scenario_ids=scenario_ids,
         knowledge_dir=args.knowledge_dir,

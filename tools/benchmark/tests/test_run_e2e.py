@@ -724,3 +724,24 @@ class TestRunE2eAll:
             assert eval_path.exists()
             eval_data = json.loads(eval_path.read_text())
             assert eval_data["scenario_id"] == "pre-01"
+
+
+class TestDefaultOutputDir:
+    def test_default_output_dir_uses_timestamp(self):
+        import re
+        from tools.benchmark.scripts.run_e2e import default_output_dir
+        result = default_output_dir()
+        assert re.match(r".*/tools/benchmark/results/\d{8}-\d{6}$", str(result))
+
+    def test_default_output_dir_is_under_results(self):
+        from tools.benchmark.scripts.run_e2e import default_output_dir
+        result = default_output_dir()
+        assert "tools/benchmark/results/" in str(result)
+
+    def test_default_output_dir_changes_each_second(self):
+        import time
+        from tools.benchmark.scripts.run_e2e import default_output_dir
+        d1 = default_output_dir()
+        time.sleep(1.1)
+        d2 = default_output_dir()
+        assert d1 != d2
