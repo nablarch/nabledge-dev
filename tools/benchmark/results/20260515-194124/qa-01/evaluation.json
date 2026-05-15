@@ -1,0 +1,115 @@
+{
+  "scenario_id": "qa-01",
+  "description": "バッチで10万件のデータを読み込んで加工する処理を書いている。findAllBySqlFileで全件取得したらOutOfMemoryErrorが出た。",
+  "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「UniversalDao#defer()メソッドを事前に呼び出すことで遅延ロードが有効になる」と明記されており、コード例でも`UniversalDao.defer()`の使用が示されている。事実の「UniversalDao.deferメソッドで遅延ロードを使用する」という情報が明確に含まれている。",
+      "fact": "UniversalDao.deferメソッドで遅延ロードを使用する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「DeferredEntityListはAutoCloseableを実装しているため、try-with-resourcesで必ずclose()を呼び出す」と明記されており、DeferredEntityListのcloseメソッドを呼び出す必要があるという事実が含まれている。",
+      "fact": "DeferredEntityListのcloseメソッドを呼び出す必要がある"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "UniversalDao#defer() メソッドを検索前に呼び出すことで遅延ロードが有効になる",
+        "supported": true
+      },
+      {
+        "claim": "内部でサーバサイドカーソルを使用する",
+        "supported": true
+      },
+      {
+        "claim": "戻り値を DeferredEntityList<T> にダウンキャストして取得する",
+        "supported": true
+      },
+      {
+        "claim": "DeferredEntityList は AutoCloseable を実装しており、try-with-resources で close() を呼び出す必要がある",
+        "supported": true
+      },
+      {
+        "claim": "メモリ使用量は JDBC のフェッチサイズに依存する",
+        "supported": true
+      },
+      {
+        "claim": "カーソルオープン中にトランザクション制御が行われるとカーソルがクローズされる場合がある",
+        "supported": true
+      },
+      {
+        "claim": "ページングで回避できる（UniversalDao#per(), UniversalDao#page() を使用）",
+        "supported": false
+      },
+      {
+        "claim": "Doma アダプター利用時は DomaDaoRepository#get(Class, Class) の第2引数に DomaTransactionNotSupportedConfig を指定する必要がある",
+        "supported": false
+      },
+      {
+        "claim": "Dao の戻り値を Stream<T> で受け取る実装が必要",
+        "supported": false
+      },
+      {
+        "claim": "引数1つの DomaDaoRepository#get(Class) を使うとトランザクションコミット時にストリームがクローズされて後続レコードが読めなくなる",
+        "supported": false
+      }
+    ],
+    "reason": "ページング回避策として言及された UniversalDao#per() および UniversalDao#page() という具体的なメソッド名は知識セクションに記載がなく裏付けがない。また、Jakarta Batch での Doma アダプター利用時の DomaDaoRepository#get(Class, Class)、DomaTransactionNotSupportedConfig、Stream<T> に関する説明は知識セクションに一切記載がなく、裏付けのない主張と判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — ページング回避策として言及された UniversalDao#per() および UniversalDao#page() という具体的なメソッド名は知識セクションに記載がなく裏付けがない。また、Jakarta Batch での Doma アダプター利用時の DomaDaoRepository#get(Class, Class)、DomaTransactionNotSupportedConfig、Stream<T> に関する説明は知識セクションに一切記載がなく、裏付けのない主張と判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/adapters/adapters-doma-adaptor.json:s10"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 68242,
+    "duration_api_ms": 68002,
+    "num_turns": 15,
+    "total_cost_usd": 0.4005542,
+    "usage": {
+      "input_tokens": 16,
+      "output_tokens": 3887,
+      "cache_read_input_tokens": 623449,
+      "cache_creation_input_tokens": 41030
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1179,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001304,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16,
+        "outputTokens": 3887,
+        "cacheReadInputTokens": 623449,
+        "cacheCreationInputTokens": 41030,
+        "webSearchRequests": 0,
+        "costUSD": 0.39925020000000006,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

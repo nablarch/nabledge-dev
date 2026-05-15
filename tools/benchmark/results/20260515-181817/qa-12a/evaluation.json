@@ -1,0 +1,133 @@
+{
+  "scenario_id": "qa-12a",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "回答にはApplicationExceptionのメッセージをErrorMessagesに変換してリクエストスコープに設定するという処理がHttpErrorHandlerによって行われるという記述がない。RESTサービスのErrorResponseBuilderでApplicationExceptionを扱う実装例は含まれているが、それはHttpErrorHandlerの動作ではなく、またErrorMessagesへの変換とリクエストスコープへの設定という具体的な処理も記述されていない。",
+      "fact": "HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する"
+    },
+    {
+      "verdict": "ABSENT",
+      "reason": "回答には「エラー表示タグ」（errorsタグやerrorタグ）を使ってリクエストスコープのエラーメッセージを表示するという内容が含まれていない。回答はバリデーションエラー時のメッセージ返却方法（@OnError、ApplicationExceptionのスロー、ErrorResponseBuilderの継承など）について説明しているが、JSPのカスタムタグ（<n:errors>や<n:error>）を用いたリクエストスコープからのエラーメッセージ表示については一切言及していない。",
+      "fact": "エラー表示タグでリクエストスコープのエラーメッセージを表示する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@InjectFormと@OnErrorを設定することでバリデーションエラー時に指定JSPへ自動遷移する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorを設定しない場合、ApplicationExceptionがシステムエラー扱いになる",
+        "supported": false
+      },
+      {
+        "claim": "nablarch.common.web.validator.BeanValidationStrategyをコンポーネント設定に定義する必要がある",
+        "supported": false
+      },
+      {
+        "claim": "ValidationUtil#createMessageForPropertyでエラーメッセージを構築しApplicationExceptionをスローする",
+        "supported": false
+      },
+      {
+        "claim": "ApplicationExceptionが保持するメッセージ情報をErrorMessagesに変換してリクエストスコープに設定する",
+        "supported": true
+      },
+      {
+        "claim": "リクエストスコープへのキー名はデフォルトでerrorsであり、WebConfigのerrorMessageRequestAttributeNameで変更可能",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.core.validation.ee.Length.min.messageなどのキーでメッセージをpropertiesファイルに定義する",
+        "supported": true
+      },
+      {
+        "claim": "アノテーションの属性値をプレースホルダとしてメッセージに埋め込める",
+        "supported": true
+      },
+      {
+        "claim": "ItemNamedConstraintViolationConverterFactoryを使うと[項目名]メッセージの形式で出力できる",
+        "supported": false
+      },
+      {
+        "claim": "ErrorResponseBuilderを継承してJSONエラーレスポンスを構築する",
+        "supported": false
+      },
+      {
+        "claim": "errorsタグ・errorタグでエラーメッセージの一覧・個別表示ができる",
+        "supported": true
+      },
+      {
+        "claim": "BeanValidationStrategyのエラーメッセージのソート順はアプリケーションサーバ依存になる場合がある",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有APIおよび設定について知識セクションに裏付けがない。最も明確なハルシネーションは「ValidationUtil#createMessageForProperty」で、知識セクションでは同様の用途にMessageUtil.createMessage(MessageLevel.ERROR, ...)が使われており、APIクラスが異なる。また「nablarch.common.web.validator.BeanValidationStrategy」「ErrorResponseBuilder」「ItemNamedConstraintViolationConverterFactory」も知識セクションに記載がなく、Nablarch固有クラスとして裏付け不十分。「@OnError未設定でシステムエラー扱い」の動作仕様も知識セクションからは直接導けない。"
+  },
+  "scores": {
+    "accuracy": 0.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する",
+    "claim[1]: ABSENT — エラー表示タグでリクエストスコープのエラーメッセージを表示する",
+    "hallucination: FAIL — 複数のNablarch固有APIおよび設定について知識セクションに裏付けがない。最も明確なハルシネーションは「ValidationUtil#createMessageForProperty」で、知識セクションでは同様の用途にMessageUtil.createMessage(MessageLevel.ERROR, ...)が使われており、APIクラスが異なる。また「nablarch.common.web.validator.BeanValidationStrategy」「ErrorResponseBuilder」「ItemNamedConstraintViolationConverterFactory」も知識セクションに記載がなく、Nablarch固有クラスとして裏付け不十分。「@OnError未設定でシステムエラー扱い」の動作仕様も知識セクションからは直接導けない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/libraries/libraries-bean-validation.json:s19",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11",
+      "processing-pattern/web-application/web-application-feature-details.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 266817,
+    "duration_api_ms": 263782,
+    "num_turns": 5,
+    "total_cost_usd": 0.7211882,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 4796,
+      "cache_read_input_tokens": 209880,
+      "cache_creation_input_tokens": 6089
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1183,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0012980000000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12028,
+        "outputTokens": 17236,
+        "cacheReadInputTokens": 665129,
+        "cacheCreationInputTokens": 60194,
+        "webSearchRequests": 0,
+        "costUSD": 0.7198901999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

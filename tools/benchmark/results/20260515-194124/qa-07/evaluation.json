@@ -1,0 +1,121 @@
+{
+  "scenario_id": "qa-07",
+  "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。",
+  "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「ObjectMapperFactory.create()でObjectMapperを生成後、mapper.read()をループ内で呼び出すことでCSVの各行を1件ずつJava Beansオブジェクトとして読み込める」と明記されており、コード例でもObjectMapperFactory.create()で生成したObjectMapperを使ってデータを読み込む実装が示されている。これは事実と同じ情報を含んでいる。",
+      "fact": "ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@CsvアノテーションをJava Beansクラスに付与し、type・properties・headers属性でフォーマットを指定できる",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapperFactory.create(Person.class, inputStream)でObjectMapperを生成し、mapper.read()をループで呼ぶことでCSVを1件ずつ読み込める",
+        "supported": true
+      },
+      {
+        "claim": "InvalidDataFormatExceptionでフォーマット不正を捕捉できる",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapperはAutoCloseable実装でtry-with-resourcesによるクローズ省略が可能",
+        "supported": true
+      },
+      {
+        "claim": "Java BeansクラスにバインドするとDataBindConfigは使用できず、フォーマット指定はアノテーションのみ",
+        "supported": true
+      },
+      {
+        "claim": "フォーマットセットとしてRFC4180・EXCEL・TSVが選択可能",
+        "supported": false
+      },
+      {
+        "claim": "CsvFormatアノテーションでfieldSeparator・lineSeparator・quote・ignoreEmptyLine・requiredHeader・charset・quoteMode・emptyToNullを個別指定できる",
+        "supported": true
+      },
+      {
+        "claim": "カスタム例でquoteMode = CsvDataBindConfig.QuoteMode.NORMALを指定している",
+        "supported": false
+      },
+      {
+        "claim": "外部入力の場合はJava BeanのプロパティをすべてString型で定義しなければならない",
+        "supported": false
+      },
+      {
+        "claim": "ValidatorUtil.validate(person)でBean Validationによる入力チェックが行える",
+        "supported": false
+      },
+      {
+        "claim": "Long型プロパティに@LineNumberアノテーションを付与することで論理行番号を取得できる（Map取得の場合は不可）",
+        "supported": false
+      },
+      {
+        "claim": "ObjectMapperはスレッドセーフではなく、複数スレッドで共有不可",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有API・仕様の主張が知識セクションに裏付けられない。①フォーマットセットとして「RFC4180・EXCEL・TSV」が選択可能という記述は知識セクションに存在しない。②カスタム例のquoteModeとして「QuoteMode.NORMAL」を使用しているが、知識セクションの実装例では「QuoteMode.ALL」であり矛盾する。③@LineNumberアノテーション、④ValidatorUtil.validate()、⑤スレッドセーフではないという仕様、⑥外部入力時のString型強制、いずれもNablarch固有の主張だが知識セクションに根拠がない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のNablarch固有API・仕様の主張が知識セクションに裏付けられない。①フォーマットセットとして「RFC4180・EXCEL・TSV」が選択可能という記述は知識セクションに存在しない。②カスタム例のquoteModeとして「QuoteMode.NORMAL」を使用しているが、知識セクションの実装例では「QuoteMode.ALL」であり矛盾する。③@LineNumberアノテーション、④ValidatorUtil.validate()、⑤スレッドセーフではないという仕様、⑥外部入力時のString型強制、いずれもNablarch固有の主張だが知識セクションに根拠がない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "libraries-data-bind.json:s7",
+      "libraries-data-bind.json:s15",
+      "libraries-data-bind.json:s2",
+      "libraries-data-bind.json:s21",
+      "libraries-data-bind.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 91622,
+    "duration_api_ms": 91205,
+    "num_turns": 4,
+    "total_cost_usd": 0.55039015,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 2841,
+      "cache_read_input_tokens": 98336,
+      "cache_creation_input_tokens": 26845
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1185,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001315,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 22,
+        "outputTokens": 6298,
+        "cacheReadInputTokens": 624193,
+        "cacheCreationInputTokens": 71275,
+        "webSearchRequests": 0,
+        "costUSD": 0.5490751500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

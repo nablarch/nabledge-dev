@@ -1,0 +1,121 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "回答ではDBからのデータ読み込みに`BaseDatabaseItemReader`を継承した実装（Jakarta Batch / Nablarchのチャンクパターン）を使用しており、`DatabaseRecordReader`については一切言及されていない。参照セクションではNablarchの標準データリーダとして`DatabaseRecordReader`が挙げられているが、回答にはこのクラス名が含まれていない。",
+      "fact": "DatabaseRecordReaderでデータベースからデータを読み込む"
+    },
+    {
+      "verdict": "ABSENT",
+      "reason": "回答はJakarta BatchのChunkステップ方式（ItemReader/ItemProcessor/ItemWriter）を使った実装を説明しており、「BatchActionを継承したアクションクラスを実装する」という事実は含まれていない。回答中にBatchActionへの言及は一切なく、Nablarchのバッチアクションクラス（BatchAction、FileBatchAction等）についても触れられていない。",
+      "fact": "BatchActionを継承したアクションクラスを実装する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Jakarta BatchにはBatchlet（タスク指向）とChunk（レコード反復処理）の2種類がある",
+        "supported": true
+      },
+      {
+        "claim": "DB入力時はBaseDatabaseItemReaderを継承すること",
+        "supported": false
+      },
+      {
+        "claim": "大量データはUniversalDao.defer()で遅延ロードすること",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao.batchInsert()でエンティティを一括登録できる",
+        "supported": false
+      },
+      {
+        "claim": "リスナー構成として最低限DbConnectionManagementListener、StepTransactionManagementListener、ItemWriteTransactionManagementListenerが必要",
+        "supported": false
+      },
+      {
+        "claim": "ジョブ定義XMLでnablarchJobListenerExecutor、nablarchStepListenerExecutor、nablarchItemWriteListenerExecutorを参照する",
+        "supported": false
+      },
+      {
+        "claim": "DB to DBパターンでは1レコードの処理中の更新が全て同一トランザクション下で実行される",
+        "supported": false
+      },
+      {
+        "claim": "DBからのデータ読み込みにはDatabaseRecordReaderが提供されている",
+        "supported": true
+      },
+      {
+        "claim": "日次・月次など定期起動には都度起動バッチが適合する",
+        "supported": true
+      }
+    ],
+    "reason": "知識セクションではNablarchのDBデータリーダとして明示されているのはDatabaseRecordReaderであり、回答が主張するBaseDatabaseItemReaderは知識セクションに存在しないクラス名であるためハルシネーションと判定する。また、UniversalDao.defer()・UniversalDao.batchInsert()・各種リスナー名（DbConnectionManagementListener等）・ジョブXML内のリスナーref名（nablarchJobListenerExecutor等）はいずれも知識セクションに裏付けがなく、Nablarch固有の主張として確認できないためFAILとする。"
+  },
+  "scores": {
+    "accuracy": 0.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — DatabaseRecordReaderでデータベースからデータを読み込む",
+    "claim[1]: ABSENT — BatchActionを継承したアクションクラスを実装する",
+    "hallucination: FAIL — 知識セクションではNablarchのDBデータリーダとして明示されているのはDatabaseRecordReaderであり、回答が主張するBaseDatabaseItemReaderは知識セクションに存在しないクラス名であるためハルシネーションと判定する。また、UniversalDao.defer()・UniversalDao.batchInsert()・各種リスナー名（DbConnectionManagementListener等）・ジョブXML内のリスナーref名（nablarchJobListenerExecutor等）はいずれも知識セクションに裏付けがなく、Nablarch固有の主張として確認できないためFAILとする。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s1",
+      "processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s2",
+      "processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s3",
+      "processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s4",
+      "processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s5",
+      "processing-pattern/jakarta-batch/jakarta-batch-database-reader.json:s1",
+      "processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s2",
+      "processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s9",
+      "processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s10",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 191360,
+    "duration_api_ms": 190572,
+    "num_turns": 4,
+    "total_cost_usd": 0.77795625,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 3643,
+      "cache_read_input_tokens": 98361,
+      "cache_creation_input_tokens": 28251
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1194,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013289999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1131,
+        "outputTokens": 8695,
+        "cacheReadInputTokens": 844960,
+        "cacheCreationInputTokens": 103819,
+        "webSearchRequests": 0,
+        "costUSD": 0.77662725,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

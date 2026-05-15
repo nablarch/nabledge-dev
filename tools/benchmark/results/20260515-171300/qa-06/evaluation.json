@@ -1,0 +1,95 @@
+{
+  "scenario_id": "qa-06",
+  "description": "Web画面で入力画面と確認画面をそれぞれ別のJSPで作っている。同じフォーム項目を2回書くのが面倒。共通化する方法があると聞いた。",
+  "input": "入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「confirmationPage タグを使用して確認画面のJSPで入力画面のJSPへのパスを指定することで共通化が実現する」旨が明記されており、コード例（`<n:confirmationPage path=\"./input.jsp\" />`）も示されている。これは事実の内容と一致する。",
+      "fact": "confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "confirmationPageタグを使用して入力画面のJSPを確認画面で流用できる",
+        "supported": true
+      },
+      {
+        "claim": "forInputPageタグで入力画面のみに表示したい部分を指定できる",
+        "supported": true
+      },
+      {
+        "claim": "forConfirmationPageタグで確認画面のみに表示したい部分を指定できる",
+        "supported": true
+      },
+      {
+        "claim": "ignoreConfirmationタグで確認画面向けの自動変換を無効化できる",
+        "supported": true
+      },
+      {
+        "claim": "plainHiddenタグとhiddenStoreタグは入力・確認画面の両方で出力される",
+        "supported": true
+      },
+      {
+        "claim": "確認画面ではuseToken属性のデフォルトがtrueになるため二重サブミット防止の設定は別途不要",
+        "supported": false
+      }
+    ],
+    "reason": "大部分の主張は知識セクションで裏付けられているが、「共通化した場合、確認画面ではuseToken属性のデフォルトがtrueになるため、二重サブミット防止の設定は別途不要」という主張は知識セクションに一切記載がなく、裏付けのないハルシネーションと判定される。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 大部分の主張は知識セクションで裏付けられているが、「共通化した場合、確認画面ではuseToken属性のデフォルトがtrueになるため、二重サブミット防止の設定は別途不要」という主張は知識セクションに一切記載がなく、裏付けのないハルシネーションと判定される。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "libraries-tag.json:s3",
+      "libraries-tag.json:s23",
+      "processing-pattern/web-application/web-application-client-create2.json:overview"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 120579,
+    "duration_api_ms": 118716,
+    "num_turns": 4,
+    "total_cost_usd": 0.8077561499999997,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 2309,
+      "cache_read_input_tokens": 98249,
+      "cache_creation_input_tokens": 26751
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1175,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001305,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 30,
+        "outputTokens": 6572,
+        "cacheReadInputTokens": 1023408,
+        "cacheCreationInputTokens": 106869,
+        "webSearchRequests": 0,
+        "costUSD": 0.8064511499999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

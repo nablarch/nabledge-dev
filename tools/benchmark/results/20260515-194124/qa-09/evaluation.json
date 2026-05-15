@@ -1,0 +1,120 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「BusinessDateUtil.getDate()」を使用して業務日付を取得するコード例が明示されており、事実の内容が含まれている。",
+      "fact": "BusinessDateUtilを使用して業務日付を取得する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「DBテーブル構造（業務日付はDBで管理）」としてデータベースで複数の業務日付を管理する説明があり、区分（セグメント）キーを使って複数の業務日付を独立管理できると明示されている。またBasicBusinessDateProviderのコンポーネント定義XMLも記載されており、initializeListへの登録（初期化設定）も含まれている。事実の両方の要素（DBで複数の業務日付を管理、BasicBusinessDateProviderの設定が必要）が回答に含まれている。",
+      "fact": "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "BusinessDateUtil を使用して業務日付を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateUtil.getDate() でデフォルト区分の業務日付を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateUtil.getDate(\"closing\") のように区分を指定して業務日付を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "業務日付はDBで管理され、テーブルは区分(PK)と日付カラムで構成される",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProvider をコンポーネント名 businessDateProvider で定義する",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProvider に tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManager プロパティを設定する",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProvider は初期化が必要で initializeList に登録する",
+        "supported": true
+      },
+      {
+        "claim": "SystemTimeUtil.getDate() で OS 日時を取得できる",
+        "supported": false
+      },
+      {
+        "claim": "BusinessDateProvider の setDate(segment, newDate) メソッドで業務日付を更新できる",
+        "supported": false
+      },
+      {
+        "claim": "システムプロパティ -DBasicBusinessDateProvider.batch=20160317 で特定区分の業務日付を上書きできる",
+        "supported": false
+      }
+    ],
+    "reason": "SystemTimeUtil.getDate() というクラス・メソッド名、BusinessDateProvider#setDate(segment, newDate) による日付更新API、およびシステムプロパティ -DBasicBusinessDateProvider.<segment>=<date> による上書き機能はいずれも知識セクションに記載がなく、Nablarch固有の主張として裏付けのないハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — SystemTimeUtil.getDate() というクラス・メソッド名、BusinessDateProvider#setDate(segment, newDate) による日付更新API、およびシステムプロパティ -DBasicBusinessDateProvider.<segment>=<date> による上書き機能はいずれも知識セクションに記載がなく、Nablarch固有の主張として裏付けのないハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s8",
+      "component/libraries/libraries-date.json:s9",
+      "component/libraries/libraries-date.json:s10",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 113940,
+    "duration_api_ms": 114047,
+    "num_turns": 9,
+    "total_cost_usd": 0.5629585500000001,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 3237,
+      "cache_read_input_tokens": 315978,
+      "cache_creation_input_tokens": 31163
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1191,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001311,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 24,
+        "outputTokens": 7675,
+        "cacheReadInputTokens": 658331,
+        "cacheCreationInputTokens": 66387,
+        "webSearchRequests": 0,
+        "costUSD": 0.56164755,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

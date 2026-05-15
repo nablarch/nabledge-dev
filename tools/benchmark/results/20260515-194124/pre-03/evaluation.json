@@ -1,0 +1,126 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「2. 任意のSQL（SQLファイル）で検索する」セクションにSQLファイルを作成しSQL IDを指定して検索する方法が示されており、コード例（findAllBySqlFile）も含まれている。また注意点に「検索結果をマッピングするBeanのプロパティ名とSELECT句のカラム名が一致する必要があります」と記載されており、検索結果がBeanにマッピングされることも言及されている。",
+      "fact": "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Jakarta PersistenceアノテーションをEntityに付けるだけで、SQLを書かずに主キー検索ができる",
+        "supported": true
+      },
+      {
+        "claim": "SQLファイルを作成し、SQL IDを指定した検索ができる",
+        "supported": true
+      },
+      {
+        "claim": "Beanのプロパティ名とSELECT句のカラム名が一致する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "検索結果をBean（Entity、Form、DTO）にマッピングして取得できる",
+        "supported": true
+      },
+      {
+        "claim": "別クラスのSQLファイルを指定する場合、SQL IDを「#」で区切って指定できる（例: \"sample.entity.Member#FIND_BY_NAME\"）",
+        "supported": false
+      },
+      {
+        "claim": "SQLファイルのパスはマッピング先BeanのFQCNから導出される",
+        "supported": false
+      },
+      {
+        "claim": "第3引数に条件Beanを渡すことでWHERE句の条件を動的に指定できる",
+        "supported": false
+      },
+      {
+        "claim": "検索条件はEntityではなく専用のBeanを指定すること（単一テーブルのみの場合はEntityでも可）",
+        "supported": false
+      },
+      {
+        "claim": "ページング検索はper(件数).page(ページ番号)を先に呼び出す",
+        "supported": false
+      },
+      {
+        "claim": "PaginationクラスおよびgetPagination()メソッドが存在する",
+        "supported": false
+      },
+      {
+        "claim": "大量データの遅延ロードはdefer()を先に呼び出しDeferredEntityListをtry-with-resourcesで使用する",
+        "supported": false
+      },
+      {
+        "claim": "主キー以外の条件を指定した更新/削除はUniversalDaoでは行えない",
+        "supported": false
+      },
+      {
+        "claim": "悲観的ロック（SELECT FOR UPDATE）が必要な場合はUniversalDao#findBySqlFileでSQLに行ロックを記述する",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションで裏付けられる主張（主キー検索、SQLファイルによる検索、Beanマッピング）は正確だが、複数のNablarch固有のAPI・仕様に関する主張が知識セクションに裏付けがない。特に「#」によるクロスクラスSQLファイル参照構文、per().page()によるページングAPI、DeferredEntityListとdefer()による遅延ロードAPI、findBySqlFileメソッド名、および条件Bean（第3引数）の動的検索仕様はいずれも知識セクションに記載がなく、Nablarch固有の主張としてハルシネーションと判定される。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションで裏付けられる主張（主キー検索、SQLファイルによる検索、Beanマッピング）は正確だが、複数のNablarch固有のAPI・仕様に関する主張が知識セクションに裏付けがない。特に「#」によるクロスクラスSQLファイル参照構文、per().page()によるページングAPI、DeferredEntityListとdefer()による遅延ロードAPI、findBySqlFileメソッド名、および条件Bean（第3引数）の動的検索仕様はいずれも知識セクションに記載がなく、Nablarch固有の主張としてハルシネーションと判定される。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-universal-dao.json:s3",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "component/libraries/libraries-universal-dao.json:s12"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 73492,
+    "duration_api_ms": 72916,
+    "num_turns": 13,
+    "total_cost_usd": 0.3819783,
+    "usage": {
+      "input_tokens": 14,
+      "output_tokens": 3941,
+      "cache_read_input_tokens": 496181,
+      "cache_creation_input_tokens": 46044
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1172,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001302,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 3941,
+        "cacheReadInputTokens": 496181,
+        "cacheCreationInputTokens": 46044,
+        "webSearchRequests": 0,
+        "costUSD": 0.3806763000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

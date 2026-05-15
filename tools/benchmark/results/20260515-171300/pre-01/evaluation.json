@@ -1,0 +1,125 @@
+{
+  "scenario_id": "pre-01",
+  "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい",
+  "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「起動方法」セクションに「Nablarchバッチアプリケーションはスタンドアロンのアプリケーションとして、javaコマンドから直接起動します」と明記されており、事実と同じ情報が含まれている。",
+      "fact": "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「-requestPath引数でアクションクラスとリクエストIDを指定する」という情報が明確に含まれており、書式例（-requestPath=アクションのクラス名/リクエストID）も示されている。事実と同じ内容が言い回しを変えて記載されている。",
+      "fact": "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "nablarch.fw.launcher.Mainクラスをjavaコマンドで起動する",
+        "supported": true
+      },
+      {
+        "claim": "-requestPath=アクションのクラス名/リクエストID の書式",
+        "supported": true
+      },
+      {
+        "claim": "指定例: -requestPath=com.sample.SampleBatchAction/BATCH0001",
+        "supported": true
+      },
+      {
+        "claim": "リクエストIDは各バッチプロセスの識別子として用いられる",
+        "supported": true
+      },
+      {
+        "claim": "同一アクションクラスを複数プロセスで起動する場合にリクエストIDが識別子となる",
+        "supported": true
+      },
+      {
+        "claim": "共通起動ランチャ(Main)がハンドラキューを実行する",
+        "supported": true
+      },
+      {
+        "claim": "ディスパッチハンドラが-requestPathをもとにアクションクラスを特定しハンドラキュー末尾に追加する",
+        "supported": true
+      },
+      {
+        "claim": "アクションクラスがデータレコード1件ごとの業務ロジックを実行する",
+        "supported": true
+      },
+      {
+        "claim": "-diConfig でDIコンテナの設定ファイル（XMLのクラスパス）を指定する",
+        "supported": false
+      },
+      {
+        "claim": "-userId で実行ユーザIDを指定する",
+        "supported": false
+      },
+      {
+        "claim": "-diConfig でコンポーネント定義XMLを指定しないと起動できない",
+        "supported": false
+      },
+      {
+        "claim": "常駐バッチを新規開発する場合はテーブルをキューとして使ったメッセージングの利用が推奨されている（マルチスレッドでの処理遅延問題のため）",
+        "supported": false
+      }
+    ],
+    "reason": "起動時の引数 `-diConfig`（DIコンテナ設定ファイルの指定）および `-userId`（実行ユーザID）はNablarch固有の主張であるが、知識セクションに記載がなく裏付けがない。また「-diConfigなしでは起動できない」という必須性の主張も知識セクションに根拠がない。さらに「常駐バッチ新規開発時はテーブルキュー型メッセージングを推奨（マルチスレッド処理遅延問題のため）」という主張も知識セクションに一切記載がなく、Nablarch固有の動作仕様・推奨事項として裏付けのないハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 起動時の引数 `-diConfig`（DIコンテナ設定ファイルの指定）および `-userId`（実行ユーザID）はNablarch固有の主張であるが、知識セクションに記載がなく裏付けがない。また「-diConfigなしでは起動できない」という必須性の主張も知識セクションに根拠がない。さらに「常駐バッチ新規開発時はテーブルキュー型メッセージングを推奨（マルチスレッド処理遅延問題のため）」という主張も知識セクションに一切記載がなく、Nablarch固有の動作仕様・推奨事項として裏付けのないハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 73155,
+    "duration_api_ms": 72694,
+    "num_turns": 15,
+    "total_cost_usd": 0.42665125000000004,
+    "usage": {
+      "input_tokens": 16,
+      "output_tokens": 3752,
+      "cache_read_input_tokens": 600735,
+      "cache_creation_input_tokens": 50341
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1179,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013239999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16,
+        "outputTokens": 3752,
+        "cacheReadInputTokens": 600735,
+        "cacheCreationInputTokens": 50341,
+        "webSearchRequests": 0,
+        "costUSD": 0.42532725000000005,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

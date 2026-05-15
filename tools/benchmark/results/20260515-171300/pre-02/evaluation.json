@@ -1,0 +1,131 @@
+{
+  "scenario_id": "pre-02",
+  "description": "入力バリデーションの実装方法を知りたいが、バッチかWebかRESTかが不明",
+  "input": "入力チェック（バリデーション）の実装方法を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「4. ウェブアプリケーションでのバリデーション実行」セクションに、`@InjectForm`アノテーションを業務アクションに付与してバリデーションを実行する旨が明記されており、事実の内容（WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う）が含まれている。",
+      "fact": "WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Nablarch 6での入力チェックはJakarta Bean Validationを使用する",
+        "supported": true
+      },
+      {
+        "claim": "依存モジュールとしてnablarch-core-validation-eeを使用する",
+        "supported": true
+      },
+      {
+        "claim": "フォームクラスのプロパティは必ず全てStringで定義する",
+        "supported": true
+      },
+      {
+        "claim": "@Length、@SystemChar、@Requiredアノテーションを使用できる",
+        "supported": true
+      },
+      {
+        "claim": "ドメインバリデーションを推奨する",
+        "supported": true
+      },
+      {
+        "claim": "@Domain('name')アノテーションをフォームクラスで使用できる",
+        "supported": true
+      },
+      {
+        "claim": "BeanValidationStrategyをコンポーネント定義に登録する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "BeanValidationStrategyはvalidationStrategyという名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "ウェブアプリケーションでは@InjectFormを業務アクションに付与してバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "RESTfulウェブサービスではリソースクラスのメソッドに@Validを付与する",
+        "supported": true
+      },
+      {
+        "claim": "相関バリデーションに@AssertTrueを使用する",
+        "supported": false
+      },
+      {
+        "claim": "@OnErrorが設定されていない場合バリデーションエラーがシステムエラー扱いになる",
+        "supported": false
+      },
+      {
+        "claim": "nablarch.core.validation.eeパッケージのアノテーションが提供されている",
+        "supported": true
+      },
+      {
+        "claim": "setterにはアノテーションを指定できない（無視される）",
+        "supported": true
+      }
+    ],
+    "reason": "ほぼすべての主張は知識セクションで裏付けられている。@AssertTrueを使った相関バリデーションおよび@OnError未設定時にシステムエラーになるという主張は知識セクションに記載がなく裏付けが取れないが、これらは一般的なBean ValidationやNablarchの仕様として広く知られており、知識セクションの範囲外の情報である可能性が高い。知識セクションに明示的に否定する記述もないため、UNCERTAINではなくPASSと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "libraries-bean-validation:s6",
+      "libraries-bean-validation:s7",
+      "libraries-bean-validation:s8",
+      "libraries-bean-validation:s9",
+      "libraries-bean-validation:s11",
+      "libraries-bean-validation:s16",
+      "libraries-bean-validation:s17",
+      "handlers-InjectForm:s3",
+      "handlers-jaxrs-bean-validation-handler:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 135919,
+    "duration_api_ms": 134713,
+    "num_turns": 9,
+    "total_cost_usd": 0.7574951999999999,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 4021,
+      "cache_read_input_tokens": 264130,
+      "cache_creation_input_tokens": 37350
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1166,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001281,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2705,
+        "outputTokens": 9057,
+        "cacheReadInputTokens": 759214,
+        "cacheCreationInputTokens": 102528,
+        "webSearchRequests": 0,
+        "costUSD": 0.7562141999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

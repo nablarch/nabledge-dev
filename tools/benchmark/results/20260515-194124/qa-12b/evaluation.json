@@ -1,0 +1,124 @@
+{
+  "scenario_id": "qa-12b",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "UNCERTAIN",
+      "reason": "回答には「@ValidアノテーションをRESTfulウェブサービスで使用する」という情報は含まれているが、「バリデーションエラーが自動的にエラーレスポンスになる」という部分については明示されていない。回答では`ErrorResponseBuilder`を継承してカスタム実装が必要と述べており、むしろ自動的にエラーレスポンスになるわけではないことを示唆している。事実の核心部分（自動的にエラーレスポンスになる）が回答と矛盾または不明確なため、UNCERTAINと判定する。",
+      "fact": "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のRESTfulウェブサービスの節に「エラーレスポンスのボディにメッセージを含めたい場合は、`ErrorResponseBuilder` を継承してカスタム実装します。」と明記されており、事実の内容（ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する）が含まれている。",
+      "fact": "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "RESTfulウェブサービスでは、リソースクラスのメソッドに@Validアノテーションを設定してバリデーションを行う",
+        "supported": true
+      },
+      {
+        "claim": "エラーレスポンスにメッセージを含めたい場合はErrorResponseBuilderを継承してカスタム実装する",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderのbuildメソッドでApplicationExceptionを判定してHTTPレスポンスを構築する",
+        "supported": true
+      },
+      {
+        "claim": "デフォルトではメッセージ管理を通じてバリデーションエラー時のメッセージを構築する",
+        "supported": true
+      },
+      {
+        "claim": "アノテーションのmessage属性の値が{…}で囲まれている場合のみメッセージ管理を使用する",
+        "supported": true
+      },
+      {
+        "claim": "プレースホルダはアノテーションの属性名を{…}で囲んで定義する",
+        "supported": true
+      },
+      {
+        "claim": "EL式などの動的式はメッセージに使用できない",
+        "supported": true
+      },
+      {
+        "claim": "ウェブアプリでBean Validationを使うにはコンポーネント設定にBeanValidationStrategyをvalidationStrategyという名前で定義する必要がある",
+        "supported": false
+      },
+      {
+        "claim": "ValidationUtil.createMessageForPropertyを使って特定項目に紐づくエラーメッセージを手動発行できる",
+        "supported": false
+      },
+      {
+        "claim": "@OnErrorを設定しない場合バリデーションエラーがシステムエラー扱いになる",
+        "supported": false
+      }
+    ],
+    "reason": "「BeanValidationStrategyをvalidationStrategyという名前で定義する」という主張、および「ValidationUtil.createMessageForProperty」メソッドの存在は、知識セクションに一切記載がなく裏付けがない。また@InjectForm/@OnErrorに関するウェブアプリ固有の動作説明（@OnError未設定でシステムエラー扱いになるなど）も知識セクションの対象外であり裏付けが取れない。これらはNablarch固有のAPI・設定に関する主張であるため、ハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": null,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: UNCERTAIN — @Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+    "hallucination: FAIL — 「BeanValidationStrategyをvalidationStrategyという名前で定義する」という主張、および「ValidationUtil.createMessageForProperty」メソッドの存在は、知識セクションに一切記載がなく裏付けがない。また@InjectForm/@OnErrorに関するウェブアプリ固有の動作説明（@OnError未設定でシステムエラー扱いになるなど）も知識セクションの対象外であり裏付けが取れない。これらはNablarch固有のAPI・設定に関する主張であるため、ハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/libraries/libraries-bean-validation.json:s21",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 223016,
+    "duration_api_ms": 221036,
+    "num_turns": 5,
+    "total_cost_usd": 0.9233562500000001,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 3737,
+      "cache_read_input_tokens": 210600,
+      "cache_creation_input_tokens": 6468
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1183,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0012980000000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4582,
+        "outputTokens": 14990,
+        "cacheReadInputTokens": 982470,
+        "cacheCreationInputTokens": 103659,
+        "webSearchRequests": 0,
+        "costUSD": 0.9220582500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

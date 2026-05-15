@@ -1,0 +1,123 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. プロパティファイルの作成」と「2. PropertiesStringResourceLoaderの多言語設定」のセクションで、言語ごとのプロパティファイルを用意すること、およびlocalesプロパティにサポートする言語を設定することが明示されている。",
+      "fact": "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "言語ごとのプロパティファイルを用意し、PropertiesStringResourceLoaderのlocalesに設定する",
+        "supported": true
+      },
+      {
+        "claim": "messages.propertiesが存在しない場合はエラーになる",
+        "supported": true
+      },
+      {
+        "claim": "defaultLocaleを設定しない場合はLocale.getDefault().getLanguage()が使われる",
+        "supported": true
+      },
+      {
+        "claim": "defaultLocaleは必ず明示的に設定すべき（OS依存を避けるため）",
+        "supported": true
+      },
+      {
+        "claim": "メッセージ取得時の言語はThreadContext#getLanguageの戻り値で決まる",
+        "supported": true
+      },
+      {
+        "claim": "ThreadContext#getLanguageからロケールが取得できない場合はLocale.getDefault()が使用される",
+        "supported": true
+      },
+      {
+        "claim": "LanguageAttributeInHttpCookieまたはLanguageAttributeInHttpSessionを使ってクッキーやセッションに言語を保持できる",
+        "supported": false
+      },
+      {
+        "claim": "LanguageAttributeInHttpCookieにsupportedLanguagesプロパティを設定できる",
+        "supported": false
+      },
+      {
+        "claim": "LanguageAttributeInHttpUtil.keepLanguageメソッドで言語選択を保持できる",
+        "supported": false
+      },
+      {
+        "claim": "JSPでn:messageタグを使ってプロパティファイルからメッセージを取得できる",
+        "supported": false
+      },
+      {
+        "claim": "n:submitLinkタグとn:paramタグで言語切り替えリンクを実装できる",
+        "supported": false
+      },
+      {
+        "claim": "nablarch-fw-webモジュールは言語・タイムゾーンを選択できる画面を作る場合のみ必要",
+        "supported": false
+      },
+      {
+        "claim": "BasicApplicationInitializerのinitializeListにBasicStaticDataCacheを追加する必要がある（回答では省略されている）",
+        "supported": false
+      }
+    ],
+    "reason": "回答の核心部分（PropertiesStringResourceLoader、defaultLocale、ThreadContext#getLanguage、messages.propertiesの必須性）は知識セクションで裏付けられている。ただし、LanguageAttributeInHttpCookie、LanguageAttributeInHttpUtil.keepLanguage、n:messageタグ、n:submitLink、supportedLanguagesプロパティ、nablarch-fw-webモジュールの必要条件など、Web多言語化に関する具体的なクラス名・API名・プロパティ名は知識セクションに記載がなく、裏付けが取れない。また、知識セクションにあるBasicApplicationInitializerへのinitializeList登録が回答から省略されており、設定の不完全性がある。裏付け不明のNablarch固有APIが複数含まれるためUNCERTAINと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — 回答の核心部分（PropertiesStringResourceLoader、defaultLocale、ThreadContext#getLanguage、messages.propertiesの必須性）は知識セクションで裏付けられている。ただし、LanguageAttributeInHttpCookie、LanguageAttributeInHttpUtil.keepLanguage、n:messageタグ、n:submitLink、supportedLanguagesプロパティ、nablarch-fw-webモジュールの必要条件など、Web多言語化に関する具体的なクラス名・API名・プロパティ名は知識セクションに記載がなく、裏付けが取れない。また、知識セクションにあるBasicApplicationInitializerへのinitializeList登録が回答から省略されており、設定の不完全性がある。裏付け不明のNablarch固有APIが複数含まれるためUNCERTAINと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "libraries-message.json:s8",
+      "handlers-thread-context-handler.json:s7",
+      "handlers-thread-context-handler.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 95378,
+    "duration_api_ms": 95031,
+    "num_turns": 4,
+    "total_cost_usd": 0.5696377499999999,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 3251,
+      "cache_read_input_tokens": 98308,
+      "cache_creation_input_tokens": 27010
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1181,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013109999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 23,
+        "outputTokens": 6722,
+        "cacheReadInputTokens": 663930,
+        "cacheCreationInputTokens": 71533,
+        "webSearchRequests": 0,
+        "costUSD": 0.56832675,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

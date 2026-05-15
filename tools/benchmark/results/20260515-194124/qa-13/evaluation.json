@@ -1,0 +1,123 @@
+{
+  "scenario_id": "qa-13",
+  "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。",
+  "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "UNCERTAIN",
+      "reason": "回答はWebアプリケーション（画面遷移型）のパターンを説明しており、`@InjectForm`でフォームを取得し`UniversalDao.insert()`で登録する流れを示している。一方、参照セクション（事実の出典）はREST APIのパターンで、`@Valid`アノテーションでバリデーションし、メソッド引数にFormクラスを直接受け取り、`UniversalDao.insert`で登録する実装を示している。回答にはREST APIにおける`@Valid`とFormクラスの引数受け取りパターンの記述がなく、Web画面型の`@InjectForm`パターンのみが説明されている。`UniversalDao.insert`の使用は共通しているが、REST APIでFormクラスを引数で受け付け`@Valid`でバリデーションするという具体的な実装パターンは回答に含まれていないため、UNCERTAINと判定する。",
+      "fact": "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@InjectForm アノテーションでリクエストパラメータのバリデーションとフォームオブジェクトの生成を行う",
+        "supported": false
+      },
+      {
+        "claim": "@InjectForm の prefix 属性と validate 属性を指定する",
+        "supported": false
+      },
+      {
+        "claim": "@OnError アノテーションでエラー時のフォワード先を指定する",
+        "supported": false
+      },
+      {
+        "claim": "ctx.getRequestScopedVar(\"form\") でバリデーション済みフォームを取得する",
+        "supported": false
+      },
+      {
+        "claim": "SessionUtil.put() でEntityをセッションストアに保存する",
+        "supported": false
+      },
+      {
+        "claim": "SessionUtil.get() でセッションストアからEntityを取得する",
+        "supported": false
+      },
+      {
+        "claim": "SessionUtil.delete() でセッションストアからEntityを削除する",
+        "supported": false
+      },
+      {
+        "claim": "BeanUtil.createAndCopy() でFormをEntityに変換する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert() でDBに登録する",
+        "supported": true
+      },
+      {
+        "claim": "顧客登録機能の処理フロー表（NO.1〜4、URL・Action・HTTPメソッド）",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta PersistenceアノテーションをEntityに付与するだけでSQLなしにCRUD操作が可能",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao のスキーマ切り替え機能はサポートされておらず、JDBCラッパーを使用すること",
+        "supported": true
+      }
+    ],
+    "reason": "知識セクションが示す実装パターンは JAX-RS スタイル（@Valid・@Consumes・メソッド引数でフォーム受取）であり、@InjectForm を使った実装パターンは提供された知識セクションに存在しない。同様に SessionUtil.put/get/delete および ctx.getRequestScopedVar() はNablarch固有のAPIであるが、いずれも知識セクションに記載がなく裏付けがない。これらはNablarch特有のクラス・API名に関する主張であるため、ハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": null,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: UNCERTAIN — REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する",
+    "hallucination: FAIL — 知識セクションが示す実装パターンは JAX-RS スタイル（@Valid・@Consumes・メソッド引数でフォーム受取）であり、@InjectForm を使った実装パターンは提供された知識セクションに存在しない。同様に SessionUtil.put/get/delete および ctx.getRequestScopedVar() はNablarch固有のAPIであるが、いずれも知識セクションに記載がなく裏付けがない。これらはNablarch特有のクラス・API名に関する主張であるため、ハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/web-application/web-application-getting-started-client-create.json:s1",
+      "component/libraries/libraries-create-example.json:s2",
+      "component/libraries/libraries-create-example.json:s4",
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/libraries/libraries-universal-dao.json:s13"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 182050,
+    "duration_api_ms": 180564,
+    "num_turns": 8,
+    "total_cost_usd": 0.7853430999999998,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 4343,
+      "cache_read_input_tokens": 271821,
+      "cache_creation_input_tokens": 31278
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1174,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001294,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6710,
+        "outputTokens": 12165,
+        "cacheReadInputTokens": 658397,
+        "cacheCreationInputTokens": 102380,
+        "webSearchRequests": 0,
+        "costUSD": 0.7840490999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

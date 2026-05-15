@@ -1,0 +1,181 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「前提条件」セクションに「Jakarta EE 10対応のアプリケーションサーバが必要」と明記されており、また「注意点」セクションにも「後方互換性は維持されないため、アプリケーションサーバのJakarta EE 10対応は必須」と記載されている。事実の内容（Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある）が回答に含まれている。",
+      "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「7. Javaソースコードの名前空間変更（`javax` → `jakarta`）」セクションおよび「2. Java EEの依存関係をJakarta EEに変更する（pom.xml）」セクションにおいて、Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている旨が明確に記載されている。具体的には`javax.*`から`jakarta.*`へのパッケージ名変更、依存関係のartifactIdやgroupIdのJakarta EE版への変更が示されており、事実の内容と一致している。",
+      "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Java 17以上が必要（Nablarch 6モジュールはJava 17でコンパイル済み）",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta EE 10対応のアプリケーションサーバが必要",
+        "supported": true
+      },
+      {
+        "claim": "移行手順はNablarch 6u2への移行を前提としている",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet:javax.servlet-api → jakarta.servlet:jakarta.servlet-api 等のpom.xml依存関係変更",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta EE BOM（jakarta.jakartaee-bom:10.0.0）の利用推奨",
+        "supported": false
+      },
+      {
+        "claim": "hibernate-validator を 5.3.6.Final から 8.0.0.Final に更新",
+        "supported": false
+      },
+      {
+        "claim": "taglibs:standard → org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.0",
+        "supported": false
+      },
+      {
+        "claim": "Jersey BOM を 3.1.8 に更新",
+        "supported": false
+      },
+      {
+        "claim": "ActiveMQ → artemis-server + artemis-jakarta-server + artemis-jakarta-client（各 2.37.0）",
+        "supported": false
+      },
+      {
+        "claim": "waitt-maven-plugin → org.eclipse.jetty.ee10:jetty-ee10-maven-plugin:12.0.12",
+        "supported": false
+      },
+      {
+        "claim": "nablarch-testing-jetty6 → nablarch-testing-jetty12 に変更（Nablarch固有モジュール名）",
+        "supported": false
+      },
+      {
+        "claim": "HttpServerFactoryJetty6 → HttpServerFactoryJetty12 に変更（Nablarch固有クラス名）",
+        "supported": false
+      },
+      {
+        "claim": "gsp-dba-maven-plugin をバージョン 5.1.0 に更新",
+        "supported": false
+      },
+      {
+        "claim": "weld-core-impl:5.0.1.Final を使用",
+        "supported": false
+      },
+      {
+        "claim": "jberet-core:2.1.4.Final を使用",
+        "supported": false
+      },
+      {
+        "claim": "slf4j-nablarch-adaptor をLogbackより後にクラスパス配置しないとNoClassDefFoundErrorが発生",
+        "supported": false
+      },
+      {
+        "claim": "web.xml の xmlns を https://jakarta.ee/xml/ns/jakartaee、version を 6.0 に変更",
+        "supported": true
+      },
+      {
+        "claim": "JSPタグライブラリのURIを jakarta.tags.core 等に変更",
+        "supported": true
+      },
+      {
+        "claim": "javax.crypto 等のJava標準ライブラリは変更不要",
+        "supported": true
+      },
+      {
+        "claim": "後方互換性は維持されない",
+        "supported": true
+      }
+    ],
+    "reason": "知識セクションはJakarta EE 10対応・Java 17要件・アプリケーションサーバ要件・パッケージ名変更の必要性という高レベルの事実を裏付けており、一般的なJava EE→Jakarta EE移行知識（名前空間変更、web.xml、JSPタグライブラリ変更）はハルシネーションではない。しかし、Nablarch固有の具体的な主張として「nablarch-testing-jetty6/jetty12」「HttpServerFactoryJetty6/Jetty12」「slf4j-nablarch-adaptorのクラスパス順序によるNoClassDefFoundError」はNablarch固有のAPI名・動作仕様であり知識セクションに裏付けがない。また「hibernate-validator 8.0.0.Final」「Jersey BOM 3.1.8」「artemis 2.37.0」「jetty-ee10-maven-plugin 12.0.12」「gsp-dba-maven-plugin 5.1.0」「jberet-core 2.1.4.Final」「weld-core-impl 5.0.1.Final」等の具体的バージョン番号も知識セクションに記載がなく、正確性を検証できない捏造の可能性がある情報として判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションはJakarta EE 10対応・Java 17要件・アプリケーションサーバ要件・パッケージ名変更の必要性という高レベルの事実を裏付けており、一般的なJava EE→Jakarta EE移行知識（名前空間変更、web.xml、JSPタグライブラリ変更）はハルシネーションではない。しかし、Nablarch固有の具体的な主張として「nablarch-testing-jetty6/jetty12」「HttpServerFactoryJetty6/Jetty12」「slf4j-nablarch-adaptorのクラスパス順序によるNoClassDefFoundError」はNablarch固有のAPI名・動作仕様であり知識セクションに裏付けがない。また「hibernate-validator 8.0.0.Final」「Jersey BOM 3.1.8」「artemis 2.37.0」「jetty-ee10-maven-plugin 12.0.12」「gsp-dba-maven-plugin 5.1.0」「jberet-core 2.1.4.Final」「weld-core-impl 5.0.1.Final」等の具体的バージョン番号も知識セクションに記載がなく、正確性を検証できない捏造の可能性がある情報として判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "about/migration/migration-migration.json:s2",
+      "about/migration/migration-migration.json:s3",
+      "about/migration/migration-migration.json:s4",
+      "about/migration/migration-migration.json:s5",
+      "about/migration/migration-migration.json:s7",
+      "about/migration/migration-migration.json:s9",
+      "about/migration/migration-migration.json:s10",
+      "about/migration/migration-migration.json:s11",
+      "about/migration/migration-migration.json:s12",
+      "about/migration/migration-migration.json:s13",
+      "about/migration/migration-migration.json:s14",
+      "about/migration/migration-migration.json:s15",
+      "about/migration/migration-migration.json:s16",
+      "about/migration/migration-migration.json:s17",
+      "about/migration/migration-migration.json:s18",
+      "about/migration/migration-migration.json:s19",
+      "about/migration/migration-migration.json:s20",
+      "about/migration/migration-migration.json:s21",
+      "about/migration/migration-migration.json:s22",
+      "about/migration/migration-migration.json:s23",
+      "about/migration/migration-migration.json:s24",
+      "about/migration/migration-migration.json:s25",
+      "about/migration/migration-migration.json:s26",
+      "about/migration/migration-migration.json:s27",
+      "about/migration/migration-migration.json:s28",
+      "about/migration/migration-migration.json:s29",
+      "about/migration/migration-migration.json:s31",
+      "about/about-nablarch/about-nablarch-jakarta-ee.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 135274,
+    "duration_api_ms": 134557,
+    "num_turns": 4,
+    "total_cost_usd": 0.6078776,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 4844,
+      "cache_read_input_tokens": 98353,
+      "cache_creation_input_tokens": 28350
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1192,
+        "outputTokens": 44,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0014119999999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 18,
+        "outputTokens": 8896,
+        "cacheReadInputTokens": 489647,
+        "cacheCreationInputTokens": 86954,
+        "webSearchRequests": 0,
+        "costUSD": 0.6064656,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

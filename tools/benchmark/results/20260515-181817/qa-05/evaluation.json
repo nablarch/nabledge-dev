@@ -1,0 +1,126 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「フォームクラス」の説明において「リクエストボディのJSONをマッピング」と記載されており、クライアントから送信された値をFormクラスで受け付けることが示されている。また、コード例でも`ProjectForm`クラスがメソッド引数として使用され、クライアントからのリクエストを受け付ける役割を担っていることが明確に示されている。",
+      "fact": "Formクラスでクライアントから送信された値を受け付ける"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「2. フォームクラスの実装」セクションに「プロパティは**全て `String` 型**で宣言する（Bean Validationの要件）」と明記されており、事実の情報が含まれている。",
+      "fact": "プロパティは全てString型で宣言する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "フォームクラス・アクションクラス（リソースクラス）・エンティティクラスの3層で実装する",
+        "supported": true
+      },
+      {
+        "claim": "フォームクラスのプロパティは全てString型で宣言する",
+        "supported": true
+      },
+      {
+        "claim": "@Required・@Domainアノテーションをフォームクラスに付与する",
+        "supported": true
+      },
+      {
+        "claim": "@Path でURLをマッピング、@POST でPOSTリクエストにバインド",
+        "supported": true
+      },
+      {
+        "claim": "@Consumes(MediaType.APPLICATION_JSON) でJSONリクエストを受け付ける",
+        "supported": true
+      },
+      {
+        "claim": "@Valid でリクエストのBean Validationを有効化",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy(Project.class, project) でフォームをエンティティに変換",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert() でDBへ登録",
+        "supported": true
+      },
+      {
+        "claim": "戻り値は201 Createdを表すHttpResponse",
+        "supported": true
+      },
+      {
+        "claim": "フォームのみ、またはフォーム+JaxRsHttpRequestの組み合わせが引数として使用可能",
+        "supported": true
+      },
+      {
+        "claim": "フォームはAPI単位に作成すること",
+        "supported": false
+      },
+      {
+        "claim": "Jakarta RESTful Web Servicesの@PathParam / @QueryParamは使用不可。パスパラメータはJaxRsHttpRequest.getPathParam()で取得する",
+        "supported": false
+      },
+      {
+        "claim": "楽観的ロックでETag/If-Matchは非対応のため、リクエストボディに直接バージョン番号を含めること",
+        "supported": false
+      }
+    ],
+    "reason": "コード実装・アノテーション・クラス構成に関する主要な主張は知識セクションで裏付けられており正確。ただし「フォームはAPI単位に作成する（登録用と更新用で共通化しない）」「@PathParam/@QueryParamは使用不可」「ETag/If-Match非対応」の3点は知識セクションに根拠がなく、ハルシネーションの可能性があるが、知識セクション自体が限定的な内容のため断定できない。ただしメソッド引数の表ではJaxRsHttpRequestがパスパラメータ取得に使われることは記載されているが、@PathParam使用不可の明示的な記述はなく、ETag/楽観ロックに関する記述も存在しない。これらは裏付けのない追加情報であるが、コアとなる実装方法は正確なため総合判定はPASSとする。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-application-design.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 91886,
+    "duration_api_ms": 91564,
+    "num_turns": 15,
+    "total_cost_usd": 0.39269950000000003,
+    "usage": {
+      "input_tokens": 16,
+      "output_tokens": 4479,
+      "cache_read_input_tokens": 604640,
+      "cache_creation_input_tokens": 38070
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1187,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013119999999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16,
+        "outputTokens": 4479,
+        "cacheReadInputTokens": 604640,
+        "cacheCreationInputTokens": 38070,
+        "webSearchRequests": 0,
+        "costUSD": 0.3913875,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

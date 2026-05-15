@@ -1,0 +1,127 @@
+{
+  "scenario_id": "review-08",
+  "description": "Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。",
+  "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭「複数タブでの操作を許容するかどうかで使い分けます。複数タブを許容しない場合はDBストア、許容する場合はHIDDENストアを使用します」および表の内容が、事実「複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う」と同一の情報を含んでいる。",
+      "fact": "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "複数タブでの操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "DBストア: サーバ停止時でもセッション変数の復元が可能",
+        "supported": true
+      },
+      {
+        "claim": "DBストア: APサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "DBストア: 同一セッションが複数スレッドで処理された場合は後勝ちになる（先のデータは消失）",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストア: hiddenタグで画面間にセッション変数を引き回すクライアントサイド方式",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストア: 複数タブで独立したデータを保持できる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストア: APサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストア: 複数スレッドの場合、各スレッドに紐付けてデータが保存される",
+        "supported": true
+      },
+      {
+        "claim": "入力・確認画面のJSPに <n:hiddenStore name=\"nablarch_hiddenStore\" /> タグを追加する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアにはFormではなくEntityを格納すること",
+        "supported": true
+      },
+      {
+        "claim": "Formを保存すると密結合を招き、バリデーション前の信頼できない値を長期保持するセキュリティリスクが生じる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはデフォルトでAPサーバごとに暗号化キーが自動生成されるため、冗長化環境では暗号化キーを明示的に設定する必要がある（サーバをまたぐと復号に失敗する）",
+        "supported": false
+      },
+      {
+        "claim": "DBストアを使用する場合、USER_SESSIONテーブルの作成が必要",
+        "supported": false
+      },
+      {
+        "claim": "ブラウザを閉じた際にDBテーブル上にセッション情報が残ることがあるため、期限切れのセッション情報を定期的に削除する仕組みが必要",
+        "supported": false
+      }
+    ],
+    "reason": "3つの主張が知識セクションに裏付けられない。①HIDDENストアの暗号化キーに関する記述（APサーバごとに自動生成・冗長化環境での明示設定必要・サーバまたぎで復号失敗）は知識セクションに一切記載がない。②DBストアのテーブル名「USER_SESSION」は知識セクションに記載がない。③ブラウザを閉じた際にセッション情報がテーブルに残るため定期削除が必要という記述も知識セクションに存在しない。これらはNablarch固有の仕様として提示されており、裏付けのないハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 3つの主張が知識セクションに裏付けられない。①HIDDENストアの暗号化キーに関する記述（APサーバごとに自動生成・冗長化環境での明示設定必要・サーバまたぎで復号失敗）は知識セクションに一切記載がない。②DBストアのテーブル名「USER_SESSION」は知識セクションに記載がない。③ブラウザを閉じた際にセッション情報がテーブルに残るため定期削除が必要という記述も知識セクションに存在しない。これらはNablarch固有の仕様として提示されており、裏付けのないハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 97315,
+    "duration_api_ms": 96407,
+    "num_turns": 6,
+    "total_cost_usd": 0.4255471,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 3007,
+      "cache_read_input_tokens": 224355,
+      "cache_creation_input_tokens": 34281
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1191,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001321,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1130,
+        "outputTokens": 5524,
+        "cacheReadInputTokens": 440237,
+        "cacheCreationInputTokens": 54908,
+        "webSearchRequests": 0,
+        "costUSD": 0.4242261,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

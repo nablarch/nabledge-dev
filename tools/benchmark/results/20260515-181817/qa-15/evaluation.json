@@ -1,0 +1,138 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「Nablarchのカスタムタグ（`n:write`等）はデフォルトでHTMLエスケープを行うため、カスタムタグを使って実装している限りXSSの根本的な原因となるエスケープ漏れを防げます」と明記されており、さらに「これはIPAのXSS対策『5-(i) ウェブページに出力する全ての要素に対してエスケープ処理を施す』の根本的解決に対応しています」とも述べられている。これは事実「NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能」と同一の情報を含んでいる。",
+      "fact": "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Nablarchのカスタムタグ（n:write等）はデフォルトでHTMLエスケープ（サニタイジング）を行う",
+        "supported": true
+      },
+      {
+        "claim": "エスケープ変換として &→&amp;、<→&lt;、>→&gt;、\"→&#034;、'→&#039; の5種類が自動適用される",
+        "supported": false
+      },
+      {
+        "claim": "EL式（${...}）はHTMLエスケープを行わないためカスタムタグの使用が必要",
+        "supported": false
+      },
+      {
+        "claim": "n:prettyPrintタグは特定HTMLタグをエスケープせず出力し、現在は非推奨",
+        "supported": false
+      },
+      {
+        "claim": "n:rawWriteタグは文字列をそのまま出力する",
+        "supported": false
+      },
+      {
+        "claim": "JavaScriptへのエスケープはNablarchカスタムタグではカバーしていない",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandlerはデフォルトでX-XSS-Protection: 1; mode=blockヘッダを設定する",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandlerはデフォルトでX-Frame-Options: SAMEORIGINヘッダを設定する",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandlerはデフォルトでX-Content-Type-Options: nosniffヘッダを設定する",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandlerはデフォルトでReferrer-Policy: strict-origin-when-cross-originヘッダを設定する",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandlerはデフォルトでCache-Control: no-storeヘッダを設定する",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandlerはCSP対応でありnonceを使ったスクリプトインジェクション対策が可能",
+        "supported": false
+      },
+      {
+        "claim": "JSP静的解析ツールによりEL式の直接出力などエスケープ漏れを静的にチェックできる",
+        "supported": true
+      },
+      {
+        "claim": "5-(ii)URLスキーム制限はプロジェクト側での対応が必要（Nablarch未対応）",
+        "supported": true
+      },
+      {
+        "claim": "5-(vi)HTMLテキスト入力時のスクリプト排除はプロジェクト側での対応が必要（OSSのHTMLパーサ等を活用）",
+        "supported": true
+      },
+      {
+        "claim": "Cookie の HttpOnly 属性・TRACEメソッド無効化（5-(ix)）はプロジェクト側での対応が必要",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有の主張が知識セクションに裏付けられていない。特に①エスケープ変換の具体的な文字コード（&#034;, &#039;等）、②n:prettyPrintタグの存在と非推奨ステータス、③n:rawWriteタグの存在、④SecureHandlerが設定する具体的なHTTPレスポンスヘッダ一覧（X-XSS-Protection, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Cache-Control）、⑤SecureHandlerのCSP/nonce対応、⑥5-(ix)のCookie HttpOnly・TRACEメソッドへの言及は、いずれも提供された知識セクションに記載がなくハルシネーションと判定される。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のNablarch固有の主張が知識セクションに裏付けられていない。特に①エスケープ変換の具体的な文字コード（&#034;, &#039;等）、②n:prettyPrintタグの存在と非推奨ステータス、③n:rawWriteタグの存在、④SecureHandlerが設定する具体的なHTTPレスポンスヘッダ一覧（X-XSS-Protection, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Cache-Control）、⑤SecureHandlerのCSP/nonce対応、⑥5-(ix)のCookie HttpOnly・TRACEメソッドへの言及は、いずれも提供された知識セクションに記載がなくハルシネーションと判定される。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "knowledge/component/libraries/libraries-tag.json:s2",
+      "knowledge/component/libraries/libraries-tag.json:s50",
+      "knowledge/component/libraries/libraries-tag.json:s27",
+      "knowledge/component/handlers/handlers-secure-handler.json:s1",
+      "knowledge/check/security-check/security-check-2.チェックリスト.json:s21",
+      "knowledge/development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 151173,
+    "duration_api_ms": 149216,
+    "num_turns": 4,
+    "total_cost_usd": 0.8326283499999999,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 3015,
+      "cache_read_input_tokens": 98389,
+      "cache_creation_input_tokens": 27839
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1201,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001381,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5055,
+        "outputTokens": 7748,
+        "cacheReadInputTokens": 985237,
+        "cacheCreationInputTokens": 107811,
+        "webSearchRequests": 0,
+        "costUSD": 0.8312473499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

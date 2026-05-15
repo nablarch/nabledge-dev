@@ -1,0 +1,122 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「方法2」において、「SQLファイルを作成してSQL IDを指定します。検索結果はBeanのプロパティ名とSELECT句の名前が一致する項目に自動マッピングされます」と明記されており、事実の内容（SQLファイルを作成してSQL IDを指定した検索ができ、検索結果がBeanにマッピングされる）が含まれている。",
+      "fact": "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "Jakarta PersistenceアノテーションをEntityに付けることで主キー検索が可能（@Entity、@Id、@Column）",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.findById(User.class, userId) で主キー検索できる",
+        "supported": false
+      },
+      {
+        "claim": "findAllBySqlFile メソッドでSQLファイルを使った検索ができる",
+        "supported": false
+      },
+      {
+        "claim": "検索結果はBeanのプロパティ名とSELECT句の名前が一致する項目に自動マッピングされる",
+        "supported": true
+      },
+      {
+        "claim": "SQLファイルのパスはBeanクラスから導出され、sample.entity.UserクラスならばクラスパスのSample/entity/User.sqlが対象",
+        "supported": false
+      },
+      {
+        "claim": "defer()メソッドで遅延ロードができる",
+        "supported": false
+      },
+      {
+        "claim": "DeferredEntityListクラスが存在し、try-with-resourcesで使用する",
+        "supported": false
+      },
+      {
+        "claim": "per().page()メソッドでページング検索ができる",
+        "supported": false
+      },
+      {
+        "claim": "EntityList#getPaginationでPaginationオブジェクトが取得できる",
+        "supported": false
+      },
+      {
+        "claim": "BasicDaoContextFactoryのコンポーネント定義が必要",
+        "supported": false
+      },
+      {
+        "claim": "悲観的ロック（SELECT FOR UPDATE）にはUniversalDao#findBySqlFileを使用する",
+        "supported": false
+      },
+      {
+        "claim": "主キー以外の条件を使った更新・削除はUniversalDaoでは対応していない",
+        "supported": true
+      }
+    ],
+    "reason": "BeanプロパティとSELECT句のマッピング、Jakarta Persistenceアノテーションによる主キーCRUD、主キー以外の更新・削除非対応の3点は知識セクションに裏付けがある。しかし、findByIdのAPI名、findAllBySqlFileのAPI名、SQLファイルパス導出ルール（sample/entity/User.sql）、defer()による遅延ロード、DeferredEntityList、per().page()によるページング、BasicDaoContextFactory、findBySqlFileによる悲観的ロックは知識セクションに記載がなく、裏付けが取れない。特にSQLファイルのパス導出規則は非常に具体的なNablarch固有の主張であり、知識セクションに根拠がないためハルシネーションの可能性が高い。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — BeanプロパティとSELECT句のマッピング、Jakarta Persistenceアノテーションによる主キーCRUD、主キー以外の更新・削除非対応の3点は知識セクションに裏付けがある。しかし、findByIdのAPI名、findAllBySqlFileのAPI名、SQLファイルパス導出ルール（sample/entity/User.sql）、defer()による遅延ロード、DeferredEntityList、per().page()によるページング、BasicDaoContextFactory、findBySqlFileによる悲観的ロックは知識セクションに記載がなく、裏付けが取れない。特にSQLファイルのパス導出規則は非常に具体的なNablarch固有の主張であり、知識セクションに根拠がないためハルシネーションの可能性が高い。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-universal-dao.json:s3",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "component/libraries/libraries-universal-dao.json:s12"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 75940,
+    "duration_api_ms": 75401,
+    "num_turns": 4,
+    "total_cost_usd": 0.4648332,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 2412,
+      "cache_read_input_tokens": 98238,
+      "cache_creation_input_tokens": 26709
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1172,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001302,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 17,
+        "outputTokens": 4619,
+        "cacheReadInputTokens": 432884,
+        "cacheCreationInputTokens": 70488,
+        "webSearchRequests": 0,
+        "costUSD": 0.46353120000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

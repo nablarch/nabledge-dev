@@ -1,0 +1,120 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. カスタムタグによるサニタイジング（根本的解決 5-(i)）」セクションに、NablarchのカスタムタグはデフォルトでHTMLエスケープ（サニタイジング）を行い、カスタムタグを使って実装している限りXSSの根本的解決（5-(i)）に対応できると明記されており、事実の情報が含まれている。",
+      "fact": "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "NablarchのカスタムタグはデフォルトでHTMLエスケープ（サニタイジング）を行う",
+        "supported": true
+      },
+      {
+        "claim": "JSP静的解析ツールを提供しており、カスタムタグ以外のタグ使用によるエスケープ漏れを検出できる",
+        "supported": true
+      },
+      {
+        "claim": "5-(ii) URL出力制限はNablarch対応×",
+        "supported": true
+      },
+      {
+        "claim": "5-(vi) HTMLテキスト入力の構文解析はNablarch対応×",
+        "supported": true
+      },
+      {
+        "claim": "セキュアハンドラ（nablarch.fw.web.handler.SecureHandler）が存在し、X-XSS-Protection・X-Frame-Options・X-Content-Type-Options・Referrer-Policy・Cache-Controlを設定する",
+        "supported": false
+      },
+      {
+        "claim": "セキュアハンドラはContent Security Policy（CSP）に対応しており、ContentSecurityPolicyHeaderを設定できる",
+        "supported": false
+      },
+      {
+        "claim": "5-(x) 保険的対策としてX-XSS-Protectionヘッダが機能する",
+        "supported": false
+      },
+      {
+        "claim": "5-(viii) HTTP文字エンコード制御によりエスケープ回避型XSSを防ぐ",
+        "supported": false
+      },
+      {
+        "claim": "rawWriteタグ・prettyPrintタグが存在し、HTMLエスケープせずに値を出力する（prettyPrintタグは現在非推奨）",
+        "supported": false
+      },
+      {
+        "claim": "Cookie HttpOnly属性のNablarch対応は×",
+        "supported": false
+      },
+      {
+        "claim": "script要素の動的生成禁止・スタイルシート取り込み制限はNablarch対応×",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションに裏付けのあるカスタムタグのサニタイジングおよびJSP静的解析ツールに関する記述は正確だが、SecureHandlerクラスの存在・具体的なセキュリティヘッダ一覧・CSP対応（ContentSecurityPolicyHeader）・5-(viii)および5-(x)の対策番号・rawWriteタグ/prettyPrintタグ・Cookie HttpOnly属性の対応状況など、Nablarch固有の複数の主張が知識セクションに一切記載されておらず、裏付けのないハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションに裏付けのあるカスタムタグのサニタイジングおよびJSP静的解析ツールに関する記述は正確だが、SecureHandlerクラスの存在・具体的なセキュリティヘッダ一覧・CSP対応（ContentSecurityPolicyHeader）・5-(viii)および5-(x)の対策番号・rawWriteタグ/prettyPrintタグ・Cookie HttpOnly属性の対応状況など、Nablarch固有の複数の主張が知識セクションに一切記載されておらず、裏付けのないハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s21",
+      "check/security-check/security-check-2.チェックリスト.json:s28",
+      "check/security-check/security-check-2.チェックリスト.json:s30",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s27",
+      "component/handlers/handlers-secure-handler.json:s1",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 122906,
+    "duration_api_ms": 122172,
+    "num_turns": 4,
+    "total_cost_usd": 0.7300610500000001,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 4168,
+      "cache_read_input_tokens": 98405,
+      "cache_creation_input_tokens": 27536
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1201,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001381,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2772,
+        "outputTokens": 9031,
+        "cacheReadInputTokens": 752701,
+        "cacheCreationInputTokens": 95757,
+        "webSearchRequests": 0,
+        "costUSD": 0.7286800500000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

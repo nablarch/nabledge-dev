@@ -1,0 +1,151 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「2. HTTPエラー制御ハンドラ」セクションに、HttpErrorHandlerが例外種別（NoMoreHandlerException→404、HttpErrorResponse→getResponse()の値、StackOverflowError→500、その他→500）に応じたステータスコードのレスポンスを返すことが記載されている。また、「HttpErrorResponseの原因がApplicationExceptionの場合、バリデーションエラーメッセージをErrorMessagesに変換してリクエストスコープ（キー: errors）にセットする」という記述も含まれており、事実の両方の要素が回答に含まれている。",
+      "fact": "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "GlobalErrorHandlerがハンドラキューの先頭近くに配置され後続ハンドラの未捕捉例外を捕捉してログを出力する",
+        "supported": false
+      },
+      {
+        "claim": "ServiceError（サブクラス含む）はwriteLog()呼び出し後に結果として返却される",
+        "supported": false
+      },
+      {
+        "claim": "Result.Error（サブクラス含む）はFATALレベルでログ出力される（GlobalErrorHandlerの表）",
+        "supported": false
+      },
+      {
+        "claim": "ThreadDeathはINFOレベルでログ出力後リスローされる（GlobalErrorHandler）",
+        "supported": false
+      },
+      {
+        "claim": "StackOverflowErrorはFATALログ出力後InternalErrorを生成して返却される（GlobalErrorHandler）",
+        "supported": false
+      },
+      {
+        "claim": "OutOfMemoryErrorは標準エラー出力へ出力後FATALログしInternalErrorを返却する（GlobalErrorHandler）",
+        "supported": false
+      },
+      {
+        "claim": "NoMoreHandlerExceptionはINFOレベルで404を返す（HttpErrorHandler）",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseはログ出力なしでgetResponse()の値を返す（HttpErrorHandler）",
+        "supported": true
+      },
+      {
+        "claim": "StackOverflowErrorはFATALレベルで500を返す（HttpErrorHandler）",
+        "supported": true
+      },
+      {
+        "claim": "上記以外の例外はFATALレベルで500を返す（HttpErrorHandler）",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseの原因がApplicationExceptionの場合にErrorMessagesをリクエストスコープのキー'errors'にセットする",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorアノテーションでtype属性にRuntimeException及びそのサブクラスを指定できる",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorのコード例（ApplicationException→/WEB-INF/view/project/index.jsp）",
+        "supported": true
+      },
+      {
+        "claim": "障害通知ログのロガー名がMONITOR、障害解析ログがクラス名",
+        "supported": false
+      },
+      {
+        "claim": "FailureLogUtil.logError(e, inputData, \"USER_NOT_FOUND\")というAPI",
+        "supported": false
+      },
+      {
+        "claim": "TransactionAbnormalEndクラスの存在とその使用方法",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandlerはカスタマイズ不可",
+        "supported": false
+      },
+      {
+        "claim": "failureLogFormatter.defaultFailureCodeが必須設定項目",
+        "supported": false
+      },
+      {
+        "claim": "Result.Errorのログ出力は設定（writeFailureLogPattern）による（HttpErrorHandler）",
+        "supported": true
+      }
+    ],
+    "reason": "複数の重大なハルシネーションが検出された。最も明確な矛盾は「Result.Error → FATAL」という主張で、知識セクションは「設定による（writeFailureLogPatternの正規表現マッチ時のみFATAL）」と明示しており直接矛盾する。また、GlobalErrorHandlerに関するServiceError・ThreadDeath・StackOverflowError・OutOfMemoryErrorの具体的な挙動（InternalError生成、標準エラー出力など）、FailureLogUtilのAPI（ロガー名MONITOR、logErrorシグネチャ）、TransactionAbnormalEnd、failureLogFormatter.defaultFailureCode必須設定、GlobalErrorHandlerカスタマイズ不可、はいずれも知識セクションに裏付けがなくハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数の重大なハルシネーションが検出された。最も明確な矛盾は「Result.Error → FATAL」という主張で、知識セクションは「設定による（writeFailureLogPatternの正規表現マッチ時のみFATAL）」と明示しており直接矛盾する。また、GlobalErrorHandlerに関するServiceError・ThreadDeath・StackOverflowError・OutOfMemoryErrorの具体的な挙動（InternalError生成、標準エラー出力など）、FailureLogUtilのAPI（ロガー名MONITOR、logErrorシグネチャ）、TransactionAbnormalEnd、failureLogFormatter.defaultFailureCode必須設定、GlobalErrorHandlerカスタマイズ不可、はいずれも知識セクションに裏付けがなくハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s3",
+      "component/handlers/handlers-on-error.json:s3",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 149501,
+    "duration_api_ms": 147882,
+    "num_turns": 20,
+    "total_cost_usd": 0.82535025,
+    "usage": {
+      "input_tokens": 13,
+      "output_tokens": 6232,
+      "cache_read_input_tokens": 492606,
+      "cache_creation_input_tokens": 50649
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1181,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013109999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4221,
+        "outputTokens": 9972,
+        "cacheReadInputTokens": 714000,
+        "cacheCreationInputTokens": 119359,
+        "webSearchRequests": 0,
+        "costUSD": 0.82403925,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

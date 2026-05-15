@@ -1,0 +1,133 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "回答にはDataReaderを使ってDBからデータを読み込む説明はあるが、「DatabaseRecordReader」という具体的なクラス名は言及されていない。回答中ではDataReaderやDataReadHandlerという用語は使われているが、DatabaseRecordReaderという固有のクラス名は登場しない。",
+      "fact": "DatabaseRecordReaderでデータベースからデータを読み込む"
+    },
+    {
+      "verdict": "ABSENT",
+      "reason": "回答にはアクションクラスについての説明はあるが、「BatchActionを継承したアクションクラスを実装する」という具体的な情報は含まれていない。回答では単に「アクションクラス (Action)」と記載されているのみで、BatchActionクラスを継承することについての言及がない。",
+      "fact": "BatchActionを継承したアクションクラスを実装する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Nablarchは「Nablarchバッチアプリケーション」と「Jakarta Batchに準拠したバッチ」の2種類のバッチフレームワークを提供している",
+        "supported": true
+      },
+      {
+        "claim": "DataReader + アクションクラスの構成で実装する",
+        "supported": true
+      },
+      {
+        "claim": "標準DataReaderとしてDatabaseRecordReader、FileDataReader、ValidatableFileDataReader、ResumeDataReaderが提供されている",
+        "supported": true
+      },
+      {
+        "claim": "標準アクションクラスとしてBatchAction、FileBatchAction、NoInputDataBatchAction、AsyncMessageSendActionが提供されている",
+        "supported": true
+      },
+      {
+        "claim": "データリードハンドラ(DataReadHandler)がDataReaderを使って1件ずつ読み込み後続ハンドラに委譲する",
+        "supported": true
+      },
+      {
+        "claim": "トランザクションループ制御ハンドラ(LoopHandler)がデータ存在中に後続ハンドラを繰り返し実行し一定件数ごとにコミットする",
+        "supported": true
+      },
+      {
+        "claim": "データベース接続管理ハンドラがDB接続を管理する",
+        "supported": true
+      },
+      {
+        "claim": "起動コマンドのmainClassが nablarch.fw.launcher.Main である",
+        "supported": false
+      },
+      {
+        "claim": "起動引数として -requestPath、-diConfig、-userId を使用する",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao.insert() / UniversalDao.update() で結果テーブルに書き込む",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao.defer().findAllBySqlFile() で遅延ロードを使用しヒープ圧迫を避ける",
+        "supported": false
+      },
+      {
+        "claim": "LoopHandler の commitInterval を設定することでコミット間隔を制御できる",
+        "supported": false
+      },
+      {
+        "claim": "常駐バッチは非推奨であり定期処理には都度起動バッチを使用すること",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションに裏付けのないNablarch固有の主張が複数含まれている。具体的には、起動クラス名 nablarch.fw.launcher.Main および起動引数の形式、UniversalDao API（insert/update/defer/findAllBySqlFile）、LoopHandlerの設定プロパティ名 commitInterval、常駐バッチ非推奨の明示的な記述が知識セクションに存在しない。これらはNablarch固有のAPI名・クラス名・設定方法に関する主張であるため、知識セクションによる裏付けが必要だが確認できない。"
+  },
+  "scores": {
+    "accuracy": 0.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — DatabaseRecordReaderでデータベースからデータを読み込む",
+    "claim[1]: ABSENT — BatchActionを継承したアクションクラスを実装する",
+    "hallucination: FAIL — 知識セクションに裏付けのないNablarch固有の主張が複数含まれている。具体的には、起動クラス名 nablarch.fw.launcher.Main および起動引数の形式、UniversalDao API（insert/update/defer/findAllBySqlFile）、LoopHandlerの設定プロパティ名 commitInterval、常駐バッチ非推奨の明示的な記述が知識セクションに存在しない。これらはNablarch固有のAPI名・クラス名・設定方法に関する主張であるため、知識セクションによる裏付けが必要だが確認できない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:root",
+      "processing-pattern/nablarch-batch/nablarch-batch-application-design.json:root",
+      "processing-pattern/nablarch-batch/nablarch-batch-batch.json:root",
+      "component/handlers/handlers-data-read-handler.json:root",
+      "component/handlers/handlers-loop-handler.json:root",
+      "processing-pattern/jakarta-batch/jakarta-batch-database-reader.json:root"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 130713,
+    "duration_api_ms": 128762,
+    "num_turns": 32,
+    "total_cost_usd": 0.7663450499999999,
+    "usage": {
+      "input_tokens": 1244,
+      "output_tokens": 7169,
+      "cache_read_input_tokens": 1492226,
+      "cache_creation_input_tokens": 54955
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1194,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013289999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1244,
+        "outputTokens": 7169,
+        "cacheReadInputTokens": 1492226,
+        "cacheCreationInputTokens": 54955,
+        "webSearchRequests": 0,
+        "costUSD": 0.76501605,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

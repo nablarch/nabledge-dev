@@ -1,0 +1,126 @@
+{
+  "scenario_id": "qa-12a",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「Webアプリケーションの場合」セクションに「HTTPエラー制御ハンドラが`ApplicationException`を`ErrorMessages`に変換し、リクエストスコープのキー`errors`に格納する」と明記されており、事実の内容（HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する）と同等の情報が含まれている。",
+      "fact": "HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する"
+    },
+    {
+      "verdict": "UNCERTAIN",
+      "reason": "回答には「リクエストスコープのerrorsオブジェクトを参照してエラーメッセージを表示する」という記述があり、リクエストスコープのエラーメッセージ表示については触れています。また注意点として「JSPのカスタムタグを使う場合はDOM構造に制約があり、リクエストスコープのErrorMessagesを直接使う方法が推奨されています」と言及しています。しかし、「エラー表示タグ（`<n:errors>`タグや`<n:error>`タグ）を使ってリクエストスコープのエラーメッセージを表示する」という参照セクションの核心的な情報（errorsタグ・errorタグを使用したリクエストスコープのApplicationExceptionからのエラーメッセージ表示）は、回答ではThymeleafを使った方法が主に説明されており、JSPのカスタムタグによる表示方法は補足的にしか述べられていないため、判定が困難です。",
+      "fact": "エラー表示タグでリクエストスコープのエラーメッセージを表示する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "ApplicationExceptionがスローされるとHTTPエラー制御ハンドラがErrorMessagesに変換しリクエストスコープのキー`errors`に格納する",
+        "supported": true
+      },
+      {
+        "claim": "リクエストスコープのキー名デフォルトは`errors`でコンポーネント設定ファイル(nablarch.common.web.WebConfig / errorMessageRequestAttributeName)で変更可能",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorアノテーションでApplicationException発生時の遷移先JSPを指定できる",
+        "supported": true
+      },
+      {
+        "claim": "Thymeleafで`${errors.hasError('form.userName')}`や`${errors.getMessage('form.userName')}`を使ってエラーメッセージを表示できる",
+        "supported": false
+      },
+      {
+        "claim": "`errors.globalMessages`および`errors.allMessages`というプロパティがErrorMessagesオブジェクトに存在する",
+        "supported": false
+      },
+      {
+        "claim": "`ValidationUtil.createMessageForProperty`を使って特定項目のエラーメッセージを生成できる",
+        "supported": false
+      },
+      {
+        "claim": "RESTful WebサービスではErrorResponseBuilderを継承したクラスを作成してエラーレスポンスを構築する",
+        "supported": false
+      },
+      {
+        "claim": "JSPのカスタムタグはDOM構造に制約がありCSSフレームワークとの相性問題が発生するため、リクエストスコープのErrorMessagesを直接使う方法が推奨されている",
+        "supported": false
+      },
+      {
+        "claim": "エラーメッセージの表示にはJSPカスタムタグ(<n:errors>/<n:error>)を使用する",
+        "supported": true
+      },
+      {
+        "claim": "<n:errors filter=\"all\">で全エラー、filter=\"global\"で入力項目に対応しないエラーのみ表示できる",
+        "supported": true
+      },
+      {
+        "claim": "ApplicationExceptionはOnErrorインターセプタを使用してリクエストスコープに設定される",
+        "supported": true
+      }
+    ],
+    "reason": "複数のハルシネーションが検出された。(1) 知識セクションではWebアプリケーションのエラー表示にJSPカスタムタグ(<n:errors>/<n:error>)を使用すると明記されているが、回答はThymeleafの`th:if`/`th:text`構文を主な実装例として提示しており、知識セクションに裏付けがない。(2) `errors.hasError()`・`errors.getMessage()`・`errors.globalMessages`・`errors.allMessages`といったErrorMessagesのAPIメソッド名は知識セクションに記載されていない。(3) `ValidationUtil.createMessageForProperty`は知識セクションに存在せず、知識セクションが示すのは`MessageUtil.createMessage(MessageLevel.ERROR, ...)`である。(4) 「JSPカスタムタグはDOM制約があり直接ErrorMessagesを使う方法が推奨」という注意点は知識セクションに根拠がなく、むしろ知識セクションはカスタムタグの使用を推奨している。(5) ErrorResponseBuilderについても知識セクションに記述がない。"
+  },
+  "scores": {
+    "accuracy": null,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[1]: UNCERTAIN — エラー表示タグでリクエストスコープのエラーメッセージを表示する",
+    "hallucination: FAIL — 複数のハルシネーションが検出された。(1) 知識セクションではWebアプリケーションのエラー表示にJSPカスタムタグ(<n:errors>/<n:error>)を使用すると明記されているが、回答はThymeleafの`th:if`/`th:text`構文を主な実装例として提示しており、知識セクションに裏付けがない。(2) `errors.hasError()`・`errors.getMessage()`・`errors.globalMessages`・`errors.allMessages`といったErrorMessagesのAPIメソッド名は知識セクションに記載されていない。(3) `ValidationUtil.createMessageForProperty`は知識セクションに存在せず、知識セクションが示すのは`MessageUtil.createMessage(MessageLevel.ERROR, ...)`である。(4) 「JSPカスタムタグはDOM制約があり直接ErrorMessagesを使う方法が推奨」という注意点は知識セクションに根拠がなく、むしろ知識セクションはカスタムタグの使用を推奨している。(5) ErrorResponseBuilderについても知識セクションに記述がない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/web-application/web-application-error-message.json:root",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s17"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 207511,
+    "duration_api_ms": 206224,
+    "num_turns": 8,
+    "total_cost_usd": 0.69496995,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 4660,
+      "cache_read_input_tokens": 272575,
+      "cache_creation_input_tokens": 31353
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1183,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001323,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7430,
+        "outputTokens": 11400,
+        "cacheReadInputTokens": 539294,
+        "cacheCreationInputTokens": 90285,
+        "webSearchRequests": 0,
+        "costUSD": 0.69364695,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

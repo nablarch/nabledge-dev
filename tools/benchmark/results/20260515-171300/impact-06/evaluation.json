@@ -1,0 +1,126 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の表中に「DBストア」の保存先として「データベース上のテーブル」が明記されており、特徴として「APサーバ停止後もセッション復元可能」と記載されている。これは事実の「DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能」という内容と一致している。",
+      "fact": "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の表中に「HIDDENストア」の保存先として「クライアントサイド（hiddenタグ）」と明記されており、事実の内容（HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する）が含まれている。",
+      "fact": "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "DBストアはデータベース上のテーブルに保存し、APサーバ停止後もセッション復元可能でヒープを圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはクライアントサイド（hiddenタグ）に保存し、複数タブ操作を許容できヒープを圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはAPサーバのヒープ領域に保存し、スケールアウト時に工夫が必要",
+        "supported": true
+      },
+      {
+        "claim": "RedisストアはDBストアと保存先が異なるだけで特徴は同じ",
+        "supported": true
+      },
+      {
+        "claim": "DBストアおよびHTTPセッションストアは複数スレッド実行時に後勝ちとなる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数スレッド実行時に後勝ちとはならない（スレッドに紐付けて保存される）",
+        "supported": true
+      },
+      {
+        "claim": "認証情報の保持にはDBストアまたはHTTPセッションストアが推奨される",
+        "supported": true
+      },
+      {
+        "claim": "検索結果一覧・検索条件・画面表示項目・エラーメッセージのセッション保存は使用しないことが推奨される",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.lettuce.clientType=cluster および nablarch.lettuce.clientType=masterReplica という設定プロパティが存在する",
+        "supported": false
+      },
+      {
+        "claim": "nablarch/webui/redisstore-lettuce.xml と redisstore-lettuce.config を読み込むことでRedisストアを使用開始できる",
+        "supported": false
+      },
+      {
+        "claim": "Redisストアの有効期限管理はRedis側が自動処理するためセッション削除バッチの実装は不要",
+        "supported": false
+      },
+      {
+        "claim": "セッションストアに保存できるのは「シリアライズ可能なJava Beansオブジェクト」のみ",
+        "supported": false
+      }
+    ],
+    "reason": "Redisストアに関するNablarch固有の設定情報（nablarch.lettuce.clientType プロパティ値、設定ファイル名 redisstore-lettuce.xml / redisstore-lettuce.config）、Redisの有効期限自動管理によるバッチ不要の主張、およびセッションストアの保存対象を「シリアライズ可能なJava Beansオブジェクトのみ」とする主張は、いずれも知識セクションに裏付けがなくハルシネーションと判定されます。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — Redisストアに関するNablarch固有の設定情報（nablarch.lettuce.clientType プロパティ値、設定ファイル名 redisstore-lettuce.xml / redisstore-lettuce.config）、Redisの有効期限自動管理によるバッチ不要の主張、およびセッションストアの保存対象を「シリアライズ可能なJava Beansオブジェクトのみ」とする主張は、いずれも知識セクションに裏付けがなくハルシネーションと判定されます。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s6",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s7",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 66923,
+    "duration_api_ms": 66539,
+    "num_turns": 12,
+    "total_cost_usd": 0.3616801,
+    "usage": {
+      "input_tokens": 13,
+      "output_tokens": 3947,
+      "cache_read_input_tokens": 510642,
+      "cache_creation_input_tokens": 39446
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1196,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013210000000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13,
+        "outputTokens": 3947,
+        "cacheReadInputTokens": 510642,
+        "cacheCreationInputTokens": 39446,
+        "webSearchRequests": 0,
+        "costUSD": 0.36035910000000004,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

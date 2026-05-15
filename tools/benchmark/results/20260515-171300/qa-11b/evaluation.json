@@ -1,0 +1,157 @@
+{
+  "scenario_id": "qa-11b",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "回答には`JaxRsResponseHandler`についての言及がない。参照セクションには`JaxRsResponseHandler`と`ErrorResponseBuilder`が例外に応じたエラーレスポンスを生成することが記載されているが、回答本文（結論・エラーログの出力・エラー画面の表示セクション）には`JaxRsResponseHandler`は登場しない。回答は`GlobalErrorHandler`、`HttpErrorHandler`、`FailureLogUtil`、`@OnError`アノテーションなどについて説明しており、JAX-RS向けのレスポンスハンドラには触れていない。",
+      "fact": "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する"
+    },
+    {
+      "verdict": "ABSENT",
+      "reason": "回答には GlobalErrorHandler、HttpErrorHandler、FailureLogUtil などによるエラーログ出力の説明はあるが、JaxRsErrorLogWriter が例外に応じたログ出力を行うという情報は含まれていない。JaxRsErrorLogWriter への言及は「参照セクション（事実の出典）」にのみ存在し、「回答」本文には記載がない。",
+      "fact": "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "GlobalErrorHandlerはハンドラキューの先頭に配置し、未捕捉の例外・エラーを全て補足してFATALログを出力する",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandlerはServiceErrorのログレベルをServiceError実装クラスによって決定する",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandlerはResult.ErrorをFATALレベルでログ出力する",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandlerはThreadDeathをINFOレベルでログ出力しその後リスローする",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandlerのクラス名はnablarch.fw.handler.GlobalErrorHandler",
+        "supported": false
+      },
+      {
+        "claim": "HttpErrorHandlerはNoMoreHandlerExceptionをINFOレベルでログ出力しステータスコード404を返す",
+        "supported": false
+      },
+      {
+        "claim": "HttpErrorHandlerはStackOverflowErrorをFATALレベルでログ出力しステータスコード500を返す",
+        "supported": false
+      },
+      {
+        "claim": "FailureLogUtil.logError()を使用してアプリケーションコードから明示的に障害ログを出力できる",
+        "supported": false
+      },
+      {
+        "claim": "障害通知ログはロガー名MONITORでFATAL/ERRORレベルで出力される",
+        "supported": false
+      },
+      {
+        "claim": "@OnError/@OnErrorsアノテーションでアクションメソッドに例外ごとの遷移先を指定できる",
+        "supported": false
+      },
+      {
+        "claim": "HttpErrorHandlerのdefaultPages設定でHTTPステータスコード別デフォルトページを設定できる",
+        "supported": false
+      },
+      {
+        "claim": "defaultPagesよりweb.xmlのerror-page要素で設定する方が推奨",
+        "supported": false
+      },
+      {
+        "claim": "HttpErrorHandlerはHttpResponseHandlerより後ろに配置すること",
+        "supported": false
+      },
+      {
+        "claim": "ErrorResponseBuilderの処理中に例外が発生した場合WARNレベルでログ出力しステータスコード500のレスポンスを生成する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsResponseHandlerにerrorResponseBuilderプロパティでErrorResponseBuilderを設定できる",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsResponseHandlerにerrorLogWriterプロパティでJaxRsErrorLogWriterを設定できる",
+        "supported": true
+      }
+    ],
+    "reason": "知識セクションはJaxRsResponseHandler・ErrorResponseBuilder・JaxRsErrorLogWriterに関する内容のみを扱っている。回答の大部分を占めるGlobalErrorHandler・HttpErrorHandler・FailureLogUtil・@OnError/@OnErrorsアノテーション・defaultPages設定に関するNablarch固有の主張（クラス名・ログレベル・動作仕様・設定方法）は知識セクションに一切裏付けがなく、ハルシネーションと判定される。知識セクションで裏付けられるのはJaxRs関連の一部主張のみであり、回答全体としてFAILとする。"
+  },
+  "scores": {
+    "accuracy": 0.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
+    "claim[1]: ABSENT — JaxRsErrorLogWriterが例外に応じたログ出力を行う",
+    "hallucination: FAIL — 知識セクションはJaxRsResponseHandler・ErrorResponseBuilder・JaxRsErrorLogWriterに関する内容のみを扱っている。回答の大部分を占めるGlobalErrorHandler・HttpErrorHandler・FailureLogUtil・@OnError/@OnErrorsアノテーション・defaultPages設定に関するNablarch固有の主張（クラス名・ログレベル・動作仕様・設定方法）は知識セクションに一切裏付けがなく、ハルシネーションと判定される。知識セクションで裏付けられるのはJaxRs関連の一部主張のみであり、回答全体としてFAILとする。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s1",
+      "component/handlers/handlers-HttpErrorHandler.json:s3",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/handlers/handlers-global-error-handler.json:s1",
+      "component/handlers/handlers-global-error-handler.json:s3",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s5",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s2",
+      "component/handlers/handlers-on-error.json:s1",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/handlers/handlers-on-errors.json:s1",
+      "component/handlers/handlers-on-errors.json:s3",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s3",
+      "component/libraries/libraries-failure-log.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 222757,
+    "duration_api_ms": 222131,
+    "num_turns": 8,
+    "total_cost_usd": 0.5867674,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 4770,
+      "cache_read_input_tokens": 271928,
+      "cache_creation_input_tokens": 36081
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1181,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001321,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2732,
+        "outputTokens": 14514,
+        "cacheReadInputTokens": 399643,
+        "cacheCreationInputTokens": 63906,
+        "webSearchRequests": 0,
+        "costUSD": 0.5854464,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

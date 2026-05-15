@@ -1,0 +1,134 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「DBストアの特長」セクションに「ローリングメンテナンス等でAPサーバが停止してもセッション変数の復元が可能」と明記されており、また表でDBストアの保存先が「データベーステーブル」と示されている。これは事実「DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能」と同じ情報を含んでいる。",
+      "fact": "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の表中に「HIDDENストア | クライアントサイド（hiddenタグ） | ✅ 適している」と記載されており、HIDDENストアがクライアントサイドにhiddenタグで引き回して実現するという事実が含まれている。",
+      "fact": "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "DBストアの保存先はデータベース上のテーブルであり、スケールアウトに適している",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアの保存先はクライアントサイド（hiddenタグ）であり、複数タブでの画面操作を許容できる",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはAPサーバのヒープ領域に保存され、スケールアウト時に工夫が必要",
+        "supported": true
+      },
+      {
+        "claim": "RedisストアはDBストアと同等の特長を持つ",
+        "supported": true
+      },
+      {
+        "claim": "認証情報の保持にはDBストアまたはHTTPセッションストアが使用できる",
+        "supported": true
+      },
+      {
+        "claim": "DBストア・HTTPセッションストアは複数スレッド処理時に後勝ちとなる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数スレッド処理時に各スレッドに紐付けて保存される",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは事前にDB上に USER_SESSION テーブルを作成する必要がある（テーブル名の明示）",
+        "supported": false
+      },
+      {
+        "claim": "DBストアは期限切れセッション情報を定期削除するバッチが必要",
+        "supported": false
+      },
+      {
+        "claim": "Redisストアはセッション情報保存用テーブルの事前作成が不要",
+        "supported": false
+      },
+      {
+        "claim": "Redisストアはの有効期限機能により期限切れセッションが自動削除され、クリーンアップバッチが不要",
+        "supported": false
+      },
+      {
+        "claim": "HIDDENストアはスケールアウト時に各APサーバが異なる暗号化キーを自動生成するため復号に失敗することがある",
+        "supported": false
+      },
+      {
+        "claim": "セッション有効期間はデフォルトでHTTPセッションに保存されており、完全にステートレスにするには保存先をDBまたはRedisに変更する必要がある",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有の仕様が知識セクションに裏付けられていない。具体的には、(1) DBストアが使用するテーブル名「USER_SESSION」の明示、(2) DBストアにおける期限切れセッション削除バッチの必要性、(3) RedisストアにおけるRedis有効期限機能によるクリーンアップバッチ不要という主張、(4) HIDDENストアがスケールアウト時に暗号化キーを自動生成して復号失敗するという動作仕様、(5) セッション有効期間がデフォルトでHTTPセッションに保存されるという仕様、これらはいずれも知識セクションに記載がなく、Nablarch固有のハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のNablarch固有の仕様が知識セクションに裏付けられていない。具体的には、(1) DBストアが使用するテーブル名「USER_SESSION」の明示、(2) DBストアにおける期限切れセッション削除バッチの必要性、(3) RedisストアにおけるRedis有効期限機能によるクリーンアップバッチ不要という主張、(4) HIDDENストアがスケールアウト時に暗号化キーを自動生成して復号失敗するという動作仕様、(5) セッション有効期間がデフォルトでHTTPセッションに保存されるという仕様、これらはいずれも知識セクションに記載がなく、Nablarch固有のハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-stateless-web-app.json:s1",
+      "component/libraries/libraries-stateless-web-app.json:s2",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s1",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s14",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s17"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 131102,
+    "duration_api_ms": 129566,
+    "num_turns": 10,
+    "total_cost_usd": 0.53865405,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 5064,
+      "cache_read_input_tokens": 400168,
+      "cache_creation_input_tokens": 47635
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1196,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001326,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 15687,
+        "outputTokens": 7911,
+        "cacheReadInputTokens": 451636,
+        "cacheCreationInputTokens": 62963,
+        "webSearchRequests": 0,
+        "costUSD": 0.5373280500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "scenario_id": "qa-04",
+  "description": "Bean Validationに対応したFormクラスの単体テストを書きたい。文字種や桁数のテストケースをどう準備すればいいかわからない。",
+  "input": "Bean ValidationのFormクラスの単体テストを書きたい。テストクラスの作り方とテストデータの準備方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のテストクラスのコード例に「public class UserRegistrationFormTest extends EntityTestSupport」と明示されており、EntityTestSupportを継承してテストクラスを作成することが含まれている。",
+      "fact": "EntityTestSupportを継承してテストクラスを作成する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「テストデータの準備方法」セクションに「テストデータはExcelファイルで作成し、テストソースコードと同じディレクトリに同じファイル名（拡張子のみ `.xlsx`）で配置します」と明記されており、事実「テストデータはExcelファイルに記述する」が含まれている。",
+      "fact": "テストデータはExcelファイルに記述する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "テストクラスはnablarch.test.core.db.EntityTestSupportを継承する",
+        "supported": true
+      },
+      {
+        "claim": "テストクラスのパッケージはテスト対象Formと同じにする",
+        "supported": true
+      },
+      {
+        "claim": "クラス名は<FormクラS名>Testとする",
+        "supported": true
+      },
+      {
+        "claim": "テストデータはExcelファイルでテストソースコードと同じディレクトリに同じファイル名（拡張子のみ.xlsx）で配置する",
+        "supported": true
+      },
+      {
+        "claim": "文字種・文字列長の単項目精査テストにtestValidateCharsetAndLengthメソッドを使用する",
+        "supported": false
+      },
+      {
+        "claim": "その他の単項目精査テストにtestSingleValidationメソッドを使用する",
+        "supported": false
+      },
+      {
+        "claim": "項目間精査テストにtestBeanValidationメソッドを使用する",
+        "supported": false
+      },
+      {
+        "claim": "setter/getterテストにtestSetterAndGetterメソッドを使用する",
+        "supported": false
+      },
+      {
+        "claim": "charsetAndLengthのExcelカラムにpropertyName/allowEmpty/min/max/messageIdWhenNotApplicable/文字種列を定義する",
+        "supported": true
+      },
+      {
+        "claim": "許容する場合は'o'、許容しない場合は'x'を設定する",
+        "supported": true
+      },
+      {
+        "claim": "allowEmptyがfalseの場合、空文字で精査エラーになることも自動テストされる",
+        "supported": true
+      },
+      {
+        "claim": "testSingleValidationのExcelカラムがpropertyName/case/input1/messageIdである",
+        "supported": false
+      },
+      {
+        "claim": "testBeanValidationのテストケース表IDは'testShots'固定、入力パラメータ表IDは'params'固定である",
+        "supported": false
+      },
+      {
+        "claim": "EntityTestConfigurationにBeanValidationTestStrategyをvalidationTestStrategyとして指定する",
+        "supported": false
+      },
+      {
+        "claim": "characterGeneratorにBasicJapaneseCharacterGeneratorを使用する",
+        "supported": false
+      },
+      {
+        "claim": "testSetterAndGetterがサポートする型はString/BigDecimal/java.util.Date/valueOf(String)を持つクラスのみである",
+        "supported": false
+      },
+      {
+        "claim": "ネストしたForm（親Form.子Form.プロパティ名）にはtestValidateCharsetAndLength/testSingleValidationは使用できない",
+        "supported": true
+      },
+      {
+        "claim": "メッセージデータやコードマスタは個別のテストデータとして作成しない",
+        "supported": true
+      }
+    ],
+    "reason": "複数の裏付けのない主張が含まれるためFAIL。特に、(1) testValidateCharsetAndLength / testSingleValidation / testBeanValidation / testSetterAndGetter という具体的なメソッド名は知識セクションに記載がない。(2) testBeanValidationで使うExcelのIDが'testShots'・'params'固定という仕様は知識セクションに存在しない。(3) testSetterAndGetterがString/BigDecimal/java.util.Dateのみをサポートするという型制限の記述は知識セクションに裏付けがない。(4) BeanValidationTestStrategyやBasicJapaneseCharacterGeneratorといった具体的なクラス名を含むXML設定例も知識セクション内では確認できない。これらは知識セクションが参照している「本項以降のコード例」に含まれる可能性はあるが、提供された知識セクションからは裏付けられないため、判定基準に従いハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数の裏付けのない主張が含まれるためFAIL。特に、(1) testValidateCharsetAndLength / testSingleValidation / testBeanValidation / testSetterAndGetter という具体的なメソッド名は知識セクションに記載がない。(2) testBeanValidationで使うExcelのIDが'testShots'・'params'固定という仕様は知識セクションに存在しない。(3) testSetterAndGetterがString/BigDecimal/java.util.Dateのみをサポートするという型制限の記述は知識セクションに裏付けがない。(4) BeanValidationTestStrategyやBasicJapaneseCharacterGeneratorといった具体的なクラス名を含むXML設定例も知識セクション内では確認できない。これらは知識セクションが参照している「本項以降のコード例」に含まれる可能性はあるが、提供された知識セクションからは裏付けられないため、判定基準に従いハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s1",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s2",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s3",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s5",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s6",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s8",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s9",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s16",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s17"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 72167,
+    "duration_api_ms": 72254,
+    "num_turns": 13,
+    "total_cost_usd": 0.38270384999999996,
+    "usage": {
+      "input_tokens": 212,
+      "output_tokens": 5015,
+      "cache_read_input_tokens": 456212,
+      "cache_creation_input_tokens": 44963
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1188,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001368,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 212,
+        "outputTokens": 5015,
+        "cacheReadInputTokens": 456212,
+        "cacheCreationInputTokens": 44963,
+        "webSearchRequests": 0,
+        "costUSD": 0.3813358499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

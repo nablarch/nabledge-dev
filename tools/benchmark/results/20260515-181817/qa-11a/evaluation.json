@@ -1,0 +1,132 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「HTTPエラー制御ハンドラ」セクションにおいて、HttpErrorHandlerが例外種別に応じたステータスコード（404、500等）のレスポンスを返すことが表形式で示されており、またApplicationExceptionを原因とするHttpErrorResponseの場合にエラーメッセージをErrorMessagesに変換してリクエストスコープ（デフォルトキー: `errors`）に格納することも明記されている。これは事実の内容と一致する。",
+      "fact": "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "NoMoreHandlerException → INFO ログ、404 レスポンス",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponse（業務例外）→ ログ出力なし、HttpErrorResponse#getResponse()",
+        "supported": true
+      },
+      {
+        "claim": "ApplicationException 原因の HttpErrorResponse → ErrorMessages に変換してリクエストスコープ（デフォルトキー: errors）に格納",
+        "supported": true
+      },
+      {
+        "claim": "Result.Error のログ出力は writeFailureLogPattern の設定による",
+        "supported": true
+      },
+      {
+        "claim": "StackOverflowError → FATAL ログ、500 レスポンス",
+        "supported": true
+      },
+      {
+        "claim": "上記以外の例外 → FATAL ログ、500 レスポンス（HttpErrorHandler）",
+        "supported": false
+      },
+      {
+        "claim": "ThreadDeath は GlobalErrorHandler で INFO ログ後リスロー",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandler で ServiceError → ServiceError#writeLog() でログ出力",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandler で StackOverflowError/OutOfMemoryError → FATAL ログ後 InternalError を生成して返却",
+        "supported": false
+      },
+      {
+        "claim": "defaultPages プロパティで HTTP ステータスコードのパターンに対して遷移先 JSP を指定",
+        "supported": false
+      },
+      {
+        "claim": "障害通知ログは FATAL/ERROR レベルでロガー名 MONITOR、障害解析ログはクラス名ロガーに出力",
+        "supported": false
+      },
+      {
+        "claim": "FailureLogUtil.logError(e, inputData, \"USER_NOT_FOUND\") でアプリから直接障害ログ出力",
+        "supported": false
+      },
+      {
+        "claim": "TransactionAbnormalEnd / ProcessAbnormalEnd を送出してグローバルエラーハンドラに出力を委ねる",
+        "supported": false
+      },
+      {
+        "claim": "HttpErrorHandler は HTTPレスポンスハンドラ および HTTPアクセスログハンドラ より後ろに配置する必要がある",
+        "supported": false
+      }
+    ],
+    "reason": "最も重大な矛盾は HttpErrorHandler における ThreadDeath の扱いである。知識セクションでは『java.lang.ThreadDeath と java.lang.VirtualMachineError（StackOverflowError 以外）は本ハンドラでは何もせず上位のハンドラに処理を任せる（エラーを再送出する）』と明記されているが、回答の HttpErrorHandler テーブルはこの特別扱いを省略し、ThreadDeath が『上記以外の例外 → FATAL/500』に分類されるかのように示しており、知識セクションと矛盾する。さらに GlobalErrorHandler の詳細な動作（ServiceError、Result.Error、ThreadDeath、OOM の具体的な処理）、defaultPages 設定例、障害ログの 2 種類の分類（MONITOR ロガー等）、FailureLogUtil の API、TransactionAbnormalEnd/ProcessAbnormalEnd の使用法はいずれも知識セクションに裏付けがなく、ハルシネーションと判定される。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 最も重大な矛盾は HttpErrorHandler における ThreadDeath の扱いである。知識セクションでは『java.lang.ThreadDeath と java.lang.VirtualMachineError（StackOverflowError 以外）は本ハンドラでは何もせず上位のハンドラに処理を任せる（エラーを再送出する）』と明記されているが、回答の HttpErrorHandler テーブルはこの特別扱いを省略し、ThreadDeath が『上記以外の例外 → FATAL/500』に分類されるかのように示しており、知識セクションと矛盾する。さらに GlobalErrorHandler の詳細な動作（ServiceError、Result.Error、ThreadDeath、OOM の具体的な処理）、defaultPages 設定例、障害ログの 2 種類の分類（MONITOR ロガー等）、FailureLogUtil の API、TransactionAbnormalEnd/ProcessAbnormalEnd の使用法はいずれも知識セクションに裏付けがなく、ハルシネーションと判定される。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s3",
+      "component/libraries/libraries-failure-log.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 207584,
+    "duration_api_ms": 205968,
+    "num_turns": 10,
+    "total_cost_usd": 0.9639705999999999,
+    "usage": {
+      "input_tokens": 3149,
+      "output_tokens": 5359,
+      "cache_read_input_tokens": 283612,
+      "cache_creation_input_tokens": 46122
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1181,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013059999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 18926,
+        "outputTokens": 11194,
+        "cacheReadInputTokens": 807322,
+        "cacheCreationInputTokens": 132208,
+        "webSearchRequests": 0,
+        "costUSD": 0.9626646,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

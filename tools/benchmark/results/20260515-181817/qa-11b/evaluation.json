@@ -1,0 +1,131 @@
+{
+  "scenario_id": "qa-11b",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "回答では`HttpErrorHandler`が例外に応じたエラーレスポンスを生成すると説明されているが、参照セクションが示す事実は`JaxRsResponseHandler`（JAX-RS用ハンドラ）が`ErrorResponseBuilder`を通じて例外に応じたエラーレスポンスを生成するという内容である。回答中に`JaxRsResponseHandler`や`ErrorResponseBuilder`への言及は一切なく、この事実は含まれていない。",
+      "fact": "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する"
+    },
+    {
+      "verdict": "ABSENT",
+      "reason": "回答には`JaxRsErrorLogWriter`についての言及が一切ない。回答では`HttpErrorHandler`、`GlobalErrorHandler`、`FailureLogUtil`によるログ出力について説明しているが、`JaxRsErrorLogWriter`が例外に応じたログ出力を行うという事実は含まれていない。",
+      "fact": "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "HttpErrorHandlerがハンドラキューに配置され、後続ハンドラで発生した例外を捕捉してエラーレスポンスを生成する",
+        "supported": false
+      },
+      {
+        "claim": "NoMoreHandlerExceptionはINFOログ・404レスポンスになる",
+        "supported": false
+      },
+      {
+        "claim": "HttpErrorResponseはログなし・getResponse()の値をHTTPステータスとして返す",
+        "supported": false
+      },
+      {
+        "claim": "StackOverflowErrorはFATALログ・500レスポンスになる",
+        "supported": false
+      },
+      {
+        "claim": "HttpErrorResponseの原因例外がApplicationExceptionの場合、リクエストスコープ（デフォルトキーerrors）にエラーメッセージが設定される",
+        "supported": false
+      },
+      {
+        "claim": "defaultPagesプロパティでデフォルトエラーページを設定できる",
+        "supported": false
+      },
+      {
+        "claim": "@OnErrorインターセプタでアクションレベルのエラー遷移先を指定できる",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandlerをハンドラキューの先頭に配置して未捕捉例外をログ出力する",
+        "supported": false
+      },
+      {
+        "claim": "障害通知ログ（ロガー名MONITOR）と障害解析ログの2種類がある",
+        "supported": false
+      },
+      {
+        "claim": "FailureLogUtil.logError()でアプリケーションから障害ログを出力できる",
+        "supported": false
+      },
+      {
+        "claim": "エラーレスポンス生成にはErrorResponseBuilderが使用され、JaxRsResponseHandlerのerrorResponseBuilderプロパティに設定する",
+        "supported": true
+      },
+      {
+        "claim": "ログ出力にはJaxRsErrorLogWriterが使用され、JaxRsResponseHandlerのerrorLogWriterプロパティに設定する",
+        "supported": true
+      }
+    ],
+    "reason": "知識セクションはJAX-RS用のJaxRsResponseHandlerにおけるErrorResponseBuilderおよびJaxRsErrorLogWriterによるエラーハンドリングを説明しているが、回答はHttpErrorHandler・GlobalErrorHandler・FailureLogUtil・@OnErrorといった全く別のクラス群を中心に説明しており、それらの存在・動作仕様・設定方法はいずれも知識セクションで裏付けられない。また、回答は知識セクションが定めるErrorResponseBuilder/JaxRsErrorLogWriterについて一切言及しておらず、Nablarch固有の主張の大部分がハルシネーションと判定される。"
+  },
+  "scores": {
+    "accuracy": 0.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
+    "claim[1]: ABSENT — JaxRsErrorLogWriterが例外に応じたログ出力を行う",
+    "hallucination: FAIL — 知識セクションはJAX-RS用のJaxRsResponseHandlerにおけるErrorResponseBuilderおよびJaxRsErrorLogWriterによるエラーハンドリングを説明しているが、回答はHttpErrorHandler・GlobalErrorHandler・FailureLogUtil・@OnErrorといった全く別のクラス群を中心に説明しており、それらの存在・動作仕様・設定方法はいずれも知識セクションで裏付けられない。また、回答は知識セクションが定めるErrorResponseBuilder/JaxRsErrorLogWriterについて一切言及しておらず、Nablarch固有の主張の大部分がハルシネーションと判定される。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s3",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/libraries/libraries-log.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 144328,
+    "duration_api_ms": 143157,
+    "num_turns": 4,
+    "total_cost_usd": 0.7581215,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 3409,
+      "cache_read_input_tokens": 98312,
+      "cache_creation_input_tokens": 28469
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1181,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001316,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4264,
+        "outputTokens": 8572,
+        "cacheReadInputTokens": 682545,
+        "cacheCreationInputTokens": 109512,
+        "webSearchRequests": 0,
+        "costUSD": 0.7568055000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

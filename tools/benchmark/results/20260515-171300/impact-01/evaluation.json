@@ -1,0 +1,115 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「コンポーネント設定ファイルにSimpleDbTransactionManagerを定義する」というXML設定例と、「SimpleDbTransactionExecutorを使ってSQLを実行する」というJavaコード例が明示されており、SimpleDbTransactionManagerを使って個別トランザクションを定義するという事実が含まれている。",
+      "fact": "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "SimpleDbTransactionManagerとSimpleDbTransactionExecutorを使用することで業務トランザクションとは独立した別トランザクションでSQLを実行できる",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント設定ファイルにSimpleDbTransactionManagerを定義する",
+        "supported": true
+      },
+      {
+        "claim": "connectionFactoryプロパティにConnectionFactory実装クラスを設定する",
+        "supported": true
+      },
+      {
+        "claim": "transactionFactoryプロパティにTransactionFactory実装クラスを設定する",
+        "supported": true
+      },
+      {
+        "claim": "dbTransactionNameプロパティでトランザクションを識別する名前を設定する",
+        "supported": true
+      },
+      {
+        "claim": "SystemRepository.getでSimpleDbTransactionManagerを取得する",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionExecutorのコンストラクタにSimpleDbTransactionManagerを指定して使用する",
+        "supported": true
+      },
+      {
+        "claim": "executeメソッドをオーバーライドしてSQLを実装する",
+        "supported": true
+      },
+      {
+        "claim": "doTransaction()を呼び出すことで独立したトランザクション内でSQLが実行される",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionManagerを直接使うのではなくSimpleDbTransactionExecutorを介してトランザクション制御を行うこと",
+        "supported": true
+      },
+      {
+        "claim": "transactionFactoryにはJdbcTransactionFactoryなどTransactionFactory実装クラスを設定する",
+        "supported": true
+      },
+      {
+        "claim": "典型的なユースケースはログイン失敗カウント更新など業務処理失敗時でも必ずDBへの変更を確定したい場合",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべての主要な主張（API名、クラス名、設定方法、動作仕様、ユースケース）は知識セクションの内容と一致しており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-database.json:s29"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 91795,
+    "duration_api_ms": 91502,
+    "num_turns": 4,
+    "total_cost_usd": 0.6278623499999999,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 1979,
+      "cache_read_input_tokens": 98326,
+      "cache_creation_input_tokens": 26671
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1194,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001314,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 142,
+        "outputTokens": 4920,
+        "cacheReadInputTokens": 691537,
+        "cacheCreationInputTokens": 91963,
+        "webSearchRequests": 0,
+        "costUSD": 0.62654835,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

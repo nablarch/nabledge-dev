@@ -1,0 +1,124 @@
+{
+  "scenario_id": "review-08",
+  "description": "Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。",
+  "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭「複数タブでの画面操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使用します」という記述が、事実の内容と完全に一致している。",
+      "fact": "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "複数タブでの画面操作を許容しない場合はDBストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "複数タブでの画面操作を許容する場合はHIDDENストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはセッション変数をDBテーブル(USER_SESSION)に保存する",
+        "supported": false
+      },
+      {
+        "claim": "DBストアはローリングメンテナンスでAPサーバが停止してもセッション復元可能",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは同一セッションが複数スレッドで処理された場合は後勝ち",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはクライアントサイド(<input type=\"hidden\">)でセッション変数を引き回す",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数タブでの画面操作を許容できる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは同一セッションが複数スレッドで処理された場合、セッションデータはそれぞれのスレッドに紐付けて保存される",
+        "supported": true
+      },
+      {
+        "claim": "JSP実装でname属性にHiddenStoreのparameterNameプロパティの値を設定する",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアにはFormではなくEntityを格納すること",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはデフォルトでAES暗号化される",
+        "supported": false
+      },
+      {
+        "claim": "APサーバが冗長化されている場合は暗号化キーを明示的に設定すること",
+        "supported": false
+      },
+      {
+        "claim": "DBストア使用時、ブラウザが閉じられた際にテーブル上にセッション情報が残ることがあるため期限切れセッションの定期削除が必要",
+        "supported": false
+      }
+    ],
+    "reason": "3つのハルシネーションが検出された。①DBテーブル名を'USER_SESSION'と具体的に明示しているが、知識セクションには該当テーブル名の記載がなく裏付けがない。②HIDDENストアがデフォルトでAES暗号化されるという記述は知識セクションに存在しない。③APサーバ冗長化時に暗号化キーを明示的に設定する必要があるという記述も知識セクションに存在しない。また、DBストア使用時の期限切れセッション定期削除の必要性についても知識セクションに裏付けがない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 3つのハルシネーションが検出された。①DBテーブル名を'USER_SESSION'と具体的に明示しているが、知識セクションには該当テーブル名の記載がなく裏付けがない。②HIDDENストアがデフォルトでAES暗号化されるという記述は知識セクションに存在しない。③APサーバ冗長化時に暗号化キーを明示的に設定する必要があるという記述も知識セクションに存在しない。また、DBストア使用時の期限切れセッション定期削除の必要性についても知識セクションに裏付けがない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 106093,
+    "duration_api_ms": 105687,
+    "num_turns": 6,
+    "total_cost_usd": 0.41745435000000003,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 2355,
+      "cache_read_input_tokens": 224931,
+      "cache_creation_input_tokens": 34411
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1191,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001311,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1797,
+        "outputTokens": 4953,
+        "cacheReadInputTokens": 362862,
+        "cacheCreationInputTokens": 60693,
+        "webSearchRequests": 0,
+        "costUSD": 0.41614335,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

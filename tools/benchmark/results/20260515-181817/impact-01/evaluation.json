@@ -1,0 +1,109 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「方法1」において、コンポーネント設定ファイルにSimpleDbTransactionManagerを定義し、それを使って個別トランザクションを実行する手順が明確に示されている。XMLの設定例とJavaコードの実装例も参照セクションと一致しており、事実の内容が回答に含まれている。",
+      "fact": "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "独立したトランザクションでSQLを実行するには SimpleDbTransactionManager を使用する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント設定ファイルで connectionFactory / transactionFactory / dbTransactionName プロパティを設定する",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionExecutor のコンストラクタに SimpleDbTransactionManager を渡し doTransaction() で実行する",
+        "supported": true
+      },
+      {
+        "claim": "doTransaction() 実行中にコミット/ロールバックは自動的に行われる",
+        "supported": true
+      },
+      {
+        "claim": "業務トランザクションがロールバックされても doTransaction() 内でコミット済みの変更は残る",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDAO の場合は UniversalDao.Transaction を継承したクラスを作成して使用する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.Transaction のコンストラクタで super() にトランザクション名または SimpleDbTransactionManager オブジェクトを渡す",
+        "supported": true
+      },
+      {
+        "claim": "execute() メソッドをオーバーライドして UniversalDAO の処理を実装する",
+        "supported": true
+      },
+      {
+        "claim": "FindPersonsTransaction を new するだけで別トランザクションで実行され、getPersons() で結果を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "dbTransactionName プロパティに他のトランザクションと重複しない固有の名前を設定する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべての主張（API名・クラス名・XML設定・Javaコード例・動作仕様）は知識セクションの内容と一致しており、裏付けのない独自の主張は含まれていない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/libraries/libraries-transaction.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 231552,
+    "duration_api_ms": 230069,
+    "num_turns": 7,
+    "total_cost_usd": 0.9187622999999998,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 2998,
+      "cache_read_input_tokens": 227370,
+      "cache_creation_input_tokens": 29432
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1194,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001314,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 20462,
+        "outputTokens": 9229,
+        "cacheReadInputTokens": 1061116,
+        "cacheCreationInputTokens": 106478,
+        "webSearchRequests": 0,
+        "costUSD": 0.9174482999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

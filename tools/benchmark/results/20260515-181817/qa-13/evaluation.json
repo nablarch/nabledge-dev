@@ -1,0 +1,127 @@
+{
+  "scenario_id": "qa-13",
+  "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。",
+  "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "回答にはUniversalDao.insertの使用は含まれているが、「Formクラスで値を受け付け、@Validでバリデーション後に登録する」という一連のフローが明示されていない。回答のcreateメソッドはセッションからエンティティを取得してinsertしており、FormクラスへのリクエストパラメータのバインドとValidアノテーションによるバリデーションの組み合わせは示されていない。参照セクションにある`public HttpResponse save(ProjectForm project)`で@ValidとUniversalDao.insertを組み合わせるパターンが回答には含まれていない。",
+      "fact": "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Jakarta PersistenceアノテーションをEntityに付与し、UniversalDao.insert()でDB登録できる",
+        "supported": true
+      },
+      {
+        "claim": "@OnDoubleSubmission アノテーションで二重サブミットを防止できる",
+        "supported": false
+      },
+      {
+        "claim": "登録フローのURL/Actionマッピング表（ClientAction#input, confirm, back, createの4処理）",
+        "supported": true
+      },
+      {
+        "claim": "SessionUtil.delete(context, \"client\") でセッションからエンティティを取得する",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao.insert(entity) でSQLを書かずにDB登録が可能",
+        "supported": true
+      },
+      {
+        "claim": "処理後は303リダイレクトで \"redirect://completeOfCreate\" に遷移する",
+        "supported": false
+      },
+      {
+        "claim": "@Entity, @Table, @Id, @Column などJakarta PersistenceアノテーションをEntityに使用できる",
+        "supported": true
+      },
+      {
+        "claim": "@GeneratedValue, @SequenceGenerator でシーケンス採番ができる",
+        "supported": true
+      },
+      {
+        "claim": "サロゲートキー採番方式としてAUTO/IDENTITY/SEQUENCE/TABLEの4種類が利用できる",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao.batchInsert(list) で複数件一括登録ができる",
+        "supported": false
+      },
+      {
+        "claim": "nablarch.common.dao.BasicDaoContextFactory を daoContextFactory として設定する",
+        "supported": false
+      },
+      {
+        "claim": "@Table アノテーションでスキーマを指定できるが、環境毎のスキーマ切り替えはユニバーサルDAOでは使用できない",
+        "supported": true
+      },
+      {
+        "claim": "batchUpdateでは排他制御が行われず、バージョン不一致の場合も正常終了する",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有APIおよび仕様について知識セクションに裏付けのない主張が含まれる。特に @OnDoubleSubmission アノテーション、SessionUtil.delete() の使用、「redirect://completeOfCreate」という303リダイレクト記法、UniversalDao.batchInsert() メソッド名、nablarch.common.dao.BasicDaoContextFactory クラス名、採番方式4種類の表、batchUpdateの排他制御に関する注意事項は、いずれも提供された知識セクションに記載がなく、Nablarch固有の主張として裏付け不足と判定する。"
+  },
+  "scores": {
+    "accuracy": 0.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する",
+    "hallucination: FAIL — 複数のNablarch固有APIおよび仕様について知識セクションに裏付けのない主張が含まれる。特に @OnDoubleSubmission アノテーション、SessionUtil.delete() の使用、「redirect://completeOfCreate」という303リダイレクト記法、UniversalDao.batchInsert() メソッド名、nablarch.common.dao.BasicDaoContextFactory クラス名、採番方式4種類の表、batchUpdateの排他制御に関する注意事項は、いずれも提供された知識セクションに記載がなく、Nablarch固有の主張として裏付け不足と判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-universal-dao.json:s13",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "component/libraries/libraries-universal-dao.json:s14",
+      "processing-pattern/web-application/web-application-getting-started-client-create.json:s1",
+      "processing-pattern/web-application/web-application-getting-started-project-update.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 250052,
+    "duration_api_ms": 248019,
+    "num_turns": 5,
+    "total_cost_usd": 0.7562892999999999,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 4093,
+      "cache_read_input_tokens": 184905,
+      "cache_creation_input_tokens": 29724
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1174,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001294,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14383,
+        "outputTokens": 12655,
+        "cacheReadInputTokens": 635796,
+        "cacheCreationInputTokens": 88342,
+        "webSearchRequests": 0,
+        "costUSD": 0.7549952999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
