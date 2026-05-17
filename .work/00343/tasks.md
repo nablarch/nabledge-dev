@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-18
+**Updated**: 2026-05-18 (session end)
 
 ## Done (B-1)
 
@@ -53,9 +53,11 @@
 ### B-1. 現行検索E2Eベースライン取得
 
 - [x] run_e2e.py実装・QAレビュー・3run実行・evaluation.json生成 — `a4d4403f1`, `02d1949f9`, `efbc320ef`, `f57b78581`
-- [ ] **ベースラインレポートをユーザーに報告**
-  - 品質指標: シナリオ別 accuracy score・hallucination verdict（3 run平均±SD）
-  - パフォーマンス指標: search_sections件数・num_turns・total_cost_usd
+- [ ] **ベースラインレポートを作成してユーザーに報告**
+  - 設計書フォーマット（benchmark-design.md §集計レポート）に従って生成
+  - 3 run集計: 品質（精度・ハルシネーション）平均±SD・中央値、外れ値除外後パフォーマンス
+  - 全28シナリオ詳細分析（OK/MISS問わず）
+  - 保存先: `tools/benchmark/results/baseline-current-report.md`
   - 受入条件: ユーザーが数値を確認し、B-2着手の承認を出す
 
 ### B-2. RBKC変更
