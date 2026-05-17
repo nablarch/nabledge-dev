@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-15
+**Updated**: 2026-05-18
 
 ## Done (B-1)
 
@@ -87,19 +87,40 @@
 
 B-1完了後に実施。目的: 意味検索が使う `terms.json`（検索語辞書）と `index.md`（知識ファイル一覧）を生成できる状態にする。これがないと新検索のスキルが動かない。
 
-- [ ] `git cherry-pick 46893d39f` — P1-group subtype再適用（xlsx_common.py, xlsx-sheet-mapping.md, test_xlsx_common.py）
-  - `git diff HEAD~1 --stat` で3ファイルのみ変更されていること（他のファイルが混入していないこと）
-- [ ] `pytest tools/rbkc/tests/ut/test_xlsx_common.py -x` がグリーン（cherry-pick が壊していないこと）
-- [ ] P1-group subtype の変更内容をユーザーに提示し承認取得（承認なしで次に進まない）
-- [ ] `git cherry-pick 03e20a535` — terms.py + test_terms.py + run.py terms統合を再適用
-  - `git diff HEAD~1 --stat` で対象3ファイルのみ変更されていること
-- [ ] `pytest tools/rbkc/tests/ut/test_terms.py -x` がグリーン
-- [ ] index.md生成（index.py: index.toon → index.md変更）のテストを書く（RED）
-  - 目的: 意味検索Stage1がカテゴリ一覧として参照するindex.mdをRBKCが生成できること。index.toonのままでは新検索ワークフローが読み込めない
+**影響調査結果（2026-05-18）:**
+- `verify.py` は `index.md` と `terms.json` を一切チェックしない（QO4は `index.toon` のみ）
+- P1-group subtype はコードベースに存在せず、terms.json設計書にも記載なし → cherry-pickステップは削除
+- `tools/benchmark/scripts/generate_index.py` にindex.md生成ロジック実装済み（ベンチマーク用）— RBKCへの統合が必要
+
+**作業A: index.md生成をRBKCに統合（generate_index_md追加）**
+
+- [ ] 変更前のFAIL数を記録: `(cd tools/rbkc && bash rbkc.sh verify 6 2>&1 | grep -c "FAIL")` — v6のFAIL数を確認
+- [ ] `test_index.py` にTDDテストを追加（RED）: `generate_index_md()` が呼べることを確認するテストを書く
   - `pytest tools/rbkc/tests/ut/test_index.py` が FAIL（実装前なのでFAILが正しい）
-- [ ] index.py を実装（GREEN）: `pytest tools/rbkc/tests/ut/test_index.py` が PASS
-- [ ] 全5バージョンで `bash rbkc.sh create <v> && bash rbkc.sh verify <v>` を実行（v6/v5/v1.4/v1.3/v1.2）
-  - 変更前のFAIL数を記録してから変更後と比較。想定外のFAIL増は横展開ミスのサイン
+  - 追加テストは `tools/benchmark/scripts/generate_index.py` の仕様と一致すること（H1/H2/H3構造、path:行、L2セクション一覧、no_knowledge_contentスキップ）
+- [ ] `index.py` に `generate_index_md()` を実装（GREEN）
+  - `pytest tools/rbkc/tests/ut/test_index.py` が PASS
+  - `run.py` の create/update/delete で `generate_index_md(file_infos, output_dir, output_dir / "index.md")` を呼ぶ
+- [ ] 全5バージョンで create+verify: `for v in 6 5 1.4 1.3 1.2; do (cd tools/rbkc && bash rbkc.sh create $v && bash rbkc.sh verify $v) 2>&1 | tail -3; done`
+  - 受入条件: 各バージョンで `index.md` が生成され、FAIL数が変更前と同じ（想定外の増加なし）
+- [ ] コミット: `feat: add generate_index_md to RBKC (index.md for semantic search Stage1)`
+
+**作業B: terms.json生成をRBKCに新規実装（terms.py新規作成）**
+
+- [ ] `test_terms.py` を新規作成してTDDテストを書く（RED）
+  - テスト対象仕様（keyword-search-design.md §terms.json）:
+    - Javaクラス名（CamelCase）、メソッド名（camelCase）、アノテーション名（`@Valid`等）を抽出
+    - 日本語技術用語: セクションタイトル全体 + 末尾動詞パターン除去形を登録
+    - 英語略語（全大文字2文字以上）、プロパティ名（ドット区切り3セグメント以上）、複合キーワード（ハイフン区切り）
+    - 除外: 一般語・1文字トークン・HTMLマークアップ残骸・高頻度term（section_df ≥ 7%）
+    - 出力形式: `{ "UniversalDao": ["component/libraries/lib.json:s1", ...], ... }`
+  - `pytest tools/rbkc/tests/ut/test_terms.py` が FAIL（実装前なのでFAILが正しい）
+- [ ] `terms.py` を実装（GREEN）
+  - `pytest tools/rbkc/tests/ut/test_terms.py` が PASS
+  - `run.py` の create/update/delete で `generate_terms(file_infos, output_dir, output_dir / "terms.json")` を呼ぶ
+- [ ] 全5バージョンで create+verify: `for v in 6 5 1.4 1.3 1.2; do (cd tools/rbkc && bash rbkc.sh create $v && bash rbkc.sh verify $v) 2>&1 | tail -3; done`
+  - 受入条件: 各バージョンで `terms.json` が生成され、FAIL数が変更前と同じ
+- [ ] コミット: `feat: add generate_terms to RBKC (terms.json for keyword search)`
 
 ### B-3. スキルデプロイ
 
