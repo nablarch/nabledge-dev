@@ -50,9 +50,13 @@
 
 依存関係: B-1 → B-2 → B-3 → B-4 → B-5 → B-6。順序厳守。
 
-### B-1. 現行検索E2Eベースライン取得 ✅
+### B-1. 現行検索E2Eベースライン取得
 
-- [x] 完了 — `a4d4403f1`, `02d1949f9`, `efbc320ef`, `f57b78581`
+- [x] run_e2e.py実装・QAレビュー・3run実行・evaluation.json生成 — `a4d4403f1`, `02d1949f9`, `efbc320ef`, `f57b78581`
+- [ ] **ベースラインレポートをユーザーに報告**
+  - 品質指標: シナリオ別 accuracy score・hallucination verdict（3 run平均±SD）
+  - パフォーマンス指標: search_sections件数・num_turns・total_cost_usd
+  - 受入条件: ユーザーが数値を確認し、B-2着手の承認を出す
 
 ### B-2. RBKC変更
 
