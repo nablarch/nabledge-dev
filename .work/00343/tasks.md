@@ -42,39 +42,17 @@
 
 フェーズAの原則: 現行スキル・RBKCは一切変更しない。部品はすべて `tools/benchmark/` 内。
 
-### A-6. マージ
+### A-6. マージ ✅
 
-- [x] 全テスト最終確認: 284 passed
-- [x] searchブランチの成果物をフェーズBブランチにマージ — committed `8d95af52e`
+- [x] 完了 — `8d95af52e`
 
 ## マージ後（フェーズB）
 
 依存関係: B-1 → B-2 → B-3 → B-4 → B-5 → B-6。順序厳守。
 
-### B-1. 現行検索E2Eベースライン取得
+### B-1. 現行検索E2Eベースライン取得 ✅
 
-**RBKC変更・スキルデプロイの前に実施すること。** 変更後はベースラインが取れなくなる。
-
-- [x] E2Eベンチマーク設計を確定（benchmark-design.md のE2Eセクション）
-- [x] E2Eベンチマークランナー（`run_e2e.py`）のテストを書く（RED）
-- [x] `run_e2e.py` を実装（GREEN）— committed `a4d4403f1`
-- [x] **ベンチマーク実行前QAエキスパートレビュー** — committed `02d1949f9`
-  - Finding 1: `hearing_answer` が現行スキルに渡る → `mode="current"/"new"` パラメータ追加で修正
-  - Finding 2: `must_ask` シナリオが不公平 → 誤り（現行の欠点を計測するのが目的）
-  - Finding 3: LLMジャッジバイアス → 設計書仕様どおりのため変更不要
-- [x] **出力データ品質を修正**
-  - `model_usage` キー名: 既修正（`modelUsage`、commit `b2f1d0d6a`）
-  - `usage.input_tokens`: 新規トークンのみ（キャッシュ分は`cache_creation_input_tokens`）。コスト比較は`total_cost_usd`を使用
-  - `pytest tools/benchmark/tests/`: 303 passed
-- [x] **1シナリオ動作確認**（pre-01, mode=current）— hearing/search/answer/metrics全項目クリア
-- [x] **全QAシナリオ 3回実行**（目的: ベースラインの再現性も含めて記録する。LLM応答のばらつきを把握し、比較時に有意差か誤差かを判断できるようにする）
-  - [x] run-1完了: `tools/benchmark/results/20260515-171300/`（28シナリオ、summary.json再生成済み）
-  - [x] run-2完了: `tools/benchmark/results/20260515-181817/`（28シナリオ、summary.json再生成済み）
-  - [x] run-3完了: `tools/benchmark/results/20260515-194124/`（28シナリオ、summary.json再生成済み）
-- [x] 結果を `results/` にコミット（3 run 分まとめて）— committed `efbc320ef`
-- [x] **3 run分の事後評価（evaluation.json生成）** — committed `f57b78581`
-  - 全3run × 28シナリオに `evaluation.json` 存在。nullはUNCERTAINによるもの（設計どおり）
-- [x] **ベースラインレポートをユーザーに報告** — done（`3436c8fe1`）
+- [x] 完了 — `a4d4403f1`, `02d1949f9`, `efbc320ef`, `f57b78581`
 
 ### B-2. RBKC変更
 
