@@ -72,16 +72,9 @@
   - [x] run-2完了: `tools/benchmark/results/20260515-181817/`（28シナリオ、summary.json再生成済み）
   - [x] run-3完了: `tools/benchmark/results/20260515-194124/`（28シナリオ、summary.json再生成済み）
 - [x] 結果を `results/` にコミット（3 run 分まとめて）— committed `efbc320ef`
-- [ ] **3 run分の事後評価（evaluation.json生成）**（設計書実行フローstep4: evaluate.pyで品質指標を取得）
-  - 設計書どおり `--knowledge-dir` を渡していなかったため evaluation.json が未生成。事後実行で補完する
-  - run-1: `python3 -m tools.benchmark.scripts.evaluate --run-dir tools/benchmark/results/20260515-171300 --scenarios tools/benchmark/scenarios/qa.json --knowledge-dir .claude/skills/nabledge-6/knowledge`
-  - run-2: 同上（`20260515-181817`）
-  - run-3: 同上（`20260515-194124`）
-  - 受入条件: 各runの全28シナリオに `evaluation.json` が存在し、`scores.accuracy` が null でない
-- [ ] evaluation.json を `results/` にコミット
-- [ ] **ベースラインレポートをユーザーに報告**（目的: 現行品質と再現性を数値で把握し、新検索デプロイ後の比較基準とする）
-  - 品質指標: シナリオ別 accuracy score・hallucination verdict（3 run平均±SD）
-  - パフォーマンス指標: search_sections件数・num_turns・total_cost_usd（前回報告済み）
+- [x] **3 run分の事後評価（evaluation.json生成）** — committed `f57b78581`
+  - 全3run × 28シナリオに `evaluation.json` 存在。nullはUNCERTAINによるもの（設計どおり）
+- [x] **ベースラインレポートをユーザーに報告** — done（`3436c8fe1`）
 
 ### B-2. RBKC変更
 
