@@ -1,13 +1,11 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-18 (session end)
-
-## Done (B-1)
+**Updated**: 2026-05-18
 
 ## Done
 
-- [x] B-1. 現行検索E2Eベースライン取得 — evaluation.json生成（3 run）、committed `f57b78581`
+- [x] B-1. 現行検索E2Eベースライン取得 — evaluation.json生成（3 run）+ ベースラインレポート作成、committed `f57b78581`, `4de6fb47b`
 - [x] A-1. RBKC変更のリバート — committed `5bf479e1c`, `f0249fea0`
 - [x] A-2. 設計書の整合（ディレクトリ構成） — committed `b3819fb94`
 - [x] A-3. 部品プロンプトの移動 — committed `eea31f065`, `426b9a0f4`
