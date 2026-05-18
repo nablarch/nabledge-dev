@@ -126,6 +126,8 @@ B-6完了後。新ベンチマーク基盤に完全移行。
 ## Done
 
 - [x] B-1. 現行検索E2Eベースライン取得 — 3 runs, 精度83.7%, 幻覚PASS14.4%, $59.34 — committed `7ea223ab3`
+- [x] qa-current.json を results/baseline-current/ に移動 — `f3d8eeb15`
+- [x] HOW-TO-RUN.md を新スキル向けに更新（qa-current.json参照除去） — `b6f7d092f`
 - [x] B-0. run_e2e.py 再設計（旧結果削除 `338c8c471`、TDD実装 `218a5e051`）— SEレビュー 0 Findings
 - [x] B-1（旧）. 現行検索E2Eベースライン取得（不正データのためB-0でリセット） — `f57b78581`, `4de6fb47b`
 - [x] A-1. RBKC変更のリバート — `5bf479e1c`, `f0249fea0`
