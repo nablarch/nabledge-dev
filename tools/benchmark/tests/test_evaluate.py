@@ -419,6 +419,37 @@ class TestEvaluateScenario:
         assert result["scores"]["hallucination"] == 1
 
 
+    def test_out_of_scope_fact_without_section(self):
+        # out-of-scope scenarios have must facts with no section reference
+        scenario = {
+            "id": "oos-01",
+            "then": {
+                "must": [{"fact": "NablarchにはOAuth2認証の組み込み機能がないと回答している"}],
+                "acceptable": [],
+            },
+        }
+        runner_output = {"answer": "NablarchにOAuth2の機能はありません", "hearing": {}, "search": {}, "metrics": {}}
+
+        section_loader_called_with = []
+
+        def mock_llm(prompt, json_schema):
+            if "ファクトチェック" in prompt:
+                return _wrap_llm_response({"verdict": "PRESENT", "reason": "回答に含まれている"})
+            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
+
+        def mock_load_section(knowledge_dir, ref):
+            section_loader_called_with.append(ref)
+            return "内容"
+
+        result = evaluate_scenario(
+            scenario, runner_output, "/dummy", mock_llm,
+            section_loader=mock_load_section,
+        )
+        # section_loader must not be called (no section reference)
+        assert section_loader_called_with == []
+        assert result["scores"]["accuracy"] == 1.0
+
+
 class TestEvaluateAll:
     def test_skips_missing_scenario_dir(self):
         tmpdir = tempfile.mkdtemp()

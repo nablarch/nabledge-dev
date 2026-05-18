@@ -256,14 +256,16 @@ def evaluate_scenario(
 
     claim_verdicts = []
     for mf in must_facts:
-        section_content = section_loader(knowledge_dir, mf["section"])
+        # out-of-scope scenarios have no section reference — use empty string
+        section_ref = mf.get("section")
+        section_content = section_loader(knowledge_dir, section_ref) if section_ref else ""
         prompt = build_claim_prompt(mf["fact"], answer, section_content)
         response = llm_fn(prompt, CLAIM_JSON_SCHEMA)
         parsed = parse_claim_response(response["result"])
         parsed["fact"] = mf["fact"]
         claim_verdicts.append(parsed)
 
-    all_section_refs = [m["section"] for m in must_facts] + [a["section"] for a in acceptable]
+    all_section_refs = [m["section"] for m in must_facts if m.get("section")] + [a["section"] for a in acceptable if a.get("section")]
     sections_content_parts = []
     for ref in all_section_refs:
         try:

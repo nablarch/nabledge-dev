@@ -1,5 +1,5 @@
 {
-  "description": "QA benchmark scenarios for nabledge search evaluation. Each scenario tests the full QA pipeline across 4 axes.",
+  "description": "QA benchmark scenarios for nabledge search evaluation. Each scenario tests the full QA pipeline across 4 axes. (hearing_answer removed — for current skill baseline)",
   "schema_version": "1.1",
   "scenarios": [
     {
@@ -13,11 +13,7 @@
       "when": {
         "workflow": "qa",
         "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
-        "expected_hearing": "should_skip",
-        "hearing_answer": {
-          "processing_type": "Nablarchバッチ",
-          "goal": "Nablarchバッチアプリケーションを-requestPathオプションで起動する"
-        }
+        "expected_hearing": "should_skip"
       },
       "then": {
         "must": [
@@ -48,11 +44,7 @@
       "when": {
         "workflow": "qa",
         "input": "入力チェック（バリデーション）の実装方法を教えてください",
-        "expected_hearing": "must_ask",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "入力画面のフォームでバリデーションする"
-        }
+        "expected_hearing": "must_ask"
       },
       "then": {
         "must": [
@@ -85,11 +77,7 @@
       "when": {
         "workflow": "qa",
         "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": null,
-          "goal": "マスタテーブルをUniversalDaoで検索する"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -115,11 +103,7 @@
       "when": {
         "workflow": "qa",
         "input": "REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい",
-        "expected_hearing": "should_skip",
-        "hearing_answer": {
-          "processing_type": "RESTfulウェブサービス",
-          "goal": "REST APIでパスパラメータとクエリパラメータを受け取りルーティングを設定する"
-        }
+        "expected_hearing": "should_skip"
       },
       "then": {
         "must": [
@@ -152,11 +136,7 @@
       "when": {
         "workflow": "qa",
         "input": "外部サイトから不正にPOSTされるのを防ぎたい。NablarchにCSRF対策の仕組みはある？どう設定する？",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "JSP画面でCSRF対策を実装する"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -185,11 +165,7 @@
       "when": {
         "workflow": "qa",
         "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
-        "expected_hearing": "should_skip",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "入力→確認→完了画面間でDBストアとHIDDENストアの使い分けを理解する"
-        }
+        "expected_hearing": "should_skip"
       },
       "then": {
         "must": [
@@ -215,11 +191,7 @@
       "when": {
         "workflow": "qa",
         "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
-        "expected_hearing": "should_skip",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "NablarchのWeb画面でContent Security Policyを設定する"
-        }
+        "expected_hearing": "should_skip"
       },
       "then": {
         "must": [
@@ -248,11 +220,7 @@
       "when": {
         "workflow": "qa",
         "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": "Nablarchバッチ",
-          "goal": "業務エラー時にエラーログをDBに書き込む"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -281,11 +249,7 @@
       "when": {
         "workflow": "qa",
         "input": "Bean Validationの中でDBに問い合わせて重複チェックしたい。カスタムバリデータでDB検索する実装でいいのか？",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": "RESTfulウェブサービス",
-          "goal": "会員登録処理でDB重複チェックする"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -311,11 +275,7 @@
       "when": {
         "workflow": "qa",
         "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "APサーバを3台にスケールアウトする"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -345,11 +305,7 @@
       "when": {
         "workflow": "qa",
         "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": null,
-          "goal": "締め処理のテストで特定の日付で動作確認する"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -375,11 +331,7 @@
       "when": {
         "workflow": "qa",
         "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": "Nablarchバッチ",
-          "goal": "10万件のレコードを処理する"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -405,11 +357,7 @@
       "when": {
         "workflow": "qa",
         "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
-        "expected_hearing": "must_ask",
-        "hearing_answer": {
-          "processing_type": "Nablarchバッチ",
-          "goal": "テーブルからデータを読み込んで集計し、結果を別テーブルに書き込む"
-        }
+        "expected_hearing": "must_ask"
       },
       "then": {
         "must": [
@@ -445,11 +393,7 @@
       "when": {
         "workflow": "qa",
         "input": "2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "会員登録画面で相関バリデーションする"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -471,11 +415,7 @@
       "when": {
         "workflow": "qa",
         "input": "Bean ValidationのFormクラスの単体テストを書きたい。テストクラスの作り方とテストデータの準備方法を教えてほしい",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": null,
-          "goal": "Nablarchの自動テストフレームワークでBean ValidationのFormクラスをテストする"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -508,11 +448,7 @@
       "when": {
         "workflow": "qa",
         "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
-        "expected_hearing": "should_skip",
-        "hearing_answer": {
-          "processing_type": "RESTfulウェブサービス",
-          "goal": "リソースクラスでJSONリクエストを受け取りDBに登録する"
-        }
+        "expected_hearing": "should_skip"
       },
       "then": {
         "must": [
@@ -542,11 +478,7 @@
       "when": {
         "workflow": "qa",
         "input": "入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？",
-        "expected_hearing": "should_skip",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "入力画面と確認画面のJSPを共通化して実装を減らす"
-        }
+        "expected_hearing": "should_skip"
       },
       "then": {
         "must": [
@@ -572,11 +504,7 @@
       "when": {
         "workflow": "qa",
         "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
-        "expected_hearing": "must_ask",
-        "hearing_answer": {
-          "processing_type": "Nablarchバッチ",
-          "goal": "固定フォーマットのCSVファイルを取り込む"
-        }
+        "expected_hearing": "must_ask"
       },
       "then": {
         "must": [
@@ -602,11 +530,7 @@
       "when": {
         "workflow": "qa",
         "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
-        "expected_hearing": "should_skip",
-        "hearing_answer": {
-          "processing_type": null,
-          "goal": "メッセージやラベルを日本語と英語で切り替えられるよう多言語化する"
-        }
+        "expected_hearing": "should_skip"
       },
       "then": {
         "must": [
@@ -632,11 +556,7 @@
       "when": {
         "workflow": "qa",
         "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": null,
-          "goal": "月次締め処理で業務日付を使う"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -666,11 +586,7 @@
       "when": {
         "workflow": "qa",
         "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "検索画面で動的SQLを使う"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -696,11 +612,7 @@
       "when": {
         "workflow": "qa",
         "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
-        "expected_hearing": "must_ask",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "エラー画面の表示とログ出力の仕組みを知りたい"
-        }
+        "expected_hearing": "must_ask"
       },
       "then": {
         "must": [
@@ -729,11 +641,7 @@
       "when": {
         "workflow": "qa",
         "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
-        "expected_hearing": "must_ask",
-        "hearing_answer": {
-          "processing_type": "RESTfulウェブサービス",
-          "goal": "エラーレスポンスとログ出力の仕組みを知りたい"
-        }
+        "expected_hearing": "must_ask"
       },
       "then": {
         "must": [
@@ -759,11 +667,7 @@
       "when": {
         "workflow": "qa",
         "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
-        "expected_hearing": "must_ask",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "バリデーションエラーメッセージをユーザーに返す"
-        }
+        "expected_hearing": "must_ask"
       },
       "then": {
         "must": [
@@ -793,11 +697,7 @@
       "when": {
         "workflow": "qa",
         "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
-        "expected_hearing": "must_ask",
-        "hearing_answer": {
-          "processing_type": "RESTfulウェブサービス",
-          "goal": "バリデーションエラーメッセージをユーザーに返す"
-        }
+        "expected_hearing": "must_ask"
       },
       "then": {
         "must": [
@@ -830,11 +730,7 @@
       "when": {
         "workflow": "qa",
         "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
-        "expected_hearing": "must_ask",
-        "hearing_answer": {
-          "processing_type": "RESTfulウェブサービス",
-          "goal": "フォームから受け取ったデータをDBに登録する"
-        }
+        "expected_hearing": "must_ask"
       },
       "then": {
         "must": [
@@ -863,11 +759,7 @@
       "when": {
         "workflow": "qa",
         "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
-        "expected_hearing": "should_skip",
-        "hearing_answer": {
-          "processing_type": null,
-          "goal": "Nablarch 5からNablarch 6へのバージョンアップでJakarta EE 10対応の影響を調べる"
-        }
+        "expected_hearing": "should_skip"
       },
       "then": {
         "must": [
@@ -900,11 +792,7 @@
       "when": {
         "workflow": "qa",
         "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
-        "expected_hearing": "should_skip",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "XSS対策のNablarch対応状況を確認する"
-        }
+        "expected_hearing": "should_skip"
       },
       "then": {
         "must": [
@@ -936,11 +824,7 @@
       "when": {
         "workflow": "qa",
         "input": "NablarchでOAuth2やOpenID Connectによる認証を実装したい。Nablarchにその仕組みは組み込まれているか？",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "OAuth2/OpenID Connect認証の対応可否を確認する"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
@@ -961,11 +845,7 @@
       "when": {
         "workflow": "qa",
         "input": "バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？",
-        "expected_hearing": "nice_to_ask",
-        "hearing_answer": {
-          "processing_type": "ウェブアプリケーション",
-          "goal": "WebSocketによるリアルタイム通知の実装方法を確認する"
-        }
+        "expected_hearing": "nice_to_ask"
       },
       "then": {
         "must": [
