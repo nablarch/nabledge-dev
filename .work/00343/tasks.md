@@ -7,65 +7,20 @@
 
 ### B-1. 現行検索E2Eベースライン取得（一度限り）
 
-B-0完了後に実施。現行スキルは変わらないため再実行不要。取得後はB-2以降の比較基準として固定する。
+手順: `tools/benchmark/HOW-TO-RUN.md` に従う。run-label = `baseline-current`、シナリオ = `qa-current.json`。
 
-**Steps:**
-- [ ] 1シナリオで動作確認:
-  ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa-current.json \
-    --skill-dir .claude/skills/nabledge-6 \
-    --scenario-ids pre-01
-  ```
-  - 受入条件: 終了コード0、出力ディレクトリ（`tools/benchmark/results/YYYYMMDD-HHMMSS/`）に `pre-01/` が生成され `hearing.json` / `search.json` / `answer.md` / `metrics.json` / `evaluation.json` が揃うこと
-  - 受入条件: `summary.json` に `skill_dir`, `scenarios_file`, `executed_at` が含まれること
-  - 受入条件: `pre-01/hearing.json` の `status` が `"skipped"` であること（hearing_answerなし → ヒアリングなし）
-  - 受入条件: `pre-01/metrics.json` の `model_usage` が `{}` でないこと
-- [ ] run-1 実行（全28シナリオ）:
-  ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa-current.json \
-    --skill-dir .claude/skills/nabledge-6
-  ```
-  - 受入条件: 終了コード0、`summary.json` の `total_scenarios` = 28
-  - 出力ディレクトリをメモしておく（例: `tools/benchmark/results/20260518-171300/`）
-  - 完了後リネーム:
-    ```bash
-    mkdir -p tools/benchmark/results/baseline-current
-    mv tools/benchmark/results/YYYYMMDD-HHMMSS tools/benchmark/results/baseline-current/run-1
-    ```
-- [ ] run-2 実行（全28シナリオ）:
-  ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa-current.json \
-    --skill-dir .claude/skills/nabledge-6
-  ```
-  - 完了後リネーム: `mv tools/benchmark/results/YYYYMMDD-HHMMSS tools/benchmark/results/baseline-current/run-2`
-- [ ] run-3 実行（全28シナリオ）:
-  ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa-current.json \
-    --skill-dir .claude/skills/nabledge-6
-  ```
-  - 完了後リネーム: `mv tools/benchmark/results/YYYYMMDD-HHMMSS tools/benchmark/results/baseline-current/run-3`
-- [ ] 3 run全て完了確認:
-  ```bash
-  for r in 1 2 3; do
-    echo "run-$r: $(ls tools/benchmark/results/baseline-current/run-$r/ | wc -l) entries"
-    cat tools/benchmark/results/baseline-current/run-$r/summary.json | python3 -c "import json,sys; d=json.load(sys.stdin); print('  total_scenarios:', d['total_scenarios'], '  scenarios_file:', d['scenarios_file'])"
-  done
-  ```
-  - 受入条件: 3 run全て `total_scenarios: 28`、`scenarios_file` が `qa-current.json` であること
-- [ ] 結果をコミット:
-  ```bash
-  git add tools/benchmark/results/baseline-current/
-  git commit -m "feat: add baseline-current E2E results (3 runs, no hearing_answer)"
-  git push
-  ```
-- [ ] 集計レポートを生成してユーザーに報告
-  - 設計書フォーマット（benchmark-design.md §集計レポート）に従い `.tmp/generate_report.py` で集計
+- [x] ステップ1: 1シナリオ動作確認（pre-01）— 完了済み
+- [x] ステップ2: run-1 実行（30シナリオ）— `tools/benchmark/results/20260518-100213/`
+- [ ] ステップ3: run-1 レポート作成・プッシュ
+  - 数値サマリー、シナリオ別詳細表、QAエキスパート定性評価（trace.json参照）
+  - 保存先: `tools/benchmark/results/baseline-current/run-1/report.md`
+  - [BLOCKED: ユーザー確認後にrun-2へ]
+- [ ] ステップ2: run-2 実行 → ステップ3: run-2 レポート → ユーザー確認
+- [ ] ステップ2: run-3 実行 → ステップ3: run-3 レポート → ユーザー確認
+- [ ] ステップ4: 3 run集計レポート作成
   - 保存先: `tools/benchmark/results/baseline-current/report.md`
-  - [BLOCKED: ユーザーが数値を確認し、B-2着手の承認を出す]
+- [ ] ステップ5: コミット・プッシュ
+  - [BLOCKED: ユーザーが集計値を確認し、B-2着手の承認を出す]
 
 ### B-2. RBKC変更
 

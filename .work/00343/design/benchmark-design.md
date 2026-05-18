@@ -169,25 +169,7 @@ deepevalによるLLM判定は別Issueとして対応。現時点は自前の `ev
 
 ## E2Eベンチマーク実行
 
-### CLI
-
-```bash
-python3 -m tools.benchmark.scripts.run_e2e \
-  --scenarios <scenarios.json> \
-  --skill-dir <skill_dir> \
-  [--scenario-ids <id1,id2,...>]
-```
-
-| オプション | 必須/省略可 | 説明 |
-|---|---|---|
-| `--scenarios` | 必須 | シナリオファイルのパス |
-| `--skill-dir` | 必須 | スキルディレクトリ（`knowledge/` はここから導出） |
-| `--scenario-ids` | 省略可 | カンマ区切りのシナリオIDリスト（原因調査時に特定シナリオのみ実行） |
-
-固定値:
-- `knowledge_dir = skill_dir/knowledge/`（導出、オプションなし）
-- `output_dir = tools/benchmark/results/YYYYMMDD-HHMMSS/`（自動生成、オプションなし）
-- `timeout = 360`秒/シナリオ（実績最大290s + 余裕70s、ハードコード）
+実行手順・レポート作成・定性評価の具体的な手順は `tools/benchmark/HOW-TO-RUN.md` を参照。
 
 ### シナリオファイルとhearing_answer
 
@@ -195,75 +177,30 @@ hearing_answerをプロンプトに注入するかどうかはシナリオファ
 
 | ベンチマーク | シナリオファイル | hearing_answer |
 |---|---|---|
-| 現行スキルベースライン | `qa-current.json` | なし（フィールド自体が存在しない） |
+| 現行スキルベースライン | `qa-current.json` | なし |
 | 新スキルベンチマーク | `qa.json` | あり（全シナリオに設定済み） |
 
 `qa-current.json` は `qa.json` と同じシナリオ定義で `hearing_answer` フィールドのみ除いたもの。
 
-### プロンプト構成
+### 構造化キャプチャマーカー
 
-**現行スキルベースライン（qa-current.json、hearing_answerなし）**:
-
-```
-以下のワークフローに従って質問に回答してください。
-
-## ワークフロー
-{qa.mdの内容}
-
-## 質問
-{scenario.when.input}
-
-## 出力要件
-{マーカー指示}
-```
-
-**新スキルベンチマーク（qa.json、hearing_answerあり）**:
+ワークフローは各ステージの出力を以下のマーカー形式で出力する。全マーカーの出力は必須。マーカーが欠落した場合はランナーエラー。
 
 ```
-以下のワークフローに従って質問に回答してください。
+<<<BENCHMARK_HEARING>>>
+{"status": "skipped" | "asked", "questions": ["質問1", "質問2"]}
+<<<END_BENCHMARK_HEARING>>>
 
-## ワークフロー
-{qa.mdの内容}
+<<<BENCHMARK_SEARCH>>>
+{"section_ids": ["path/to/file.json:s1", "path/to/file.json:s3"]}
+<<<END_BENCHMARK_SEARCH>>>
 
-## 質問
-{scenario.when.input}
-
-## コンテキスト（ヒアリング結果）
-処理方式: {scenario.when.hearing_answer.processing_type}
-目的: {scenario.when.hearing_answer.goal}
-ヒアリング結果が提供されている場合、ワークフローのヒアリングステップはスキップして検索から開始してください。
-
-## 出力要件
-{マーカー指示}
+<<<BENCHMARK_ANSWER>>>
+{回答テキスト全文}
+<<<END_BENCHMARK_ANSWER>>>
 ```
 
-### 実行例
-
-```bash
-# 1シナリオで動作確認（現行スキル）
-python3 -m tools.benchmark.scripts.run_e2e \
-  --scenarios tools/benchmark/scenarios/qa-current.json \
-  --skill-dir .claude/skills/nabledge-6 \
-  --scenario-ids pre-01
-
-# 全28シナリオ実行（現行スキル）
-python3 -m tools.benchmark.scripts.run_e2e \
-  --scenarios tools/benchmark/scenarios/qa-current.json \
-  --skill-dir .claude/skills/nabledge-6
-
-# 1シナリオで動作確認（新スキル）
-python3 -m tools.benchmark.scripts.run_e2e \
-  --scenarios tools/benchmark/scenarios/qa.json \
-  --skill-dir .claude/skills/nabledge-6 \
-  --scenario-ids pre-01
-
-# 全28シナリオ実行（新スキル）
-python3 -m tools.benchmark.scripts.run_e2e \
-  --scenarios tools/benchmark/scenarios/qa.json \
-  --skill-dir .claude/skills/nabledge-6
-```
-
-### 実行方式（内部）
+### CLIパターン（内部実装）
 
 ```python
 result = subprocess.run(
@@ -281,133 +218,11 @@ result = subprocess.run(
 )
 ```
 
-### 構造化キャプチャ
-
-ワークフローは各ステージの出力を以下のマーカー形式で出力する。全マーカーの出力は必須。マーカーが欠落した場合はランナーエラーとして扱い、シナリオを再実行する。
-
-```
-<<<BENCHMARK_HEARING>>>
-{"status": "skipped" | "asked", "questions": ["質問1", "質問2"]}
-<<<END_BENCHMARK_HEARING>>>
-
-<<<BENCHMARK_SEARCH>>>
-{"section_ids": ["path/to/file.json:s1", "path/to/file.json:s3"]}
-<<<END_BENCHMARK_SEARCH>>>
-
-<<<BENCHMARK_ANSWER>>>
-{回答テキスト全文}
-<<<END_BENCHMARK_ANSWER>>>
-```
-
-## 実行フロー
-
-### 部品ベンチマーク
-
-```
-1. simulate_*.py でコンポーネント実行（model: sonnet）
-2. 結果をファイルに保存
-3. evaluate.py で評価（C-claim + ハルシネーション）
-4. report.py でレポート生成
-5. 人間最終判定 → 確定スコア
-```
-
-### E2Eベンチマーク
-
-```
-1. 全シナリオを3回実行（再現性確認のため必須）
-   run-1, run-2, run-3 をそれぞれ別ディレクトリに保存
-   各run: claude -p でスキルワークフローを実行（model: sonnet）
-
-2. JSON出力からメトリクスを取得
-   duration_ms, num_turns, total_cost_usd, usage.*
-
-3. 構造化キャプチャマーカーから診断情報をパース
-   ヒアリング行動、検索セクションID、回答全文
-
-4. evaluate.py で評価
-   a. 回答精度 → LLM判定（C-claim）
-   b. ハルシネーション → LLM判定
-
-5. report.py でレポート生成（3 run集計）
-
-6. 人間最終判定 → 確定スコア
-```
-
-## レポート形式
-
-### 集計レポート
-
-3回実行の結果を集計する。外れ値除外後の値で平均・中央値・SDを計算する。
-
-```markdown
-# ベンチマーク結果: {run-label} ({date})
-
-## 品質サマリー（3 run集計）
-
-| 軸 | 対象件数 | 確定件数 | 未確定 | 平均±SD | 中央値 | 最低 | 全PASS率 |
-|---|---|---|---|---|---|---|---|
-| 回答精度 | 28 | 25 | 3 | 0.92 ± 0.03 | 0.95 | 0.50 | 24/25 |
-| ハルシネーション | 28 | 26 | 2 | 0.93 ± 0.04 | 1.0 | 0 | 24/26 |
-
-## パフォーマンスサマリー（3 run集計、外れ値除外後）
-
-| メトリクス | 平均±SD | 中央値 | P95 | 最大 | 外れ値除外件数 |
-|---|---|---|---|---|---|
-| 実行時間（総合） | 35s ± 5s | 32s | 80s | 120s | 2 |
-| ...
-
-## シナリオ別詳細分析
-
-| シナリオID | 品質(精度/幻覚) | ターン数 | 検索件数 | ヒアリング | 想定との差異 |
-|---|---|---|---|---|---|
-
-## 人間レビュー対象
-{UNCERTAIN / ABSENT / FAIL判定のシナリオ一覧}
-```
-
-### 外れ値の扱い
-
-実行時間（`duration_ms`, `duration_api_ms`）はIQR×1.5ルールで外れ値を除外する。品質スコアは除外しない。除外した値は捨てずに外れ値リストとして報告する。
-
-### 比較レポート
-
-```markdown
-# ベンチマーク比較: {label-A} vs {label-B}
-
-## 品質比較（3 run集計）
-| 軸 | {label-A} 平均±SD / 中央値 | {label-B} 平均±SD / 中央値 | 差分 | 判定 |
-|---|---|---|---|---|
-
-## パフォーマンス比較（3 run集計、外れ値除外後）
-| メトリクス | {label-A} | {label-B} | 変化率 |
-|---|---|---|---|
-
-## シナリオ別差分
-{変化した全シナリオの一覧}
-```
-
-差分がいずれかのSDを超える場合は「有意差あり」、そうでなければ「誤差範囲内」。
-
-## CLIパターン（共通）
-
-全スクリプトで `claude -p` を使用する。
-
-```python
-subprocess.run(
-    ["claude", "-p", "--model", model, "--output-format", "json",
-     "--no-session-persistence", full_prompt],
-    capture_output=True, text=True,
-    cwd="/tmp",  # E2Eのみ cwd=skill_dir
-    timeout=120,
-)
-```
-
 必須ルール:
-- 部品ベンチマーク: `cwd="/tmp"`（プロジェクトディレクトリから実行するとセッション管理と干渉する）
-- E2Eベンチマーク: `cwd=skill_dir`（スキルのワークフローと知識ファイルにアクセスするため）
+- 部品ベンチマーク: `cwd="/tmp"`
+- E2Eベンチマーク: `cwd=skill_dir`
 - `--bare` は使わない（OAuth/keychainを無効化するためCI以外では使えない）
-- `--json-schema` は使わない（非bareモードでは動作しない）。JSON SchemaはプロンプトのJSON出力形式指示として追記する
-- レスポンスがmarkdownコードフェンスで囲まれる場合があるため `extract_json_from_result()` でストリップしてからパースする
+- `--json-schema` は使わない（非bareモードでは動作しない）
 
 ## ディレクトリ構成
 
