@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-3: 部品コピー+ワークフロー作成完了、スモークテスト実行中)
+**Updated**: 2026-05-19 (B-3スモークテスト実行済み、参照:形式の差異を要確認)
 
 ## In Progress
 
@@ -11,15 +11,19 @@ B-2完了後に実施。目的: ベンチマークで検証済みの部品プロ
 
 - [x] 部品をスキルにコピー — `a07583fc4`
 - [x] ワークフロー作成（PE 2ラウンドレビュー済み、全Findings対応済み） — `549df22d2`, `295e37d65`, `c54ef6d30`, `c1ec0de54`, `000fc91db`, `71a0c16e3`, `10a7aaf82`
-- [ ] 1シナリオでスモークテスト:
+- [ ] 1シナリオでスモークテスト（実行済み: `tools/benchmark/results/20260518-164532/`）:
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
     --skill-dir .claude/skills/nabledge-6 \
     --scenario-ids pre-01
   ```
-  - 受入条件: 終了コード0、`pre-01/answer.md` に `参照:` セクションあり、`metrics.json` の `model_usage` が `{}` でない
-  - 受入条件: `pre-01/search.json` のセクションIDが現行ベースラインの同シナリオと異なること（新検索が使われていること）
+  - ✅ 終了コード0
+  - ✅ `model_usage` が `{}` でない（Sonnet + Haiku 両モデル使用）
+  - ✅ `search.json` のセクションIDが baseline-current と異なる（新検索動作確認済: 8件 vs 4件）
+  - [DECISION: `answer.md` の `参照:` 形式確認] `### 参照` 形式で出力されており受入条件の `参照:` と不一致。内容は正しい参照セクションあり。このまま受入とするか、`参照:` 形式に統一するか要確認。
+  - ✅ `evaluation.json` の `claim_verdicts` 2件（B-4条件も満たす）
+  - hallucination FAIL（`-userId`, `-diConfig` 等が knowledge ファイル未カバー — ワークフロー設計の問題ではなく知識カバレッジの問題）
 
 ### B-4. 新スキルE2Eベンチマーク
 
