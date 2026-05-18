@@ -1,0 +1,129 @@
+{
+  "scenario_id": "qa-12b",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "UNCERTAIN",
+      "reason": "回答には「@Validアノテーションを設定することでバリデーションを実行する」という記述はあるが、「@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる」という部分については明確に述べられていない。むしろ回答では、エラーレスポンスを返すためにはErrorResponseBuilderを継承したクラスを別途作成する必要があると説明しており、「自動的にエラーレスポンスになる」という事実とは異なるニュアンスを示している。",
+      "fact": "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のRESTfulウェブサービスのセクションに「ErrorResponseBuilderを継承したクラスを作成し、ApplicationExceptionが発生した際にJSONなどの形式でメッセージをレスポンスに含めます」という記述があり、コード例も示されている。これは事実「ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する」と同じ情報を含んでいる。",
+      "fact": "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "InjectFormインターセプタを使って入力値チェックを行う",
+        "supported": false
+      },
+      {
+        "claim": "BeanValidationStrategyをコンポーネント定義する",
+        "supported": false
+      },
+      {
+        "claim": "@OnErrorアノテーションでバリデーションエラー発生時の遷移先画面を指定する",
+        "supported": false
+      },
+      {
+        "claim": "@OnErrorがないとバリデーションエラーがシステムエラー扱いになる",
+        "supported": false
+      },
+      {
+        "claim": "NablarchMessageInterpolatorがデフォルトで使われ、メッセージ管理機能でメッセージを定義する",
+        "supported": true
+      },
+      {
+        "claim": "メッセージ定義でnablarch.core.validation.ee.Length.max.messageなどのキーを使う",
+        "supported": true
+      },
+      {
+        "claim": "リソースクラスのメソッドに@Validアノテーションを設定する",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderを継承したクラスを作成してエラーレスポンスにメッセージを設定する",
+        "supported": true
+      },
+      {
+        "claim": "ApplicationExceptionが発生した際にJSONなどの形式でメッセージをレスポンスに含める",
+        "supported": true
+      },
+      {
+        "claim": "ValidationUtil.createMessageForPropertyでプログラム的にエラーを生成できる",
+        "supported": false
+      },
+      {
+        "claim": "BeanValidationStrategyのエラーメッセージソート順はアプリケーションサーバ実装依存",
+        "supported": false
+      },
+      {
+        "claim": "ItemNamedConstraintViolationConverterFactoryを使うと[ユーザ名]入力してください。のような形式になる",
+        "supported": true
+      }
+    ],
+    "reason": "回答にはウェブアプリケーション向けの記述（InjectFormインターセプタ、BeanValidationStrategy、@OnErrorアノテーション）が含まれているが、これらは知識セクション（ゴールドスタンダード）に一切記載がなく裏付けられない。また、ValidationUtil.createMessageForPropertyというAPIおよびBeanValidationStrategyのソート順がアプリケーションサーバ実装依存という主張も知識セクションに根拠がない。RESTful部分の記述は概ね知識セクションと一致しているが、Nablarch固有のウェブアプリ側のAPIや動作仕様に裏付けのないハルシネーションが複数含まれているためFAIL。"
+  },
+  "scores": {
+    "accuracy": null,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: UNCERTAIN — @Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+    "hallucination: FAIL — 回答にはウェブアプリケーション向けの記述（InjectFormインターセプタ、BeanValidationStrategy、@OnErrorアノテーション）が含まれているが、これらは知識セクション（ゴールドスタンダード）に一切記載がなく裏付けられない。また、ValidationUtil.createMessageForPropertyというAPIおよびBeanValidationStrategyのソート順がアプリケーションサーバ実装依存という主張も知識セクションに根拠がない。RESTful部分の記述は概ね知識セクションと一致しているが、Nablarch固有のウェブアプリ側のAPIや動作仕様に裏付けのないハルシネーションが複数含まれているためFAIL。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/libraries/libraries-bean-validation.json:s19"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 189664,
+    "duration_api_ms": 186645,
+    "num_turns": 7,
+    "total_cost_usd": 0.6546631999999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 3985,
+      "cache_read_input_tokens": 297233,
+      "cache_creation_input_tokens": 5719
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1183,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001313,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6650,
+        "outputTokens": 12992,
+        "cacheReadInputTokens": 823634,
+        "cacheCreationInputTokens": 51048,
+        "webSearchRequests": 0,
+        "costUSD": 0.6533501999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

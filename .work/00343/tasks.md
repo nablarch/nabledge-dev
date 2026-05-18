@@ -3,7 +3,7 @@
 **Branch**: 343-improve-search-quality
 **Updated**: 2026-05-18
 
-## Not Started
+## In Progress
 
 ### B-1. 現行検索E2Eベースライン取得（一度限り）
 

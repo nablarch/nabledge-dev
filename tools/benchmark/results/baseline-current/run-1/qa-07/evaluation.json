@@ -1,0 +1,114 @@
+{
+  "scenario_id": "qa-07",
+  "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。",
+  "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「2. 読み込み実装」セクションに「ObjectMapperFactory#createでObjectMapperを生成し、mapper.read()でnullが返るまでループします」と明記されており、コード例でも`ObjectMapperFactory.create(Person.class, inputStream)`を使用してデータを読み込む実装が示されている。これは事実の内容と一致する。",
+      "fact": "ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "@CsvアノテーションでCSVのフォーマットとプロパティマッピングを指定できる",
+        "supported": true
+      },
+      {
+        "claim": "Csv.CsvTypeでフォーマットセットを選択する（DEFAULT / RFC4180 / EXCEL / TSV）",
+        "supported": true
+      },
+      {
+        "claim": "DEFAULTはカンマ区切り、UTF-8、ヘッダ行ありの設定",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapperFactory#createでObjectMapperを生成する",
+        "supported": true
+      },
+      {
+        "claim": "mapper.read()でnullが返るまでループして全データを読み込む",
+        "supported": true
+      },
+      {
+        "claim": "try-with-resourcesでObjectMapper#closeの自動化が可能",
+        "supported": true
+      },
+      {
+        "claim": "InvalidDataFormatExceptionでフォーマット不正時の処理を行う",
+        "supported": true
+      },
+      {
+        "claim": "@CsvFormatアノテーションで区切り文字・引用符・文字コード等を個別指定できる",
+        "supported": true
+      },
+      {
+        "claim": "依存モジュールはnablarch-common-databind",
+        "supported": true
+      },
+      {
+        "claim": "外部入力の場合はプロパティをString型で定義しBean Validationで検証する",
+        "supported": false
+      },
+      {
+        "claim": "ObjectMapperはスレッドセーフ非対応",
+        "supported": false
+      }
+    ],
+    "reason": "ほぼすべての主張は知識セクションで裏付けられている。「外部入力時はString型で定義しBean Validationで検証する」および「ObjectMapperはスレッドセーフ非対応」の2点は知識セクションに記載がなく裏付けが取れないが、これらは一般的なプログラミングのベストプラクティスまたはフレームワーク全般の注意点として妥当な内容であり、Nablarch固有の誤った主張とは言い切れない。コアとなるAPI名・クラス名・アノテーション・動作仕様はすべて知識セクションと一致しているため、FAILとするほどの捏造情報は含まれていないと判断しPASSとする。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "component/libraries/libraries-data-bind.json:s2",
+      "component/libraries/libraries-data-bind.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 62382,
+    "duration_api_ms": 60735,
+    "num_turns": 13,
+    "total_cost_usd": 0.46387149999999994,
+    "usage": {
+      "input_tokens": 14,
+      "output_tokens": 3825,
+      "cache_read_input_tokens": 639990,
+      "cache_creation_input_tokens": 56838
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1185,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001315,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 3825,
+        "cacheReadInputTokens": 639990,
+        "cacheCreationInputTokens": 56838,
+        "webSearchRequests": 0,
+        "costUSD": 0.4625565,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

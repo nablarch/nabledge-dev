@@ -1,0 +1,129 @@
+{
+  "scenario_id": "review-07",
+  "description": "Web画面で外部サイトからの不正なPOSTリクエストを防ぐ必要がある。CSRF対策をNablarchの仕組みで実装したい。",
+  "input": "外部サイトから不正にPOSTされるのを防ぎたい。NablarchにCSRF対策の仕組みはある？どう設定する？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の結論部分に「ハンドラ構成に追加するだけで自動的にCSRFトークンの生成・検証が行われます」と明記されており、事実「CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う」と同じ情報が含まれている。",
+      "fact": "CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "CsrfTokenVerificationHandler というクラスが nablarch.fw.web.handler パッケージに存在する",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成に追加するだけでCSRFトークンの生成・検証が自動的に行われる",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアハンドラ・Nablarchカスタムタグ制御ハンドラの後にCSRFトークン検証ハンドラを配置する設定例",
+        "supported": true
+      },
+      {
+        "claim": "依存モジュールは nablarch-fw-web",
+        "supported": true
+      },
+      {
+        "claim": "CSRFトークンはセッションストアに格納される",
+        "supported": true
+      },
+      {
+        "claim": "トークン生成はUUIDv4（UUIDv4CsrfTokenGenerator）",
+        "supported": true
+      },
+      {
+        "claim": "GET HEAD TRACE OPTIONS は検証対象外、POSTやPUTは検証対象",
+        "supported": true
+      },
+      {
+        "claim": "トークンの送信方法はリクエストヘッダ X-CSRF-TOKEN またはリクエストパラメータ csrf-token",
+        "supported": true
+      },
+      {
+        "claim": "検証失敗時は400 BadRequestを返す",
+        "supported": true
+      },
+      {
+        "claim": "CsrfTokenUtil.regenerateCsrfToken(request) でCSRFトークンを再生成できる",
+        "supported": true
+      },
+      {
+        "claim": "ログイン時にセッションストアを破棄・再生成する場合はregenerate呼び出し不要",
+        "supported": true
+      },
+      {
+        "claim": "テスト時は nablarch.test.NopHandler に差し替えてCSRF検証を無効化できる",
+        "supported": true
+      },
+      {
+        "claim": "配置順序として「セッション変数保存ハンドラより後ろ」に配置すること",
+        "supported": true
+      },
+      {
+        "claim": "JSPカスタムタグ使用時はNablarchカスタムタグ制御ハンドラより後ろに配置すること",
+        "supported": true
+      },
+      {
+        "claim": "ファイルアップロード時はマルチパートリクエストハンドラの前に本ハンドラとセッション変数保存ハンドラを配置する",
+        "supported": false
+      }
+    ],
+    "reason": "ほぼすべての主張は知識セクションで裏付けられている。ただし「ファイルアップロード時はマルチパートリクエストハンドラの前に本ハンドラとセッション変数保存ハンドラを配置する」という注意点は知識セクションに記載がなく、裏付けが確認できない。しかしこの1点は補足的な注意事項であり、Nablarch固有の主要な動作仕様（クラス名・API・設定方法・デフォルト動作）はすべて正確に裏付けられているため、全体判定はPASSとする。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 47807,
+    "duration_api_ms": 47775,
+    "num_turns": 9,
+    "total_cost_usd": 0.2726327499999999,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 3388,
+      "cache_read_input_tokens": 317730,
+      "cache_creation_input_tokens": 33369
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1190,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00133,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 3388,
+        "cacheReadInputTokens": 317730,
+        "cacheCreationInputTokens": 33369,
+        "webSearchRequests": 0,
+        "costUSD": 0.2713027499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

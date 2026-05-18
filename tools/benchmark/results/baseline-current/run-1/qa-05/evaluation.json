@@ -1,0 +1,134 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「① フォームクラスの作成」セクションに「リクエストJSONを受け取るフォームクラスをJava Beansとして作成します」と明記されており、ProjectFormクラスのコード例も示されている。これは「Formクラスでクライアントから送信された値を受け付ける」という事実と同一の情報を含んでいる。",
+      "fact": "Formクラスでクライアントから送信された値を受け付ける"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「①フォームクラスの作成」セクションに「プロパティは `String` 型で宣言し、バリデーションアノテーションを付与します」と明記されており、また「注意点」セクションにも「フォームのプロパティは `String` 型で宣言すること（型変換はバリデーション設定で行う）」と記載されている。事実「プロパティは全てString型で宣言する」と同じ情報が含まれている。",
+      "fact": "プロパティは全てString型で宣言する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@Path / @POST / @Consumes(MediaType.APPLICATION_JSON) / @Valid をリソースクラスに付与し、フォームを引数に受け取って UniversalDao.insert() でDBに登録するパターンが標準実装",
+        "supported": true
+      },
+      {
+        "claim": "ProjectForm のプロパティは String 型で宣言し、バリデーションアノテーションを付与する",
+        "supported": true
+      },
+      {
+        "claim": "@Consumes(MediaType.APPLICATION_JSON) でリクエストをJSON形式で受け付ける",
+        "supported": true
+      },
+      {
+        "claim": "@Valid でリクエストボディの Bean Validation を実行する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy() でフォームをエンティティに変換して UniversalDao.insert() でDB登録する",
+        "supported": true
+      },
+      {
+        "claim": "戻り値は HttpResponse でステータスコード 201 Created を返却する",
+        "supported": true
+      },
+      {
+        "claim": "メソッド引数として JaxRsHttpRequest を使用できる",
+        "supported": true
+      },
+      {
+        "claim": "組み合わせ引数 (SampleForm form, JaxRsHttpRequest request) が使用可能",
+        "supported": true
+      },
+      {
+        "claim": "後方互換のため HttpRequest も使えるが、原則 JaxRsHttpRequest を使用すること",
+        "supported": true
+      },
+      {
+        "claim": "戻り値としてフォーム(Java Beans)を返すとレスポンスJSONに変換される",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta RESTful Web Services アダプタを使用するとリクエストボディ変換ハンドラと Bean Validation ハンドラが自動的に追加される",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao.insert() を使う場合、エンティティクラスに Jakarta Persistence アノテーション（@Table、@Column 等）が必要",
+        "supported": false
+      },
+      {
+        "claim": "@Table アノテーションでスキーマ指定はできるが環境ごとのスキーマ切り替えには対応していないため、その場合は JDBC ラッパーを使用すること",
+        "supported": false
+      },
+      {
+        "claim": "ExecutionContext を引数として定義できる",
+        "supported": false
+      }
+    ],
+    "reason": "複数のハルシネーションが検出された。①「Jakarta RESTful Web Services アダプタを使用するとリクエストボディ変換ハンドラと Bean Validation ハンドラが自動的に追加される」は知識セクションに記載がなく裏付けなし。②「UniversalDao.insert() には Jakarta Persistence アノテーション（@Table、@Column 等）が必要」という具体的な制約は知識セクションに記載がなく裏付けなし。③「@Table でのスキーマ指定は環境ごとの切り替え不可のため JDBC ラッパーを使用」という記述は知識セクションに一切記載がなく裏付けなし。④「ExecutionContext を引数として定義できる」は知識セクションに記載があるが、回答の「メソッドシグネチャのバリエーション」表にはこの型が省略されており、不完全な情報提示となっている（ただしこれは省略であり捏造ではないため軽微）。特に①②③は Nablarch 固有の動作仕様に関する捏造情報であり FAIL と判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のハルシネーションが検出された。①「Jakarta RESTful Web Services アダプタを使用するとリクエストボディ変換ハンドラと Bean Validation ハンドラが自動的に追加される」は知識セクションに記載がなく裏付けなし。②「UniversalDao.insert() には Jakarta Persistence アノテーション（@Table、@Column 等）が必要」という具体的な制約は知識セクションに記載がなく裏付けなし。③「@Table でのスキーマ指定は環境ごとの切り替え不可のため JDBC ラッパーを使用」という記述は知識セクションに一切記載がなく裏付けなし。④「ExecutionContext を引数として定義できる」は知識セクションに記載があるが、回答の「メソッドシグネチャのバリエーション」表にはこの型が省略されており、不完全な情報提示となっている（ただしこれは省略であり捏造ではないため軽微）。特に①②③は Nablarch 固有の動作仕様に関する捏造情報であり FAIL と判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/libraries/libraries-universal-dao.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 168909,
+    "duration_api_ms": 167597,
+    "num_turns": 6,
+    "total_cost_usd": 0.69781325,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 4015,
+      "cache_read_input_tokens": 226810,
+      "cache_creation_input_tokens": 31018
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1187,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001367,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6876,
+        "outputTokens": 11806,
+        "cacheReadInputTokens": 601565,
+        "cacheCreationInputTokens": 84869,
+        "webSearchRequests": 0,
+        "costUSD": 0.6964462499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
