@@ -1,50 +1,9 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-2作業B-1完了: verify設計書更新)
+**Updated**: 2026-05-19 (B-2完了: verify設計書更新+TDD+terms.json実装)
 
 ## In Progress
-
-### B-2. RBKC変更
-
-B-1完了後に実施。目的: `index.md`（知識ファイル一覧）と `terms.json`（検索語辞書）を生成できる状態にする。
-
-**作業A: index.md生成をRBKCに統合**
-
-- [x] 変更前のFAIL数を記録: 全バージョン FAIL 0
-- [x] TDD: `test_index.py` に `generate_index_md()` のテストを追加（RED）
-- [x] `index.py` に `generate_index_md()` を実装（GREEN） — 19テストPASS
-- [x] 全5バージョンで create+verify: 全バージョン All files verified OK、FAIL 0
-- [x] コミット: `feat: add generate_index_md to RBKC` — `22566bc09`
-
-**作業B: terms.json生成をRBKCに新規実装**
-
-現状: `test_terms.py`（29テストGREEN）、`terms.py`、`run.py` 呼び出し追加まで完了済み（未コミット）。
-ただし create+verify で **FAIL 発生**（QO3/QO4 が terms.json を通常の knowledge JSON と誤認）。
-
-設計上の問題: index.md と terms.json は知識コンテンツファイルではなくメタデータファイルだが、verify 設計書がこれを未定義のままにしている。ゼロトレランス原則に従い、**設計書更新 → verify TDD → 実装整合** の順で進める。
-
-**作業B-1: verify 設計書の更新**
-
-- [x] `tools/rbkc/docs/rbkc-verify-quality-design.md` を更新 — `c05a3afac`
-
-**作業B-2: verify TDD（QO4 更新 + QO5 新設）**
-
-- [ ] `test_verify.py` の `TestCheckIndexCoverage` に index.md 対応テストを追加（RED）
-  - index.md 存在チェック、全 content JSON が H3 エントリとして存在、dangling path 検出
-- [ ] `test_verify.py` に `TestCheckTermsCoverage` を新規追加（RED）
-  - terms.json 存在チェック、section 参照形式（`path:sN`）、dangling 参照検出
-- [ ] `verify.py` を更新（GREEN）:
-  - `check_index_coverage()`: index.toon → index.md ベースに変更、QO3/QO4 スキャンから terms.json / index.md を除外
-  - `check_terms_coverage()` を新規実装
-- [ ] 全5バージョンで create+verify: 全バージョン FAIL 0
-- [ ] コミット2本:
-  - `test: add verify tests for index.md and terms.json coverage`
-  - `feat: update verify — QO4 to index.md, add QO5 terms.json`
-
-**作業B-3: 作業Bのコミット**
-
-- [ ] test_terms.py, terms.py, run.py の変更をコミット: `feat: add generate_terms to RBKC`
 
 ### B-3. スキルデプロイ
 
@@ -125,6 +84,7 @@ B-6完了後。新ベンチマーク基盤に完全移行。
 
 ## Done
 
+- [x] B-2. RBKC変更（index.md + terms.json生成）— `22566bc09`, `c05a3afac`, `84f2feb23`, `cc5d2c56b`, `38fe7aae9`, `b3f0c9dfe`
 - [x] B-1. 現行検索E2Eベースライン取得 — 3 runs, 精度83.7%, 幻覚PASS14.4%, $59.34 — committed `7ea223ab3`
 - [x] qa-current.json を results/baseline-current/ に移動 — `f3d8eeb15`
 - [x] HOW-TO-RUN.md を新スキル向けに更新（qa-current.json参照除去） — `b6f7d092f`
