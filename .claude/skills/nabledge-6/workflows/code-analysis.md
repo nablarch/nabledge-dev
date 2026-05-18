@@ -132,39 +132,37 @@ Output directory: .nabledge/20260210
 
 ### Step 2: Search Nablarch knowledge
 
-**Tools**: Bash (scripts/full-text-search.sh, scripts/read-sections.sh)
+**Tools**: workflows/semantic-search.md, workflows/keyword-search.md, Bash (scripts/read-sections.sh)
 
 **Action**: Search relevant knowledge for all Nablarch components identified in Step 1.
 
 **Search process**:
 
-1. **Collect search keywords** from Step 1 analysis:
-   - Use Nablarch component names identified in Step 1 as search keywords
-   - Include class names, Japanese feature names, and related technical terms
-   - Example: ["UniversalDao", "ExecutionContext", "ValidationUtil", "validation", "transaction"]
+1. **Build question string** from Step 1 analysis:
+   - Combine Nablarch component names and key concepts into a natural question
+   - Example: "UniversalDaoとExecutionContextを使ったDB操作とバリデーションの実装方法"
 
-2. **Execute full-text search**:
-   ```bash
-   bash .claude/skills/nabledge-6/scripts/full-text-search.sh "UniversalDao" "ExecutionContext" "ValidationUtil" "validation" "transaction"
-   ```
-   - Output: Scored and ranked candidate sections (max 15 results)
+2. **Execute semantic search**:
+   - Execute `workflows/semantic-search.md` with `{question}` = question string from above and `{hearing_answer}` = "なし"
+   - Output: pointer JSON `{results: [{file, section_id, relevance}]}`
 
-3. **Execute section judgement**:
-   - Read `workflows/_knowledge-search/_section-judgement.md`
-   - Before passing candidates: convert pipe separators to colons (`file|section_id` → `file:section_id`)
-   - Follow the workflow with candidate sections from step 2
-   - Output: Filtered sections (High and Partial relevance only)
+3. **Execute keyword search**:
+   - Execute `workflows/keyword-search.md` with same inputs
+   - Output: pointer JSON `{results: [{file, section_id, relevance}]}`
 
-4. **Collect knowledge file basenames** for Step 3.2:
-   - Extract unique knowledge files from section-judgement output
+4. **Merge results**:
+   - Combine both result lists; deduplicate by `(file, section_id)`, keeping higher relevance on conflict
+   - Sort: `"high"` first, then `"partial"`
+
+5. **Collect knowledge file basenames** for Step 3.2:
+   - Extract unique `file` values from merged results
    - Use basenames only (filename without path and extension)
    - Example: `libraries-universal_dao,libraries-data_bind`
    - prefill-template.sh will automatically search and include all matches
-   - Deduplicate: Multiple sections may come from same file
    - Format as comma-separated list for --knowledge-files parameter
 
-5. **Collect knowledge content** for documentation:
-   - Use `scripts/read-sections.sh` to read High-relevance sections
+6. **Collect knowledge content** for documentation:
+   - Use `scripts/read-sections.sh` to read `"high"` relevance sections (up to 10)
    - Collect: API usage patterns, configuration requirements, code examples, best practices
 
 **Output**: Knowledge file basenames for Step 3.2, and relevant knowledge content for documentation
