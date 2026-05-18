@@ -1,0 +1,108 @@
+{
+  "scenario_id": "qa-03",
+  "description": "会員登録フォームで、メールアドレスと確認用メールアドレスの一致チェックが必要。Nablarchの入力チェックの仕組みでどうやるのかわからない。",
+  "input": "2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「方法1: Jakarta Bean Validation を使う場合」セクションで、@AssertTrueアノテーションを使った相関バリデーションの実装例が明示されており、事実の内容と一致している。",
+      "fact": "Jakarta Bean Validationの@AssertTrueを使って相関バリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Jakarta Bean ValidationのAssertTrueアノテーションを使って相関バリデーションを実装できる",
+        "supported": true
+      },
+      {
+        "claim": "isEqualsMailAddressメソッドにAssertTrue(message=\"{compareMailAddress}\")を付与する実装例",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta Bean Validationではバリデーションの実行順序が保証されないため、項目単体バリデーションより先に相関バリデーションが呼ばれる場合がある",
+        "supported": true
+      },
+      {
+        "claim": "任意項目の場合はStringUtil.isNullOrEmptyで未入力チェックをしてからObjects.equalsで比較する",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch Validationという第2の方法が存在し、@ValidateForアノテーションを付けたstaticメソッドで相関バリデーションを実装できる",
+        "supported": false
+      },
+      {
+        "claim": "ValidationUtil.validate()で項目単体バリデーションを実施する",
+        "supported": false
+      },
+      {
+        "claim": "ValidationContext<SampleForm>クラスにisValid()、createObject()、addMessage()メソッドが存在する",
+        "supported": false
+      },
+      {
+        "claim": "Nablarch Validationではセッターに@Domainと@Requiredを付与するスタイルを取る",
+        "supported": false
+      },
+      {
+        "claim": "DBアクセスを伴う相関バリデーションは業務アクション側で実装すべきであり、バリデーション実行中の値はSQLインジェクション等の脆弱性につながる",
+        "supported": false
+      }
+    ],
+    "reason": "方法1（Jakarta Bean Validation）の実装内容は知識セクションで完全に裏付けられる。しかし方法2として提示された「Nablarch Validation」の実装（@ValidateFor、ValidationContext、ValidationUtil、@Domain、@Required等のNablarch固有API）は知識セクションに一切記載がなく、ハルシネーションの疑いがある。また、注意点として追記されたDBアクセス相関バリデーションをアクション側で実装すべきという主張およびSQLインジェクションリスクの言及も知識セクションに裏付けがない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 方法1（Jakarta Bean Validation）の実装内容は知識セクションで完全に裏付けられる。しかし方法2として提示された「Nablarch Validation」の実装（@ValidateFor、ValidationContext、ValidationUtil、@Domain、@Required等のNablarch固有API）は知識セクションに一切記載がなく、ハルシネーションの疑いがある。また、注意点として追記されたDBアクセス相関バリデーションをアクション側で実装すべきという主張およびSQLインジェクションリスクの言及も知識セクションに裏付けがない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-nablarch-validation.json:s14",
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-nablarch-validation.json:s20"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 133040,
+    "duration_api_ms": 132035,
+    "num_turns": 5,
+    "total_cost_usd": 0.57960015,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 2840,
+      "cache_read_input_tokens": 183500,
+      "cache_creation_input_tokens": 28334
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1199,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001314,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1138,
+        "outputTokens": 8706,
+        "cacheReadInputTokens": 528878,
+        "cacheCreationInputTokens": 76165,
+        "webSearchRequests": 0,
+        "costUSD": 0.5782861499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「NablarchのカスタムタグはHTMLエスケープ（サニタイジング）をデフォルトで実施するため、IPA基準の「5-(i) 全要素のエスケープ処理」を満たします」と明記されており、参照セクションの「Nablarchのカスタムタグはサニタイジングを行います。これによりNablarchのカスタムタグを使った場合には5-(i)の根本的解決が可能です」という事実と同等の内容が含まれている。",
+      "fact": "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "NablarchのカスタムタグはデフォルトでHTMLエスケープ（サニタイジング）を実施する",
+        "supported": true
+      },
+      {
+        "claim": "エスケープ対象文字として & → &amp;、< → &lt;、> → &gt;、\" → &#034;、' → &#039; という具体的な変換テーブルを示している",
+        "supported": false
+      },
+      {
+        "claim": "JSP静的解析ツールを提供しており、カスタムタグ以外のタグ使用によるエスケープ漏れを検出できる",
+        "supported": true
+      },
+      {
+        "claim": "5-(ii)〜(iv) の対策はNablarch未対応でプロジェクト対応が必要",
+        "supported": true
+      },
+      {
+        "claim": "5-(viii): HTTP文字エンコード制御ハンドラがContent-TypeヘッダにMIME Typeと文字コードを設定してXSSを防止する",
+        "supported": false
+      },
+      {
+        "claim": "5-(x) 保険的対策としてセキュアハンドラがXSS関連のブラウザ機能を有効化するレスポンスヘッダを返す",
+        "supported": false
+      },
+      {
+        "claim": "セキュアハンドラ＋ContentSecurityPolicyHeader＋カスタムタグのCSP対応を組み合わせてCSPを有効化できる",
+        "supported": false
+      },
+      {
+        "claim": "rawWriteタグ・prettyPrintタグはHTMLエスケープをスキップする",
+        "supported": false
+      },
+      {
+        "claim": "JavaScriptエスケープ（scriptタグのボディやonclick属性への動的値埋め込み）はプロジェクト責任",
+        "supported": false
+      }
+    ],
+    "reason": "カスタムタグによるサニタイジング、JSP静的解析ツールの提供、5-(ii)〜(iv) のプロジェクト対応という主要な主張は知識セクションで裏付けられる。しかし、具体的なエスケープ変換テーブル（&#034;、&#039; 等）、HTTP文字エンコード制御ハンドラによる5-(viii)対応、セキュアハンドラによる5-(x)対応、ContentSecurityPolicyHeaderクラス名、rawWrite/prettyPrintタグの言及、JavaScriptエスケープ非対応の主張は、知識セクションに一切記載がないNablarch固有の主張であり、ハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — カスタムタグによるサニタイジング、JSP静的解析ツールの提供、5-(ii)〜(iv) のプロジェクト対応という主要な主張は知識セクションで裏付けられる。しかし、具体的なエスケープ変換テーブル（&#034;、&#039; 等）、HTTP文字エンコード制御ハンドラによる5-(viii)対応、セキュアハンドラによる5-(x)対応、ContentSecurityPolicyHeaderクラス名、rawWrite/prettyPrintタグの言及、JavaScriptエスケープ非対応の主張は、知識セクションに一切記載がないNablarch固有の主張であり、ハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s21",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s50",
+      "check/security-check/security-check-2.チェックリスト.json:s28",
+      "check/security-check/security-check-2.チェックリスト.json:s30",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/libraries/libraries-tag.json:s27"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 215343,
+    "duration_api_ms": 212939,
+    "num_turns": 6,
+    "total_cost_usd": 0.94549475,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 3675,
+      "cache_read_input_tokens": 228829,
+      "cache_creation_input_tokens": 30951
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1201,
+        "outputTokens": 41,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0014060000000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6013,
+        "outputTokens": 13988,
+        "cacheReadInputTokens": 805320,
+        "cacheCreationInputTokens": 126569,
+        "webSearchRequests": 0,
+        "costUSD": 0.94408875,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

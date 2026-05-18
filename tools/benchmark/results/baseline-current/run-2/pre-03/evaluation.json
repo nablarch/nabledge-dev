@@ -1,0 +1,101 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「SQLファイルを使った検索」（②）としてfindAllBySqlFileの説明があり、SQL IDを指定して検索できることが示されている。また「Beanのプロパティ名とSELECT句の名前が一致する項目が自動的にマッピングされます」と検索結果がBeanにマッピングされることも明記されている。事実の全要素（SQLファイル作成、SQL ID指定検索、Beanへのマッピング）が回答に含まれている。",
+      "fact": "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Jakarta Persistenceアノテーション（@Entity、@Id など）を付けるだけで、主キーによる検索が可能でSQLを書く必要はない",
+        "supported": true
+      },
+      {
+        "claim": "findAllBySqlFileを使って任意の条件で検索できる",
+        "supported": true
+      },
+      {
+        "claim": "SQLファイルのパスはBeanのクラス名から自動的に導出される（例: sample.entity.User → sample/entity/User.sql）",
+        "supported": true
+      },
+      {
+        "claim": "Beanのプロパティ名とSELECT句の名前が一致する項目が自動的にマッピングされる",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.defer()を使用して遅延ロードができる",
+        "supported": true
+      },
+      {
+        "claim": "遅延ロード使用時はDeferredEntityList#closeを必ず呼び出すこと（try-with-resources推奨）",
+        "supported": true
+      },
+      {
+        "claim": "条件付き検索では検索条件専用のBeanを指定すること（1テーブルのみの場合はEntityも可）",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有の主張はすべて知識セクションの内容と整合している。主キー検索のためのJakarta Persistenceアノテーション利用、findAllBySqlFileによる検索、BeanプロパティとSELECT句のマッピング、遅延ロードの注意事項など、いずれも知識セクションに裏付けられており、捏造情報は確認されない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s3",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-universal-dao.json:s5",
+      "component/libraries/libraries-universal-dao.json:s8",
+      "component/libraries/libraries-universal-dao.json:s9"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 113793,
+    "duration_api_ms": 113067,
+    "num_turns": 4,
+    "total_cost_usd": 0.4399864500000001,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 2722,
+      "cache_read_input_tokens": 140948,
+      "cache_creation_input_tokens": 28677
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1172,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001302,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1134,
+        "outputTokens": 9124,
+        "cacheReadInputTokens": 383079,
+        "cacheCreationInputTokens": 48933,
+        "webSearchRequests": 0,
+        "costUSD": 0.43868445000000006,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

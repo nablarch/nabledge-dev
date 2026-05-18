@@ -1,0 +1,120 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. フォームクラスの作成」セクションで「リクエストボディのJSONを受け取るフォームを定義する」と説明され、ProjectFormクラスのコードが示されている。これはFormクラスでクライアントから送信された値を受け付けることを示しており、事実の内容が含まれている。",
+      "fact": "Formクラスでクライアントから送信された値を受け付ける"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. フォームクラスの作成」セクションに「プロパティは全て `String` 型で宣言する」と明記されており、また「注意点」セクションにも「フォームのプロパティは全て `String` 型で宣言すること」と記載されている。事実と同一の情報が含まれている。",
+      "fact": "プロパティは全てString型で宣言する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@Path、@POST、@Consumes(MediaType.APPLICATION_JSON)アノテーションをリソースクラスに付ける",
+        "supported": true
+      },
+      {
+        "claim": "フォームのプロパティは全てString型で宣言する",
+        "supported": true
+      },
+      {
+        "claim": "@Validアノテーションでリクエストのバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy()でフォームをエンティティに変換する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert()でINSERT文を自動生成して実行する",
+        "supported": true
+      },
+      {
+        "claim": "戻り値としてステータスコード201を表すHttpResponseを返す",
+        "supported": true
+      },
+      {
+        "claim": "メソッド引数としてフォーム、JaxRsHttpRequest、ExecutionContext、またはそれらの組み合わせが使用できる",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert()はSQLを書かずにINSERT文を自動生成して実行し、Jakarta Persistenceアノテーションを元に構築する",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDocは共通項目（登録ユーザ・更新ユーザ等）の自動設定機能を持たない",
+        "supported": false
+      },
+      {
+        "claim": "共通項目の自動設定が必要な場合はDomaアダプタのエンティティリスナー機能を使用すること",
+        "supported": false
+      },
+      {
+        "claim": "Jakarta RESTful Web Servicesの@PathParamや@QueryParamはNablarchでは使用不可であり、JaxRsHttpRequest.getPathParam()を使用する",
+        "supported": false
+      }
+    ],
+    "reason": "以下の3点がNablarch固有の主張でありながら知識セクションに裏付けがなく、ハルシネーションと判定する。①UniversalDaoがJakarta Persistenceアノテーションを元にSQL構築するという説明は知識セクションに記載なし。②UniversalDaoに共通項目（登録ユーザ・更新ユーザ等）の自動設定機能がないという仕様説明は知識セクションに記載なし。③「Domaアダプタのエンティティリスナー機能」という具体的な代替手段の提示は知識セクションに一切記載がない。④@PathParamや@QueryParamが「使用不可」という明示的な制約は知識セクションに記述されておらず、知識セクションではJaxRsHttpRequestの使用を案内するにとどまっている。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 以下の3点がNablarch固有の主張でありながら知識セクションに裏付けがなく、ハルシネーションと判定する。①UniversalDaoがJakarta Persistenceアノテーションを元にSQL構築するという説明は知識セクションに記載なし。②UniversalDaoに共通項目（登録ユーザ・更新ユーザ等）の自動設定機能がないという仕様説明は知識セクションに記載なし。③「Domaアダプタのエンティティリスナー機能」という具体的な代替手段の提示は知識セクションに一切記載がない。④@PathParamや@QueryParamが「使用不可」という明示的な制約は知識セクションに記述されておらず、知識セクションではJaxRsHttpRequestの使用を案内するにとどまっている。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/libraries/libraries-universal-dao.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 123338,
+    "duration_api_ms": 122502,
+    "num_turns": 7,
+    "total_cost_usd": 0.52372505,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 3372,
+      "cache_read_input_tokens": 277411,
+      "cache_creation_input_tokens": 37501
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1187,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001382,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1226,
+        "outputTokens": 7467,
+        "cacheReadInputTokens": 586246,
+        "cacheCreationInputTokens": 61543,
+        "webSearchRequests": 0,
+        "costUSD": 0.52234305,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

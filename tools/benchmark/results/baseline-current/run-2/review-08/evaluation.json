@@ -1,0 +1,149 @@
+{
+  "scenario_id": "review-08",
+  "description": "Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。",
+  "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭「結論」セクションに「複数タブでの画面操作を許容するか」が選択基準であり、「許容しない場合はDBストア、許容する場合はHIDDENストアを使う」と明記されており、事実の情報が完全に含まれている。",
+      "fact": "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "複数タブでの画面操作を許容するか否かがセッションストアの唯一の選択基準である",
+        "supported": true
+      },
+      {
+        "claim": "複数タブ不許容の場合はDBストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "複数タブ許容の場合はHIDDENストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはデータベース上のテーブルにデータを保存する",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはローリングメンテナンスでAPサーバが停止してもセッション変数を復元できる",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは同一セッションで複数スレッドが並行実行された場合に後勝ちとなり先のデータは消失する",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはクライアントサイドにhiddenタグで画面間を引き回す形で保存する",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数タブでの操作を許容できる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数スレッドが並行実行された場合にセッションデータがそれぞれのスレッドに紐付けて保存される",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストア使用時のJSPでn:hiddenStoreタグをname属性付きで設定する",
+        "supported": true
+      },
+      {
+        "claim": "実装例でSessionUtil.put(ctx, \"project\", project)というAPIを使用してセッションストアに保存する",
+        "supported": false
+      },
+      {
+        "claim": "実装例でcontext.getRequestScopedVar(\"form\")というAPIでリクエストスコープから取得する",
+        "supported": false
+      },
+      {
+        "claim": "実装例でBeanUtil.createAndCopy(Project.class, form)というAPIでFormからEntityへ変換する",
+        "supported": false
+      },
+      {
+        "claim": "セッションストアにはFormではなくEntityを格納すること",
+        "supported": true
+      },
+      {
+        "claim": "Formを格納するとバリデーション前の信頼できない値を保持するリスクがある",
+        "supported": true
+      },
+      {
+        "claim": "認証情報の保持にはDBストアまたはHTTPセッションストアが適切でHIDDENストアは不適切",
+        "supported": true
+      },
+      {
+        "claim": "検索条件・検索結果一覧・セレクトボックス等の画面表示項目・エラーメッセージはセッションストアに保存しない",
+        "supported": true
+      }
+    ],
+    "reason": "主要な選択基準・各ストアの特徴・JSP設定・注意事項はいずれも知識セクションと一致している。ただし、登録機能の実装例として示されたJavaコード（SessionUtil.put、context.getRequestScopedVar、BeanUtil.createAndCopy）は知識セクションには記載されておらず、外部リンク先のドキュメントに委ねられている。これらはNablarch固有のAPI名であり、知識セクションから直接裏付けが取れないためUNCERTAINと判定する。なお、これらのAPIが実際のNablarchで存在するかどうかは本知識セクションからは確認不可能である。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — 主要な選択基準・各ストアの特徴・JSP設定・注意事項はいずれも知識セクションと一致している。ただし、登録機能の実装例として示されたJavaコード（SessionUtil.put、context.getRequestScopedVar、BeanUtil.createAndCopy）は知識セクションには記載されておらず、外部リンク先のドキュメントに委ねられている。これらはNablarch固有のAPI名であり、知識セクションから直接裏付けが取れないためUNCERTAINと判定する。なお、これらのAPIが実際のNablarchで存在するかどうかは本知識セクションからは確認不可能である。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-create-example.json:s2",
+      "component/libraries/libraries-update-example.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 175576,
+    "duration_api_ms": 173885,
+    "num_turns": 4,
+    "total_cost_usd": 0.7120678500000001,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 2850,
+      "cache_read_input_tokens": 141096,
+      "cache_creation_input_tokens": 28941
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1191,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001311,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1180,
+        "outputTokens": 11434,
+        "cacheReadInputTokens": 752177,
+        "cacheCreationInputTokens": 82681,
+        "webSearchRequests": 0,
+        "costUSD": 0.71075685,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

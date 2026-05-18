@@ -1,0 +1,131 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の結論部分に「Jakarta EE 10対応のアプリケーションサーバへの移行も必須」と明記されており、注意点にも「アプリケーションサーバ自体も Jakarta EE 10 対応版 に更新が必要（後方互換性なし）」と記載されている。これは事実の「Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある」と同じ情報を含んでいる。",
+      "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. 名前空間の変更（`javax.*` → `jakarta.*`）」セクションで、Jakarta EE 9においてJava EEの仕様名（javax.*パッケージ名）がJakarta EEのもの（jakarta.*パッケージ名）に変更されたことが明示されており、具体的な対応表も示されている。これは事実の「Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている」に該当する。",
+      "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "Jakarta EE 10対応のアプリケーションサーバへの移行が必須",
+        "supported": true
+      },
+      {
+        "claim": "javax.* → jakarta.* 名前空間変更が必要",
+        "supported": true
+      },
+      {
+        "claim": "javax.crypto.* などの標準ライブラリは変更不要",
+        "supported": true
+      },
+      {
+        "claim": "Java 17 が必要最低バージョンになる",
+        "supported": true
+      },
+      {
+        "claim": "jakarta.platform:jakarta.jakartaee-bom:10.0.0 の導入推奨",
+        "supported": true
+      },
+      {
+        "claim": "web.xml の xmlns を https://jakarta.ee/xml/ns/jakartaee / version 6.0 に変更",
+        "supported": true
+      },
+      {
+        "claim": "JSP taglib URI を jakarta.tags.core 等に変更",
+        "supported": true
+      },
+      {
+        "claim": "waitt-maven-plugin → jetty-ee10-maven-plugin への変更",
+        "supported": false
+      },
+      {
+        "claim": "nablarch-testing-jetty6 → nablarch-testing-jetty12 への変更",
+        "supported": false
+      },
+      {
+        "claim": "HttpServerFactoryJetty6 → HttpServerFactoryJetty12 への変更",
+        "supported": false
+      },
+      {
+        "claim": "weld-core → weld-core-impl 5.0.1.Final への変更",
+        "supported": false
+      },
+      {
+        "claim": "org.jboss.spec.javax.batch:jboss-batch-api_1.0_spec → jakarta.batch:jakarta.batch-api への変更",
+        "supported": true
+      }
+    ],
+    "reason": "Jakarta EE 10 対応・Java 17 必須・名前空間変更・AS移行必須などの主要な事実は知識セクション（No.1, No.2, No.3）で裏付けられる。web.xml スキーマ変更・JSP taglib 変更・jakarta.batch API 変更は一般的な Jakarta EE 移行知識として妥当。一方、Nablarch 固有のモジュール名・クラス名（waitt-maven-plugin→jetty-ee10-maven-plugin、nablarch-testing-jetty6→nablarch-testing-jetty12、HttpServerFactoryJetty6→HttpServerFactoryJetty12）および weld-core-impl の具体バージョン（5.0.1.Final）は提供された知識セクションには記載がなく検証不能。知識セクションはマイグレーションガイドへの参照を示すのみであり、これらの情報が同ガイドに存在する可能性は排除できないため UNCERTAIN と判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — Jakarta EE 10 対応・Java 17 必須・名前空間変更・AS移行必須などの主要な事実は知識セクション（No.1, No.2, No.3）で裏付けられる。web.xml スキーマ変更・JSP taglib 変更・jakarta.batch API 変更は一般的な Jakarta EE 移行知識として妥当。一方、Nablarch 固有のモジュール名・クラス名（waitt-maven-plugin→jetty-ee10-maven-plugin、nablarch-testing-jetty6→nablarch-testing-jetty12、HttpServerFactoryJetty6→HttpServerFactoryJetty12）および weld-core-impl の具体バージョン（5.0.1.Final）は提供された知識セクションには記載がなく検証不能。知識セクションはマイグレーションガイドへの参照を示すのみであり、これらの情報が同ガイドに存在する可能性は排除できないため UNCERTAIN と判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "about/migration/migration-migration.json:s2",
+      "about/migration/migration-migration.json:s5",
+      "about/migration/migration-migration.json:s9",
+      "about/migration/migration-migration.json:s26",
+      "about/migration/migration-migration.json:s27",
+      "about/migration/migration-migration.json:s28",
+      "about/migration/migration-migration.json:s29",
+      "about/migration/migration-migration.json:s33",
+      "about/migration/migration-migration.json:s16",
+      "about/migration/migration-migration.json:s24"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 263342,
+    "duration_api_ms": 261454,
+    "num_turns": 6,
+    "total_cost_usd": 1.06282585,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 4741,
+      "cache_read_input_tokens": 242973,
+      "cache_creation_input_tokens": 39227
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1192,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001387,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8758,
+        "outputTokens": 19093,
+        "cacheReadInputTokens": 738262,
+        "cacheCreationInputTokens": 140611,
+        "webSearchRequests": 0,
+        "costUSD": 1.06143885,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
