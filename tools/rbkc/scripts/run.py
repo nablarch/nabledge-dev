@@ -34,12 +34,14 @@ from scripts.common.sources import FileInfo, classify_sources, scan_sources
 from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.create.docs import generate_docs
 from scripts.create.index import generate_index, generate_index_md
+from scripts.create.terms import generate_terms
 from scripts.create.resolver import collect_asset_refs, copy_assets
 from scripts.common.labels import build_label_doc_map, build_label_map  # noqa: F401
 from scripts.verify.verify import (
     verify_file,
     verify_docs_md,
     check_index_coverage,
+    check_terms_coverage,
     check_docs_coverage,
     check_source_links,
     check_json_docs_md_consistency,
@@ -260,6 +262,7 @@ def create(
     copy_assets(all_asset_refs, output_dir)
     generate_index(file_infos, output_dir, version, index_path)
     generate_index_md(output_dir, output_dir / "index.md")
+    generate_terms(output_dir, output_dir / "terms.json")
     generate_docs(output_dir, docs_dir, version)
 
     snap = make_snapshot(file_infos, repo_root, version)
@@ -310,6 +313,7 @@ def update(
     copy_assets(changed_asset_refs, output_dir)
     generate_index(file_infos, output_dir, version, output_dir / "index.toon")
     generate_index_md(output_dir, output_dir / "index.md")
+    generate_terms(output_dir, output_dir / "terms.json")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 
     # Update snapshot to reflect current state
@@ -353,6 +357,7 @@ def delete(
 
     generate_index(file_infos, output_dir, version, output_dir / "index.toon")
     generate_index_md(output_dir, output_dir / "index.md")
+    generate_terms(output_dir, output_dir / "terms.json")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 
     # Update snapshot
@@ -438,9 +443,14 @@ def verify(
 
     # Coverage checks (F, H) — only when verifying all files
     if files is None:
-        index_path = output_dir / "index.toon"
+        index_path = output_dir / "index.md"
         for issue in check_index_coverage(output_dir, index_path):
-            print(f"FAIL index.toon: {issue}", file=sys.stderr)
+            print(f"FAIL index.md: {issue}", file=sys.stderr)
+            all_ok = False
+
+        terms_path = output_dir / "terms.json"
+        for issue in check_terms_coverage(output_dir, terms_path):
+            print(f"FAIL terms.json: {issue}", file=sys.stderr)
             all_ok = False
 
         for issue in check_docs_coverage(output_dir, docs_dir):

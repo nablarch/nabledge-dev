@@ -160,6 +160,9 @@ def generate_index_md(knowledge_dir: Path, output_path: Path) -> None:
             continue
         rel = json_path.relative_to(knowledge_dir)
         parts = rel.parts
+        # Skip literalinclude source copies under assets/ — not content JSON.
+        if "assets" in parts:
+            continue
         if len(parts) < 2:
             continue
         category = "/".join(parts[:2])
