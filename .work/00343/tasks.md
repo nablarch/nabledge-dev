@@ -1,29 +1,9 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-3スモークテスト実行済み、参照:形式の差異を要確認)
+**Updated**: 2026-05-19
 
 ## In Progress
-
-### B-3. スキルデプロイ
-
-B-2完了後に実施。目的: ベンチマークで検証済みの部品プロンプト・スクリプトをスキルに組み込む。
-
-- [x] 部品をスキルにコピー — `a07583fc4`
-- [x] ワークフロー作成（PE 2ラウンドレビュー済み、全Findings対応済み） — `549df22d2`, `295e37d65`, `c54ef6d30`, `c1ec0de54`, `000fc91db`, `71a0c16e3`, `10a7aaf82`
-- [ ] 1シナリオでスモークテスト（実行済み: `tools/benchmark/results/20260518-164532/`）:
-  ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa.json \
-    --skill-dir .claude/skills/nabledge-6 \
-    --scenario-ids pre-01
-  ```
-  - ✅ 終了コード0
-  - ✅ `model_usage` が `{}` でない（Sonnet + Haiku 両モデル使用）
-  - ✅ `search.json` のセクションIDが baseline-current と異なる（新検索動作確認済: 8件 vs 4件）
-  - [DECISION: `answer.md` の `参照:` 形式確認] `### 参照` 形式で出力されており受入条件の `参照:` と不一致。内容は正しい参照セクションあり。このまま受入とするか、`参照:` 形式に統一するか要確認。
-  - ✅ `evaluation.json` の `claim_verdicts` 2件（B-4条件も満たす）
-  - hallucination FAIL（`-userId`, `-diConfig` 等が knowledge ファイル未カバー — ワークフロー設計の問題ではなく知識カバレッジの問題）
 
 ### B-4. 新スキルE2Eベンチマーク
 
@@ -85,6 +65,7 @@ B-6完了後。新ベンチマーク基盤に完全移行。
 - [x] B-1. 現行検索E2Eベースライン取得 — 3 runs, 精度83.7%, 幻覚PASS14.4%, $59.34 — committed `7ea223ab3`
 - [x] qa-current.json を results/baseline-current/ に移動 — `f3d8eeb15`
 - [x] HOW-TO-RUN.md を新スキル向けに更新（qa-current.json参照除去） — `b6f7d092f`
+- [x] B-3. スキルデプロイ（スモークテスト完了） — `a07583fc4`, `549df22d2`, `000fc91db`, `71a0c16e3`, `10a7aaf82`
 - [x] B-0. run_e2e.py 再設計（旧結果削除 `338c8c471`、TDD実装 `218a5e051`）— SEレビュー 0 Findings
 - [x] B-1（旧）. 現行検索E2Eベースライン取得（不正データのためB-0でリセット） — `f57b78581`, `4de6fb47b`
 - [x] A-1. RBKC変更のリバート — `5bf479e1c`, `f0249fea0`
