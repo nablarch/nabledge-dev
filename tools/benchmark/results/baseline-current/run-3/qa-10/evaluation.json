@@ -1,0 +1,109 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「$if(プロパティ名) {SQL条件}」の形式で可変条件を記述すること、およびBeanのプロパティがnullまたは空文字列（String型の場合）のときに条件が自動的に除外されることが明確に述べられており、事実の情報が含まれている。",
+      "fact": "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "$if(プロパティ名) {SQL条件} の形式でWHERE句に記述する",
+        "supported": true
+      },
+      {
+        "claim": "対応するBeanのプロパティがnullまたは空文字列（String型）のとき条件が除外される",
+        "supported": true
+      },
+      {
+        "claim": "配列やjava.util.Collectionのプロパティがnullまたはサイズ0のとき条件が除外される",
+        "supported": true
+      },
+      {
+        "claim": "$ifはWHERE句内でのみ使用可能",
+        "supported": true
+      },
+      {
+        "claim": "$if内に$ifをネストすることはできない",
+        "supported": true
+      },
+      {
+        "claim": "IN句で$ifと組み合わせる場合は :プロパティ名[] の形式でパラメータを記述する",
+        "supported": true
+      },
+      {
+        "claim": "この機能は検索画面のように入力内容によって条件が変わる場合に使うものであり、複数のSQLを共通化する目的には使用しない",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.findAllBySqlFile() でSQLファイルを指定して実行できる",
+        "supported": false
+      },
+      {
+        "claim": "LIKE句で :%projectName% という記法（パラメータの前後に%を置く）が使用できる",
+        "supported": false
+      }
+    ],
+    "reason": "大部分の主張は知識セクションにより裏付けられているが、2点のハルシネーションが検出された。①UniversalDao.findAllBySqlFile() の使用例：知識セクションはprepareParameterizedSqlStatementBySqlIdによる実行方法のみを示しており、UniversalDAOを使った実行方法への言及はなく、裏付けがない。②LIKE句での :%projectName% 記法：知識セクションの例では :userName% （パラメータ名の後ろに%）のみが示されており、パラメータ名の前後に%を置く :%projectName% 構文は裏付けられていない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 大部分の主張は知識セクションにより裏付けられているが、2点のハルシネーションが検出された。①UniversalDao.findAllBySqlFile() の使用例：知識セクションはprepareParameterizedSqlStatementBySqlIdによる実行方法のみを示しており、UniversalDAOを使った実行方法への言及はなく、裏付けがない。②LIKE句での :%projectName% 記法：知識セクションの例では :userName% （パラメータ名の後ろに%）のみが示されており、パラメータ名の前後に%を置く :%projectName% 構文は裏付けられていない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+      "component/libraries/libraries-database.json:s6",
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-universal-dao.json:s10"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 207568,
+    "duration_api_ms": 204347,
+    "num_turns": 7,
+    "total_cost_usd": 0.8760703000000001,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 3124,
+      "cache_read_input_tokens": 227023,
+      "cache_creation_input_tokens": 33864
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1193,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013180000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 34277,
+        "outputTokens": 12513,
+        "cacheReadInputTokens": 467596,
+        "cacheCreationInputTokens": 118386,
+        "webSearchRequests": 0,
+        "costUSD": 0.8747523000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

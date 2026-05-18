@@ -1,0 +1,126 @@
+{
+  "scenario_id": "review-09",
+  "description": "セキュリティ診断でContent Security Policyを有効にしろと指摘された。NablarchのWeb画面でCSPを設定したい。",
+  "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答では「SecureHandler」「ContentSecurityPolicyHeader」「JSPカスタムタグのCSP対応」の3つを組み合わせてCSPを有効にする方法が詳細に説明されており、事実の内容と一致している。",
+      "fact": "セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "SecureHandlerにContentSecurityPolicyHeaderを追加することでCSPヘッダを設定できる",
+        "supported": true
+      },
+      {
+        "claim": "ContentSecurityPolicyHeaderのクラス名はnablarch.fw.web.handler.secure.ContentSecurityPolicyHeader",
+        "supported": true
+      },
+      {
+        "claim": "nonce生成にはSecureHandlerの設定が必要",
+        "supported": true
+      },
+      {
+        "claim": "SecureHandlerにgenerateCspNonceプロパティがあり、trueに設定するとnonce生成が有効になる",
+        "supported": false
+      },
+      {
+        "claim": "ContentSecurityPolicyHeaderのpolicyプロパティにポリシー文字列を設定する",
+        "supported": false
+      },
+      {
+        "claim": "$cspNonceSource$というプレースホルダーがnonceに自動置換される",
+        "supported": false
+      },
+      {
+        "claim": "formタグが生成するJavaScriptをscript要素にまとめnonce属性を自動付与する",
+        "supported": true
+      },
+      {
+        "claim": "scriptタグが生成するscript要素にnonce属性が自動付与される",
+        "supported": true
+      },
+      {
+        "claim": "cspNonceタグ（<n:cspNonce />）でnonceを出力できる",
+        "supported": true
+      },
+      {
+        "claim": "nonceを使うとHTMLがリクエストごとに変化しキャッシュ戦略に影響する",
+        "supported": true
+      },
+      {
+        "claim": "ContentSecurityPolicyHeaderにreportOnlyプロパティがあり、trueにするとreport-onlyモードになる",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandlerはHTTPレスポンスハンドラより後ろに設定する必要がある",
+        "supported": false
+      },
+      {
+        "claim": "secureResponseHeaderListを明示する際はデフォルトの5つのヘッダも必ず一緒に設定しなければならない",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有の主張が知識セクションで裏付けられない。特に「generateCspNonce」プロパティ名、「$cspNonceSource$」プレースホルダー構文、「reportOnly」プロパティ、「policy」プロパティ名、SecureHandlerのハンドラ順序に関する注意点、デフォルト5ヘッダの明示設定義務については知識セクションに記載がなく、Nablarch固有のAPI仕様としてハルシネーションと判定される。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のNablarch固有の主張が知識セクションで裏付けられない。特に「generateCspNonce」プロパティ名、「$cspNonceSource$」プレースホルダー構文、「reportOnly」プロパティ、「policy」プロパティ名、SecureHandlerのハンドラ順序に関する注意点、デフォルト5ヘッダの明示設定義務については知識セクションに記載がなく、Nablarch固有のAPI仕様としてハルシネーションと判定される。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "component/libraries/libraries-tag.json:s38",
+      "component/libraries/libraries-tag.json:s39"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 125765,
+    "duration_api_ms": 122108,
+    "num_turns": 10,
+    "total_cost_usd": 0.5162132500000001,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 4642,
+      "cache_read_input_tokens": 379459,
+      "cache_creation_input_tokens": 39579
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1180,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001315,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 26,
+        "outputTokens": 8596,
+        "cacheReadInputTokens": 580330,
+        "cacheCreationInputTokens": 56475,
+        "webSearchRequests": 0,
+        "costUSD": 0.51489825,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

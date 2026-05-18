@@ -1,0 +1,91 @@
+{
+  "scenario_id": "oos-qa-01",
+  "description": "バッチ処理の進捗をリアルタイムにクライアントへ通知する機能を実装したい。WebSocketを使いたいが、NablarchでWebSocketが使えるか確認したい。",
+  "input": "バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「NablarchはWebSocketを公式にサポートしておらず」「Jakarta WebSocket はこのリストに含まれていません」と明確に述べており、NablarchにはWebSocketのサポートがないという事実が含まれている。",
+      "fact": "NablarchにはWebSocketのサポートがないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "NablarchフレームワークがJakarta Standard Tag Library 3.0、Jakarta Activation 2.1、Jakarta Server Pages 3.1、Jakarta Servlet 6.0、Jakarta Mail 2.1、Jakarta Messaging 3.1、Jakarta Persistence 3.1、Jakarta Batch 2.1、Jakarta Bean Validation 3.0、Jakarta RESTful Web Services 3.1に対応している",
+        "supported": false
+      },
+      {
+        "claim": "Jakarta WebSocketはNablarchのサポート対象リストに含まれていない",
+        "supported": false
+      },
+      {
+        "claim": "NablarchはWebSocketを公式にサポートしておらず、NablarchのAPIやフレームワーク機能としてWebSocketを利用する方法は提供されていない",
+        "supported": false
+      },
+      {
+        "claim": "Nablarchのバッチ処理にProgressManagerという進捗ログ出力機能がある",
+        "supported": false
+      },
+      {
+        "claim": "ProgressManagerはログファイルへの出力を目的としており、ブラウザへのリアルタイム通知には対応していない",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションが空であるため、回答内のNablarch固有の主張（Jakarta EE対応仕様のリスト、WebSocketの非サポート、ProgressManagerクラスの存在と仕様）をいずれも裏付けることができない。特にProgressManagerというクラス名およびその動作仕様は具体的なNablarch固有の主張であり、提供された知識セクションに根拠がないためハルシネーションの可能性がある。ただし知識ファイル自体が提供されていないため確定的な判定はできず、UNCERTAINとする。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — 知識セクションが空であるため、回答内のNablarch固有の主張（Jakarta EE対応仕様のリスト、WebSocketの非サポート、ProgressManagerクラスの存在と仕様）をいずれも裏付けることができない。特にProgressManagerというクラス名およびその動作仕様は具体的なNablarch固有の主張であり、提供された知識セクションに根拠がないためハルシネーションの可能性がある。ただし知識ファイル自体が提供されていないため確定的な判定はできず、UNCERTAINとする。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "about/about-nablarch/about-nablarch-platform.json:s1",
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1",
+      "about/migration/migration-migration.json:s33"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 119829,
+    "duration_api_ms": 118628,
+    "num_turns": 9,
+    "total_cost_usd": 0.5764298,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 2302,
+      "cache_read_input_tokens": 268682,
+      "cache_creation_input_tokens": 31541
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1194,
+        "outputTokens": 31,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001349,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5183,
+        "outputTokens": 6878,
+        "cacheReadInputTokens": 646556,
+        "cacheCreationInputTokens": 69972,
+        "webSearchRequests": 0,
+        "costUSD": 0.5750808000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

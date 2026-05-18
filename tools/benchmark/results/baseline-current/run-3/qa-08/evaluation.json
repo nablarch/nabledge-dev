@@ -1,0 +1,117 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. メッセージの多言語化」セクションに、言語ごとのプロパティファイル（messages.properties、messages_en.properties、messages_zh.properties）を用意することと、PropertiesStringResourceLoaderのlocalesプロパティにサポートする言語（en、zh）を設定するXML例が明示されており、事実の内容が含まれている。",
+      "fact": "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "PropertiesStringResourceLoader.locales にサポート言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "PropertiesStringResourceLoader.defaultLocale でデフォルト言語を設定する。未設定時は Locale.getDefault().getLanguage() が使われ障害の原因になる",
+        "supported": true
+      },
+      {
+        "claim": "プロパティファイルの命名規則は messages_言語.properties（デフォルトは messages.properties）",
+        "supported": true
+      },
+      {
+        "claim": "メッセージ取得時の言語は ThreadContext#getLanguage が返すロケールで決定される",
+        "supported": true
+      },
+      {
+        "claim": "PropertiesStringResourceLoader を BasicStaticDataCache でラップせず直接コンポーネント定義として使用できる",
+        "supported": false
+      },
+      {
+        "claim": "LanguageAttributeInHttpCookie クラスが存在し、defaultLanguage・supportedLanguages プロパティを持つ",
+        "supported": false
+      },
+      {
+        "claim": "LanguageAttributeInHttpSession クラスが存在する",
+        "supported": false
+      },
+      {
+        "claim": "LanguageAttributeInHttpUtil.keepLanguage(request, context, language) メソッドが存在する",
+        "supported": false
+      },
+      {
+        "claim": "CodeUtil.getName(\"GENDER\", \"MALE\", Locale.JAPANESE) のようにロケールを引数に取るオーバーロードが存在する",
+        "supported": false
+      },
+      {
+        "claim": "ResourcePathRule を使って JSP カスタムタグが言語ごとにリソースパスを動的切り替えする",
+        "supported": false
+      },
+      {
+        "claim": "n:submitLink / n:param カスタムタグで言語切り替えパラメータを送信できる",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションはメッセージ多言語化（PropertiesStringResourceLoader）のみをカバーしている。回答が主張する Nablarch 固有の API（LanguageAttributeInHttpCookie、LanguageAttributeInHttpSession、LanguageAttributeInHttpUtil.keepLanguage、CodeUtil.getName のロケール引数オーバーロード、ResourcePathRule）は知識セクションに裏付けがなくハルシネーションの疑いがある。また、XML 設定例で BasicStaticDataCache ラッパーが省略されており、知識セクションが示す正しい構成と異なる。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションはメッセージ多言語化（PropertiesStringResourceLoader）のみをカバーしている。回答が主張する Nablarch 固有の API（LanguageAttributeInHttpCookie、LanguageAttributeInHttpSession、LanguageAttributeInHttpUtil.keepLanguage、CodeUtil.getName のロケール引数オーバーロード、ResourcePathRule）は知識セクションに裏付けがなくハルシネーションの疑いがある。また、XML 設定例で BasicStaticDataCache ラッパーが省略されており、知識セクションが示す正しい構成と異なる。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/libraries/libraries-tag.json:s32",
+      "processing-pattern/web-application/web-application-feature-details.json:s12",
+      "component/libraries/libraries-code.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 173372,
+    "duration_api_ms": 170775,
+    "num_turns": 5,
+    "total_cost_usd": 0.6809637500000001,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 3819,
+      "cache_read_input_tokens": 184045,
+      "cache_creation_input_tokens": 29516
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1181,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001316,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11648,
+        "outputTokens": 10093,
+        "cacheReadInputTokens": 548725,
+        "cacheCreationInputTokens": 87651,
+        "webSearchRequests": 0,
+        "costUSD": 0.67964775,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
