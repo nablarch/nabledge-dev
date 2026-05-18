@@ -7,20 +7,15 @@
 
 ### B-1. 現行検索E2Eベースライン取得（一度限り）
 
-手順: `tools/benchmark/HOW-TO-RUN.md` に従う。run-label = `baseline-current`、シナリオ = `qa-current.json`。
+`tools/benchmark/HOW-TO-RUN.md` の手順に従う。run-label = `baseline-current`、シナリオ = `qa-current.json`。
 
-- [x] ステップ1: 1シナリオ動作確認（pre-01）— 完了済み
-- [x] ステップ2: run-1 実行（30シナリオ）— `tools/benchmark/results/20260518-100213/`
-- [ ] ステップ3: run-1 レポート作成・プッシュ
-  - 数値サマリー、シナリオ別詳細表、QAエキスパート定性評価（trace.json参照）
-  - 保存先: `tools/benchmark/results/baseline-current/run-1/report.md`
-  - [BLOCKED: ユーザー確認後にrun-2へ]
-- [ ] ステップ2: run-2 実行 → ステップ3: run-2 レポート → ユーザー確認
-- [ ] ステップ2: run-3 実行 → ステップ3: run-3 レポート → ユーザー確認
-- [ ] ステップ4: 3 run集計レポート作成
-  - 保存先: `tools/benchmark/results/baseline-current/report.md`
-- [ ] ステップ5: コミット・プッシュ
-  - [BLOCKED: ユーザーが集計値を確認し、B-2着手の承認を出す]
+- [x] ステップ1（動作確認）
+- [x] ステップ2（run-1）
+- [ ] ステップ3（run-1 レポート） → [BLOCKED: ユーザー確認]
+- [ ] ステップ2〜3（run-2）→ [BLOCKED: ユーザー確認]
+- [ ] ステップ2〜3（run-3）→ [BLOCKED: ユーザー確認]
+- [ ] ステップ4（集計レポート）→ [BLOCKED: ユーザーがB-2着手を承認]
+- [ ] ステップ5（コミット・プッシュ）
 
 ### B-2. RBKC変更
 
