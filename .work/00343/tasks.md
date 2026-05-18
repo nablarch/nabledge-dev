@@ -3,64 +3,6 @@
 **Branch**: 343-improve-search-quality
 **Updated**: 2026-05-18
 
-## In Progress
-
-### B-0. run_e2e.py 再設計
-
-**目的**: ミスが起きない構造にする。`--mode` 削除、hearing_answerの注入をシナリオファイルで制御、summary.jsonに実行コンテキスト追加。
-
-**完了済み**:
-- [x] out-of-scopeシナリオ2件追加（oos-impact-01, oos-qa-01）— `f21c6f039`
-- [x] `qa-current.json` 生成（30シナリオ、hearing_answerなし）— `f21c6f039`
-- [x] `evaluate.py` out-of-scope対応（section参照なしfactを空文字で評価）— `f21c6f039`
-- [x] シナリオ設計（3フェーズ + oos）を benchmark-design.md に追記 — `f21c6f039`
-
-**影響ファイル**:
-- `tools/benchmark/scripts/run_e2e.py` — 主要変更対象
-- `tools/benchmark/tests/test_run_e2e.py` — テスト更新
-- `tools/benchmark/results/` — 旧結果を削除（不正データのため）
-- `tools/benchmark/results/baseline-current-report.md` — 削除
-
-**Steps:**
-- [ ] 旧成果物を削除してコミット:
-  ```bash
-  rm -rf tools/benchmark/results/20260515-171300 \
-         tools/benchmark/results/20260515-181817 \
-         tools/benchmark/results/20260515-194124 \
-         tools/benchmark/results/baseline-current-report.md
-  git add -A tools/benchmark/results/
-  git commit -m "chore: remove invalid baseline results (hearing_answer was injected)"
-  git push
-  ```
-- [ ] TDD: `test_run_e2e.py` を以下の方針で書き直す（RED）
-  - `--mode` 引数が存在しないこと
-  - `--knowledge-dir` 引数が存在しないこと
-  - `--output-dir` 引数が存在しないこと
-  - `--timeout` 引数が存在しないこと
-  - hearing_answer が `None` の場合プロンプトに注入しないこと
-  - hearing_answer が設定されている場合プロンプトに注入すること
-  - `summary.json` に `skill_dir`, `scenarios_file`, `executed_at` が含まれること
-  - `trace.json` が保存されること（`claude -p --output-format json` の全出力）
-  - `pytest tools/benchmark/tests/test_run_e2e.py` が FAIL（実装前なのでFAILが正しい）
-- [ ] `run_e2e.py` を書き直す（GREEN）
-  - `--mode` / `--knowledge-dir` / `--output-dir` / `--timeout` を削除
-  - hearing_answerの注入ロジック: シナリオの `hearing_answer` が非Noneなら注入、Noneなら注入しない（分岐のみ、モードなし）
-  - `knowledge_dir = skill_dir / "knowledge"` に固定
-  - `output_dir = tools/benchmark/results/YYYYMMDD-HHMMSS/` に固定
-  - `timeout = 360` にハードコード
-  - `summary.json` に `skill_dir`, `scenarios_file`, `executed_at` を追加
-  - `trace.json` を保存（`claude -p` の生JSON出力全体）— QAエキスパートの定性評価用
-  - `pytest tools/benchmark/tests/test_run_e2e.py` が PASS
-  - `pytest tools/benchmark/tests/` が全PASS
-- [ ] SEレビュー（別エージェント）を実施してユーザーに報告、Findingがあれば修正
-- [ ] コミット:
-  ```bash
-  git add tools/benchmark/scripts/run_e2e.py \
-          tools/benchmark/tests/test_run_e2e.py
-  git commit -m "feat: simplify run_e2e — remove --mode/--output-dir/--knowledge-dir/--timeout, hearing controlled by scenario"
-  git push
-  ```
-
 ## Not Started
 
 ### B-1. 現行検索E2Eベースライン取得（一度限り）
@@ -245,6 +187,7 @@ B-6完了後。新ベンチマーク基盤に完全移行。
 
 ## Done
 
+- [x] B-0. run_e2e.py 再設計（旧結果削除 `338c8c471`、TDD実装 `218a5e051`）— SEレビュー 0 Findings
 - [x] B-1（旧）. 現行検索E2Eベースライン取得（不正データのためB-0でリセット） — `f57b78581`, `4de6fb47b`
 - [x] A-1. RBKC変更のリバート — `5bf479e1c`, `f0249fea0`
 - [x] A-2. 設計書の整合 — `b3819fb94`
