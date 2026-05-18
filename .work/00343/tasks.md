@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-2作業B再設計: verify設計書更新→TDD→実装の順に変更)
+**Updated**: 2026-05-19 (B-2作業B-1完了: verify設計書更新)
 
 ## In Progress
 
@@ -26,13 +26,7 @@ B-1完了後に実施。目的: `index.md`（知識ファイル一覧）と `ter
 
 **作業B-1: verify 設計書の更新**
 
-- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` を更新:
-  - §0 全体像: 出力ファイルに index.md / terms.json を追加（それぞれの役割を明記）
-  - QO4 を index.md ベースに刷新（index.toon 廃止。index.md の網羅性・内容整合性を検証）
-  - QO5 新設: terms.json 整合性チェック（存在確認、dangling section 参照検出）
-  - QO3/QO4 スキャンから index.md / terms.json を除外する旨を明記
-  - §4 品質保証マトリクスに QO5 を追加（❌ 状態）
-  - §4 対応テストテーブルに QO4/QO5 のテストクラスを追記
+- [x] `tools/rbkc/docs/rbkc-verify-quality-design.md` を更新 — `c05a3afac`
 
 **作業B-2: verify TDD（QO4 更新 + QO5 新設）**
 
