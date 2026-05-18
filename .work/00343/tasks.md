@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-18
+**Updated**: 2026-05-19 (B-2作業B再設計: verify設計書更新→TDD→実装の順に変更)
 
 ## In Progress
 
@@ -9,42 +9,48 @@
 
 B-1完了後に実施。目的: `index.md`（知識ファイル一覧）と `terms.json`（検索語辞書）を生成できる状態にする。
 
-**影響調査結果**:
-- `verify.py` は `index.md` と `terms.json` を一切チェックしない（QO4は `index.toon` のみ）
-- `tools/benchmark/scripts/generate_index.py` にindex.md生成ロジック実装済み — RBKCへの統合が必要
-
 **作業A: index.md生成をRBKCに統合**
 
-- [ ] 変更前のFAIL数を記録:
-  ```bash
-  for v in 6 5 1.4 1.3 1.2; do
-    echo -n "v$v: "; (cd tools/rbkc && bash rbkc.sh verify $v 2>&1 | grep -c "FAIL") || echo "0"
-  done
-  ```
-- [ ] TDD: `test_index.py` に `generate_index_md()` のテストを追加（RED）
-  - `pytest tools/rbkc/tests/ut/test_index.py` が FAIL
-- [ ] `index.py` に `generate_index_md()` を実装（GREEN）
-  - `pytest tools/rbkc/tests/ut/test_index.py` が PASS
-  - `run.py` の create/update/delete で呼び出す
-- [ ] 全5バージョンで create+verify:
-  ```bash
-  for v in 6 5 1.4 1.3 1.2; do
-    echo "=== v$v ===" && (cd tools/rbkc && bash rbkc.sh create $v && bash rbkc.sh verify $v) 2>&1 | tail -3
-  done
-  ```
-  - 受入条件: 各バージョンで `index.md` が生成され、FAIL数が変更前と同じ
-- [ ] コミット: `feat: add generate_index_md to RBKC`
+- [x] 変更前のFAIL数を記録: 全バージョン FAIL 0
+- [x] TDD: `test_index.py` に `generate_index_md()` のテストを追加（RED）
+- [x] `index.py` に `generate_index_md()` を実装（GREEN） — 19テストPASS
+- [x] 全5バージョンで create+verify: 全バージョン All files verified OK、FAIL 0
+- [x] コミット: `feat: add generate_index_md to RBKC` — `22566bc09`
 
 **作業B: terms.json生成をRBKCに新規実装**
 
-- [ ] TDD: `test_terms.py` を新規作成（RED）
-  - `pytest tools/rbkc/tests/ut/test_terms.py` が FAIL
-- [ ] `terms.py` を実装（GREEN）
-  - `pytest tools/rbkc/tests/ut/test_terms.py` が PASS
-  - `run.py` の create/update/delete で呼び出す
-- [ ] 全5バージョンで create+verify（同上コマンド）
-  - 受入条件: 各バージョンで `terms.json` が生成され、FAIL数が変更前と同じ
-- [ ] コミット: `feat: add generate_terms to RBKC`
+現状: `test_terms.py`（29テストGREEN）、`terms.py`、`run.py` 呼び出し追加まで完了済み（未コミット）。
+ただし create+verify で **FAIL 発生**（QO3/QO4 が terms.json を通常の knowledge JSON と誤認）。
+
+設計上の問題: index.md と terms.json は知識コンテンツファイルではなくメタデータファイルだが、verify 設計書がこれを未定義のままにしている。ゼロトレランス原則に従い、**設計書更新 → verify TDD → 実装整合** の順で進める。
+
+**作業B-1: verify 設計書の更新**
+
+- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` を更新:
+  - §0 全体像: 出力ファイルに index.md / terms.json を追加（それぞれの役割を明記）
+  - QO4 を index.md ベースに刷新（index.toon 廃止。index.md の網羅性・内容整合性を検証）
+  - QO5 新設: terms.json 整合性チェック（存在確認、dangling section 参照検出）
+  - QO3/QO4 スキャンから index.md / terms.json を除外する旨を明記
+  - §4 品質保証マトリクスに QO5 を追加（❌ 状態）
+  - §4 対応テストテーブルに QO4/QO5 のテストクラスを追記
+
+**作業B-2: verify TDD（QO4 更新 + QO5 新設）**
+
+- [ ] `test_verify.py` の `TestCheckIndexCoverage` に index.md 対応テストを追加（RED）
+  - index.md 存在チェック、全 content JSON が H3 エントリとして存在、dangling path 検出
+- [ ] `test_verify.py` に `TestCheckTermsCoverage` を新規追加（RED）
+  - terms.json 存在チェック、section 参照形式（`path:sN`）、dangling 参照検出
+- [ ] `verify.py` を更新（GREEN）:
+  - `check_index_coverage()`: index.toon → index.md ベースに変更、QO3/QO4 スキャンから terms.json / index.md を除外
+  - `check_terms_coverage()` を新規実装
+- [ ] 全5バージョンで create+verify: 全バージョン FAIL 0
+- [ ] コミット2本:
+  - `test: add verify tests for index.md and terms.json coverage`
+  - `feat: update verify — QO4 to index.md, add QO5 terms.json`
+
+**作業B-3: 作業Bのコミット**
+
+- [ ] test_terms.py, terms.py, run.py の変更をコミット: `feat: add generate_terms to RBKC`
 
 ### B-3. スキルデプロイ
 
