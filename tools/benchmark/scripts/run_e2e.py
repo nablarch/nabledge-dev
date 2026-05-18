@@ -4,10 +4,13 @@ Runs the qa.md workflow for each scenario, capturing diagnostic markers from
 the response to extract hearing, search, and answer information.
 
 Output per scenario:
-  {output-dir}/{scenario-id}/hearing.json   — hearing behavior (skipped or asked)
-  {output-dir}/{scenario-id}/search.json    — search results (section IDs)
-  {output-dir}/{scenario-id}/answer.md      — generated answer text
-  {output-dir}/{scenario-id}/metrics.json   — performance metrics
+  {output-dir}/{scenario-id}/hearing.json    — hearing behavior (skipped or asked)
+  {output-dir}/{scenario-id}/search.json     — search results (section IDs)
+  {output-dir}/{scenario-id}/answer.md       — generated answer text
+  {output-dir}/{scenario-id}/metrics.json    — performance metrics
+  {output-dir}/{scenario-id}/trace.json      — full claude -p JSON output (for QA review)
+  {output-dir}/{scenario-id}/evaluation.json — evaluation results
+  {output-dir}/summary.json                  — run summary with context
 """
 from __future__ import annotations
 
@@ -27,6 +30,7 @@ def default_output_dir() -> Path:
 from tools.benchmark.scripts.evaluate import evaluate_scenario
 
 WORKFLOW_FILE = "workflows/qa.md"
+TIMEOUT = 360
 
 MARKER_HEARING_START = "<<<BENCHMARK_HEARING>>>"
 MARKER_HEARING_END = "<<<END_BENCHMARK_HEARING>>>"
@@ -47,17 +51,15 @@ def _extract_between_markers(text: str, start_marker: str, end_marker: str) -> s
     return text[start_idx + len(start_marker):end_idx].strip()
 
 
-def build_e2e_prompt(scenario: dict, workflow_content: str, mode: str = "new") -> str:
-    """Build the E2E prompt that instructs the model to follow qa.md and output diagnostic markers.
+def build_e2e_prompt(scenario: dict, workflow_content: str) -> str:
+    """Build the E2E prompt that instructs the model to follow qa.md.
 
-    Args:
-        mode: "current" — no hearing context injected (measures current skill as-is).
-              "new"     — hearing context injected so new skill can skip hearing step.
+    Injects hearing_answer context when scenario["when"]["hearing_answer"] is not None.
     """
     question = scenario["when"]["input"]
     hearing_answer = scenario["when"].get("hearing_answer")
 
-    if mode == "new" and hearing_answer:
+    if hearing_answer is not None:
         hearing_section = (
             f"\n## コンテキスト（ヒアリング結果）\n"
             f"処理方式: {hearing_answer.get('processing_type', '')}\n"
@@ -144,7 +146,7 @@ def _extract_metrics(claude_output: dict) -> dict:
 
 
 def save_e2e_results(output_dir: str | Path, scenario_id: str, data: dict) -> None:
-    """Save E2E scenario results in evaluate.py-compatible format."""
+    """Save E2E scenario results."""
     scenario_dir = Path(output_dir) / scenario_id
     scenario_dir.mkdir(parents=True, exist_ok=True)
 
@@ -158,25 +160,21 @@ def save_e2e_results(output_dir: str | Path, scenario_id: str, data: dict) -> No
     (scenario_dir / "metrics.json").write_text(
         json.dumps(data["metrics"], ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    (scenario_dir / "trace.json").write_text(
+        json.dumps(data["trace"], ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
 
 def run_e2e_scenario(
     scenario: dict,
     skill_dir: str | Path,
-    timeout: int = 180,
-    mode: str = "new",
 ) -> dict:
     """Run a single scenario through the skill workflow end-to-end.
 
-    Args:
-        scenario: Scenario definition dict.
-        skill_dir: Path to the skill directory (e.g. .claude/skills/nabledge-6/).
-        timeout: Subprocess timeout in seconds.
-        mode: "current" — no hearing context (measures current skill as-is).
-              "new"     — hearing context injected for new skill.
+    Injects hearing_answer context when scenario["when"]["hearing_answer"] is not None.
 
     Returns:
-        Dict with scenario_id, hearing, search, answer, metrics.
+        Dict with scenario_id, hearing, search, answer, metrics, trace.
 
     Raises:
         RuntimeError: If claude subprocess exits with non-zero return code.
@@ -184,7 +182,7 @@ def run_e2e_scenario(
     """
     skill_dir = Path(skill_dir)
     workflow_content = (skill_dir / WORKFLOW_FILE).read_text(encoding="utf-8")
-    prompt = build_e2e_prompt(scenario, workflow_content, mode=mode)
+    prompt = build_e2e_prompt(scenario, workflow_content)
 
     proc = subprocess.run(
         [
@@ -198,7 +196,7 @@ def run_e2e_scenario(
         capture_output=True,
         text=True,
         cwd=str(skill_dir),
-        timeout=timeout,
+        timeout=TIMEOUT,
     )
 
     if proc.returncode != 0:
@@ -218,36 +216,35 @@ def run_e2e_scenario(
         "search": parsed["search"],
         "answer": parsed["answer"],
         "metrics": metrics,
+        "trace": claude_output,
     }
 
 
 def run_e2e_all(
     scenarios_path: str,
     skill_dir: str | Path,
-    output_dir: str | Path,
+    output_dir: str | Path | None = None,
     scenario_ids: list[str] | None = None,
-    knowledge_dir: str | None = None,
-    timeout: int = 180,
-    mode: str = "new",
 ) -> dict:
     """Run all scenarios end-to-end and save results.
 
     Args:
         scenarios_path: Path to scenarios JSON file.
         skill_dir: Path to the skill directory.
-        output_dir: Directory to save results.
+        output_dir: Directory to save results (default: tools/benchmark/results/YYYYMMDD-HHMMSS/).
         scenario_ids: Optional list of scenario IDs to run (runs all if None).
-        knowledge_dir: Path to knowledge directory (required for evaluation step).
-        timeout: Subprocess timeout in seconds per scenario.
-        mode: "current" — no hearing context. "new" — hearing context injected.
 
     Returns:
-        Summary dict with total_scenarios and per-scenario info.
+        Summary dict with total_scenarios, skill_dir, scenarios_file, executed_at, and per-scenario info.
     """
+    skill_dir = Path(skill_dir)
+    knowledge_dir = str(skill_dir / "knowledge")
+    executed_at = datetime.now().isoformat()
+
     with open(scenarios_path, encoding="utf-8") as f:
         data = json.load(f)
 
-    out = Path(output_dir)
+    out = Path(output_dir) if output_dir else default_output_dir()
     out.mkdir(parents=True, exist_ok=True)
 
     results = []
@@ -257,19 +254,21 @@ def run_e2e_all(
             continue
 
         print(f"Running {sid}...", file=sys.stderr)
-        result = run_e2e_scenario(scenario, skill_dir, timeout=timeout, mode=mode)
+        result = run_e2e_scenario(scenario, skill_dir)
         save_e2e_results(str(out), sid, result)
 
-        if knowledge_dir is not None:
-            evaluation = evaluate_scenario(scenario, result, knowledge_dir)
-            (out / sid / "evaluation.json").write_text(
-                json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8"
-            )
+        evaluation = evaluate_scenario(scenario, result, knowledge_dir)
+        (out / sid / "evaluation.json").write_text(
+            json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
         results.append(result)
 
     summary = {
         "total_scenarios": len(results),
+        "skill_dir": str(skill_dir),
+        "scenarios_file": str(scenarios_path),
+        "executed_at": executed_at,
         "scenarios": [
             {
                 "id": r["scenario_id"],
@@ -295,25 +294,18 @@ def main():
     )
     parser.add_argument("--scenarios", required=True, help="Path to scenarios JSON")
     parser.add_argument("--skill-dir", required=True, help="Path to skill directory")
-    parser.add_argument("--output-dir", default=None, help="Output directory for results (default: tools/benchmark/results/YYYYMMDD-HHMMSS/)")
     parser.add_argument("--scenario-ids", help="Comma-separated scenario IDs to run")
-    parser.add_argument("--knowledge-dir", required=True, help="Knowledge directory for quality evaluation (accuracy + hallucination)")
-    parser.add_argument("--timeout", type=int, default=180, help="Subprocess timeout in seconds per scenario (default: 180)")
-    parser.add_argument("--mode", default="new", choices=["current", "new"], help="'current': no hearing context (baseline). 'new': hearing context injected (default: new)")
     args = parser.parse_args()
 
     scenario_ids = args.scenario_ids.split(",") if args.scenario_ids else None
-    output_dir = args.output_dir or str(default_output_dir())
+    output_dir = default_output_dir()
     print(f"Output dir: {output_dir}", file=sys.stderr)
 
     summary = run_e2e_all(
         args.scenarios,
         args.skill_dir,
-        output_dir,
+        output_dir=str(output_dir),
         scenario_ids=scenario_ids,
-        knowledge_dir=args.knowledge_dir,
-        timeout=args.timeout,
-        mode=args.mode,
     )
 
     print(f"\nCompleted: {summary['total_scenarios']} scenarios", file=sys.stderr)
