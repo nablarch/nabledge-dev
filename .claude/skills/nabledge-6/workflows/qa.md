@@ -1,6 +1,6 @@
 # QA Workflow
 
-Question-answering workflow. Searches knowledge files for information relevant to the user's question and responds in Japanese.
+Question-answering workflow. Searches Nablarch knowledge and responds in Japanese.
 
 ## Input
 
@@ -8,77 +8,126 @@ User's question (natural Japanese text)
 
 ## Output
 
-Answer in Japanese
+Answer in Japanese (Markdown)
+
+And benchmark markers (required when running in benchmark mode):
+```
+<<<BENCHMARK_HEARING>>>
+{"status": "skipped" or "asked", "questions": [...]}
+<<<END_BENCHMARK_HEARING>>>
+
+<<<BENCHMARK_SEARCH>>>
+{"section_ids": ["file.json:s1", ...]}
+<<<END_BENCHMARK_SEARCH>>>
+
+<<<BENCHMARK_ANSWER>>>
+[answer text]
+<<<END_BENCHMARK_ANSWER>>>
+```
 
 ## Steps
 
-### Step 1: Call knowledge search
+### Step 0: Detect pre-injected hearing context
 
-**Tool**: workflows/_knowledge-search.md
+Check whether the prompt contains a `## コンテキスト（ヒアリング結果）` section.
 
-**Action**: Execute `workflows/_knowledge-search.md`. Pass the user's question as-is as input.
+**If present (benchmark runner pre-injection)**:
+- Extract `処理方式:` and `目的:` values from that section
+- If processing type is empty or the literal string `None`, set `hearing_answer_str` = `"やりたいこと: {goal}"`
+- Otherwise set `hearing_answer_str` = `"処理方式: {processing_type}\nやりたいこと: {goal}"`
+- Output benchmark hearing marker now:
+  ```
+  <<<BENCHMARK_HEARING>>>
+  {"status": "skipped", "questions": []}
+  <<<END_BENCHMARK_HEARING>>>
+  ```
+- Skip Step 1 and proceed to Step 2
 
-**Output**: Pointer JSON
+**If not present (normal user invocation)**:
+- Proceed to Step 1
 
-**Branch**: If pointer JSON is empty (`results: []`), proceed to "No match response" in Step 3.
+### Step 1: Hearing
 
-### Step 2: Read section content
+**Tool**: workflows/qa/hearing.md
 
-**Tool**: Bash (scripts/read-sections.sh)
+Execute `workflows/qa/hearing.md` with the user's question.
 
-**Action**: Read section content from `results` in pointer JSON, in order from the top.
+This workflow:
+- Classifies whether hearing is needed
+- Asks the user if needed (via AskUserQuestion)
+- Outputs the `<<<BENCHMARK_HEARING>>>` marker
+- Returns hearing result
 
-**Command**:
-```bash
-bash .claude/skills/nabledge-6/scripts/read-sections.sh \
-  "features/handlers/common/db-connection-management-handler.json:setup" \
-  "features/libraries/universal-dao.json:paging"
+Save the formatted hearing string as `hearing_answer_str`.
+
+### Step 2: Semantic search
+
+**Tool**: workflows/semantic-search.md
+
+Execute `workflows/semantic-search.md` with:
+- `{question}` = user's question
+- `{hearing_answer}` = `hearing_answer_str`
+
+Save as `semantic_results` (pointer JSON).
+
+### Step 3: Keyword search
+
+**Tool**: workflows/keyword-search.md
+
+Execute `workflows/keyword-search.md` with:
+- `{question}` = user's question
+- `{hearing_answer}` = `hearing_answer_str`
+
+Save as `keyword_results` (pointer JSON).
+
+### Step 4: Merge results
+
+Combine `semantic_results.results` and `keyword_results.results`:
+1. Concatenate the two result lists
+2. Deduplicate by `(file, section_id)` — when duplicated, keep the entry with higher relevance (`"high"` beats `"partial"`)
+3. Sort: `"high"` entries first, then `"partial"`
+
+Save as `merged_pointer_json`.
+
+Output benchmark search marker:
+```
+<<<BENCHMARK_SEARCH>>>
+{"section_ids": ["file.json:s1", "file.json:s3", ...]}
+<<<END_BENCHMARK_SEARCH>>>
 ```
 
-**Output format**:
+Where `section_ids` is the list of `"file:section_id"` strings from `merged_pointer_json.results`.
+
+If `merged_pointer_json.results` is empty, output `{"section_ids": []}`.
+
+### Step 5: Generate answer
+
+**Tool**: workflows/qa/answer.md
+
+Execute `workflows/qa/answer.md` with:
+- `{question}` = user's question
+- `{hearing_answer_str}` = hearing result string
+- `{pointer_json}` = `merged_pointer_json`
+
+Save result as `answer_text`.
+
+### Step 6: Verify answer
+
+**Tool**: workflows/qa/verify.md
+
+Execute `workflows/qa/verify.md` with:
+- `{answer}` = `answer_text`
+- `{pointer_json}` = `merged_pointer_json`
+
+Save result as `final_answer`.
+
+### Step 7: Output
+
+Output `final_answer` to the user.
+
+Then output benchmark answer marker:
 ```
-=== features/handlers/common/db-connection-management-handler.json : setup ===
-[section content]
-=== END ===
-=== features/libraries/universal-dao.json : paging ===
-[section content]
-=== END ===
+<<<BENCHMARK_ANSWER>>>
+{final_answer}
+<<<END_BENCHMARK_ANSWER>>>
 ```
-
-**Reading rules**:
-- Read high relevance sections first
-- Max count: **10**
-
-### Step 3: Generate answer
-
-**Tool**: In-memory (LLM generation)
-
-**Action**: Generate an answer in the following format based on the section content obtained in Step 2.
-
-**Answer format** (output in Japanese to user):
-```
-**結論**: [direct answer to the question]
-
-**根拠**: [code examples, configuration examples, specification information from knowledge files]
-
-**注意点**: [constraints, limitations, common pitfalls]
-
-参照: [knowledge-file-id#section-id]
-```
-
-**Answer rules**:
-- Answer based **only** on information from knowledge files
-- Do not fill in information not in knowledge files with inference
-- Cite sources explicitly (e.g., `universal-dao.json#paging`)
-- Target length: within 500 tokens (up to 800 tokens for complex questions)
-
-**No match response** (when pointer JSON is empty):
-```
-この情報は知識ファイルに含まれていません。
-
-関連する知識ファイル:
-- [list title and path of entries from index.toon that may be related]
-- [for entries with path "not yet created", show that fact]
-```
-
-**Important**: Do **not** provide alternative answers from LLM training data.
