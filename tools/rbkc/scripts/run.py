@@ -33,7 +33,7 @@ from pathlib import Path
 from scripts.common.sources import FileInfo, classify_sources, scan_sources
 from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.create.docs import generate_docs
-from scripts.create.index import generate_index
+from scripts.create.index import generate_index, generate_index_md
 from scripts.create.resolver import collect_asset_refs, copy_assets
 from scripts.common.labels import build_label_doc_map, build_label_map  # noqa: F401
 from scripts.verify.verify import (
@@ -259,6 +259,7 @@ def create(
 
     copy_assets(all_asset_refs, output_dir)
     generate_index(file_infos, output_dir, version, index_path)
+    generate_index_md(output_dir, output_dir / "index.md")
     generate_docs(output_dir, docs_dir, version)
 
     snap = make_snapshot(file_infos, repo_root, version)
@@ -308,6 +309,7 @@ def update(
 
     copy_assets(changed_asset_refs, output_dir)
     generate_index(file_infos, output_dir, version, output_dir / "index.toon")
+    generate_index_md(output_dir, output_dir / "index.md")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 
     # Update snapshot to reflect current state
@@ -350,6 +352,7 @@ def delete(
                 count += 1
 
     generate_index(file_infos, output_dir, version, output_dir / "index.toon")
+    generate_index_md(output_dir, output_dir / "index.md")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 
     # Update snapshot
