@@ -5,14 +5,19 @@
 
 ## In Progress
 
-### B-0. run_e2e.py 再設計と qa-current.json 追加
+### B-0. run_e2e.py 再設計
 
 **目的**: ミスが起きない構造にする。`--mode` 削除、hearing_answerの注入をシナリオファイルで制御、summary.jsonに実行コンテキスト追加。
+
+**完了済み**:
+- [x] out-of-scopeシナリオ2件追加（oos-impact-01, oos-qa-01）— `f21c6f039`
+- [x] `qa-current.json` 生成（30シナリオ、hearing_answerなし）— `f21c6f039`
+- [x] `evaluate.py` out-of-scope対応（section参照なしfactを空文字で評価）— `f21c6f039`
+- [x] シナリオ設計（3フェーズ + oos）を benchmark-design.md に追記 — `f21c6f039`
 
 **影響ファイル**:
 - `tools/benchmark/scripts/run_e2e.py` — 主要変更対象
 - `tools/benchmark/tests/test_run_e2e.py` — テスト更新
-- `tools/benchmark/scenarios/qa-current.json` — 新規作成（qa.jsonからhearing_answer除いたもの）
 - `tools/benchmark/results/` — 旧結果を削除（不正データのため）
 - `tools/benchmark/results/baseline-current-report.md` — 削除
 
@@ -45,27 +50,11 @@
   - `summary.json` に `skill_dir`, `scenarios_file`, `executed_at` を追加
   - `pytest tools/benchmark/tests/test_run_e2e.py` が PASS
   - `pytest tools/benchmark/tests/` が全PASS
-- [ ] `qa-current.json` を生成するスクリプトを書いて実行:
-  ```bash
-  python3 -c "
-  import json
-  from pathlib import Path
-  data = json.loads(Path('tools/benchmark/scenarios/qa.json').read_text())
-  for s in data['scenarios']:
-      s.get('when', {}).pop('hearing_answer', None)
-  data['description'] = data['description'] + ' (hearing_answer removed — for current skill baseline)'
-  Path('tools/benchmark/scenarios/qa-current.json').write_text(
-      json.dumps(data, ensure_ascii=False, indent=2))
-  print('done')
-  "
-  ```
-  - 確認: `python3 -c "import json; d=json.loads(open('tools/benchmark/scenarios/qa-current.json').read()); print(all('hearing_answer' not in s.get('when',{}) for s in d['scenarios']))"` が True
 - [ ] SEレビュー（別エージェント）を実施してユーザーに報告、Findingがあれば修正
 - [ ] コミット:
   ```bash
   git add tools/benchmark/scripts/run_e2e.py \
-          tools/benchmark/tests/test_run_e2e.py \
-          tools/benchmark/scenarios/qa-current.json
+          tools/benchmark/tests/test_run_e2e.py
   git commit -m "feat: simplify run_e2e — remove --mode/--output-dir/--knowledge-dir/--timeout, hearing controlled by scenario"
   git push
   ```
