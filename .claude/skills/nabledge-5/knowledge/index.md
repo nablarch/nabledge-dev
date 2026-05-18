@@ -106,11 +106,6 @@ path: about/about-nablarch/about-nablarch-versionup-policy.json
 ### リリース情報
 path: about/release-notes/release-notes-releases.json
 
-## assets/etl-etl
-
-### file_output
-path: assets/etl-etl/file_output.json
-
 ## check/security-check
 
 ### 1.概要
