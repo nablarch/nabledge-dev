@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-2完了: verify設計書更新+TDD+terms.json実装)
+**Updated**: 2026-05-19 (B-3: 部品コピー+ワークフロー作成完了、スモークテスト実行中)
 
 ## In Progress
 
@@ -9,15 +9,8 @@
 
 B-2完了後に実施。目的: ベンチマークで検証済みの部品プロンプト・スクリプトをスキルに組み込む。
 
-- [ ] 部品をスキルにコピー:
-  ```bash
-  diff tools/benchmark/components/prompts/ .claude/skills/nabledge-6/assets/
-  diff tools/benchmark/components/scripts/ .claude/skills/nabledge-6/scripts/
-  ```
-  - 受入条件: 差分がない（ベンチマーク済みと一致）
-- [ ] ワークフロー作成（各ファイルをPEレビュー後にコミット）:
-  - `qa/hearing.md`, `semantic-search.md`, `keyword-search.md`
-  - `qa/answer.md`, `qa/verify.md`, `qa.md`, `code-analysis.md`
+- [x] 部品をスキルにコピー — `a07583fc4`
+- [x] ワークフロー作成（PE 2ラウンドレビュー済み、全Findings対応済み） — `549df22d2`, `295e37d65`, `c54ef6d30`, `c1ec0de54`, `000fc91db`, `71a0c16e3`, `10a7aaf82`
 - [ ] 1シナリオでスモークテスト:
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
