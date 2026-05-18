@@ -431,37 +431,35 @@ class TestCheckJsonDocsMdConsistency_QO2:
 # ---------------------------------------------------------------------------
 
 class TestCheckIndexCoverage:
-    """QO4: every JSON without no_knowledge_content must be in index.toon."""
+    """QO4: every content JSON must have a 'path:' entry in index.md (H3-based)."""
 
     def _check(self, knowledge_dir, index_path):
         from scripts.verify.verify import check_index_coverage
         return check_index_coverage(knowledge_dir, index_path)
 
-    def _write_toon(self, idx_path, entries):
-        """Write index.toon in real TOON format: comma-separated, indented rows."""
-        lines = [
-            "# Nabledge-6 Knowledge Index",
-            "",
-            f"files[{len(entries)},]{{title,type,category,processing_patterns,path}}:",
-        ]
-        for e in entries:
-            lines.append(f"  {', '.join(e)}")
-        idx_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    def _write_index_md(self, idx_path, entries):
+        """Write index.md with 'path: {rel}' lines for given relative paths."""
+        lines = ["# Knowledge Index", ""]
+        for rel in entries:
+            lines.append(f"### title")
+            lines.append(f"path: {rel}")
+            lines.append("")
+        idx_path.write_text("\n".join(lines), encoding="utf-8")
 
     def test_pass_all_files_indexed(self, tmp_path):
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A", "no_knowledge_content": False}))
-        idx = tmp_path / "index.toon"
-        self._write_toon(idx, [["A", "", "", "", "a.json"]])
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, ["a.json"])
         assert self._check(kdir, idx) == []
 
     def test_fail_json_not_in_index(self, tmp_path):
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "missing.json").write_text(json.dumps({"id": "m", "title": "M", "no_knowledge_content": False}))
-        idx = tmp_path / "index.toon"
-        self._write_toon(idx, [])
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, [])
         issues = self._check(kdir, idx)
         assert any("QO4" in i and "missing.json" in i for i in issues)
 
@@ -469,156 +467,233 @@ class TestCheckIndexCoverage:
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "toc.json").write_text(json.dumps({"id": "t", "title": "T", "no_knowledge_content": True}))
-        idx = tmp_path / "index.toon"
-        self._write_toon(idx, [])
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, [])
         assert self._check(kdir, idx) == []
 
     def test_pass_nested_path_indexed(self, tmp_path):
-        """Nested JSON with commas in title must parse correctly from TOON."""
         kdir = tmp_path / "knowledge"
         (kdir / "sub").mkdir(parents=True)
         (kdir / "sub" / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
-        idx = tmp_path / "index.toon"
-        self._write_toon(idx, [["B", "about", "sub", "", "sub/b.json"]])
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, ["sub/b.json"])
         assert self._check(kdir, idx) == []
 
     def test_fail_missing_index_file(self, tmp_path):
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A", "no_knowledge_content": False}))
-        issues = self._check(kdir, tmp_path / "nonexistent.toon")
+        issues = self._check(kdir, tmp_path / "nonexistent.md")
         assert any("QO4" in i for i in issues)
 
-    # --- QO4 Z-1 gap fill -------------------------------------------------
-
     def test_fail_missing_index_lists_every_content_json(self, tmp_path):
-        """Spec §3-3: when index.toon is absent, every content JSON is FAIL."""
+        """Spec §3-3: when index.md is absent, every content JSON is FAIL."""
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
         (kdir / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
         (kdir / "no.json").write_text(json.dumps({"id": "no", "title": "N", "no_knowledge_content": True}))
-        issues = self._check(kdir, tmp_path / "missing.toon")
-        # Two content JSONs must both be reported
+        issues = self._check(kdir, tmp_path / "missing.md")
         assert any("a.json" in i for i in issues)
         assert any("b.json" in i for i in issues)
-        # no_knowledge file is not reported
         assert not any("no.json" in i for i in issues)
 
     def test_fail_dangling_entry_in_index(self, tmp_path):
-        """Spec §3-3: an index entry without a matching JSON on disk FAILs."""
+        """Spec §3-3: a path entry in index.md without a matching JSON on disk FAILs."""
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "real.json").write_text(json.dumps({"id": "r", "title": "R"}))
-        idx = tmp_path / "index.toon"
-        self._write_toon(idx, [
-            ["R", "", "", "", "real.json"],
-            ["Phantom", "", "", "", "ghost.json"],  # no file on disk
-        ])
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, ["real.json", "ghost.json"])
         issues = self._check(kdir, idx)
         assert any("ghost.json" in i and "missing JSON" in i for i in issues)
 
     def test_empty_knowledge_dir_without_index_passes(self, tmp_path):
-        """No content JSONs and no index.toon — nothing to verify."""
+        """No content JSONs and no index.md — nothing to verify."""
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
-        assert self._check(kdir, tmp_path / "missing.toon") == []
+        assert self._check(kdir, tmp_path / "missing.md") == []
 
     def test_cjk_filename_indexed(self, tmp_path):
         kdir = tmp_path / "knowledge"
         (kdir / "sub").mkdir(parents=True)
         (kdir / "sub" / "日本語.json").write_text(json.dumps({"id": "j", "title": "日本語"}))
-        idx = tmp_path / "index.toon"
-        self._write_toon(idx, [["日本語", "", "", "", "sub/日本語.json"]])
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, ["sub/日本語.json"])
         assert self._check(kdir, idx) == []
 
     def test_assets_json_not_required_in_index(self, tmp_path):
         """JSON files under knowledge/assets/ are literalinclude source
         copies, not content JSON. They must be excluded from QO4 coverage
-        and must not be required to appear in index.toon.
+        and must not be required to appear in index.md.
         """
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
         (kdir / "assets" / "etl-etl").mkdir(parents=True)
-        # A non-parseable JSON asset must not even be opened.
         (kdir / "assets" / "etl-etl" / "chunk_replace.json").write_text(
             '{ "mode": "ABORT"  // a comment\n}', encoding="utf-8"
         )
-        idx = tmp_path / "index.toon"
-        self._write_toon(idx, [["A", "", "", "", "a.json"]])
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, ["a.json"])
         assert self._check(kdir, idx) == []
 
     def test_fail_broken_json_surfaces_qo4(self, tmp_path):
-        """Spec §3-3 point 4: a JSON that cannot be parsed is QO4 FAIL
-        (no silent skip — zero-tolerance)."""
+        """Spec §3-3 point 4: a JSON that cannot be parsed is QO4 FAIL."""
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "valid.json").write_text(json.dumps({"id": "v", "title": "V"}))
         (kdir / "broken.json").write_text("{ not json")
-        idx = tmp_path / "index.toon"
-        self._write_toon(idx, [["V", "", "", "", "valid.json"]])
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, ["valid.json"])
         issues = self._check(kdir, idx)
         assert any("QO4" in i and "broken.json" in i and "parse failed" in i for i in issues)
 
-    # --- Z-1 r7 QO4 Findings -------------------------------------------
-
     def test_fail_no_knowledge_json_listed_in_index_has_distinct_message(self, tmp_path):
-        """Z-1 r7 QO4 F1: a no_knowledge_content JSON that is erroneously
-        listed in index.toon must NOT be reported as 'missing JSON' — the
-        file exists, the defect is that it was indexed. Distinct message."""
+        """A no_knowledge_content JSON listed in index.md must NOT be reported
+        as 'missing JSON' — the file exists, the defect is that it was indexed."""
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "toc.json").write_text(json.dumps({"id": "t", "title": "T", "no_knowledge_content": True}))
-        idx = tmp_path / "index.toon"
-        self._write_toon(idx, [["T", "", "", "", "toc.json"]])
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, ["toc.json"])
         issues = self._check(kdir, idx)
         assert any("QO4" in i and "no_knowledge" in i and "toc.json" in i for i in issues), issues
         assert not any("missing JSON" in i and "toc.json" in i for i in issues), issues
 
     def test_fail_broken_json_in_index_not_double_reported(self, tmp_path):
-        """Z-1 r7 QO4 F2: broken JSON listed in index.toon must produce
-        exactly one FAIL (the parse error), not a second misleading
-        'missing JSON' message — the file exists on disk."""
+        """Broken JSON listed in index.md must produce exactly one FAIL (parse error),
+        not a second misleading 'missing JSON' message."""
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "broken.json").write_text("{ not json")
-        idx = tmp_path / "index.toon"
-        self._write_toon(idx, [["X", "", "", "", "broken.json"]])
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, ["broken.json"])
         issues = self._check(kdir, idx)
         broken_issues = [i for i in issues if "broken.json" in i]
         assert any("parse failed" in i for i in broken_issues), broken_issues
         assert not any("missing JSON" in i for i in broken_issues), broken_issues
 
-    def test_pass_toon_backslash_path_normalised(self, tmp_path):
-        """Z-1 r7 QO4 F5: if a TOON writer emits a backslash path, verify
-        normalises to forward slash on both sides so equality holds."""
-        kdir = tmp_path / "knowledge"
-        (kdir / "sub").mkdir(parents=True)
-        (kdir / "sub" / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
-        idx = tmp_path / "index.toon"
-        # Write a row with a backslash separator in the path.
-        idx.write_text(
-            "files[1,]{title,type,category,processing_patterns,path}:\n"
-            "  A, , , , sub\\a.json\n",
-            encoding="utf-8",
-        )
-        assert self._check(kdir, idx) == []
-
     def test_fail_missing_index_lists_every_content_json_strict(self, tmp_path):
-        """Z-1 r7 QO4 F7: pin the spec requirement that when index.toon
-        is absent, EVERY content JSON appears as a FAIL — not just the
-        header. A test that asserted only 'any QO4 in issues' would pass
-        even if the per-file enumeration regressed to nothing."""
+        """When index.md is absent, EVERY content JSON appears as a FAIL."""
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
         (kdir / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
-        issues = self._check(kdir, tmp_path / "no-such.toon")
+        issues = self._check(kdir, tmp_path / "no-such.md")
         per_file = [i for i in issues if "not registered" in i]
         assert len(per_file) >= 2
         assert any("a.json" in i for i in per_file)
         assert any("b.json" in i for i in per_file)
+
+    def test_terms_json_excluded_from_scan(self, tmp_path):
+        """Spec §3-3 metadata exclusion: terms.json must not be required in index.md."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        (kdir / "terms.json").write_text(json.dumps({"SomeClass": ["a.json:s1"]}))
+        idx = tmp_path / "index.md"
+        self._write_index_md(idx, ["a.json"])
+        assert self._check(kdir, idx) == []
+
+    def test_index_md_itself_excluded_from_scan(self, tmp_path):
+        """Spec §3-3 metadata exclusion: index.md in knowledge_dir is not a content JSON."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        # index.md in knowledge dir should not trigger QO4 (it's not a JSON)
+        idx = kdir / "index.md"
+        self._write_index_md(idx, ["a.json"])
+        assert self._check(kdir, idx) == []
+
+
+# ---------------------------------------------------------------------------
+# QO5: terms.json 整合性 (check_terms_coverage)
+# ---------------------------------------------------------------------------
+
+class TestCheckTermsCoverage:
+    """QO5: terms.json must exist and all path:sN references must resolve."""
+
+    def _check(self, knowledge_dir, terms_path):
+        from scripts.verify.verify import check_terms_coverage
+        return check_terms_coverage(knowledge_dir, terms_path)
+
+    def _make_json(self, kdir, rel, sections=None):
+        """Write a minimal knowledge JSON at kdir/rel."""
+        path = kdir / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        data = {"id": rel.replace("/", "-").replace(".json", ""), "title": "T",
+                "sections": sections or []}
+        path.write_text(json.dumps(data), encoding="utf-8")
+
+    def test_pass_valid_terms_json(self, tmp_path):
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        self._make_json(kdir, "comp/foo.json", [{"id": "s1", "title": "T", "content": ""}])
+        terms = {"SomeClass": ["comp/foo.json:s1"]}
+        terms_path = kdir / "terms.json"
+        terms_path.write_text(json.dumps(terms), encoding="utf-8")
+        assert self._check(kdir, terms_path) == []
+
+    def test_fail_terms_json_missing(self, tmp_path):
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        issues = self._check(kdir, kdir / "terms.json")
+        assert any("QO5" in i and "terms.json" in i and "missing" in i for i in issues)
+
+    def test_fail_dangling_json_path(self, tmp_path):
+        """A reference to a non-existent JSON file is a dangling reference."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        terms = {"SomeClass": ["nonexistent.json:s1"]}
+        terms_path = kdir / "terms.json"
+        terms_path.write_text(json.dumps(terms), encoding="utf-8")
+        issues = self._check(kdir, terms_path)
+        assert any("QO5" in i and "nonexistent.json" in i for i in issues)
+
+    def test_fail_dangling_section_id(self, tmp_path):
+        """A reference to a JSON that exists but lacks the specified section is dangling."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        self._make_json(kdir, "comp/foo.json", [{"id": "s1", "title": "T", "content": ""}])
+        terms = {"SomeClass": ["comp/foo.json:s99"]}  # s99 does not exist
+        terms_path = kdir / "terms.json"
+        terms_path.write_text(json.dumps(terms), encoding="utf-8")
+        issues = self._check(kdir, terms_path)
+        assert any("QO5" in i and "foo.json" in i and "s99" in i for i in issues)
+
+    def test_pass_empty_terms_json(self, tmp_path):
+        """An empty terms.json (no terms) is valid — small corpus or no sections."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        terms_path = kdir / "terms.json"
+        terms_path.write_text("{}", encoding="utf-8")
+        assert self._check(kdir, terms_path) == []
+
+    def test_pass_multiple_refs_all_valid(self, tmp_path):
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        self._make_json(kdir, "a/foo.json", [
+            {"id": "s1", "title": "T1", "content": ""},
+            {"id": "s2", "title": "T2", "content": ""},
+        ])
+        self._make_json(kdir, "b/bar.json", [{"id": "s1", "title": "T", "content": ""}])
+        terms = {"MyClass": ["a/foo.json:s1", "b/bar.json:s1"], "otherTerm": ["a/foo.json:s2"]}
+        terms_path = kdir / "terms.json"
+        terms_path.write_text(json.dumps(terms), encoding="utf-8")
+        assert self._check(kdir, terms_path) == []
+
+    def test_fail_mixed_valid_and_dangling(self, tmp_path):
+        """Only the dangling references are reported, valid ones are not."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        self._make_json(kdir, "a/foo.json", [{"id": "s1", "title": "T", "content": ""}])
+        terms = {"MyClass": ["a/foo.json:s1", "missing.json:s1"]}
+        terms_path = kdir / "terms.json"
+        terms_path.write_text(json.dumps(terms), encoding="utf-8")
+        issues = self._check(kdir, terms_path)
+        assert any("missing.json" in i for i in issues)
+        assert not any("foo.json" in i for i in issues)
 
 
 # ---------------------------------------------------------------------------
@@ -733,6 +808,16 @@ class TestCheckDocsCoverage:
         (kdir / "assets" / "etl-etl" / "chunk_replace.json").write_text(
             '{ "mode": "ABORT"  // comment breaks json\n}', encoding="utf-8"
         )
+        (ddir / "README.md").write_text("1ページ\n")
+        assert self._check(kdir, ddir) == []
+
+    def test_terms_json_excluded_from_qo3_scan(self, tmp_path):
+        """Spec §3-3 metadata exclusion: terms.json must not require a docs MD."""
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "about/a.json")
+        self._write_md(ddir, "about/a.md")
+        (kdir / "terms.json").write_text(json.dumps({"MyClass": ["about/a.json:s1"]}))
         (ddir / "README.md").write_text("1ページ\n")
         assert self._check(kdir, ddir) == []
 

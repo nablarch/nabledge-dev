@@ -418,3 +418,19 @@ class TestGenerateIndexMdIndexFileSkipped:
         text = out.read_text(encoding="utf-8")
         assert "### Index" not in text
         assert "### Lib" in text
+
+    def test_assets_json_is_excluded(self, tmp_path):
+        """JSON files under assets/ are literalinclude source copies — not content."""
+        kn = tmp_path / "knowledge"
+        _write_json_with_sections(kn, "component/libraries/lib.json", {
+            "id": "lib", "title": "Lib", "no_knowledge_content": False, "sections": [],
+        })
+        # A JSON under assets/ that must be excluded
+        _write_json_with_sections(kn, "assets/etl-etl/file_output.json", {
+            "id": "file_output", "title": "file_output", "no_knowledge_content": False, "sections": [],
+        })
+        out = tmp_path / "index.md"
+        generate_index_md(kn, out)
+        text = out.read_text(encoding="utf-8")
+        assert "file_output" not in text
+        assert "### Lib" in text
