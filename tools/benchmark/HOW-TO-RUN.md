@@ -5,9 +5,7 @@
 ## 前提
 
 - スキルディレクトリ: `.claude/skills/nabledge-6`
-- シナリオファイル:
-  - 現行スキルベースライン: `tools/benchmark/scenarios/qa-current.json`（hearing_answerなし）
-  - 新スキルベンチマーク: `tools/benchmark/scenarios/qa.json`（hearing_answerあり）
+- シナリオファイル: `tools/benchmark/scenarios/qa.json`
 
 ---
 
@@ -15,7 +13,7 @@
 
 ```bash
 python3 -m tools.benchmark.scripts.run_e2e \
-  --scenarios tools/benchmark/scenarios/qa-current.json \
+  --scenarios tools/benchmark/scenarios/qa.json \
   --skill-dir .claude/skills/nabledge-6 \
   --scenario-ids pre-01
 ```
@@ -24,7 +22,6 @@ python3 -m tools.benchmark.scripts.run_e2e \
 - 終了コード 0
 - `tools/benchmark/results/YYYYMMDD-HHMMSS/pre-01/` に `hearing.json` / `search.json` / `answer.md` / `metrics.json` / `trace.json` / `evaluation.json` が揃う
 - `summary.json` に `skill_dir`, `scenarios_file`, `executed_at` が含まれる
-- `pre-01/hearing.json` の `status` が `"skipped"`（hearing_answerなし → ヒアリングなし）
 - `pre-01/metrics.json` の `model_usage` が空でない
 
 確認後、動作確認用ディレクトリを削除する:
@@ -38,7 +35,7 @@ rm -rf tools/benchmark/results/YYYYMMDD-HHMMSS
 
 ```bash
 python3 -m tools.benchmark.scripts.run_e2e \
-  --scenarios tools/benchmark/scenarios/qa-current.json \
+  --scenarios tools/benchmark/scenarios/qa.json \
   --skill-dir .claude/skills/nabledge-6
 ```
 
@@ -48,7 +45,7 @@ mkdir -p tools/benchmark/results/{run-label}
 mv tools/benchmark/results/YYYYMMDD-HHMMSS tools/benchmark/results/{run-label}/run-N
 ```
 
-`run-label` の例: `baseline-current`（現行スキル）、`v1-new-search`（新スキル第1版）
+`run-label` の例: `v1-new-search`（新スキル第1版）、`v2-new-search`（改善後）
 
 受入条件:
 - 終了コード 0
