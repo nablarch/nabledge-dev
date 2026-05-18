@@ -40,6 +40,7 @@
   - hearing_answer が `None` の場合プロンプトに注入しないこと
   - hearing_answer が設定されている場合プロンプトに注入すること
   - `summary.json` に `skill_dir`, `scenarios_file`, `executed_at` が含まれること
+  - `trace.json` が保存されること（`claude -p --output-format json` の全出力）
   - `pytest tools/benchmark/tests/test_run_e2e.py` が FAIL（実装前なのでFAILが正しい）
 - [ ] `run_e2e.py` を書き直す（GREEN）
   - `--mode` / `--knowledge-dir` / `--output-dir` / `--timeout` を削除
@@ -48,6 +49,7 @@
   - `output_dir = tools/benchmark/results/YYYYMMDD-HHMMSS/` に固定
   - `timeout = 360` にハードコード
   - `summary.json` に `skill_dir`, `scenarios_file`, `executed_at` を追加
+  - `trace.json` を保存（`claude -p` の生JSON出力全体）— QAエキスパートの定性評価用
   - `pytest tools/benchmark/tests/test_run_e2e.py` が PASS
   - `pytest tools/benchmark/tests/` が全PASS
 - [ ] SEレビュー（別エージェント）を実施してユーザーに報告、Findingがあれば修正
