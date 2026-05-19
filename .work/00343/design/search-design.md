@@ -86,7 +86,6 @@ qa.md（質問応答オーケストレーション）
   └── qa/verify.md          根拠検証
 
 code-analysis.md（コード分析）
-  ├── semantic-search.md    意味検索 → high relevanceセクション取得
   ├── keyword-search.md     キーワード検索 → セクションIDリスト
   ├── read-sections.sh      セクション本文取得
   └── レポート生成
@@ -99,9 +98,9 @@ code-analysis.md（コード分析）
 | ワークフロー | 入力 | 方式 | 利用想定 |
 |------------|------|------|--------|
 | keyword-search.md | キーワード（1つ以上） | スクリプトによる機械的マッチ | コード分析（セクションポインタ取得） |
-| semantic-search.md | 自然言語の質問文、ヒアリング結果（hearing_answer） | AIによるインデックスからのセクション選定 | 質問、コード分析（high relevanceセクション取得） |
+| semantic-search.md | 自然言語の質問文、ヒアリング結果（hearing_answer） | AIによるインデックスからのセクション選定 | 質問 |
 
-keyword-searchは既知の用語で確実にヒットさせる（precision重視）。semantic-searchは語彙ギャップを超えて関連セクションを発見し、重要度（high/partial）を付与する（recall重視）。コード分析では両方を組み合わせて使う。
+keyword-searchは既知の用語で確実にヒットさせる（precision重視）。semantic-searchは語彙ギャップを超えて関連セクションを発見し、重要度（high/partial）を付与する（recall重視）。コード分析はStep 1でNablarchクラス名が確定するため、keyword-searchのみを使う。
 
 ---
 
