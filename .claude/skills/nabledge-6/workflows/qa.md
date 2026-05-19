@@ -98,45 +98,19 @@ Then build `hearing_answer` from the user's selection:
 
 ---
 
-## Step 4: Semantic search — page selection
+## Step 4: Semantic search
 
-Using `hearing_answer` from Step 3, select relevant pages from `index.md`.
+Execute `workflows/semantic-search.md` with:
+- `{question}` = user's question
+- `{hearing_answer}` = formatted hearing string from Step 3:
+  - If `processing_type` is not null: `"処理方式: {processing_type}\nやりたいこと: {goal}"`
+  - If `processing_type` is null: `"やりたいこと: {goal}"`
 
-Read the question and hearing_answer. Identify what the user wants to know.
-
-For each page in the index, judge whether it contains information needed to answer the question:
-- Select pages that directly correspond to the question's operation target
-- Select pages for features that solve the question's technical problem
-- Select pages for the processing type identified in hearing_answer
-- Do NOT select pages for a different processing type
-
-Select up to 10 pages, ordered by confidence (highest first). If fewer than 3 high-confidence pages exist, do not pad to 10.
-
-Save the selected page paths (relative to knowledge/) as `selected_pages`.
+Save the returned `results` array as `selected_sections`.
 
 ---
 
-## Step 5: Semantic search — section selection
-
-For each path in `selected_pages` (up to 10):
-1. Read `knowledge/{path}`
-2. For each section, judge relevance:
-   - **high**: Information in this section is required to answer the question
-   - **partial**: Supplements high sections — background knowledge or related configuration needed to implement the high section's content
-   - **out of scope**: Neither of the above
-
-Select all high sections first, then fill remaining slots (up to 30 total) with partial sections.
-
-Do NOT include as partial:
-- Information already inferable from high section content
-- Concept definitions only, with no implementation details
-- Content that just explains the same information as a high section from a different angle
-
-Save the selected sections as `selected_sections`: list of `{ "file": "...", "section_id": "sN", "relevance": "high|partial" }`, sorted high → partial.
-
----
-
-## Step 6: Read section content
+## Step 5: Read section content
 
 From `selected_sections`, select sections to read:
 1. All `high` sections first
@@ -165,13 +139,11 @@ and stop.
 
 Otherwise, generate a Japanese answer based solely on the knowledge sections.
 
-**Question**: {question}
+**Question**: user's question
 
-**Hearing answer**:
-- If `processing_type` is not null: `処理方式: {processing_type}\nやりたいこと: {goal}`
-- If `processing_type` is null: `やりたいこと: {goal}`
+**Hearing answer**: formatted hearing string from Step 4
 
-**Knowledge sections**: {sections_content}
+**Knowledge sections**: `sections_content`
 
 1. Read all knowledge sections.
 2. Identify the information that directly answers the question.
