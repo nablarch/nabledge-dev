@@ -1,30 +1,20 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (追記: 設計書最新化・SKILL.md/n6.md対応タスク追加)
+**Updated**: 2026-05-19
 
 ## In Progress
 
-### B-0-1. 設計書との適合確認・修正（最優先）
-
-設計書 `.work/00343/design/search-design.md` のアーキテクチャと現在の実装が一致しているか確認し、乖離があれば修正。ユーザーレビューでパスするまで繰り返す。
+### B-0-1. 設計書・SKILL.md・n6.md 最新化
 
 **ステップ:**
-- [x] 設計書（`search-design.md` のフェーズB構成）と現実装（`.claude/skills/nabledge-6/workflows/` 以下の全ファイル）の差異を列挙して報告
-- [x] ユーザーと乖離を確認し修正方針を決定:
-  - `_knowledge-search.md` 系 + `full-text-search.sh` → 削除（現行検索の消し忘れ）— `b42ffd2d2`
-  - `assets/` の複数ファイル・`semantic-search.md` の `{hearing_answer}` 入力追加 → 設計書更新漏れ（実装が正）
-  - `qa.md` が `keyword-search.md` を呼ばない → 設計意図通り
-  - `_knowledge-search.md` は現行検索のため削除済み
-- [x] B-X（terms.json抽出ルール見直し）タスクを追加 — `0d198c64f`, `bc4a2ca2a`
-- [x] 設計書（`search-design.md`）を実装に合わせて更新 — `8d53739f6`
-- [x] `assets/` プロンプトをワークフローにインライン化（英語化）、`assets/` 廃止 — `0ebfb886b`
-- [x] `index.toon` 削除 — `2a96bb538`
 - [ ] 設計書（`search-design.md`）を最新実装に合わせて更新
   - `assets/` 廃止・プロンプトインライン化の反映
   - `workflows/code-analysis/` サブディレクトリ追加の反映
   - ファイル配置ルール（コロケーション）を設計書に記載
 - [ ] SKILL.md を新検索の4コマンド（質問・コード分析・キーワード検索・セマンティック検索）に対応させる
+  - `knowledge/` のディレクトリ構成を実態（`processing-pattern/`, `component/` 等）に合わせて更新
+  - 旧記述 `_knowledge-search pipeline` を削除
 - [ ] `n6.md` コマンドを新検索の4コマンドに対応させる
 - [ ] [DECISION: ユーザーが設計書・SKILL.md・n6.md を確認してパスを確認]
 
@@ -154,6 +144,8 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-0-1（前半）. 設計書適合確認・assets廃止・index.toon削除 — `8d53739f6`, `0ebfb886b`, `2a96bb538`, `0c3605da7`, `b42ffd2d2`
+- [x] PR #346 レビュー対応（BENCHMARKマーカー削除 `3f4b4d8d4`, QO4/QO5 ✅ `80c589c29`）
 - [x] B-4-2. run_e2e.py エラー時診断情報の確実な保存（TDD, QAレビュー 0 Findings）— `5eab4f1dd`, `d9af9bd2c`
 - [x] qa.md/hearing.md 修正（マーカー出力をStep 7に一元化、スキーマ不整合修正、PEレビュー5 Findings修正）— `a1570139a`
 - [x] B-2. RBKC変更（index.md + terms.json生成）— `22566bc09`, `c05a3afac`, `84f2feb23`, `cc5d2c56b`, `38fe7aae9`, `b3f0c9dfe`
