@@ -247,36 +247,44 @@ def run_e2e_all(
     out = Path(output_dir) if output_dir else default_output_dir()
     out.mkdir(parents=True, exist_ok=True)
 
-    results = []
+    scenario_summaries = []
     for scenario in data["scenarios"]:
         sid = scenario["id"]
         if scenario_ids and sid not in scenario_ids:
             continue
 
         print(f"Running {sid}...", file=sys.stderr)
-        result = run_e2e_scenario(scenario, skill_dir)
-        save_e2e_results(str(out), sid, result)
+        try:
+            result = run_e2e_scenario(scenario, skill_dir)
+            save_e2e_results(str(out), sid, result)
 
-        evaluation = evaluate_scenario(scenario, result, knowledge_dir)
-        (out / sid / "evaluation.json").write_text(
-            json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+            evaluation = evaluate_scenario(scenario, result, knowledge_dir)
+            (out / sid / "evaluation.json").write_text(
+                json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
 
-        results.append(result)
+            scenario_summaries.append({
+                "id": result["scenario_id"],
+                "search_sections": len(result["search"]["section_ids"]),
+                "hearing_status": result["hearing"].get("status", "unknown"),
+            })
+        except Exception as exc:
+            exc_type = type(exc).__name__
+            print(f"  ERROR {sid}: {exc_type}: {exc}", file=sys.stderr)
+            error_dir = out / sid
+            error_dir.mkdir(parents=True, exist_ok=True)
+            (error_dir / "error.json").write_text(
+                json.dumps({"error": str(exc), "exception_type": exc_type}, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            scenario_summaries.append({"id": sid, "status": "error", "error": str(exc)})
 
     summary = {
-        "total_scenarios": len(results),
+        "total_scenarios": len(scenario_summaries),
         "skill_dir": str(skill_dir),
         "scenarios_file": str(scenarios_path),
         "executed_at": executed_at,
-        "scenarios": [
-            {
-                "id": r["scenario_id"],
-                "search_sections": len(r["search"]["section_ids"]),
-                "hearing_status": r["hearing"].get("status", "unknown"),
-            }
-            for r in results
-        ],
+        "scenarios": scenario_summaries,
     }
 
     (out / "summary.json").write_text(

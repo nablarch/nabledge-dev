@@ -561,6 +561,157 @@ class TestRunE2eAll:
             assert eval_data["scenario_id"] == "pre-01"
 
 
+class TestRunE2eAllErrorHandling:
+    """Tests for error handling in run_e2e_all: failures are isolated per scenario."""
+
+    def _setup_skill_dir(self, base_dir):
+        skill_dir = Path(base_dir) / "skill"
+        skill_dir.mkdir()
+        (skill_dir / "workflows").mkdir()
+        (skill_dir / "workflows" / "qa.md").write_text("# QA", encoding="utf-8")
+        (skill_dir / "knowledge").mkdir()
+        return skill_dir
+
+    def _setup_scenarios(self, base_dir, scenarios):
+        scenarios_path = Path(base_dir) / "qa.json"
+        scenarios_path.write_text(json.dumps({"scenarios": scenarios}), encoding="utf-8")
+        return scenarios_path
+
+    def _make_valid_proc(self):
+        valid_response = (
+            "<<<BENCHMARK_HEARING>>>\n"
+            '{"status": "skipped", "questions": []}\n'
+            "<<<END_BENCHMARK_HEARING>>>\n"
+            "<<<BENCHMARK_SEARCH>>>\n"
+            '{"section_ids": []}\n'
+            "<<<END_BENCHMARK_SEARCH>>>\n"
+            "<<<BENCHMARK_ANSWER>>>\n"
+            "テスト回答\n"
+            "<<<END_BENCHMARK_ANSWER>>>"
+        )
+        claude_out = json.dumps({
+            "result": valid_response,
+            "duration_ms": 10000,
+            "duration_api_ms": 9000,
+            "num_turns": 3,
+            "total_cost_usd": 0.01,
+            "usage": {"input_tokens": 5000, "output_tokens": 1000,
+                      "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+        })
+        return type("P", (), {"returncode": 0, "stdout": claude_out, "stderr": ""})()
+
+    FAKE_EVAL = {"scenario_id": "s1", "scores": {"accuracy": 1.0}}
+
+    def test_continues_after_timeout(self):
+        """TimeoutExpired on scenario 1 must not prevent scenario 2 from running."""
+        import subprocess
+        scenario1 = {**SAMPLE_SCENARIO, "id": "s1"}
+        scenario2 = {**SAMPLE_SCENARIO, "id": "s2"}
+        call_count = [0]
+
+        def side_effect(*args, **kwargs):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                raise subprocess.TimeoutExpired(cmd="claude", timeout=360)
+            return self._make_valid_proc()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [scenario1, scenario2])
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", side_effect=side_effect), \
+                 patch("tools.benchmark.scripts.run_e2e.evaluate_scenario", return_value=self.FAKE_EVAL):
+                summary = run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+
+        assert summary["total_scenarios"] == 2
+        assert summary["scenarios"][1]["id"] == "s2"
+        assert summary["scenarios"][1].get("status") != "error"
+
+    def test_error_scenario_has_status_error_in_summary(self):
+        """A scenario that raises must appear in summary with status='error'."""
+        import subprocess
+        scenario1 = {**SAMPLE_SCENARIO, "id": "s1"}
+
+        def side_effect(*args, **kwargs):
+            raise subprocess.TimeoutExpired(cmd="claude", timeout=360)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", side_effect=side_effect):
+                summary = run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+
+        assert summary["scenarios"][0]["status"] == "error"
+
+    def test_error_json_saved_for_failed_scenario(self):
+        """error.json must be written to the scenario dir when a scenario fails."""
+        import subprocess
+        scenario1 = {**SAMPLE_SCENARIO, "id": "s1"}
+
+        def side_effect(*args, **kwargs):
+            raise subprocess.TimeoutExpired(cmd="claude", timeout=360)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", side_effect=side_effect):
+                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+
+            error_path = output_dir / "s1" / "error.json"
+            assert error_path.exists()
+            error_data = json.loads(error_path.read_text())
+            assert "error" in error_data
+            assert "exception_type" in error_data
+
+    def test_summary_json_written_even_when_all_scenarios_fail(self):
+        """summary.json must be written even if every scenario fails."""
+        import subprocess
+
+        def side_effect(*args, **kwargs):
+            raise subprocess.TimeoutExpired(cmd="claude", timeout=360)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [SAMPLE_SCENARIO])
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", side_effect=side_effect):
+                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+
+            assert (output_dir / "summary.json").exists()
+
+    def test_marker_missing_does_not_crash_other_scenarios(self):
+        """ValueError (missing marker) on scenario 1 must not prevent scenario 2."""
+        scenario1 = {**SAMPLE_SCENARIO, "id": "s1"}
+        scenario2 = {**SAMPLE_SCENARIO, "id": "s2"}
+        call_count = [0]
+
+        def side_effect(*args, **kwargs):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                broken_out = json.dumps({"result": "no markers here", "duration_ms": 1,
+                                         "duration_api_ms": 1, "num_turns": 1,
+                                         "total_cost_usd": 0.0,
+                                         "usage": {"input_tokens": 0, "output_tokens": 0,
+                                                   "cache_read_input_tokens": 0,
+                                                   "cache_creation_input_tokens": 0}})
+                return type("P", (), {"returncode": 0, "stdout": broken_out, "stderr": ""})()
+            return self._make_valid_proc()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [scenario1, scenario2])
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", side_effect=side_effect), \
+                 patch("tools.benchmark.scripts.run_e2e.evaluate_scenario", return_value=self.FAKE_EVAL):
+                summary = run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+
+        assert summary["total_scenarios"] == 2
+        assert summary["scenarios"][0]["status"] == "error"
+        assert summary["scenarios"][1].get("status") != "error"
+
+
 class TestDefaultOutputDir:
     def test_default_output_dir_uses_timestamp(self):
         import re
