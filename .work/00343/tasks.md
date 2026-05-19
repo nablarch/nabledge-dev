@@ -29,14 +29,7 @@
 
 ### ~~B-0-4-B~~ (完了) — `d81081876`
 
-### B-0-4-C. sections_content 共有
-
-qa.md が `read-sections.sh` を一元呼び出しし、answer.md と verify.md に渡す。
-
-**対象ファイル:**
-- `.claude/skills/nabledge-6/workflows/qa.md` — Step 2-3 で sections_content を取得・保持
-- `.claude/skills/nabledge-6/workflows/qa/answer.md` — sections_content を受け取る（自分で呼ばない）
-- `.claude/skills/nabledge-6/workflows/qa/verify.md` — sections_content を受け取る（自分で呼ばない）
+### ~~B-0-4-C~~ (完了) — `8f07c62ee`
 
 ### B-0-4-D. hearing status のdownstream流出削除
 
