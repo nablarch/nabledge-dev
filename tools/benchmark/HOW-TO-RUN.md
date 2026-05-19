@@ -55,7 +55,7 @@ mv tools/benchmark/results/YYYYMMDD-HHMMSS tools/benchmark/results/{run-label}/r
 
 ## ステップ 3: 1 runレポート作成
 
-run完了後、すぐにレポートを作成してユーザーに確認を求める。3 run完了を待たない。
+runの完了を待たず、完了したシナリオから順にレポートを作成してユーザーに確認を求める。
 
 ### 3a. 数値サマリー生成
 
