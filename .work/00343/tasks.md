@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-4-2 実装完了 `5eab4f1dd`)
+**Updated**: 2026-05-19 (B-4-1 qa.md修正 `a1570139a`)
 
 ## In Progress
 
