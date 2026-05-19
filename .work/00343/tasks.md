@@ -5,27 +5,6 @@
 
 ## In Progress
 
-### B-0-2. keyword-search.md を設計書通りに修正
-
-設計書: 入力はキーワード配列、LLM不使用のパススルー。
-現実装: Step 1 で LLM がキーワード抽出しており、入力が質問文になっている（設計書と乖離）。
-
-code-analysis.md が Nablarch クラス名を渡す想定なので、呼び出し元でキーワードを組み立てて渡す形に修正する。
-
-**影響調査:**
-- `keyword-search.md` の呼び出し元: `code-analysis.md`（Step 2.3）
-- `/n6 keyword-search "<terms>"` — SKILL.md Step 0 → `workflows/keyword-search.md`
-
-**ステップ:**
-- [ ] `keyword-search.md` を修正: 入力をキーワード配列に変更、Step 1（LLMキーワード抽出）を削除
-- [ ] `code-analysis.md` Step 2.3 を修正: Step 1 で洗い出した Nablarch クラス名をキーワードとして直接渡す
-- [ ] `SKILL.md` Step 0 を修正: `keyword-search` 引数の渡し方を明確化（`"<terms>"` をスペース区切りでキーワード配列として `keyword-search.md` に渡す）
-- [ ] PEレビュー（別エージェント）
-- [ ] Findingsがあれば修正
-- [ ] コミット
-
-**前提:** B-0-2 完了後に B-0-3（code-analysis の semantic-search 要否）を判断する。
-
 ### B-4-1. エラー原因調査と修正
 
 qa.md の keyword-search 削除により過去の run-1 結果は無効。新たにエラー調査・修正を行う。
@@ -153,6 +132,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-0-2. keyword-search.md を設計書通りに修正（PEレビュー 0 Findings）— `6b3a9134a`
 - [x] B-0-1. 設計書・SKILL.md・n6.md 最新化（PEレビュー 0 Findings）— `2ba8abd93`, `1a4b9902e`（qa.md keyword-search削除）
 - [x] B-0-1（前半）. 設計書適合確認・assets廃止・index.toon削除 — `8d53739f6`, `0ebfb886b`, `2a96bb538`, `0c3605da7`, `b42ffd2d2`
 - [x] PR #346 レビュー対応（BENCHMARKマーカー削除 `3f4b4d8d4`, QO4/QO5 ✅ `80c589c29`）
