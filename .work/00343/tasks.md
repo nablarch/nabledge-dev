@@ -1,36 +1,24 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-0-1 前3ステップ完了、DECISION待ち)
+**Updated**: 2026-05-19
 
 ## In Progress
 
-### B-0-1. 設計書・SKILL.md・n6.md 最新化
+### B-4-1. エラー原因調査と修正
+
+qa.md の keyword-search 削除により過去の run-1 結果は無効。新たにエラー調査・修正を行う。
 
 **ステップ:**
-- [x] 設計書（`search-design.md`）を最新実装に合わせて更新
-  - `assets/` 廃止・プロンプトインライン化の反映
-  - `workflows/code-analysis/` サブディレクトリ追加の反映
-  - ファイル配置ルール（コロケーション）を設計書に記載
-- [x] SKILL.md を新検索の4コマンド（質問・コード分析・キーワード検索・セマンティック検索）に対応させる
-  - `knowledge/` のディレクトリ構成を実態（`processing-pattern/`, `component/` 等）に合わせて更新
-  - 旧記述 `_knowledge-search pipeline` を削除
-- [x] `n6.md` コマンドを新検索の4コマンドに対応させる
-- [ ] [DECISION: ユーザーが設計書・SKILL.md・n6.md を確認してパスを確認]
-
-
-### B-4-1. エラー原因調査と修正（B-4-2完了後）
-
-run-1結果 (tools/benchmark/results/20260519-113919/): 30シナリオ中13件エラー
-- TIMEOUT (360s): pre-03, qa-01 — 2件
-- `<<<BENCHMARK_HEARING>>>` マーカー欠損: review-06, review-08, impact-01, impact-06, qa-03, qa-08, qa-09, qa-12a — 8件
-- `<<<END_BENCHMARK_ANSWER>>>` マーカー欠損: qa-06, qa-12b — 2件
-
-**ステップ:**
-- [ ] エラーシナリオを再実行して trace.json / raw_response.txt を取得
-- [ ] trace.json / raw_response.txt を読んでエラー原因を特定し、ユーザーに報告
-- [ ] 原因に応じてスキル（qa.md）またはスクリプトを修正
-- [ ] エラーシナリオのみ再実行して全件成功を確認
+- [ ] 全30シナリオ実行してエラー件数を確認
+  ```bash
+  python3 -m tools.benchmark.scripts.run_e2e \
+    --scenarios tools/benchmark/scenarios/qa.json \
+    --skill-dir .claude/skills/nabledge-6 \
+    --output-dir tools/benchmark/results/run-1
+  ```
+- [ ] エラーシナリオの trace.json / raw_response.txt を読んでエラー原因を特定し、ユーザーに報告
+- [ ] 原因に応じてスキル（qa.md 等）またはスクリプトを修正
 - [ ] 全30シナリオ再実行して全件成功を確認
   - 受入条件: summary.json の全シナリオに `status: error` が存在しないこと
 
@@ -144,6 +132,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-0-1. 設計書・SKILL.md・n6.md 最新化（PEレビュー 0 Findings）— `2ba8abd93`, `1a4b9902e`（qa.md keyword-search削除）
 - [x] B-0-1（前半）. 設計書適合確認・assets廃止・index.toon削除 — `8d53739f6`, `0ebfb886b`, `2a96bb538`, `0c3605da7`, `b42ffd2d2`
 - [x] PR #346 レビュー対応（BENCHMARKマーカー削除 `3f4b4d8d4`, QO4/QO5 ✅ `80c589c29`）
 - [x] B-4-2. run_e2e.py エラー時診断情報の確実な保存（TDD, QAレビュー 0 Findings）— `5eab4f1dd`, `d9af9bd2c`
