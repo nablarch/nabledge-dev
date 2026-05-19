@@ -64,23 +64,23 @@ def _extract_between_markers(text: str, start_marker: str, end_marker: str) -> s
     return text[start_idx + len(start_marker):end_idx].strip()
 
 
-def build_e2e_prompt(scenario: dict, workflow_content: str) -> str:
-    """Build the E2E prompt that instructs the model to follow qa.md.
-
-    Injects hearing_answer context when scenario["when"]["hearing_answer"] is not None.
-    """
+def _build_question(scenario: dict) -> str:
+    """Build the question text, appending hearing_answer context when present."""
     question = scenario["when"]["input"]
     hearing_answer = scenario["when"].get("hearing_answer")
+    if hearing_answer is None:
+        return question
+    parts = [question]
+    if hearing_answer.get("processing_type"):
+        parts.append(f"（処理方式: {hearing_answer['processing_type']}）")
+    if hearing_answer.get("goal"):
+        parts.append(f"（やりたいこと: {hearing_answer['goal']}）")
+    return "".join(parts)
 
-    if hearing_answer is not None:
-        hearing_section = (
-            f"\n## コンテキスト（ヒアリング結果）\n"
-            f"処理方式: {hearing_answer.get('processing_type', '')}\n"
-            f"目的: {hearing_answer.get('goal', '')}\n\n"
-            f"ヒアリング結果が提供されている場合、ワークフローのヒアリングステップはスキップして検索から開始してください。\n"
-        )
-    else:
-        hearing_section = ""
+
+def build_e2e_prompt(scenario: dict, workflow_content: str) -> str:
+    """Build the E2E prompt that instructs the model to follow qa.md."""
+    question = _build_question(scenario)
 
     return f"""以下のワークフロー（qa.md）に従って質問に回答してください。
 
@@ -89,7 +89,7 @@ def build_e2e_prompt(scenario: dict, workflow_content: str) -> str:
 
 ## 質問
 {question}
-{hearing_section}
+
 ## 出力要件
 
 回答を出力した後、以下のマーカー形式でベンチマーク診断情報を出力してください。全マーカーの出力は必須です。

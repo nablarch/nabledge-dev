@@ -12,20 +12,6 @@ Answer in Japanese (Markdown)
 
 ## Steps
 
-### Step 0: Check for pre-supplied hearing context
-
-Check whether the prompt contains a `## コンテキスト（ヒアリング結果）` section (supplied by the caller).
-
-**If present**:
-- Extract `処理方式:` and `目的:` values from that section
-- If `処理方式:` is absent, empty, or `None`, set `hearing_answer_str` = `"やりたいこと: {goal}"`
-- Otherwise set `hearing_answer_str` = `"処理方式: {processing_type}\nやりたいこと: {goal}"`
-- Set `hearing_status` = `"skipped"`, `hearing_questions` = `[]`
-- Skip Step 1 and proceed to Step 2
-
-**If not present**:
-- Proceed to Step 1
-
 ### Step 1: Hearing
 
 **Tool**: workflows/qa/hearing.md
@@ -35,10 +21,9 @@ Execute `workflows/qa/hearing.md` with the user's question.
 This workflow:
 - Classifies whether hearing is needed
 - Asks the user if needed (via AskUserQuestion)
-- Returns hearing result including `status` (`"skipped"` or `"asked"`) and `questions` (list of asked question strings)
+- Returns `hearing_answer_str` (formatted string for downstream use)
 
 Save the formatted hearing string as `hearing_answer_str`.
-Save `hearing_result.status` as `hearing_status` and `hearing_result.questions` as `hearing_questions`.
 
 ### Step 2: Semantic search
 

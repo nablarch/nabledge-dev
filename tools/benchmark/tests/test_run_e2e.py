@@ -96,6 +96,10 @@ class TestBuildE2ePrompt:
         assert "Nablarchバッチ" in prompt
         assert "バッチを起動する" in prompt
 
+    def test_hearing_answer_injected_into_question_not_separate_section(self):
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
+        assert "コンテキスト（ヒアリング結果）" not in prompt
+
     def test_no_unreplaced_placeholders(self):
         prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
         assert "{question}" not in prompt
