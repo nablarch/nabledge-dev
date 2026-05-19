@@ -32,6 +32,17 @@ from tools.benchmark.scripts.evaluate import evaluate_scenario
 WORKFLOW_FILE = "workflows/qa.md"
 TIMEOUT = 360
 
+class MarkerError(ValueError):
+    """Raised when a required benchmark marker is missing from the response.
+
+    Carries the raw response text so callers can save it for diagnosis.
+    """
+
+    def __init__(self, message: str, raw_response: str = "") -> None:
+        super().__init__(message)
+        self.raw_response = raw_response
+
+
 MARKER_HEARING_START = "<<<BENCHMARK_HEARING>>>"
 MARKER_HEARING_END = "<<<END_BENCHMARK_HEARING>>>"
 MARKER_SEARCH_START = "<<<BENCHMARK_SEARCH>>>"
@@ -207,7 +218,10 @@ def run_e2e_scenario(
     claude_output = json.loads(proc.stdout)
     result_text = claude_output.get("result", "")
 
-    parsed = parse_e2e_response(result_text)
+    try:
+        parsed = parse_e2e_response(result_text)
+    except ValueError as exc:
+        raise MarkerError(str(exc), raw_response=result_text) from exc
     metrics = _extract_metrics(claude_output)
 
     return {
@@ -277,6 +291,8 @@ def run_e2e_all(
                 json.dumps({"error": str(exc), "exception_type": exc_type}, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
+            if isinstance(exc, MarkerError) and exc.raw_response:
+                (error_dir / "raw_response.txt").write_text(exc.raw_response, encoding="utf-8")
             scenario_summaries.append({"id": sid, "status": "error", "error": str(exc)})
 
     summary = {

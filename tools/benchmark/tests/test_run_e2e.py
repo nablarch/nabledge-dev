@@ -711,6 +711,50 @@ class TestRunE2eAllErrorHandling:
         assert summary["scenarios"][0]["status"] == "error"
         assert summary["scenarios"][1].get("status") != "error"
 
+    def test_raw_response_saved_on_marker_missing(self):
+        """raw_response.txt must be written to the scenario dir when markers are missing."""
+        scenario1 = {**SAMPLE_SCENARIO, "id": "s1"}
+        raw_result_text = "no markers here — raw LLM output"
+
+        def side_effect(*args, **kwargs):
+            broken_out = json.dumps({
+                "result": raw_result_text,
+                "duration_ms": 1, "duration_api_ms": 1, "num_turns": 1,
+                "total_cost_usd": 0.0,
+                "usage": {"input_tokens": 0, "output_tokens": 0,
+                          "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+            })
+            return type("P", (), {"returncode": 0, "stdout": broken_out, "stderr": ""})()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", side_effect=side_effect):
+                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+
+            raw_path = output_dir / "s1" / "raw_response.txt"
+            assert raw_path.exists(), "raw_response.txt must be saved on marker error"
+            assert raw_result_text in raw_path.read_text(encoding="utf-8")
+
+    def test_raw_response_not_saved_on_timeout(self):
+        """raw_response.txt must NOT be written when subprocess.TimeoutExpired (no response available)."""
+        import subprocess
+        scenario1 = {**SAMPLE_SCENARIO, "id": "s1"}
+
+        def side_effect(*args, **kwargs):
+            raise subprocess.TimeoutExpired(cmd="claude", timeout=360)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", side_effect=side_effect):
+                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+
+            raw_path = output_dir / "s1" / "raw_response.txt"
+            assert not raw_path.exists(), "raw_response.txt must not be saved when there is no response"
+
 
 class TestDefaultOutputDir:
     def test_default_output_dir_uses_timestamp(self):
