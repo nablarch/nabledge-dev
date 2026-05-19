@@ -180,7 +180,6 @@ tools/benchmark/
   scripts/
     keyword-search.sh                 ← components/scripts/ からデプロイ
     read-sections.sh                  ← components/scripts/ からデプロイ
-  assets/                             ← 空（プロンプトはワークフローMDにインライン化）
 
 tools/rbkc/
   scripts/create/
