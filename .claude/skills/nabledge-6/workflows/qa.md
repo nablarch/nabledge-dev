@@ -33,14 +33,9 @@ Check whether the prompt contains a `## コンテキスト（ヒアリング結�
 
 **If present (benchmark runner pre-injection)**:
 - Extract `処理方式:` and `目的:` values from that section
-- If processing type is empty or the literal string `None`, set `hearing_answer_str` = `"やりたいこと: {goal}"`
+- If `処理方式:` value is absent, empty, or exactly the string `None` (case-sensitive — this is a Python serialization artifact from the benchmark runner), treat processing type as absent and set `hearing_answer_str` = `"やりたいこと: {goal}"`
 - Otherwise set `hearing_answer_str` = `"処理方式: {processing_type}\nやりたいこと: {goal}"`
-- Output benchmark hearing marker now:
-  ```
-  <<<BENCHMARK_HEARING>>>
-  {"status": "skipped", "questions": []}
-  <<<END_BENCHMARK_HEARING>>>
-  ```
+- Set `hearing_status` = `"skipped"`, `hearing_questions` = `[]`
 - Skip Step 1 and proceed to Step 2
 
 **If not present (normal user invocation)**:
@@ -55,10 +50,10 @@ Execute `workflows/qa/hearing.md` with the user's question.
 This workflow:
 - Classifies whether hearing is needed
 - Asks the user if needed (via AskUserQuestion)
-- Outputs the `<<<BENCHMARK_HEARING>>>` marker
-- Returns hearing result
+- Returns hearing result including `status` (`"skipped"` or `"asked"`) and `questions` (list of asked question strings)
 
 Save the formatted hearing string as `hearing_answer_str`.
+Save `hearing_result.status` as `hearing_status` and `hearing_result.questions` as `hearing_questions`.
 
 ### Step 2: Semantic search
 
@@ -89,17 +84,6 @@ Combine `semantic_results.results` and `keyword_results.results`:
 
 Save as `merged_pointer_json`.
 
-Output benchmark search marker:
-```
-<<<BENCHMARK_SEARCH>>>
-{"section_ids": ["file.json:s1", "file.json:s3", ...]}
-<<<END_BENCHMARK_SEARCH>>>
-```
-
-Where `section_ids` is the list of `"file:section_id"` strings from `merged_pointer_json.results`.
-
-If `merged_pointer_json.results` is empty, output `{"section_ids": []}`.
-
 ### Step 5: Generate answer
 
 **Tool**: workflows/qa/answer.md
@@ -125,9 +109,23 @@ Save result as `final_answer`.
 
 Output `final_answer` to the user.
 
-Then output benchmark answer marker:
+Then output all benchmark markers in this exact order:
+
 ```
+<<<BENCHMARK_HEARING>>>
+{"status": "{hearing_status}", "questions": {hearing_questions}}
+<<<END_BENCHMARK_HEARING>>>
+
+<<<BENCHMARK_SEARCH>>>
+{"section_ids": [...]}
+<<<END_BENCHMARK_SEARCH>>>
+
 <<<BENCHMARK_ANSWER>>>
 {final_answer}
 <<<END_BENCHMARK_ANSWER>>>
 ```
+
+Where:
+- `{hearing_status}`: `"skipped"` if hearing was not performed, `"asked"` if the user was asked a question
+- `{hearing_questions}`: `[]` if skipped, `["どの処理方式で実装しますか？"]` if asked
+- `section_ids`: extract `"{file}:{section_id}"` for each entry in `merged_pointer_json.results`, preserving order
