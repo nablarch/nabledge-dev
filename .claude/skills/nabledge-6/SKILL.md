@@ -47,14 +47,12 @@ nabledge-6 code-analysis
 
 **When knowledge is missing**:
 - Output: "この情報は知識ファイルに含まれていません"
-- List related available knowledge from `knowledge/index.toon`
 - DO NOT answer from external knowledge
 
 ## Error Handling
 
 **Knowledge not found** (Knowledge Search):
 - Message: "この情報は知識ファイルに含まれていません"
-- List related entries from index.toon
 
 **Target code not found** (Code Analysis):
 - Message: "指定されたコードが見つかりませんでした"
@@ -69,6 +67,6 @@ nabledge-6 code-analysis
 ## Knowledge Structure
 
 **Files**: `knowledge/features/`, `knowledge/checks/`, `knowledge/releases/`
-**Index**: `knowledge/index.toon` (TOON-formatted list of all knowledge files with title, type, category, processing_patterns, path)
+**Index**: `knowledge/index.md` (section index for semantic search)
 **Schemas**: `schemas/*.json` (JSON validation schemas)
 **Scripts**: `scripts/*.sh` (pre-built processing scripts)
