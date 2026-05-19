@@ -96,6 +96,30 @@ B-6完了後。新ベンチマーク基盤に完全移行。
 - [ ] `.claude/rules/` からnabledge-test固有記述を削除
 - [ ] `python3 -m pytest tools/ -x` で全テストPASS
 
+### B-8. test-setup.sh 動作確認
+
+B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施。
+**前提**: mainマージ済みであること（test-setup.sh は nablarch/nabledge:develop からスキルを取得するため）
+
+**確認対象**:
+- `test-setup.sh` は GUIDE-CC.md / GUIDE-GHC.md からsetupスクリプトURLを取得
+- setupスクリプトでスキルをインストール（静的チェック: SKILL.md / knowledge/ / docs/ / コマンドファイル）
+- 動的チェック: `claude -p` でSKILL.mdが読まれるか（B-7で `_scenario_field` を削除してハードコードに変更済み）
+- 全バージョン（v6/v5/v1.4/v1.3/v1.2/upgrade）× CC/GHC
+
+**ステップ**:
+- [ ] v6のみ先行確認:
+  ```bash
+  cd .tmp/nabledge-test-b8 && bash /path/to/tools/tests/test-setup.sh v6
+  ```
+  - 受入条件: 終了コード0、静的チェックOK、動的チェックOK（SKILL.md read）
+- [ ] 問題があればB-7の修正内容を確認・修正してコミット
+- [ ] 全バージョン確認:
+  ```bash
+  bash tools/tests/test-setup.sh
+  ```
+  - 受入条件: 終了コード0、全環境 `[OK]` のみ
+
 ## Done
 
 - [x] B-2. RBKC変更（index.md + terms.json生成）— `22566bc09`, `c05a3afac`, `84f2feb23`, `cc5d2c56b`, `38fe7aae9`, `b3f0c9dfe`
