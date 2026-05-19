@@ -25,20 +25,7 @@
 - [ ] ユーザーにレビュー結果を報告、PRレビューを依頼
 - [ ] [BLOCKED: ユーザーがPRをOKするまで上記を繰り返す]
 
-### B-0-4-A. qa.md Step 0 削除 + run_e2e.py修正
-
-hearing_answer をセクション注入ではなく質問文に展開する。
-
-**対象ファイル:**
-- `.claude/skills/nabledge-6/workflows/qa.md` — Step 0 を削除
-- `tools/benchmark/scripts/run_e2e.py` — `hearing_answer` を質問文に展開（セクション注入廃止）
-- `tools/benchmark/tests/test_run_e2e.py` — テスト更新
-
-**ステップ:**
-- [ ] テスト追加（RED）: `コンテキスト（ヒアリング結果）` セクションが注入されないこと
-- [ ] `run_e2e.py` 修正: `_build_question()` で hearing_answer を質問文に展開
-- [ ] `qa.md` Step 0 削除
-- [ ] テストがすべて GREEN であること: `python3 -m pytest tools/benchmark/tests/test_run_e2e.py -x`
+### ~~B-0-4-A~~ (完了) — `890683762`
 
 ### B-0-4-B. verify FAIL時リトライ実装
 
