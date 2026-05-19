@@ -41,6 +41,8 @@ B-4実行中に判明した問題を先に修正する。
 - [ ] テストがGREENであることを確認（`pytest tools/benchmark/tests/ -x`）
 - [ ] SEレビュー（別エージェント）
 - [ ] コミット・プッシュ
+- [ ] 失敗シナリオのみ `--scenario-ids` で再実行して結果を既存ディレクトリに追記
+  - 受入条件: summary.jsonの `failed_scenarios` が空になること
 
 ### B-4. 新スキルE2Eベンチマーク
 
