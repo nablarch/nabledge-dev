@@ -18,8 +18,7 @@
 
 **ステップ:**
 - [x] 5設計書と実装の突合完了、ユーザーへ報告済み
-- [ ] B-0-4-A〜G の実装修正（下記タスク参照）
-- [ ] 設計書追記（B-0-4-H）
+- [x] B-0-4-A〜G の実装修正・設計書追記完了
 - [ ] SEエキスパートレビュー（別エージェント）: 設計書適合性・コード品質・整合性を確認
 - [ ] Findingsがあれば修正
 - [ ] ユーザーにレビュー結果を報告、PRレビューを依頼
@@ -37,14 +36,10 @@
 
 ### ~~B-0-4-F~~ (完了) — `d9aa47843`
 
-### B-0-4-G. 設計書追記（6〜8）
-
-実装済み動作を設計書に反映する。
-
-**内容:**
-- `.work/00343/design/keyword-search-design.md` — `no_knowledge_content: true` 除外の記載追加
-- `.work/00343/design/search-design.md` — `trace.excluded` の記載追加（semantic-search参照）
-- `.work/00343/design/semantic-search-design.md` — Stage 1/2 出力スキーマに `trace.excluded` 追加
+### ~~B-0-4-G~~ (完了) — `031b830c7`
+- keyword-search-design.md: no_knowledge_content 除外は既に記載済みのため追記不要
+- search-design.md: 構成レベル記述のみのため追記不要
+- semantic-search-design.md: trace スキーマ追記済み
 
 ### B-4-1. run-1 安定化（エラーゼロまで）
 
