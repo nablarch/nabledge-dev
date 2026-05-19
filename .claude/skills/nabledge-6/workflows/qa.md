@@ -12,21 +12,7 @@ Answer in Japanese (Markdown)
 
 ---
 
-## Step 1: Processing types (Nablarch 6)
-
-Use the following list as `processing_types`:
-
-- ウェブアプリケーション
-- RESTfulウェブサービス
-- Nablarchバッチ
-- Jakartaバッチ
-- テーブルをキューとして使ったメッセージング
-- HTTPメッセージング
-- MOMメッセージング
-
----
-
-## Step 2: Classify question — skip or ask?
+## Step 1: Classify question — skip or ask?
 
 Read the user's question and determine whether the processing type can be identified without asking.
 
@@ -71,20 +57,27 @@ Note: Common concepts (transactions, validation, DB access, SQL, etc.) are NOT c
 If neither Step B nor Step C produced "skip" → **ask**
 
 Build `hearing_answer`:
-- skip: `{ "processing_type": "<type or null>", "goal": "<one sentence verb phrase>" }`
+- skip: `{ "processing_type": "<type from the list above, or null>", "goal": "<one sentence verb phrase>" }`
   - goal: user's specific objective in one verb phrase; use processing-type-specific operation names; do not add information not in the question
   - processing_type: null for cross-functional
 - ask: `hearing_answer = null`
 
 ---
 
-## Step 3: Ask user if needed
+## Step 2: Ask user if needed
 
-**If skip**: Use `hearing_answer` from Step 2. Proceed to Step 4.
+**If skip**: Use `hearing_answer` from Step 1. Proceed to Step 3.
 
 **If ask**: Use AskUserQuestion:
 - Question: "どの処理方式で実装しますか？"
-- Options: the `processing_types` list from Step 1
+- Options:
+  - ウェブアプリケーション
+  - RESTfulウェブサービス
+  - Nablarchバッチ
+  - Jakartaバッチ
+  - テーブルをキューとして使ったメッセージング
+  - HTTPメッセージング
+  - MOMメッセージング
 
 Then build `hearing_answer` from the user's selection:
 1. Use the selected processing type as `processing_type`.
@@ -95,11 +88,11 @@ Then build `hearing_answer` from the user's selection:
 
 ---
 
-## Step 4: Semantic search
+## Step 3: Semantic search
 
 Execute `workflows/semantic-search.md` with:
 - `{question}` = user's question
-- `{hearing_answer}` = formatted hearing string from Step 3:
+- `{hearing_answer}` = formatted hearing string from Step 2:
   - If `processing_type` is not null: `"処理方式: {processing_type}\nやりたいこと: {goal}"`
   - If `processing_type` is null: `"やりたいこと: {goal}"`
 
@@ -107,7 +100,7 @@ Save the returned `results` array as `selected_sections`.
 
 ---
 
-## Step 5: Read section content
+## Step 4: Read section content
 
 From `selected_sections`, select sections to read:
 1. All `high` sections first
@@ -126,7 +119,7 @@ If `selected_sections` is empty, set `sections_content = ""`.
 
 ---
 
-## Step 7: Generate answer
+## Step 5: Generate answer
 
 If `sections_content` is empty, output immediately:
 ```
@@ -138,7 +131,7 @@ Otherwise, generate a Japanese answer based solely on the knowledge sections.
 
 **Question**: user's question
 
-**Hearing answer**: formatted hearing string from Step 4
+**Hearing answer**: formatted hearing string from Step 2
 
 **Knowledge sections**: `sections_content`
 
@@ -174,7 +167,7 @@ Save as `answer_text`.
 
 ---
 
-## Step 8: Verify answer
+## Step 6: Verify answer
 
 Check that all Nablarch-specific claims in `answer_text` are supported by `sections_content`.
 
@@ -209,14 +202,14 @@ If any claim is unsupported, set `verify_result = FAIL` and record `issues` (lis
 
 ---
 
-## Step 9: Handle verify result
+## Step 7: Handle verify result
 
 **If PASS**: Set `final_answer = answer_text`.
 
-**If FAIL**: Re-run Step 7 once with the additional constraint: do not include any of the `issues` claims in the answer. Save the result as `final_answer`.
+**If FAIL**: Re-run Step 5 once with the additional constraint: do not include any of the `issues` claims in the answer. Save the result as `final_answer`.
 
 ---
 
-## Step 10: Output
+## Step 8: Output
 
 Output `final_answer` to the user.
