@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19
+**Updated**: 2026-05-19 (session 3)
 
 ## Rules
 
@@ -24,26 +24,15 @@
 - [x] ユーザーにレビュー結果を報告、PRレビューを依頼（本セッション末）
 - [ ] [BLOCKED: ユーザーがPRをOKするまで上記を繰り返す]
 
-### B-0-4-H. ワークフローMDのボイラープレート削除
+### ~~B-0-4-H~~ ワークフローMDリファクタリング（完了）
 
-`**Tool**: In-memory (LLM generation)` と `Call LLM with the following prompt, substituting the variables:` を削除し、
-プロンプト本文をステップの指示として直接記述する形に書き直す。
-
-**方針:**
-- 単純削除ではなく、情報を失わないようゼロベースで書き直す
-- 書き直し後、元ファイルと比較して不足・捏造がないか確認する
-- `---` 区切りも削除し、プロンプト本文をそのままステップ指示として統合する
-
-**対象ファイル（5ファイル、6箇所）:**
-- `.claude/skills/nabledge-6/workflows/qa/verify.md` — Step 1（1箇所）
-- `.claude/skills/nabledge-6/workflows/qa/answer.md` — Step 1（1箇所）
-- `.claude/skills/nabledge-6/workflows/qa/hearing.md` — Step 2, Step 3（2箇所）
-- `.claude/skills/nabledge-6/workflows/semantic-search.md` — Step 2, Step 3（2箇所）
-
-**ステップ（1ファイルずつ）:**
-- [x] qa.md に hearing/answer/verify を統合してゼロから書き直し → コミット `76268a9d3`
-- [x] semantic-search.md 書き直し → コミット `76268a9d3`
-- [x] qa/hearing.md, qa/answer.md, qa/verify.md 削除 → コミット `76268a9d3`
+- [x] qa.md に hearing/answer/verify を統合してゼロから書き直し → `76268a9d3`
+- [x] semantic-search.md 書き直し → `76268a9d3`
+- [x] qa/hearing.md, qa/answer.md, qa/verify.md 削除 → `76268a9d3`
+- [x] SKILL.md: 未定義 greeting 削除、LLMステップヒント削除 → `a3b523638`
+- [x] qa.md: semantic-search.md 呼び出しに修正（重複ロジック除去）→ `cf026e442`
+- [x] qa.md: processing_types を Step 2 にインライン化、Step 1 削除 → `119ff53ce`
+- [x] nabledge-skill.md: qa.md はバージョン固有のためコピー不可と明記 → `189b51402`
 
 ### ~~B-0-4-A~~ (完了) — `890683762`
 
