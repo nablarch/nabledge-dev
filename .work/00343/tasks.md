@@ -5,19 +5,33 @@
 
 ## In Progress
 
+### B-4-0. run_e2e.py エラーハンドリング修正
+
+B-4実行中に判明した問題を先に修正する。
+
+**問題**:
+- シナリオ単体は正常でも連続実行時にクラッシュする事象が発生（原因未特定: マーカー未検出エラー）
+- 失敗時にどのシナリオで何が起きたかログに出ない
+- 1件失敗すると残り全シナリオがスキップされる
+
+**修正内容**:
+- [ ] シナリオごとにtry/catchして継続実行
+- [ ] 失敗シナリオのエラー内容をstderrとsummary.jsonに記録
+- [ ] SEレビュー
+- [ ] テスト追加（エラー時の継続動作確認）
+- [ ] コミット・プッシュ
+
 ### B-4. 新スキルE2Eベンチマーク
 
-B-3完了後に実施。
+B-4-0完了後に実施。
 
-- [ ] 1シナリオで動作確認（B-3スモークテストと同じコマンド、今度は評価も確認）:
-  - 受入条件: `pre-01/evaluation.json` が生成され `claim_verdicts` が空でないこと
-- [ ] run-1 実行（全28シナリオ）:
+- [ ] run-1 実行（全30シナリオ）:
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
     --skill-dir .claude/skills/nabledge-6
   ```
-  - 受入条件: 終了コード0、`total_scenarios` = 28、`summary.json` の `scenarios_file` が `qa.json` であること
+  - 受入条件: 終了コード0、`total_scenarios` = 30、`summary.json` の `scenarios_file` が `qa.json` であること
   - 完了後リネーム: `mv tools/benchmark/results/YYYYMMDD-HHMMSS tools/benchmark/results/v1-new-search/run-1`
 - [ ] run-2, run-3 実行（同上、run-2/run-3にリネーム）
 - [ ] 結果をコミット
