@@ -50,46 +50,27 @@ Execute `workflows/semantic-search.md` with:
 
 Save as `semantic_results` (pointer JSON).
 
-### Step 3: Keyword search
-
-**Tool**: workflows/keyword-search.md
-
-Execute `workflows/keyword-search.md` with:
-- `{question}` = user's question
-- `{hearing_answer}` = `hearing_answer_str`
-
-Save as `keyword_results` (pointer JSON).
-
-### Step 4: Merge results
-
-Combine `semantic_results.results` and `keyword_results.results`:
-1. Concatenate the two result lists
-2. Deduplicate by `(file, section_id)` — when duplicated, keep the entry with higher relevance (`"high"` beats `"partial"`)
-3. Sort: `"high"` entries first, then `"partial"`
-
-Save as `merged_pointer_json`.
-
-### Step 5: Generate answer
+### Step 3: Generate answer
 
 **Tool**: workflows/qa/answer.md
 
 Execute `workflows/qa/answer.md` with:
 - `{question}` = user's question
 - `{hearing_answer_str}` = hearing result string
-- `{pointer_json}` = `merged_pointer_json`
+- `{pointer_json}` = `semantic_results`
 
 Save result as `answer_text`.
 
-### Step 6: Verify answer
+### Step 4: Verify answer
 
 **Tool**: workflows/qa/verify.md
 
 Execute `workflows/qa/verify.md` with:
 - `{answer}` = `answer_text`
-- `{pointer_json}` = `merged_pointer_json`
+- `{pointer_json}` = `semantic_results`
 
 Save result as `final_answer`.
 
-### Step 7: Output
+### Step 5: Output
 
 Output `final_answer` to the user.
