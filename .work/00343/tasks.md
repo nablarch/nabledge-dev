@@ -17,7 +17,7 @@
 その後SEエキスパートレビューを実施し、ユーザーがPRをOKするまで改善。
 
 **ステップ:**
-- [ ] 設計書（search-design.md, keyword-search-design.md）と実装（workflows/\*.md, scripts/\*）を突合し、不整合をユーザーに報告
+- [ ] 設計書（search-design.md, keyword-search-design.md, semantic-search-design.md, hearing-design.md, answer-verify-design.md, benchmark-design.md）と実装（workflows/\*.md, scripts/\*）を突合し、不整合をユーザーに報告
 - [ ] SEエキスパートレビュー（別エージェント）: 設計書適合性・コード品質・整合性を確認
 - [ ] Findingsがあれば修正
 - [ ] ユーザーにレビュー結果を報告、PRレビューを依頼
