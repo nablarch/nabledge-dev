@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19
+**Updated**: 2026-05-19 (追記: 設計書最新化・SKILL.md/n6.md対応タスク追加)
 
 ## In Progress
 
@@ -17,11 +17,16 @@
   - `qa.md` が `keyword-search.md` を呼ばない → 設計意図通り
   - `_knowledge-search.md` は現行検索のため削除済み
 - [x] B-X（terms.json抽出ルール見直し）タスクを追加 — `0d198c64f`, `bc4a2ca2a`
-- [ ] 設計書（`search-design.md`, `keyword-search-design.md`）を実装に合わせて更新
-  - `assets/` 構成の追記（hearing-classify/extract, stage1/2, answer, verify）
-  - `hearing-prompt.md` → 2ファイル分割の反映
-  - `semantic-search.md` 入力に `{hearing_answer}` 追記
-- [ ] [DECISION: ユーザーが設計書更新内容を確認してパスを確認]
+- [x] 設計書（`search-design.md`）を実装に合わせて更新 — `8d53739f6`
+- [x] `assets/` プロンプトをワークフローにインライン化（英語化）、`assets/` 廃止 — `0ebfb886b`
+- [x] `index.toon` 削除 — `2a96bb538`
+- [ ] 設計書（`search-design.md`）を最新実装に合わせて更新
+  - `assets/` 廃止・プロンプトインライン化の反映
+  - `workflows/code-analysis/` サブディレクトリ追加の反映
+  - ファイル配置ルール（コロケーション）を設計書に記載
+- [ ] SKILL.md を新検索の4コマンド（質問・コード分析・キーワード検索・セマンティック検索）に対応させる
+- [ ] `n6.md` コマンドを新検索の4コマンドに対応させる
+- [ ] [DECISION: ユーザーが設計書・SKILL.md・n6.md を確認してパスを確認]
 
 
 ### B-4-1. エラー原因調査と修正（B-4-2完了後）
