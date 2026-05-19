@@ -27,13 +27,7 @@
 
 ### ~~B-0-4-A~~ (完了) — `890683762`
 
-### B-0-4-B. verify FAIL時リトライ実装
-
-FAIL時に⚠️警告追記ではなく、answer.mdを再実行（最大1回）する。
-
-**対象ファイル:**
-- `.claude/skills/nabledge-6/workflows/qa.md` — Step 5 にリトライループ追加
-- `.claude/skills/nabledge-6/workflows/qa/verify.md` — FAIL時はリトライ指示を返す（警告追記を削除）
+### ~~B-0-4-B~~ (完了) — `d81081876`
 
 ### B-0-4-C. sections_content 共有
 
