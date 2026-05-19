@@ -9,7 +9,7 @@ Verifies that all Nablarch-specific claims in the answer are supported by knowle
 
 ## Output
 
-Verified answer text (possibly with a warning appended if hallucination detected)
+Verification result JSON (`result`, `claims`, `issues`)
 
 ## Steps
 
@@ -99,16 +99,14 @@ Parse the JSON response. Extract:
 - `result`: `"PASS"` or `"FAIL"`
 - `issues`: list of unsupported claims (empty if PASS)
 
-### Step 3: Return verified answer
+### Step 3: Return verification result
 
-**If `result == "PASS"`**: Return the original answer text unchanged.
+Return the parsed JSON as-is:
 
-**If `result == "FAIL"`**: Append a warning to the answer:
-
+```json
+{
+  "result": "PASS or FAIL",
+  "claims": [...],
+  "issues": [...]
+}
 ```
----
-⚠️ 検証: 以下の主張は知識ファイルで裏付けが取れていません:
-- {issue.claim}
-```
-
-Return the modified answer text.

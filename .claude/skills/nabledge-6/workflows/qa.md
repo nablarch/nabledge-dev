@@ -54,8 +54,21 @@ Execute `workflows/qa/verify.md` with:
 - `{answer}` = `answer_text`
 - `{pointer_json}` = `semantic_results`
 
-Save result as `final_answer`.
+Save result as `verify_result` (JSON with `result`, `claims`, `issues`).
 
-### Step 5: Output
+### Step 5: Handle verify result
+
+**If `verify_result.result == "PASS"`**:
+- Set `final_answer` = `answer_text`
+
+**If `verify_result.result == "FAIL"`**:
+- Re-execute `workflows/qa/answer.md` with:
+  - `{question}` = user's question
+  - `{hearing_answer_str}` = hearing result string
+  - `{pointer_json}` = `semantic_results`
+  - `{exclusions}` = `verify_result.issues` (list of unsupported claims to avoid)
+- Save result as `final_answer`
+
+### Step 6: Output
 
 Output `final_answer` to the user.

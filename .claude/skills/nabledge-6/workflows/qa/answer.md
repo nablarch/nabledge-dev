@@ -7,6 +7,7 @@ Generates a Japanese answer from the search results.
 - `{question}`: User's question
 - `{hearing_answer_str}`: Formatted hearing result string
 - `{pointer_json}`: Combined pointer JSON from semantic + keyword search
+- `{exclusions}` (optional): List of unsupported claims from verify — avoid restating these in the answer
 
 ## Output
 
@@ -77,6 +78,7 @@ Steps:
 - Base the answer only on the knowledge sections. Do not fill gaps with inference.
 - General Java/programming knowledge (try-catch, Bean, getter/setter, etc.) may be used.
 - Stay within 500 tokens (up to 800 for complex questions).
+- If `{exclusions}` is provided, do not include any of those claims in the answer.
 
 **Multiple approaches**: Choose the approach matching the processing type in the hearing answer. If the processing type does not narrow it down, state the most common approach in the conclusion and mention alternatives in the notes.
 
