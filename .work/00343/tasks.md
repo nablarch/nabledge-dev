@@ -41,10 +41,9 @@
 - `.claude/skills/nabledge-6/workflows/semantic-search.md` — Step 2, Step 3（2箇所）
 
 **ステップ（1ファイルずつ）:**
-- [ ] verify.md 書き直し → 元ファイルと比較確認 → コミット
-- [ ] answer.md 書き直し → 元ファイルと比較確認 → コミット
-- [ ] hearing.md 書き直し → 元ファイルと比較確認 → コミット
-- [ ] semantic-search.md 書き直し → 元ファイルと比較確認 → コミット
+- [x] qa.md に hearing/answer/verify を統合してゼロから書き直し → コミット `76268a9d3`
+- [x] semantic-search.md 書き直し → コミット `76268a9d3`
+- [x] qa/hearing.md, qa/answer.md, qa/verify.md 削除 → コミット `76268a9d3`
 
 ### ~~B-0-4-A~~ (完了) — `890683762`
 
