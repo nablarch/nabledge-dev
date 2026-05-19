@@ -16,14 +16,24 @@ Knowledge base and code analysis tool for Nablarch 6 framework.
 nabledge-6
 ```
 
-**Direct knowledge search**:
+**Question answering**:
 ```
 nabledge-6 "<question>"
 ```
 
-**Direct code analysis**:
+**Code analysis**:
 ```
 nabledge-6 code-analysis
+```
+
+**Keyword search** (precise, term-based):
+```
+nabledge-6 keyword-search "<term1> <term2> ..."
+```
+
+**Semantic search** (exploratory, natural language):
+```
+nabledge-6 semantic-search "<question>"
 ```
 
 ## Execution Instructions
@@ -32,14 +42,19 @@ nabledge-6 code-analysis
 
 **No arguments** (`nabledge-6`):
 - Show greeting
-- Ask user to choose: Knowledge Search or Code Analysis
+- Ask user to choose: Question Answering or Code Analysis
 
 **Text argument** (`nabledge-6 "<question>"`):
-- Execute `workflows/qa.md` to answer question
-- This workflow orchestrates _knowledge-search pipeline
+- Execute `workflows/qa.md` (hearing → semantic search → answer → verify)
 
 **"code-analysis" argument** (`nabledge-6 code-analysis`):
-- Execute `workflows/code-analysis.md` to analyze user's code
+- Execute `workflows/code-analysis.md`
+
+**"keyword-search" argument** (`nabledge-6 keyword-search "<terms>"`):
+- Execute `workflows/keyword-search.md` with the provided terms
+
+**"semantic-search" argument** (`nabledge-6 semantic-search "<question>"`):
+- Execute `workflows/semantic-search.md` with the provided question
 
 ## Critical Constraints
 
@@ -66,7 +81,10 @@ nabledge-6 code-analysis
 
 ## Knowledge Structure
 
-**Files**: `knowledge/features/`, `knowledge/checks/`, `knowledge/releases/`
+**Files**: `knowledge/{category}/` — RBKC-generated JSON files by category:
+  - `about/`, `assets/`, `check/`, `component/`, `development-tools/`
+  - `guide/`, `processing-pattern/`, `releases/`, `setup/`
 **Index**: `knowledge/index.md` (section index for semantic search)
+**Terms**: `knowledge/terms.json` (term → section_id map for keyword search)
 **Schemas**: `schemas/*.json` (JSON validation schemas)
 **Scripts**: `scripts/*.sh` (pre-built processing scripts)

@@ -86,6 +86,7 @@ qa.md（質問応答オーケストレーション）
   └── qa/verify.md          根拠検証
 
 code-analysis.md（コード分析）
+  ├── semantic-search.md    意味検索 → high relevanceセクション取得
   ├── keyword-search.md     キーワード検索 → セクションIDリスト
   ├── read-sections.sh      セクション本文取得
   └── レポート生成
@@ -97,10 +98,10 @@ code-analysis.md（コード分析）
 
 | ワークフロー | 入力 | 方式 | 利用想定 |
 |------------|------|------|--------|
-| keyword-search.md | キーワード（1つ以上） | スクリプトによる機械的マッチ | コード分析、レビュー、影響調査 等 |
-| semantic-search.md | 自然言語の質問文、ヒアリング結果（hearing_answer） | AIによるインデックスからのセクション選定 | 質問 |
+| keyword-search.md | キーワード（1つ以上） | スクリプトによる機械的マッチ | コード分析（セクションポインタ取得） |
+| semantic-search.md | 自然言語の質問文、ヒアリング結果（hearing_answer） | AIによるインデックスからのセクション選定 | 質問、コード分析（high relevanceセクション取得） |
 
-keyword-searchは既知の用語で確実にヒットさせる（precision重視）。semantic-searchは語彙ギャップを超えて関連セクションを発見する（recall重視）。
+keyword-searchは既知の用語で確実にヒットさせる（precision重視）。semantic-searchは語彙ギャップを超えて関連セクションを発見し、重要度（high/partial）を付与する（recall重視）。コード分析では両方を組み合わせて使う。
 
 ---
 
@@ -152,32 +153,35 @@ tools/benchmark/
 ```
 .claude/skills/nabledge-6/
   knowledge/
-    *.json                            ← 知識ファイル（RBKC生成）
+    {category}/                       ← 知識ファイル（RBKC生成、カテゴリ別サブディレクトリ）
+      about/
+      assets/
+      check/
+      component/
+      development-tools/
+      guide/
+      processing-pattern/
+      releases/
+      setup/
     index.md                          ← セクション目次（RBKC生成）
     terms.json                        ← term→section_idマップ（RBKC生成）
   workflows/
     qa.md                             ← 質問応答オーケストレーション
-    qa/
-      hearing.md                      ← ヒアリング
-      answer.md                       ← 回答生成
-      verify.md                       ← 根拠検証
+    qa/                               ← qa.md が参照するサブワークフロー（コロケーション）
+      hearing.md                      ← ヒアリング（LLMプロンプトをインライン）
+      answer.md                       ← 回答生成（LLMプロンプトをインライン）
+      verify.md                       ← 根拠検証（LLMプロンプトをインライン）
     keyword-search.md                 ← キーワード検索（公開）
-    semantic-search.md                ← 意味検索（公開）
+    semantic-search.md                ← 意味検索（公開、LLMプロンプトをインライン）
     code-analysis.md                  ← コード分析
+    code-analysis/                    ← code-analysis.md が参照するテンプレート（コロケーション）
+      template.md                     ← コード分析テンプレート
+      template-guide.md               ← テンプレートガイド
+      template-examples.md            ← テンプレート例
   scripts/
     keyword-search.sh                 ← components/scripts/ からデプロイ
     read-sections.sh                  ← components/scripts/ からデプロイ
-  assets/
-    hearing-classify.md               ← ヒアリング分類LLMプロンプト（hearing-prompt.mdを2ファイルに分割）
-    hearing-extract.md                ← ヒアリング抽出LLMプロンプト
-    semantic-search-stage1.md         ← 意味検索Stage1プロンプト
-    semantic-search-stage2.md         ← 意味検索Stage2プロンプト
-    answer.md                         ← 回答生成プロンプト
-    verify.md                         ← 根拠検証プロンプト
-    answer-generation.md              ← 回答生成補助プロンプト
-    code-analysis-template.md         ← コード分析テンプレート
-    code-analysis-template-guide.md   ← コード分析テンプレートガイド
-    code-analysis-template-examples.md ← コード分析テンプレート例
+  assets/                             ← 空（プロンプトはワークフローMDにインライン化）
 
 tools/rbkc/
   scripts/create/
@@ -185,7 +189,11 @@ tools/rbkc/
     terms.py                          ← terms.json生成
 ```
 
+**ファイル配置の原則（コロケーション）**:
+- ワークフローとその依存ファイルは同一ディレクトリまたは直下のサブディレクトリに配置する
+- LLMへのプロンプト指示はワークフローMD（`qa/hearing.md`等）にインライン化する（`assets/`参照なし）
+- `qa/`サブディレクトリは`qa.md`専用。`code-analysis/`サブディレクトリは`code-analysis.md`専用
+
 - keyword-search.md、semantic-search.mdは公開ワークフロー。PJ側で独自ワークフローから直接呼べる
 - qa/配下もベンチマークから個別に呼べるよう公開
-- プロンプトはassets/に配置。ワークフローMDから参照する
 - フェーズAの `components/` をフェーズBでスキルにデプロイする
