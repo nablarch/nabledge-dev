@@ -35,14 +35,14 @@ B-4実行中に判明した問題を先に修正する。
 - [ ] 調査結果をユーザーに報告してから修正方針を確定
 
 **修正ステップ（調査後に詳細化）**:
-- [ ] RED: エラー継続動作のテストを追加（失敗シナリオがあっても後続が実行される、summary.jsonにエラー内容が記録される）
+- [ ] RED: 根本原因に対するテストを追加
 - [ ] テストがREDであることを確認（`pytest tools/benchmark/tests/ -x -k run_e2e`）
-- [ ] GREEN: シナリオごとにtry/catchして継続実行、失敗内容をsummary.jsonに記録
+- [ ] GREEN: 根本原因を修正（エラーハンドリング改善はあわせて実施）
 - [ ] テストがGREENであることを確認（`pytest tools/benchmark/tests/ -x`）
 - [ ] SEレビュー（別エージェント）
 - [ ] コミット・プッシュ
-- [ ] 失敗シナリオのみ `--scenario-ids` で再実行して結果を既存ディレクトリに追記
-  - 受入条件: summary.jsonの `failed_scenarios` が空になること
+- [ ] 全30シナリオを1runで完走することを確認
+  - 受入条件: 終了コード0、summary.jsonの `total_scenarios` = 30
 
 ### B-4. 新スキルE2Eベンチマーク
 
