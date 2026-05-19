@@ -41,11 +41,10 @@ nabledge-6 semantic-search "<question>"
 ### Step 0: Determine Workflow
 
 **No arguments** (`nabledge-6`):
-- Show greeting
 - Ask user to choose: Question Answering or Code Analysis
 
 **Text argument** (`nabledge-6 "<question>"`):
-- Execute `workflows/qa.md` (hearing → semantic search → answer → verify)
+- Execute `workflows/qa.md`
 
 **"code-analysis" argument** (`nabledge-6 code-analysis`):
 - Execute `workflows/code-analysis.md`
