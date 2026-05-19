@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-0-4サブタスク追加)
+**Updated**: 2026-05-19
 
 ## Rules
 
@@ -21,7 +21,7 @@
 - [x] B-0-4-A〜G の実装修正・設計書追記完了
 - [x] SEエキスパートレビュー完了（1 Finding → 修正済み `baacaa984`）
   - Finding: answer.md の `{hearing_answer_str}` vs `{hearing_answer}` 変数名不一致 → 修正済み
-- [ ] ユーザーにレビュー結果を報告、PRレビューを依頼
+- [x] ユーザーにレビュー結果を報告、PRレビューを依頼（本セッション末）
 - [ ] [BLOCKED: ユーザーがPRをOKするまで上記を繰り返す]
 
 ### ~~B-0-4-A~~ (完了) — `890683762`
