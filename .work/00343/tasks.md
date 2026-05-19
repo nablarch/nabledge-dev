@@ -17,22 +17,25 @@
 - [ ] ユーザーにレビュー結果を報告、PRレビューを依頼
 - [ ] [BLOCKED: ユーザーがPRをOKするまで上記を繰り返す]
 
-### B-4-1. エラー原因調査と修正
+### B-4-1. run-1 安定化（エラーゼロまで）
 
-qa.md の keyword-search 削除により過去の run-1 結果は無効。新たにエラー調査・修正を行う。
+E2E実行が安定して完走できる状態にする。エラーがある限り調査→修正→再実行を繰り返し、ユーザーに確認を取る。
 
-**ステップ:**
-- [ ] 全30シナリオ実行してエラー件数を確認
+最新実行結果: `tools/benchmark/results/20260519-170919`
+
+**ステップ（繰り返し）:**
+- [ ] summary.json でエラー件数を確認
+- [ ] エラーがあれば trace.json を読んで原因を特定し、ユーザーに報告
+- [ ] ユーザー承認後、スキル（qa.md 等）またはスクリプトを修正
+- [ ] 全シナリオ再実行
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
-    --skill-dir .claude/skills/nabledge-6 \
-    --output-dir tools/benchmark/results/run-1
+    --skill-dir .claude/skills/nabledge-6
   ```
-- [ ] エラーシナリオの trace.json / raw_response.txt を読んでエラー原因を特定し、ユーザーに報告
-- [ ] 原因に応じてスキル（qa.md 等）またはスクリプトを修正
-- [ ] 全30シナリオ再実行して全件成功を確認
-  - 受入条件: summary.json の全シナリオに `status: error` が存在しないこと
+- [ ] [BLOCKED: エラーゼロをユーザーが確認してOKを出す]
+
+**受入条件**: summary.json の全シナリオに `status: error` が存在しないこと
 
 ### B-4. 新スキルE2Eベンチマーク（B-4-1完了後）
 
