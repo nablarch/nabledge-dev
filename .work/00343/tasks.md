@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19
+**Updated**: 2026-05-19 (B-0-4サブタスク追加)
 
 ## Rules
 
@@ -17,15 +17,76 @@
 その後SEエキスパートレビューを実施し、ユーザーがPRをOKするまで改善。
 
 **ステップ:**
-- [ ] search-design.md と実装（workflows/qa.md, workflows/semantic-search.md, workflows/keyword-search.md, workflows/code-analysis.md）を突合し、不整合をユーザーに報告
-- [ ] keyword-search-design.md と実装（workflows/keyword-search.md, scripts/keyword-search.sh, knowledge/terms.json）を突合し、不整合をユーザーに報告
-- [ ] semantic-search-design.md と実装（workflows/semantic-search.md）を突合し、不整合をユーザーに報告
-- [ ] hearing-design.md と実装（workflows/qa/hearing.md）を突合し、不整合をユーザーに報告
-- [ ] answer-verify-design.md と実装（workflows/qa/answer.md, workflows/qa/verify.md）を突合し、不整合をユーザーに報告
+- [x] 5設計書と実装の突合完了、ユーザーへ報告済み
+- [ ] B-0-4-A〜G の実装修正（下記タスク参照）
+- [ ] 設計書追記（B-0-4-H）
 - [ ] SEエキスパートレビュー（別エージェント）: 設計書適合性・コード品質・整合性を確認
 - [ ] Findingsがあれば修正
 - [ ] ユーザーにレビュー結果を報告、PRレビューを依頼
 - [ ] [BLOCKED: ユーザーがPRをOKするまで上記を繰り返す]
+
+### B-0-4-A. qa.md Step 0 削除 + run_e2e.py修正
+
+hearing_answer をセクション注入ではなく質問文に展開する。
+
+**対象ファイル:**
+- `.claude/skills/nabledge-6/workflows/qa.md` — Step 0 を削除
+- `tools/benchmark/scripts/run_e2e.py` — `hearing_answer` を質問文に展開（セクション注入廃止）
+- `tools/benchmark/tests/test_run_e2e.py` — テスト更新
+
+**ステップ:**
+- [ ] テスト追加（RED）: `コンテキスト（ヒアリング結果）` セクションが注入されないこと
+- [ ] `run_e2e.py` 修正: `_build_question()` で hearing_answer を質問文に展開
+- [ ] `qa.md` Step 0 削除
+- [ ] テストがすべて GREEN であること: `python3 -m pytest tools/benchmark/tests/test_run_e2e.py -x`
+
+### B-0-4-B. verify FAIL時リトライ実装
+
+FAIL時に⚠️警告追記ではなく、answer.mdを再実行（最大1回）する。
+
+**対象ファイル:**
+- `.claude/skills/nabledge-6/workflows/qa.md` — Step 5 にリトライループ追加
+- `.claude/skills/nabledge-6/workflows/qa/verify.md` — FAIL時はリトライ指示を返す（警告追記を削除）
+
+### B-0-4-C. sections_content 共有
+
+qa.md が `read-sections.sh` を一元呼び出しし、answer.md と verify.md に渡す。
+
+**対象ファイル:**
+- `.claude/skills/nabledge-6/workflows/qa.md` — Step 2-3 で sections_content を取得・保持
+- `.claude/skills/nabledge-6/workflows/qa/answer.md` — sections_content を受け取る（自分で呼ばない）
+- `.claude/skills/nabledge-6/workflows/qa/verify.md` — sections_content を受け取る（自分で呼ばない）
+
+### B-0-4-D. hearing status のdownstream流出削除
+
+hearing.md が返す `status` を qa.md に渡さない。
+
+**対象ファイル:**
+- `.claude/skills/nabledge-6/workflows/qa/hearing.md` — 出力から `status` を削除
+- `.claude/skills/nabledge-6/workflows/qa.md` — `hearing_status` / `hearing_questions` の参照を削除
+
+### B-0-4-E. semantic-search: 高確信度3件未満の処理追加
+
+Stage 1 で高確信度ページが3件未満の場合、中間出力にその旨を記載する。
+
+**対象ファイル:**
+- `.claude/skills/nabledge-6/workflows/semantic-search.md` — Stage 1 プロンプトに条件追加
+
+### B-0-4-F. hearing: trace.candidates 追加
+
+ユーザーに提示した選択肢リストを trace に含める。
+
+**対象ファイル:**
+- `.claude/skills/nabledge-6/workflows/qa/hearing.md` — trace 出力に `candidates` フィールド追加
+
+### B-0-4-G. 設計書追記（6〜8）
+
+実装済み動作を設計書に反映する。
+
+**内容:**
+- `.work/00343/design/keyword-search-design.md` — `no_knowledge_content: true` 除外の記載追加
+- `.work/00343/design/search-design.md` — `trace.excluded` の記載追加（semantic-search参照）
+- `.work/00343/design/semantic-search-design.md` — Stage 1/2 出力スキーマに `trace.excluded` 追加
 
 ### B-4-1. run-1 安定化（エラーゼロまで）
 
