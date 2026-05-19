@@ -96,6 +96,27 @@ B-6完了後。新ベンチマーク基盤に完全移行。
 - [ ] `.claude/rules/` からnabledge-test固有記述を削除
 - [ ] `python3 -m pytest tools/ -x` で全テストPASS
 
+### B-8-pre. マージ前静的確認
+
+B-7完了後、PRマージ前に実施。「マージしたら壊れる」を事前に潰す。
+
+**確認1: GHA sync manifest**
+- [ ] `.github/workflows/sync-to-nabledge/sync-manifest.txt` を読み、今回追加・変更したスキルファイルが含まれているか確認
+  - 含まれるべきもの: `workflows/qa.md`, `workflows/qa/`, `workflows/_knowledge-search.md`, `workflows/_knowledge-search/`, `assets/answer.md` など今回の変更ファイル
+  - 含まれないべきもの: `tools/`, `.work/`, `.claude/rules/` など開発専用ファイル
+  - 受入条件: デプロイ対象ファイルがすべてmanifestに含まれること
+
+**確認2: セットアップスクリプト**
+- [ ] `tools/setup/setup-6-cc.sh` / `tools/setup/setup-6-ghc.sh` を読み、今回削除・移動したファイルへの参照がないか確認
+  - 受入条件: 削除・移動したファイルへの参照がゼロであること
+
+**確認3: test-setup.sh**
+- [ ] B-7で削除するファイル（`.claude/skills/nabledge-test/scenarios/`）への参照がtest-setup.shに残っていないか確認
+  - B-7の `_scenario_field` 削除ステップで対処済みであることを確認
+  - 受入条件: `grep -n "nabledge-test" tools/tests/test-setup.sh` が0件であること
+
+- [ ] 問題があればB-7の修正に追加してコミット
+
 ### B-8. test-setup.sh 動作確認
 
 B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施。
