@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (session 4)
+**Updated**: 2026-05-20 (session 5)
 
 ## Rules
 
@@ -53,22 +53,33 @@
 
 ### B-4-1. run-1 安定化（エラーゼロまで）
 
-E2E実行が安定して完走できる状態にする。エラーがある限り調査→修正→再実行を繰り返し、ユーザーに確認を取る。
+E2E実行が安定して完走できる状態にする。エラーがある限り調査→修正→再実行を繰り返す。
+完走後はレポートで事実データをユーザーに提示し、一緒に改善を検討する。
+現行ベンチマークとの比較は行わない（B-4以降の作業）。
 
-最新実行結果: なし（`20260519-170919` は削除済み）
+最新実行結果: `20260520-072948`（実行中: bsi88mjx8）
 
-**ステップ（繰り返し）:**
-- [ ] 全シナリオ実行して summary.json でエラー件数を確認
-  - [BLOCKED: E2E実行中（バックグラウンド brq8fxkin）— 完了後に結果確認]
-- [ ] エラーがあれば trace.json を読んで原因を特定し、ユーザーに報告
-- [ ] ユーザー承認後、スキル（qa.md 等）またはスクリプトを修正
-- [ ] 全シナリオ再実行
+**サイクル（エラーゼロになるまで繰り返し）:**
+- [ ] 全シナリオ実行
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
     --skill-dir .claude/skills/nabledge-6
   ```
-- [ ] [BLOCKED: エラーゼロをユーザーが確認してOKを出す]
+- [ ] summary.json でエラー件数を確認（`status: error` の有無）
+- [ ] エラーがあれば trace.json / error.json で原因を特定し、ユーザーに報告
+- [ ] ユーザー承認後、スキル（qa.md 等）またはスクリプトを修正してサイクル先頭へ
+
+**エラーゼロ確認後（1回のみ）:**
+- [ ] report.py でレポート出力し、結果をユーザーに提示
+  ```bash
+  python3 -m tools.benchmark.scripts.report --run-dir tools/benchmark/results/<RUN_DIR>
+  ```
+- [ ] レポートの事実データをもとにユーザーと改善点を検討
+  - hallucination FAIL の原因（知識ファイル不足か、回答生成の過剰か）
+  - hearing が期待通りに動作しているか
+  - search セクション数・内容の妥当性
+- [ ] [BLOCKED: ユーザーが改善方針を決定 or run-1完了OKを出す]
 
 **受入条件**: summary.json の全シナリオに `status: error` が存在しないこと
 
