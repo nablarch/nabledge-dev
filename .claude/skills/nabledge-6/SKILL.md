@@ -51,7 +51,8 @@ nabledge-6 semantic-search "<question>"
 - Execute `workflows/code-analysis.md`
 
 **"keyword-search" argument** (`nabledge-6 keyword-search "<terms>"`):
-- Execute `workflows/keyword-search.md` with the provided terms
+- Split `<terms>` on spaces to get a keyword list
+- Execute `workflows/keyword-search.md` with `{keywords}` = that list
 
 **"semantic-search" argument** (`nabledge-6 semantic-search "<question>"`):
 - Execute `workflows/semantic-search.md` with the provided question

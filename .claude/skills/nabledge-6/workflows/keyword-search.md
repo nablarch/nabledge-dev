@@ -4,8 +4,7 @@ Keyword-based search using terms.json inverted index.
 
 ## Input
 
-- `{question}`: User's question
-- `{hearing_answer}`: Formatted hearing result or "なし"
+- `{keywords}`: List of search keywords (e.g., `UniversalDao`, `batchUpdate`, `ページング`)
 
 ## Output
 
@@ -21,22 +20,7 @@ Pointer JSON:
 
 ## Steps
 
-### Step 1: Extract keywords
-
-**Tool**: In-memory (LLM judgment)
-
-From the question and hearing_answer, extract 3–7 search keywords:
-- Nablarch class names (e.g., `UniversalDao`, `BatchAction`)
-- Annotation names (e.g., `@InjectForm`, `@Valid`)
-- Japanese feature names (e.g., `バリデーション`, `ページング`)
-- English technical terms (e.g., `requestPath`, `SQLID`)
-
-Rules:
-- Minimum length: 2 characters
-- Prefer specific terms over general words
-- Include both Japanese and English variants of the same concept when applicable
-
-### Step 2: Execute keyword search
+### Step 1: Execute keyword search
 
 **Tool**: Bash
 
@@ -44,9 +28,9 @@ Rules:
 bash scripts/keyword-search.sh <keyword1> [keyword2] ...
 ```
 
-Replace `<keyword1>`, `[keyword2]` etc. with the keywords extracted in Step 1.
+Replace `<keyword1>`, `[keyword2]` etc. with the keywords from `{keywords}`.
 
-If no keywords were extracted (all below 2 characters), return `{"results": []}` immediately.
+If `{keywords}` is empty, return `{"results": []}` immediately.
 
 The script outputs a JSON array. Each element is:
 ```json
@@ -67,7 +51,7 @@ Note: `section_id` in the script output is the full `"file_path:section_id"` for
 
 If the output is an empty array `[]`, return `{"results": []}` immediately.
 
-### Step 3: Convert to pointer JSON
+### Step 2: Convert to pointer JSON
 
 For each section entry in the script output:
 - Split `section_id` on the **last** `:` to get `file` (e.g., `processing-pattern/nablarch-batch/page.json`) and `sid` (e.g., `s1`)

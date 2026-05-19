@@ -147,7 +147,8 @@ Output directory: .nabledge/20260210
    - Output: pointer JSON `{results: [{file, section_id, relevance}]}`
 
 3. **Execute keyword search**:
-   - Execute `workflows/keyword-search.md` with same inputs
+   - Extract Nablarch class names, method names, and annotation names identified in Step 1 as the keyword list
+   - Execute `workflows/keyword-search.md` with `{keywords}` = that list
    - Output: pointer JSON `{results: [{file, section_id, relevance}]}`
 
 4. **Merge results**:
