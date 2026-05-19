@@ -31,13 +31,7 @@
 
 ### ~~B-0-4-C~~ (完了) — `8f07c62ee`
 
-### B-0-4-D. hearing status のdownstream流出削除
-
-hearing.md が返す `status` を qa.md に渡さない。
-
-**対象ファイル:**
-- `.claude/skills/nabledge-6/workflows/qa/hearing.md` — 出力から `status` を削除
-- `.claude/skills/nabledge-6/workflows/qa.md` — `hearing_status` / `hearing_questions` の参照を削除
+### ~~B-0-4-D~~ (完了) — `3f7b0403c`
 
 ### B-0-4-E. semantic-search: 高確信度3件未満の処理追加
 
