@@ -104,7 +104,8 @@ skip case:
   },
   "trace": {
     "reason": "質問に「Web画面」が明示されている",
-    "matched_keywords": ["Web画面"]
+    "matched_keywords": ["Web画面"],
+    "candidates": []
   }
 }
 ```
@@ -116,7 +117,8 @@ ask case:
   "hearing_answer": null,
   "trace": {
     "reason": "入力チェックはWeb/REST APIの両方で異なる実装があるが、質問に処理方式が明示されていない",
-    "matched_keywords": []
+    "matched_keywords": [],
+    "candidates": ["ウェブアプリケーション", "RESTfulウェブサービス", "Nablarchバッチ", "Jakartaバッチ"]
   }
 }
 ```
@@ -131,7 +133,8 @@ cross-functional skip case:
   },
   "trace": {
     "reason": "テスティングフレームワークは処理方式に依存しない横断的機能",
-    "matched_keywords": []
+    "matched_keywords": [],
+    "candidates": []
   }
 }
 ```
