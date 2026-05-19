@@ -1,23 +1,9 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19
+**Updated**: 2026-05-19 (B-4-0完了)
 
 ## In Progress
-
-### B-4-0. run_e2e.py 調査（未完了分）
-
-エラーハンドリング修正はコミット済み（`46877d7a4`）。以下の調査が未実施のため実施する。
-
-**調査1（未実施分）**:
-- [ ] `TIMEOUT = 360` の根拠を確認（HOW-TO-RUN.md / 設計書に記載があるか）
-- [ ] タイムアウト時に claude が返すレスポンスの形式を確認（`subprocess.TimeoutExpired` 例外か、マーカーなしテキストが返るか）
-- [ ] `<<<BENCHMARK_HEARING>>>` マーカーが欠損するケースを設計書・ワークフローで確認
-- [ ] 調査結果をユーザーに報告
-
-**再実行確認**:
-- [ ] 落ちたシナリオのみ `--scenario-ids review-08,impact-01` で再実行して問題解消を確認
-  - 受入条件: クラッシュしないこと、失敗シナリオは error.json が生成されること、後続シナリオが継続すること
 
 ### B-4. 新スキルE2Eベンチマーク
 
@@ -121,7 +107,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 - [x] qa-current.json を results/baseline-current/ に移動 — `f3d8eeb15`
 - [x] HOW-TO-RUN.md を新スキル向けに更新（qa-current.json参照除去） — `b6f7d092f`
 - [x] B-3. スキルデプロイ（スモークテスト完了） — `a07583fc4`, `549df22d2`, `000fc91db`, `71a0c16e3`, `10a7aaf82`
-- [x] B-4-0. run_e2e.py エラーハンドリング修正（シナリオ単位で例外キャッチ、error.json保存、5テスト追加）— SEレビュー 0 Findings — `46877d7a4` ※調査未完了分はIn Progressに戻した
+- [x] B-4-0. run_e2e.py エラーハンドリング修正 + 調査（TIMEOUT=360根拠確認、TimeoutExpired動作確認、マーカー欠損ケース確認、review-08/impact-01再実行確認）— `46877d7a4`
 - [x] B-0. run_e2e.py 再設計（旧結果削除 `338c8c471`、TDD実装 `218a5e051`）— SEレビュー 0 Findings
 - [x] B-1（旧）. 現行検索E2Eベースライン取得（不正データのためB-0でリセット） — `f57b78581`, `4de6fb47b`
 - [x] A-1. RBKC変更のリバート — `5bf479e1c`, `f0249fea0`
