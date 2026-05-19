@@ -818,6 +818,72 @@ class TestRunE2eAllErrorHandling:
             assert not raw_path.exists(), "raw_response.txt must not be saved when there is no response"
 
 
+class TestMain:
+    """Tests for main() CLI entrypoint."""
+
+    def _make_valid_proc(self):
+        return type("P", (), {"returncode": 0, "stdout": json.dumps({
+            "result": self._make_valid_e2e_response(),
+            "duration_ms": 1, "duration_api_ms": 1, "num_turns": 1,
+            "total_cost_usd": 0.0,
+            "usage": {"input_tokens": 0, "output_tokens": 0,
+                      "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+        }), "stderr": ""})()
+
+    def _make_valid_e2e_response(self):
+        return (
+            "<<<BENCHMARK_HEARING>>>\n{\"status\": \"skipped\", \"questions\": []}\n<<<END_BENCHMARK_HEARING>>>\n"
+            "<<<BENCHMARK_SEARCH>>>\n{\"section_ids\": [\"f.json:s1\"]}\n<<<END_BENCHMARK_SEARCH>>>\n"
+            "<<<BENCHMARK_ANSWER>>>\n回答\n<<<END_BENCHMARK_ANSWER>>>"
+        )
+
+    def _setup_skill_dir(self, tmpdir):
+        skill_dir = Path(tmpdir) / "skill"
+        (skill_dir / "workflows").mkdir(parents=True)
+        (skill_dir / "workflows" / "qa.md").write_text("# QA", encoding="utf-8")
+        (skill_dir / "knowledge").mkdir()
+        return skill_dir
+
+    def _setup_scenarios(self, tmpdir, scenarios):
+        path = Path(tmpdir) / "scenarios.json"
+        path.write_text(json.dumps({"scenarios": scenarios}), encoding="utf-8")
+        return path
+
+    FAKE_EVAL = {"must": [], "acceptable": [], "hallucination": []}
+
+    def test_main_does_not_crash_when_scenario_has_error(self):
+        """main() must not raise KeyError when summary contains error scenarios."""
+        import sys
+        from tools.benchmark.scripts.run_e2e import main
+        scenario_ok = {**SAMPLE_SCENARIO, "id": "s1"}
+        scenario_err = {**SAMPLE_SCENARIO, "id": "s2"}
+        call_count = [0]
+
+        def side_effect(*args, **kwargs):
+            call_count[0] += 1
+            if call_count[0] == 2:
+                broken = json.dumps({"result": "no markers", "duration_ms": 1,
+                                     "duration_api_ms": 1, "num_turns": 1,
+                                     "total_cost_usd": 0.0,
+                                     "usage": {"input_tokens": 0, "output_tokens": 0,
+                                               "cache_read_input_tokens": 0,
+                                               "cache_creation_input_tokens": 0}})
+                return type("P", (), {"returncode": 0, "stdout": broken, "stderr": ""})()
+            return self._make_valid_proc()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [scenario_ok, scenario_err])
+            output_dir = Path(tmpdir) / "results"
+            argv = ["run_e2e.py", "--scenarios", str(scenarios_path),
+                    "--skill-dir", str(skill_dir)]
+            with patch("subprocess.run", side_effect=side_effect), \
+                 patch("tools.benchmark.scripts.run_e2e.evaluate_scenario", return_value=self.FAKE_EVAL), \
+                 patch("tools.benchmark.scripts.run_e2e.default_output_dir", return_value=output_dir), \
+                 patch.object(sys, "argv", argv):
+                main()  # must not raise
+
+
 class TestDefaultOutputDir:
     def test_default_output_dir_uses_timestamp(self):
         import re

@@ -341,9 +341,12 @@ def main():
 
     print(f"\nCompleted: {summary['total_scenarios']} scenarios", file=sys.stderr)
     for s in summary["scenarios"]:
-        sections = s["search_sections"]
-        hearing = s["hearing_status"]
-        print(f"  {s['id']}: {sections} sections found, hearing={hearing}", file=sys.stderr)
+        if s.get("status") == "error":
+            print(f"  {s['id']}: ERROR — {s.get('error', '')}", file=sys.stderr)
+        else:
+            sections = s["search_sections"]
+            hearing = s["hearing_status"]
+            print(f"  {s['id']}: {sections} sections found, hearing={hearing}", file=sys.stderr)
 
 
 if __name__ == "__main__":
