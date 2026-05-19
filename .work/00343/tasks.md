@@ -59,7 +59,7 @@ keyword-search-design.md のterm抽出ルールについて、以下の点を検
 - [ ] 設計書（keyword-search-design.md）と実装（terms.py / keyword-search.sh）を更新
 - [ ] 20テストがGREENであること確認
 
-**前提:** B-6（バージョン展開）完了後に実施。v6で確定してから展開。
+**前提:** B-5（改善サイクル）完了後、B-6（バージョン展開）前に実施。v6で確定してから展開。
 
 ### B-5. 改善サイクル
 
