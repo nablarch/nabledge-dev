@@ -5,6 +5,26 @@
 
 ## In Progress
 
+### B-0-2. keyword-search.md を設計書通りに修正
+
+設計書: 入力はキーワード配列、LLM不使用のパススルー。
+現実装: Step 1 で LLM がキーワード抽出しており、入力が質問文になっている（設計書と乖離）。
+
+code-analysis.md が Nablarch クラス名を渡す想定なので、呼び出し元でキーワードを組み立てて渡す形に修正する。
+
+**影響調査:**
+- `keyword-search.md` の呼び出し元: `code-analysis.md`（Step 2.3）
+- `/n6 keyword-search "<terms>"` — SKILL.md Step 0 → `workflows/keyword-search.md`
+
+**ステップ:**
+- [ ] `keyword-search.md` を修正: 入力をキーワード配列に変更、Step 1（LLMキーワード抽出）を削除
+- [ ] `code-analysis.md` Step 2.3 を修正: Step 1 で洗い出した Nablarch クラス名をキーワードとして直接渡す
+- [ ] PEレビュー（別エージェント）
+- [ ] Findingsがあれば修正
+- [ ] コミット
+
+**前提:** B-0-2 完了後に B-0-3（code-analysis の semantic-search 要否）を判断する。
+
 ### B-4-1. エラー原因調査と修正
 
 qa.md の keyword-search 削除により過去の run-1 結果は無効。新たにエラー調査・修正を行う。
