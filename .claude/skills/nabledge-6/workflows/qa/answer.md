@@ -5,7 +5,7 @@ Generates a Japanese answer from the search results.
 ## Input
 
 - `{question}`: User's question
-- `{hearing_answer_str}`: Formatted hearing result string
+- `{hearing_answer}`: Formatted hearing result string
 - `{sections_content}`: Section content pre-fetched by the caller (qa.md Step 3)
 - `{exclusions}` (optional): List of unsupported claims from verify — avoid restating these in the answer
 

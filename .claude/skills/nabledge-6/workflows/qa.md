@@ -61,7 +61,7 @@ If no results exist, set `sections_content = ""`.
 
 Execute `workflows/qa/answer.md` with:
 - `{question}` = user's question
-- `{hearing_answer_str}` = hearing result string
+- `{hearing_answer}` = `hearing_answer_str`
 - `{sections_content}` = `sections_content`
 
 Save result as `answer_text`.
@@ -82,9 +82,9 @@ Save result as `verify_result` (JSON with `result`, `claims`, `issues`).
 - Set `final_answer` = `answer_text`
 
 **If `verify_result.result == "FAIL"`**:
-- Re-execute `workflows/qa/answer.md` with:
+- Re-execute `workflows/qa/answer.md` with (once only):
   - `{question}` = user's question
-  - `{hearing_answer_str}` = hearing result string
+  - `{hearing_answer}` = `hearing_answer_str`
   - `{sections_content}` = `sections_content`
   - `{exclusions}` = `verify_result.issues` (list of unsupported claims to avoid)
 - Save result as `final_answer`
