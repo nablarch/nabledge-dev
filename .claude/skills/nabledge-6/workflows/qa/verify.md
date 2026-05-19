@@ -5,7 +5,7 @@ Verifies that all Nablarch-specific claims in the answer are supported by knowle
 ## Input
 
 - `{answer}`: Answer text to verify
-- `{pointer_json}`: Pointer JSON used to generate the answer
+- `{sections_content}`: Section content pre-fetched by the caller (qa.md Step 3)
 
 ## Output
 
@@ -13,26 +13,7 @@ Verification result JSON (`result`, `claims`, `issues`)
 
 ## Steps
 
-### Step 1: Read section content
-
-**Tool**: Bash
-
-From `{pointer_json}.results`, select sections to read:
-- All sections (up to 15)
-- `"high"` first, then `"partial"`
-
-If `pointer_json.results` is empty, set `sections_content = ""` and proceed to Step 2.
-
-Otherwise, build the argument list: for each selected result, `"{file}:{section_id}"`.
-
-Run:
-```bash
-bash scripts/read-sections.sh "file1.json:s1" "file2.json:s3" ...
-```
-
-Save the output as `sections_content`.
-
-### Step 2: Verify claims
+### Step 1: Verify claims
 
 **Tool**: In-memory (LLM generation)
 
@@ -99,7 +80,7 @@ Parse the JSON response. Extract:
 - `result`: `"PASS"` or `"FAIL"`
 - `issues`: list of unsupported claims (empty if PASS)
 
-### Step 3: Return verification result
+### Step 2: Return verification result
 
 Return the parsed JSON as-is:
 
