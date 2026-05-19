@@ -35,12 +35,7 @@
 
 ### ~~B-0-4-E~~ (完了) — `049b14e01`
 
-### B-0-4-F. hearing: trace.candidates 追加
-
-ユーザーに提示した選択肢リストを trace に含める。
-
-**対象ファイル:**
-- `.claude/skills/nabledge-6/workflows/qa/hearing.md` — trace 出力に `candidates` フィールド追加
+### ~~B-0-4-F~~ (完了) — `d9aa47843`
 
 ### B-0-4-G. 設計書追記（6〜8）
 
