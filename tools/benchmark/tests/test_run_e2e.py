@@ -711,6 +711,68 @@ class TestRunE2eAllErrorHandling:
         assert summary["scenarios"][0]["status"] == "error"
         assert summary["scenarios"][1].get("status") != "error"
 
+    def test_trace_json_saved_on_marker_missing(self):
+        """trace.json must be written even when marker parsing fails."""
+        scenario1 = {**SAMPLE_SCENARIO, "id": "s1"}
+        raw_result_text = "no markers here"
+        fake_trace = {
+            "result": raw_result_text,
+            "duration_ms": 1, "duration_api_ms": 1, "num_turns": 1,
+            "total_cost_usd": 0.0,
+            "usage": {"input_tokens": 0, "output_tokens": 0,
+                      "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+        }
+
+        def side_effect(*args, **kwargs):
+            return type("P", (), {"returncode": 0, "stdout": json.dumps(fake_trace), "stderr": ""})()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", side_effect=side_effect):
+                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+
+            trace_path = output_dir / "s1" / "trace.json"
+            assert trace_path.exists(), "trace.json must be saved even on marker error"
+            saved = json.loads(trace_path.read_text(encoding="utf-8"))
+            assert saved["result"] == raw_result_text
+
+    def test_trace_json_not_saved_on_timeout(self):
+        """trace.json must NOT be written when subprocess.TimeoutExpired (no response available)."""
+        import subprocess
+        scenario1 = {**SAMPLE_SCENARIO, "id": "s1"}
+
+        def side_effect(*args, **kwargs):
+            raise subprocess.TimeoutExpired(cmd="claude", timeout=360)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", side_effect=side_effect):
+                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+
+            trace_path = output_dir / "s1" / "trace.json"
+            assert not trace_path.exists(), "trace.json must not be saved when there is no response"
+
+    def test_trace_json_not_saved_on_nonzero_exit(self):
+        """trace.json must NOT be written when claude exits non-zero (no parseable output)."""
+        scenario1 = {**SAMPLE_SCENARIO, "id": "s1"}
+
+        def side_effect(*args, **kwargs):
+            return type("P", (), {"returncode": 1, "stdout": "", "stderr": "error"})()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", side_effect=side_effect):
+                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+
+            trace_path = output_dir / "s1" / "trace.json"
+            assert not trace_path.exists(), "trace.json must not be saved when claude exits non-zero"
+
     def test_raw_response_saved_on_marker_missing(self):
         """raw_response.txt must be written to the scenario dir when markers are missing."""
         scenario1 = {**SAMPLE_SCENARIO, "id": "s1"}
