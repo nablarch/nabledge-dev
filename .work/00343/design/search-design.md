@@ -98,7 +98,7 @@ code-analysis.md（コード分析）
 | ワークフロー | 入力 | 方式 | 利用想定 |
 |------------|------|------|--------|
 | keyword-search.md | キーワード（1つ以上） | スクリプトによる機械的マッチ | コード分析、レビュー、影響調査 等 |
-| semantic-search.md | 自然言語の質問文 | AIによるインデックスからのセクション選定 | 質問 |
+| semantic-search.md | 自然言語の質問文、ヒアリング結果（hearing_answer） | AIによるインデックスからのセクション選定 | 質問 |
 
 keyword-searchは既知の用語で確実にヒットさせる（precision重視）。semantic-searchは語彙ギャップを超えて関連セクションを発見する（recall重視）。
 
@@ -168,7 +168,16 @@ tools/benchmark/
     keyword-search.sh                 ← components/scripts/ からデプロイ
     read-sections.sh                  ← components/scripts/ からデプロイ
   assets/
-    hearing-prompt.md                 ← ヒアリング判定LLMプロンプト
+    hearing-classify.md               ← ヒアリング分類LLMプロンプト（hearing-prompt.mdを2ファイルに分割）
+    hearing-extract.md                ← ヒアリング抽出LLMプロンプト
+    semantic-search-stage1.md         ← 意味検索Stage1プロンプト
+    semantic-search-stage2.md         ← 意味検索Stage2プロンプト
+    answer.md                         ← 回答生成プロンプト
+    verify.md                         ← 根拠検証プロンプト
+    answer-generation.md              ← 回答生成補助プロンプト
+    code-analysis-template.md         ← コード分析テンプレート
+    code-analysis-template-guide.md   ← コード分析テンプレートガイド
+    code-analysis-template-examples.md ← コード分析テンプレート例
 
 tools/rbkc/
   scripts/create/
