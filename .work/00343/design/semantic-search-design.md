@@ -60,7 +60,17 @@ Stage 2: セクション選定
       "section_id": "s29",
       "relevance": "partial"
     }
-  ]
+  ],
+  "trace": {
+    "user_intent": "UniversalDaoでページング検索する方法を知りたい",
+    "stage1_files": [
+      {"path": "component/libraries/libraries-universal-dao.json", "reason": "..."}
+    ],
+    "excluded": [
+      {"path": "component/libraries/libraries-database.json", "reason": "直接対応しない"}
+    ],
+    "low_confidence_note": "高確信度ページが1件のみ: 質問が横断的機能に関するため"
+  }
 }
 ```
 
@@ -69,6 +79,10 @@ Stage 2: セクション選定
 | file | string | knowledge/からの相対パス |
 | section_id | string | セクションID（s1, s2, ... 形式） |
 | relevance | "high" \| "partial" | high: 直接回答可能 / partial: 前提知識・関連情報 |
+| trace.user_intent | string | Stage 1 で特定したユーザーの意図（1文） |
+| trace.stage1_files | array | Stage 1 で選定したファイルリスト（各: path, reason） |
+| trace.excluded | array | 検討したが選定しなかったページ（各: path/file, reason）。Stage 1・Stage 2 両方に存在 |
+| trace.low_confidence_note | string | 高確信度ページが3件未満の場合の説明（任意） |
 
 results はrelevance降順（high → partial）。空配列は一致なし。
 
