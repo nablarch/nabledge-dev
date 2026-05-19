@@ -33,12 +33,7 @@
 
 ### ~~B-0-4-D~~ (完了) — `3f7b0403c`
 
-### B-0-4-E. semantic-search: 高確信度3件未満の処理追加
-
-Stage 1 で高確信度ページが3件未満の場合、中間出力にその旨を記載する。
-
-**対象ファイル:**
-- `.claude/skills/nabledge-6/workflows/semantic-search.md` — Stage 1 プロンプトに条件追加
+### ~~B-0-4-E~~ (完了) — `049b14e01`
 
 ### B-0-4-F. hearing: trace.candidates 追加
 
