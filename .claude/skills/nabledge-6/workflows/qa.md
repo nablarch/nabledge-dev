@@ -10,35 +10,20 @@ User's question (natural Japanese text)
 
 Answer in Japanese (Markdown)
 
-And benchmark markers (required when running in benchmark mode):
-```
-<<<BENCHMARK_HEARING>>>
-{"status": "skipped" or "asked", "questions": [...]}
-<<<END_BENCHMARK_HEARING>>>
-
-<<<BENCHMARK_SEARCH>>>
-{"section_ids": ["file.json:s1", ...]}
-<<<END_BENCHMARK_SEARCH>>>
-
-<<<BENCHMARK_ANSWER>>>
-[answer text]
-<<<END_BENCHMARK_ANSWER>>>
-```
-
 ## Steps
 
-### Step 0: Detect pre-injected hearing context
+### Step 0: Check for pre-supplied hearing context
 
-Check whether the prompt contains a `## コンテキスト（ヒアリング結果）` section.
+Check whether the prompt contains a `## コンテキスト（ヒアリング結果）` section (supplied by the caller).
 
-**If present (benchmark runner pre-injection)**:
+**If present**:
 - Extract `処理方式:` and `目的:` values from that section
-- If `処理方式:` value is absent, empty, or exactly the string `None` (case-sensitive — this is a Python serialization artifact from the benchmark runner), treat processing type as absent and set `hearing_answer_str` = `"やりたいこと: {goal}"`
+- If `処理方式:` is absent, empty, or `None`, set `hearing_answer_str` = `"やりたいこと: {goal}"`
 - Otherwise set `hearing_answer_str` = `"処理方式: {processing_type}\nやりたいこと: {goal}"`
 - Set `hearing_status` = `"skipped"`, `hearing_questions` = `[]`
 - Skip Step 1 and proceed to Step 2
 
-**If not present (normal user invocation)**:
+**If not present**:
 - Proceed to Step 1
 
 ### Step 1: Hearing
@@ -108,24 +93,3 @@ Save result as `final_answer`.
 ### Step 7: Output
 
 Output `final_answer` to the user.
-
-Then output all benchmark markers in this exact order:
-
-```
-<<<BENCHMARK_HEARING>>>
-{"status": "{hearing_status}", "questions": {hearing_questions}}
-<<<END_BENCHMARK_HEARING>>>
-
-<<<BENCHMARK_SEARCH>>>
-{"section_ids": [...]}
-<<<END_BENCHMARK_SEARCH>>>
-
-<<<BENCHMARK_ANSWER>>>
-{final_answer}
-<<<END_BENCHMARK_ANSWER>>>
-```
-
-Where:
-- `{hearing_status}`: `"skipped"` if hearing was not performed, `"asked"` if the user was asked a question
-- `{hearing_questions}`: `[]` if skipped, `["どの処理方式で実装しますか？"]` if asked
-- `section_ids`: extract `"{file}:{section_id}"` for each entry in `merged_pointer_json.results`, preserving order
