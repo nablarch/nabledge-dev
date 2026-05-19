@@ -92,7 +92,7 @@ Output directory: .nabledge/20260210
    ```
    Replace `<path/to/file.java>` with the actual path(s) returned by find-file.sh. Pass paths exactly as output (e.g., `./src/main/java/Foo.java`) — do not modify or normalize the path.
 
-4. **Read target files** and extract dependencies:
+4. **Extract dependencies** from the file content read in step 3:
    - Imports → External dependencies
    - Field types, method parameters → Direct dependencies
    - Method calls → Behavioral dependencies
@@ -123,12 +123,7 @@ Output directory: .nabledge/20260210
 9. **Identify Nablarch components** for knowledge search:
    - UniversalDao, ValidationUtil, ExecutionContext, Handler chain, etc.
 
-10. **Extract key concepts** for knowledge search:
-    - Technical terms: DAO, transaction, handler
-    - Operations: search, register, update, validation
-    - Patterns: CRUD, pagination, error handling
-
-**Output**: Target files list, dependency graph, component list with Nablarch components identified
+**Output**: Target files list, dependency graph, component list with Nablarch class/method/annotation names identified
 
 ### Step 2: Search Nablarch knowledge
 
@@ -151,7 +146,12 @@ Output directory: .nabledge/20260210
    - Format as comma-separated list for --knowledge-files parameter
 
 3. **Collect knowledge content** for documentation:
-   - Use `scripts/read-sections.sh` to read `"high"` relevance sections (up to 10)
+   - From the pointer JSON returned in step 1, extract all `{file}:{section_id}` pairs
+   - Pass them to `scripts/read-sections.sh`:
+     ```bash
+     bash scripts/read-sections.sh "file1.json:s1" "file2.json:s3" ...
+     ```
+   - All results have `"relevance": "partial"` — read all of them (up to 10 sections; if more, prioritize sections whose titles directly match the Nablarch class names from Step 1)
    - Collect: API usage patterns, configuration requirements, code examples, best practices
 
 **Output**: Knowledge file basenames for Step 3.2, and relevant knowledge content for documentation
