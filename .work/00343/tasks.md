@@ -10,12 +10,18 @@
 設計書 `.work/00343/design/search-design.md` のアーキテクチャと現在の実装が一致しているか確認し、乖離があれば修正。ユーザーレビューでパスするまで繰り返す。
 
 **ステップ:**
-- [ ] 設計書（`search-design.md` のフェーズB構成）と現実装（`.claude/skills/nabledge-6/workflows/` 以下の全ファイル）の差異を列挙して報告
-  - 受入条件: 乖離リストをユーザーに提示
-- [ ] [DECISION: ユーザーがレビューして修正方針を承認]
-- [ ] 承認された修正を実装してコミット
-- [ ] 再度差異を確認して報告
-- [ ] [DECISION: ユーザーがレビューしてパスを確認]
+- [x] 設計書（`search-design.md` のフェーズB構成）と現実装（`.claude/skills/nabledge-6/workflows/` 以下の全ファイル）の差異を列挙して報告
+- [x] ユーザーと乖離を確認し修正方針を決定:
+  - `_knowledge-search.md` 系 + `full-text-search.sh` → 削除（現行検索の消し忘れ）— `b42ffd2d2`
+  - `assets/` の複数ファイル・`semantic-search.md` の `{hearing_answer}` 入力追加 → 設計書更新漏れ（実装が正）
+  - `qa.md` が `keyword-search.md` を呼ばない → 設計意図通り
+  - `_knowledge-search.md` は現行検索のため削除済み
+- [x] B-X（terms.json抽出ルール見直し）タスクを追加 — `0d198c64f`, `bc4a2ca2a`
+- [ ] 設計書（`search-design.md`, `keyword-search-design.md`）を実装に合わせて更新
+  - `assets/` 構成の追記（hearing-classify/extract, stage1/2, answer, verify）
+  - `hearing-prompt.md` → 2ファイル分割の反映
+  - `semantic-search.md` 入力に `{hearing_answer}` 追記
+- [ ] [DECISION: ユーザーが設計書更新内容を確認してパスを確認]
 
 
 ### B-4-1. エラー原因調査と修正（B-4-2完了後）
