@@ -17,11 +17,6 @@ Answer text in Japanese (Markdown)
 
 ### Step 1: Generate answer
 
-**Tool**: In-memory (LLM generation)
-
-Call LLM with the following prompt, substituting the variables:
-
----
 You are a Nablarch framework technical support assistant. Answer the question in Japanese based solely on the knowledge sections provided.
 
 **Question**: {question}
@@ -81,7 +76,6 @@ Unused sections (read but not used):
 Output JSON with `answer` and `trace` fields:
 - `trace.user_intent`: the user's intent identified from the question and hearing answer (one sentence)
 - `trace.sections`: processing record for each section (per trace format above)
----
 
 Parse the JSON response. Extract `answer` field (Markdown text).
 
