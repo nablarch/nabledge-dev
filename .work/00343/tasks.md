@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (session 3)
+**Updated**: 2026-05-19 (session 4)
 
 ## Rules
 
@@ -22,7 +22,7 @@
 - [x] SEエキスパートレビュー完了（1 Finding → 修正済み `baacaa984`）
   - Finding: answer.md の `{hearing_answer_str}` vs `{hearing_answer}` 変数名不一致 → 修正済み
 - [x] ユーザーにレビュー結果を報告、PRレビューを依頼（本セッション末）
-- [ ] [BLOCKED: ユーザーがPRをOKするまで上記を繰り返す]
+- [x] [BLOCKED: ユーザーがPRをOKするまで上記を繰り返す] → OK `2026-05-19`
 
 ### ~~B-0-4-H~~ ワークフローMDリファクタリング（完了）
 
