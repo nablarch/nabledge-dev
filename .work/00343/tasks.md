@@ -1,20 +1,65 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-4-0完了)
+**Updated**: 2026-05-19 (B-4-2追加)
 
 ## In Progress
 
-### B-4. 新スキルE2Eベンチマーク
+### B-4-2. run_e2e.py エラー時診断情報の確実な保存（TDD）
 
-- [ ] run-1 実行（全30シナリオ）:
+**背景**: 例外が発生した箇所によって trace.json / raw_response.txt が保存されないケースが複数ある。「あれがない、これがない」を繰り返さないよう、どの例外パターンでも診断情報が確実に保存される実装にする。
+
+**保存すべきもの:**
+- `trace.json` — `claude -p` の完全なJSON出力。claudeプロセスが返った時点で取得できる（TIMEOUT時は不可）
+- `raw_response.txt` — `trace["result"]`（LLMのテキスト出力）。マーカーパース失敗時に保存
+
+**現状の問題（事実）:**
+- パース失敗（`MarkerError`/`ValueError`）時: `trace.json` が保存されない（`save_e2e_results` 到達前に例外）
+- TIMEOUT時: `claude -p` が返らないため `trace.json` / `raw_response.txt` どちらも保存不可（これは仕様）
+
+**ステップ:**
+- [ ] テスト追加（RED）: `parse_e2e_response` 失敗時に `trace.json` が保存されること
+  - `tools/benchmark/tests/test_run_e2e.py` に追加
+  - 受入条件: テストがREDであることを確認（`pytest` で FAILED）
+- [ ] 実装（GREEN）: `run_e2e_all` でclaudeプロセス成功後は常に `trace.json` を保存し、その後パースする構造に変更
+  - 受入条件: 追加したテストがGREEN、既存55テストが全部GREEN
+- [ ] エッジケース網羅確認: 以下の全パターンでテストが存在することを確認・追加
+  - TIMEOUT（subprocess.TimeoutExpired）: `error.json` のみ。`trace.json`/`raw_response.txt` なし
+  - claude非ゼロ終了（RuntimeError）: `error.json` のみ
+  - マーカー欠損（MarkerError）: `error.json` + `trace.json` + `raw_response.txt`
+  - JSON不正（ValueError）: `error.json` + `trace.json` + `raw_response.txt`
+  - 正常: `hearing.json`/`search.json`/`answer.md`/`metrics.json`/`trace.json`/`evaluation.json`
+- [ ] QAエキスパートレビュー（別エージェント）: テストコードとrun_e2e.pyの変更差分をレビュー
+  - 受入条件: Findingsがゼロ
+- [ ] Findingsがあれば修正して再レビュー
+- [ ] コミット
+- [ ] エラーシナリオを1件再実行して trace.json / raw_response.txt が実際に保存されることを確認:
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
-    --skill-dir .claude/skills/nabledge-6
+    --skill-dir .claude/skills/nabledge-6 \
+    --scenario-ids review-06
   ```
-  - 受入条件: 終了コード0、`total_scenarios` = 30、`summary.json` の `scenarios_file` が `qa.json` であること
-  - 完了後リネーム: `mv tools/benchmark/results/YYYYMMDD-HHMMSS tools/benchmark/results/v1-new-search/run-1`
+
+### B-4-1. エラー原因調査と修正（B-4-2完了後）
+
+run-1結果 (tools/benchmark/results/20260519-113919/): 30シナリオ中13件エラー
+- TIMEOUT (360s): pre-03, qa-01 — 2件
+- `<<<BENCHMARK_HEARING>>>` マーカー欠損: review-06, review-08, impact-01, impact-06, qa-03, qa-08, qa-09, qa-12a — 8件
+- `<<<END_BENCHMARK_ANSWER>>>` マーカー欠損: qa-06, qa-12b — 2件
+
+**ステップ:**
+- [ ] エラーシナリオを再実行して trace.json / raw_response.txt を取得
+- [ ] trace.json / raw_response.txt を読んでエラー原因を特定し、ユーザーに報告
+- [ ] 原因に応じてスキル（qa.md）またはスクリプトを修正
+- [ ] エラーシナリオのみ再実行して全件成功を確認
+- [ ] 全30シナリオ再実行して全件成功を確認
+  - 受入条件: summary.json の全シナリオに `status: error` が存在しないこと
+
+### B-4. 新スキルE2Eベンチマーク（B-4-1完了後）
+
+- [ ] run-1 リネーム: `mv tools/benchmark/results/20260519-113919 tools/benchmark/results/v1-new-search/run-1`
+  （または全件成功後の新しい実行結果をrun-1とする）
 - [ ] run-2, run-3 実行（同上、run-2/run-3にリネーム）
 - [ ] 結果をコミット
 - [ ] QAエキスパート（別エージェント）に生データを渡して比較評価させる（実装者が自己採点しない）
