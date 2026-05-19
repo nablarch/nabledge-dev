@@ -57,7 +57,7 @@ Steps:
    - Select pages related to the processing type identified in the hearing answer
 4. Select up to 10 pages, ordered by confidence (highest first).
 5. If more than 10 candidates exist, analyze the cause and select the 10 most direct matches.
-6. If fewer than 3 high-confidence pages exist, do not pad to 10.
+6. If fewer than 3 high-confidence pages exist, do not pad to 10. Note this in `trace.low_confidence_note` (one sentence explaining why matches are limited).
 
 Do NOT select:
 - Pages related to but not directly addressing the question
