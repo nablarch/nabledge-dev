@@ -33,6 +33,11 @@ Format as a bullet list (e.g., `- Nablarchバッチ\n- ウェブアプリケー�
 
 ### Step 2: Classify question
 
+**Tool**: In-memory (LLM generation)
+
+Call LLM with the following prompt, substituting the variables:
+
+---
 You are a Nablarch knowledge search system. Read the user's question and determine whether the processing type required for the answer can be identified without asking.
 
 **Question**: {question}
@@ -133,6 +138,7 @@ cross-functional skip case:
   }
 }
 ```
+---
 
 Parse the JSON response. Extract:
 - `classification`: `"skip"` or `"ask"`
@@ -148,6 +154,9 @@ Parse the JSON response. Extract:
 - Question text: "どの処理方式で実装しますか？"
 - Options: list of processing types extracted in Step 1 (one option per type)
 
+Call LLM with the following prompt, substituting the variables:
+
+---
 You are a Nablarch knowledge search system. Build a hearing_answer from the user's question and their selected processing type.
 
 **Question**: {question}
@@ -175,6 +184,7 @@ Output JSON:
   }
 }
 ```
+---
 
 Parse the JSON response. Use `hearing_answer` from the response.
 

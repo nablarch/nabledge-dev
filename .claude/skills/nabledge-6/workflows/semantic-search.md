@@ -31,6 +31,11 @@ Save content as `index_content`.
 
 ### Step 2: Stage 1 — Page selection
 
+**Tool**: In-memory (LLM generation)
+
+Call LLM with the following prompt, substituting the variables:
+
+---
 You are a knowledge base search system. Select the pages (knowledge files) from the index that contain information needed to answer the user's question.
 
 **Question**: {question}
@@ -61,6 +66,7 @@ Do NOT select:
 Output JSON with a `files` array (each entry: `path`, `reason`) and a `trace` field:
 - `trace.user_intent`: the user's intent identified in step 1 (one sentence)
 - `trace.excluded`: pages considered but not selected (only pages actually considered; each entry: `path`, `reason`)
+---
 
 Parse the JSON response. Extract the `files` array — each entry has:
 - `path`: path relative to knowledge directory (e.g., `processing-pattern/nablarch-batch/page.json`)
@@ -69,6 +75,8 @@ Parse the JSON response. Extract the `files` array — each entry has:
 If `files` is empty, return `{"results": []}` immediately.
 
 ### Step 3: Stage 2 — Section selection
+
+**Tool**: In-memory (LLM generation)
 
 For each path in the Stage 1 `files` array (up to 10):
 1. Prepend `knowledge/` to the path to get the file path relative to skill root (e.g., `knowledge/processing-pattern/nablarch-batch/page.json`)
@@ -87,6 +95,9 @@ For each path in the Stage 1 `files` array (up to 10):
 
 Concatenate all formatted file contents as `{files_content}`.
 
+Call LLM with the following prompt, substituting the variables:
+
+---
 You are a knowledge base search system. Read the full text of candidate pages and select sections relevant to the user's question.
 
 **Question**: {question}
@@ -122,6 +133,7 @@ Output JSON with a `results` array and a `trace` field:
 - `trace.excluded`: sections considered but not selected (sections with some relevance to the question that did not meet high/partial criteria; each entry: `file`, `section_id`, `reason`)
 - Omit clearly irrelevant sections (module lists, revision histories, topics completely unrelated to the question) from trace.excluded
 - If no matching sections exist, set results to an empty array
+---
 
 Parse the JSON response. Extract the `results` array — each entry has:
 - `file`: knowledge JSON path relative to knowledge/ (e.g., `processing-pattern/nablarch-batch/page.json`)

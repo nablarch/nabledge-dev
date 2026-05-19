@@ -15,6 +15,11 @@ Verification result JSON (`result`, `claims`, `issues`)
 
 ### Step 1: Verify claims
 
+**Tool**: In-memory (LLM generation)
+
+Call LLM with the following prompt, substituting the variables:
+
+---
 You are a Nablarch framework claim verifier. Verify that all Nablarch-specific claims in the answer text are supported by the knowledge sections.
 
 **Answer text**: {answer}
@@ -69,6 +74,7 @@ Output JSON:
 }
 ```
 `issues` is empty array on PASS.
+---
 
 Parse the JSON response. Extract:
 - `result`: `"PASS"` or `"FAIL"`

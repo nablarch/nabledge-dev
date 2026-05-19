@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-0-4-H完了)
+**Updated**: 2026-05-19
 
 ## Rules
 
@@ -41,10 +41,10 @@
 - `.claude/skills/nabledge-6/workflows/semantic-search.md` — Step 2, Step 3（2箇所）
 
 **ステップ（1ファイルずつ）:**
-- [x] verify.md 書き直し → 元ファイルと比較確認 → コミット `f0268df7f`
-- [x] answer.md 書き直し → 元ファイルと比較確認 → コミット `36ac296a8`
-- [x] hearing.md 書き直し → 元ファイルと比較確認 → コミット `258ff40e7`
-- [x] semantic-search.md 書き直し → 元ファイルと比較確認 → コミット `1de7c04a5`
+- [ ] verify.md 書き直し → 元ファイルと比較確認 → コミット
+- [ ] answer.md 書き直し → 元ファイルと比較確認 → コミット
+- [ ] hearing.md 書き直し → 元ファイルと比較確認 → コミット
+- [ ] semantic-search.md 書き直し → 元ファイルと比較確認 → コミット
 
 ### ~~B-0-4-A~~ (完了) — `890683762`
 
