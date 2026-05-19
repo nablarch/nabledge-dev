@@ -1,21 +1,21 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19
+**Updated**: 2026-05-19 (B-0-1 前3ステップ完了、DECISION待ち)
 
 ## In Progress
 
 ### B-0-1. 設計書・SKILL.md・n6.md 最新化
 
 **ステップ:**
-- [ ] 設計書（`search-design.md`）を最新実装に合わせて更新
+- [x] 設計書（`search-design.md`）を最新実装に合わせて更新
   - `assets/` 廃止・プロンプトインライン化の反映
   - `workflows/code-analysis/` サブディレクトリ追加の反映
   - ファイル配置ルール（コロケーション）を設計書に記載
-- [ ] SKILL.md を新検索の4コマンド（質問・コード分析・キーワード検索・セマンティック検索）に対応させる
+- [x] SKILL.md を新検索の4コマンド（質問・コード分析・キーワード検索・セマンティック検索）に対応させる
   - `knowledge/` のディレクトリ構成を実態（`processing-pattern/`, `component/` 等）に合わせて更新
   - 旧記述 `_knowledge-search pipeline` を削除
-- [ ] `n6.md` コマンドを新検索の4コマンドに対応させる
+- [x] `n6.md` コマンドを新検索の4コマンドに対応させる
 - [ ] [DECISION: ユーザーが設計書・SKILL.md・n6.md を確認してパスを確認]
 
 
