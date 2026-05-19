@@ -12,20 +12,17 @@ Answer in Japanese (Markdown)
 
 ---
 
-## Step 1: Read index.md
+## Step 1: Processing types (Nablarch 6)
 
-Read `knowledge/index.md`.
+Use the following list as `processing_types`:
 
-Extract all H2 headings of the form `## processing-pattern/{slug}`. Map each slug to a display name:
-- `web-application` → ウェブアプリケーション
-- `restful-web-service` → RESTfulウェブサービス
-- `nablarch-batch` → Nablarchバッチ
-- `jakarta-batch` → Jakartaバッチ
-- `db-messaging` → テーブルをキューとして使ったメッセージング
-- `http-messaging` → HTTPメッセージング
-- `mom-messaging` → MOMメッセージング
-
-Format as a bullet list. Save as `processing_types`.
+- ウェブアプリケーション
+- RESTfulウェブサービス
+- Nablarchバッチ
+- Jakartaバッチ
+- テーブルをキューとして使ったメッセージング
+- HTTPメッセージング
+- MOMメッセージング
 
 ---
 
