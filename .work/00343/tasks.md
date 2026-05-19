@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-0-1追加: 設計書適合確認)
+**Updated**: 2026-05-19
 
 ## In Progress
 
@@ -17,28 +17,6 @@
 - [ ] 再度差異を確認して報告
 - [ ] [DECISION: ユーザーがレビューしてパスを確認]
 
-### B-4-2. run_e2e.py エラー時診断情報の確実な保存（TDD）
-
-**背景**: 例外が発生した箇所によって trace.json / raw_response.txt が保存されないケースが複数ある。「あれがない、これがない」を繰り返さないよう、どの例外パターンでも診断情報が確実に保存される実装にする。
-
-**保存すべきもの:**
-- `trace.json` — `claude -p` の完全なJSON出力。claudeプロセスが返った時点で取得できる（TIMEOUT時は不可）
-- `raw_response.txt` — `trace["result"]`（LLMのテキスト出力）。マーカーパース失敗時に保存
-
-**現状の問題（事実）:**
-- パース失敗（`MarkerError`/`ValueError`）時: `trace.json` が保存されない（`save_e2e_results` 到達前に例外）
-- TIMEOUT時: `claude -p` が返らないため `trace.json` / `raw_response.txt` どちらも保存不可（これは仕様）
-
-**ステップ:**
-- [x] テスト追加（RED）→ 実装（GREEN）→ QAレビュー 0 Findings → コミット `5eab4f1dd`
-- [ ] エラーシナリオを1件再実行して trace.json / raw_response.txt が実際に保存されることを確認:
-  ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa.json \
-    --skill-dir .claude/skills/nabledge-6 \
-    --scenario-ids review-06
-  ```
-  - 受入条件: `results/YYYYMMDD-HHMMSS/review-06/trace.json` と `raw_response.txt` が存在すること
 
 ### B-4-1. エラー原因調査と修正（B-4-2完了後）
 
@@ -146,6 +124,8 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-4-2. run_e2e.py エラー時診断情報の確実な保存（TDD, QAレビュー 0 Findings）— `5eab4f1dd`, `d9af9bd2c`
+- [x] qa.md/hearing.md 修正（マーカー出力をStep 7に一元化、スキーマ不整合修正、PEレビュー5 Findings修正）— `a1570139a`
 - [x] B-2. RBKC変更（index.md + terms.json生成）— `22566bc09`, `c05a3afac`, `84f2feb23`, `cc5d2c56b`, `38fe7aae9`, `b3f0c9dfe`
 - [x] B-1. 現行検索E2Eベースライン取得 — 3 runs, 精度83.7%, 幻覚PASS14.4%, $59.34 — committed `7ea223ab3`
 - [x] qa-current.json を results/baseline-current/ に移動 — `f3d8eeb15`
