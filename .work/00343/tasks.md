@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-4-2追加)
+**Updated**: 2026-05-19 (B-4-2 実装完了 `5eab4f1dd`)
 
 ## In Progress
 
@@ -18,21 +18,7 @@
 - TIMEOUT時: `claude -p` が返らないため `trace.json` / `raw_response.txt` どちらも保存不可（これは仕様）
 
 **ステップ:**
-- [ ] テスト追加（RED）: `parse_e2e_response` 失敗時に `trace.json` が保存されること
-  - `tools/benchmark/tests/test_run_e2e.py` に追加
-  - 受入条件: テストがREDであることを確認（`pytest` で FAILED）
-- [ ] 実装（GREEN）: `run_e2e_all` でclaudeプロセス成功後は常に `trace.json` を保存し、その後パースする構造に変更
-  - 受入条件: 追加したテストがGREEN、既存55テストが全部GREEN
-- [ ] エッジケース網羅確認: 以下の全パターンでテストが存在することを確認・追加
-  - TIMEOUT（subprocess.TimeoutExpired）: `error.json` のみ。`trace.json`/`raw_response.txt` なし
-  - claude非ゼロ終了（RuntimeError）: `error.json` のみ
-  - マーカー欠損（MarkerError）: `error.json` + `trace.json` + `raw_response.txt`
-  - JSON不正（ValueError）: `error.json` + `trace.json` + `raw_response.txt`
-  - 正常: `hearing.json`/`search.json`/`answer.md`/`metrics.json`/`trace.json`/`evaluation.json`
-- [ ] QAエキスパートレビュー（別エージェント）: テストコードとrun_e2e.pyの変更差分をレビュー
-  - 受入条件: Findingsがゼロ
-- [ ] Findingsがあれば修正して再レビュー
-- [ ] コミット
+- [x] テスト追加（RED）→ 実装（GREEN）→ QAレビュー 0 Findings → コミット `5eab4f1dd`
 - [ ] エラーシナリオを1件再実行して trace.json / raw_response.txt が実際に保存されることを確認:
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
@@ -40,6 +26,7 @@
     --skill-dir .claude/skills/nabledge-6 \
     --scenario-ids review-06
   ```
+  - 受入条件: `results/YYYYMMDD-HHMMSS/review-06/trace.json` と `raw_response.txt` が存在すること
 
 ### B-4-1. エラー原因調査と修正（B-4-2完了後）
 
