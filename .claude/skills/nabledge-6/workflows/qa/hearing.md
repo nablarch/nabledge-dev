@@ -8,17 +8,9 @@ User's question (natural Japanese text)
 
 ## Output
 
-Hearing result:
-```json
-{
-  "status": "skipped",
-  "questions": [],
-  "hearing_answer": {
-    "processing_type": "Nablarchバッチ",
-    "goal": "Nablarchバッチアプリケーションを-requestPathオプションで起動する"
-  }
-}
-```
+Formatted hearing answer string for use in downstream prompts:
+- If `processing_type` is not null: `"処理方式: {processing_type}\nやりたいこと: {goal}"`
+- If `processing_type` is null: `"やりたいこと: {goal}"`
 
 ## Steps
 
@@ -197,22 +189,6 @@ Set `asked_question = "どの処理方式で実装しますか？"`.
 
 ### Step 4: Return hearing result
 
-Return as an in-memory object (passed to the calling workflow):
-```json
-{
-  "status": "skipped" or "asked",
-  "questions": [] or ["どの処理方式で実装しますか？"],
-  "hearing_answer": {
-    "processing_type": "...",
-    "goal": "..."
-  }
-}
-```
-
-Where:
-- `status`: `"skipped"` if classification was `"skip"`, `"asked"` if classification was `"ask"`
-- `questions`: `[]` if skipped, `["どの処理方式で実装しますか？"]` if asked
-
-Format `hearing_answer` as a string for use in other prompts:
+Return the formatted hearing answer string:
 - If `processing_type` is not null: `"処理方式: {processing_type}\nやりたいこと: {goal}"`
 - If `processing_type` is null: `"やりたいこと: {goal}"`
