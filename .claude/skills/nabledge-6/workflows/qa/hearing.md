@@ -43,7 +43,7 @@ Format as a bullet list (e.g., `- Nablarchバッチ\n- ウェブアプリケー�
 
 **Tool**: Read + In-memory (LLM generation)
 
-Read `assets/hearing-classify.md`.
+Read `workflows/qa/hearing-classify.md`.
 
 Replace the following variables and call LLM:
 - `{question}` → the user's question
@@ -63,7 +63,7 @@ Parse the JSON response. Extract:
 - Question text: "どの処理方式で実装しますか？"
 - Options: list of processing types extracted in Step 1 (one option per type)
 
-Read `assets/hearing-extract.md`.
+Read `workflows/qa/hearing-extract.md`.
 
 Replace variables and call LLM:
 - `{question}` → the user's question

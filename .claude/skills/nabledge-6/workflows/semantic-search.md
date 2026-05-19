@@ -33,7 +33,7 @@ Save content as `index_content`.
 
 **Tool**: Read + In-memory (LLM generation)
 
-Read `assets/semantic-search-stage1.md`.
+Read `workflows/semantic-search/stage1.md`.
 
 Replace the following variables in the prompt text and call LLM to generate a response:
 - `{question}` → the input question
@@ -67,7 +67,7 @@ For each path in the Stage 1 `files` array (up to 10):
 
 Concatenate all formatted file contents as `{files_content}`.
 
-Read `assets/semantic-search-stage2.md`.
+Read `workflows/semantic-search/stage2.md`.
 
 Replace the following variables and call LLM:
 - `{question}` → the input question

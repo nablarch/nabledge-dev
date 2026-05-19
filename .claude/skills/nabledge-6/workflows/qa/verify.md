@@ -36,7 +36,7 @@ Save the output as `sections_content`.
 
 **Tool**: Read + In-memory (LLM generation)
 
-Read `assets/verify.md`.
+Read `workflows/qa/verify-prompt.md`.
 
 Replace the following variables and call LLM:
 - `{answer}` → the answer text

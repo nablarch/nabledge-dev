@@ -38,7 +38,7 @@ If no results exist, skip to Step 3.
 
 **Tool**: Read + In-memory (LLM generation)
 
-Read `assets/answer.md`.
+Read `workflows/qa/answer-prompt.md`.
 
 Replace the following variables and call LLM:
 - `{question}` → the user's question
