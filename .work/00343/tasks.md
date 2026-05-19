@@ -1,9 +1,39 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-19 (B-4-1 qa.md修正 `a1570139a`)
+**Updated**: 2026-05-19 (B-0-1追加: 設計書適合確認)
 
 ## In Progress
+
+### B-0-1. 設計書との適合確認・修正（最優先）
+
+設計書 `.work/00343/design/search-design.md` のアーキテクチャ図と現在の実装が一致しているか確認し、乖離があれば修正。ユーザーレビューでパスするまで繰り返す。
+
+**設計書のワークフロー構成（正）:**
+```
+qa.md
+  ├── qa/hearing.md
+  ├── semantic-search.md   ← qaが使う検索はセマンティックのみ
+  ├── read-sections.sh
+  ├── qa/answer.md
+  └── qa/verify.md
+
+code-analysis.md
+  ├── keyword-search.md    ← keyword-searchはcode-analysisが使う
+  └── ...
+```
+
+**確認済みの乖離:**
+- `qa.md` Step 3 にキーワード検索（`workflows/keyword-search.md`）が入っている → 設計書ではqaはセマンティック検索のみ
+
+**ステップ:**
+- [ ] 設計書と現実装の全差異を列挙して報告（ワークフロー、スクリプト、アセット、ディレクトリ構成）
+  - 対象: `.claude/skills/nabledge-6/workflows/` 以下の全ファイル vs `search-design.md` のフェーズB構成
+  - 受入条件: 乖離リストをユーザーに提示、「なし」または「あり（列挙）」の形で報告
+- [ ] [DECISION: ユーザーがレビューして乖離の修正方針を承認]
+- [ ] 承認された修正を実装
+- [ ] 再度差異を確認して報告
+- [ ] [DECISION: ユーザーがレビューしてパスを確認]
 
 ### B-4-2. run_e2e.py エラー時診断情報の確実な保存（TDD）
 
