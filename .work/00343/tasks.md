@@ -14,17 +14,6 @@
 ## Not Started
 
 
-### B-4-1-inv-read-sections-qa. QA フローで read-sections.sh が不要か調査
-
-semantic-search.md の Step 3 で各ページの知識ファイル全体を Read で読んでいる。
-qa.md の Step 4 で read-sections.sh を使って同じファイルを再度読んでいるが、冗長では？
-Step 5 の回答生成に `sections_content` を渡す役割があるため、省略可否を設計観点で確認する。
-
-**ステップ:**
-- [ ] semantic-search.md の Step 3 でLLMが読んだ内容と、qa.md Step 4 で read-sections.sh が返す内容の差異を整理する
-- [ ] Step 4 を省略した場合（Step 3 で読んだ内容をそのまま Step 5 に渡す）の設計上の問題点を確認する
-- [ ] [BLOCKED: ユーザーに調査結果報告・方針確認]
-
 ### B-4. 新スキルE2Eベンチマーク（B-4-pre完了後）
 
 - [ ] run-1, run-2, run-3 実行 → `v1-new-search/run-{1,2,3}` に保存
@@ -152,6 +141,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 - [x] qa-current.json を results/baseline-current/ に移動 — `f3d8eeb15`
 - [x] HOW-TO-RUN.md を新スキル向けに更新（qa-current.json参照除去） — `b6f7d092f`
 - [x] B-3. スキルデプロイ（スモークテスト完了） — `a07583fc4`, `549df22d2`, `000fc91db`, `71a0c16e3`, `10a7aaf82`
+- [x] B-4-1-inv-read-sections-qa. Step 4 省略不可を確認（選定 vs テキスト抽出で役割が異なる）— notes.md 記録済み
 - [x] B-4-1-inv-allowedTools. --allowedTools パターン修正（`bash scripts/...` プレフィックス追加、329テストGREEN）— `44076bcbc`
 - [x] B-4-0. run_e2e.py エラーハンドリング修正 + 調査（TIMEOUT=360根拠確認、TimeoutExpired動作確認、マーカー欠損ケース確認、review-08/impact-01再実行確認）— `46877d7a4`
 - [x] B-0. run_e2e.py 再設計（旧結果削除 `338c8c471`、TDD実装 `218a5e051`）— SEレビュー 0 Findings

@@ -148,3 +148,25 @@ Analyzed qa.md and all sub-workflows across all 5 versions. All versions are log
 - Token budget: 500 target, 800 ceiling
 - Citation format: `filename.json#section-id`
 - Search pipeline delivers Pointer JSON with high/partial relevance classification
+
+## 2026-05-21
+
+### Finding: --allowedTools pattern must include `bash` prefix
+
+**Context**: `run_e2e.py` passes `--allowedTools` to `claude -p` to restrict tool use in the skill agent.
+
+**Root cause**: The skill workflows call scripts as `bash scripts/read-sections.sh ...` and
+`bash scripts/keyword-search.sh ...`. The old pattern `Bash(read-sections.sh *)` does not match
+this invocation form — Claude Code matches against the full command string including the leading `bash`.
+
+**Verified empirically** with `.tmp/verify-allowed-tools/run.py`:
+- Old pattern `Bash(read-sections.sh *)`: `permission_denials` recorded, tool blocked, LLM returned "requires approval"
+- New pattern `Bash(bash scripts/read-sections.sh *)`: tool executed successfully, section content returned
+
+**Fix**: `run_e2e.py` line 206 changed to `Bash(bash scripts/keyword-search.sh *) Bash(bash scripts/read-sections.sh *) Read` — committed `44076bcbc`.
+
+### Finding: qa.md Step 4 (read-sections.sh) is not redundant
+
+semantic-search.md Step 3 reads full knowledge JSONs for section *selection* only — it returns Pointer JSON (file + section_id pairs), not section text.
+qa.md Step 4 uses `read-sections.sh` to extract the selected sections' text into `sections_content`, which Step 5 (answer generation) and Step 6 (hallucination verification) both consume.
+The two reads serve different roles: selection vs. content extraction. Step 4 cannot be removed.
