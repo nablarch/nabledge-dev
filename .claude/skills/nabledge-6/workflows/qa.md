@@ -29,10 +29,9 @@ Processing types and their identifying terms:
 - **HTTPメッセージング**
 - **MOMメッセージング**
 
-- Question clearly belongs to one processing type → `processing_type = <that type>`
-- Question clearly belongs to multiple processing types → `processing_type = UNCLEAR`
-- Question is cross-functional (testing framework, i18n, logging, common utilities) → `processing_type = null`
-- Cannot determine from the question → `processing_type = UNCLEAR`
+- Clearly belongs to one processing type → `processing_type = <that type>`
+- Cross-functional (testing framework, i18n, logging, common utilities) → `processing_type = null`
+- Otherwise → `processing_type = UNCLEAR`
 
 Note: Common concepts (transactions, validation, DB access, SQL) are NOT cross-functional if their configuration/implementation differs per processing type.
 
