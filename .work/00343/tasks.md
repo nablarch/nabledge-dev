@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20
+**Updated**: 2026-05-21
 
 ## Rules
 
@@ -17,7 +17,7 @@
 
 **run-1 (1回目) 結果**: 30件中29件正常完了。qa-04のみ MarkerError（`<<<BENCHMARK_HEARING>>>`マーカー未出力）。
 
-- [ ] qa-04 MarkerError の原因を確認し修正する
+- [x] qa-04 MarkerError の原因を確認し修正する — `79677a793`（`goal`→`purpose` 修正、329テストGREEN）
 - [ ] run-1 再実行 → エラーゼロを確認する
 - [ ] [BLOCKED: エラーゼロ確認後、ユーザーに報告して B-4（run-2/run-3）進行承認を得る]
 
