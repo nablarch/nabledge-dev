@@ -22,7 +22,7 @@
 - [x] qa-04 MarkerError の原因を確認し修正する — `79677a793`（`goal`→`purpose` 修正、329テストGREEN）
 - [x] run-1 qa-04 再実行・エラーゼロ確認 — `65c938bf6`
 - [x] purpose 未注入の影響を調査する — `processing_type` は正しく注入済み。`purpose` は Step 1 自己推測にフォールバックするため、推測誤りが発生した可能性あり
-- [ ] run-1 全件を再実行する（purpose 注入済みの正しい状態で計測し直す）
+- [ ] qa.json 修正済み（impact-08 purpose / impact-03 must 重複）を確認してから run-1 全件を再実行する
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
