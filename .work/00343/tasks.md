@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20 (session 12 end)
+**Updated**: 2026-05-20 (session 13)
 
 ## Rules
 
@@ -20,14 +20,63 @@ qa.md を大幅改修（Step 1-2-5）したため、改修後スキルで run-1 
 **前提**: evaluate.py hallucination 判定バグ修正済み（`f51692b91`）。古い結果ディレクトリは削除済み。
 
 **ステップ:**
-- [ ] run-1 実行 → `tools/benchmark/results/` に保存（出力先はタイムスタンプ自動生成）
+- [x] run-1 実行 → `tools/benchmark/results/20260520-155111` + `20260520-165023`（4件ERR再実行）
+- [x] evaluate.py OSError（引数長超過）修正 → `13329357d`
+- [x] 30件完走確認（エラーゼロ）
+- [x] run-1 レポート確認（精度97.7% / 幻覚PASS率75.0%）
+- [ ] 結果をコミット・プッシュ（下記改善タスク完了後にまとめて）
+
+**run-1 結果（20260520-155111 + 20260520-165023）:**
+- 精度: 97.7%（BL 83.7%、+14.0pp）
+- 幻覚PASS率: 75.0%（BL 14.4%、+60.6pp）
+- 精度FAIL: 1件（qa-12b UNCERTAIN → N/A）
+- 幻覚FAIL: 7件（impact-01/06/08, qa-05/11b/12a/13）
+- 幻覚スキップ（UNCERTAIN）: 2件（pre-03, qa-02）
+
+### B-4-1-fix. run-1 幻覚FAILの改善
+
+run-1で新規FAILした6件（impact-06/08, qa-05/11b/12a/13）と精度N/A 1件（qa-12b）を改善する。
+
+**幻覚FAIL内訳と原因:**
+
+| シナリオ | BL幻覚 | 今回 | 虚偽クレームの要旨 |
+|---|---|---|---|
+| impact-01 | 67%FAIL | FAIL | 業務トランザクションをLoopHandlerが制御すると誤記述 |
+| impact-06 | 0%PASS | FAIL | HTTPセッションストアを「避けるべき」と断言（知識は「工夫が必要」のみ） |
+| impact-08 | 0%PASS | FAIL | fixedDateの日付が知識と1日ずれ（20100914→20100913）|
+| qa-05 | 0%PASS | FAIL | REST APIで排他制御taglib不使用の断言・楽観的ロックのリクエストボディ設計を捏造 |
+| qa-11b | 0%PASS | FAIL | JaxRsResponseHandlerの後続ハンドラ名・GlobalErrorHandlerの役割を捏造 |
+| qa-13 | 0%PASS | FAIL | バリデーションエラー時にApplicationExceptionが送出されると捏造 |
+| qa-12a | 0%PASS | FAIL | Thymeleafのerrors.hasError/getMessage等のメソッドを捏造（知識はJSP taglib） |
+
+**分析と対処方針:**
+- impact-08: 知識ファイルの数値が回答に正確に出ていない → 該当セクションの知識を確認
+- impact-06/qa-05/qa-11b/qa-13: 知識にない情報を推論・補完して出力している → qa.md Step 6の「知識に書いていないことを書かない」指示を強化
+- qa-12a: JSP taglibの知識でThymeleaf APIを推論している → カテゴリ/purposeのヒアリングで対応（Thymeleaf用知識がなければOOSと判定すべき）
+- qa-12b 精度N/A: UNCERTAINクレームが1件あり score=None → シナリオ期待値の見直し or UNCERTAINの扱い検討
+
+**ステップ:**
+- [ ] impact-08: 該当セクション（`processing-pattern/nablarch-batch/`等）の知識ファイルでfixedDate日付を確認。knowledge JSON に正しい値があれば qa.md の「知識の値をそのまま使う」指示を強化
+- [ ] impact-06/qa-05/qa-11b/qa-13: qa.md Step 6に「知識セクションに明示されていない技術的断言を書かない」を具体例付きで追加
+- [ ] qa-12a: hearing.md の purpose 選択肢に「実装したい（Thymeleaf）」等の分岐を設けるか、OOS判定基準を確認。knowledge に Thymeleaf 情報がなければ OOS として扱う旨を qa.md に追記
+- [ ] qa-12b: シナリオ期待値（`@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる`）が知識と整合するか確認。不整合なら期待値を修正
+- [ ] 各修正後に `python3 -m pytest tools/benchmark/ -x -q` でテストGREEN確認
+- [ ] PEレビュー（qa.md変更がある場合）
+
+### B-4-1-re2. run-1 再測定（改善後）
+
+B-4-1-fix 完了後に run-1 を再実行して改善を確認する。
+
+**ステップ:**
+- [ ] run-1 実行
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
     --skill-dir .claude/skills/nabledge-6
   ```
-- [ ] エラーゼロで30件完走すること確認
-- [ ] エラーがあれば原因を修正して再実行
+- [ ] エラーゼロで30件完走確認
+- [ ] 幻覚FAIL が 0〜1件（impact-01のみ許容）になることを確認
+- [ ] 精度N/A（qa-12b）が解消されることを確認
 - [ ] 結果をコミット・プッシュ
 
 ### B-4. 新スキルE2Eベンチマーク（B-4-pre完了後）
