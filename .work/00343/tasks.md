@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20 (session 11)
+**Updated**: 2026-05-20 (session 11 end)
 
 ## Rules
 
@@ -18,12 +18,11 @@
 qa.md を大幅改修（Step 1-2-5）したため、改修後スキルで run-1 が安定完走することを再確認する。
 
 **ステップ:**
-- [ ] run-1 実行 → `tools/benchmark/results/` に保存
+- [ ] run-1 実行 → `tools/benchmark/results/` に保存（出力先はタイムスタンプ自動生成）
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
-    --skill-dir .claude/skills/nabledge-6 \
-    --run-id v1-new-search-re/run-1
+    --skill-dir .claude/skills/nabledge-6
   ```
 - [ ] エラーゼロで30件完走すること確認
 - [ ] エラーがあれば原因を修正して再実行
@@ -137,6 +136,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-4-pre. ユーザープロンプトレビュー — qa.md 大幅改修（Step 1-2-5）、PEレビュー 0 Findings — `86b319939`〜`2d2cfe3fa`
 - [x] B-4-1-B. purpose ヒアリング追加（goal廃止・purpose7択追加・PEレビュー0 Findings）— `dbad4cf64`
 - [x] B-4-1-C. evaluate.py 幻覚検証ロジック修正（search_sections を sections_text に追加、TDD 5テスト追加）— `563d8b4aa`
 - [x] B-4-1-A. 精度FAIL・幻覚FAIL の詳細調査 — 全19シナリオ突合完了。真の幻覚5件確定。report.md に記録
