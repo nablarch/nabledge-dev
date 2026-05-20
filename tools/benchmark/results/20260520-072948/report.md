@@ -40,6 +40,63 @@
 
 ---
 
+## 精度FAIL 分析（B-4-1-A 追記）
+
+精度FAIL は qa-12a・qa-12b の2件。
+
+### read-sections.sh permission_denied の全体状況
+
+`claude -p` 実行時の `--allowedTools "Bash(read-sections.sh *)"` パターンが、LLM が `bash scripts/read-sections.sh ...` と呼び出す際にマッチせず denied になるケースが多発している（`bash` が先頭にあるため pattern `read-sections.sh *` にマッチしない）。
+
+30シナリオ中 **23シナリオ** で `read-sections.sh` の denied が発生。ただし denied が発生しても大半のシナリオでは BENCHMARK_SEARCH にセクションが記録されている。これは semantic-search の返り値（ページ・セクション候補）を LLM がそのまま BENCHMARK_SEARCH に出力しているため。denied は回答の品質に影響するが、シナリオによって影響度が異なる。
+
+### qa-12a 精度FAIL の事実
+
+**must fact**: `HttpErrorHandler が ApplicationException のメッセージを ErrorMessages に変換しリクエストスコープに設定する`  
+**must fact のセクション**: `handlers-HttpErrorHandler.json:s4`
+
+**LLM の動き（trace.json の permission_denials より）**:
+- LLM が `read-sections.sh` に渡そうとしたセクションリスト（4回全て denied）:
+  ```
+  web-application-error-message.json:s1
+  handlers-InjectForm.json:s3, s4
+  libraries-bean-validation.json:s7, s16
+  libraries-tag.json:s29
+  libraries-tag-reference.json:s48, s49
+  ```
+- `handlers-HttpErrorHandler.json` は **このリストに含まれていない**
+- BENCHMARK_SEARCH のセクションも HttpErrorHandler なし
+
+**原因**: semantic-search が `handlers-HttpErrorHandler.json` をそもそも返さなかった。denied とは無関係。ページ選定（semantic-search）の段階で HttpErrorHandler が漏れた。semantic-search の中間ログは trace.json に記録されないため、なぜ漏れたかは現状のログから確認不可。
+
+### qa-12b 精度FAIL の事実
+
+**must fact 1**: `@Valid アノテーションによりバリデーションエラーが自動的にエラーレスポンスになる`  
+**must fact 1 のセクション**: `libraries-bean-validation.json:s17`
+
+**must fact 2**: `ErrorResponseBuilder の継承クラスでエラーメッセージをレスポンスボディに設定する`  
+**must fact 2 のセクション**: `handlers-jaxrs-response-handler.json:s7`（search_sections に含まれ、回答にも記載 → PRESENT）
+
+**LLM の動き（trace.json の permission_denials より）**:
+- LLM が `read-sections.sh` に渡そうとしたセクションリスト（3回全て denied）:
+  ```
+  handlers-jaxrs-response-handler.json:s4, s7
+  handlers-jaxrs-bean-validation-handler.json:s4
+  libraries-bean-validation.json:s17   ← must fact のセクション
+  restful-web-service-feature-details.json:s2, s11
+  ```
+- `libraries-bean-validation.json:s17` は **選定リストに含まれていた**
+- しかし denied で内容を読めず、BENCHMARK_SEARCH の最終出力から s17 が**脱落**した
+
+**evaluate.py の claim verdict**: UNCERTAIN（ABSENTではない）。理由：LLM の回答は「@Valid を付与する」と書いているが「自動的にエラーレスポンスになる」とは書いておらず、カスタム実装が必要と説明している。評価 LLM が一致判断困難と判定。
+
+**原因のまとめ**:
+- s17 はセクション選定に含まれていたが `read-sections.sh` denied で内容未読
+- 内容を読めないまま回答生成 → @Valid の動作を知識ファイルに基づかず不正確に説明
+- さらに denied 後の BENCHMARK_SEARCH 出力から s17 が脱落（LLM が denied を受けてセクションリストを修正した）
+
+---
+
 ## シナリオ別レポート
 
 ### pre-01
