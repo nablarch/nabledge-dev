@@ -56,11 +56,31 @@ Note: Common concepts (transactions, validation, DB access, SQL, etc.) are NOT c
 
 If neither Step B nor Step C produced "skip" → **ask**
 
+**Step E: Infer purpose**
+
+Always infer `purpose` from the question (never ask the user). Select one from the 7 fixed categories:
+
+1. 実装したい
+2. 仕組み・動作を理解したい
+3. 不具合・エラーを調査したい
+4. テストを書きたい
+5. バージョンアップしたい
+6. 実装パターン・サンプルを参考にしたい
+7. セキュリティ対応したい
+
+Signal keywords:
+- 「仕組み」「とは」「動作」「理解」「概要」→ 仕組み・動作を理解したい
+- 「エラー」「例外」「不具合」「原因」「調査」→ 不具合・エラーを調査したい
+- 「テスト」「テストコード」「テストケース」→ テストを書きたい
+- 「バージョンアップ」「移行」「マイグレーション」「アップグレード」→ バージョンアップしたい
+- 「サンプル」「パターン」「例を見たい」「参考」→ 実装パターン・サンプルを参考にしたい
+- 「セキュリティ」「脆弱性」「認証」「認可」→ セキュリティ対応したい
+- (no signal matches) → **実装したい** (default)
+
 Build `hearing_answer`:
-- skip: `{ "processing_type": "<type from the list above, or null>", "goal": "<one sentence verb phrase>" }`
-  - goal: user's specific objective in one verb phrase; use processing-type-specific operation names; do not add information not in the question
+- skip: `{ "processing_type": "<type from the list above, or null>", "purpose": "<one of the 7 categories>" }`
   - processing_type: null for cross-functional
-- ask: `hearing_answer = null`
+- ask: `hearing_answer = null` (purpose will be set in Step 2)
 
 ---
 
@@ -81,10 +101,7 @@ Build `hearing_answer`:
 
 Then build `hearing_answer` from the user's selection:
 1. Use the selected processing type as `processing_type`.
-2. Write `goal` as one verb phrase that concretizes the question in the context of that processing type.
-   - End with a verb phrase ("〜する", "〜したい", "〜を知りたい")
-   - Include processing-type-specific operation names ("画面", "レスポンス", "ジョブ", etc.)
-   - Do not add information not present in the question
+2. Infer `purpose` from the original question using the same signal keywords from Step 1E (default: 実装したい).
 
 ---
 
@@ -93,8 +110,8 @@ Then build `hearing_answer` from the user's selection:
 Execute `workflows/semantic-search.md` with:
 - `{question}` = user's question
 - `{hearing_answer}` = formatted hearing string from Step 2:
-  - If `processing_type` is not null: `"処理方式: {processing_type}\nやりたいこと: {goal}"`
-  - If `processing_type` is null: `"やりたいこと: {goal}"`
+  - If `processing_type` is not null: `"処理方式: {processing_type}\n目的: {purpose}"`
+  - If `processing_type` is null: `"目的: {purpose}"`
 
 Save the returned `results` array as `selected_sections`.
 

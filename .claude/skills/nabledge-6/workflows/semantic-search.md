@@ -5,7 +5,7 @@
 ## Input
 
 - `{question}`: User's question
-- `{hearing_answer}`: Formatted hearing result ("処理方式: X\nやりたいこと: Y") or "なし"
+- `{hearing_answer}`: Formatted hearing result ("処理方式: X\n目的: Y") or "なし"
 
 ## Output
 
