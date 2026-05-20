@@ -20,17 +20,14 @@ From the question, determine `processing_type` and `purpose` independently.
 
 Judge which processing type the question belongs to. Use the names and technical terms below as reference:
 
-Reference — processing types and their identifying terms:
-
-| Processing type | Identifying terms |
-|---|---|
-| ウェブアプリケーション | JSP, HIDDENストア, セッション変数, セッションストア, CSRF |
-| RESTfulウェブサービス | リソースクラス, JAX-RS, REST API, RESTful |
-| Nablarchバッチ | requestPath (batch startup argument), バッチアプリ |
-| Jakartaバッチ | ItemReader, ItemWriter, Chunk |
-| テーブルをキューとして使ったメッセージング | — |
-| HTTPメッセージング | — |
-| MOMメッセージング | — |
+Processing types:
+- ウェブアプリケーション
+- RESTfulウェブサービス
+- Nablarchバッチ
+- Jakartaバッチ
+- テーブルをキューとして使ったメッセージング
+- HTTPメッセージング
+- MOMメッセージング
 
 Judgment:
 - Question clearly belongs to one processing type → `processing_type = <that type>`
@@ -43,15 +40,14 @@ Note: Common concepts (transactions, validation, DB access, SQL) are NOT cross-f
 
 Judge the purpose from the question. Reference categories:
 
-| Purpose | Examples |
-|---|---|
-| 仕組み・動作を理解したい | 「仕組み」「とは」「動作」「理解」「概要」 |
-| 不具合・エラーを調査したい | 「エラー」「例外」「不具合」「原因」「調査」 |
-| テストを書きたい | 「テスト」「テストコード」「テストケース」 |
-| バージョンアップしたい | 「バージョンアップ」「移行」「マイグレーション」「アップグレード」 |
-| 実装パターン・サンプルを参考にしたい | 「サンプル」「パターン」「例を見たい」「参考」 |
-| セキュリティ対応したい | 「セキュリティ」「脆弱性」「認証」「認可」 |
-| 実装したい | 実装方法を聞いている |
+Purpose categories:
+- 実装したい
+- 仕組み・動作を理解したい
+- 不具合・エラーを調査したい
+- テストを書きたい
+- バージョンアップしたい
+- 実装パターン・サンプルを参考にしたい
+- セキュリティ対応したい
 
 - Purpose is clear from the question → `purpose = <that category>`
 - Cannot determine from the question → `purpose = UNCLEAR`
