@@ -13,7 +13,21 @@
 
 ## Not Started
 
-### B-4. 新スキルE2Eベンチマーク（B-4-1完了後）
+### B-4-pre. ユーザープロンプトレビュー（ベンチマーク前必須）
+
+ベンチマーク実行前に、ユーザーがスキルのプロンプト（qa.md / semantic-search.md）を確認してOKを出す。
+
+**レビュー対象ファイル:**
+- `.claude/skills/nabledge-6/workflows/qa.md`
+- `.claude/skills/nabledge-6/workflows/semantic-search.md`
+
+**ステップ:**
+- [ ] ユーザーにレビュー対象ファイルを提示する
+- [ ] [BLOCKED: ユーザーのレビューOKを受けるまで B-4 に進まない]
+- [ ] フィードバックがあれば修正してコミット・プッシュ → 再レビュー依頼
+- [ ] レビューOK確認
+
+### B-4. 新スキルE2Eベンチマーク（B-4-pre完了後）
 
 - [ ] run-1, run-2, run-3 実行 → `v1-new-search/run-{1,2,3}` に保存
 - [ ] 結果をコミット
