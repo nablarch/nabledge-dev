@@ -33,39 +33,91 @@ qa.md を大幅改修（Step 1-2-5）したため、改修後スキルで run-1 
 - 幻覚FAIL: 7件（impact-01/06/08, qa-05/11b/12a/13）
 - 幻覚スキップ（UNCERTAIN）: 2件（pre-03, qa-02）
 
-### B-4-1-fix. run-1 幻覚FAILの改善
-
-run-1で新規FAILした6件（impact-06/08, qa-05/11b/12a/13）と精度N/A 1件（qa-12b）を改善する。
-
-**幻覚FAIL内訳と原因:**
-
-| シナリオ | BL幻覚 | 今回 | 虚偽クレームの要旨 |
-|---|---|---|---|
-| impact-01 | 67%FAIL | FAIL | 業務トランザクションをLoopHandlerが制御すると誤記述 |
-| impact-06 | 0%PASS | FAIL | HTTPセッションストアを「避けるべき」と断言（知識は「工夫が必要」のみ） |
-| impact-08 | 0%PASS | FAIL | fixedDateの日付が知識と1日ずれ（20100914→20100913）|
-| qa-05 | 0%PASS | FAIL | REST APIで排他制御taglib不使用の断言・楽観的ロックのリクエストボディ設計を捏造 |
-| qa-11b | 0%PASS | FAIL | JaxRsResponseHandlerの後続ハンドラ名・GlobalErrorHandlerの役割を捏造 |
-| qa-13 | 0%PASS | FAIL | バリデーションエラー時にApplicationExceptionが送出されると捏造 |
-| qa-12a | 0%PASS | FAIL | Thymeleafのerrors.hasError/getMessage等のメソッドを捏造（知識はJSP taglib） |
-
-**分析と対処方針:**
-- impact-08: 知識ファイルの数値が回答に正確に出ていない → 該当セクションの知識を確認
-- impact-06/qa-05/qa-11b/qa-13: 知識にない情報を推論・補完して出力している → qa.md Step 6の「知識に書いていないことを書かない」指示を強化
-- qa-12a: JSP taglibの知識でThymeleaf APIを推論している → カテゴリ/purposeのヒアリングで対応（Thymeleaf用知識がなければOOSと判定すべき）
-- qa-12b 精度N/A: UNCERTAINクレームが1件あり score=None → シナリオ期待値の見直し or UNCERTAINの扱い検討
+### B-4-1-inv-impact-01. 幻覚FAIL調査: impact-01
 
 **ステップ:**
-- [ ] impact-08: 該当セクション（`processing-pattern/nablarch-batch/`等）の知識ファイルでfixedDate日付を確認。knowledge JSON に正しい値があれば qa.md の「知識の値をそのまま使う」指示を強化
-- [ ] impact-06/qa-05/qa-11b/qa-13: qa.md Step 6に「知識セクションに明示されていない技術的断言を書かない」を具体例付きで追加
-- [ ] qa-12a: hearing.md の purpose 選択肢に「実装したい（Thymeleaf）」等の分岐を設けるか、OOS判定基準を確認。knowledge に Thymeleaf 情報がなければ OOS として扱う旨を qa.md に追記
-- [ ] qa-12b: シナリオ期待値（`@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる`）が知識と整合するか確認。不整合なら期待値を修正
-- [ ] 各修正後に `python3 -m pytest tools/benchmark/ -x -q` でテストGREEN確認
-- [ ] PEレビュー（qa.md変更がある場合）
+- [ ] `evaluation.json` の虚偽クレームと reason を読む
+- [ ] `answer.md` で該当クレームの記述箇所を特定する
+- [ ] `search.json` の section_ids を確認し、`read-sections.sh` で該当セクション本文を取得する
+- [ ] 回答の記述と知識セクション本文を逐語照合し、どこでどう乖離したかを事実として列挙する
+- [ ] `trace.json` でどのターンでその記述が生成されたか確認する
+- [ ] [BLOCKED: ユーザーに事実報告・方針確認]
+
+### B-4-1-inv-impact-06. 幻覚FAIL調査: impact-06
+
+**ステップ:**
+- [ ] `evaluation.json` の虚偽クレームと reason を読む
+- [ ] `answer.md` で該当クレームの記述箇所を特定する
+- [ ] `search.json` の section_ids を確認し、該当セクション本文を取得する
+- [ ] 回答の記述と知識セクション本文を逐語照合し、乖離箇所を事実として列挙する
+- [ ] `trace.json` で生成ターンを確認する
+- [ ] [BLOCKED: ユーザーに事実報告・方針確認]
+
+### B-4-1-inv-impact-08. 幻覚FAIL調査: impact-08
+
+**ステップ:**
+- [ ] `evaluation.json` の虚偽クレームと reason を読む
+- [ ] `answer.md` で該当クレームの記述箇所を特定する
+- [ ] `search.json` の section_ids を確認し、該当セクション本文を取得する
+- [ ] 回答の記述と知識セクション本文を逐語照合し、乖離箇所を事実として列挙する
+- [ ] `trace.json` で生成ターンを確認する
+- [ ] [BLOCKED: ユーザーに事実報告・方針確認]
+
+### B-4-1-inv-qa-05. 幻覚FAIL調査: qa-05
+
+**ステップ:**
+- [ ] `evaluation.json` の虚偽クレームと reason を読む
+- [ ] `answer.md` で該当クレームの記述箇所を特定する
+- [ ] `search.json` の section_ids を確認し、該当セクション本文を取得する
+- [ ] 回答の記述と知識セクション本文を逐語照合し、乖離箇所を事実として列挙する
+- [ ] `trace.json` で生成ターンを確認する
+- [ ] [BLOCKED: ユーザーに事実報告・方針確認]
+
+### B-4-1-inv-qa-11b. 幻覚FAIL調査: qa-11b
+
+**ステップ:**
+- [ ] `evaluation.json` の虚偽クレームと reason を読む
+- [ ] `answer.md` で該当クレームの記述箇所を特定する
+- [ ] `search.json` の section_ids を確認し、該当セクション本文を取得する
+- [ ] 回答の記述と知識セクション本文を逐語照合し、乖離箇所を事実として列挙する
+- [ ] `trace.json` で生成ターンを確認する
+- [ ] [BLOCKED: ユーザーに事実報告・方針確認]
+
+### B-4-1-inv-qa-12a. 幻覚FAIL調査: qa-12a
+
+**ステップ:**
+- [ ] `evaluation.json` の虚偽クレームと reason を読む
+- [ ] `answer.md` で該当クレームの記述箇所を特定する
+- [ ] `search.json` の section_ids を確認し、該当セクション本文を取得する
+- [ ] 回答の記述と知識セクション本文を逐語照合し、乖離箇所を事実として列挙する
+- [ ] `trace.json` で生成ターンを確認する
+- [ ] [BLOCKED: ユーザーに事実報告・方針確認]
+
+### B-4-1-inv-qa-13. 幻覚FAIL調査: qa-13
+
+**ステップ:**
+- [ ] `evaluation.json` の虚偽クレームと reason を読む
+- [ ] `answer.md` で該当クレームの記述箇所を特定する
+- [ ] `search.json` の section_ids を確認し、該当セクション本文を取得する
+- [ ] 回答の記述と知識セクション本文を逐語照合し、乖離箇所を事実として列挙する
+- [ ] `trace.json` で生成ターンを確認する
+- [ ] [BLOCKED: ユーザーに事実報告・方針確認]
+
+### B-4-1-inv-qa-12b. 精度N/A調査: qa-12b
+
+accuracy=None（UNCERTAINクレームが含まれるため score が確定しない）。
+
+**ステップ:**
+- [ ] `evaluation.json` の claim_verdicts を読み、UNCERTAIN になったクレームと reason を確認する
+- [ ] `answer.md` で該当クレームの記述箇所を特定する
+- [ ] `search.json` の section_ids を確認し、該当セクション本文を取得する
+- [ ] クレームの事実（期待値）と知識セクション本文を逐語照合し、整合・不整合を事実として列挙する
+- [ ] `trace.json` で生成ターンを確認する
+- [ ] [BLOCKED: ユーザーに事実報告・方針確認（期待値修正 or スキップ or 別対応）]
 
 ### B-4-1-re2. run-1 再測定（改善後）
 
-B-4-1-fix 完了後に run-1 を再実行して改善を確認する。
+B-4-1-inv-* 全件の方針確認・改善完了後に run-1 を再実行して改善を確認する。
 
 **ステップ:**
 - [ ] run-1 実行
