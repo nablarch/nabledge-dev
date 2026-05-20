@@ -41,7 +41,7 @@ SAMPLE_SCENARIO = {
         "expected_hearing": "should_skip",
         "hearing_answer": {
             "processing_type": "Nablarchバッチ",
-            "goal": "バッチを起動する",
+            "purpose": "実装したい",
         },
     },
     "then": {
@@ -72,9 +72,9 @@ class TestBuildE2ePrompt:
         prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
         assert "Nablarchバッチ" in prompt
 
-    def test_includes_hearing_answer_goal(self):
+    def test_includes_hearing_answer_purpose(self):
         prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
-        assert "バッチを起動する" in prompt
+        assert "実装したい" in prompt
 
     def test_includes_benchmark_markers_instruction(self):
         prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
@@ -89,12 +89,12 @@ class TestBuildE2ePrompt:
         }
         prompt = build_e2e_prompt(scenario_no_hearing, self.workflow_content)
         assert "Nablarchバッチ" not in prompt
-        assert "バッチを起動する" not in prompt
+        assert "実装したい" not in prompt
 
     def test_hearing_answer_present_injects_context(self):
         prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
         assert "Nablarchバッチ" in prompt
-        assert "バッチを起動する" in prompt
+        assert "実装したい" in prompt
 
     def test_hearing_answer_injected_into_question_not_separate_section(self):
         prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)

@@ -73,8 +73,8 @@ def _build_question(scenario: dict) -> str:
     parts = [question]
     if hearing_answer.get("processing_type"):
         parts.append(f"（処理方式: {hearing_answer['processing_type']}）")
-    if hearing_answer.get("goal"):
-        parts.append(f"（やりたいこと: {hearing_answer['goal']}）")
+    if hearing_answer.get("purpose"):
+        parts.append(f"（目的: {hearing_answer['purpose']}）")
     return "".join(parts)
 
 
