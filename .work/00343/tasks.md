@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20 (session 6)
+**Updated**: 2026-05-20 (session 7)
 
 ## Rules
 
@@ -11,77 +11,38 @@
 
 ## In Progress
 
-### B-4-1-A. 精度FAIL・幻覚TRUE FAIL の詳細調査（1件ずつユーザーと認識合わせ）
+### 精度FAIL の改善方針確認
 
-evaluate.py の false FAIL が多数判明したため、真のFAILを1件ずつ調査してユーザーと認識を合わせる。
-各ステップ: 該当シナリオのunsupported claimsを知識ファイルと突合 → 真のFAIL特定 → ユーザーに提示 → 改善方針を決定
+qa-12a と qa-12b の精度FAIL（各1件）についてユーザーとの認識合わせが必要。
 
-**精度FAIL（2件）:**
-- [ ] qa-12a: `HttpErrorHandler` が `ApplicationException` を `ErrorMessages` に変換する fact が未検出
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-12b: `@Valid` アノテーションによりバリデーションエラーが自動的にエラーレスポンスになる fact が未検出
-  - [BLOCKED: ユーザーの改善方針を確認]
-
-**幻覚FAIL（19件 — 真のFAILのみ特定するため1件ずつ突合）:**
-- [ ] pre-01（4件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] pre-02（5件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] pre-03（2件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] review-06（5件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] review-09（7件 unsupported — claim 6・7が真の幻覚の可能性あり）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] impact-01（4件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] impact-06（5件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] impact-08（5件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-03（5件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-04（3件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-05（3件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-07（7件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-08（4件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-09（4件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-11a（5件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-11b（6件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-12a（5件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-12b（3件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
-- [ ] qa-13（5件 unsupported）
-  - [BLOCKED: ユーザーの改善方針を確認]
+- [ ] [BLOCKED: 精度FAIL の改善方針を確認]
+  - qa-12a: `HttpErrorHandler` が `ApplicationException` のメッセージを `ErrorMessages` に変換しリクエストスコープに設定する fact が未検出。search_sections に関連セクションが含まれていない可能性あり
+  - qa-12b: `@Valid` アノテーションによりバリデーションエラーが自動的にエラーレスポンスになる fact が未検出。同上
 
 ## Not Started
 
 ### B-4-1-C. evaluate.py 幻覚検証ロジックの見直し
 
-B-4-1-A の調査で、evaluate.py の幻覚検証が sections=0 の知識ファイル（content フィールドのみ）を
-参照範囲に含めていないため、知識ファイルに記述があるにも関わらず unsupported 判定になる false FAIL が
-多数発生していることが判明。
+B-4-1-A の調査（session 7 完了）により根本原因が確定。
 
-**確認済みの具体例（qa-12a）:**
-- `errors.hasError()` / `errors.getMessage()` → web-application-error-message.json の content に記述あり → false FAIL
-- `@OnError未設定時にシステムエラー扱い` → handlers-InjectForm.json:s4 に記述あり → false FAIL
+**根本原因**: evaluate.py の幻覚チェックで `hallucination_prompt` に渡すセクションが
+`must_facts` と `acceptable` の `section` フィールド（シナリオの gold standard）のみ。
+LLM が実際に参照した `search_sections`（ベンチマーク実行時に取得したセクション）が含まれない。
+→ search_sections に記述があっても unsupported 判定（false FAIL）になる。
+
+**規模**: 19シナリオ中 78件が false FAIL、真の幻覚は 5件のみ。
+
+**修正方針**: `hallucination_prompt` に `search_sections` の内容も含める。
+ただし `search_sections` はランナー出力（`runner_output`）から取得する必要がある。
+現在 evaluate.py は `runner_output.get("search", {}).get("section_ids", [])` で参照可能。
 
 **ステップ:**
-- [ ] evaluate.py の幻覚検証ロジックを読み、content フィールルの扱いを確認
-- [ ] B-4-1-A の全シナリオ調査結果をもとに false FAIL パターンを整理
-- [ ] 修正方針を設計（PEまたはQAエキスパートレビュー必須）
+- [ ] evaluate.py の幻覚検証ロジックを確認（`build_hallucination_prompt` の呼び出し箇所）
+- [ ] 修正方針を設計（QAエキスパートレビュー必須）
 - [ ] TDD: テスト追加（RED）→ 修正実装（GREEN）
 - [ ] `python3 -m pytest tools/ -x` で全テスト GREEN
 
-**前提:** B-4-1-A（FAIL調査）完了後に着手。
+**前提:** B-4-1-A（FAIL調査）完了 → 完了済み。
 
 ### B-4-1-B. goal 設計見直し（ヒアリング設計の根本修正）
 
@@ -208,6 +169,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-4-1-A. 精度FAIL・幻覚FAIL の詳細調査 — 全19シナリオ突合完了。真の幻覚5件確定。report.md に記録
 - [x] B-4-1. run-1 安定化（エラーゼロまで）— 30件完走 `20260520-072948`
 - [x] B-0-4. 設計書適合確認・SEエキスパートレビュー・PRレビュー — OK `2026-05-19`
 - [x] ワークフローMDリファクタリング（B-0-4-H）— `76268a9d3`, `a3b523638`, `cf026e442`, `119ff53ce`, `189b51402`

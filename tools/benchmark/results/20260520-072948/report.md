@@ -3,7 +3,40 @@
 **実行日時**: 2026-05-20  
 **実行ディレクトリ**: `tools/benchmark/results/20260520-072948`  
 **スキル**: `.claude/skills/nabledge-6`  
-**ステータス**: 実行中（逐次追記）
+**ステータス**: 分析完了（2026-05-20 B-4-1-A）
+
+---
+
+## 幻覚FAIL 全件分析サマリー（B-4-1-A）
+
+幻覚FAIL は19シナリオ。全件の unsupported claims を知識ファイルと突合した結果：
+
+| 分類 | 件数 | 説明 |
+|---|---|---|
+| **false FAIL（search_sections 内）** | 78件 | search_sections に記述があるが evaluate.py が must/acceptable しか渡さないため FAIL |
+| **false FAIL（search_sections 外、KB 内）** | 4件 | 知識ファイルに記述はあるが LLM の search_sections に含まれなかったセクション |
+| **真の幻覚** | 5件 | 知識ファイルに存在しない、または誤った内容 |
+
+### 真の幻覚 5件
+
+| シナリオ | claim | 内容 |
+|---|---|---|
+| impact-06 | claim 1 | DBストア定期削除を「バッチ」と表現（知識ファイルは「定期的に削除する必要がある」のみ。バッチという語なし） |
+| impact-08 | claim 2 | fixedDate の桁数を「14桁」「17桁」と誤記（知識ファイルは「12桁」「15桁」） |
+| impact-08 | claim 4 | 「BasicBusinessDateProvider の**設定ファイル**を差し替える」（知識ファイルは「コンポーネント定義で指定する**クラス**を差し替える」） |
+| qa-05 | claim 3 | 「String型宣言は Bean Validation の**要件**」（知識ファイルはBean Validationの仕様要件とは言っていない。設計上の推奨事項） |
+| qa-12a | claim 4 | `Required.message=**必須項目です**`（知識ファイルは `Required.message=入力してください。`） |
+
+### search_sections 外の false FAIL 4件（KB には存在する）
+
+| シナリオ | claim | 知識ファイルの場所 | search_sections |
+|---|---|---|---|
+| impact-06 | claim 2（clientType プロパティ） | adapters-redisstore-lettuce-adaptor.json:**s7** | s1/s5/s6 のみ |
+| impact-06 | claim 4（HiddenStore + AesEncryptor） | libraries-session-store.json:**s12** | s2/s8/s16 のみ |
+| review-09 | claim 6（SecureHandler 設定順序） | handlers-secure-handler.json:**s3** | s7/s8/s9 のみ |
+| review-09 | claim 7（デフォルトコンポーネント明示設定） | handlers-secure-handler.json:**s5** | s7/s8/s9 のみ |
+
+**根本原因**: evaluate.py の幻覚チェックは must/acceptable セクションのみを参照しており、LLM が実際に参照した search_sections を含めていない。真の幻覚は5件のみ（全unsupported claimsの約6%）。B-4-1-C で修正方針を設計する。
 
 ---
 
@@ -244,6 +277,15 @@
 3. HandlerとTransactionEventCallbackを同時に実装したハンドラクラスを作成してLoopHandlerの後続に配置することでエラーログDB書き込みに使用できる
 4. 複数のハンドラがTransactionEventCallbackを実装している場合、コールバック中に例外が発生すると残りのハンドラのコールバックは実行されない
 
+**裏取り結果**: 全件 search_sections に明記あり → **evaluate.py の false FAIL**
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| LoopHandler が transactionAbnormalEnd を呼び出す | false FAIL | handlers-loop-handler.json:s6「ロールバック後にコールバック処理を実行する」+コード例 |
+| TransactionEventCallback の2メソッドとロールバック後の新トランザクション | false FAIL | handlers-transaction-management-handler.json:s6 に明記 |
+| Handler+TransactionEventCallback 同時実装 → LoopHandler後続配置 | false FAIL | handlers-loop-handler.json:s6 のコード例・説明に明記 |
+| 複数ハンドラで例外発生時に残りコールバック未実行 | false FAIL | handlers-loop-handler.json:s6「残りのハンドラに対するコールバック処理は実行しない」 |
+
 ---
 
 ### impact-03
@@ -290,6 +332,18 @@
 4. HiddenStore の encryptor に AesEncryptor / Base64Key を設定するXML構成が存在し、key・iv プロパティで固定キーを指定できる
 5. セッションストアの有効期間はデフォルトでHTTPセッションに保存されるため、ステートレス化にはDBへの変更が必要
 
+**裏取り結果**:
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| DBストア定期削除「バッチ」 | **真の幻覚** | 知識ファイルは「定期的に削除する必要がある」と記述。「バッチ」という語は存在しない |
+| clientType プロパティ (masterReplica/cluster) | false FAIL | adapters-redisstore-lettuce-adaptor.json:s7 に明記。ただし search_sections は s1/s5/s6 のみで s7 は含まれず → LLM は知識ファイルから正確に引用したが evaluate.py が渡すセクション外 |
+| 3クラスの存在 | false FAIL | adapters-redisstore-lettuce-adaptor.json:s6（search_sections に含まれる）に明記 |
+| HiddenStore + AesEncryptor/Base64Key + key/iv | false FAIL | libraries-session-store.json:s12 に明記。ただし search_sections は s2/s8/s16 のみで s12 は含まれず → LLM は知識ファイルから正確に引用したが evaluate.py が渡すセクション外 |
+| 有効期間はデフォルトHTTPセッション → ステートレス化にはDB変更 | false FAIL | libraries-stateless-web-app.json:s2（search_sections に含まれる）「セッションストアはデフォルトでHTTPセッションに依存」に記述あり |
+
+**impact-06 まとめ**: claim 1（バッチ）のみ**真の幻覚**。claim 2・4 は false FAIL だが evaluate.py が渡すセクション外での記述（search_sections の選択ミス）。claim 3・5 は evaluate.py の false FAIL（search_sections 内に記述あり）。
+
 ---
 
 ### impact-08
@@ -313,6 +367,18 @@
 3. nablarch.core.date.BasicSystemTimeProvider という既製クラスが本番用として存在する
 4. BasicBusinessDateProvider の設定ファイルを差し替えることで業務日付を切り替えられる
 5. BusinessDateProvider インタフェースを実装したクラスを作成してコンポーネント定義に設定することで業務日付をテスト用に切り替えられる
+
+**裏取り結果**:
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| nablarch.test.FixedSystemTimeProvider | false FAIL | testing-framework-03-Tips.json:s12（search_sections に含まれる）に明記 |
+| fixedDate「14桁」「17桁」 | **真の幻覚** | 知識ファイルは「12桁」「15桁」と記載。14桁・17桁は LLM による誤記（フォーマット文字列の文字数を数えて間違えた） |
+| nablarch.core.date.BasicSystemTimeProvider | false FAIL | libraries-date.json:s5（search_sections に含まれる）に明記 |
+| BasicBusinessDateProvider の設定ファイル差し替え | **真の幻覚** | 知識ファイルの記述は「コンポーネント定義で指定するクラスを差し替える」。「設定ファイルを差し替える」という表現は存在しない |
+| BusinessDateProvider 実装クラスをコンポーネント定義に設定 | false FAIL | libraries-date.json:s13（search_sections に含まれる）に明記 |
+
+**impact-08 まとめ**: claim 2（桁数誤記）・claim 4（設定ファイル差し替えという誤表現）が**真の幻覚**。他は false FAIL。
 
 ---
 
@@ -379,6 +445,16 @@
 4. @OnErrorアノテーションをApplicationException.classに対して設定する
 5. @OnErrorを設定しない場合、バリデーションエラーがシステムエラー扱いになる
 
+**裏取り結果**: 全件 search_sections に明記あり → **evaluate.py の false FAIL**
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| BeanValidationStrategy を validationStrategy 名で定義 | false FAIL | libraries-bean-validation.json:s16（search_sections）に明記 |
+| @InjectForm インターセプタ経由バリデーション | false FAIL | libraries-bean-validation.json:s16 / libraries-nablarch-validation.json:s21（search_sections）に明記 |
+| @InjectForm の validate 属性 | false FAIL | handlers-InjectForm.json:s3（search_sections）のコード例に明記 |
+| @OnError(type = ApplicationException.class) | false FAIL | handlers-InjectForm.json:s3（search_sections）のコード例に明記 |
+| @OnError 未設定でシステムエラー扱い | false FAIL | handlers-InjectForm.json:s4（search_sections）に明記 |
+
 ---
 
 ### qa-04
@@ -401,6 +477,14 @@
 2. testSetterAndGetter が対応する型は String / BigDecimal / java.util.Date / valueOf(String) を持つクラス（Integer・Long 等）およびそれらの配列に限られる
 3. テストメソッドとして testValidateCharsetAndLength / testSingleValidation / testBeanValidation / testSetterAndGetter を使用する
 
+**裏取り結果**: 全件 search_sections に明記あり → **evaluate.py の false FAIL**
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| Excelのセル書式はすべて文字列 | false FAIL | testing-framework-01-Abstract.json:s14（search_sections）「全てのセルの書式を文字列に設定」 |
+| testSetterAndGetter の対応型 | false FAIL | testing-framework-01-entityUnitTestWithBeanValidation.json:s14（search_sections）に対応型一覧が明記 |
+| 4つのテストメソッド名 | false FAIL | testing-framework-01-entityUnitTestWithBeanValidation.json:s6/s9/s12/s14（search_sections）で各メソッド確認 |
+
 ---
 
 ### qa-05
@@ -422,6 +506,16 @@
 1. @Consumes(MediaType.APPLICATION_JSON)でBodyConvertHandlerがアノテーションを参照しBodyConverterでFormに変換する
 2. GenerationType.AUTO/SEQUENCE/IDENTITY/TABLEに対応
 3. Formのプロパティを全てString型で宣言するのはBean Validationの要件
+
+**裏取り結果**:
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| @Consumes → BodyConvertHandler → BodyConverter で変換 | false FAIL | handlers-body-convert-handler.json:s5（search_sections）「Consumesにより決まる」「対応したBodyConverterでリクエストボディが変換される」に明記 |
+| GenerationType.AUTO/SEQUENCE/IDENTITY/TABLE | false FAIL | libraries-universal-dao.json:s13（search_sections）「すべてのストラテジをサポート」+4種の実装例 |
+| String型宣言は Bean Validation の要件 | **真の幻覚（表現の誤り）** | 知識ファイルは「Beanクラスのプロパティの型は全てStringとして定義すること」と記述するが、「Bean Validationの要件」とは言っていない。理由は「変換失敗前にバリデーションが走らなくなるため」という設計上の考慮事項。restful-web-service-getting-started-create.json:s1（search_sections）には「プロパティは全てString型で宣言する」の記述はある |
+
+**qa-05 まとめ**: claim 3 のみ**真の幻覚（因果の誤帰属）**。claim 1・2 は false FAIL。
 
 ---
 
@@ -469,6 +563,18 @@
 6. FileDataReader / FileBatchAction という標準提供クラスが存在する
 7. ObjectMapper はスレッドアンセーフである
 
+**裏取り結果**: 全件 search_sections に明記あり → **evaluate.py の false FAIL**
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| ObjectMapperIterator + DataReader 内で iterator パターン | false FAIL | nablarch-batch-getting-started:s2（search_sections）に明記 |
+| DataReader<T> の read/hasNext/close | false FAIL | nablarch-batch-getting-started:s2（search_sections）のコード例に明記 |
+| BatchAction<T> 継承 + handle/createReader 実装 | false FAIL | nablarch-batch-getting-started:s3（search_sections）のコード例に明記 |
+| @LineNumber アノテーション | false FAIL | nablarch-batch-getting-started:s2（search_sections）に明記 |
+| FilePathSetting.getInstance().getFileWithoutCreate() | false FAIL | nablarch-batch-getting-started:s2（search_sections）のコード例に明記 |
+| FileDataReader / FileBatchAction | false FAIL | nablarch-batch-architecture.json:s7/s8（search_sections）に明記 |
+| ObjectMapper スレッドアンセーフ | false FAIL | libraries-data-bind.json:s15（search_sections）に明記 |
+
 ---
 
 ### qa-08
@@ -492,6 +598,15 @@
 3. LanguageAttributeInHttpUtil.keepLanguage() メソッドが存在し、言語をクッキーに保持できる
 4. n:submitLink と n:param を組み合わせた JSP 言語切り替えリンクの実装パターン
 
+**裏取り結果**: 全件 search_sections に明記あり → **evaluate.py の false FAIL**
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| LanguageAttribute + defaultLanguage | false FAIL | handlers-thread-context-handler.json:s4（search_sections）のXML例に明記 |
+| LanguageAttributeInHttpCookie + 2プロパティ | false FAIL | handlers-thread-context-handler.json:s7（search_sections）のXML例に明記 |
+| LanguageAttributeInHttpUtil.keepLanguage() | false FAIL | handlers-thread-context-handler.json:s7（search_sections）のコード例に明記 |
+| n:submitLink + n:param の JSP パターン | false FAIL | handlers-thread-context-handler.json:s7（search_sections）のJSP例に明記 |
+
 ---
 
 ### qa-09
@@ -514,6 +629,17 @@
 2. SystemRepository.get("businessDateProvider")でBasicBusinessDateProviderを取得できる
 3. システムプロパティ -DBasicBusinessDateProvider.<区分>=yyyyMMdd で業務日付を上書き可能
 4. nablarch-common-jdbcモジュールが追加で必要
+
+**裏取り結果**: 全件 search_sections に明記あり → **evaluate.py の false FAIL**
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| BusinessDateProvider.setDate(segment, date) | false FAIL | libraries-date.json:s10（search_sections）のコード例に明記 |
+| SystemRepository.get("businessDateProvider") | false FAIL | libraries-date.json:s10（search_sections）に明記 |
+| -DBasicBusinessDateProvider.<区分>=yyyyMMdd | false FAIL | libraries-date.json:s9（search_sections）に明記 |
+| nablarch-common-jdbc モジュール | false FAIL | libraries-date.json:s3（search_sections）に明記（注: s3 は search_sections リストにないが libraries-date.json:s2 から参照されている。ただし s2 自体は search_sections に含まれる） |
+
+**補足**: claim 4 については libraries-date.json:s2（search_sections）に「モジュール一覧参照」の記述があり、s3 に実際の依存関係が記載。s3 自体は search_sections に含まれていないが、s2 が含まれており LLM は s3 も参照した可能性がある。いずれも知識ファイルに明記された事実。
 
 ---
 
@@ -556,6 +682,16 @@
 4. FailureLogUtilクラスを使用してアプリケーションから明示的に障害ログを出力できる
 5. 障害ログは障害通知ログ(ロガー名MONITOR)と障害解析ログ(ロガー名クラス名)の2種類に分かれる
 
+**裏取り結果**: 全件 search_sections に明記あり → **evaluate.py の false FAIL**
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| defaultPages にステータスコードパターン→JSP マッピング | false FAIL | handlers-HttpErrorHandler.json:s6（search_sections）に設定例あり |
+| defaultPages より web.xml 推奨 | false FAIL | handlers-HttpErrorHandler.json:s6（search_sections）「web.xml へ行うことを推奨する」 |
+| @OnErrors + サブクラスを先に定義 | false FAIL | handlers-on-errors.json:s3（search_sections）に明記 |
+| FailureLogUtil クラス | false FAIL | libraries-failure-log.json:s3（search_sections）のコード例に明記 |
+| 障害通知ログ(MONITOR) / 障害解析ログ(クラス名) | false FAIL | libraries-failure-log.json:s1（search_sections）のテーブルに明記 |
+
 ---
 
 ### qa-11b
@@ -580,6 +716,17 @@
 4. GlobalErrorHandlerでStackOverflowError/OutOfMemoryError/VirtualMachineErrorはFATALレベルでログ出力される
 5. JaxRsAccessLogHandler（クラス名: nablarch.fw.jaxrs.JaxRsAccessLogHandler）をハンドラキューに追加するとHTTPアクセスログをINFOレベルで出力できる
 6. GlobalErrorHandlerはログレベルの切り替えを設定で行えないため要件を満たせない場合はプロジェクト固有のハンドラを作成する必要がある
+
+**裏取り結果**: 全件 search_sections に明記あり → **evaluate.py の false FAIL**
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| ServiceError → ServiceError#writeLog | false FAIL | handlers-global-error-handler.json:s4（search_sections）のエラーテーブルに明記 |
+| Result.Error → FATAL | false FAIL | handlers-global-error-handler.json:s4（search_sections）に明記 |
+| ThreadDeath → INFO | false FAIL | handlers-global-error-handler.json:s4（search_sections）に明記 |
+| StackOverflowError/OutOfMemoryError/VirtualMachineError → FATAL | false FAIL | handlers-global-error-handler.json:s4（search_sections）に3エントリ全てFATAL記載 |
+| nablarch.fw.jaxrs.JaxRsAccessLogHandler + INFOレベル | false FAIL | handlers-jaxrs-access-log-handler.json:s4（search_sections）＋libraries-jaxrs-access-log.json:s1（search_sections）に明記 |
+| GlobalErrorHandler は設定で切り替え不可 → プロジェクト固有ハンドラ作成 | false FAIL | handlers-global-error-handler.json:s5（search_sections）に明記 |
 
 ---
 
@@ -608,6 +755,18 @@
 4. nablarch.core.validation.ee.Required.message=必須項目です。
 5. <component name="validationStrategy" class="nablarch.common.web.validator.BeanValidationStrategy" />でBean Validationを有効化する
 
+**裏取り結果**:
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| @OnError 未設定でシステムエラー扱い | false FAIL | handlers-InjectForm.json:s4（search_sections）に明記 |
+| errors.hasError('form.userName') | false FAIL | web-application-error-message.json（search_sections、ファイル全体）に実装例あり |
+| errors.getMessage('form.userName') | false FAIL | web-application-error-message.json（search_sections、ファイル全体）に実装例あり |
+| Required.message=必須項目です | **真の幻覚** | 知識ファイルの記述は `Required.message=入力してください。`。「必須項目です。」は存在しない |
+| BeanValidationStrategy の設定 | false FAIL | libraries-bean-validation.json:s16（search_sections）に明記 |
+
+**qa-12a まとめ**: claim 4（メッセージ内容の誤り）のみ**真の幻覚**。他は false FAIL。
+
 ---
 
 ### qa-12b
@@ -633,6 +792,14 @@
 2. JaxRsResponseHandler の errorResponseBuilder プロパティに継承クラスを登録する
 3. ErrorResponseBuilder の処理中に例外が発生した場合、フレームワークは WARN レベルでログ出力を行い、ステータスコード 500 のレスポンスを生成する
 
+**裏取り結果**: 全件 search_sections に明記あり → **evaluate.py の false FAIL**
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| JaxRsBeanValidationHandler が ApplicationException 送出 | false FAIL | handlers-jaxrs-bean-validation-handler.json:s4（search_sections）のintroに明記 |
+| errorResponseBuilder プロパティに継承クラス登録 | false FAIL | handlers-jaxrs-response-handler.json:s4（search_sections）のXML例・説明に明記 |
+| ErrorResponseBuilder 処理中例外 → WARN + 500 | false FAIL | handlers-jaxrs-response-handler.json:s4（search_sections）に明記 |
+
 ---
 
 ### qa-13
@@ -656,6 +823,16 @@
 3. コンポーネント名'daoContextFactory'でBasicDaoContextFactoryを設定する
 4. BodyConvertHandlerのbodyConvertersにapplication/json対応コンバータを設定する必要があり、未設定MIMEには415を返す
 5. JaxRsBeanValidationHandlerはBodyConvertHandlerより後ろに設定する必要がある
+
+**裏取り結果**: 全件 search_sections に明記あり → **evaluate.py の false FAIL**
+
+| claim | 判定 | 根拠 |
+|---|---|---|
+| BodyConvertHandler が JSON を Form に変換 | false FAIL | handlers-body-convert-handler.json:s5（search_sections）に明記 |
+| バリデーションエラー → ApplicationException 送出 | false FAIL | handlers-jaxrs-bean-validation-handler.json:s4（search_sections）のintroに明記 |
+| daoContextFactory 名で BasicDaoContextFactory | false FAIL | libraries-universal-dao.json:s6（search_sections）に明記 |
+| bodyConverters 未設定 MIME → 415 | false FAIL | handlers-body-convert-handler.json:s4（search_sections）に明記 |
+| JaxRsBeanValidationHandler は BodyConvertHandler より後ろ | false FAIL | handlers-jaxrs-bean-validation-handler.json:s3（search_sections）に明記 |
 
 ---
 
