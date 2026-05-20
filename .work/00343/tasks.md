@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20 (session 13 end)
+**Updated**: 2026-05-20
 
 ## Rules
 
@@ -12,6 +12,27 @@
 ## In Progress
 
 ## Not Started
+
+### B-4-1-inv-allowedTools. run_e2e.py の --allowedTools パターン修正
+
+`claude -p` の `--allowedTools` が `Bash(read-sections.sh *)` になっており、スキルエージェントが
+`bash scripts/read-sections.sh ...` と呼ぶとマッチしない（permission_denials に記録される）。
+
+**ステップ:**
+- [ ] `tools/benchmark/scripts/run_e2e.py` の `--allowedTools` を `Bash(bash scripts/read-sections.sh *) Bash(bash scripts/keyword-search.sh *)` に修正
+- [ ] `bash rbkc.sh` などは不要。`python3 -m pytest tools/ -x` で全テストPASS確認
+- [ ] コミット・プッシュ
+
+### B-4-1-inv-read-sections-qa. QA フローで read-sections.sh が不要か調査
+
+semantic-search.md の Step 3 で各ページの知識ファイル全体を Read で読んでいる。
+qa.md の Step 4 で read-sections.sh を使って同じファイルを再度読んでいるが、冗長では？
+Step 5 の回答生成に `sections_content` を渡す役割があるため、省略可否を設計観点で確認する。
+
+**ステップ:**
+- [ ] semantic-search.md の Step 3 でLLMが読んだ内容と、qa.md Step 4 で read-sections.sh が返す内容の差異を整理する
+- [ ] Step 4 を省略した場合（Step 3 で読んだ内容をそのまま Step 5 に渡す）の設計上の問題点を確認する
+- [ ] [BLOCKED: ユーザーに調査結果報告・方針確認]
 
 ### B-4-1-inv-impact-01. 幻覚FAIL調査: impact-01
 
