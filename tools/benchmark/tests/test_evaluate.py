@@ -12,6 +12,7 @@ from tools.benchmark.scripts.evaluate import (
     build_hallucination_prompt,
     calculate_accuracy_score,
     calculate_hallucination_score,
+    call_llm,
     determine_human_review_items,
     evaluate_all,
     evaluate_scenario,
@@ -723,3 +724,34 @@ class TestEvaluateAll:
             data = json.load(f)
         assert data["scenario_id"] == "test-01"
         assert "scores" in data
+
+
+class TestCallLlm:
+    """Tests for call_llm subprocess invocation."""
+
+    def test_prompt_passed_via_stdin_not_argv(self):
+        """full_prompt must be passed as stdin (input=), not as a CLI argument.
+
+        OSError: Argument list too long occurs when long prompts are passed as argv.
+        subprocess.run must not include full_prompt in the command list.
+        """
+        captured = {}
+
+        def mock_run(cmd, **kwargs):
+            captured["cmd"] = cmd
+            captured["input"] = kwargs.get("input")
+            import subprocess
+            mock_result = subprocess.CompletedProcess(cmd, 0, stdout='', stderr='')
+            mock_result.stdout = '{"result": "{\\"verdict\\": \\"PASS\\", \\"claims\\": [], \\"reason\\": \\"ok\\"}", "usage": {}, "duration_ms": 0, "duration_api_ms": 0, "total_cost_usd": 0}'
+            return mock_result
+
+        with patch("tools.benchmark.scripts.evaluate.subprocess.run", mock_run):
+            call_llm("test prompt", '{"type": "object"}')
+
+        # full_prompt must NOT appear in the command list
+        assert not any("test prompt" in str(arg) for arg in captured["cmd"]), (
+            "full_prompt must not be passed as a CLI argument (causes OSError on long prompts)"
+        )
+        # full_prompt must be passed via stdin
+        assert captured["input"] is not None, "prompt must be passed via stdin (input=)"
+        assert "test prompt" in captured["input"]
