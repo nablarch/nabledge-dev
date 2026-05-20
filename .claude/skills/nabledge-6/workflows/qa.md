@@ -18,57 +18,40 @@ From the question, determine `processing_type` and `purpose` independently.
 
 ### Determine processing_type
 
-**Check A — Verbatim keyword match (no inference)**
+Judge which processing type the question belongs to. Use the names and technical terms below as reference:
 
-Scan the question for keywords below. Match verbatim only; do not infer from business context.
+Processing types and their identifying terms:
+- **ウェブアプリケーション**: JSP, HIDDENストア, セッション変数, セッションストア, CSRF
+- **RESTfulウェブサービス**: リソースクラス, JAX-RS, REST API, RESTful
+- **Nablarchバッチ**: requestPath (batch startup argument), バッチアプリ
+- **Jakartaバッチ**: ItemReader, ItemWriter, Chunk
+- **テーブルをキューとして使ったメッセージング**
+- **HTTPメッセージング**
+- **MOMメッセージング**
 
-Group 1 — Official names/abbreviations of processing types:
-- ウェブアプリケーション, Webアプリ, Web画面
-- RESTfulウェブサービス, REST API, RESTful, REST
-- Nablarchバッチ, バッチアプリケーション (only "Nablarchバッチ" or "バッチアプリ")
-- Jakartaバッチ
-- テーブルをキューとして使ったメッセージング
-- HTTPメッセージング
-- MOMメッセージング
-
-Group 2 — Technical terms that exist in exactly one processing type:
-- JSP, HIDDENストア, セッション変数, セッションストア, CSRF → ウェブアプリケーション
-- リソースクラス, JAX-RS → RESTfulウェブサービス
-- requestPath (as a batch startup argument) → Nablarchバッチ
-- ItemReader, ItemWriter, Chunk → Jakartaバッチ
-
-- Match → exactly one type → `processing_type = <that type>`
-- Match → multiple types → `processing_type = UNCLEAR`
-- No match → proceed to Check B
-
-**Check B — Cross-functional feature check**
-
-Check whether the question topic is one of:
-- Testing framework
-- Internationalization (i18n)
-- Logging configuration
-- Common utilities (date/time, code value management, etc.)
+- Question clearly belongs to one processing type → `processing_type = <that type>`
+- Question clearly belongs to multiple processing types → `processing_type = UNCLEAR`
+- Question is cross-functional (testing framework, i18n, logging, common utilities) → `processing_type = null`
+- Cannot determine from the question → `processing_type = UNCLEAR`
 
 Note: Common concepts (transactions, validation, DB access, SQL) are NOT cross-functional if their configuration/implementation differs per processing type.
 
-- Topic is cross-functional → `processing_type = null`
-- Topic is not cross-functional → `processing_type = UNCLEAR`
-
 ### Determine purpose
 
-Scan the question for signal keywords:
+Judge the purpose from the question. Reference categories:
 
-| Signal keywords | Purpose |
+| Purpose | Examples |
 |---|---|
-| 「仕組み」「とは」「動作」「理解」「概要」 | 仕組み・動作を理解したい |
-| 「エラー」「例外」「不具合」「原因」「調査」 | 不具合・エラーを調査したい |
-| 「テスト」「テストコード」「テストケース」 | テストを書きたい |
-| 「バージョンアップ」「移行」「マイグレーション」「アップグレード」 | バージョンアップしたい |
-| 「サンプル」「パターン」「例を見たい」「参考」 | 実装パターン・サンプルを参考にしたい |
-| 「セキュリティ」「脆弱性」「認証」「認可」 | セキュリティ対応したい |
+| 仕組み・動作を理解したい | 「仕組み」「とは」「動作」「理解」「概要」 |
+| 不具合・エラーを調査したい | 「エラー」「例外」「不具合」「原因」「調査」 |
+| テストを書きたい | 「テスト」「テストコード」「テストケース」 |
+| バージョンアップしたい | 「バージョンアップ」「移行」「マイグレーション」「アップグレード」 |
+| 実装パターン・サンプルを参考にしたい | 「サンプル」「パターン」「例を見たい」「参考」 |
+| セキュリティ対応したい | 「セキュリティ」「脆弱性」「認証」「認可」 |
+| 実装したい | 実装方法を聞いている |
 
-- Match found → `purpose = <that category>`
-- No match → `purpose = UNCLEAR`
+- Purpose is clear from the question → `purpose = <that category>`
+- Cannot determine from the question → `purpose = UNCLEAR`
 
 ### Result
 
@@ -92,7 +75,7 @@ Otherwise, ask only about what is UNCLEAR.
 ```
 いくつか確認させてください。
 
-どの処理方式で実装しますか？
+どの処理方式の質問ですか？
 1. ウェブアプリケーション
 2. RESTfulウェブサービス
 3. Nablarchバッチ
@@ -102,7 +85,7 @@ Otherwise, ask only about what is UNCLEAR.
 7. MOMメッセージング
 8. その他（処理方式に依存しない）
 
-何を目的としていますか？
+質問の目的は？
 1. 実装したい
 2. 仕組み・動作を理解したい
 3. 不具合・エラーを調査したい
@@ -116,7 +99,7 @@ Otherwise, ask only about what is UNCLEAR.
 **If only processing_type is UNCLEAR**, output:
 
 ```
-どの処理方式で実装しますか？
+どの処理方式の質問ですか？
 
 1. ウェブアプリケーション
 2. RESTfulウェブサービス
@@ -131,7 +114,7 @@ Otherwise, ask only about what is UNCLEAR.
 **If only purpose is UNCLEAR**, output:
 
 ```
-何を目的としていますか？
+質問の目的は？
 
 1. 実装したい
 2. 仕組み・動作を理解したい
@@ -190,23 +173,18 @@ If `sections_content` is empty, output immediately:
 ```
 and stop.
 
-Otherwise, generate a Japanese answer based solely on the knowledge sections.
+Otherwise, generate a Japanese answer following the steps below.
 
-**Question**: user's question
-
-**Hearing answer**: formatted hearing string from Step 2
-
-**Knowledge sections**: `sections_content`
-
-1. Read all knowledge sections.
-2. Identify the information that directly answers the question.
-3. Write the answer in the format below.
+1. Read all sections in `sections_content`.
+2. If `hearing_answer` contains a processing type, focus on approaches that match that type.
+3. Identify the information that directly answers the question. For any gap in the sections, write "この情報は知識ファイルの対象範囲外です" — do not infer.
+4. Write the answer in the format below. Stay within 500 tokens (up to 800 for complex questions).
 
 **Answer format**:
 
 **結論**: Direct answer to the question (1–2 sentences)
-- Do not parrot back the question
 - Include specific method names, class names, and approaches
+- Do not parrot back the question
 
 **根拠**: Code examples, configuration examples, or spec information that backs the conclusion
 - Show code/config examples in code blocks
@@ -219,12 +197,7 @@ Otherwise, generate a Japanese answer based solely on the knowledge sections.
 
 参照: Only sections actually cited in the answer (file.json:sN format, omit category path)
 
-**Rules**:
-- Base the answer only on the knowledge sections. Do not fill gaps with inference.
-- General Java/programming knowledge (try-catch, Bean, getter/setter, etc.) may be used.
-- Stay within 500 tokens (up to 800 for complex questions).
-- If hearing_answer identified a processing type, choose the approach matching that type.
-- For gaps in section content, state explicitly: "この情報は知識ファイルの対象範囲外です". Do not infer.
+Note: General Java/programming knowledge (try-catch, Bean, getter/setter, etc.) may be used alongside knowledge sections.
 
 Save as `answer_text`.
 
