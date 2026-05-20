@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20 (session 13)
+**Updated**: 2026-05-20 (session 13 end)
 
 ## Rules
 
@@ -12,26 +12,6 @@
 ## In Progress
 
 ## Not Started
-
-### B-4-1-re. run-1 安定化（qa.md 改善後の再測定）
-
-qa.md を大幅改修（Step 1-2-5）したため、改修後スキルで run-1 が安定完走することを再確認する。
-
-**前提**: evaluate.py hallucination 判定バグ修正済み（`f51692b91`）。古い結果ディレクトリは削除済み。
-
-**ステップ:**
-- [x] run-1 実行 → `tools/benchmark/results/20260520-155111` + `20260520-165023`（4件ERR再実行）
-- [x] evaluate.py OSError（引数長超過）修正 → `13329357d`
-- [x] 30件完走確認（エラーゼロ）
-- [x] run-1 レポート確認（精度97.7% / 幻覚PASS率75.0%）
-- [ ] 結果をコミット・プッシュ（下記改善タスク完了後にまとめて）
-
-**run-1 結果（20260520-155111 + 20260520-165023）:**
-- 精度: 97.7%（BL 83.7%、+14.0pp）
-- 幻覚PASS率: 75.0%（BL 14.4%、+60.6pp）
-- 精度FAIL: 1件（qa-12b UNCERTAIN → N/A）
-- 幻覚FAIL: 7件（impact-01/06/08, qa-05/11b/12a/13）
-- 幻覚スキップ（UNCERTAIN）: 2件（pre-03, qa-02）
 
 ### B-4-1-inv-impact-01. 幻覚FAIL調査: impact-01
 
@@ -239,6 +219,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-4-1-re. run-1 安定化（qa.md 改修後の再測定）— 30件完走、精度97.7%/幻覚PASS75.0%、evaluate.py OSError修正 `13329357d`、結果コミット `85aa9f7bc`
 - [x] B-4-pre. ユーザープロンプトレビュー — qa.md 大幅改修（Step 1-2-5）、PEレビュー 0 Findings — `86b319939`〜`2d2cfe3fa`
 - [x] B-4-1-B. purpose ヒアリング追加（goal廃止・purpose7択追加・PEレビュー0 Findings）— `dbad4cf64`
 - [x] B-4-1-C. evaluate.py 幻覚検証ロジック修正（search_sections を sections_text に追加、TDD 5テスト追加）— `563d8b4aa`
