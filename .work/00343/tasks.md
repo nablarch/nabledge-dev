@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20
+**Updated**: 2026-05-21
 
 ## Rules
 
@@ -13,15 +13,6 @@
 
 ## Not Started
 
-### B-4-1-inv-allowedTools. run_e2e.py の --allowedTools パターン修正
-
-`claude -p` の `--allowedTools` が `Bash(read-sections.sh *)` になっており、スキルエージェントが
-`bash scripts/read-sections.sh ...` と呼ぶとマッチしない（permission_denials に記録される）。
-
-**ステップ:**
-- [ ] `tools/benchmark/scripts/run_e2e.py` の `--allowedTools` を `Bash(bash scripts/read-sections.sh *) Bash(bash scripts/keyword-search.sh *)` に修正
-- [ ] `bash rbkc.sh` などは不要。`python3 -m pytest tools/ -x` で全テストPASS確認
-- [ ] コミット・プッシュ
 
 ### B-4-1-inv-read-sections-qa. QA フローで read-sections.sh が不要か調査
 
@@ -161,6 +152,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 - [x] qa-current.json を results/baseline-current/ に移動 — `f3d8eeb15`
 - [x] HOW-TO-RUN.md を新スキル向けに更新（qa-current.json参照除去） — `b6f7d092f`
 - [x] B-3. スキルデプロイ（スモークテスト完了） — `a07583fc4`, `549df22d2`, `000fc91db`, `71a0c16e3`, `10a7aaf82`
+- [x] B-4-1-inv-allowedTools. --allowedTools パターン修正（`bash scripts/...` プレフィックス追加、329テストGREEN）— `44076bcbc`
 - [x] B-4-0. run_e2e.py エラーハンドリング修正 + 調査（TIMEOUT=360根拠確認、TimeoutExpired動作確認、マーカー欠損ケース確認、review-08/impact-01再実行確認）— `46877d7a4`
 - [x] B-0. run_e2e.py 再設計（旧結果削除 `338c8c471`、TDD実装 `218a5e051`）— SEレビュー 0 Findings
 - [x] B-1（旧）. 現行検索E2Eベースライン取得（不正データのためB-0でリセット） — `f57b78581`, `4de6fb47b`
