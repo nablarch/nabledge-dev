@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20 (session 11 end)
+**Updated**: 2026-05-20 (session 12 end)
 
 ## Rules
 
@@ -16,6 +16,8 @@
 ### B-4-1-re. run-1 安定化（qa.md 改善後の再測定）
 
 qa.md を大幅改修（Step 1-2-5）したため、改修後スキルで run-1 が安定完走することを再確認する。
+
+**前提**: evaluate.py hallucination 判定バグ修正済み（`f51692b91`）。古い結果ディレクトリは削除済み。
 
 **ステップ:**
 - [ ] run-1 実行 → `tools/benchmark/results/` に保存（出力先はタイムスタンプ自動生成）
