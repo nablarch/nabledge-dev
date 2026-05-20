@@ -1,0 +1,66 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 62009,
+  "duration_api_ms": 60617,
+  "ttft_ms": 4311,
+  "num_turns": 6,
+  "result": "必要な情報が揃いました。回答を生成します。\n\n---\n\n**結論**: NablarchにはOAuth2/OpenID Connectの認証機能は組み込まれていません。認証はフレームワークとして提供しておらず、プロジェクトで実装します。ただし、OIDCのIDトークンを用いた認証を行うための**ビジネスサンプル**（`nablarch-oidc`）が公式から提供されています。\n\n**根拠**:\n\nウェブアプリケーションの機能詳細ドキュメントには以下が明記されています。\n\n> 認証については、プロジェクト要件により仕様が異なるため、フレークワークとしては提供していない。プロジェクト要件に合わせてPJで実装する。\n\n公式ビジネスサンプル（`nablarch-biz-sample-all` の `nablarch-oidc` パッケージ）では、OIDCのIDトークンを用いた認証方法が提供されています。\n\n**サンプルの構成**:\n\n- バックエンド（RESTfulウェブサービス）でIDトークンを検証する構成を想定\n- フロントエンド（SPA・モバイルアプリ等）でIDトークンを取得し、バックエンドに送信\n- 認証成功後はステートフルなセッション管理を行う\n- 対応サービス: **Amazon Cognito ユーザープール** および **Azure Active Directory B2C**\n\n**サンプルの使い方（Cognitoの場合）**:\n\n1. JWTライブラリの依存関係を追加（Auth0の `java-jwt`, `jwks-rsa-java`）:\n\n```xml\n<dependency>\n  <groupId>com.auth0</groupId>\n  <artifactId>java-jwt</artifactId>\n  <version>4.4.0</version>\n</dependency>\n<dependency>\n  <groupId>com.auth0</groupId>\n  <artifactId>jwks-rsa</artifactId>\n  <version>0.22.1</version>\n</dependency>\n```\n\n2. 環境依存値を設定（リージョン・ユーザープールID・クライアントID）\n3. `CognitoIdTokenVerifier` などのコンポーネントをコンポーネント設定ファイルに定義\n4. 業務アクション（`LoginAction`）でIDトークンを検証し、成功時にセッションを確立:\n\n```java\n// IDトークンを検証する\nIdTokenVerifier idTokenVerifier = SystemRepository.get(\"idTokenVerifier\");\nDecodedJWT decodedJWT = idTokenVerifier.verify(form.getIdToken());\n\n// セッションIDおよびCSRFトークンを変更する\nSessionUtil.changeId(context);\nCsrfTokenUtil.regenerateCsrfToken(context);\n\n// 認証状態をセッションに保持する\nString userId = decodedJWT.getSubject();\nSessionUtil.put(context, \"user.id\", userId);\n```\n\n**注意点**:\n- このサンプルはRESTfulウェブサービスのバックエンドを想定した構成です。ウェブアプリケーションで利用する場合は、構成を適宜調整する必要があります。\n- サンプルは2024年9月時点の仕様に合わせて実装されており、利用するサービスの最新仕様を確認してカスタマイズする必要があります。\n- 認証情報の保持については、`SessionUtil`を使用したセッションストアへの保存が基本です。\n\n参照: `guide/biz-samples/biz-samples-12.json:s2`, `guide/biz-samples/biz-samples-12.json:s11`, `guide/biz-samples/biz-samples-12.json:s13`, `guide/biz-samples/biz-samples-12.json:s16`, `processing-pattern/web-application/web-application-feature-details.json:s13`\n\n---\n\n<<<BENCHMARK_HEARING>>>\n{\"status\": \"skipped\", \"questions\": []}\n<<<END_BENCHMARK_HEARING>>>\n\n<<<BENCHMARK_SEARCH>>>\n{\"section_ids\": [\"guide/biz-samples/biz-samples-12.json:s2\", \"guide/biz-samples/biz-samples-12.json:s3\", \"guide/biz-samples/biz-samples-12.json:s11\", \"guide/biz-samples/biz-samples-12.json:s13\", \"guide/biz-samples/biz-samples-12.json:s14\", \"guide/biz-samples/biz-samples-12.json:s16\", \"processing-pattern/web-application/web-application-feature-details.json:s13\"]}\n<<<END_BENCHMARK_SEARCH>>>\n\n<<<BENCHMARK_ANSWER>>>\n**結論**: NablarchにはOAuth2/OpenID Connectの認証機能は組み込まれていません。認証はフレームワークとして提供しておらず、プロジェクトで実装します。ただし、OIDCのIDトークンを用いた認証を行うための**ビジネスサンプル**（`nablarch-oidc`）が公式から提供されています。\n\n**根拠**:\n\nウェブアプリケーションの機能詳細ドキュメントには以下が明記されています。\n\n> 認証については、プロジェクト要件により仕様が異なるため、フレークワークとしては提供していない。プロジェクト要件に合わせてPJで実装する。\n\n公式ビジネスサンプル（`nablarch-biz-sample-all` の `nablarch-oidc` パッケージ）では、OIDCのIDトークンを用いた認証方法が提供されています。\n\n**サンプルの構成**:\n\n- バックエンド（RESTfulウェブサービス）でIDトークンを検証する構成を想定\n- フロントエンド（SPA・モバイルアプリ等）でIDトークンを取得し、バックエンドに送信\n- 認証成功後はステートフルなセッション管理を行う\n- 対応サービス: **Amazon Cognito ユーザープール** および **Azure Active Directory B2C**\n\n**サンプルの使い方（Cognitoの場合）**:\n\n1. JWTライブラリの依存関係を追加（Auth0の `java-jwt`, `jwks-rsa-java`）:\n\n```xml\n<dependency>\n  <groupId>com.auth0</groupId>\n  <artifactId>java-jwt</artifactId>\n  <version>4.4.0</version>\n</dependency>\n<dependency>\n  <groupId>com.auth0</groupId>\n  <artifactId>jwks-rsa</artifactId>\n  <version>0.22.1</version>\n</dependency>\n```\n\n2. 環境依存値を設定（リージョン・ユーザープールID・クライアントID）\n3. `CognitoIdTokenVerifier` などのコンポーネントをコンポーネント設定ファイルに定義\n4. 業務アクション（`LoginAction`）でIDトークンを検証し、成功時にセッションを確立:\n\n```java\n// IDトークンを検証する\nIdTokenVerifier idTokenVerifier = SystemRepository.get(\"idTokenVerifier\");\nDecodedJWT decodedJWT = idTokenVerifier.verify(form.getIdToken());\n\n// セッションIDおよびCSRFトークンを変更する\nSessionUtil.changeId(context);\nCsrfTokenUtil.regenerateCsrfToken(context);\n\n// 認証状態をセッションに保持する\nString userId = decodedJWT.getSubject();\nSessionUtil.put(context, \"user.id\", userId);\n```\n\n**注意点**:\n- このサンプルはRESTfulウェブサービスのバックエンドを想定した構成です。ウェブアプリケーションで利用する場合は、構成を適宜調整する必要があります。\n- サンプルは2024年9月時点の仕様に合わせて実装されており、利用するサービスの最新仕様を確認してカスタマイズする必要があります。\n- 認証情報の保持については、`SessionUtil`を使用したセッションストアへの保存が基本です。\n\n参照: `guide/biz-samples/biz-samples-12.json:s2`, `guide/biz-samples/biz-samples-12.json:s11`, `guide/biz-samples/biz-samples-12.json:s13`, `guide/biz-samples/biz-samples-12.json:s16`, `processing-pattern/web-application/web-application-feature-details.json:s13`\n<<<END_BENCHMARK_ANSWER>>>",
+  "stop_reason": "end_turn",
+  "session_id": "d862dcbd-f3cc-4556-9a57-ddfaec41ef53",
+  "total_cost_usd": 0.5488161,
+  "usage": {
+    "input_tokens": 7,
+    "cache_creation_input_tokens": 96426,
+    "cache_read_input_tokens": 414452,
+    "output_tokens": 3994,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 96426
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 2812,
+      "outputTokens": 28,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0029519999999999998,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 7,
+      "outputTokens": 3994,
+      "cacheReadInputTokens": 414452,
+      "cacheCreationInputTokens": 96426,
+      "webSearchRequests": 0,
+      "costUSD": 0.5458641000000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01HwQPFxtTcXDPULTeXVXp2H",
+      "tool_input": {
+        "command": "bash scripts/read-sections.sh \"guide/biz-samples/biz-samples-12.json:s1\" \"guide/biz-samples/biz-samples-12.json:s2\" \"guide/biz-samples/biz-samples-12.json:s3\" \"guide/biz-samples/biz-samples-12.json:s4\" \"guide/biz-samples/biz-samples-12.json:s10\" \"processing-pattern/web-application/web-application-feature-details.json:s13\" \"about/about-nablarch/about-nablarch-policy.json:s6\""
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "82d0dcec-2789-44ab-af6a-9250ca8239b8"
+}

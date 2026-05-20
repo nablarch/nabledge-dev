@@ -1,0 +1,93 @@
+{
+  "scenario_id": "oos-qa-01",
+  "description": "バッチ処理の進捗をリアルタイムにクライアントへ通知する機能を実装したい。WebSocketを使いたいが、NablarchでWebSocketが使えるか確認したい。",
+  "input": "バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭で「NablarchにはWebSocketのサポートはありません」と明示的に述べており、事実と同じ内容が含まれている。",
+      "fact": "NablarchにはWebSocketのサポートがないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "NablarchにはWebSocketのサポートはない",
+        "supported": false
+      },
+      {
+        "claim": "Nablarchが提供する非同期連携パターンは「テーブルをキューとして使ったメッセージング」のみ",
+        "supported": false
+      },
+      {
+        "claim": "WebSocketに関する記述は「Java EE/Jakarta EEの仕様名対応表」のJakarta WebSocketという列挙のみ",
+        "supported": false
+      },
+      {
+        "claim": "Nablarchで時間のかかる処理を非同期に実行する公式パターンはDBをキューとして使うポーリング型",
+        "supported": false
+      },
+      {
+        "claim": "WebSocketを使う場合はNablarchのハンドラ機構の外側でServletコンテナの機能を直接利用することになる",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションが空のため、回答内のNablarch固有の主張（WebSocketサポートの有無、非同期処理パターンの詳細、ハンドラ機構との関係など）を裏付けることも否定することもできません。判定にはNablarchの知識セクションが必要です。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — 知識セクションが空のため、回答内のNablarch固有の主張（WebSocketサポートの有無、非同期処理パターンの詳細、ハンドラ機構との関係など）を裏付けることも否定することもできません。判定にはNablarchの知識セクションが必要です。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1",
+      "about/migration/migration-migration.json:s33",
+      "processing-pattern/web-application/web-application-architecture.json:s1",
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1",
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 103329,
+    "duration_api_ms": 101982,
+    "num_turns": 10,
+    "total_cost_usd": 0.7963559499999998,
+    "usage": {
+      "input_tokens": 49,
+      "output_tokens": 3546,
+      "cache_read_input_tokens": 283276,
+      "cache_creation_input_tokens": 30616
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2825,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0029649999999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6846,
+        "outputTokens": 6224,
+        "cacheReadInputTokens": 846764,
+        "cacheCreationInputTokens": 113457,
+        "webSearchRequests": 0,
+        "costUSD": 0.7933909499999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

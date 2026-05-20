@@ -1,0 +1,118 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のセクション1と2において、「言語ごとのプロパティファイルを用意する」こと（messages.properties、messages_en.properties）と、「PropertiesStringResourceLoaderのlocalesにサポートする言語を設定する」ことが明示されており、事実の内容が含まれている。",
+      "fact": "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "messages.properties（デフォルト）とmessages_en.propertiesのファイル命名規則",
+        "supported": true
+      },
+      {
+        "claim": "PropertiesStringResourceLoader の locales プロパティにサポート言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "PropertiesStringResourceLoader の defaultLocale プロパティでデフォルト言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "defaultLocale を設定しない場合、Locale.getDefault() が使用される",
+        "supported": true
+      },
+      {
+        "claim": "BasicStaticDataCache で PropertiesStringResourceLoader をラップする構成",
+        "supported": true
+      },
+      {
+        "claim": "ThreadContext#getLanguage が返すロケールによってメッセージ取得時の言語が決まる",
+        "supported": true
+      },
+      {
+        "claim": "ThreadContext に言語が設定されていない場合は Locale.getDefault() が使用される",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.common.handler.threadcontext.LanguageAttribute クラスが存在し、defaultLanguage プロパティを持つ",
+        "supported": false
+      },
+      {
+        "claim": "nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie クラスが存在し、defaultLanguage・supportedLanguages プロパティを持つ",
+        "supported": false
+      },
+      {
+        "claim": "LanguageAttributeInHttpUtil.keepLanguage() メソッドが存在し、言語をクッキーに保持できる",
+        "supported": false
+      },
+      {
+        "claim": "n:submitLink と n:param を組み合わせた JSP 言語切り替えリンクの実装パターン",
+        "supported": false
+      }
+    ],
+    "reason": "LanguageAttribute（nablarch.common.handler.threadcontext.LanguageAttribute）、LanguageAttributeInHttpCookie（supportedLanguages プロパティを含む）、LanguageAttributeInHttpUtil.keepLanguage() は、知識セクションに一切記載のない Nablarch 固有の API・クラス名・メソッド名であり、根拠なく主張されているためハルシネーションと判定する。また JSP の n:submitLink / n:param を用いた言語切り替えパターンも知識セクションに裏付けがない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — LanguageAttribute（nablarch.common.handler.threadcontext.LanguageAttribute）、LanguageAttributeInHttpCookie（supportedLanguages プロパティを含む）、LanguageAttributeInHttpUtil.keepLanguage() は、知識セクションに一切記載のない Nablarch 固有の API・クラス名・メソッド名であり、根拠なく主張されているためハルシネーションと判定する。また JSP の n:submitLink / n:param を用いた言語切り替えパターンも知識セクションに裏付けがない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s4",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/libraries/libraries-tag.json:s32",
+      "component/handlers/handlers-http-response-handler.json:s7",
+      "component/libraries/libraries-code.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 148276,
+    "duration_api_ms": 146527,
+    "num_turns": 6,
+    "total_cost_usd": 0.9846435499999998,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 4690,
+      "cache_read_input_tokens": 401924,
+      "cache_creation_input_tokens": 97098
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2803,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002933,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10309,
+        "outputTokens": 9719,
+        "cacheReadInputTokens": 467566,
+        "cacheCreationInputTokens": 177261,
+        "webSearchRequests": 0,
+        "costUSD": 0.98171055,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

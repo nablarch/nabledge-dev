@@ -1,0 +1,111 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「2. 業務日付の取得」セクションに「BusinessDateUtilを使って業務日付を取得します」と明記されており、事実の内容が含まれている。",
+      "fact": "BusinessDateUtilを使用して業務日付を取得する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「区分（SEGMENT）を使うことで、複数の業務日付を独立して管理できます」という記述があり、データベースで複数の業務日付を管理することが示されています。また、BasicBusinessDateProviderのXML設定例も詳細に記載されており、コンポーネント定義への設定が必要であることも明確に説明されています。",
+      "fact": "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "BusinessDateUtilを使って業務日付を取得する",
+        "supported": true
+      },
+      {
+        "claim": "業務日付はDBテーブルで管理され、区分(PK)と日付(yyyyMMdd形式)のカラムを持つ",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProviderをコンポーネント名businessDateProviderで登録し、初期化対象に追加する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント定義のプロパティ(tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManager)が正確である",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateProviderインターフェースのsetDate(segment, date)メソッドで業務日付を更新できる",
+        "supported": false
+      },
+      {
+        "claim": "SystemRepository.get(\"businessDateProvider\")でBasicBusinessDateProviderを取得できる",
+        "supported": false
+      },
+      {
+        "claim": "システムプロパティ -DBasicBusinessDateProvider.<区分>=yyyyMMdd で業務日付を上書き可能",
+        "supported": false
+      },
+      {
+        "claim": "nablarch-common-jdbcモジュールが追加で必要",
+        "supported": false
+      }
+    ],
+    "reason": "setDate()メソッドの存在・シグネチャ、システムプロパティによる上書き仕様(-DBasicBusinessDateProvider.<区分>=yyyyMMdd)、およびnablarch-common-jdbcモジュールの要否は、知識セクションに一切記載がなくNablarch固有の主張として裏付けが取れないためFAILと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — setDate()メソッドの存在・シグネチャ、システムプロパティによる上書き仕様(-DBasicBusinessDateProvider.<区分>=yyyyMMdd)、およびnablarch-common-jdbcモジュールの要否は、知識セクションに一切記載がなくNablarch固有の主張として裏付けが取れないためFAILと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s8",
+      "component/libraries/libraries-date.json:s10",
+      "component/libraries/libraries-date.json:s9",
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 84933,
+    "duration_api_ms": 83784,
+    "num_turns": 5,
+    "total_cost_usd": 0.5758798,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 3231,
+      "cache_read_input_tokens": 192373,
+      "cache_creation_input_tokens": 31464
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2799,
+        "outputTokens": 20,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0028989999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 4883,
+        "cacheReadInputTokens": 429346,
+        "cacheCreationInputTokens": 98904,
+        "webSearchRequests": 0,
+        "costUSD": 0.5729808,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

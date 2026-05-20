@@ -1,0 +1,126 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「例外種別に応じたステータスコードのレスポンスを返す」という情報が表として明示されており（NoMoreHandlerException→404、HttpErrorResponse→HttpErrorResponse#getResponse()、Result.Error→Error#getStatusCode()、StackOverflowError→500、その他→500）、また「HttpErrorResponseの原因例外がApplicationExceptionの場合は、エラーメッセージをリクエストスコープ（デフォルトキー: errors）に設定してViewで利用できるようにする」という記述も含まれている。事実の両方の要素が回答に含まれている。",
+      "fact": "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "NoMoreHandlerExceptionはINFOレベルでログ出力し、ステータスコード404を返す",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseはログ出力なしで、HttpErrorResponse#getResponse()のステータスコードを返す",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseの原因例外がApplicationExceptionの場合、エラーメッセージをリクエストスコープのキー'errors'に設定する",
+        "supported": true
+      },
+      {
+        "claim": "Result.ErrorのログはwriteFailureLogPatternの正規表現がError#getStatusCode()にマッチした場合にFATALレベルで出力する",
+        "supported": true
+      },
+      {
+        "claim": "StackOverflowErrorはFATALレベルでログ出力し、ステータスコード500を返す",
+        "supported": true
+      },
+      {
+        "claim": "上記以外の例外・エラーはFATALレベルでログ出力し、ステータスコード500を返す",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorアノテーションをアクションメソッドに設定し、type属性にRuntimeExceptionのサブクラスを指定できる",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorHandlerのdefaultPagesプロパティにステータスコードパターンと遷移先JSPをマッピングできる",
+        "supported": false
+      },
+      {
+        "claim": "defaultPagesではなくweb.xmlへのエラーページ設定を推奨する",
+        "supported": false
+      },
+      {
+        "claim": "@OnErrorsアノテーションで複数例外の遷移先を定義でき、継承関係がある場合はサブクラスを先に定義する必要がある",
+        "supported": false
+      },
+      {
+        "claim": "FailureLogUtilクラスを使用してアプリケーションから明示的に障害ログを出力できる",
+        "supported": false
+      },
+      {
+        "claim": "障害ログは障害通知ログ(ロガー名MONITOR)と障害解析ログ(ロガー名クラス名)の2種類に分かれる",
+        "supported": false
+      }
+    ],
+    "reason": "HttpErrorHandlerのdefaultPagesプロパティ設定、web.xmlへの推奨、@OnErrorsアノテーション、FailureLogUtilクラス、および障害通知ログ/障害解析ログの2種類への分類とMONITORロガー名は、いずれも提供された知識セクションに記載がないNablarch固有の主張であり、裏付けが取れないためFAILと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — HttpErrorHandlerのdefaultPagesプロパティ設定、web.xmlへの推奨、@OnErrorsアノテーション、FailureLogUtilクラス、および障害通知ログ/障害解析ログの2種類への分類とMONITORロガー名は、いずれも提供された知識セクションに記載がないNablarch固有の主張であり、裏付けが取れないためFAILと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "processing-pattern/web-application/web-application-feature-details.json:s16",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s3",
+      "component/handlers/handlers-on-errors.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 265282,
+    "duration_api_ms": 262323,
+    "num_turns": 5,
+    "total_cost_usd": 1.4813107999999997,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 5995,
+      "cache_read_input_tokens": 194226,
+      "cache_creation_input_tokens": 35691
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2814,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002939,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10837,
+        "outputTokens": 16546,
+        "cacheReadInputTokens": 1217786,
+        "cacheCreationInputTokens": 221956,
+        "webSearchRequests": 0,
+        "costUSD": 1.4783717999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

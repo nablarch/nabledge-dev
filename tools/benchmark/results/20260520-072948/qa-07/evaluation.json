@@ -1,0 +1,119 @@
+{
+  "scenario_id": "qa-07",
+  "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。",
+  "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のデータリーダ実装例において、`ObjectMapperFactory.create(ZipCodeForm.class, new FileInputStream(file))` を使用してObjectMapperを生成し、データを読み込む処理が明示されており、事実の内容（ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む）が含まれている。",
+      "fact": "ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@Csv アノテーションに properties / type 属性を使用してCSVフォーマットを定義できる",
+        "supported": true
+      },
+      {
+        "claim": "@CsvFormat アノテーションに charset, fieldSeparator, ignoreEmptyLine, lineSeparator, quote, quoteMode, requiredHeader, emptyToNull 属性を使用できる",
+        "supported": true
+      },
+      {
+        "claim": "CsvType.CUSTOM を指定した場合に @CsvFormat で個別フォーマットを指定できる",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapperFactory.create(Class, InputStream) で ObjectMapper を生成してデータを読み込める",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapperIterator<T> というクラスが存在し、DataReader 内で iterator パターンで使用できる",
+        "supported": false
+      },
+      {
+        "claim": "DataReader<T> インターフェースに read(), hasNext(), close() メソッドが存在する",
+        "supported": false
+      },
+      {
+        "claim": "BatchAction<T> を継承して handle() と createReader() を実装するアクションクラスのパターン",
+        "supported": false
+      },
+      {
+        "claim": "@LineNumber アノテーションをゲッターメソッドに付与して行番号を取得できる",
+        "supported": false
+      },
+      {
+        "claim": "FilePathSetting.getInstance().getFileWithoutCreate() でファイルパスを解決できる",
+        "supported": false
+      },
+      {
+        "claim": "FileDataReader / FileBatchAction という標準提供クラスが存在する",
+        "supported": false
+      },
+      {
+        "claim": "ObjectMapper はスレッドアンセーフである",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションでは ObjectMapper を直接使用し mapper.read() を while ループで呼び出すパターンのみが示されている。回答が主張する ObjectMapperIterator<T> というクラスは知識セクションに一切記載がなく、知識セクションの実装パターンとも異なるため、ハルシネーションと判定する。また DataReader<T>・BatchAction<T>・@LineNumber・FilePathSetting・FileDataReader・FileBatchAction 等の Nablarch 固有 API も知識セクションに裏付けがない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションでは ObjectMapper を直接使用し mapper.read() を while ループで呼び出すパターンのみが示されている。回答が主張する ObjectMapperIterator<T> というクラスは知識セクションに一切記載がなく、知識セクションの実装パターンとも異なるため、ハルシネーションと判定する。また DataReader<T>・BatchAction<T>・@LineNumber・FilePathSetting・FileDataReader・FileBatchAction 等の Nablarch 固有 API も知識セクションに裏付けがない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "component/libraries/libraries-data-bind.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 69137,
+    "duration_api_ms": 64025,
+    "num_turns": 6,
+    "total_cost_usd": 0.54709845,
+    "usage": {
+      "input_tokens": 11883,
+      "output_tokens": 4229,
+      "cache_read_input_tokens": 198154,
+      "cache_creation_input_tokens": 102827
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2812,
+        "outputTokens": 31,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002967,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11883,
+        "outputTokens": 4229,
+        "cacheReadInputTokens": 198154,
+        "cacheCreationInputTokens": 102827,
+        "webSearchRequests": 0,
+        "costUSD": 0.5441314500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

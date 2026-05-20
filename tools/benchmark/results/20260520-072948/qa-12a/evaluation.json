@@ -1,0 +1,124 @@
+{
+  "scenario_id": "qa-12a",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "回答には、HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換してリクエストスコープに設定するという処理は記述されていない。回答は@OnErrorアノテーションとJSPでのエラー表示方法に焦点を当てており、HttpErrorHandlerの動作については言及していない。",
+      "fact": "HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「エラー表示タグでリクエストスコープのエラーメッセージを表示する」という事実が含まれている。具体的には、`<n:errors>`タグや`<n:error>`タグを使ってエラーメッセージを表示する方法が説明されており、参照セクションのTipにも「エラー表示に使用するカスタムタグでは、リクエストスコープからApplicationExceptionを取得してエラーメッセージを出力する」という内容が含まれている。回答のJSP実装例でも同様のタグを使ったエラー表示が示されている。",
+      "fact": "エラー表示タグでリクエストスコープのエラーメッセージを表示する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@InjectFormがバリデーションを実行し、エラー時にApplicationExceptionを送出する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorで遷移先を指定する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorが設定されていない場合、バリデーションエラーがシステムエラー扱いになる",
+        "supported": false
+      },
+      {
+        "claim": "<n:errors filter=\"all\">タグで全エラーを一覧表示する",
+        "supported": true
+      },
+      {
+        "claim": "<n:error name=\"form.userName\" messageFormat=\"span\" errorCss=\"...\">タグで個別表示する",
+        "supported": true
+      },
+      {
+        "claim": "<n:errors filter=\"global\">タグで項目に紐付かないエラーのみ表示する",
+        "supported": true
+      },
+      {
+        "claim": "Thymeleafで errors.hasError('form.userName') を使ってエラー判定する",
+        "supported": false
+      },
+      {
+        "claim": "Thymeleafで errors.getMessage('form.userName') を使ってエラーメッセージを取得する",
+        "supported": false
+      },
+      {
+        "claim": "nablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.core.validation.ee.Required.message=必須項目です。",
+        "supported": false
+      },
+      {
+        "claim": "<component name=\"validationStrategy\" class=\"nablarch.common.web.validator.BeanValidationStrategy\" />でBean Validationを有効化する",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有主張が知識セクションに裏付けられない。(1) @OnError未設定時にバリデーションエラーがシステムエラー扱いになるという動作仕様の記述は知識セクションに存在しない。(2) ThymeleafでのエラーAPI（errors.hasError()、errors.getMessage()）はNablarch固有の主張であるが知識セクションに記載がない。(3) BeanValidationStrategyコンポーネント設定は知識セクションに記載がなく、ハルシネーションの可能性が高い。(4) Required.messageのデフォルトメッセージ値は知識セクションのメッセージ定義例に含まれておらず裏付けがない。"
+  },
+  "scores": {
+    "accuracy": 0.5,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する",
+    "hallucination: FAIL — 複数のNablarch固有主張が知識セクションに裏付けられない。(1) @OnError未設定時にバリデーションエラーがシステムエラー扱いになるという動作仕様の記述は知識セクションに存在しない。(2) ThymeleafでのエラーAPI（errors.hasError()、errors.getMessage()）はNablarch固有の主張であるが知識セクションに記載がない。(3) BeanValidationStrategyコンポーネント設定は知識セクションに記載がなく、ハルシネーションの可能性が高い。(4) Required.messageのデフォルトメッセージ値は知識セクションのメッセージ定義例に含まれておらず裏付けがない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/web-application/web-application-error-message.json",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/libraries/libraries-tag.json:s29"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 86944,
+    "duration_api_ms": 84381,
+    "num_turns": 13,
+    "total_cost_usd": 0.8373286,
+    "usage": {
+      "input_tokens": 14,
+      "output_tokens": 4700,
+      "cache_read_input_tokens": 1177812,
+      "cache_creation_input_tokens": 109468
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2813,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002938,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 4700,
+        "cacheReadInputTokens": 1177812,
+        "cacheCreationInputTokens": 109468,
+        "webSearchRequests": 0,
+        "costUSD": 0.8343906,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

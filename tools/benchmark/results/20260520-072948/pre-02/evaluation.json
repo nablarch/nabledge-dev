@@ -1,0 +1,115 @@
+{
+  "scenario_id": "pre-02",
+  "description": "入力バリデーションの実装方法を知りたいが、バッチかWebかRESTかが不明",
+  "input": "入力チェック（バリデーション）の実装方法を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「業務アクションへの`@InjectForm`設定」として、WebアプリケーションでInjectFormインターセプタを使用してバリデーションを行うことが明確に記述されている。結論部分でも「`@InjectForm`インターセプタを業務アクションのメソッドに付与することで実装する」と述べており、事実の内容と一致している。",
+      "fact": "WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "ウェブアプリケーションのフォームバリデーションに@InjectFormインターセプタを使用する",
+        "supported": true
+      },
+      {
+        "claim": "BeanValidationStrategyをvalidationStrategyという名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "フォームクラスのプロパティは全てString型にする",
+        "supported": true
+      },
+      {
+        "claim": "String型以外のプロパティに不正な値が送信された場合、Bean変換処理が失敗して予期せぬ例外が発生する",
+        "supported": true
+      },
+      {
+        "claim": "@Required、@Length、@SystemCharアノテーションでバリデーションルールを設定する",
+        "supported": true
+      },
+      {
+        "claim": "@InjectFormにvalidateパラメータを指定できる（例: validate = \"register\"）",
+        "supported": false
+      },
+      {
+        "claim": "@OnErrorアノテーションでバリデーションエラー時の遷移先を設定する",
+        "supported": false
+      },
+      {
+        "claim": "@OnErrorが未設定の場合、バリデーションエラーがシステムエラー扱いになる",
+        "supported": false
+      },
+      {
+        "claim": "ctx.getRequestScopedVar(\"form\")でバリデーション済みフォームを取得する",
+        "supported": false
+      },
+      {
+        "claim": "データベースとの相関バリデーションはSQLインジェクション等のリスクを避けるため業務アクション側で実装すること",
+        "supported": false
+      }
+    ],
+    "reason": "@OnErrorアノテーションの存在・未設定時の挙動、@InjectFormのvalidateパラメータ、ctx.getRequestScopedVar()によるフォーム取得方法、およびデータベース相関バリデーションをSQLインジェクションリスク回避のため業務アクション側で実装するという主張は、いずれも提供された知識セクションに裏付けがない。特に「SQLインジェクション等のリスクを避けるため」という相関バリデーションの理由付けは知識セクションに存在せず、論理的にも不自然な説明であるためハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — @OnErrorアノテーションの存在・未設定時の挙動、@InjectFormのvalidateパラメータ、ctx.getRequestScopedVar()によるフォーム取得方法、およびデータベース相関バリデーションをSQLインジェクションリスク回避のため業務アクション側で実装するという主張は、いずれも提供された知識セクションに裏付けがない。特に「SQLインジェクション等のリスクを避けるため」という相関バリデーションの理由付けは知識セクションに存在せず、論理的にも不自然な説明であるためハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-InjectForm.json:s1",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/libraries/libraries-bean-validation.json:s8",
+      "component/libraries/libraries-bean-validation.json:s6",
+      "component/libraries/libraries-bean-validation.json:s7"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 64440,
+    "duration_api_ms": 62849,
+    "num_turns": 9,
+    "total_cost_usd": 0.6877203999999999,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 3944,
+      "cache_read_input_tokens": 723503,
+      "cache_creation_input_tokens": 108950
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2792,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0029170000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 3944,
+        "cacheReadInputTokens": 723503,
+        "cacheCreationInputTokens": 108950,
+        "webSearchRequests": 0,
+        "costUSD": 0.6848034000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

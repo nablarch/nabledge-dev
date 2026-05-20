@@ -1,0 +1,123 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の①フォームクラスの作成セクションにて、ProjectFormクラスがクライアントから送信された値を受け付けるフォームとして実装されており、プロパティをString型で宣言する点も含めて事実の内容が含まれている。",
+      "fact": "Formクラスでクライアントから送信された値を受け付ける"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答中に「プロパティは全てString型で宣言する。」という記述が①フォームクラスの作成セクション内のコード例直後に明示されており、さらに注意点セクションにも「Formのプロパティは全てString型で宣言する（Bean Validationの要件）」と記載されている。",
+      "fact": "プロパティは全てString型で宣言する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "リソースクラスに@Path/@POST/@Consumes(APPLICATION_JSON)/@Validを付与したメソッドを定義する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy()でFormをEntityに変換する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert()でDBに登録する",
+        "supported": true
+      },
+      {
+        "claim": "Formのプロパティは全てString型で宣言する",
+        "supported": true
+      },
+      {
+        "claim": "@Consumes(MediaType.APPLICATION_JSON)でBodyConvertHandlerがアノテーションを参照しBodyConverterでFormに変換する",
+        "supported": false
+      },
+      {
+        "claim": "@ValidでJaxRsBeanValidationHandlerがバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "HttpResponse.Status.CREATED.getStatusCode()で201を返す",
+        "supported": true
+      },
+      {
+        "claim": "メソッド引数としてフォーム(Java Beans)、JaxRsHttpRequest、ExecutionContextが使用可能",
+        "supported": true
+      },
+      {
+        "claim": "GenerationType.AUTO/SEQUENCE/IDENTITY/TABLEに対応",
+        "supported": false
+      },
+      {
+        "claim": "Formのプロパティを全てString型で宣言するのはBean Validationの要件",
+        "supported": false
+      }
+    ],
+    "reason": "3点のハルシネーションが検出された。①BodyConvertHandlerが@Consumesアノテーションを参照してBodyConverterでFormに変換するという説明は知識セクションに裏付けがなく、知識セクションでは単に「リクエストをJSON形式で受け付けるため@Consumesを指定する」とのみ記載されており、BodyConvertHandlerの動作詳細への言及はない。②@GeneratedValueのGenerationType(AUTO/SEQUENCE/IDENTITY/TABLE)への対応については知識セクションに一切記載がなく、Nablarch固有の仕様として裏付けがない。③Formのプロパティを全てString型で宣言する理由を「Bean Validationの要件」と説明しているが、知識セクションではそのような理由付けはなく、詳細はバリデーションルールの設定方法を参照とのみ記載されている。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 3点のハルシネーションが検出された。①BodyConvertHandlerが@Consumesアノテーションを参照してBodyConverterでFormに変換するという説明は知識セクションに裏付けがなく、知識セクションでは単に「リクエストをJSON形式で受け付けるため@Consumesを指定する」とのみ記載されており、BodyConvertHandlerの動作詳細への言及はない。②@GeneratedValueのGenerationType(AUTO/SEQUENCE/IDENTITY/TABLE)への対応については知識セクションに一切記載がなく、Nablarch固有の仕様として裏付けがない。③Formのプロパティを全てString型で宣言する理由を「Bean Validationの要件」と説明しているが、知識セクションではそのような理由付けはなく、詳細はバリデーションルールの設定方法を参照とのみ記載されている。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-universal-dao.json:s13",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 206510,
+    "duration_api_ms": 203656,
+    "num_turns": 5,
+    "total_cost_usd": 1.08477355,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 4115,
+      "cache_read_input_tokens": 201384,
+      "cache_creation_input_tokens": 37128
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2819,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0030039999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13925,
+        "outputTokens": 14682,
+        "cacheReadInputTokens": 404536,
+        "cacheCreationInputTokens": 186241,
+        "webSearchRequests": 0,
+        "costUSD": 1.0817695499999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

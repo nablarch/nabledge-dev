@@ -1,0 +1,101 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「SQLファイルによる検索（全件）」のセクションで「任意のSQLで検索する場合は、SQLファイルを作成し、SQL IDを指定します」と明記されており、さらに「検索結果のマッピング: BeanのプロパティとSELECT句の名前が一致する項目が自動でマッピングされます」とも記載されている。これらは事実の「SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる」という内容を完全にカバーしている。",
+      "fact": "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "UniversalDao.findById() で主キーを指定した検索ができる",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.findAllBySqlFile() でSQLファイルとSQL IDを指定した検索ができる",
+        "supported": true
+      },
+      {
+        "claim": "SQLファイルのパスはマッピングするBeanクラス（例: sample.entity.User）から sample/entity/User.sql として導出される",
+        "supported": false
+      },
+      {
+        "claim": "findAllBySqlFile に条件Beanを渡すことで条件付き検索ができる",
+        "supported": true
+      },
+      {
+        "claim": "BeanのプロパティとSELECT句の名前が一致する項目が自動でマッピングされる",
+        "supported": true
+      },
+      {
+        "claim": "ユニバーサルDAOを使うにはコンポーネント定義に BasicDaoContextFactory の設定が必要",
+        "supported": false
+      },
+      {
+        "claim": "主キー以外の条件を指定した更新・削除はユニバーサルDAOではできない",
+        "supported": true
+      }
+    ],
+    "reason": "2つのNablarch固有の主張が知識セクションで裏付けられていない。①SQLファイルのパス導出規則（Beanクラス名からsample/entity/User.sqlのように導出）は知識セクションに記載がない。②BasicDaoContextFactoryのコンポーネント定義が必要という設定方法も知識セクションに記載がない。これらはNablarch固有の動作仕様・設定方法の主張であり、裏付けがないためハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 2つのNablarch固有の主張が知識セクションで裏付けられていない。①SQLファイルのパス導出規則（Beanクラス名からsample/entity/User.sqlのように導出）は知識セクションに記載がない。②BasicDaoContextFactoryのコンポーネント定義が必要という設定方法も知識セクションに記載がない。これらはNablarch固有の動作仕様・設定方法の主張であり、裏付けがないためハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-universal-dao.json:s3",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s10"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 60323,
+    "duration_api_ms": 57487,
+    "num_turns": 4,
+    "total_cost_usd": 0.4902902,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 3335,
+      "cache_read_input_tokens": 204294,
+      "cache_creation_input_tokens": 100280
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2782,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002912,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5,
+        "outputTokens": 3335,
+        "cacheReadInputTokens": 204294,
+        "cacheCreationInputTokens": 100280,
+        "webSearchRequests": 0,
+        "costUSD": 0.4873782,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

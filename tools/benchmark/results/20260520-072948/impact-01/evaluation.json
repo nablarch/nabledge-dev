@@ -1,0 +1,102 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「方法1」セクションで、コンポーネント設定ファイルにSimpleDbTransactionManagerを定義し、個別トランザクションを使用する方法が明確に説明されている。XMLの設定例とJavaの実装例も含まれており、事実の内容と一致している。",
+      "fact": "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "SimpleDbTransactionManagerのコンポーネント設定にconnectionFactory、transactionFactory、dbTransactionNameプロパティを設定する",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionManagerを直接使わず、SimpleDbTransactionExecutorを介してSQLを実行する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDAOを使う場合はUniversalDao.Transactionを継承したクラスを使う",
+        "supported": true
+      },
+      {
+        "claim": "LoopHandler（トランザクションループ制御ハンドラ）は例外・エラー発生時にロールバック後、新しいトランザクションでtransactionAbnormalEndを呼び出す",
+        "supported": false
+      },
+      {
+        "claim": "TransactionEventCallbackインターフェースにtransactionNormalEndとtransactionAbnormalEndメソッドが存在し、後者はロールバック後に新しいトランザクションで実行される",
+        "supported": false
+      },
+      {
+        "claim": "HandlerとTransactionEventCallbackを同時に実装したハンドラクラスを作成してLoopHandlerの後続に配置することでエラーログDB書き込みに使用できる",
+        "supported": false
+      },
+      {
+        "claim": "複数のハンドラがTransactionEventCallbackを実装している場合、コールバック中に例外が発生すると残りのハンドラのコールバックは実行されない",
+        "supported": false
+      }
+    ],
+    "reason": "方法1（SimpleDbTransactionManager + SimpleDbTransactionExecutor）の説明は知識セクションに裏付けられている。しかし方法2として提示されているTransactionEventCallback、LoopHandlerのtransactionAbnormalEnd呼び出し動作、および複数ハンドラ時の例外動作に関する記述は、知識セクションに一切記載がなく裏付けがない。これらはNablarch固有のAPI名・動作仕様に関する主張であり、ハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 方法1（SimpleDbTransactionManager + SimpleDbTransactionExecutor）の説明は知識セクションに裏付けられている。しかし方法2として提示されているTransactionEventCallback、LoopHandlerのtransactionAbnormalEnd呼び出し動作、および複数ハンドラ時の例外動作に関する記述は、知識セクションに一切記載がなく裏付けがない。これらはNablarch固有のAPI名・動作仕様に関する主張であり、ハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/handlers/handlers-loop-handler.json:s6",
+      "component/handlers/handlers-transaction-management-handler.json:s6",
+      "component/handlers/handlers-transaction-management-handler.json:s7",
+      "component/libraries/libraries-transaction.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 196668,
+    "duration_api_ms": 194005,
+    "num_turns": 5,
+    "total_cost_usd": 1.1749833999999997,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 4373,
+      "cache_read_input_tokens": 219157,
+      "cache_creation_input_tokens": 7262
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2821,
+        "outputTokens": 21,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002926,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 23810,
+        "outputTokens": 12678,
+        "cacheReadInputTokens": 763108,
+        "cacheCreationInputTokens": 181740,
+        "webSearchRequests": 0,
+        "costUSD": 1.1720573999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

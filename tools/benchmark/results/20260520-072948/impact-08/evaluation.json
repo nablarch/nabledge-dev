@@ -1,0 +1,102 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の結論部分および末尾に「コンポーネント定義で指定するクラスを差し替えるだけでよいため、本番とテストの切り替えは設定ファイルの分離で実現できる」と明記されており、事実の内容（コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる）が含まれている。",
+      "fact": "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "SystemTimeProviderインタフェースの実装クラスがシステム日時を提供する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント定義で指定するクラスを差し替えるだけで切り替えられる",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.test.FixedSystemTimeProvider という既製クラスが存在する",
+        "supported": false
+      },
+      {
+        "claim": "fixedDateプロパティでyyyyMMddHHmmss（14桁）またはyyyyMMddHHmmssSSS（17桁）フォーマットで日時を指定できる",
+        "supported": false
+      },
+      {
+        "claim": "nablarch.core.date.BasicSystemTimeProvider という既製クラスが本番用として存在する",
+        "supported": false
+      },
+      {
+        "claim": "BasicBusinessDateProvider の設定ファイルを差し替えることで業務日付を切り替えられる",
+        "supported": false
+      },
+      {
+        "claim": "BusinessDateProvider インタフェースを実装したクラスを作成してコンポーネント定義に設定することで業務日付をテスト用に切り替えられる",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションでは「SystemTimeProvider を実装したクラスを作成する」と明記されており、既製のFixedSystemTimeProviderクラスの存在は裏付けられていない。fixedDateプロパティや対応フォーマット（yyyyMMddHHmmss等）、BasicSystemTimeProvider、BasicBusinessDateProvider、BusinessDateProviderインタフェースのいずれも知識セクションに記載がなく、Nablarch固有のAPI・クラス名に関する複数の主張が未裏付けのままである。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションでは「SystemTimeProvider を実装したクラスを作成する」と明記されており、既製のFixedSystemTimeProviderクラスの存在は裏付けられていない。fixedDateプロパティや対応フォーマット（yyyyMMddHHmmss等）、BasicSystemTimeProvider、BasicBusinessDateProvider、BusinessDateProviderインタフェースのいずれも知識セクションに記載がなく、Nablarch固有のAPI・クラス名に関する複数の主張が未裏付けのままである。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s12",
+      "component/libraries/libraries-date.json:s13",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s11",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s12"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 71775,
+    "duration_api_ms": 70936,
+    "num_turns": 11,
+    "total_cost_usd": 0.33332765,
+    "usage": {
+      "input_tokens": 40,
+      "output_tokens": 4473,
+      "cache_read_input_tokens": 330503,
+      "cache_creation_input_tokens": 43745
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2798,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002918,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 40,
+        "outputTokens": 4473,
+        "cacheReadInputTokens": 330503,
+        "cacheCreationInputTokens": 43745,
+        "webSearchRequests": 0,
+        "costUSD": 0.33040965,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
