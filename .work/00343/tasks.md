@@ -11,29 +11,6 @@
 
 ## In Progress
 
-### B-4-1-C. evaluate.py 幻覚検証ロジックの見直し
-
-B-4-1-A の調査（session 7 完了）により根本原因が確定。
-
-**根本原因**: evaluate.py の幻覚チェックで `hallucination_prompt` に渡すセクションが
-`must_facts` と `acceptable` の `section` フィールド（シナリオの gold standard）のみ。
-LLM が実際に参照した `search_sections`（ベンチマーク実行時に取得したセクション）が含まれない。
-→ search_sections に記述があっても unsupported 判定（false FAIL）になる。
-
-**規模**: 19シナリオ中 78件が false FAIL、真の幻覚は 5件のみ。
-
-**修正方針**: `hallucination_prompt` に `search_sections` の内容も含める。
-ただし `search_sections` はランナー出力（`runner_output`）から取得する必要がある。
-現在 evaluate.py は `runner_output.get("search", {}).get("section_ids", [])` で参照可能。
-
-**ステップ:**
-- [x] evaluate.py の幻覚検証ロジックを確認（`build_hallucination_prompt` の呼び出し箇所）
-- [x] 修正方針を設計（QAエキスパートレビュー必須）
-- [x] TDD: テスト追加（RED）→ 修正実装（GREEN）
-- [ ] `python3 -m pytest tools/benchmark/ -x` で全テスト GREEN（既存失敗を除く）
-
-**前提:** B-4-1-A（FAIL調査）完了 → 完了済み。
-
 ## Not Started
 
 ### B-4-1-B. goal 設計見直し（ヒアリング設計の根本修正）
@@ -161,6 +138,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-4-1-C. evaluate.py 幻覚検証ロジック修正（search_sections を sections_text に追加、TDD 5テスト追加）— `563d8b4aa`
 - [x] B-4-1-A. 精度FAIL・幻覚FAIL の詳細調査 — 全19シナリオ突合完了。真の幻覚5件確定。report.md に記録
 - [x] B-4-1. run-1 安定化（エラーゼロまで）— 30件完走 `20260520-072948`
 - [x] B-0-4. 設計書適合確認・SEエキスパートレビュー・PRレビュー — OK `2026-05-19`
