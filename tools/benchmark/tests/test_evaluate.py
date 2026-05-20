@@ -16,6 +16,7 @@ from tools.benchmark.scripts.evaluate import (
     evaluate_all,
     evaluate_scenario,
     extract_json_from_result,
+    load_page_content,
     load_runner_output,
     load_section_content,
     parse_claim_response,
@@ -125,6 +126,33 @@ class TestLoadSectionContent:
     def test_missing_file_raises(self):
         with pytest.raises(FileNotFoundError):
             load_section_content(self.tmpdir, "nonexistent/file.json:s1")
+
+
+class TestLoadPageContent:
+    def setup_method(self):
+        self.tmpdir = tempfile.mkdtemp()
+        knowledge_dir = Path(self.tmpdir) / "component" / "libs"
+        knowledge_dir.mkdir(parents=True)
+        data = {
+            "id": "test-file",
+            "title": "Test",
+            "sections": [
+                {"id": "s1", "title": "First", "content": "Section one content", "level": 2},
+                {"id": "s2", "title": "Second", "content": "Section two content", "level": 2},
+                {"id": "s3", "title": "Third", "content": "Section three content", "level": 2},
+            ],
+        }
+        (knowledge_dir / "test.json").write_text(json.dumps(data), encoding="utf-8")
+
+    def test_load_all_sections_joined(self):
+        content = load_page_content(self.tmpdir, "component/libs/test.json")
+        assert "Section one content" in content
+        assert "Section two content" in content
+        assert "Section three content" in content
+
+    def test_missing_file_raises(self):
+        with pytest.raises(FileNotFoundError):
+            load_page_content(self.tmpdir, "nonexistent/file.json")
 
 
 class TestCalculateAccuracyScore:
@@ -450,7 +478,8 @@ class TestEvaluateScenario:
         assert result["scores"]["accuracy"] == 1.0
 
     def test_search_sections_eliminate_false_positive(self):
-        # Claim supported by search_sections but not must_facts/acceptable → should PASS
+        # Claim supported by a non-retrieved section of a retrieved page → should PASS
+        # (page-level loading: all sections of b.json are passed to hallucination judge)
         scenario = {
             "id": "fp-01",
             "then": {
@@ -465,22 +494,25 @@ class TestEvaluateScenario:
             "metrics": {},
         }
 
-        loaded_refs = []
+        loaded_pages = []
 
         def mock_llm(prompt, json_schema):
             if "ファクトチェック" in prompt:
                 return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
-            # hallucination judge: check sections contains b.json:s2 content
-            assert "b.json:s2の内容" in prompt
+            # hallucination judge: full page content of b.json should be in prompt
+            assert "b.jsonの全内容" in prompt
             return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
 
         def mock_load_section(knowledge_dir, ref):
-            loaded_refs.append(ref)
             return f"{ref}の内容"
 
+        def mock_load_page(knowledge_dir, file_path):
+            loaded_pages.append(file_path)
+            return f"{file_path}の全内容"
+
         evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
-                          section_loader=mock_load_section)
-        assert "b.json:s2" in loaded_refs
+                          section_loader=mock_load_section, page_loader=mock_load_page)
+        assert "b.json" in loaded_pages
 
     def test_search_sections_true_hallucination_still_caught(self):
         # Claim unsupported by both must_facts and search_sections → should FAIL

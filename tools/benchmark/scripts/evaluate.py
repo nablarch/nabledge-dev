@@ -59,6 +59,15 @@ def load_section_content(knowledge_dir: str, section_ref: str) -> str:
     raise ValueError(f"Section {section_id} not found in {file_path}")
 
 
+def load_page_content(knowledge_dir: str, file_path: str) -> str:
+    """Load all sections from a knowledge JSON file, joined with separators."""
+    full_path = Path(knowledge_dir) / file_path
+    with open(full_path, encoding="utf-8") as f:
+        data = json.load(f)
+    parts = [s["content"] for s in data.get("sections", [])]
+    return "\n\n---\n\n".join(parts)
+
+
 def calculate_accuracy_score(verdicts: list[dict]) -> float | None:
     """Calculate accuracy score: PRESENT count / total. Returns None if no verdicts or any UNCERTAIN.
 
@@ -242,12 +251,15 @@ def evaluate_scenario(
     knowledge_dir: str,
     llm_fn=None,
     section_loader=None,
+    page_loader=None,
 ) -> dict:
     """Evaluate a single scenario. Returns evaluation dict."""
     if llm_fn is None:
         llm_fn = call_llm
     if section_loader is None:
         section_loader = load_section_content
+    if page_loader is None:
+        page_loader = load_page_content
 
     scenario_id = scenario["id"]
     answer = runner_output["answer"]
@@ -265,14 +277,17 @@ def evaluate_scenario(
         parsed["fact"] = mf["fact"]
         claim_verdicts.append(parsed)
 
-    all_section_refs = (
+    # Build sections_text for hallucination judge:
+    # - must/acceptable refs: individual section content (for claim grounding)
+    # - search results: full page content (all sections of each retrieved file),
+    #   because the LLM sees the full file during Stage 2 section selection
+    must_acceptable_refs = (
         [m["section"] for m in must_facts if m.get("section")]
         + [a["section"] for a in acceptable if a.get("section")]
-        + runner_output.get("search", {}).get("section_ids", [])
     )
     seen_refs: set[str] = set()
     sections_content_parts = []
-    for ref in all_section_refs:
+    for ref in must_acceptable_refs:
         if ref in seen_refs:
             continue
         seen_refs.add(ref)
@@ -281,6 +296,19 @@ def evaluate_scenario(
             sections_content_parts.append(content)
         except (FileNotFoundError, ValueError):
             pass
+
+    seen_files: set[str] = set()
+    for ref in runner_output.get("search", {}).get("section_ids", []):
+        file_path, _ = parse_section_ref(ref)
+        if file_path in seen_files:
+            continue
+        seen_files.add(file_path)
+        try:
+            content = page_loader(knowledge_dir, file_path)
+            sections_content_parts.append(content)
+        except (FileNotFoundError, ValueError):
+            pass
+
     sections_text = "\n\n---\n\n".join(sections_content_parts) if sections_content_parts else ""
 
     h_prompt = build_hallucination_prompt(answer, sections_text)
