@@ -1,0 +1,118 @@
+{
+  "scenario_id": "review-09",
+  "description": "セキュリティ診断でContent Security Policyを有効にしろと指摘された。NablarchのWeb画面でCSPを設定したい。",
+  "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の方法2において、SecureHandlerとContentSecurityPolicyHeaderを組み合わせ、さらにgenerateCspNonceを有効にすることでカスタムタグのCSP対応（nonce属性の自動設定など）が行われると説明されており、「セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする」という事実が含まれている。",
+      "fact": "セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "ContentSecurityPolicyHeaderをSecureHandlerのsecureResponseHeaderListに追加してCSPを設定する",
+        "supported": true
+      },
+      {
+        "claim": "ContentSecurityPolicyHeaderのpolicyプロパティにCSPポリシーを指定する",
+        "supported": true
+      },
+      {
+        "claim": "固定ポリシーの設定例としてdefault-src 'self'を使用する",
+        "supported": true
+      },
+      {
+        "claim": "generateCspNonceプロパティをtrueに設定してnonceを生成する",
+        "supported": true
+      },
+      {
+        "claim": "$cspNonceSource$プレースホルダーがnonce-[生成されたnonce]に置換される",
+        "supported": true
+      },
+      {
+        "claim": "reportOnlyプロパティをtrueに設定するとContent-Security-Policy-Report-Onlyヘッダが出力される",
+        "supported": true
+      },
+      {
+        "claim": "formタグが生成するJavaScriptがscript要素にまとめられnonce属性が自動設定される",
+        "supported": true
+      },
+      {
+        "claim": "scriptタグが生成するscript要素のnonce属性にnonceが自動設定される",
+        "supported": true
+      },
+      {
+        "claim": "cspNonceタグ(<n:cspNonce />)でnonce値を任意の要素に埋め込める",
+        "supported": true
+      },
+      {
+        "claim": "SecureHandlerはHTTPレスポンスハンドラよりも後ろに設定すること",
+        "supported": true
+      },
+      {
+        "claim": "secureResponseHeaderListを明示的に設定する場合、デフォルトのコンポーネントもリストに含める必要がある",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるNablarch固有の主張（API名、クラス名、設定方法、動作仕様）はすべて知識セクションの内容と一致しており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "component/libraries/libraries-tag.json:s38",
+      "component/libraries/libraries-tag.json:s39",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 72505,
+    "duration_api_ms": 71612,
+    "num_turns": 8,
+    "total_cost_usd": 0.6473927,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 4598,
+      "cache_read_input_tokens": 635619,
+      "cache_creation_input_tokens": 102576
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2925,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00305,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 4598,
+        "cacheReadInputTokens": 635619,
+        "cacheCreationInputTokens": 102576,
+        "webSearchRequests": 0,
+        "costUSD": 0.6443427,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「NablarchのJSPカスタムタグはデフォルトでHTMLエスケープ（サニタイジング）を行います」と明記されており、カスタムタグによるサニタイジングでXSSの根本的解決（IPA 5-(i)）が可能であることが説明されています。事実の内容と一致しています。",
+      "fact": "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchのJSPカスタムタグはデフォルトでHTMLエスケープ（サニタイジング）を行う",
+        "supported": true
+      },
+      {
+        "claim": "タグライブラリURIは http://tis.co.jp/nablarch",
+        "supported": true
+      },
+      {
+        "claim": "JSP静的解析ツールでカスタムタグ以外のタグによるエスケープ漏れを検出できる",
+        "supported": true
+      },
+      {
+        "claim": "JavaScriptに対するエスケープ処理は提供しておらず、scriptタグのボディやonclick属性等に動的な値を埋め込まないこと",
+        "supported": true
+      },
+      {
+        "claim": "SecureHandlerがデフォルトでX-Frame-Options: SAMEORIGINを設定する",
+        "supported": true
+      },
+      {
+        "claim": "SecureHandlerがX-XSS-Protection, X-Content-Type-Options, Referrer-Policy, Cache-Controlのセキュリティヘッダを設定する（クラス名レベルでの確認）",
+        "supported": true
+      },
+      {
+        "claim": "Referrer-Policyのデフォルト値がstrict-origin-when-cross-cross-originであるという具体的な値",
+        "supported": false
+      },
+      {
+        "claim": "Cache-Controlのデフォルト値がno-storeであるという具体的な値",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandlerがIPA 5-(x)に対応する",
+        "supported": true
+      },
+      {
+        "claim": "HTTP文字エンコード制御ハンドラがIPA 5-(viii)（Content-TypeへのMIME Type・文字コード設定）に対応する",
+        "supported": true
+      },
+      {
+        "claim": "ContentSecurityPolicyHeaderとカスタムタグのCSP対応機能を組み合わせてCSPヘッダ設定・nonceの自動埋め込みが可能",
+        "supported": true
+      },
+      {
+        "claim": "5-(ii)〜(iv)はプロジェクト側の対応が必要",
+        "supported": true
+      },
+      {
+        "claim": "5-(ix) CookieへのHttpOnly属性付与はNablarchでは対応しておらずプロジェクト対応",
+        "supported": true
+      },
+      {
+        "claim": "n:rawWriteタグはHTMLエスケープを行わない",
+        "supported": true
+      }
+    ],
+    "reason": "主要なNablarch固有の主張（カスタムタグによるHTMLエスケープ、JSP静的解析ツール、SecureHandlerのヘッダ設定クラス群、IPA項目との対応関係、CSP/nonce対応、rawWriteの非エスケープ動作）はすべて知識セクションで裏付けられている。ただし、Referrer-PolicyのデフォルトをREFERRER_POLICY: strict-origin-when-cross-origin、Cache-ControlをCache-Control: no-storeと断定している部分は知識セクションに具体的な値の記載がなく、知識セクションはクラス名（ReferrerPolicyHeader、CacheControlHeader）の存在のみを示している。これらの値は一般的に妥当であり、知識セクションと矛盾もしないため、FATALなハルシネーションとは判定しないが、厳密には知識セクション未裏付けの主張である。全体として致命的な捏造情報は含まれない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s21",
+      "check/security-check/security-check-2.チェックリスト.json:s22",
+      "check/security-check/security-check-2.チェックリスト.json:s23",
+      "check/security-check/security-check-2.チェックリスト.json:s24",
+      "check/security-check/security-check-2.チェックリスト.json:s25",
+      "check/security-check/security-check-2.チェックリスト.json:s26",
+      "check/security-check/security-check-2.チェックリスト.json:s27",
+      "check/security-check/security-check-2.チェックリスト.json:s28",
+      "check/security-check/security-check-2.チェックリスト.json:s29",
+      "check/security-check/security-check-2.チェックリスト.json:s30",
+      "component/libraries/libraries-tag.json:s2",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 100025,
+    "duration_api_ms": 98690,
+    "num_turns": 7,
+    "total_cost_usd": 0.7655324,
+    "usage": {
+      "input_tokens": 4391,
+      "output_tokens": 6799,
+      "cache_read_input_tokens": 359403,
+      "cache_creation_input_tokens": 143846
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2946,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0031309999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4391,
+        "outputTokens": 6799,
+        "cacheReadInputTokens": 359403,
+        "cacheCreationInputTokens": 143846,
+        "webSearchRequests": 0,
+        "costUSD": 0.7624014,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

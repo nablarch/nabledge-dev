@@ -1,0 +1,121 @@
+{
+  "scenario_id": "pre-02",
+  "description": "入力バリデーションの実装方法を知りたいが、バッチかWebかRESTかが不明",
+  "input": "入力チェック（バリデーション）の実装方法を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の結論部分に「`@InjectForm` インターセプタを業務アクションのメソッドに設定して行う」と明記されており、WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行うという事実が含まれている。",
+      "fact": "WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "ウェブアプリケーションの入力チェックは @InjectForm インターセプタを業務アクションのメソッドに設定して行う",
+        "supported": true
+      },
+      {
+        "claim": "BeanValidationStrategy を validationStrategy という名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "Formクラスのプロパティは必ず String 型で定義すること",
+        "supported": true
+      },
+      {
+        "claim": "@Required, @Length, @SystemChar アノテーションをFormクラスのプロパティに設定する",
+        "supported": true
+      },
+      {
+        "claim": "ドメインバリデーションでは DomainManager 実装クラスを作成し domainManager という名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "ドメインバリデーション使用時は Formクラスに @Domain アノテーションだけを設定する（推奨）",
+        "supported": true
+      },
+      {
+        "claim": "@InjectForm(form = UserForm.class, prefix = \"form\", validate = \"register\") の形式でアノテーションを設定する",
+        "supported": true
+      },
+      {
+        "claim": "@OnError(type = ApplicationException.class, path = \"forward://registerForm.jsp\") をメソッドに設定する",
+        "supported": true
+      },
+      {
+        "claim": "バリデーション済みフォームを ctx.getRequestScopedVar(\"form\") でリクエストスコープから取得する",
+        "supported": true
+      },
+      {
+        "claim": "prefix = \"form\" を指定すると form から始まるリクエストパラメータがバリデーション対象となる",
+        "supported": true
+      },
+      {
+        "claim": "@OnError を設定しないとバリデーションエラーがシステムエラー扱いになる",
+        "supported": true
+      },
+      {
+        "claim": "データベースとの相関バリデーションは SQLインジェクション防止のため Bean Validation 内ではなく業務アクション側で実装する",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のすべての主要な主張（API名、クラス名、アノテーション、設定方法、動作仕様）は知識セクションの記述と一致しており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s6",
+      "component/libraries/libraries-bean-validation.json:s8",
+      "component/libraries/libraries-bean-validation.json:s9",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "processing-pattern/web-application/web-application-feature-details.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 56340,
+    "duration_api_ms": 55432,
+    "num_turns": 6,
+    "total_cost_usd": 0.53348385,
+    "usage": {
+      "input_tokens": 6387,
+      "output_tokens": 3639,
+      "cache_read_input_tokens": 198252,
+      "cache_creation_input_tokens": 105927
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2911,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003036,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6387,
+        "outputTokens": 3639,
+        "cacheReadInputTokens": 198252,
+        "cacheCreationInputTokens": 105927,
+        "webSearchRequests": 0,
+        "costUSD": 0.53044785,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

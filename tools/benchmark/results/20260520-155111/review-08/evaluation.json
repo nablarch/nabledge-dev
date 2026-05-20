@@ -1,0 +1,128 @@
+{
+  "scenario_id": "review-08",
+  "description": "Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。",
+  "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭で「複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使用する」と明示されており、表形式でも同じ情報が整理されている。事実の内容が完全に含まれている。",
+      "fact": "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "DBストアの保存先はデータベース上のテーブル",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはローリングメンテナンス等でAPサーバーが停止してもセッション変数の復元が可能",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは同一セッションを複数スレッドで処理した場合は後勝ち",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアの保存先はクライアントサイド（hiddenタグで画面間引き回し）",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数タブでの画面操作を許容できる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは同一セッションを複数スレッドで処理した場合、データはそれぞれのスレッドに紐付けて保存される",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストア使用時に入力・確認画面のJSPにhiddenStoreタグを追加する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "hiddenStoreタグのname属性にはHiddenStoreのparameterNameプロパティの値を設定する",
+        "supported": true
+      },
+      {
+        "claim": "SessionUtil.put()でセッションストアに保存し、SessionUtil.get()で取得し、SessionUtil.delete()で削除する",
+        "supported": true
+      },
+      {
+        "claim": "APサーバーが冗長化されている場合、デフォルトの自動生成キーだとサーバーごとに異なるキーになり復号に失敗するケースがある",
+        "supported": true
+      },
+      {
+        "claim": "冗長化対応にはAesEncryptorで暗号化キーを明示的に設定する",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアにはFormではなくEntityを格納すること",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のすべての主張（セッションストアの選択基準、DBストア・HIDDENストアの特徴、JSP実装例、Java実装例、冗長化対応、Entity格納推奨）は知識セクションの内容と一致しており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s8",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s17",
+      "component/handlers/handlers-SessionStoreHandler.json:s3",
+      "component/libraries/libraries-create-example.json:s1",
+      "component/libraries/libraries-create-example.json:s2",
+      "component/libraries/libraries-create-example.json:s3",
+      "component/libraries/libraries-create-example.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 166702,
+    "duration_api_ms": 164525,
+    "num_turns": 12,
+    "total_cost_usd": 1.1018839999999999,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 5835,
+      "cache_read_input_tokens": 500606,
+      "cache_creation_input_tokens": 42199
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2936,
+        "outputTokens": 33,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0031009999999999996,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 844,
+        "outputTokens": 9718,
+        "cacheReadInputTokens": 1294570,
+        "cacheCreationInputTokens": 149896,
+        "webSearchRequests": 0,
+        "costUSD": 1.0987829999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

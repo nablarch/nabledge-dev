@@ -1,0 +1,132 @@
+{
+  "scenario_id": "qa-11b",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する」という事実が明確に含まれている。具体的には、「ErrorResponseBuilderがエラー内容に応じたHTTPレスポンスを生成します」と説明されており、JaxRsResponseHandlerのerrorResponseBuilderプロパティを通じて例外・エラーに応じたレスポンスが生成されることが記述されている。",
+      "fact": "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「2. ログ出力（`errorLogWriter`プロパティ）」セクションに「`JaxRsErrorLogWriter`がエラーログを出力します」と明記されており、`errorLogWriter`プロパティを通じて`JaxRsErrorLogWriter`がログ出力を担うことが記述されている。事実の「JaxRsErrorLogWriterが例外に応じたログ出力を行う」という情報が回答に含まれている。",
+      "fact": "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "JaxRsResponseHandlerはエラー処理の中核を担い、例外の種類に応じてHTTPレスポンス生成とログ出力を自動的に行う",
+        "supported": true
+      },
+      {
+        "claim": "クラス名はnablarch.fw.jaxrs.JaxRsResponseHandler",
+        "supported": true
+      },
+      {
+        "claim": "errorResponseBuilderプロパティにErrorResponseBuilderを設定してレスポンスを生成する",
+        "supported": true
+      },
+      {
+        "claim": "設定省略時はデフォルト実装のErrorResponseBuilderが使用される",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseの場合はHttpErrorResponse#getResponse()から取得したレスポンスが返却される",
+        "supported": true
+      },
+      {
+        "claim": "errorLogWriterプロパティにJaxRsErrorLogWriterを設定してログ出力する",
+        "supported": true
+      },
+      {
+        "claim": "設定省略時はデフォルト実装のJaxRsErrorLogWriterが使用される",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilder処理中に例外が発生した場合、WARNレベルでログ出力しステータスコード500のレスポンスを生成して処理継続",
+        "supported": true
+      },
+      {
+        "claim": "SampleErrorResponseBuilderのカスタマイズ例（ApplicationException、NoDataExceptionの処理）",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerはハンドラキューの先頭に配置し、未捕捉例外を処理する",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerはFATAL/INFOレベルのログを出力する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsResponseHandlerが後続ハンドラ（リソースクラスやBodyConvertHandler）で発生した例外を捕捉する",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandlerはJaxRsResponseHandlerでも捕捉できなかった最終的な未捕捉例外を処理する",
+        "supported": false
+      }
+    ],
+    "reason": "回答中の「後続ハンドラ（リソースクラスやBodyConvertHandler）で発生した例外を捕捉する」という具体的な後続ハンドラの記載、および「GlobalErrorHandlerはJaxRsResponseHandlerでも捕捉できなかった最終的な未捕捉例外を処理する」という両者の役割分担の説明は、知識セクションに明確な裏付けがない。知識セクションではGlobalErrorHandlerは「未捕捉例外を処理する」とのみ記載されており、JaxRsResponseHandlerとの関係性（JaxRsResponseHandlerで捕捉できなかったものを処理する）という具体的な連携関係は記載されていない。これらはNablarch固有の仕様に関する裏付けのない主張であり、ハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 回答中の「後続ハンドラ（リソースクラスやBodyConvertHandler）で発生した例外を捕捉する」という具体的な後続ハンドラの記載、および「GlobalErrorHandlerはJaxRsResponseHandlerでも捕捉できなかった最終的な未捕捉例外を処理する」という両者の役割分担の説明は、知識セクションに明確な裏付けがない。知識セクションではGlobalErrorHandlerは「未捕捉例外を処理する」とのみ記載されており、JaxRsResponseHandlerとの関係性（JaxRsResponseHandlerで捕捉できなかったものを処理する）という具体的な連携関係は記載されていない。これらはNablarch固有の仕様に関する裏付けのない主張であり、ハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-response-handler.json:s8",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s5",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 67018,
+    "duration_api_ms": 66415,
+    "num_turns": 9,
+    "total_cost_usd": 0.5832251,
+    "usage": {
+      "input_tokens": 2394,
+      "output_tokens": 4760,
+      "cache_read_input_tokens": 521602,
+      "cache_creation_input_tokens": 92026
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2925,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003065,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2394,
+        "outputTokens": 4760,
+        "cacheReadInputTokens": 521602,
+        "cacheCreationInputTokens": 92026,
+        "webSearchRequests": 0,
+        "costUSD": 0.5801601,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

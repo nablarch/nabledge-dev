@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 61693,
+  "duration_api_ms": 60279,
+  "ttft_ms": 8819,
+  "num_turns": 5,
+  "result": "必要なセクションが揃いました。回答を生成します。\n\n---\n\n**結論**: `@Csv` アノテーションでフォーマットを定義したフォームクラスと、`ObjectMapperFactory` を使った `DataReader` 実装を組み合わせることで、CSVの各行を Java Beans として1件ずつ読み込める。\n\n**根拠**:\n\n**① フォームクラスの作成（CSVフォーマット定義）**\n\n`@Csv` および `@CsvFormat` アノテーションでフォーマットを指定する。\n\n```java\n@Csv(properties = {\"localGovernmentCode\", \"zipCode5digit\"}, type = CsvType.CUSTOM)\n@CsvFormat(charset = \"UTF-8\", fieldSeparator = ',',\n        ignoreEmptyLine = true, lineSeparator = \"\\r\\n\", quote = '\"',\n        quoteMode = QuoteMode.NORMAL, requiredHeader = false, emptyToNull = true)\npublic class ZipCodeForm {\n\n    @Domain(\"localGovernmentCode\")\n    @Required\n    private String localGovernmentCode;\n\n    private String zipCode5digit;\n\n    private Long lineNumber;\n\n    @LineNumber\n    public Long getLineNumber() { return lineNumber; }\n\n    // getter/setter は省略\n}\n```\n\n**② DataReader の実装**\n\n`DataReader<T>` を実装し、`ObjectMapperFactory` で生成した `ObjectMapper` を使って1行ずつ読み込む。\n\n```java\npublic class ZipCodeFileReader implements DataReader<ZipCodeForm> {\n\n    private ObjectMapperIterator<ZipCodeForm> iterator;\n\n    @Override\n    public ZipCodeForm read(ExecutionContext ctx) {\n        if (iterator == null) initialize();\n        return iterator.next();\n    }\n\n    @Override\n    public boolean hasNext(ExecutionContext ctx) {\n        if (iterator == null) initialize();\n        return iterator.hasNext();\n    }\n\n    @Override\n    public void close(ExecutionContext ctx) {\n        iterator.close();\n    }\n\n    private void initialize() {\n        File file = FilePathSetting.getInstance().getFileWithoutCreate(\"csv-input\", \"importZipCode\");\n        try {\n            iterator = new ObjectMapperIterator<>(\n                ObjectMapperFactory.create(ZipCodeForm.class, new FileInputStream(file)));\n        } catch (FileNotFoundException e) {\n            throw new IllegalStateException(e);\n        }\n    }\n}\n```\n\n**③ BatchAction に組み込む**\n\n`BatchAction` を継承したアクションクラスの `createReader` で上記リーダーを返す。\n\n```java\npublic class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {\n\n    @Override\n    public Result handle(ZipCodeForm inputData, ExecutionContext ctx) {\n        ZipCodeData data = BeanUtil.createAndCopy(ZipCodeData.class, inputData);\n        UniversalDao.insert(data);\n        return new Result.Success();\n    }\n\n    @Override\n    public DataReader<ZipCodeForm> createReader(ExecutionContext ctx) {\n        return new ZipCodeFileReader();\n    }\n}\n```\n\n**注意点**:\n- `ObjectMapper` は必ず `close` でリソースを解放すること（`try-with-resources` 推奨）\n- `ObjectMapper` はスレッドアンセーフのため、複数スレッドでの共有は不可\n- 外部から受け付けたデータをフォームに読み込む場合、型変換エラーを業務エラーとして扱うため、プロパティは全て `String` 型で定義すること\n\n参照: `libraries-data-bind.json:s7`, `libraries-data-bind.json:s15`, `nablarch-batch-getting-started-nablarch-batch.json:s2`, `nablarch-batch-getting-started-nablarch-batch.json:s3`\n\n---\n\n<<<BENCHMARK_HEARING>>>\n{\"status\": \"skipped\", \"questions\": []}\n<<<END_BENCHMARK_HEARING>>>\n\n<<<BENCHMARK_SEARCH>>>\n{\"section_ids\": [\"component/libraries/libraries-data-bind.json:s7\", \"component/libraries/libraries-data-bind.json:s15\", \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2\", \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3\"]}\n<<<END_BENCHMARK_SEARCH>>>\n\n<<<BENCHMARK_ANSWER>>>\n**結論**: `@Csv` アノテーションでフォーマットを定義したフォームクラスと、`ObjectMapperFactory` を使った `DataReader` 実装を組み合わせることで、CSVの各行を Java Beans として1件ずつ読み込める。\n\n**根拠**:\n\n**① フォームクラスの作成（CSVフォーマット定義）**\n\n`@Csv` および `@CsvFormat` アノテーションでフォーマットを指定する。\n\n```java\n@Csv(properties = {\"localGovernmentCode\", \"zipCode5digit\"}, type = CsvType.CUSTOM)\n@CsvFormat(charset = \"UTF-8\", fieldSeparator = ',',\n        ignoreEmptyLine = true, lineSeparator = \"\\r\\n\", quote = '\"',\n        quoteMode = QuoteMode.NORMAL, requiredHeader = false, emptyToNull = true)\npublic class ZipCodeForm {\n\n    @Domain(\"localGovernmentCode\")\n    @Required\n    private String localGovernmentCode;\n\n    private String zipCode5digit;\n\n    private Long lineNumber;\n\n    @LineNumber\n    public Long getLineNumber() { return lineNumber; }\n\n    // getter/setter は省略\n}\n```\n\n**② DataReader の実装**\n\n`DataReader<T>` を実装し、`ObjectMapperFactory` で生成した `ObjectMapper` を使って1行ずつ読み込む。\n\n```java\npublic class ZipCodeFileReader implements DataReader<ZipCodeForm> {\n\n    private ObjectMapperIterator<ZipCodeForm> iterator;\n\n    @Override\n    public ZipCodeForm read(ExecutionContext ctx) {\n        if (iterator == null) initialize();\n        return iterator.next();\n    }\n\n    @Override\n    public boolean hasNext(ExecutionContext ctx) {\n        if (iterator == null) initialize();\n        return iterator.hasNext();\n    }\n\n    @Override\n    public void close(ExecutionContext ctx) {\n        iterator.close();\n    }\n\n    private void initialize() {\n        File file = FilePathSetting.getInstance().getFileWithoutCreate(\"csv-input\", \"importZipCode\");\n        try {\n            iterator = new ObjectMapperIterator<>(\n                ObjectMapperFactory.create(ZipCodeForm.class, new FileInputStream(file)));\n        } catch (FileNotFoundException e) {\n            throw new IllegalStateException(e);\n        }\n    }\n}\n```\n\n**③ BatchAction に組み込む**\n\n`BatchAction` を継承したアクションクラスの `createReader` で上記リーダーを返す。\n\n```java\npublic class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {\n\n    @Override\n    public Result handle(ZipCodeForm inputData, ExecutionContext ctx) {\n        ZipCodeData data = BeanUtil.createAndCopy(ZipCodeData.class, inputData);\n        UniversalDao.insert(data);\n        return new Result.Success();\n    }\n\n    @Override\n    public DataReader<ZipCodeForm> createReader(ExecutionContext ctx) {\n        return new ZipCodeFileReader();\n    }\n}\n```\n\n**注意点**:\n- `ObjectMapper` は必ず `close` でリソースを解放すること（`try-with-resources` 推奨）\n- `ObjectMapper` はスレッドアンセーフのため、複数スレッドでの共有は不可\n- 外部から受け付けたデータをフォームに読み込む場合、型変換エラーを業務エラーとして扱うため、プロパティは全て `String` 型で定義すること\n\n参照: `libraries-data-bind.json:s7`, `libraries-data-bind.json:s15`, `nablarch-batch-getting-started-nablarch-batch.json:s2`, `nablarch-batch-getting-started-nablarch-batch.json:s3`\n<<<END_BENCHMARK_ANSWER>>>",
+  "stop_reason": "end_turn",
+  "session_id": "849f639b-1488-4dc4-a773-1b60b070e489",
+  "total_cost_usd": 0.49785485,
+  "usage": {
+    "input_tokens": 3640,
+    "cache_creation_input_tokens": 96551,
+    "cache_read_input_tokens": 204502,
+    "output_tokens": 4029,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 96551
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 2928,
+      "outputTokens": 31,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0030830000000000002,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 3640,
+      "outputTokens": 4029,
+      "cacheReadInputTokens": 204502,
+      "cacheCreationInputTokens": 96551,
+      "webSearchRequests": 0,
+      "costUSD": 0.49477184999999996,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "2c2f8760-85e3-4771-b9f9-11b632796e9b"
+}

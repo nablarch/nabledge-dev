@@ -1,0 +1,145 @@
+{
+  "scenario_id": "review-06",
+  "description": "REST APIのリソースクラスでJaxRsHttpRequestからクエリーパラメータを取得する処理を書いている。URLパスの一部をパスパラメータとして使う箇所もある。",
+  "input": "REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「ルーティング設定（routes.xml）でパスパラメータに名前を設定し（`users/:id` の `id`）、リソースクラスで `JaxRsHttpRequest#getPathParam()` により取得する」という情報が明確に含まれており、事実と一致している。",
+      "fact": "パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答中の「クエリーパラメータ（例: GET /users/search?name=Duke）」セクションに「リソースクラスで `getParamMap()` → `BeanUtil.createAndCopy()` でFormに変換する」と記載されており、コード例でも `JaxRsHttpRequest req` を引数として受け取り `req.getParamMap()` でクエリーパラメータを取得している。これは「クエリーパラメータはJaxRsHttpRequestから取得する」という事実と同一の情報である。",
+      "fact": "クエリーパラメータはJaxRsHttpRequestから取得する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "パスパラメータはJaxRsHttpRequest#getPathParam()で取得する",
+        "supported": true
+      },
+      {
+        "claim": "クエリーパラメータはgetParamMap()+BeanUtil.createAndCopy()でFormに変換する",
+        "supported": true
+      },
+      {
+        "claim": "ルーティングはXML定義（routes.xml）または@Pathアノテーションの2方式がある",
+        "supported": true
+      },
+      {
+        "claim": "XML定義方式ではRoutesMapping をディスパッチハンドラとして設定する",
+        "supported": true
+      },
+      {
+        "claim": "RoutesMapping のコンポーネント名はpackageMappingとし、basePackage属性にアクションクラスのパッケージを設定する",
+        "supported": true
+      },
+      {
+        "claim": "RoutesMappingを初期化対象リストに設定する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "routes.xmlでパスパラメータ部に名前と制約を設定できる（例: users/:id, \\d+$）",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta RESTful Web Servicesの@PathParamアノテーションは使用できない",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta RESTful Web Servicesの@QueryParamアノテーションは使用できない",
+        "supported": true
+      },
+      {
+        "claim": "@Pathアノテーション方式ではPathOptionsProviderRoutesMapping をディスパッチハンドラとして設定する",
+        "supported": true
+      },
+      {
+        "claim": "PathOptionsProviderRoutesMapping にはpathOptionsProviderプロパティにJaxRsPathOptionsProviderを設定する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsPathOptionsProviderにはapplicationPathとbasePackageの2プロパティを設定する",
+        "supported": true
+      },
+      {
+        "claim": "methodBinderFactoryにはJaxRsMethodBinderFactoryを設定しhandlerListにJerseyJaxRsHandlerListFactoryを指定する",
+        "supported": true
+      },
+      {
+        "claim": "{パラメータ名}でパスパラメータを定義し、{パラメータ名 : 正規表現}で書式制約も指定できる",
+        "supported": true
+      },
+      {
+        "claim": "@Pathアノテーション方式はJBoss/WildFly（vfsファイルシステム）では使用できない",
+        "supported": true
+      },
+      {
+        "claim": "XML定義方式とPathアノテーション方式は混在不可",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるNablarch固有の主張（API名、クラス名、XML設定方法、動作仕様）はすべて知識セクションの内容と一致しており、裏付けのない捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s3",
+      "component/adapters/adapters-router-adaptor.json:s3",
+      "component/adapters/adapters-router-adaptor.json:s4",
+      "component/adapters/adapters-router-adaptor.json:s6",
+      "component/adapters/adapters-router-adaptor.json:s9",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/adapters/adapters-router-adaptor.json:s7",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 122916,
+    "duration_api_ms": 121362,
+    "num_turns": 8,
+    "total_cost_usd": 0.8513632,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 5861,
+      "cache_read_input_tokens": 242387,
+      "cache_creation_input_tokens": 41104
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2947,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003082,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 15,
+        "outputTokens": 9039,
+        "cacheReadInputTokens": 503429,
+        "cacheCreationInputTokens": 149766,
+        "webSearchRequests": 0,
+        "costUSD": 0.8482812,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

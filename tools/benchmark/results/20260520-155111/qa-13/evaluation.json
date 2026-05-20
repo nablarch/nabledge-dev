@@ -1,0 +1,125 @@
+{
+  "scenario_id": "qa-13",
+  "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。",
+  "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答にはFormクラス（ProjectForm）で値を受け付け、@ValidでバリデーションしてUniversalDao.insertで登録する実装が明示されている。事実の内容と一致している。",
+      "fact": "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@POST + @Consumes(MediaType.APPLICATION_JSON) + @Valid アノテーションを付けたアクションメソッドでDB登録を行う",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy() でFormをEntityに変換する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert() でDB登録する",
+        "supported": true
+      },
+      {
+        "claim": "Formクラスのプロパティは全てString型で宣言する",
+        "supported": true
+      },
+      {
+        "claim": "BodyConvertHandler が @Consumes アノテーションに基づいてリクエストボディをFormに変換する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsBeanValidationHandler が @Valid アノテーションを検知してBean Validationを実行する",
+        "supported": true
+      },
+      {
+        "claim": "バリデーションエラー時は ApplicationException が送出される",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao.insert() はJakarta PersistenceアノテーションをもとにINSERT SQLを自動生成する",
+        "supported": true
+      },
+      {
+        "claim": "戻り値としてHTTPステータスコード201を返す",
+        "supported": true
+      },
+      {
+        "claim": "BodyConvertHandler はルーティングアダプタより後ろに設定する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsBeanValidationHandler は BodyConvertHandler より後ろに設定する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao を使用するには BasicDaoContextFactory のコンポーネント定義が必要",
+        "supported": true
+      },
+      {
+        "claim": "主キー以外の条件を指定した更新・削除はJDBCラッパーを使用すること",
+        "supported": true
+      }
+    ],
+    "reason": "「バリデーションエラー時は ApplicationException が送出される」という主張が知識セクションに裏付けられていない。知識セクションには JaxRsBeanValidationHandler が @Valid を検知してBean Validationを実行することは記載されているが、バリデーションエラー時にどの例外が送出されるかについては一切記載がなく、ApplicationException という具体的なクラス名は登場しない。他の主張はすべて知識セクションで裏付けられている。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 「バリデーションエラー時は ApplicationException が送出される」という主張が知識セクションに裏付けられていない。知識セクションには JaxRsBeanValidationHandler が @Valid を検知してBean Validationを実行することは記載されているが、バリデーションエラー時にどの例外が送出されるかについては一切記載がなく、ApplicationException という具体的なクラス名は登場しない。他の主張はすべて知識セクションで裏付けられている。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/libraries/libraries-universal-dao.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 59375,
+    "duration_api_ms": 58900,
+    "num_turns": 8,
+    "total_cost_usd": 0.5245253000000001,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 3613,
+      "cache_read_input_tokens": 314156,
+      "cache_creation_input_tokens": 99470
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2918,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003053,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 3613,
+        "cacheReadInputTokens": 314156,
+        "cacheCreationInputTokens": 99470,
+        "webSearchRequests": 0,
+        "costUSD": 0.5214723,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

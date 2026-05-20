@@ -1,0 +1,119 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「言語ごとにプロパティファイルを作成します」という記述と、PropertiesStringResourceLoaderのlocalesプロパティにサポート言語（en、zh）を設定するXMLの例が明示されており、事実の内容（言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する）が含まれている。",
+      "fact": "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "PropertiesStringResourceLoader.localesにサポート言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "PropertiesStringResourceLoader.defaultLocaleでデフォルトロケールを設定する",
+        "supported": true
+      },
+      {
+        "claim": "defaultLocaleを未設定の場合Locale.getDefault().getLanguage()が使用され障害原因になる",
+        "supported": true
+      },
+      {
+        "claim": "メッセージ取得時の言語はThreadContext#getLanguage()で決まる",
+        "supported": true
+      },
+      {
+        "claim": "ThreadContextHandlerにLanguageAttributeを設定しdefaultLanguageプロパティで言語を指定する",
+        "supported": true
+      },
+      {
+        "claim": "クッキー保持にはLanguageAttributeInHttpCookieを使用し、supportedLanguagesプロパティでサポート言語を指定する",
+        "supported": true
+      },
+      {
+        "claim": "LanguageAttributeInHttpUtil.keepLanguage()でクッキーとスレッドコンテキストに言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "JSP言語切り替えにn:submitLinkとn:paramタグを使用し、paramName=\"user.language\"で言語を送信する",
+        "supported": true
+      },
+      {
+        "claim": "HttpResponseHandlerのcontentPathRuleにDirectoryBasedResourcePathRuleまたはFilenameBasedResourcePathRuleを設定することでJSPを言語別に切り替える",
+        "supported": true
+      },
+      {
+        "claim": "コード名称テーブルに言語ごとのデータを追加することでコード名称の多言語化が可能",
+        "supported": true
+      },
+      {
+        "claim": "JSP用カスタムタグライブラリでは言語指定による直接的な値の取得はできず、スレッドコンテキストの言語が自動的に使われる",
+        "supported": true
+      },
+      {
+        "claim": "customResponseWriter使用時はcontentPathRuleによるJSPの言語別切り替えは利用できない",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有のすべての主要な主張（クラス名・プロパティ名・設定方法・動作仕様）は知識セクションによって裏付けられている。I18nHandlerの実装例でnullチェックを省略した簡略化があるが、これはAPI仕様の誤りではなく実装上の省略であり、ハルシネーションには該当しない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s4",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/handlers/handlers-http-response-handler.json:s7",
+      "component/libraries/libraries-code.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 72375,
+    "duration_api_ms": 71291,
+    "num_turns": 7,
+    "total_cost_usd": 0.5878366500000001,
+    "usage": {
+      "input_tokens": 8056,
+      "output_tokens": 4828,
+      "cache_read_input_tokens": 313428,
+      "cache_creation_input_tokens": 105115
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2909,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003039,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8056,
+        "outputTokens": 4828,
+        "cacheReadInputTokens": 313428,
+        "cacheCreationInputTokens": 105115,
+        "webSearchRequests": 0,
+        "costUSD": 0.5847976500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

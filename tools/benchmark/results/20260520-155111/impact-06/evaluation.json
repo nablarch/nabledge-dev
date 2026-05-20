@@ -1,0 +1,159 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「DBストア」セクションに「保存先: データベース上のテーブル（`USER_SESSION`テーブル）」および「APサーバが停止してもセッション変数の復元が可能」と明記されており、事実の内容（DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能）が含まれている。",
+      "fact": "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「HIDDENストア」セクションに「保存先: クライアントサイド（hiddenタグで画面間を引き回す）」と明記されており、事実の内容と一致している。",
+      "fact": "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "DBストアの保存先はデータベース上のテーブル（USER_SESSIONテーブル）である",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはAPサーバが停止してもセッション変数の復元が可能",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは同一セッションの処理が複数スレッドで実行された場合は後勝ちとなる",
+        "supported": true
+      },
+      {
+        "claim": "DBストアでは期限切れのセッション情報を定期的に削除するバッチが必要",
+        "supported": true
+      },
+      {
+        "claim": "RedisストアはDBストアと同等の特徴を持つ",
+        "supported": true
+      },
+      {
+        "claim": "Redisストアでは有効期限切れのセッション情報はRedisが自動削除するため削除バッチが不要",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.lettuce.clientTypeでsimple/masterReplica/clusterを切り替えられる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアの保存先はクライアントサイド（hiddenタグ）",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数タブでの画面操作を許容できる",
+        "supported": true
+      },
+      {
+        "claim": "APサーバ冗長化時にHIDDENストアで共通の暗号化キーを明示設定しないと復号に失敗する",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアのAesEncryptor設定XMLはAesEncryptorとBase64Keyを使用する",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアの保存先はAPサーバのヒープ領域",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはAPサーバごとに情報を保持するためスケールアウト時に工夫が必要",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアは大量データ保存でヒープを圧迫する恐れがある",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはスケールアウト時に避けるべきストアである",
+        "supported": false
+      },
+      {
+        "claim": "Redisストアは高スループット用途に適している",
+        "supported": false
+      },
+      {
+        "claim": "認証情報の保持においてDBストアが推奨（HTTPセッションストアより優先）される",
+        "supported": false
+      }
+    ],
+    "reason": "HTTPセッションストアを「避けるべきストア」と断言している点がハルシネーション。知識セクションではHTTPセッションストアは「APサーバ毎に情報を保持するため工夫が必要」と記載されているに留まり、かつ「認証情報の保持」における有効な選択肢として明示されている。「避けるべき」という断定は知識に裏付けられず、むしろ矛盾する。また、Redisストアの用途として「高スループット」を挙げているが、知識セクションにそのような記述はない。認証情報の保持でDBストアを「推奨」とする表現も、知識セクションの選択基準表ではDBストアとHTTPセッションストアを同等に列挙しており、一方的な優劣付けは裏付けが不十分である。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — HTTPセッションストアを「避けるべきストア」と断言している点がハルシネーション。知識セクションではHTTPセッションストアは「APサーバ毎に情報を保持するため工夫が必要」と記載されているに留まり、かつ「認証情報の保持」における有効な選択肢として明示されている。「避けるべき」という断定は知識に裏付けられず、むしろ矛盾する。また、Redisストアの用途として「高スループット」を挙げているが、知識セクションにそのような記述はない。認証情報の保持でDBストアを「推奨」とする表現も、知識セクションの選択基準表ではDBストアとHTTPセッションストアを同等に列挙しており、一方的な優劣付けは裏付けが不十分である。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s3",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s17",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s1",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s6",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s14",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 86816,
+    "duration_api_ms": 85459,
+    "num_turns": 7,
+    "total_cost_usd": 0.62232675,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 5110,
+      "cache_read_input_tokens": 519810,
+      "cache_creation_input_tokens": 103105
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2941,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003066,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 5110,
+        "cacheReadInputTokens": 519810,
+        "cacheCreationInputTokens": 103105,
+        "webSearchRequests": 0,
+        "costUSD": 0.61926075,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

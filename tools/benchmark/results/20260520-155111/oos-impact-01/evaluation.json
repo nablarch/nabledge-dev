@@ -1,0 +1,129 @@
+{
+  "scenario_id": "oos-impact-01",
+  "description": "既存システムをNablarch 6に移行するにあたり、OAuth2/OpenID Connect認証が必要かどうか影響調査している。NablarchにOAuth2/OIDCの仕組みが組み込まれているか確認したい。",
+  "input": "NablarchでOAuth2やOpenID Connectによる認証を実装したい。Nablarchにその仕組みは組み込まれているか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭で「NablarchにはOAuth2やOpenID Connectの認証機構はフレームワークとして組み込まれていない」と明示されており、さらに公式ドキュメントの引用として「認証については、プロジェクト要件により仕様が異なるため、フレームワークとしては提供していない」と記載されている。これは事実の内容と一致する。",
+      "fact": "NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchにはOAuth2やOpenID Connectの認証機構はフレームワークとして組み込まれていない",
+        "supported": true
+      },
+      {
+        "claim": "認証についてはプロジェクト要件により仕様が異なるため、フレームワークとしては提供していない",
+        "supported": true
+      },
+      {
+        "claim": "OIDCのIDトークンを用いた認証サンプル（nablarch-biz-sample-all）が提供されている",
+        "supported": true
+      },
+      {
+        "claim": "バックエンドはNablarchのRESTfulウェブサービスを前提としている",
+        "supported": true
+      },
+      {
+        "claim": "IDトークンはフロントエンド（SPA・モバイルアプリ等）で取得しバックエンドに送信する",
+        "supported": true
+      },
+      {
+        "claim": "対応サービスはAmazon CognitoユーザープールおよびAzure Active Directory B2C（ADB2C）",
+        "supported": true
+      },
+      {
+        "claim": "Auth0のjava-jwt（4.4.0）とjwks-rsa（0.22.1）を使用する",
+        "supported": true
+      },
+      {
+        "claim": "環境依存値としてaws.cognito.region、aws.cognito.userPool.id、aws.cognito.userPool.clientIdを設定する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント名idTokenVerifier、クラスCognitoIdTokenVerifierを使用する",
+        "supported": true
+      },
+      {
+        "claim": "CognitoIdTokenVerifierのプロパティにregion、userPoolId、clientId、signatureAlgorithmProviderを設定する",
+        "supported": true
+      },
+      {
+        "claim": "LoginActionでDecodedJWTを取得し、SessionUtil.changeId、CsrfTokenUtil.regenerateCsrfToken、SessionUtil.putを呼び出す",
+        "supported": true
+      },
+      {
+        "claim": "IDトークン検証失敗時にHttpErrorResponse(401)を返す",
+        "supported": true
+      },
+      {
+        "claim": "秘匿情報はシステムプロパティまたはOS環境変数で管理することを推奨する",
+        "supported": true
+      },
+      {
+        "claim": "サンプルは2024年9月時点のCognito・ADB2C仕様に基づいている",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有の主張（クラス名、API名、設定方法、ライブラリバージョン、対応サービス、動作仕様）はすべて知識セクションの内容と一致しており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "guide/biz-samples/biz-samples-12.json:s2",
+      "guide/biz-samples/biz-samples-12.json:s11",
+      "guide/biz-samples/biz-samples-12.json:s12",
+      "guide/biz-samples/biz-samples-12.json:s13",
+      "guide/biz-samples/biz-samples-12.json:s14",
+      "guide/biz-samples/biz-samples-12.json:s16",
+      "processing-pattern/web-application/web-application-feature-details.json:s13"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 81303,
+    "duration_api_ms": 81197,
+    "num_turns": 9,
+    "total_cost_usd": 0.6371938,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 4975,
+      "cache_read_input_tokens": 557896,
+      "cache_creation_input_tokens": 104560
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2930,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00307,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 4975,
+        "cacheReadInputTokens": 557896,
+        "cacheCreationInputTokens": 104560,
+        "webSearchRequests": 0,
+        "costUSD": 0.6341238,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

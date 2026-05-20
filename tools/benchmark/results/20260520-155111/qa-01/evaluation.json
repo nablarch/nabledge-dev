@@ -1,0 +1,105 @@
+{
+  "scenario_id": "qa-01",
+  "description": "バッチで10万件のデータを読み込んで加工する処理を書いている。findAllBySqlFileで全件取得したらOutOfMemoryErrorが出た。",
+  "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「UniversalDao.defer()を使用します」と明記されており、コード例でも`UniversalDao.defer()`の呼び出しが示されている。事実の「UniversalDao.deferメソッドで遅延ロードを使用する」という情報が明確に含まれている。",
+      "fact": "UniversalDao.deferメソッドで遅延ロードを使用する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「処理後は `DeferredEntityList#close` を必ず呼び出す必要があります（try-with-resources で自動クローズ可能）」と明記されており、DeferredEntityListのcloseメソッドを呼び出す必要があるという事実が含まれている。",
+      "fact": "DeferredEntityListのcloseメソッドを呼び出す必要がある"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "UniversalDao.defer()を使用して遅延ロードができる",
+        "supported": true
+      },
+      {
+        "claim": "遅延ロードはJDBCのサーバサイドカーソルを利用して1件ずつデータを読み込む",
+        "supported": true
+      },
+      {
+        "claim": "DeferredEntityListはダウンキャストして取得する",
+        "supported": true
+      },
+      {
+        "claim": "try-with-resourcesでDeferredEntityList#closeを自動呼び出しできる",
+        "supported": true
+      },
+      {
+        "claim": "メモリ使用量はJDBCのフェッチサイズによって変わる",
+        "supported": true
+      },
+      {
+        "claim": "フェッチサイズの詳細はデータベースベンダーのマニュアルを参照する",
+        "supported": true
+      },
+      {
+        "claim": "カーソルオープン中にトランザクション制御が行われるとカーソルがクローズされる場合がある",
+        "supported": true
+      },
+      {
+        "claim": "遅延ロード中にトランザクション制御を行うとクローズ済みカーソルを参照してエラーになる可能性がある",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるNablarch固有の主張（UniversalDao.defer()の使用方法、DeferredEntityList、サーバサイドカーソル、フェッチサイズ、トランザクション制御時の注意点）はすべて知識セクションの内容と一致しており、捏造情報は確認されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 53306,
+    "duration_api_ms": 52659,
+    "num_turns": 5,
+    "total_cost_usd": 0.5140257500000001,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 2787,
+      "cache_read_input_tokens": 204500,
+      "cache_creation_input_tokens": 108745
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2922,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003062,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5,
+        "outputTokens": 2787,
+        "cacheReadInputTokens": 204500,
+        "cacheCreationInputTokens": 108745,
+        "webSearchRequests": 0,
+        "costUSD": 0.5109637499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "scenario_id": "qa-07",
+  "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。",
+  "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「② DataReader の実装」セクションで、`ObjectMapperFactory.create(ZipCodeForm.class, new FileInputStream(file))` を使ってObjectMapperを生成し、データを読み込む実装が明示されている。これは「ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む」という事実と一致している。",
+      "fact": "ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "@Csv および @CsvFormat アノテーションでCSVフォーマットを指定できる",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapperFactory#create で生成した ObjectMapper を使ってデータを読み込む",
+        "supported": true
+      },
+      {
+        "claim": "DataReader<T> を実装してデータリーダを作成する",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapperIterator<ZipCodeForm> を使って1行ずつ読み込む",
+        "supported": true
+      },
+      {
+        "claim": "FilePathSetting.getInstance().getFileWithoutCreate(\"csv-input\", ...) でファイルを取得する",
+        "supported": true
+      },
+      {
+        "claim": "BatchAction を継承して業務アクションクラスを作成する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy() でフォームからエンティティに変換する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert() でDBに登録する",
+        "supported": true
+      },
+      {
+        "claim": "@LineNumber アノテーションをゲッタに付与することで行番号を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapper は close でリソースを解放すること（try-with-resources 推奨）",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapper はスレッドアンセーフのため複数スレッドでの共有は不可",
+        "supported": true
+      },
+      {
+        "claim": "外部から受け付けたデータのプロパティは全て String 型で定義すること",
+        "supported": true
+      },
+      {
+        "claim": "createReader メソッドで DataReader のインスタンスを返却する",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有の主張（API名・クラス名・アノテーション名・動作仕様）はすべて知識セクションの記述と一致しており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 61693,
+    "duration_api_ms": 60279,
+    "num_turns": 5,
+    "total_cost_usd": 0.49785485,
+    "usage": {
+      "input_tokens": 3640,
+      "output_tokens": 4029,
+      "cache_read_input_tokens": 204502,
+      "cache_creation_input_tokens": 96551
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2928,
+        "outputTokens": 31,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0030830000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 3640,
+        "outputTokens": 4029,
+        "cacheReadInputTokens": 204502,
+        "cacheCreationInputTokens": 96551,
+        "webSearchRequests": 0,
+        "costUSD": 0.49477184999999996,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
