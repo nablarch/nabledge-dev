@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20 (session 9)
+**Updated**: 2026-05-20 (session 9b)
 
 ## Rules
 
@@ -13,41 +13,51 @@
 
 ## Not Started
 
-### B-4-1-B. goal 設計見直し（ヒアリング設計の根本修正）
+### B-4-1-B. purpose ヒアリング追加（ヒアリング設計の根本修正）
 
 **背景・問題**
 
-`goal` の現行定義（hearing-design.md §goalの導出）は「質問の要点を処理方式の文脈で具体化した1文動詞句」。
-これは**質問の言い換え**にすぎず、semantic search の向き先を制御できていない。
+`goal` は質問の言い換えにすぎず、semantic search の向き先を制御できていない。
 
 例: 「バリデーションエラーをユーザーに返す方法」という質問は、目的によって参照すべき知識が変わる。
-- 「実装方法を知りたい」→ processing-pattern / libraries が relevant
-- 「ハンドラ構成を理解したい」→ component/handlers が relevant
-- 「バージョンアップ影響を調べたい」→ about/release-notes / about/migration が relevant
+- 「実装したい」→ processing-pattern / component/libraries が優先
+- 「仕組みを理解したい」→ component/handlers が優先
+- 「バージョンアップしたい」→ about/migration / releases が優先
 
-現行の goal は「バリデーションエラーメッセージをユーザーに返す」のような操作記述しか生成できず、
-LLM がどのカテゴリを選ぶべきか判断できない。目的を明示することで検索の向き先が確定する。
+目的を明示することで LLM が libraries と handlers のどちらを優先するかを判断できるようになる。
 
-**設計方針**
+**設計方針（合意済み）**
 
-`processing_type`（処理方式）に加えて `purpose`（質問の目的）をヒアリングで特定し、
-semantic search に渡す `hearing_answer` を `{ processing_type, purpose, goal }` に拡張する。
+- `goal` を廃止し、`purpose`（質問の目的）を新設
+- `hearing_answer` は `{ processing_type, purpose }` の2軸
+- semantic search には `"処理方式: {processing_type}\n目的: {purpose}"` として渡す
+- `purpose` は以下の7択の固定カテゴリ（ユーザー承認済み）:
+  1. 実装したい
+  2. 仕組み・動作を理解したい
+  3. 不具合・エラーを調査したい
+  4. テストを書きたい
+  5. バージョンアップしたい
+  6. 実装パターン・サンプルを参考にしたい
+  7. セキュリティ対応したい
 
-- `purpose`: 質問の目的を表す固定カテゴリ（例: 実装方法、ハンドラ/アーキテクチャ理解、バージョンアップ影響調査、テスト方法、設定方法）
-- `goal`: purpose が確定した上で、質問の核心操作を1文で表す動詞句（現行の役割は維持）
-- semantic search では `"目的: {purpose}\nやりたいこと: {goal}"` として渡す
+**purpose と優先カテゴリの対応（目安）**
+
+| purpose | 優先カテゴリ |
+|---------|------------|
+| 実装したい | processing-pattern/*, component/libraries |
+| 仕組み・動作を理解したい | component/handlers, component/libraries, about/about-nablarch |
+| 不具合・エラーを調査したい | component/handlers, component/libraries, processing-pattern/* |
+| テストを書きたい | development-tools/testing-framework, component/libraries |
+| バージョンアップしたい | about/migration, releases/releases, about/release-notes |
+| 実装パターン・サンプルを参考にしたい | guide/nablarch-patterns, guide/biz-samples, processing-pattern/* |
+| セキュリティ対応したい | check/security-check, component/handlers, processing-pattern/* |
 
 **ステップ:**
-- [ ] 知識カテゴリ一覧（index.md の `##` 見出し）と質問の目的の対応表を整理する（調査）
-- [ ] purpose の固定カテゴリリストを設計する（5〜8種）
-- [ ] `processing_type` ヒアリングと同様に、purpose ヒアリングの分類ロジック（skip/ask）を設計する
-  - 質問から目的が明示されていれば skip（自動抽出）
-  - 曖昧なら ask（ユーザーに選択肢を提示）
-- [ ] hearing-design.md を更新（purpose フィールド追加、ヒアリングロジック更新）
-- [ ] qa.md の Step 1〜3 を更新（purpose ヒアリング追加、hearing_answer スキーマ拡張）
-- [ ] semantic-search.md の hearing_answer 入力フォーマットを更新
-- [ ] シナリオ（qa.json）の hearing_answer に purpose フィールドを追加
-- [ ] PEレビュー（qa.md の変更）
+- [ ] `processing_type` ヒアリングと同様に、purpose ヒアリングの skip/ask 分類ロジックを設計する（PEレビュー必須）
+- [ ] hearing-design.md を更新（`goal` 廃止、`purpose` 追加、7択リスト・ヒアリングロジック記述）
+- [ ] qa.md の Step 1〜3 を更新（purpose ヒアリング追加、`goal` 削除、hearing_answer スキーマ変更）
+- [ ] semantic-search.md の hearing_answer 入力フォーマットを更新（`goal` → `purpose`）
+- [ ] シナリオ（qa.json）の hearing_answer を `{ processing_type, purpose }` に更新（`goal` 削除）
 - [ ] `python3 -m pytest tools/ -x` で全テスト GREEN
 
 **前提:** B-4-1-A（FAIL調査）完了後に着手。
