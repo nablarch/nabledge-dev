@@ -64,6 +64,25 @@ evaluate.py の false FAIL が多数判明したため、真のFAILを1件ずつ
 
 ## Not Started
 
+### B-4-1-C. evaluate.py 幻覚検証ロジックの見直し
+
+B-4-1-A の調査で、evaluate.py の幻覚検証が sections=0 の知識ファイル（content フィールドのみ）を
+参照範囲に含めていないため、知識ファイルに記述があるにも関わらず unsupported 判定になる false FAIL が
+多数発生していることが判明。
+
+**確認済みの具体例（qa-12a）:**
+- `errors.hasError()` / `errors.getMessage()` → web-application-error-message.json の content に記述あり → false FAIL
+- `@OnError未設定時にシステムエラー扱い` → handlers-InjectForm.json:s4 に記述あり → false FAIL
+
+**ステップ:**
+- [ ] evaluate.py の幻覚検証ロジックを読み、content フィールルの扱いを確認
+- [ ] B-4-1-A の全シナリオ調査結果をもとに false FAIL パターンを整理
+- [ ] 修正方針を設計（PEまたはQAエキスパートレビュー必須）
+- [ ] TDD: テスト追加（RED）→ 修正実装（GREEN）
+- [ ] `python3 -m pytest tools/ -x` で全テスト GREEN
+
+**前提:** B-4-1-A（FAIL調査）完了後に着手。
+
 ### B-4-1-B. goal 設計見直し（ヒアリング設計の根本修正）
 
 現行の `goal` は質問の言い換えにすぎず、ユーザーの目的（背景・意図）を把握するという本来の設計意図が実装されていない。
