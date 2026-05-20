@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20 (session 8)
+**Updated**: 2026-05-20 (session 9)
 
 ## Rules
 
@@ -15,15 +15,39 @@
 
 ### B-4-1-B. goal 設計見直し（ヒアリング設計の根本修正）
 
-現行の `goal` は質問の言い換えにすぎず、ユーザーの目的（背景・意図）を把握するという本来の設計意図が実装されていない。
-`goal` の本来の目的は「アプリの実装方法を知りたい」「アーキテクチャを設計したい」「バージョンアップの影響調査をしたい」といった
-ユーザーの目的・背景を確認し、回答をその目的にマッチさせること。
+**背景・問題**
+
+`goal` の現行定義（hearing-design.md §goalの導出）は「質問の要点を処理方式の文脈で具体化した1文動詞句」。
+これは**質問の言い換え**にすぎず、semantic search の向き先を制御できていない。
+
+例: 「バリデーションエラーをユーザーに返す方法」という質問は、目的によって参照すべき知識が変わる。
+- 「実装方法を知りたい」→ processing-pattern / libraries が relevant
+- 「ハンドラ構成を理解したい」→ component/handlers が relevant
+- 「バージョンアップ影響を調べたい」→ about/release-notes / about/migration が relevant
+
+現行の goal は「バリデーションエラーメッセージをユーザーに返す」のような操作記述しか生成できず、
+LLM がどのカテゴリを選ぶべきか判断できない。目的を明示することで検索の向き先が確定する。
+
+**設計方針**
+
+`processing_type`（処理方式）に加えて `purpose`（質問の目的）をヒアリングで特定し、
+semantic search に渡す `hearing_answer` を `{ processing_type, purpose, goal }` に拡張する。
+
+- `purpose`: 質問の目的を表す固定カテゴリ（例: 実装方法、ハンドラ/アーキテクチャ理解、バージョンアップ影響調査、テスト方法、設定方法）
+- `goal`: purpose が確定した上で、質問の核心操作を1文で表す動詞句（現行の役割は維持）
+- semantic search では `"目的: {purpose}\nやりたいこと: {goal}"` として渡す
 
 **ステップ:**
-- [ ] hearing-design.md を読み、goal の設計意図を確認・更新
-- [ ] qa.md の Step 1/2 における goal の定義・取得方法を再設計（PEレビュー必須）
-- [ ] シナリオの hearing_answer.goal を再設計後の定義に合わせて更新
-- [ ] 20260520-072948 の精度FAIL（qa-12a, qa-12b）への影響を確認
+- [ ] 知識カテゴリ一覧（index.md の `##` 見出し）と質問の目的の対応表を整理する（調査）
+- [ ] purpose の固定カテゴリリストを設計する（5〜8種）
+- [ ] `processing_type` ヒアリングと同様に、purpose ヒアリングの分類ロジック（skip/ask）を設計する
+  - 質問から目的が明示されていれば skip（自動抽出）
+  - 曖昧なら ask（ユーザーに選択肢を提示）
+- [ ] hearing-design.md を更新（purpose フィールド追加、ヒアリングロジック更新）
+- [ ] qa.md の Step 1〜3 を更新（purpose ヒアリング追加、hearing_answer スキーマ拡張）
+- [ ] semantic-search.md の hearing_answer 入力フォーマットを更新
+- [ ] シナリオ（qa.json）の hearing_answer に purpose フィールドを追加
+- [ ] PEレビュー（qa.md の変更）
 - [ ] `python3 -m pytest tools/ -x` で全テスト GREEN
 
 **前提:** B-4-1-A（FAIL調査）完了後に着手。
