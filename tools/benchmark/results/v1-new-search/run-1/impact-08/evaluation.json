@@ -1,0 +1,105 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「コンポーネント定義で指定されたSystemTimeProvider実装クラスを差し替えることで、システム日時の取得方法を切り替えられる」という情報が明確に含まれている。具体的には本番環境ではBasicSystemTimeProvider、テスト時はFixedSystemTimeProviderに差し替える例が示されており、事実の内容と一致している。",
+      "fact": "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "systemTimeProviderコンポーネントをnablarch.test.FixedSystemTimeProviderに差し替えることでシステム日時を固定できる",
+        "supported": true
+      },
+      {
+        "claim": "本番用クラスはnablarch.core.date.BasicSystemTimeProvider",
+        "supported": true
+      },
+      {
+        "claim": "テスト用XMLでfixedDateプロパティに日時を設定する",
+        "supported": true
+      },
+      {
+        "claim": "fixedDateの例として value=\"20100913123456\" を使用",
+        "supported": true
+      },
+      {
+        "claim": "fixedDateのフォーマットはyyyyMMddHHmmss(12桁)とyyyyMMddHHmmssSSS(15桁)の2種類",
+        "supported": true
+      },
+      {
+        "claim": "src/test/resources配下のコンポーネント設定がテスト時に使用される",
+        "supported": true
+      },
+      {
+        "claim": "mvn -P prod packageではsrc/test/resourcesが含まれない",
+        "supported": true
+      },
+      {
+        "claim": "SystemTimeProviderインタフェースを独自実装して差し替えることも可能",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のすべての主張（クラス名・プロパティ名・XML設定例・フォーマット仕様・ビルド切り替え仕組み）は知識セクションに明示的に裏付けられており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s11",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s12",
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s12",
+      "setup/setting-guide/setting-guide-ManagingEnvironmentalConfiguration.json:s9",
+      "setup/setting-guide/setting-guide-ManagingEnvironmentalConfiguration.json:s10"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 69261,
+    "duration_api_ms": 66333,
+    "num_turns": 7,
+    "total_cost_usd": 0.54085435,
+    "usage": {
+      "input_tokens": 4232,
+      "output_tokens": 3796,
+      "cache_read_input_tokens": 306172,
+      "cache_creation_input_tokens": 100357
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2913,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003028,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4232,
+        "outputTokens": 3796,
+        "cacheReadInputTokens": 306172,
+        "cacheCreationInputTokens": 100357,
+        "webSearchRequests": 0,
+        "costUSD": 0.53782635,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "scenario_id": "pre-02",
+  "description": "入力バリデーションの実装方法を知りたいが、バッチかWebかRESTかが不明",
+  "input": "入力チェック（バリデーション）の実装方法を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の結論部分に「ウェブアプリケーションの入力チェックは`@InjectForm`インターセプタを業務アクションのメソッドに設定し...実装します」と明記されており、Step3でも`@InjectForm`を使ったバリデーション実装が示されている。事実「WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う」の内容が回答に含まれている。",
+      "fact": "WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "BeanValidationStrategyをvalidationStrategyという名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "FormクラスのプロパティはすべてString型で定義すること",
+        "supported": true
+      },
+      {
+        "claim": "String以外の型があると変換処理が失敗し予期せぬ例外が発生する",
+        "supported": true
+      },
+      {
+        "claim": "@Domain, @Required, @Length, @SystemCharアノテーションの使用",
+        "supported": true
+      },
+      {
+        "claim": "@InjectForm(form, prefix, validate)属性の使用",
+        "supported": true
+      },
+      {
+        "claim": "ctx.getRequestScopedVar(\"form\")でバリデーション済みフォームを取得する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorを設定しないとバリデーションエラーがシステムエラー扱いになる",
+        "supported": true
+      },
+      {
+        "claim": "相関バリデーションには@AssertTrueアノテーションを使用する",
+        "supported": true
+      },
+      {
+        "claim": "バリデーション実行順は保証されないため片方が未入力でも例外が出ないようにロジックを組む必要がある",
+        "supported": true
+      },
+      {
+        "claim": "メッセージキーnablarch.core.validation.ee.Length.max.messageの形式",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.core.validation.ee.Required.message=必須項目です。というメッセージキー",
+        "supported": false
+      },
+      {
+        "claim": "ドメインバリデーション(@Domain)の使用を推奨",
+        "supported": true
+      }
+    ],
+    "reason": "回答の主要なNablarch固有の主張（BeanValidationStrategy設定、String型プロパティ制約、@InjectForm/@OnErrorの動作、相関バリデーションの注意点など）は知識セクションによって裏付けられている。唯一、nablarch.core.validation.ee.Required.messageというメッセージキーが知識セクションに明示されていないが、知識セクションに示されているメッセージ定義パターン（nablarch.core.validation.ee.Length.max.message等）と一貫しており、重大なハルシネーションとは言えない。全体として回答はPASSと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s5",
+      "component/libraries/libraries-bean-validation.json:s6",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s8",
+      "component/libraries/libraries-bean-validation.json:s9",
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/libraries/libraries-bean-validation.json:s18",
+      "component/handlers/handlers-InjectForm.json:s1",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "processing-pattern/web-application/web-application-feature-details.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 80106,
+    "duration_api_ms": 78657,
+    "num_turns": 7,
+    "total_cost_usd": 0.5941379,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 4318,
+      "cache_read_input_tokens": 509368,
+      "cache_creation_input_tokens": 99602
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2911,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003026,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 4318,
+        "cacheReadInputTokens": 509368,
+        "cacheCreationInputTokens": 99602,
+        "webSearchRequests": 0,
+        "costUSD": 0.5911119,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

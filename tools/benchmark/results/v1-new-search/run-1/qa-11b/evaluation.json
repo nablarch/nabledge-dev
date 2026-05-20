@@ -1,0 +1,143 @@
+{
+  "scenario_id": "qa-11b",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する」という事実が含まれている。具体的には、結論部分で「JaxRsResponseHandlerが中心となり、例外の種類に応じたレスポンス生成をする」と述べており、またレスポンス生成セクションでerrorResponseBuilderプロパティによる例外に応じたレスポンス生成の仕組みが詳細に説明されている。",
+      "fact": "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「ログ出力」セクションに「ログ出力はerrorLogWriterプロパティに設定されたJaxRsErrorLogWriterが担う」と明記されており、事実「JaxRsErrorLogWriterが例外に応じたログ出力を行う」の情報が含まれている。",
+      "fact": "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "JaxRsResponseHandlerのerrorResponseBuilderプロパティにErrorResponseBuilderを設定してレスポンス生成を行う",
+        "supported": true
+      },
+      {
+        "claim": "発生した例外がHttpErrorResponseの場合はHttpErrorResponse#getResponse()が直接クライアントに返される",
+        "supported": true
+      },
+      {
+        "claim": "設定を省略するとデフォルト実装のErrorResponseBuilderが使用される",
+        "supported": true
+      },
+      {
+        "claim": "errorLogWriterプロパティにJaxRsErrorLogWriterを設定してログ出力を行う",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderの処理中に例外が発生した場合、WARNレベルでログ出力しステータスコード500のレスポンスを生成して処理を継続する",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerがJaxRsResponseHandlerで捕捉できない例外を処理する",
+        "supported": true
+      },
+      {
+        "claim": "ServiceError（サブクラス含む）はServiceError#writeLogを呼び出しログ出力後、ServiceErrorを返却する",
+        "supported": true
+      },
+      {
+        "claim": "Result.Error（サブクラス含む）はFATALレベルのログを出力し、Result.Errorを返却する",
+        "supported": true
+      },
+      {
+        "claim": "上記以外の例外クラスはFATALレベルのログを出力し、InternalErrorを生成して返却する",
+        "supported": true
+      },
+      {
+        "claim": "ThreadDeathはINFOレベルのログ出力後にリスローする",
+        "supported": true
+      },
+      {
+        "claim": "StackOverflowErrorはFATALレベルのログ出力後にInternalErrorを生成して返却する",
+        "supported": true
+      },
+      {
+        "claim": "OutOfMemoryErrorはFATALレベルのログ出力後にInternalErrorを生成して返却する",
+        "supported": true
+      },
+      {
+        "claim": "VirtualMachineError（StackOverflowError・OutOfMemoryError以外）はFATALレベルのログ出力後にリスローする",
+        "supported": true
+      },
+      {
+        "claim": "上記以外のエラークラスはFATALレベルのログ出力後にInternalErrorを生成して返却する",
+        "supported": false
+      },
+      {
+        "claim": "アクセスログはJaxRsAccessLogHandlerが出力し、ロガー名HTTP_ACCESS、ログレベルINFOでアプリケーションログに出力される",
+        "supported": true
+      }
+    ],
+    "reason": "「上記以外のエラークラス」の処理について、回答では「FATAL（InternalErrorに変換して返却）」と記載しているが、知識セクションのエラーに応じた処理内容テーブルには「上記以外のエラークラス」の行は存在しない。知識セクションでは ThreadDeath、StackOverflowError、OutOfMemoryError、VirtualMachineError（残り）の4種類のみが記載されており、「上記以外のエラークラス」への言及はない。また、GlobalErrorHandlerの説明で「JaxRsResponseHandlerでは捕捉できない例外・エラーはGlobalErrorHandlerが処理する」と述べているが、知識セクションにはそのような直接的な関係の記述はなく、両者の関係についての裏付けがない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 「上記以外のエラークラス」の処理について、回答では「FATAL（InternalErrorに変換して返却）」と記載しているが、知識セクションのエラーに応じた処理内容テーブルには「上記以外のエラークラス」の行は存在しない。知識セクションでは ThreadDeath、StackOverflowError、OutOfMemoryError、VirtualMachineError（残り）の4種類のみが記載されており、「上記以外のエラークラス」への言及はない。また、GlobalErrorHandlerの説明で「JaxRsResponseHandlerでは捕捉できない例外・エラーはGlobalErrorHandlerが処理する」と述べているが、知識セクションにはそのような直接的な関係の記述はなく、両者の関係についての裏付けがない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-response-handler.json:s8",
+      "component/handlers/handlers-jaxrs-response-handler.json:s9",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s5",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-jaxrs-access-log.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 61932,
+    "duration_api_ms": 61175,
+    "num_turns": 5,
+    "total_cost_usd": 0.5098173,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 4639,
+      "cache_read_input_tokens": 310556,
+      "cache_creation_input_tokens": 91730
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2925,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0030600000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 4639,
+        "cacheReadInputTokens": 310556,
+        "cacheCreationInputTokens": 91730,
+        "webSearchRequests": 0,
+        "costUSD": 0.5067573000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

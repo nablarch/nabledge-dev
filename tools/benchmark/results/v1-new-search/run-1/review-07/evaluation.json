@@ -1,0 +1,137 @@
+{
+  "scenario_id": "review-07",
+  "description": "Web画面で外部サイトからの不正なPOSTリクエストを防ぐ必要がある。CSRF対策をNablarchの仕組みで実装したい。",
+  "input": "外部サイトから不正にPOSTされるのを防ぎたい。NablarchにCSRF対策の仕組みはある？どう設定する？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「ハンドラ構成に追加するだけでCSRFトークンの生成・検証を自動的に行えます」と明記されており、事実の「CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う」という内容が含まれている。",
+      "fact": "CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "CsrfTokenVerificationHandler（CSRFトークン検証ハンドラ）が提供されている",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成に追加するだけでCSRFトークンの生成・検証を自動的に行える",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta Server Pagesカスタムタグを使用している場合、CSRFトークンは画面に自動出力される",
+        "supported": true
+      },
+      {
+        "claim": "クラス名はnablarch.fw.web.handler.CsrfTokenVerificationHandler",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアハンドラより後ろに配置すること",
+        "supported": true
+      },
+      {
+        "claim": "Nablarchカスタムタグ制御ハンドラより後ろに配置すること",
+        "supported": true
+      },
+      {
+        "claim": "CSRFトークンはUUIDv4（UUIDv4CsrfTokenGenerator）で生成",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアにnablarch_csrf-tokenという名前で保存",
+        "supported": true
+      },
+      {
+        "claim": "GET、HEAD、TRACE、OPTIONSは検証対象外",
+        "supported": true
+      },
+      {
+        "claim": "POST、PUT等は検証対象",
+        "supported": true
+      },
+      {
+        "claim": "リクエストヘッダX-CSRF-TOKENでトークンを送信",
+        "supported": true
+      },
+      {
+        "claim": "リクエストパラメータcsrf-tokenでトークンを送信",
+        "supported": true
+      },
+      {
+        "claim": "検証失敗時はBadRequest(400)レスポンスを返す",
+        "supported": true
+      },
+      {
+        "claim": "CsrfTokenUtil.regenerateCsrfTokenメソッドでCSRFトークンを再生成できる",
+        "supported": true
+      },
+      {
+        "claim": "ログイン時にセッションIDの再生成にとどめる実装の場合はregenerateCsrfTokenを呼び出すこと",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアを破棄・再生成する実装であればregenerateCsrfToken呼び出しは不要",
+        "supported": true
+      },
+      {
+        "claim": "リクエスト単体テストではNopHandlerに差し替えてCSRF対策を無効化すること",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるすべてのNablarch固有の主張（クラス名、API名、設定方法、動作仕様、配置順序）は知識セクションの内容と完全に一致しており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+      "processing-pattern/web-application/web-application-feature-details.json:s19"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 80693,
+    "duration_api_ms": 79484,
+    "num_turns": 9,
+    "total_cost_usd": 0.6530469499999999,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 4715,
+      "cache_read_input_tokens": 733369,
+      "cache_creation_input_tokens": 95787
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2935,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0030800000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 4715,
+        "cacheReadInputTokens": 733369,
+        "cacheCreationInputTokens": 95787,
+        "webSearchRequests": 0,
+        "costUSD": 0.6499669499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

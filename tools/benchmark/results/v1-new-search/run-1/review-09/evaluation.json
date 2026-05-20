@@ -1,0 +1,119 @@
+{
+  "scenario_id": "review-09",
+  "description": "セキュリティ診断でContent Security Policyを有効にしろと指摘された。NablarchのWeb画面でCSPを設定したい。",
+  "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のアプローチ2において、SecureHandler（セキュアハンドラ）とContentSecurityPolicyHeader、およびJSPカスタムタグのCSP対応（nonceを使った対応）を組み合わせてCSPを有効にする方法が明確に説明されている。参照セクションの事実と同じ内容が回答に含まれている。",
+      "fact": "セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "SecureHandlerにContentSecurityPolicyHeaderを追加しpolicyプロパティにCSPポリシー文字列を設定する",
+        "supported": true
+      },
+      {
+        "claim": "アプローチ1のXML設定例（固定CSPヘッダ）が知識セクションの例と一致する",
+        "supported": true
+      },
+      {
+        "claim": "generateCspNonceプロパティをtrueに設定してnonceを生成する",
+        "supported": true
+      },
+      {
+        "claim": "$cspNonceSource$プレースホルダーがnonce値に自動置換される",
+        "supported": true
+      },
+      {
+        "claim": "$cspNonceSource$はnonce-DhcnhD3khTMePgXwdayK9BsMqXjhguVVのような形式に置換される",
+        "supported": true
+      },
+      {
+        "claim": "formタグが生成するJavaScriptがscript要素にまとめられnonce属性が自動設定される",
+        "supported": true
+      },
+      {
+        "claim": "scriptタグが生成するscript要素のnonce属性が自動設定される",
+        "supported": true
+      },
+      {
+        "claim": "cspNonceタグで任意の要素にnonceを出力できる",
+        "supported": true
+      },
+      {
+        "claim": "reportOnlyをtrueに設定するとreport-onlyモードで動作する",
+        "supported": true
+      },
+      {
+        "claim": "SecureHandlerはHTTPレスポンスハンドラよりも後ろに設定する",
+        "supported": true
+      },
+      {
+        "claim": "secureResponseHeaderListに追加する際はデフォルトの5つのヘッダコンポーネントも明示的に設定する",
+        "supported": true
+      },
+      {
+        "claim": "nonceはHTMLに埋め込まれるためJSPから生成されるHTMLはリクエストごとに変化する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内の全ての主張は知識セクションの内容によって裏付けられており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "component/libraries/libraries-tag.json:s38"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 73605,
+    "duration_api_ms": 72233,
+    "num_turns": 10,
+    "total_cost_usd": 0.6183546000000001,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 4804,
+      "cache_read_input_tokens": 631992,
+      "cache_creation_input_tokens": 94296
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2925,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0030600000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 4804,
+        "cacheReadInputTokens": 631992,
+        "cacheCreationInputTokens": 94296,
+        "webSearchRequests": 0,
+        "costUSD": 0.6152946,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

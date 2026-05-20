@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 67789,
+  "duration_api_ms": 67365,
+  "ttft_ms": 13169,
+  "num_turns": 6,
+  "result": "必要な情報が揃いました。回答を生成します。\n\n---\n\n**結論**: NablarchのRESTfulウェブサービスでは、パスパラメータはルーティング定義で `:id` 形式（XMLルート定義）または `{id}` 形式（`@Path` アノテーション）で定義し、クエリパラメータはクエリ文字列をそのまま `JaxRsHttpRequest#getParamMap()` で取得します。\n\n**根拠**:\n\n### ルーティング設定（2つの方法）\n\n#### 方法1: XMLルート定義ファイル（`routes.xml`）\n\nまずコンポーネント定義でディスパッチハンドラ `RoutesMapping` を設定します。\n\n```xml\n<component name=\"packageMapping\" class=\"nablarch.integration.router.RoutesMapping\">\n  <property name=\"basePackage\" value=\"sample.web.action\" />\n</component>\n\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <!-- その他のハンドラは省略 -->\n      <component-ref name=\"packageMapping\" />\n    </list>\n  </property>\n</component>\n```\n\nクラスパス直下の `routes.xml` でURLとアクションをマッピングします。\n\n```xml\n<routes>\n  <!-- パスパラメータあり: :id でパラメータ定義 -->\n  <get path=\"users/:id\" to=\"UsersResource#find\">\n    <requirements>\n      <requirement name=\"id\" value=\"\\d+$\" />\n    </requirements>\n  </get>\n\n  <!-- クエリパラメータあり: クエリ部分はルーティング定義に含めない -->\n  <get path=\"users/search\" to=\"Users#search\"/>\n</routes>\n```\n\n#### 方法2: `@Path` アノテーション（バージョン1.2.0以降）\n\nディスパッチハンドラを `PathOptionsProviderRoutesMapping` に変更します。\n\n```xml\n<component name=\"packageMapping\" class=\"nablarch.integration.router.PathOptionsProviderRoutesMapping\">\n  <property name=\"pathOptionsProvider\">\n    <component class=\"nablarch.integration.router.jaxrs.JaxRsPathOptionsProvider\">\n      <property name=\"applicationPath\" value=\"${nablarch.webApi.applicationPath}\" />\n      <property name=\"basePackage\" value=\"${nablarch.commonProperty.basePackage}\" />\n    </component>\n  </property>\n  <property name=\"methodBinderFactory\">\n    <component class=\"nablarch.fw.jaxrs.JaxRsMethodBinderFactory\">\n      <property name=\"handlerList\">\n        <component class=\"nablarch.integration.jaxrs.jersey.JerseyJaxRsHandlerListFactory\"/>\n      </property>\n    </component>\n  </property>\n</component>\n```\n\nアクションクラスに `@Path` アノテーションでマッピングを定義します。\n\n```java\n@Path(\"/users\")\npublic class UsersAction {\n\n    // パスパラメータあり: {id} または {id : \\d+} で正規表現指定可\n    @GET\n    @Path(\"/{id : \\\\d+}\")\n    @Produces(MediaType.APPLICATION_JSON)\n    public User find(JaxRsHttpRequest request) {\n        int id = Integer.parseInt(request.getPathParam(\"id\"));\n        // 省略\n    }\n\n    // クエリパラメータあり: パスにクエリは含めない\n    @GET\n    @Path(\"/search\")\n    public HttpResponse search(JaxRsHttpRequest request) {\n        // 省略\n    }\n}\n```\n\n### リソースクラスの実装\n\n**パスパラメータの取得**（`GET /users/123` の `123` を取得する場合）:\n\n```java\n@Produces(MediaType.APPLICATION_JSON)\npublic User find(JaxRsHttpRequest request) {\n    // ルーティング定義のパラメータ名を指定して取得\n    Long id = Long.valueOf(request.getPathParam(\"id\"));\n    return UniversalDao.findById(User.class, id);\n}\n```\n\n**クエリパラメータの取得**（`GET /users/search?name=Duke` の場合）:\n\n```java\npublic HttpResponse search(JaxRsHttpRequest request) {\n    // リクエストパラメータをBeanに変換\n    UserSearchForm form = BeanUtil.createAndCopy(UserSearchForm.class, req.getParamMap());\n\n    // バリデーションの実行\n    ValidatorUtil.validate(form);\n\n    // 業務ロジックを実行する（省略）\n}\n\npublic class UserSearchForm {\n    private String name;\n    // 省略\n}\n```\n\n**注意点**:\n- `JaxRsHttpRequest` を使ってパスパラメータ・クエリパラメータの両方を取得します。メソッドの仮引数に `JaxRsHttpRequest` を定義する必要があります。\n- Jakarta RESTful Web Servicesで規定されている `@PathParam` や `@QueryParam` アノテーションは**使用できません**。\n- JBoss/WildFly環境では `@Path` アノテーションによるルーティングは使用できないため、XMLルート定義を使用してください。\n\n参照: restful-web-service-resource-signature.json:s2, restful-web-service-resource-signature.json:s3, adapters-router-adaptor.json:s3, adapters-router-adaptor.json:s8, adapters-router-adaptor.json:s9\n\n---\n\n<<<BENCHMARK_HEARING>>>\n{\"status\": \"skipped\", \"questions\": []}\n<<<END_BENCHMARK_HEARING>>>\n\n<<<BENCHMARK_SEARCH>>>\n{\"section_ids\": [\"processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s2\", \"processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s3\", \"component/adapters/adapters-router-adaptor.json:s3\", \"component/adapters/adapters-router-adaptor.json:s4\", \"component/adapters/adapters-router-adaptor.json:s6\", \"component/adapters/adapters-router-adaptor.json:s7\", \"component/adapters/adapters-router-adaptor.json:s8\", \"component/adapters/adapters-router-adaptor.json:s9\", \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5\", \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s6\"]}\n<<<END_BENCHMARK_SEARCH>>>\n\n<<<BENCHMARK_ANSWER>>>\n**結論**: NablarchのRESTfulウェブサービスでは、パスパラメータはルーティング定義で `:id` 形式（XMLルート定義）または `{id}` 形式（`@Path` アノテーション）で定義し、クエリパラメータはクエリ文字列をそのまま `JaxRsHttpRequest#getParamMap()` で取得します。\n\n**根拠**:\n\n### ルーティング設定（2つの方法）\n\n#### 方法1: XMLルート定義ファイル（`routes.xml`）\n\nまずコンポーネント定義でディスパッチハンドラ `RoutesMapping` を設定します。\n\n```xml\n<component name=\"packageMapping\" class=\"nablarch.integration.router.RoutesMapping\">\n  <property name=\"basePackage\" value=\"sample.web.action\" />\n</component>\n\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <!-- その他のハンドラは省略 -->\n      <component-ref name=\"packageMapping\" />\n    </list>\n  </property>\n</component>\n```\n\nクラスパス直下の `routes.xml` でURLとアクションをマッピングします。\n\n```xml\n<routes>\n  <!-- パスパラメータあり: :id でパラメータ定義 -->\n  <get path=\"users/:id\" to=\"UsersResource#find\">\n    <requirements>\n      <requirement name=\"id\" value=\"\\d+$\" />\n    </requirements>\n  </get>\n\n  <!-- クエリパラメータあり: クエリ部分はルーティング定義に含めない -->\n  <get path=\"users/search\" to=\"Users#search\"/>\n</routes>\n```\n\n#### 方法2: `@Path` アノテーション（バージョン1.2.0以降）\n\nディスパッチハンドラを `PathOptionsProviderRoutesMapping` に変更します。\n\n```xml\n<component name=\"packageMapping\" class=\"nablarch.integration.router.PathOptionsProviderRoutesMapping\">\n  <property name=\"pathOptionsProvider\">\n    <component class=\"nablarch.integration.router.jaxrs.JaxRsPathOptionsProvider\">\n      <property name=\"applicationPath\" value=\"${nablarch.webApi.applicationPath}\" />\n      <property name=\"basePackage\" value=\"${nablarch.commonProperty.basePackage}\" />\n    </component>\n  </property>\n  <property name=\"methodBinderFactory\">\n    <component class=\"nablarch.fw.jaxrs.JaxRsMethodBinderFactory\">\n      <property name=\"handlerList\">\n        <component class=\"nablarch.integration.jaxrs.jersey.JerseyJaxRsHandlerListFactory\"/>\n      </property>\n    </component>\n  </property>\n</component>\n```\n\nアクションクラスに `@Path` アノテーションでマッピングを定義します。\n\n```java\n@Path(\"/users\")\npublic class UsersAction {\n\n    // パスパラメータあり: {id} または {id : \\d+} で正規表現指定可\n    @GET\n    @Path(\"/{id : \\\\d+}\")\n    @Produces(MediaType.APPLICATION_JSON)\n    public User find(JaxRsHttpRequest request) {\n        int id = Integer.parseInt(request.getPathParam(\"id\"));\n        // 省略\n    }\n\n    // クエリパラメータあり: パスにクエリは含めない\n    @GET\n    @Path(\"/search\")\n    public HttpResponse search(JaxRsHttpRequest request) {\n        // 省略\n    }\n}\n```\n\n### リソースクラスの実装\n\n**パスパラメータの取得**（`GET /users/123` の `123` を取得する場合）:\n\n```java\n@Produces(MediaType.APPLICATION_JSON)\npublic User find(JaxRsHttpRequest request) {\n    // ルーティング定義のパラメータ名を指定して取得\n    Long id = Long.valueOf(request.getPathParam(\"id\"));\n    return UniversalDao.findById(User.class, id);\n}\n```\n\n**クエリパラメータの取得**（`GET /users/search?name=Duke` の場合）:\n\n```java\npublic HttpResponse search(JaxRsHttpRequest request) {\n    // リクエストパラメータをBeanに変換\n    UserSearchForm form = BeanUtil.createAndCopy(UserSearchForm.class, req.getParamMap());\n\n    // バリデーションの実行\n    ValidatorUtil.validate(form);\n\n    // 業務ロジックを実行する（省略）\n}\n\npublic class UserSearchForm {\n    private String name;\n    // 省略\n}\n```\n\n**注意点**:\n- `JaxRsHttpRequest` を使ってパスパラメータ・クエリパラメータの両方を取得します。メソッドの仮引数に `JaxRsHttpRequest` を定義する必要があります。\n- Jakarta RESTful Web Servicesで規定されている `@PathParam` や `@QueryParam` アノテーションは**使用できません**。\n- JBoss/WildFly環境では `@Path` アノテーションによるルーティングは使用できないため、XMLルート定義を使用してください。\n\n参照: restful-web-service-resource-signature.json:s2, restful-web-service-resource-signature.json:s3, adapters-router-adaptor.json:s3, adapters-router-adaptor.json:s8, adapters-router-adaptor.json:s9\n<<<END_BENCHMARK_ANSWER>>>",
+  "stop_reason": "end_turn",
+  "session_id": "3a0952ec-fe1b-405e-beba-2c87429c7d56",
+  "total_cost_usd": 0.4967079,
+  "usage": {
+    "input_tokens": 5,
+    "cache_creation_input_tokens": 97988,
+    "cache_read_input_tokens": 204503,
+    "output_tokens": 4320,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 97988
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 2947,
+      "outputTokens": 28,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003087,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 5,
+      "outputTokens": 4320,
+      "cacheReadInputTokens": 204503,
+      "cacheCreationInputTokens": 97988,
+      "webSearchRequests": 0,
+      "costUSD": 0.49362090000000003,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "f95898b0-8fa7-4e77-8a75-4de4cb2fbfe5"
+}

@@ -1,0 +1,134 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のセクション1「メッセージプロパティファイルの準備」で言語ごとのプロパティファイル（messages.properties、messages_en.properties）を用意することが示されており、セクション2のXML設定例でPropertiesStringResourceLoaderのlocalesプロパティにサポートする言語（en）を設定することが明示されている。これは事実の内容「言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する」と一致している。",
+      "fact": "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "言語ごとのプロパティファイルをmessages_言語.propertiesとして作成する",
+        "supported": true
+      },
+      {
+        "claim": "デフォルトロケール用ファイルはmessages.properties（言語なし）として作成する",
+        "supported": true
+      },
+      {
+        "claim": "messages.propertiesが存在しない場合はエラーとして処理を終了する",
+        "supported": true
+      },
+      {
+        "claim": "PropertiesStringResourceLoaderのlocalesプロパティでサポート言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "PropertiesStringResourceLoaderのdefaultLocaleプロパティでデフォルト言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "defaultLocaleを未設定だとLocale.getDefault().getLanguage()の値が使われOSの設定に依存し障害の原因になる",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.core.cache.BasicStaticDataCacheとnablarch.core.message.StringResourceHolderを組み合わせて設定する",
+        "supported": true
+      },
+      {
+        "claim": "LanguageAttributeInHttpCookieにdefaultLanguageとsupportedLanguagesを設定してクッキーで言語を保持する",
+        "supported": true
+      },
+      {
+        "claim": "n:submitLinkタグとn:paramタグ（paramName=\"user.language\"）を使って言語切り替えリンクを実装する",
+        "supported": true
+      },
+      {
+        "claim": "LanguageAttributeInHttpUtil.keepLanguageメソッドを呼び出してスレッドコンテキストとクッキーに言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "n:message messageId=\"...\" タグでThreadContextの言語設定に従ってメッセージを出力する",
+        "supported": true
+      },
+      {
+        "claim": "DirectoryBasedResourcePathRuleをHttpResponseHandlerのcontentPathRuleプロパティに設定するとJSPをディレクトリで言語ごとに切り替えられる",
+        "supported": true
+      },
+      {
+        "claim": "コンテキストルート直下にja/とen/ディレクトリを作成してJSPを配置する",
+        "supported": true
+      },
+      {
+        "claim": "messageタグによる1ファイル多言語対応は画面レイアウト崩れが起きる可能性があるため許容できる場合のみ使用する",
+        "supported": true
+      },
+      {
+        "claim": "コード名称の多言語化はCodeUtil.getName(\"ID\", \"VALUE\", Locale.ENGLISH)で取得できる",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有の主張はすべて知識セクションに記載された内容と一致しており、クラス名・プロパティ名・動作仕様に捏造は確認されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/handlers/handlers-http-response-handler.json:s7",
+      "component/libraries/libraries-tag.json:s31",
+      "component/libraries/libraries-tag.json:s32",
+      "component/libraries/libraries-code.json:s8",
+      "processing-pattern/web-application/web-application-feature-details.json:s12",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 67515,
+    "duration_api_ms": 66469,
+    "num_turns": 7,
+    "total_cost_usd": 0.5257246,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 4945,
+      "cache_read_input_tokens": 354647,
+      "cache_creation_input_tokens": 91226
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2909,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0030340000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 4945,
+        "cacheReadInputTokens": 354647,
+        "cacheCreationInputTokens": 91226,
+        "webSearchRequests": 0,
+        "costUSD": 0.5226906,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

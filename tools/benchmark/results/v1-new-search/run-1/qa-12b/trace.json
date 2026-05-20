@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 46297,
+  "duration_api_ms": 45861,
+  "ttft_ms": 6341,
+  "num_turns": 5,
+  "result": "回答を生成します。\n\n**結論**: RESTfulウェブサービスでバリデーションエラー時にエラーメッセージをユーザーに返すには、`@Valid`アノテーションでバリデーションを有効にし、`ErrorResponseBuilder`のサブクラスを作成してエラーレスポンスのボディにメッセージを設定します。\n\n**根拠**:\n\n**① バリデーションの有効化**\n\nリソースクラスのメソッドに`@Valid`アノテーションを付与します。\n\n```java\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```\n\nバリデーションエラーが発生すると、フレームワークは`ApplicationException`をスローします。\n\n**② エラーメッセージをレスポンスに設定する**\n\n`ErrorResponseBuilder`を継承したクラスを作成し、`ApplicationException`をハンドルしてJSON形式のエラーメッセージをレスポンスボディに設定します。\n\n```java\npublic class SampleErrorResponseBuilder extends ErrorResponseBuilder {\n\n    private final ObjectMapper objectMapper = new ObjectMapper();\n\n    @Override\n    public HttpResponse build(final HttpRequest request,\n            final ExecutionContext context, final Throwable throwable) {\n        if (throwable instanceof ApplicationException) {\n            return createResponseBody((ApplicationException) throwable);\n        } else {\n            return super.build(request, context, throwable);\n        }\n    }\n\n    private HttpResponse createResponseBody(final ApplicationException ae) {\n        final HttpResponse response = new HttpResponse(400);\n        response.setContentType(MediaType.APPLICATION_JSON);\n\n        // エラーメッセージの生成処理は省略\n\n        try {\n            response.write(objectMapper.writeValueAsString(errorMessages));\n        } catch (JsonProcessingException ignored) {\n            return new HttpResponse(500);\n        }\n        return response;\n    }\n}\n```\n\n**③ ハンドラへの設定**\n\n作成した`SampleErrorResponseBuilder`を`JaxRsResponseHandler`の`errorResponseBuilder`プロパティに設定します。\n\n```xml\n<component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n  <property name=\"errorResponseBuilder\">\n    <component class=\"sample.SampleErrorResponseBuilder\" />\n  </property>\n</component>\n```\n\n**注意点**: `ErrorResponseBuilder`の処理中に例外が発生するとレスポンスが生成できなくなります。カスタマイズ時は`ErrorResponseBuilder`内で例外が発生しない実装を徹底してください。万が一例外が発生した場合、フレームワークはWARNレベルでログを出力し、ステータスコード500のレスポンスを返します。\n\n参照: component/handlers/handlers-jaxrs-response-handler.json:s4, s7, component/handlers/handlers-jaxrs-bean-validation-handler.json:s4, processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\n\n---\n\n<<<BENCHMARK_HEARING>>>\n{\"status\": \"skipped\", \"questions\": []}\n<<<END_BENCHMARK_HEARING>>>\n\n<<<BENCHMARK_SEARCH>>>\n{\"section_ids\": [\"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2\", \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\", \"component/handlers/handlers-jaxrs-response-handler.json:s4\", \"component/handlers/handlers-jaxrs-response-handler.json:s5\", \"component/handlers/handlers-jaxrs-response-handler.json:s7\", \"component/handlers/handlers-jaxrs-response-handler.json:s8\", \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\", \"component/libraries/libraries-bean-validation.json:s17\"]}\n<<<END_BENCHMARK_SEARCH>>>\n\n<<<BENCHMARK_ANSWER>>>\n**結論**: RESTfulウェブサービスでバリデーションエラー時にエラーメッセージをユーザーに返すには、`@Valid`アノテーションでバリデーションを有効にし、`ErrorResponseBuilder`のサブクラスを作成してエラーレスポンスのボディにメッセージを設定します。\n\n**根拠**:\n\n**① バリデーションの有効化**\n\nリソースクラスのメソッドに`@Valid`アノテーションを付与します。\n\n```java\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```\n\nバリデーションエラーが発生すると、フレームワークは`ApplicationException`をスローします。\n\n**② エラーメッセージをレスポンスに設定する**\n\n`ErrorResponseBuilder`を継承したクラスを作成し、`ApplicationException`をハンドルしてJSON形式のエラーメッセージをレスポンスボディに設定します。\n\n```java\npublic class SampleErrorResponseBuilder extends ErrorResponseBuilder {\n\n    private final ObjectMapper objectMapper = new ObjectMapper();\n\n    @Override\n    public HttpResponse build(final HttpRequest request,\n            final ExecutionContext context, final Throwable throwable) {\n        if (throwable instanceof ApplicationException) {\n            return createResponseBody((ApplicationException) throwable);\n        } else {\n            return super.build(request, context, throwable);\n        }\n    }\n\n    private HttpResponse createResponseBody(final ApplicationException ae) {\n        final HttpResponse response = new HttpResponse(400);\n        response.setContentType(MediaType.APPLICATION_JSON);\n\n        // エラーメッセージの生成処理は省略\n\n        try {\n            response.write(objectMapper.writeValueAsString(errorMessages));\n        } catch (JsonProcessingException ignored) {\n            return new HttpResponse(500);\n        }\n        return response;\n    }\n}\n```\n\n**③ ハンドラへの設定**\n\n作成した`SampleErrorResponseBuilder`を`JaxRsResponseHandler`の`errorResponseBuilder`プロパティに設定します。\n\n```xml\n<component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n  <property name=\"errorResponseBuilder\">\n    <component class=\"sample.SampleErrorResponseBuilder\" />\n  </property>\n</component>\n```\n\n**注意点**: `ErrorResponseBuilder`の処理中に例外が発生するとレスポンスが生成できなくなります。カスタマイズ時は`ErrorResponseBuilder`内で例外が発生しない実装を徹底してください。万が一例外が発生した場合、フレームワークはWARNレベルでログを出力し、ステータスコード500のレスポンスを返します。\n\n参照: component/handlers/handlers-jaxrs-response-handler.json:s4, s7, component/handlers/handlers-jaxrs-bean-validation-handler.json:s4, processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\n<<<END_BENCHMARK_ANSWER>>>",
+  "stop_reason": "end_turn",
+  "session_id": "3415c137-daf5-4113-9897-e853283028e8",
+  "total_cost_usd": 0.47609765,
+  "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 88145,
+    "cache_read_input_tokens": 307913,
+    "output_tokens": 3340,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 88145
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 2927,
+      "outputTokens": 27,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003062,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 6,
+      "outputTokens": 3340,
+      "cacheReadInputTokens": 307913,
+      "cacheCreationInputTokens": 88145,
+      "webSearchRequests": 0,
+      "costUSD": 0.47303565000000003,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "be2af595-95db-482b-b14c-ccadf0e5963c"
+}

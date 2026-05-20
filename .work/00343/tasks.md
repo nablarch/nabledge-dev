@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-21
+**Updated**: 2026-05-20
 
 ## Rules
 
@@ -11,15 +11,19 @@
 
 ## In Progress
 
-## Not Started
-
-
 ### B-4. 新スキルE2Eベンチマーク（B-4-pre完了後）
 
-- [ ] run-1, run-2, run-3 実行 → `v1-new-search/run-{1,2,3}` に保存
+**Status**: run-1完了（`v1-new-search/run-1/`、未コミット）。run-2/run-3未実施。
+
+**run-1 結果**: 30件中29件正常完了。qa-04のみ MarkerError（スキルがヒアリング質問を返して停止、`<<<BENCHMARK_HEARING>>>`マーカー未出力）。
+
+- [x] run-1 実行 → `v1-new-search/run-1/` に保存（未コミット）
+- [ ] run-2, run-3 実行 → `v1-new-search/run-{2,3}` に保存
 - [ ] 結果をコミット
 - [ ] QAエキスパート（別エージェント）に生データを渡して比較評価させる（実装者が自己採点しない）
 - [ ] [BLOCKED: ユーザーがQAエキスパートの評価を確認し、B-5着手の承認を出す]
+
+## Not Started
 
 ### B-X. terms.json抽出ルールの見直し検討
 

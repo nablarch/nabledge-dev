@@ -1,0 +1,67 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 50540,
+  "duration_api_ms": 50479,
+  "ttft_ms": 6244,
+  "num_turns": 5,
+  "result": "十分な情報が揃いました。回答を生成します。\n\n---\n\n**結論**: `$if(プロパティ名) {SQL条件}` 構文をSQLファイルに記述し、Beanオブジェクトのプロパティ値が null または空文字の場合にその条件を自動で除外できます。ウェブアプリの検索画面のような可変条件SQLに対応する専用機能です。\n\n**根拠**:\n\nSQLファイルに `$if` 構文で可変条件を記述します:\n\n```sql\nSEARCH_PROJECT =\nSELECT\n    PROJECT_ID,\n    PROJECT_NAME,\n    PROJECT_TYPE,\n    PROJECT_START_DATE,\n    PROJECT_END_DATE\nFROM\n    PROJECT\nWHERE\n    USER_ID = :userId\n    AND $if(clientId)              {CLIENT_ID = :clientId}\n    AND $if(projectName)           {PROJECT_NAME LIKE :%projectName%}\n    AND $if(projectType)           {PROJECT_TYPE = :projectType}\n    AND $if(projectClass)          {PROJECT_CLASS IN (:projectClass[])}\n    AND $if(projectStartDateBegin) {PROJECT_START_DATE >= :projectStartDateBegin}\n    AND $if(projectEndDateEnd)     {PROJECT_END_DATE <= :projectEndDateEnd}\n```\n\n除外条件は以下の通りです:\n- `String` 型: `null` または空文字列の場合に除外\n- `Collection` / 配列型: `null` またはサイズ0の場合に除外\n\n業務アクションでは、フォームの値を検索条件Beanにコピーして `UniversalDao.findAllBySqlFile` に渡します:\n\n```java\n@InjectForm(form = ProjectSearchForm.class, prefix = \"searchForm\", name = \"searchForm\")\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\npublic HttpResponse list(HttpRequest request, ExecutionContext context) {\n\n    ProjectSearchForm searchForm = context.getRequestScopedVar(\"searchForm\");\n    // フォームの値を検索条件Beanにコピー\n    ProjectSearchDto searchCondition =\n            BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);\n\n    List<Project> searchList = UniversalDao\n            .page(searchCondition.getPageNumber())\n            .per(20L)\n            .findAllBySqlFile(Project.class, \"SEARCH_PROJECT\", searchCondition);\n\n    context.setRequestScopedVar(\"searchResult\", searchList);\n    return new HttpResponse(\"/WEB-INF/view/project/index.jsp\");\n}\n```\n\n**注意点**:\n- `$if` が使えるのは `WHERE` 句のみ。ネスト（`$if` 内に `$if`）は不可。\n- IN句のプロパティがnullやサイズ0になり得る場合は、`$if` と `[]` を併用すること。例: `$if(userKbn) {user_kbn IN (:userKbn[])}`\n- この構文は「ユーザー入力によって条件が変わる検索画面」向けのものです。複数SQLの共通化を目的に使用すると、変更時に思わぬ不具合を招く可能性があります。\n\n参照: `component/libraries/libraries-database.json:s21`, `component/libraries/libraries-database.json:s22`, `processing-pattern/web-application/web-application-getting-started-project-search.json:s1`, `component/libraries/libraries-universal-dao.json:s10`\n\n---\n\n<<<BENCHMARK_HEARING>>>\n{\"status\": \"skipped\", \"questions\": []}\n<<<END_BENCHMARK_HEARING>>>\n\n<<<BENCHMARK_SEARCH>>>\n{\"section_ids\": [\"component/libraries/libraries-database.json:s21\", \"component/libraries/libraries-database.json:s22\", \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\", \"component/libraries/libraries-universal-dao.json:s7\", \"component/libraries/libraries-universal-dao.json:s10\"]}\n<<<END_BENCHMARK_SEARCH>>>\n\n<<<BENCHMARK_ANSWER>>>\n**結論**: `$if(プロパティ名) {SQL条件}` 構文をSQLファイルに記述し、Beanオブジェクトのプロパティ値が null または空文字の場合にその条件を自動で除外できます。ウェブアプリの検索画面のような可変条件SQLに対応する専用機能です。\n\n**根拠**:\n\nSQLファイルに `$if` 構文で可変条件を記述します:\n\n```sql\nSEARCH_PROJECT =\nSELECT\n    PROJECT_ID,\n    PROJECT_NAME,\n    PROJECT_TYPE,\n    PROJECT_START_DATE,\n    PROJECT_END_DATE\nFROM\n    PROJECT\nWHERE\n    USER_ID = :userId\n    AND $if(clientId)              {CLIENT_ID = :clientId}\n    AND $if(projectName)           {PROJECT_NAME LIKE :%projectName%}\n    AND $if(projectType)           {PROJECT_TYPE = :projectType}\n    AND $if(projectClass)          {PROJECT_CLASS IN (:projectClass[])}\n    AND $if(projectStartDateBegin) {PROJECT_START_DATE >= :projectStartDateBegin}\n    AND $if(projectEndDateEnd)     {PROJECT_END_DATE <= :projectEndDateEnd}\n```\n\n除外条件は以下の通りです:\n- `String` 型: `null` または空文字列の場合に除外\n- `Collection` / 配列型: `null` またはサイズ0の場合に除外\n\n業務アクションでは、フォームの値を検索条件Beanにコピーして `UniversalDao.findAllBySqlFile` に渡します:\n\n```java\n@InjectForm(form = ProjectSearchForm.class, prefix = \"searchForm\", name = \"searchForm\")\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\npublic HttpResponse list(HttpRequest request, ExecutionContext context) {\n\n    ProjectSearchForm searchForm = context.getRequestScopedVar(\"searchForm\");\n    // フォームの値を検索条件Beanにコピー\n    ProjectSearchDto searchCondition =\n            BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);\n\n    List<Project> searchList = UniversalDao\n            .page(searchCondition.getPageNumber())\n            .per(20L)\n            .findAllBySqlFile(Project.class, \"SEARCH_PROJECT\", searchCondition);\n\n    context.setRequestScopedVar(\"searchResult\", searchList);\n    return new HttpResponse(\"/WEB-INF/view/project/index.jsp\");\n}\n```\n\n**注意点**:\n- `$if` が使えるのは `WHERE` 句のみ。ネスト（`$if` 内に `$if`）は不可。\n- IN句のプロパティがnullやサイズ0になり得る場合は、`$if` と `[]` を併用すること。例: `$if(userKbn) {user_kbn IN (:userKbn[])}`\n- この構文は「ユーザー入力によって条件が変わる検索画面」向けのものです。複数SQLの共通化を目的に使用すると、変更時に思わぬ不具合を招く可能性があります。\n\n参照: `component/libraries/libraries-database.json:s21`, `component/libraries/libraries-database.json:s22`, `processing-pattern/web-application/web-application-getting-started-project-search.json:s1`, `component/libraries/libraries-universal-dao.json:s10`\n<<<END_BENCHMARK_ANSWER>>>",
+  "stop_reason": "end_turn",
+  "session_id": "1c1e3117-6dc3-48c1-94ae-273521896f2b",
+  "total_cost_usd": 0.49296365000000003,
+  "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 92529,
+    "cache_read_input_tokens": 306363,
+    "output_tokens": 3399,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 92529
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 2938,
+      "outputTokens": 26,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003068,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 6,
+      "outputTokens": 3399,
+      "cacheReadInputTokens": 306363,
+      "cacheCreationInputTokens": 92529,
+      "webSearchRequests": 0,
+      "costUSD": 0.48989565,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_017Ksruihgpm9Wy8t2e39ZW5",
+      "tool_input": {
+        "command": "cd /home/tie303177/work/nabledge/work1 && bash scripts/read-sections.sh \"component/libraries/libraries-database.json:s21\" \"component/libraries/libraries-database.json:s22\" \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\" \"component/libraries/libraries-universal-dao.json:s7\" \"component/libraries/libraries-universal-dao.json:s10\"",
+        "description": "Read sections on variable-condition SQL and web search"
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "07c6958e-c2f6-4f2a-9d9d-6b576d5befca"
+}

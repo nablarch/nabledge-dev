@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 74055,
+  "duration_api_ms": 73137,
+  "ttft_ms": 6445,
+  "num_turns": 8,
+  "result": "十分な情報が揃いました。回答を生成します。\n\n---\n\n**結論**: ウェブアプリケーションのエラー処理は、主に「**HTTPエラー制御ハンドラ**」と「**グローバルエラーハンドラ**」の2段構えで行われる。例外の種類に応じてログレベル（INFO/FATAL）を自動選択し、対応するHTTPレスポンス（エラー画面）を生成する。\n\n---\n\n**根拠**:\n\n### 1. HTTPエラー制御ハンドラ（ウェブアプリ専用）\n\nクラス名: `nablarch.fw.web.handler.HttpErrorHandler`\n\n後続ハンドラで発生した例外を捕捉し、例外の種類に応じてログ出力とエラー用レスポンスを生成する。\n\n| 例外クラス | ログレベル | ステータスコード | 備考 |\n|---|---|---|---|\n| `NoMoreHandlerException` | INFO | 404 | ハンドラ不在を証跡として記録 |\n| `HttpErrorResponse` | なし | レスポンス内のコード | 業務エラー（バリデーション等）は通常ログ不要 |\n| `Result.Error` | 設定による | `Error#getStatusCode()` | `writeFailureLogPattern`の正規表現がマッチした場合にFATAL |\n| `StackOverflowError` | FATAL | 500 | 障害扱い |\n| その他の例外・エラー | FATAL | 500 | 予期しないエラーは障害扱い |\n\n`HttpErrorResponse`の原因例外が`ApplicationException`の場合、JSPでエラーメッセージを表示できるよう`ErrorMessages`がリクエストスコープの`errors`キーに自動設定される。\n\n**デフォルトエラーページの設定**（ステータスコードベース）:\n```xml\n<component class=\"nablarch.fw.web.handler.HttpErrorHandler\">\n  <property name=\"defaultPages\">\n    <map>\n      <entry key=\"4..\" value=\"/USER_ERROR.jsp\" />\n      <entry key=\"404\" value=\"/NOT_FOUND.jsp\" />\n      <entry key=\"5..\" value=\"/ERROR.jsp\" />\n    </map>\n  </property>\n</component>\n```\n> なお、Nablarchはデフォルトページの設定を`HttpErrorHandler`ではなく`web.xml`の`error-page`要素で行うことを推奨している。\n\n---\n\n### 2. グローバルエラーハンドラ（全処理方式共通）\n\nクラス名: `nablarch.fw.handler.GlobalErrorHandler`\n\nハンドラキューの先頭付近に配置し、未捕捉の例外・エラーを最終的に捕捉する。\n\n| 例外/エラー | 処理内容 |\n|---|---|\n| `ServiceError` | `ServiceError#writeLog`を呼び出す（ログレベルは実装クラスによる） |\n| `Result.Error` | FATALログ出力後、`Result.Error`を返却 |\n| その他の例外 | FATALログ出力後、`InternalError`を生成して返却 |\n| `StackOverflowError` | FATALログ出力後、`InternalError`を返却 |\n| `OutOfMemoryError` | 標準エラー出力に出力後、FATALログ出力、`InternalError`を返却 |\n\n---\n\n### 3. アクションレベルでのエラー画面指定\n\n業務アクションのメソッドに`@OnError`アノテーションを付けることで、特定例外発生時の遷移先を指定できる。\n\n```java\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    // 業務処理\n}\n```\n\n---\n\n### 4. システム横断のエラー画面制御（カスタムハンドラ）\n\n特定の例外に対してシステム全体で共通のエラーページに遷移させる場合は、カスタムハンドラをハンドラキューに追加する。\n\n```java\npublic class ExampleErrorForwardHandler implements Handler<Object, Object> {\n  @Override\n  public Object handle(Object data, ExecutionContext context) {\n    try {\n      return context.handleNext(data);\n    } catch (NoDataException e) {\n      throw new HttpErrorResponse(\n          404, \"/WEB-INF/view/common/errorPages/pageNotFoundError.jsp\", e);\n    } catch (OptimisticLockException e) {\n      throw new HttpErrorResponse(\n          400, \"/WEB-INF/view/common/errorPages/optimisticLockError.jsp\", e);\n    }\n  }\n}\n```\n\n**注意点**:\n- `グローバルエラーハンドラ`はハンドラキューの**先頭**に配置すること（それより前で発生した例外はアプリケーションサーバが処理する）\n- `HTTPエラー制御ハンドラ`は`HTTPレスポンスハンドラ`および`HTTPアクセスログハンドラ`より**後ろ**に配置すること\n- `OnErrorインターセプタ`では単一例外に対して1つの遷移先しか指定できない。複数の遷移先が必要な場合はアクション内で`HttpErrorResponse`を直接生成する\n\n参照: handlers-HttpErrorHandler.json:s4, handlers-HttpErrorHandler.json:s5, handlers-HttpErrorHandler.json:s6, handlers-global-error-handler.json:s4, web-application-forward-error-page.json:s1, handlers-on-error.json:s3, web-application-feature-details.json:s16\n\n---\n\n<<<BENCHMARK_HEARING>>>\n{\"status\": \"skipped\", \"questions\": []}\n<<<END_BENCHMARK_HEARING>>>\n\n<<<BENCHMARK_SEARCH>>>\n{\"section_ids\": [\"component/handlers/handlers-HttpErrorHandler.json:s4\", \"component/handlers/handlers-HttpErrorHandler.json:s5\", \"component/handlers/handlers-HttpErrorHandler.json:s6\", \"component/handlers/handlers-global-error-handler.json:s4\", \"component/handlers/handlers-global-error-handler.json:s5\", \"processing-pattern/web-application/web-application-forward-error-page.json:s1\", \"processing-pattern/web-application/web-application-forward-error-page.json:s2\", \"component/handlers/handlers-on-error.json:s3\", \"processing-pattern/web-application/web-application-feature-details.json:s16\"]}\n<<<END_BENCHMARK_SEARCH>>>\n\n<<<BENCHMARK_ANSWER>>>\n**結論**: ウェブアプリケーションのエラー処理は、主に「**HTTPエラー制御ハンドラ**」と「**グローバルエラーハンドラ**」の2段構えで行われる。例外の種類に応じてログレベル（INFO/FATAL）を自動選択し、対応するHTTPレスポンス（エラー画面）を生成する。\n\n**根拠**:\n\n### 1. HTTPエラー制御ハンドラ（ウェブアプリ専用）\n\nクラス名: `nablarch.fw.web.handler.HttpErrorHandler`\n\n後続ハンドラで発生した例外を捕捉し、例外の種類に応じてログ出力とエラー用レスポンスを生成する。\n\n| 例外クラス | ログレベル | ステータスコード | 備考 |\n|---|---|---|---|\n| `NoMoreHandlerException` | INFO | 404 | ハンドラ不在を証跡として記録 |\n| `HttpErrorResponse` | なし | レスポンス内のコード | 業務エラー（バリデーション等）は通常ログ不要 |\n| `Result.Error` | 設定による | `Error#getStatusCode()` | `writeFailureLogPattern`の正規表現がマッチした場合にFATAL |\n| `StackOverflowError` | FATAL | 500 | 障害扱い |\n| その他の例外・エラー | FATAL | 500 | 予期しないエラーは障害扱い |\n\n`HttpErrorResponse`の原因例外が`ApplicationException`の場合、JSPでエラーメッセージを表示できるよう`ErrorMessages`がリクエストスコープの`errors`キーに自動設定される。\n\n**デフォルトエラーページの設定**（ステータスコードベース）:\n```xml\n<component class=\"nablarch.fw.web.handler.HttpErrorHandler\">\n  <property name=\"defaultPages\">\n    <map>\n      <entry key=\"4..\" value=\"/USER_ERROR.jsp\" />\n      <entry key=\"404\" value=\"/NOT_FOUND.jsp\" />\n      <entry key=\"5..\" value=\"/ERROR.jsp\" />\n    </map>\n  </property>\n</component>\n```\n> なお、Nablarchはデフォルトページの設定を`HttpErrorHandler`ではなく`web.xml`の`error-page`要素で行うことを推奨している。\n\n### 2. グローバルエラーハンドラ（全処理方式共通）\n\nクラス名: `nablarch.fw.handler.GlobalErrorHandler`\n\nハンドラキューの先頭付近に配置し、未捕捉の例外・エラーを最終的に捕捉する。\n\n| 例外/エラー | 処理内容 |\n|---|---|\n| `ServiceError` | `ServiceError#writeLog`を呼び出す（ログレベルは実装クラスによる） |\n| `Result.Error` | FATALログ出力後、`Result.Error`を返却 |\n| その他の例外 | FATALログ出力後、`InternalError`を生成して返却 |\n| `StackOverflowError` | FATALログ出力後、`InternalError`を返却 |\n| `OutOfMemoryError` | 標準エラー出力に出力後、FATALログ出力、`InternalError`を返却 |\n\n### 3. アクションレベルでのエラー画面指定\n\n業務アクションのメソッドに`@OnError`アノテーションを付けることで、特定例外発生時の遷移先を指定できる。\n\n```java\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    // 業務処理\n}\n```\n\n### 4. システム横断のエラー画面制御（カスタムハンドラ）\n\n特定の例外に対してシステム全体で共通のエラーページに遷移させる場合は、カスタムハンドラをハンドラキューに追加する。\n\n```java\npublic class ExampleErrorForwardHandler implements Handler<Object, Object> {\n  @Override\n  public Object handle(Object data, ExecutionContext context) {\n    try {\n      return context.handleNext(data);\n    } catch (NoDataException e) {\n      throw new HttpErrorResponse(\n          404, \"/WEB-INF/view/common/errorPages/pageNotFoundError.jsp\", e);\n    } catch (OptimisticLockException e) {\n      throw new HttpErrorResponse(\n          400, \"/WEB-INF/view/common/errorPages/optimisticLockError.jsp\", e);\n    }\n  }\n}\n```\n\n**注意点**:\n- `グローバルエラーハンドラ`はハンドラキューの**先頭**に配置すること（それより前で発生した例外はアプリケーションサーバが処理する）\n- `HTTPエラー制御ハンドラ`は`HTTPレスポンスハンドラ`および`HTTPアクセスログハンドラ`より**後ろ**に配置すること\n- `OnErrorインターセプタ`では単一例外に対して1つの遷移先しか指定できない。複数の遷移先が必要な場合はアクション内で`HttpErrorResponse`を直接生成する\n\n参照: handlers-HttpErrorHandler.json:s4, handlers-HttpErrorHandler.json:s5, handlers-HttpErrorHandler.json:s6, handlers-global-error-handler.json:s4, web-application-forward-error-page.json:s1, handlers-on-error.json:s3, web-application-feature-details.json:s16\n<<<END_BENCHMARK_ANSWER>>>",
+  "stop_reason": "end_turn",
+  "session_id": "ace0f385-7ec0-4376-9eca-f8bfd06e3af6",
+  "total_cost_usd": 0.5467204,
+  "usage": {
+    "input_tokens": 5812,
+    "cache_creation_input_tokens": 93536,
+    "cache_read_input_tokens": 310528,
+    "output_tokens": 5488,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 93536
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 2926,
+      "outputTokens": 24,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003046,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 5812,
+      "outputTokens": 5488,
+      "cacheReadInputTokens": 310528,
+      "cacheCreationInputTokens": 93536,
+      "webSearchRequests": 0,
+      "costUSD": 0.5436744,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "0ac8da81-6050-4dee-a970-a2cace9a3dd5"
+}

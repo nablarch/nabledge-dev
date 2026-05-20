@@ -1,0 +1,130 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「これにより『ウェブページに出力する全ての要素に対してエスケープ処理を施す』という根本的解決が可能です」と明記されており、NablarchのカスタムタグがサニタイジングによりXSSの根本的解決が可能であるという事実が含まれている。",
+      "fact": "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "カスタムタグはデフォルトで全てのHTML属性についてHTMLエスケープを行う",
+        "supported": true
+      },
+      {
+        "claim": "エスケープ変換内容: & → &amp;, < → &lt;, > → &gt;, \" → &#034;, ' → &#039;",
+        "supported": true
+      },
+      {
+        "claim": "EL式はHTMLエスケープを行わないため、値出力にはwriteタグ等のカスタムタグを使用すること",
+        "supported": true
+      },
+      {
+        "claim": "JavaScriptに対するエスケープ処理は提供していない",
+        "supported": true
+      },
+      {
+        "claim": "5-(ii) URLスキーム制限はNablarch非対応（プロジェクト対応）",
+        "supported": true
+      },
+      {
+        "claim": "5-(iii) script要素の動的生成禁止はNablarch非対応（プロジェクト対応）",
+        "supported": true
+      },
+      {
+        "claim": "5-(iv) スタイルシート任意取り込み禁止はNablarch非対応（プロジェクト対応）",
+        "supported": true
+      },
+      {
+        "claim": "5-(v) 入力値チェックはBean ValidationまたはNablarch Validationで対応可能",
+        "supported": true
+      },
+      {
+        "claim": "5-(vi) HTMLテキスト入力の構文解析木による除去はNablarch非対応、OSSのHTMLパーサー等を推奨",
+        "supported": true
+      },
+      {
+        "claim": "5-(vii) スクリプト文字列排除はNablarch非対応",
+        "supported": true
+      },
+      {
+        "claim": "セキュアハンドラがX-XSS-Protectionヘッダ等のセキュリティレスポンスヘッダを自動付与する",
+        "supported": true
+      },
+      {
+        "claim": "ContentSecurityPolicyHeaderとnonceを組み合わせることでCSPに対応できる",
+        "supported": true
+      },
+      {
+        "claim": "JSP静的解析ツールにより許可タグ以外のエスケープ漏れを検出できる",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有の主張（エスケープ変換内容、JavaScriptエスケープ非対応、各IPA対策項目のNablarch対応状況、セキュアハンドラ、CSP対応、JSP静的解析ツール）はすべて知識セクションの記述と一致しており、捏造情報は認められない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s21",
+      "check/security-check/security-check-2.チェックリスト.json:s22",
+      "check/security-check/security-check-2.チェックリスト.json:s23",
+      "check/security-check/security-check-2.チェックリスト.json:s24",
+      "check/security-check/security-check-2.チェックリスト.json:s25",
+      "check/security-check/security-check-2.チェックリスト.json:s26",
+      "check/security-check/security-check-2.チェックリスト.json:s27",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s50",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 67427,
+    "duration_api_ms": 66924,
+    "num_turns": 7,
+    "total_cost_usd": 0.5214354999999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 4757,
+      "cache_read_input_tokens": 354335,
+      "cache_creation_input_tokens": 90828
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2946,
+        "outputTokens": 41,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0031509999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 4757,
+        "cacheReadInputTokens": 354335,
+        "cacheCreationInputTokens": 90828,
+        "webSearchRequests": 0,
+        "costUSD": 0.5182845,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

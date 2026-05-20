@@ -1,0 +1,100 @@
+{
+  "scenario_id": "qa-06",
+  "description": "Web画面で入力画面と確認画面をそれぞれ別のJSPで作っている。同じフォーム項目を2回書くのが面倒。共通化する方法があると聞いた。",
+  "input": "入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「確認画面のJSP内で入力画面JSPのパスを指定して共通化を行う」として`<n:confirmationPage path=\"...\">`タグの説明が含まれており、事実の内容（confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する）と一致している。",
+      "fact": "confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "confirmationPageタグは確認画面のJSPで入力画面のJSPへのパスを指定して共通化を行う",
+        "supported": true
+      },
+      {
+        "claim": "forInputPageタグは入力画面でのみ表示したい部分を指定する",
+        "supported": true
+      },
+      {
+        "claim": "forConfirmationPageタグは確認画面でのみ表示したい部分を指定する",
+        "supported": true
+      },
+      {
+        "claim": "ignoreConfirmationタグは確認画面で確認画面向けの表示を無効化したい部分に指定する",
+        "supported": true
+      },
+      {
+        "claim": "plainHiddenタグとhiddenStoreタグは入力・確認画面ともに出力される",
+        "supported": true
+      },
+      {
+        "claim": "確認画面のJSPは<n:confirmationPage path=\"./input.jsp\" />の1行だけで済む",
+        "supported": true
+      },
+      {
+        "claim": "入力系タグ(n:text, n:select, n:checkboxなど)は確認画面時に自動的に読み取り専用の表示に切り替わる",
+        "supported": true
+      },
+      {
+        "claim": "入力画面のJSP実装例(n:form, n:text, n:checkbox, n:select, forInputPage, forConfirmationPage)が知識セクションと一致する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内の全ての主張は知識セクションの内容と一致しており、ハルシネーションは検出されませんでした。タグの用途・動作仕様・実装例はいずれも知識セクションに裏付けられています。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-tag.json:s3",
+      "component/libraries/libraries-tag.json:s23"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 67118,
+    "duration_api_ms": 64386,
+    "num_turns": 8,
+    "total_cost_usd": 0.7677829,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 4295,
+      "cache_read_input_tokens": 642353,
+      "cache_creation_input_tokens": 135352
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2920,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003055,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 4295,
+        "cacheReadInputTokens": 642353,
+        "cacheCreationInputTokens": 135352,
+        "webSearchRequests": 0,
+        "costUSD": 0.7647279,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

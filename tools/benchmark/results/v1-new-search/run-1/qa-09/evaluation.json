@@ -1,0 +1,126 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答中に「業務日付の取得は `BusinessDateUtil` を使います」と明記されており、事実と同じ情報が含まれている。",
+      "fact": "BusinessDateUtilを使用して業務日付を取得する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「業務日付はデータベーステーブルで管理します」と明記されており、区分（PK）と日付のカラムを持つテーブル構成で複数の業務日付を管理できることが示されています。また、BasicBusinessDateProviderのXML設定例も含まれており、コンポーネント定義への設定が必要であることも説明されています。事実の両要素（データベースで複数の業務日付を管理、BasicBusinessDateProviderの設定が必要）が回答に含まれています。",
+      "fact": "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "BusinessDateUtilで業務日付を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "業務日付はデータベーステーブルで管理する",
+        "supported": true
+      },
+      {
+        "claim": "テーブルは区分（PK）と日付カラムで構成される",
+        "supported": true
+      },
+      {
+        "claim": "日付は文字列型でyyyyMMdd形式",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProviderをコンポーネント定義に設定する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント名はbusinessDateProviderと指定する",
+        "supported": true
+      },
+      {
+        "claim": "tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManagerプロパティを設定する",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProviderは初期化が必要でinitializeListへの登録が必須",
+        "supported": true
+      },
+      {
+        "claim": "SystemTimeUtilでOS日時を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "システムプロパティ -DBasicBusinessDateProvider.<区分>=yyyyMMdd で業務日付を上書きできる",
+        "supported": true
+      },
+      {
+        "claim": "業務日付の更新はSystemRepository.get(\"businessDateProvider\")でBasicBusinessDateProviderを取得しsetDateメソッドを呼び出す",
+        "supported": true
+      },
+      {
+        "claim": "業務日付管理機能にはnablarch-common-jdbcモジュールが必要",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張（API名、クラス名、設定方法、動作仕様）は知識セクションによって裏付けられており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s8",
+      "component/libraries/libraries-date.json:s9",
+      "component/libraries/libraries-date.json:s10"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 51794,
+    "duration_api_ms": 47562,
+    "num_turns": 6,
+    "total_cost_usd": 0.50989505,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 3358,
+      "cache_read_input_tokens": 408696,
+      "cache_creation_input_tokens": 89027
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2919,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0030440000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 3358,
+        "cacheReadInputTokens": 408696,
+        "cacheCreationInputTokens": 89027,
+        "webSearchRequests": 0,
+        "costUSD": 0.5068510500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

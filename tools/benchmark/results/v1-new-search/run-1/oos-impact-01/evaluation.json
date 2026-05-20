@@ -1,0 +1,156 @@
+{
+  "scenario_id": "oos-impact-01",
+  "description": "既存システムをNablarch 6に移行するにあたり、OAuth2/OpenID Connect認証が必要かどうか影響調査している。NablarchにOAuth2/OIDCの仕組みが組み込まれているか確認したい。",
+  "input": "NablarchでOAuth2やOpenID Connectによる認証を実装したい。Nablarchにその仕組みは組み込まれているか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭で「NablarchにはOAuth2/OpenID Connect認証機能は組み込まれていません。認証はフレームワークとして提供されておらず、プロジェクト要件に合わせてプロジェクト側で実装します」と明確に述べており、組み込み機能がないことを回答している。",
+      "fact": "NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchにはOAuth2/OpenID Connect認証機能は組み込まれていない",
+        "supported": true
+      },
+      {
+        "claim": "認証はプロジェクト要件に合わせてPJで実装する",
+        "supported": true
+      },
+      {
+        "claim": "OIDCのIDトークンを用いた認証を実装するための公式サンプルが提供されている",
+        "supported": true
+      },
+      {
+        "claim": "パッケージ: please.change.me.common.oidc.verification",
+        "supported": true
+      },
+      {
+        "claim": "対応サービス: Amazon Cognito ユーザープール、Azure Active Directory B2C（ADB2C）",
+        "supported": true
+      },
+      {
+        "claim": "NablarchをバックエンドのRESTfulウェブサービスとして稼働させる構成を想定",
+        "supported": true
+      },
+      {
+        "claim": "IDトークンはフロントエンドで取得しバックエンドに送信する",
+        "supported": true
+      },
+      {
+        "claim": "認証成功時にセッションを確立する",
+        "supported": true
+      },
+      {
+        "claim": "Auth0製JWTライブラリ（java-jwt 4.4.0、jwks-rsa 0.22.1）を使用",
+        "supported": true
+      },
+      {
+        "claim": "CognitoIdTokenVerifierクラスの存在とproperties（region、userPoolId、clientId、signatureAlgorithmProvider）",
+        "supported": true
+      },
+      {
+        "claim": "CognitoSignatureAlgorithmProviderクラスの存在とproperty（rsaKeyProvider）",
+        "supported": true
+      },
+      {
+        "claim": "CognitoRSAKeyProviderクラスの存在とproperties（region、userPoolId）",
+        "supported": true
+      },
+      {
+        "claim": "SessionUtil.changeId(context)でセッションIDを変更する",
+        "supported": true
+      },
+      {
+        "claim": "CsrfTokenUtil.regenerateCsrfToken(context)でCSRFトークンを再生成する",
+        "supported": true
+      },
+      {
+        "claim": "decodedJWT.getSubject()でユーザーIDを取得する",
+        "supported": true
+      },
+      {
+        "claim": "SystemRepository.get(\"idTokenVerifier\")でコンポーネントを取得する",
+        "supported": true
+      },
+      {
+        "claim": "JWTVerificationException発生時にHTTPステータス401のHttpErrorResponseをスローする",
+        "supported": true
+      },
+      {
+        "claim": "署名検証用の公開鍵はJWKSエンドポイントから動的に取得する設計",
+        "supported": true
+      },
+      {
+        "claim": "サンプルは2024年9月時点のCognito/ADB2C仕様に基づいている",
+        "supported": true
+      },
+      {
+        "claim": "秘匿情報はシステムプロパティまたはOS環境変数で設定する",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるNablarch固有の主張（クラス名、パッケージ名、コンポーネント設定、依存ライブラリのバージョン、実装コード、注意事項）はすべて知識セクションの内容と一致しており、裏付けのない捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "guide/biz-samples/biz-samples-12.json:s1",
+      "guide/biz-samples/biz-samples-12.json:s2",
+      "guide/biz-samples/biz-samples-12.json:s3",
+      "guide/biz-samples/biz-samples-12.json:s11",
+      "guide/biz-samples/biz-samples-12.json:s12",
+      "guide/biz-samples/biz-samples-12.json:s13",
+      "guide/biz-samples/biz-samples-12.json:s14",
+      "guide/biz-samples/biz-samples-12.json:s15",
+      "guide/biz-samples/biz-samples-12.json:s16",
+      "processing-pattern/web-application/web-application-feature-details.json:s13"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 70250,
+    "duration_api_ms": 68659,
+    "num_turns": 6,
+    "total_cost_usd": 0.57314935,
+    "usage": {
+      "input_tokens": 4487,
+      "output_tokens": 5066,
+      "cache_read_input_tokens": 312907,
+      "cache_creation_input_tokens": 103135
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2930,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00307,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4487,
+        "outputTokens": 5066,
+        "cacheReadInputTokens": 312907,
+        "cacheCreationInputTokens": 103135,
+        "webSearchRequests": 0,
+        "costUSD": 0.57007935,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

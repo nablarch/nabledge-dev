@@ -1,0 +1,184 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「注意点」セクションに「Jakarta EE 10に対応しているアプリケーションサーバが必要です（後方互換性なし）」という記述があり、事実の「Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある」という情報が含まれている。",
+      "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「javax.*」から「jakarta.*」への名前空間変更、APIライブラリのjakarta.*グループIDへの置き換え（javax.servlet-api→jakarta.servlet-api等）、XMLスキーマのJakarta EE対応変更など、Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されているという事実が詳細に含まれている。",
+      "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Nablarch 5→6バージョンアップでJakarta EE 10対応が必要",
+        "supported": true
+      },
+      {
+        "claim": "javax.* → jakarta.* 名前空間の変更が必要（Jakarta EE 9で導入）",
+        "supported": true
+      },
+      {
+        "claim": "javax.crypto.SecretKeyFactoryなど標準ライブラリのjavax.*は変更不要",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet:javax.servlet-api → jakarta.servlet:jakarta.servlet-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet.jsp:javax.servlet.jsp-api → jakarta.servlet.jsp:jakarta.servlet.jsp-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api → jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api",
+        "supported": true
+      },
+      {
+        "claim": "org.apache.geronimo.specs:geronimo-jpa_2.0_spec → jakarta.persistence:jakarta.persistence-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.ws.rs:javax.ws.rs-api → jakarta.ws.rs:jakarta.ws.rs-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.annotation:javax.annotation-api → jakarta.annotation:jakarta.annotation-api",
+        "supported": true
+      },
+      {
+        "claim": "jakarta.platform:jakarta.jakartaee-bom:10.0.0 のBOM利用を推奨",
+        "supported": true
+      },
+      {
+        "claim": "hibernate-validator 5.3.6.Final (org.hibernate) → 8.0.0.Final (org.hibernate.validator)",
+        "supported": true
+      },
+      {
+        "claim": "taglibs:standard → org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.0",
+        "supported": true
+      },
+      {
+        "claim": "jersey-bom を 3.1.8 に更新",
+        "supported": true
+      },
+      {
+        "claim": "activemq-all → artemis-server + artemis-jakarta-server + artemis-jakarta-client",
+        "supported": true
+      },
+      {
+        "claim": "web.xml スキーマを Jakarta EE 10 (web-app_6_0.xsd, version=6.0) に変更",
+        "supported": true
+      },
+      {
+        "claim": "JSP taglib URIを jakarta.tags.core に変更",
+        "supported": true
+      },
+      {
+        "claim": "waitt-maven-plugin → jetty-ee10-maven-plugin:12.0.12",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-testing-jetty6 → nablarch-testing-jetty12",
+        "supported": true
+      },
+      {
+        "claim": "HttpServerFactoryJetty6 → HttpServerFactoryJetty12",
+        "supported": true
+      },
+      {
+        "claim": "gsp-dba-maven-plugin を 5.1.0 に更新が必要",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta Batch: jboss-batch-api_1.0_spec → jakarta.batch:jakarta.batch-api",
+        "supported": true
+      },
+      {
+        "claim": "weld-core → weld-core-impl:5.0.1.Final",
+        "supported": true
+      },
+      {
+        "claim": "Java 17以上が動作要件",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch 5最新版へのバージョンアップ後にNablarch 6移行を実施",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta EE 10に対応しているアプリケーションサーバが必要（後方互換性なし）",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるNablarch固有の主張（クラス名・モジュール名・バージョン・設定方法・移行手順）はすべて知識セクション（マイグレーションガイドのゴールドスタンダード）に裏付けられており、捏造情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "about/migration/migration-migration.json:s2",
+      "about/migration/migration-migration.json:s3",
+      "about/migration/migration-migration.json:s5",
+      "about/migration/migration-migration.json:s7",
+      "about/migration/migration-migration.json:s9",
+      "about/migration/migration-migration.json:s16",
+      "about/migration/migration-migration.json:s24",
+      "about/migration/migration-migration.json:s25",
+      "about/migration/migration-migration.json:s26",
+      "about/migration/migration-migration.json:s27",
+      "about/migration/migration-migration.json:s28",
+      "about/migration/migration-migration.json:s29",
+      "about/about-nablarch/about-nablarch-jakarta-ee.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 73018,
+    "duration_api_ms": 72363,
+    "num_turns": 5,
+    "total_cost_usd": 0.53065185,
+    "usage": {
+      "input_tokens": 1758,
+      "output_tokens": 5558,
+      "cache_read_input_tokens": 204472,
+      "cache_creation_input_tokens": 100687
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2920,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00309,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1758,
+        "outputTokens": 5558,
+        "cacheReadInputTokens": 204472,
+        "cacheCreationInputTokens": 100687,
+        "webSearchRequests": 0,
+        "costUSD": 0.5275618500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

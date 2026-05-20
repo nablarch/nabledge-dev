@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 80106,
+  "duration_api_ms": 78657,
+  "ttft_ms": 9075,
+  "num_turns": 7,
+  "result": "情報が揃いました。回答を生成します。\n\n---\n\n**結論**: ウェブアプリケーションの入力チェックは `@InjectForm` インターセプタを業務アクションのメソッドに設定し、Bean Validation のアノテーションを Form クラスのプロパティに定義することで実装します。\n\n**根拠**:\n\n**Step 1: コンポーネント設定ファイルに `BeanValidationStrategy` を定義する**\n\n```xml\n<component name=\"validationStrategy\" class=\"nablarch.common.web.validator.BeanValidationStrategy\" />\n```\n\n**Step 2: Form クラスを作成し、バリデーションアノテーションを設定する**\n\n> **重要**: Formクラスのプロパティは必ず `String` 型で定義すること。String以外の型があると、不正な値送信時にBeanへの変換処理が失敗し予期せぬ例外が発生する。\n\n```java\npublic class UserForm {\n\n    @Domain(\"name\")   // ドメインバリデーションを推奨\n    @Required\n    private String userName;\n\n    @Domain(\"date\")\n    private String birthday;\n\n    // getter、setter\n}\n```\n\nアノテーションを個別指定する場合（ドメインバリデーションなし）:\n\n```java\npublic class SampleForm {\n\n    @Length(max = 10)\n    @SystemChar(charsetDef = \"全角文字\")\n    @Required\n    private String userName;\n\n    @Length(min = 8, max = 8)\n    @SystemChar(charsetDef = \"半角数字\")\n    private String birthday;\n\n    // getter、setter\n}\n```\n\n**Step 3: 業務アクションに `@InjectForm` と `@OnError` を設定する**\n\n```java\n@InjectForm(form = UserForm.class, prefix = \"form\", validate = \"register\")\n@OnError(type = ApplicationException.class, path = \"forward://registerForm.jsp\")\npublic HttpResponse handle(HttpRequest req, ExecutionContext ctx) {\n\n    // バリデーション成功後、リクエストスコープからフォームを取得\n    UserForm form = ctx.getRequestScopedVar(\"form\");\n\n    // 以降、業務処理\n}\n```\n\n- `prefix`: リクエストパラメータのプレフィックス（`form.userId` のように HTML側でも合わせる）\n- `validate`: バリデーショングループ名\n- `@OnError` を設定しないとバリデーションエラーがシステムエラー扱いになるため必須\n\n**Step 4: エラーメッセージをプロパティファイルに定義する**\n\n```properties\nnablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。\nnablarch.core.validation.ee.Required.message=必須項目です。\n```\n\n**注意点**:\n- `@OnError` は `@InjectForm` を付けたメソッドに必ず設定すること。\n- 相関バリデーションは `@AssertTrue` アノテーションを使うが、バリデーション実行順は保証されないため、片方が未入力の場合でも例外が出ないようにロジックを組む必要がある。\n- ドメインバリデーション（`@Domain`）の使用を推奨。個別アノテーション設定では実装ミスやメンテナンスコストが増大するため。\n\n参照: component/libraries/libraries-bean-validation.json:s8, component/libraries/libraries-bean-validation.json:s9, component/libraries/libraries-bean-validation.json:s16, component/handlers/handlers-InjectForm.json:s3, component/handlers/handlers-InjectForm.json:s4, component/libraries/libraries-bean-validation.json:s7\n\n---\n\n<<<BENCHMARK_HEARING>>>\n{\"status\": \"skipped\", \"questions\": []}\n<<<END_BENCHMARK_HEARING>>>\n\n<<<BENCHMARK_SEARCH>>>\n{\"section_ids\": [\"component/libraries/libraries-bean-validation.json:s5\", \"component/libraries/libraries-bean-validation.json:s6\", \"component/libraries/libraries-bean-validation.json:s7\", \"component/libraries/libraries-bean-validation.json:s8\", \"component/libraries/libraries-bean-validation.json:s9\", \"component/libraries/libraries-bean-validation.json:s11\", \"component/libraries/libraries-bean-validation.json:s16\", \"component/libraries/libraries-bean-validation.json:s18\", \"component/handlers/handlers-InjectForm.json:s1\", \"component/handlers/handlers-InjectForm.json:s3\", \"component/handlers/handlers-InjectForm.json:s4\", \"processing-pattern/web-application/web-application-feature-details.json:s2\"]}\n<<<END_BENCHMARK_SEARCH>>>\n\n<<<BENCHMARK_ANSWER>>>\n**結論**: ウェブアプリケーションの入力チェックは `@InjectForm` インターセプタを業務アクションのメソッドに設定し、Bean Validation のアノテーションを Form クラスのプロパティに定義することで実装します。\n\n**根拠**:\n\n**Step 1: コンポーネント設定ファイルに `BeanValidationStrategy` を定義する**\n\n```xml\n<component name=\"validationStrategy\" class=\"nablarch.common.web.validator.BeanValidationStrategy\" />\n```\n\n**Step 2: Form クラスを作成し、バリデーションアノテーションを設定する**\n\n> **重要**: Formクラスのプロパティは必ず `String` 型で定義すること。String以外の型があると、不正な値送信時にBeanへの変換処理が失敗し予期せぬ例外が発生する。\n\n```java\npublic class UserForm {\n\n    @Domain(\"name\")   // ドメインバリデーションを推奨\n    @Required\n    private String userName;\n\n    @Domain(\"date\")\n    private String birthday;\n\n    // getter、setter\n}\n```\n\nアノテーションを個別指定する場合（ドメインバリデーションなし）:\n\n```java\npublic class SampleForm {\n\n    @Length(max = 10)\n    @SystemChar(charsetDef = \"全角文字\")\n    @Required\n    private String userName;\n\n    @Length(min = 8, max = 8)\n    @SystemChar(charsetDef = \"半角数字\")\n    private String birthday;\n\n    // getter、setter\n}\n```\n\n**Step 3: 業務アクションに `@InjectForm` と `@OnError` を設定する**\n\n```java\n@InjectForm(form = UserForm.class, prefix = \"form\", validate = \"register\")\n@OnError(type = ApplicationException.class, path = \"forward://registerForm.jsp\")\npublic HttpResponse handle(HttpRequest req, ExecutionContext ctx) {\n\n    // バリデーション成功後、リクエストスコープからフォームを取得\n    UserForm form = ctx.getRequestScopedVar(\"form\");\n\n    // 以降、業務処理\n}\n```\n\n- `prefix`: リクエストパラメータのプレフィックス（`form.userId` のように HTML側でも合わせる）\n- `validate`: バリデーショングループ名\n- `@OnError` を設定しないとバリデーションエラーがシステムエラー扱いになるため必須\n\n**Step 4: エラーメッセージをプロパティファイルに定義する**\n\n```properties\nnablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。\nnablarch.core.validation.ee.Required.message=必須項目です。\n```\n\n**注意点**:\n- `@OnError` は `@InjectForm` を付けたメソッドに必ず設定すること。\n- 相関バリデーションは `@AssertTrue` アノテーションを使うが、バリデーション実行順は保証されないため、片方が未入力の場合でも例外が出ないようにロジックを組む必要がある。\n- ドメインバリデーション（`@Domain`）の使用を推奨。個別アノテーション設定では実装ミスやメンテナンスコストが増大するため。\n\n参照: component/libraries/libraries-bean-validation.json:s8, component/libraries/libraries-bean-validation.json:s9, component/libraries/libraries-bean-validation.json:s16, component/handlers/handlers-InjectForm.json:s3, component/handlers/handlers-InjectForm.json:s4, component/libraries/libraries-bean-validation.json:s7\n<<<END_BENCHMARK_ANSWER>>>",
+  "stop_reason": "end_turn",
+  "session_id": "bf006d68-93f0-419f-b9df-f669b191dafd",
+  "total_cost_usd": 0.5941379,
+  "usage": {
+    "input_tokens": 8,
+    "cache_creation_input_tokens": 99602,
+    "cache_read_input_tokens": 509368,
+    "output_tokens": 4318,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 99602
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 2911,
+      "outputTokens": 23,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003026,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 8,
+      "outputTokens": 4318,
+      "cacheReadInputTokens": 509368,
+      "cacheCreationInputTokens": 99602,
+      "webSearchRequests": 0,
+      "costUSD": 0.5911119,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "68733364-9de8-422e-b7b3-8da22c434762"
+}

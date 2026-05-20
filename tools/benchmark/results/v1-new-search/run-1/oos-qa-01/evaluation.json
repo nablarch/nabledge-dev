@@ -1,0 +1,89 @@
+{
+  "scenario_id": "oos-qa-01",
+  "description": "バッチ処理の進捗をリアルタイムにクライアントへ通知する機能を実装したい。WebSocketを使いたいが、NablarchでWebSocketが使えるか確認したい。",
+  "input": "バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答は「NablarchはWebSocketを直接サポートする機能を提供していません」と明示しており、さらに「WebSocket通信はNablarchのハンドラキューやフレームワーク管理下では扱われません」とも述べている。これはNablarchにWebSocketのサポートがないという事実と一致する。",
+      "fact": "NablarchにはWebSocketのサポートがないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchはWebSocketを直接サポートする機能を提供していない",
+        "supported": true
+      },
+      {
+        "claim": "Nablarchはリクエスト/レスポンス型のHTTPベースアーキテクチャを前提に設計されている",
+        "supported": true
+      },
+      {
+        "claim": "WebSocket通信はNablarchのハンドラキューやフレームワーク管理下では扱われない",
+        "supported": true
+      },
+      {
+        "claim": "テーブルをキューとして使ったメッセージング方式が代替アプローチとして存在する",
+        "supported": true
+      },
+      {
+        "claim": "WebSocketサポートはアプリケーションサーバ（Tomcat、WildFlyなど）が提供するJakarta WebSocket仕様を直接使用することになる",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta WebSocketの実装はNablarchフレームワーク外の作業になる",
+        "supported": true
+      }
+    ],
+    "reason": "回答はNablarchがWebSocketを直接サポートしないという一般的な事実を述べており、Nablarch固有のAPI名・クラス名・設定方法などの具体的な主張は含まれていない。代替アプローチとして挙げられている「テーブルをキューとして使ったメッセージング」はNablarchの既知のアーキテクチャパターンと整合しており、Jakarta WebSocketへの言及は一般的なJakarta EE知識の範囲内である。知識セクションは空であるが、回答内のNablarch固有の主張は最小限であり、捏造と判断できる根拠もない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 48772,
+    "duration_api_ms": 47542,
+    "num_turns": 7,
+    "total_cost_usd": 0.49664625,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 2538,
+      "cache_read_input_tokens": 411625,
+      "cache_creation_input_tokens": 88533
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2939,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003069,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 2538,
+        "cacheReadInputTokens": 411625,
+        "cacheCreationInputTokens": 88533,
+        "webSearchRequests": 0,
+        "costUSD": 0.49357725,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

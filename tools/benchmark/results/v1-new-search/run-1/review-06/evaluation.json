@@ -1,0 +1,137 @@
+{
+  "scenario_id": "review-06",
+  "description": "REST APIのリソースクラスでJaxRsHttpRequestからクエリーパラメータを取得する処理を書いている。URLパスの一部をパスパラメータとして使う箇所もある。",
+  "input": "REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「ルーティング設定でパスパラメータの名前を定義し（routes.xmlの`:id`または`@Path`の`{id}`）、リソースクラスで`request.getPathParam(\"id\")`により受け取る」という内容が明確に含まれており、事実と同じ情報が記述されている。",
+      "fact": "パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「クエリパラメータの取得」セクションおよびコード例において、`JaxRsHttpRequest`からクエリパラメータを取得する旨が明示されている。具体的には「クエリパラメータはクエリ文字列をそのまま `JaxRsHttpRequest#getParamMap()` で取得します」と結論部に記載され、コード例でも `req.getParamMap()` を使用している。また注意点として「`JaxRsHttpRequest` を使ってパスパラメータ・クエリパラメータの両方を取得します」とも明記されており、事実の情報が含まれている。",
+      "fact": "クエリーパラメータはJaxRsHttpRequestから取得する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "XMLルート定義でパスパラメータは `:id` 形式で定義する",
+        "supported": true
+      },
+      {
+        "claim": "@Path アノテーションでパスパラメータは `{id}` または `{id : \\d+}` 形式で定義する",
+        "supported": true
+      },
+      {
+        "claim": "クエリパラメータは `JaxRsHttpRequest#getParamMap()` で取得する",
+        "supported": true
+      },
+      {
+        "claim": "ディスパッチハンドラとして `RoutesMapping` を使用する",
+        "supported": true
+      },
+      {
+        "claim": "`@Path` アノテーション使用時は `PathOptionsProviderRoutesMapping` に変更する",
+        "supported": true
+      },
+      {
+        "claim": "`JaxRsPathOptionsProvider` に `applicationPath` と `basePackage` を設定する",
+        "supported": true
+      },
+      {
+        "claim": "`JerseyJaxRsHandlerListFactory` を使用する",
+        "supported": true
+      },
+      {
+        "claim": "パスパラメータは `JaxRsHttpRequest#getPathParam(String)` で取得する",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta RESTful Web Services の `@PathParam`・`@QueryParam` は使用できない",
+        "supported": true
+      },
+      {
+        "claim": "JBoss/WildFly 環境では `@Path` アノテーションによるルーティングは使用できない",
+        "supported": true
+      },
+      {
+        "claim": "バージョン1.2.0以降で `@Path` アノテーションによるルーティングが利用可能",
+        "supported": true
+      },
+      {
+        "claim": "`BeanUtil.createAndCopy` でクエリパラメータをFormクラスにマッピングする",
+        "supported": true
+      },
+      {
+        "claim": "`ValidatorUtil.validate` でバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "`UniversalDao.findById` でエンティティを取得する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有の主張（クラス名・API名・設定方法・動作仕様）はすべて知識セクションに裏付けられており、捏造情報は検出されなかった。なお、searchメソッドのコード例で引数名が `request` と `req` で不一致な箇所があるが、これはコードの記述ミスであり Nablarch 仕様に関するハルシネーションではない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s3",
+      "component/adapters/adapters-router-adaptor.json:s3",
+      "component/adapters/adapters-router-adaptor.json:s4",
+      "component/adapters/adapters-router-adaptor.json:s6",
+      "component/adapters/adapters-router-adaptor.json:s7",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "component/adapters/adapters-router-adaptor.json:s9",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 67789,
+    "duration_api_ms": 67365,
+    "num_turns": 6,
+    "total_cost_usd": 0.4967079,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 4320,
+      "cache_read_input_tokens": 204503,
+      "cache_creation_input_tokens": 97988
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2947,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003087,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5,
+        "outputTokens": 4320,
+        "cacheReadInputTokens": 204503,
+        "cacheCreationInputTokens": 97988,
+        "webSearchRequests": 0,
+        "costUSD": 0.49362090000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
