@@ -13,13 +13,25 @@
 
 ### B-4-1. run-1 安定化（エラーゼロになるまで繰り返す）
 
-**Status**: 1回目実行済み（`v1-new-search/run-1/`、コミット済み `ead7f4889`）。qa-04 で MarkerError 発生（スキルがヒアリング質問を返して停止）。エラーゼロ未達のため継続。
+**Status**: `purpose` 未注入問題を修正済み。run-1 は `purpose` が注入されない状態で計測されたため、再実行が必要。
 
-**run-1 (1回目) 結果**: 30件中29件正常完了。qa-04のみ MarkerError（`<<<BENCHMARK_HEARING>>>`マーカー未出力）。
+**run-1 (1回目) 結果**: 30件中29件正常完了。qa-04のみ MarkerError。`purpose` 未注入のため全件が不正確な可能性。
+
+**run-1 (2回目) 結果**: qa-04 のみ再実行（accuracy=1.0/hallucination=PASS）。ただし残り29件は `purpose` 未注入状態のまま。
 
 - [x] qa-04 MarkerError の原因を確認し修正する — `79677a793`（`goal`→`purpose` 修正、329テストGREEN）
-- [x] run-1 再実行 → エラーゼロを確認する — `65c938bf6`（30/30完了、qa-04 accuracy=1.0/hallucination=PASS）
-- [BLOCKED: エラーゼロ確認後、ユーザーに報告して B-4（run-2/run-3）進行承認を得る]
+- [x] run-1 qa-04 再実行・エラーゼロ確認 — `65c938bf6`
+- [x] purpose 未注入の影響を調査する — `processing_type` は正しく注入済み。`purpose` は Step 1 自己推測にフォールバックするため、推測誤りが発生した可能性あり
+- [ ] run-1 全件を再実行する（purpose 注入済みの正しい状態で計測し直す）
+  ```bash
+  python3 -m tools.benchmark.scripts.run_e2e \
+    --scenarios tools/benchmark/scenarios/qa.json \
+    --skill-dir .claude/skills/nabledge-6
+  ```
+  出力先: デフォルト（タイムスタンプ付き）→ `v1-new-search/run-1/` にコピー（既存を上書き）
+- [ ] エラーゼロを確認する
+- [ ] 結果をコミット
+- [ ] [BLOCKED: エラーゼロ確認後、ユーザーに報告して B-4（run-2/run-3）進行承認を得る]
 
 ## Not Started
 
