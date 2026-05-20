@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20 (session 9b)
+**Updated**: 2026-05-20 (session 10)
 
 ## Rules
 
@@ -12,55 +12,6 @@
 ## In Progress
 
 ## Not Started
-
-### B-4-1-B. purpose ヒアリング追加（ヒアリング設計の根本修正）
-
-**背景・問題**
-
-`goal` は質問の言い換えにすぎず、semantic search の向き先を制御できていない。
-
-例: 「バリデーションエラーをユーザーに返す方法」という質問は、目的によって参照すべき知識が変わる。
-- 「実装したい」→ processing-pattern / component/libraries が優先
-- 「仕組みを理解したい」→ component/handlers が優先
-- 「バージョンアップしたい」→ about/migration / releases が優先
-
-目的を明示することで LLM が libraries と handlers のどちらを優先するかを判断できるようになる。
-
-**設計方針（合意済み）**
-
-- `goal` を廃止し、`purpose`（質問の目的）を新設
-- `hearing_answer` は `{ processing_type, purpose }` の2軸
-- semantic search には `"処理方式: {processing_type}\n目的: {purpose}"` として渡す
-- `purpose` は以下の7択の固定カテゴリ（ユーザー承認済み）:
-  1. 実装したい
-  2. 仕組み・動作を理解したい
-  3. 不具合・エラーを調査したい
-  4. テストを書きたい
-  5. バージョンアップしたい
-  6. 実装パターン・サンプルを参考にしたい
-  7. セキュリティ対応したい
-
-**purpose と優先カテゴリの対応（目安）**
-
-| purpose | 優先カテゴリ |
-|---------|------------|
-| 実装したい | processing-pattern/*, component/libraries |
-| 仕組み・動作を理解したい | component/handlers, component/libraries, about/about-nablarch |
-| 不具合・エラーを調査したい | component/handlers, component/libraries, processing-pattern/* |
-| テストを書きたい | development-tools/testing-framework, component/libraries |
-| バージョンアップしたい | about/migration, releases/releases, about/release-notes |
-| 実装パターン・サンプルを参考にしたい | guide/nablarch-patterns, guide/biz-samples, processing-pattern/* |
-| セキュリティ対応したい | check/security-check, component/handlers, processing-pattern/* |
-
-**ステップ:**
-- [ ] `processing_type` ヒアリングと同様に、purpose ヒアリングの skip/ask 分類ロジックを設計する（PEレビュー必須）
-- [ ] hearing-design.md を更新（`goal` 廃止、`purpose` 追加、7択リスト・ヒアリングロジック記述）
-- [ ] qa.md の Step 1〜3 を更新（purpose ヒアリング追加、`goal` 削除、hearing_answer スキーマ変更）
-- [ ] semantic-search.md の hearing_answer 入力フォーマットを更新（`goal` → `purpose`）
-- [ ] シナリオ（qa.json）の hearing_answer を `{ processing_type, purpose }` に更新（`goal` 削除）
-- [ ] `python3 -m pytest tools/ -x` で全テスト GREEN
-
-**前提:** B-4-1-A（FAIL調査）完了後に着手。
 
 ### B-4. 新スキルE2Eベンチマーク（B-4-1完了後）
 
@@ -172,6 +123,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-4-1-B. purpose ヒアリング追加（goal廃止・purpose7択追加・PEレビュー0 Findings）— `dbad4cf64`
 - [x] B-4-1-C. evaluate.py 幻覚検証ロジック修正（search_sections を sections_text に追加、TDD 5テスト追加）— `563d8b4aa`
 - [x] B-4-1-A. 精度FAIL・幻覚FAIL の詳細調査 — 全19シナリオ突合完了。真の幻覚5件確定。report.md に記録
 - [x] B-4-1. run-1 安定化（エラーゼロまで）— 30件完走 `20260520-072948`
