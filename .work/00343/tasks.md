@@ -15,9 +15,7 @@
 
 ### B-4. 新スキルE2Eベンチマーク（B-4-1完了後）
 
-- [ ] run-1 リネーム: `mv tools/benchmark/results/20260519-113919 tools/benchmark/results/v1-new-search/run-1`
-  （または全件成功後の新しい実行結果をrun-1とする）
-- [ ] run-2, run-3 実行（同上、run-2/run-3にリネーム）
+- [ ] run-1, run-2, run-3 実行 → `v1-new-search/run-{1,2,3}` に保存
 - [ ] 結果をコミット
 - [ ] QAエキスパート（別エージェント）に生データを渡して比較評価させる（実装者が自己採点しない）
 - [ ] [BLOCKED: ユーザーがQAエキスパートの評価を確認し、B-5着手の承認を出す]
