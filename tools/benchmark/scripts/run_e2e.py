@@ -203,7 +203,7 @@ def run_e2e_scenario(
             "--model", "sonnet",
             "--output-format", "json",
             "--no-session-persistence",
-            "--allowedTools", "Bash(keyword-search.sh *) Bash(read-sections.sh *) Read",
+            "--allowedTools", "Bash(bash scripts/keyword-search.sh *) Bash(bash scripts/read-sections.sh *) Read",
         ],
         input=prompt,
         capture_output=True,

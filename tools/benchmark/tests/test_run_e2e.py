@@ -363,8 +363,8 @@ class TestRunE2eScenario:
             cmd = mock_run.call_args[0][0]
             allowed_tools_idx = cmd.index("--allowedTools")
             allowed_tools_value = cmd[allowed_tools_idx + 1]
-            assert "Bash(keyword-search.sh *)" in allowed_tools_value
-            assert "Bash(read-sections.sh *)" in allowed_tools_value
+            assert "Bash(bash scripts/keyword-search.sh *)" in allowed_tools_value
+            assert "Bash(bash scripts/read-sections.sh *)" in allowed_tools_value
             assert "Read" in allowed_tools_value
 
     def test_uses_default_timeout_360(self):
