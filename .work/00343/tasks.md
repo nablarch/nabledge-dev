@@ -11,19 +11,24 @@
 
 ## In Progress
 
-### B-4. 新スキルE2Eベンチマーク（B-4-pre完了後）
+### B-4-1. run-1 安定化（エラーゼロになるまで繰り返す）
 
-**Status**: run-1完了（`v1-new-search/run-1/`、未コミット）。run-2/run-3未実施。
+**Status**: 1回目実行済み（`v1-new-search/run-1/`、コミット済み `ead7f4889`）。qa-04 で MarkerError 発生（スキルがヒアリング質問を返して停止）。エラーゼロ未達のため継続。
 
-**run-1 結果**: 30件中29件正常完了。qa-04のみ MarkerError（スキルがヒアリング質問を返して停止、`<<<BENCHMARK_HEARING>>>`マーカー未出力）。
+**run-1 (1回目) 結果**: 30件中29件正常完了。qa-04のみ MarkerError（`<<<BENCHMARK_HEARING>>>`マーカー未出力）。
 
-- [x] run-1 実行 → `v1-new-search/run-1/` に保存（未コミット）
+- [ ] qa-04 MarkerError の原因を確認し修正する
+- [ ] run-1 再実行 → エラーゼロを確認する
+- [ ] [BLOCKED: エラーゼロ確認後、ユーザーに報告して B-4（run-2/run-3）進行承認を得る]
+
+## Not Started
+
+### B-4. 新スキルE2Eベンチマーク（B-4-1完了後）
+
 - [ ] run-2, run-3 実行 → `v1-new-search/run-{2,3}` に保存
 - [ ] 結果をコミット
 - [ ] QAエキスパート（別エージェント）に生データを渡して比較評価させる（実装者が自己採点しない）
 - [ ] [BLOCKED: ユーザーがQAエキスパートの評価を確認し、B-5着手の承認を出す]
-
-## Not Started
 
 ### B-X. terms.json抽出ルールの見直し検討
 
