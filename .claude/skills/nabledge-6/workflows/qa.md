@@ -20,19 +20,22 @@ From the question, determine `processing_type` and `purpose` independently.
 
 Judge which processing type the question belongs to. Use the names and technical terms below as reference:
 
-Processing types and their identifying terms:
-- **ウェブアプリケーション**: JSP, HIDDENストア, セッション変数, セッションストア, CSRF
-- **RESTfulウェブサービス**: リソースクラス, JAX-RS, REST API, RESTful
-- **Nablarchバッチ**: requestPath (batch startup argument), バッチアプリ
-- **Jakartaバッチ**: ItemReader, ItemWriter, Chunk
-- **テーブルをキューとして使ったメッセージング**
-- **HTTPメッセージング**
-- **MOMメッセージング**
+Reference — processing types and their identifying terms:
 
+| Processing type | Identifying terms |
+|---|---|
+| ウェブアプリケーション | JSP, HIDDENストア, セッション変数, セッションストア, CSRF |
+| RESTfulウェブサービス | リソースクラス, JAX-RS, REST API, RESTful |
+| Nablarchバッチ | requestPath (batch startup argument), バッチアプリ |
+| Jakartaバッチ | ItemReader, ItemWriter, Chunk |
+| テーブルをキューとして使ったメッセージング | — |
+| HTTPメッセージング | — |
+| MOMメッセージング | — |
+
+Judgment:
 - Question clearly belongs to one processing type → `processing_type = <that type>`
-- Question clearly belongs to multiple processing types → `processing_type = UNCLEAR`
 - Question is cross-functional (testing framework, i18n, logging, common utilities) → `processing_type = null`
-- Cannot determine from the question → `processing_type = UNCLEAR`
+- Otherwise → `processing_type = UNCLEAR`
 
 Note: Common concepts (transactions, validation, DB access, SQL) are NOT cross-functional if their configuration/implementation differs per processing type.
 
