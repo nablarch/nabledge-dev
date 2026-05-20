@@ -265,9 +265,17 @@ def evaluate_scenario(
         parsed["fact"] = mf["fact"]
         claim_verdicts.append(parsed)
 
-    all_section_refs = [m["section"] for m in must_facts if m.get("section")] + [a["section"] for a in acceptable if a.get("section")]
+    all_section_refs = (
+        [m["section"] for m in must_facts if m.get("section")]
+        + [a["section"] for a in acceptable if a.get("section")]
+        + runner_output.get("search", {}).get("section_ids", [])
+    )
+    seen_refs: set[str] = set()
     sections_content_parts = []
     for ref in all_section_refs:
+        if ref in seen_refs:
+            continue
+        seen_refs.add(ref)
         try:
             content = section_loader(knowledge_dir, ref)
             sections_content_parts.append(content)

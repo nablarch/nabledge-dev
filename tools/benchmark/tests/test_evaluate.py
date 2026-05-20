@@ -449,6 +449,163 @@ class TestEvaluateScenario:
         assert section_loader_called_with == []
         assert result["scores"]["accuracy"] == 1.0
 
+    def test_search_sections_eliminate_false_positive(self):
+        # Claim supported by search_sections but not must_facts/acceptable → should PASS
+        scenario = {
+            "id": "fp-01",
+            "then": {
+                "must": [{"fact": "fact1", "section": "a.json:s1"}],
+                "acceptable": [],
+            },
+        }
+        runner_output = {
+            "answer": "回答",
+            "hearing": {},
+            "search": {"section_ids": ["b.json:s2"]},
+            "metrics": {},
+        }
+
+        loaded_refs = []
+
+        def mock_llm(prompt, json_schema):
+            if "ファクトチェック" in prompt:
+                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
+            # hallucination judge: check sections contains b.json:s2 content
+            assert "b.json:s2の内容" in prompt
+            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
+
+        def mock_load_section(knowledge_dir, ref):
+            loaded_refs.append(ref)
+            return f"{ref}の内容"
+
+        evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
+                          section_loader=mock_load_section)
+        assert "b.json:s2" in loaded_refs
+
+    def test_search_sections_true_hallucination_still_caught(self):
+        # Claim unsupported by both must_facts and search_sections → should FAIL
+        scenario = {
+            "id": "th-01",
+            "then": {
+                "must": [{"fact": "fact1", "section": "a.json:s1"}],
+                "acceptable": [],
+            },
+        }
+        runner_output = {
+            "answer": "回答",
+            "hearing": {},
+            "search": {"section_ids": ["b.json:s2"]},
+            "metrics": {},
+        }
+
+        def mock_llm(prompt, json_schema):
+            if "ファクトチェック" in prompt:
+                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
+            return _wrap_llm_response({
+                "verdict": "FAIL",
+                "claims": [{"claim": "捏造事実", "supported": False}],
+                "reason": "裏付けなし",
+            })
+
+        def mock_load_section(knowledge_dir, ref):
+            return f"{ref}の内容"
+
+        result = evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
+                                   section_loader=mock_load_section)
+        assert result["scores"]["hallucination"] == 0
+
+    def test_search_sections_deduplication(self):
+        # A section in both must_facts and search_sections → loaded exactly once
+        scenario = {
+            "id": "dup-01",
+            "then": {
+                "must": [{"fact": "fact1", "section": "a.json:s1"}],
+                "acceptable": [],
+            },
+        }
+        runner_output = {
+            "answer": "回答",
+            "hearing": {},
+            "search": {"section_ids": ["a.json:s1"]},  # duplicate
+            "metrics": {},
+        }
+
+        load_count = {"a.json:s1": 0}
+
+        def mock_llm(prompt, json_schema):
+            if "ファクトチェック" in prompt:
+                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
+            # content should appear exactly once (no duplicate --- block)
+            count = prompt.count("a.json:s1の内容")
+            assert count == 1, f"Section content duplicated {count} times"
+            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
+
+        def mock_load_section(knowledge_dir, ref):
+            load_count[ref] = load_count.get(ref, 0) + 1
+            return f"{ref}の内容"
+
+        evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
+                          section_loader=mock_load_section)
+        # The in-prompt assertion in mock_llm verifies deduplication
+
+    def test_search_sections_empty(self):
+        # Empty search_sections → behavior identical to current (no crash)
+        scenario = {
+            "id": "empty-01",
+            "then": {
+                "must": [{"fact": "fact1", "section": "a.json:s1"}],
+                "acceptable": [],
+            },
+        }
+        runner_output = {
+            "answer": "回答",
+            "hearing": {},
+            "search": {"section_ids": []},
+            "metrics": {},
+        }
+
+        def mock_llm(prompt, json_schema):
+            if "ファクトチェック" in prompt:
+                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
+            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
+
+        def mock_load_section(knowledge_dir, ref):
+            return f"{ref}の内容"
+
+        result = evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
+                                   section_loader=mock_load_section)
+        assert result["scores"]["hallucination"] == 1
+
+    def test_search_sections_unresolvable_ref_skipped(self):
+        # Unresolvable search_section ref → silently skipped, no crash
+        scenario = {
+            "id": "skip-01",
+            "then": {
+                "must": [{"fact": "fact1", "section": "a.json:s1"}],
+                "acceptable": [],
+            },
+        }
+        runner_output = {
+            "answer": "回答",
+            "hearing": {},
+            "search": {"section_ids": ["nonexistent.json:s99"]},
+            "metrics": {},
+        }
+
+        def mock_llm(prompt, json_schema):
+            if "ファクトチェック" in prompt:
+                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
+            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
+
+        def mock_load_section(knowledge_dir, ref):
+            if ref == "nonexistent.json:s99":
+                raise FileNotFoundError(f"not found: {ref}")
+            return f"{ref}の内容"
+
+        result = evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
+                                   section_loader=mock_load_section)
+        assert result["scores"]["hallucination"] == 1
+
 
 class TestEvaluateAll:
     def test_skips_missing_scenario_dir(self):
