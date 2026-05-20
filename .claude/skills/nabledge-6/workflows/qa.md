@@ -12,53 +12,126 @@ Answer in Japanese (Markdown)
 
 ---
 
-## Step 1: Classify question — skip or ask?
+## Step 1: Classify question
 
-Read the user's question and determine whether the processing type can be identified without asking.
+From the question, determine `processing_type` and `purpose` independently.
 
-**Step A: Scan for explicit keywords**
+### Determine processing_type
 
-Check whether the question contains any keyword from the lists below verbatim. Do not infer from business context — only match listed keywords exactly.
+**Check A — Verbatim keyword match (no inference)**
 
-Group 1 (official names or abbreviations of processing types):
+Scan the question for keywords below. Match verbatim only; do not infer from business context.
+
+Group 1 — Official names/abbreviations of processing types:
 - ウェブアプリケーション, Webアプリ, Web画面
 - RESTfulウェブサービス, REST API, RESTful, REST
-- Nablarchバッチ, バッチアプリケーション (only in the form "Nablarchバッチ" or "バッチアプリ")
+- Nablarchバッチ, バッチアプリケーション (only "Nablarchバッチ" or "バッチアプリ")
 - Jakartaバッチ
 - テーブルをキューとして使ったメッセージング
 - HTTPメッセージング
 - MOMメッセージング
 
-Group 2 (technical terms that exist in exactly one processing type):
+Group 2 — Technical terms that exist in exactly one processing type:
 - JSP, HIDDENストア, セッション変数, セッションストア, CSRF → ウェブアプリケーション
 - リソースクラス, JAX-RS → RESTfulウェブサービス
-- requestPath (in the context of a batch startup argument) → Nablarchバッチ
+- requestPath (as a batch startup argument) → Nablarchバッチ
 - ItemReader, ItemWriter, Chunk → Jakartaバッチ
 
-**Step B: Match**
-- Keyword found → points to exactly one processing type → **skip** (that processing type)
-- Keyword found → points to multiple processing types → **ask**
-- No keyword found → proceed to Step C
+- Match → exactly one type → `processing_type = <that type>`
+- Match → multiple types → `processing_type = UNCLEAR`
+- No match → proceed to Check B
 
-**Step C: Cross-functional check**
+**Check B — Cross-functional feature check**
 
-Check whether the question topic is one of the following cross-functional features:
+Check whether the question topic is one of:
 - Testing framework
 - Internationalization (i18n)
 - Logging configuration
 - Common utilities (date/time, code value management, etc.)
 
-If yes → **skip** (processing_type = null)
+Note: Common concepts (transactions, validation, DB access, SQL) are NOT cross-functional if their configuration/implementation differs per processing type.
 
-Note: Common concepts (transactions, validation, DB access, SQL, etc.) are NOT cross-functional if their configuration/implementation differs per processing type.
+- Topic is cross-functional → `processing_type = null`
+- Topic is not cross-functional → `processing_type = UNCLEAR`
 
-**Step D: Default**
+### Determine purpose
 
-If neither Step B nor Step C produced "skip" → **ask**
+Scan the question for signal keywords:
 
-**Step E: Infer purpose**
+| Signal keywords | Purpose |
+|---|---|
+| 「仕組み」「とは」「動作」「理解」「概要」 | 仕組み・動作を理解したい |
+| 「エラー」「例外」「不具合」「原因」「調査」 | 不具合・エラーを調査したい |
+| 「テスト」「テストコード」「テストケース」 | テストを書きたい |
+| 「バージョンアップ」「移行」「マイグレーション」「アップグレード」 | バージョンアップしたい |
+| 「サンプル」「パターン」「例を見たい」「参考」 | 実装パターン・サンプルを参考にしたい |
+| 「セキュリティ」「脆弱性」「認証」「認可」 | セキュリティ対応したい |
 
-Always infer `purpose` from the question (never ask the user). Select one from the 7 fixed categories:
+- Match found → `purpose = <that category>`
+- No match → `purpose = UNCLEAR`
+
+### Result
+
+If both `processing_type` and `purpose` are determined (not UNCLEAR) → build `hearing_answer` and proceed to Step 3:
+```
+hearing_answer = { "processing_type": "<type or null>", "purpose": "<category>" }
+```
+
+If either is UNCLEAR → proceed to Step 2.
+
+---
+
+## Step 2: Ask user if needed
+
+If both `processing_type` and `purpose` are already determined in Step 1, skip to the build step below.
+
+Otherwise, ask only about what is UNCLEAR.
+
+**If both processing_type and purpose are UNCLEAR**, output both questions together in one message:
+
+```
+いくつか確認させてください。
+
+どの処理方式で実装しますか？
+1. ウェブアプリケーション
+2. RESTfulウェブサービス
+3. Nablarchバッチ
+4. Jakartaバッチ
+5. テーブルをキューとして使ったメッセージング
+6. HTTPメッセージング
+7. MOMメッセージング
+8. その他（処理方式に依存しない）
+
+何を目的としていますか？
+1. 実装したい
+2. 仕組み・動作を理解したい
+3. 不具合・エラーを調査したい
+4. テストを書きたい
+5. バージョンアップしたい
+6. 実装パターン・サンプルを参考にしたい
+7. セキュリティ対応したい
+8. その他
+```
+
+**If only processing_type is UNCLEAR**, output:
+
+```
+どの処理方式で実装しますか？
+
+1. ウェブアプリケーション
+2. RESTfulウェブサービス
+3. Nablarchバッチ
+4. Jakartaバッチ
+5. テーブルをキューとして使ったメッセージング
+6. HTTPメッセージング
+7. MOMメッセージング
+8. その他（処理方式に依存しない）
+```
+
+**If only purpose is UNCLEAR**, output:
+
+```
+何を目的としていますか？
 
 1. 実装したい
 2. 仕組み・動作を理解したい
@@ -67,41 +140,14 @@ Always infer `purpose` from the question (never ask the user). Select one from t
 5. バージョンアップしたい
 6. 実装パターン・サンプルを参考にしたい
 7. セキュリティ対応したい
+8. その他
+```
 
-Signal keywords:
-- 「仕組み」「とは」「動作」「理解」「概要」→ 仕組み・動作を理解したい
-- 「エラー」「例外」「不具合」「原因」「調査」→ 不具合・エラーを調査したい
-- 「テスト」「テストコード」「テストケース」→ テストを書きたい
-- 「バージョンアップ」「移行」「マイグレーション」「アップグレード」→ バージョンアップしたい
-- 「サンプル」「パターン」「例を見たい」「参考」→ 実装パターン・サンプルを参考にしたい
-- 「セキュリティ」「脆弱性」「認証」「認可」→ セキュリティ対応したい
-- (no signal matches) → **実装したい** (default)
+Wait for the user's response. Then build `hearing_answer`:
+- `processing_type`: from Step 1 or user's selection (「その他」or 8 → null)
+- `purpose`: from Step 1 or user's selection (「その他」or 8 → 実装したい)
 
-Build `hearing_answer`:
-- skip: `{ "processing_type": "<type from the list above, or null>", "purpose": "<one of the 7 categories>" }`
-  - processing_type: null for cross-functional
-- ask: `hearing_answer = null` (purpose will be set in Step 2)
-
----
-
-## Step 2: Ask user if needed
-
-**If skip**: Use `hearing_answer` from Step 1. Proceed to Step 3.
-
-**If ask**: Use AskUserQuestion:
-- Question: "どの処理方式で実装しますか？"
-- Options:
-  - ウェブアプリケーション
-  - RESTfulウェブサービス
-  - Nablarchバッチ
-  - Jakartaバッチ
-  - テーブルをキューとして使ったメッセージング
-  - HTTPメッセージング
-  - MOMメッセージング
-
-Then build `hearing_answer` from the user's selection:
-1. Use the selected processing type as `processing_type`.
-2. Infer `purpose` from the original question using the same signal keywords from Step 1E (default: 実装したい).
+Proceed to Step 3.
 
 ---
 
