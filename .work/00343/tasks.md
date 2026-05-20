@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-20 (session 10)
+**Updated**: 2026-05-20 (session 11)
 
 ## Rules
 
@@ -13,19 +13,21 @@
 
 ## Not Started
 
-### B-4-pre. ユーザープロンプトレビュー（ベンチマーク前必須）
+### B-4-1-re. run-1 安定化（qa.md 改善後の再測定）
 
-ベンチマーク実行前に、ユーザーがスキルのプロンプト（qa.md / semantic-search.md）を確認してOKを出す。
-
-**レビュー対象ファイル:**
-- `.claude/skills/nabledge-6/workflows/qa.md`
-- `.claude/skills/nabledge-6/workflows/semantic-search.md`
+qa.md を大幅改修（Step 1-2-5）したため、改修後スキルで run-1 が安定完走することを再確認する。
 
 **ステップ:**
-- [ ] ユーザーにレビュー対象ファイルを提示する
-- [ ] [BLOCKED: ユーザーのレビューOKを受けるまで B-4 に進まない]
-- [ ] フィードバックがあれば修正してコミット・プッシュ → 再レビュー依頼
-- [ ] レビューOK確認
+- [ ] run-1 実行 → `tools/benchmark/results/` に保存
+  ```bash
+  python3 -m tools.benchmark.scripts.run_e2e \
+    --scenarios tools/benchmark/scenarios/qa.json \
+    --skill-dir .claude/skills/nabledge-6 \
+    --run-id v1-new-search-re/run-1
+  ```
+- [ ] エラーゼロで30件完走すること確認
+- [ ] エラーがあれば原因を修正して再実行
+- [ ] 結果をコミット・プッシュ
 
 ### B-4. 新スキルE2Eベンチマーク（B-4-pre完了後）
 
