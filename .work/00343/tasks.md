@@ -13,11 +13,16 @@
 
 ### 精度FAIL の改善方針確認
 
-qa-12a と qa-12b の精度FAIL（各1件）についてユーザーとの認識合わせが必要。
+原因特定済み（session 7）。詳細は `report.md` 精度FAIL分析セクション参照。
 
-- [ ] [BLOCKED: 精度FAIL の改善方針を確認]
-  - qa-12a: `HttpErrorHandler` が `ApplicationException` のメッセージを `ErrorMessages` に変換しリクエストスコープに設定する fact が未検出。search_sections に関連セクションが含まれていない可能性あり
-  - qa-12b: `@Valid` アノテーションによりバリデーションエラーが自動的にエラーレスポンスになる fact が未検出。同上
+- **qa-12a**: semantic-search が `handlers-HttpErrorHandler.json` をそもそも返さなかった。セクション選定以前の問題（denied とは無関係）
+- **qa-12b**: `libraries-bean-validation.json:s17` は選定リストにあったが `read-sections.sh` が denied で内容未読。denied 後の BENCHMARK_SEARCH 出力から s17 も脱落
+
+また `read-sections.sh` denied は30シナリオ中23シナリオで発生（`bash scripts/read-sections.sh` が `Bash(read-sections.sh *)` パターンにマッチしない）。
+
+- [ ] [BLOCKED: 精度FAIL および read-sections.sh denied の改善方針を確認]
+  - 選択肢A: denied を修正（`run_e2e.py` の allowedTools パターン修正）してベンチマーク再実行
+  - 選択肢B: 現状のまま B-4-1-C（evaluate.py 修正）に進む
 
 ## Not Started
 
