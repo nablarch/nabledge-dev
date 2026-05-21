@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-21 (session 9)
+**Updated**: 2026-05-22
 
 ## Rules
 
@@ -11,57 +11,16 @@
 
 ## In Progress
 
-### B-4-1-fix. read-sections.sh: sections:[] ファイルの content 返却対応
+### B-4. 新スキルE2Eベンチマーク
 
-**背景**: RBKC仕様（rbkc-json-schema-design.md §3-2）では h2/h3 がないファイルは `sections:[]`、内容は `content` フィールドに格納する。しかし read-sections.sh は `sections[]` からIDで検索するのみで、`sections:[]` のファイルの `content` を取得できない。qa-12aのベンチマークでエージェントが SECTION_NOT_FOUND を受けて `cat` でバイパスした根本原因。
-
-**対応**: `sections:[]` のファイルはセクションIDに関わらず `content` を返す。
-
-**影響ファイル**:
-- `.claude/skills/nabledge-6/scripts/read-sections.sh`
-- `.claude/skills/nabledge-5/scripts/read-sections.sh`
-- `.claude/skills/nabledge-1.4/scripts/read-sections.sh`
-- `.claude/skills/nabledge-1.3/scripts/read-sections.sh`
-- `.claude/skills/nabledge-1.2/scripts/read-sections.sh`
-- `tools/tests/test-read-sections.sh`（テスト追加）
-
-**ステップ**:
-- [x] `sections:[]` のファイルが v6 知識ファイルに何件あるか確認 — 100件
-- [x] テスト追加（RED）: `sections:[]` ファイルに対して `content` が返ること — `tools/tests/test-read-sections.sh` 9テスト
-- [x] read-sections.sh 修正（GREEN）: `sections:[]` のとき `content` を返す
-- [x] `bash tools/tests/test-read-sections.sh` 全テスト PASS 確認 — 9/9 PASS
-- [x] コミット・プッシュ — `11c9160ec`
-- [x] qa-12a で動作確認 — SECTION_NOT_FOUND 解消・cat バイパスなし確認済み
-- [x] run-1 全件再実行 — `tools/benchmark/results/v1-new-search/run-1/` に保存（エラー0件）
-- [BLOCKED: run-1レポート確認・run-2/run-3進行承認を得る]
-
-### B-4-1. run-1 再測定（B-4-1-fix完了後）
-
-**背景**: read-sections.sh修正後、sections:[]ファイルを含むシナリオ（qa-12a等）の回答品質が変わる可能性があるため再測定する。
-
-**結果** (2026-05-21):
-- 結果ディレクトリ: `tools/benchmark/results/v1-new-search/run-1/`
-- エラー: 0件（pre-02/qa-13 タイムアウト→再実行で回収済み）
-- Claims PRESENT: 41/42 (97.6%)
-- 幻覚PASS: 28/30 (93.3%)（FAIL 1件: impact-08、UNCERTAIN 1件: qa-12a）
-- 精度ABSENT: qa-12b（1/2）
-- 合計コスト: $27.56
-
-**ステップ**:
-- [x] run-1 全件を再実行する
-- [x] エラーゼロ・ワークフロー詳細が正しく取得できていることを確認
-- [ ] 結果をコミット
-- [ ] report.md を `tools/benchmark/results/v1-new-search/run-1/report.md` に保存
-- [BLOCKED: run-1レポート確認・run-2/run-3進行承認を得る]
-
-## Not Started
-
-### B-4. 新スキルE2Eベンチマーク（B-4-1完了後）
-
-- [ ] run-2, run-3 実行 → `v1-new-search/run-{2,3}` に保存
+- [ ] run-2 実行 → `v1-new-search/run-2` に保存
+- [ ] run-3 実行 → `v1-new-search/run-3` に保存
 - [ ] 結果をコミット
 - [ ] QAエキスパート（別エージェント）に生データを渡して比較評価させる（実装者が自己採点しない）
 - [ ] [BLOCKED: ユーザーがQAエキスパートの評価を確認し、B-5着手の承認を出す]
+
+
+## Not Started
 
 ### B-X. terms.json抽出ルールの見直し検討
 
@@ -164,6 +123,8 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-4-1-fix. read-sections.sh sections:[] 対応（9テスト追加・全バージョン修正）— `11c9160ec`
+- [x] B-4-1. run-1 再測定（B-4-1-fix後）— Claims 96.7%, Hal 93.3%, $27.56 — `1e44a77d7`, `66f936c6e`
 - [x] B-4-pre. ユーザープロンプトレビュー — qa.md 大幅改修（Step 1-2-5）、PEレビュー 0 Findings — `86b319939`〜`2d2cfe3fa`
 - [x] B-4-1-B. purpose ヒアリング追加（goal廃止・purpose7択追加・PEレビュー0 Findings）— `dbad4cf64`
 - [x] B-4-1-C. evaluate.py 幻覚検証ロジック修正（search_sections を sections_text に追加、TDD 5テスト追加）— `563d8b4aa`
