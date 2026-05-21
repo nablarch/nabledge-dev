@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-21 (session 7)
+**Updated**: 2026-05-21 (session 8)
 
 ## Rules
 
@@ -26,12 +26,13 @@
 - `tools/tests/test-read-sections.sh`（テスト追加）
 
 **ステップ**:
-- [ ] `sections:[]` のファイルが v6 知識ファイルに何件あるか確認
-- [ ] テスト追加（RED）: `sections:[]` ファイルに対して `content` が返ること
-- [ ] read-sections.sh 修正（GREEN）: `sections:[]` のとき `content` を返す
-- [ ] `bash tools/tests/test-read-sections.sh` 全テスト PASS 確認
-- [ ] コミット・プッシュ
-- [ ] [BLOCKED: run-1再測定の承認を得る]
+- [x] `sections:[]` のファイルが v6 知識ファイルに何件あるか確認 — 100件
+- [x] テスト追加（RED）: `sections:[]` ファイルに対して `content` が返ること — `tools/tests/test-read-sections.sh` 9テスト
+- [x] read-sections.sh 修正（GREEN）: `sections:[]` のとき `content` を返す
+- [x] `bash tools/tests/test-read-sections.sh` 全テスト PASS 確認 — 9/9 PASS
+- [x] コミット・プッシュ — `11c9160ec`
+- [x] qa-12a で動作確認 — SECTION_NOT_FOUND 解消・cat バイパスなし確認済み
+- [BLOCKED: run-1再測定の承認を得る]
 
 ### B-4-1. run-1 再測定（B-4-1-fix完了後）
 
