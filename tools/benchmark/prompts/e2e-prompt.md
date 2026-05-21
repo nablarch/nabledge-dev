@@ -18,22 +18,28 @@ Follow the workflow and additional instructions below, then answer the question.
 ### Workflow Details
 ```json
 {
-  "selected_pages": [
-    "<page path relative to knowledge/>"
-  ],
-  "stage2_sections": [
-    {"file": "<file path>", "section_id": "<sN>", "relevance": "<high|partial>"}
-  ],
-  "read_sections": [
-    "<file.json:sN>"
-  ],
-  "answer_sections": {
-    "used": [
-      {"ref": "<file.json:sN>", "reason": "<one sentence: why this section was used in the answer>"}
+  "step3": {
+    "stage1_pages": [
+      "<page path relative to knowledge/>"
     ],
-    "unused": [
-      {"ref": "<file.json:sN>", "reason": "<one sentence: why this section was read but not used in the answer>"}
+    "stage2_sections": [
+      {"file": "<file path>", "section_id": "<sN>", "relevance": "<high|partial>"}
     ]
+  },
+  "step4": {
+    "read_sections": [
+      "<file.json:sN>"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {"ref": "<file.json:sN>", "reason": "<one sentence: why this section was used in the answer>"}
+      ],
+      "unused": [
+        {"ref": "<file.json:sN>", "reason": "<one sentence: why this section was read but not used in the answer>"}
+      ]
+    }
   }
 }
 ```
