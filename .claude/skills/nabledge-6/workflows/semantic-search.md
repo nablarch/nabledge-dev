@@ -1,6 +1,6 @@
 # Semantic Search Workflow
 
-2-stage semantic search: Stage 1 selects pages from index.md, Stage 2 selects sections from knowledge JSONs.
+Searches knowledge files and returns relevant sections for the question.
 
 ## Input
 
@@ -26,7 +26,7 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
 
 ---
 
-## Step 2: Stage 1 — Page selection
+## Step 2: Select pages
 
 Read the question. Identify in one sentence what the user wants to know. If the question contains `（処理方式: X）`, use that as the processing type context.
 
@@ -44,7 +44,7 @@ Save the selected page paths (relative to knowledge/) as `selected_pages`.
 
 ---
 
-## Step 3: Stage 2 — Section selection
+## Step 3: Select sections
 
 For each path in `selected_pages` (up to 10):
 1. Read `knowledge/{path}`
