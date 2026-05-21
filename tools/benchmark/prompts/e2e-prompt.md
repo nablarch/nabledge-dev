@@ -7,7 +7,9 @@ Follow the workflow and additional instructions below, then answer the question.
 
 **Step 1 and Step 2**: Skip both steps. The question already contains the hearing result (`（処理方式: X）（目的: Y）`). Start from Step 3.
 
-**Step 3**: Save the full `results` array returned by semantic-search.md as `stage2_sections`.
+**Step 3**: While executing semantic-search.md:
+- After Stage 1: save the selected page paths as `selected_pages`.
+- After Stage 2: save the full `results` array as `stage2_sections`.
 
 **Step 4**: Save the section IDs passed to read-sections.sh as `read_sections`.
 
@@ -16,6 +18,9 @@ Follow the workflow and additional instructions below, then answer the question.
 ### Workflow Details
 ```json
 {
+  "selected_pages": [
+    "<page path relative to knowledge/>"
+  ],
   "stage2_sections": [
     {"file": "<file path>", "section_id": "<sN>", "relevance": "<high|partial>"}
   ],
