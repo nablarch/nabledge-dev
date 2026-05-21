@@ -1,4 +1,4 @@
-Follow the workflow below and answer the question.
+Follow the workflow and additional instructions below, then answer the question.
 
 ## Workflow
 {workflow}
