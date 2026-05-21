@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-21 (session 4)
+**Updated**: 2026-05-21 (session 5)
 
 ## Rules
 
@@ -25,13 +25,10 @@
 - [x] run_e2e.py / e2e-prompt.md の実装を整合させる（semantic-search.md リファクタリングに合わせた修正）— `b00d53b7d`
 - [x] 無効な run-1 結果を削除 — `20d0051a6`
 - [x] run_e2e.py を e2e-prompt.md に合わせて修正する（TDD）— `8f4d7175c`（324テストGREEN）
-- [ ] 3件試し実行してエラーゼロ確認（実行中: pre-01 OK、pre-02/pre-03 待ち）
-  出力先: `tools/benchmark/results/20260521-150826/`
-  完了後にエラーゼロを確認
+- [x] 3件試し実行してエラーゼロ確認 — `tools/benchmark/results/20260521-150826/` (pre-01/02/03 全件 accuracy=1.0, hallucination=PASS)
 - [ ] ワークフロー詳細（step3/step4/step8）をユーザーに提示してOKをもらう
-  - pre-01/pre-02/pre-03 のうち1件の workflow_details.json を表示
-  - 回答テキスト（answer.md）も合わせて提示
-  - [BLOCKED: ユーザーのOK待ち]
+  - 3件のフル workflow_details.json をユーザーに提示済み（session 5）
+  - [BLOCKED: ユーザーのOK待ち — run-1全件実行に進んでよいか確認]
 - [ ] run-1 全件を再実行する
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
