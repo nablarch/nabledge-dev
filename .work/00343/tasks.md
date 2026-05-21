@@ -29,7 +29,6 @@
 - [ ] `sections:[]` のファイルが v6 知識ファイルに何件あるか確認
 - [ ] テスト追加（RED）: `sections:[]` ファイルに対して `content` が返ること
 - [ ] read-sections.sh 修正（GREEN）: `sections:[]` のとき `content` を返す
-- [ ] 全5版に同じ修正を適用
 - [ ] `bash tools/tests/test-read-sections.sh` 全テスト PASS 確認
 - [ ] コミット・プッシュ
 - [ ] [BLOCKED: run-1再測定の承認を得る]
