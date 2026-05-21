@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-21 (session 5)
+**Updated**: 2026-05-21 (session 6)
 
 ## Rules
 
@@ -40,6 +40,29 @@
 - [ ] [BLOCKED: エラーゼロ確認後、ユーザーに報告して B-4（run-2/run-3）進行承認を得る]
 
 ## Not Started
+
+### B-4-1-fix. read-sections.sh: sections:[] ファイルの content 返却対応
+
+**背景**: RBKC仕様（rbkc-json-schema-design.md §3-2）では h2/h3 がないファイルは `sections:[]`、内容は `content` フィールドに格納する。しかし read-sections.sh は `sections[]` からIDで検索するのみで、`sections:[]` のファイルの `content` を取得できない。qa-12aのベンチマークでエージェントが SECTION_NOT_FOUND を受けて `cat` でバイパスした根本原因。
+
+**対応**: セクションIDで検索して SECTION_NOT_FOUND かつ `sections:[]` の場合、`content` フィールドを返すよう修正する。
+
+**影響ファイル**:
+- `.claude/skills/nabledge-6/scripts/read-sections.sh`
+- `.claude/skills/nabledge-5/scripts/read-sections.sh`
+- `.claude/skills/nabledge-1.4/scripts/read-sections.sh`
+- `.claude/skills/nabledge-1.3/scripts/read-sections.sh`
+- `.claude/skills/nabledge-1.2/scripts/read-sections.sh`
+- `tools/tests/test-read-sections.sh`（テスト追加）
+
+**ステップ**:
+- [ ] `sections:[]` のファイルが v6 知識ファイルに何件あるか確認
+- [ ] テスト追加（RED）: `sections:[]` ファイルに対してセクションID指定で `content` が返ること
+- [ ] read-sections.sh 修正（GREEN）: `sections:[]` かつ SECTION_NOT_FOUND のとき `content` を返す
+- [ ] 全5版に同じ修正を適用
+- [ ] `bash tools/tests/test-read-sections.sh` 全テスト PASS 確認
+- [ ] コミット・プッシュ
+- [ ] [BLOCKED: ユーザーに結果報告し、B-4（run-2/run-3）進行承認を得る]
 
 ### B-4. 新スキルE2Eベンチマーク（B-4-1完了後）
 
