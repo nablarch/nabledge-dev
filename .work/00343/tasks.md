@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-21
+**Updated**: 2026-05-21 (session 2)
 
 ## Rules
 
@@ -22,7 +22,9 @@
 - [x] qa-04 MarkerError の原因を確認し修正する — `79677a793`（`goal`→`purpose` 修正、329テストGREEN）
 - [x] run-1 qa-04 再実行・エラーゼロ確認 — `65c938bf6`
 - [x] purpose 未注入の影響を調査する — `processing_type` は正しく注入済み。`purpose` は Step 1 自己推測にフォールバックするため、推測誤りが発生した可能性あり
-- [ ] qa.json 修正済み（impact-08 purpose / impact-03 must 重複）を確認してから run-1 全件を再実行する
+- [x] run_e2e.py / e2e-prompt.md の実装を整合させる（semantic-search.md リファクタリングに合わせた修正）— `b00d53b7d`
+- [x] 無効な run-1 結果を削除 — `20d0051a6`
+- [ ] run-1 全件を再実行する（qa.json修正済み・e2e-prompt.md整合済み）
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
