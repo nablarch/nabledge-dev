@@ -32,9 +32,13 @@ for pair in "$@"; do
   jq -r --arg sec "$section" '
     (if . == null then error("FILE_NOT_FOUND") else . end) |
     . as $root |
-    ([.sections[]? | select(.id == $sec)][0]) as $s |
-    if $s == null then "SECTION_NOT_FOUND"
-    else "# " + $root.title + " > " + $s.title + "\n" + $s.content
+    if (.sections | length) == 0 then
+      "# " + $root.title + "\n" + ($root.content // "")
+    else
+      ([.sections[]? | select(.id == $sec)][0]) as $s |
+      if $s == null then "SECTION_NOT_FOUND"
+      else "# " + $root.title + " > " + $s.title + "\n" + $s.content
+      end
     end
   ' "$KNOWLEDGE_DIR/$file" 2>/dev/null || echo "FILE_NOT_FOUND"
   echo "=== END ==="
