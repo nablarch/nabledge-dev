@@ -1,35 +1,35 @@
-以下のワークフローに従って質問に回答してください。
+Follow the workflow below and answer the question.
 
-## ワークフロー
+## Workflow
 {workflow}
 
-## 質問
+## Question
 {question}
 
-## ワークフローに加えてやって欲しいこと
+## Additional instructions
 
-質問テキストに `処理方式:` と `目的:` が含まれている場合、hearing_answer は確定済みです。Step 1 と Step 2 はスキップし、Step 3 から開始してください。
+If the question text contains `処理方式:` and `目的:`, hearing_answer is already determined. Skip Step 1 and Step 2 and start from Step 3.
 
-Step 8 で final_answer を出力した後、以下を出力してください。
+After outputting final_answer in Step 8, output the following.
 
 ## Workflow Details
 {
   "hearing": {
-    "processing_type": "<Step 1 で確定した処理方式、または質問テキストの `処理方式:` の値。null 可>",
-    "purpose": "<Step 1 で確定した目的、または質問テキストの `目的:` の値>"
+    "processing_type": "<processing type determined in Step 1, or taken from `処理方式:` in the question text. null if cross-functional>",
+    "purpose": "<purpose determined in Step 1, or taken from `目的:` in the question text>"
   },
   "stage2_sections": [
-    {"file": "<ファイルパス>", "section_id": "<sN>", "relevance": "<high|partial>"}
+    {"file": "<file path>", "section_id": "<sN>", "relevance": "<high|partial>"}
   ],
   "read_sections": [
-    "<Step 4 で read-sections.sh に渡した section ID（file.json:sN 形式）>"
+    "<section ID passed to read-sections.sh in Step 4 (file.json:sN format)>"
   ],
   "answer_sections": {
     "used": [
-      {"ref": "<file.json:sN>", "reason": "<この section を回答で使った理由（1文）>"}
+      {"ref": "<file.json:sN>", "reason": "<one sentence: why this section was used in the answer>"}
     ],
     "unused": [
-      {"ref": "<file.json:sN>", "reason": "<読んだが回答で使わなかった理由（1文）>"}
+      {"ref": "<file.json:sN>", "reason": "<one sentence: why this section was read but not used in the answer>"}
     ]
   }
 }
