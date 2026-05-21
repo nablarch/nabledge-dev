@@ -1,0 +1,78 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationのデータベース相関バリデーションに関するセクション(s12)を含む最も直接的なページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの入力値チェック(s2)の処理方式固有の情報を含む"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "@Validアノテーションの使い方が主な内容でDB重複チェックの実装方法には直接関係しない"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "DB検索の実装方法を含むが、バリデーション文脈での使い方の判断はbean-validationページで完結する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "DB相関バリデーションをBean Validationで行うべきでない理由と代替案を直接説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "partial",
+        "reason": "業務アクション側でバリデーションエラーを特定項目に紐づける実装例を提供している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "相関バリデーションの実装パターンとして参考になる"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値のチェックへのリンクのみで実質的な内容がない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s11"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-bean-validation.json:s12",
+          "reason": "Bean Validation内でのDB検索を避けるべき理由（セキュリティリスク）と業務アクション側での実装という指針の根拠"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s13",
+          "reason": "業務アクション側でDB重複検出時にApplicationExceptionをスローするコード例"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-bean-validation.json:s11",
+          "reason": "相関バリデーションの一般的な実装例で、DB重複チェックの回答には不要だった"
+        }
+      ]
+    }
+  }
+}

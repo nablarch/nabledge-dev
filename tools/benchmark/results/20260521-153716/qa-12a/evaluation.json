@@ -1,0 +1,184 @@
+{
+  "scenario_id": "qa-12a",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の②「ハンドラによるエラーメッセージの格納」セクションに、「HTTPエラー制御ハンドラが ApplicationException を受け取り、メッセージ情報を ErrorMessages に変換してリクエストスコープに設定する」と明記されており、ファクトの内容と一致している。",
+      "fact": "HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する"
+    },
+    {
+      "verdict": "UNCERTAIN",
+      "reason": "The answer mentions error display using request-scoped `errors` object (via Thymeleaf templates) and briefly mentions JSP custom tags (`<n:errors>`) in a note. However, the fact specifically refers to displaying request-scoped error messages using 'エラー表示タグ' (error display tags like `<n:errors>` and `<n:error>`). The reference section clearly describes using `<n:errors>` tag and `<n:error>` tag to display error messages from request scope. The answer does mention these custom tags but only briefly in a note as an alternative with limitations, rather than presenting them as the primary method. The core concept is partially present but not fully aligned with the fact's emphasis on using error display tags specifically for request-scoped error messages.",
+      "fact": "エラー表示タグでリクエストスコープのエラーメッセージを表示する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@InjectFormアノテーションで入力値のバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorでバリデーションエラー時の遷移先を指定する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorを設定しないとApplicationExceptionがシステムエラー扱いになる",
+        "supported": true
+      },
+      {
+        "claim": "@InjectForm(form = UserForm.class, prefix = \"form\", validate = \"register\")のコード例",
+        "supported": true
+      },
+      {
+        "claim": "ctx.getRequestScopedVar(\"form\")でバリデーション済みフォームを取得する",
+        "supported": true
+      },
+      {
+        "claim": "HTTPエラー制御ハンドラがApplicationExceptionを直接受け取りErrorMessagesに変換する",
+        "supported": false
+      },
+      {
+        "claim": "ErrorMessagesのデフォルトキー名はerrors",
+        "supported": true
+      },
+      {
+        "claim": "errorMessageRequestAttributeName プロパティでキー名を変更できる",
+        "supported": true
+      },
+      {
+        "claim": "Thymeleafで ${errors.hasError('form.userName')} を使ってエラーを確認できる",
+        "supported": false
+      },
+      {
+        "claim": "Thymeleafで ${errors.getMessage('form.userName')} を使ってエラーメッセージを取得できる",
+        "supported": false
+      },
+      {
+        "claim": "Thymeleafで ${errors.allMessages} で全エラーを取得できる",
+        "supported": false
+      },
+      {
+        "claim": "BeanValidationStrategyをvalidationStrategyという名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.core.validation.ee.Required.messageなどのプロパティキーでメッセージを定義する",
+        "supported": true
+      },
+      {
+        "claim": "JSPカスタムタグ(<n:errors>)はDOM構造の制約によりCSSフレームワークとの相性が悪い問題がある",
+        "supported": false
+      }
+    ],
+    "reason": "複数の箇所でハルシネーションが確認された。(1) エラーハンドラの動作説明が不正確: 知識セクションによると HttpErrorHandler は ApplicationException を直接受け取るのではなく、原因例外が ApplicationException である HttpErrorResponse を処理する。(2) Thymeleafでのエラー表示APIが未確認: errors.hasError()、errors.getMessage()、errors.allMessages といった ErrorMessages オブジェクトのメソッドは知識セクションに記載がなく、ハルシネーションの可能性が高い。(3) JSPカスタムタグとCSSフレームワークの相性問題: 知識セクションにはこのような記述は存在しない。"
+  },
+  "scores": {
+    "accuracy": null,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[1]: UNCERTAIN — エラー表示タグでリクエストスコープのエラーメッセージを表示する",
+    "hallucination: FAIL — 複数の箇所でハルシネーションが確認された。(1) エラーハンドラの動作説明が不正確: 知識セクションによると HttpErrorHandler は ApplicationException を直接受け取るのではなく、原因例外が ApplicationException である HttpErrorResponse を処理する。(2) Thymeleafでのエラー表示APIが未確認: errors.hasError()、errors.getMessage()、errors.allMessages といった ErrorMessages オブジェクトのメソッドは知識セクションに記載がなく、ハルシネーションの可能性が高い。(3) JSPカスタムタグとCSSフレームワークの相性問題: 知識セクションにはこのような記述は存在しない。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-error-message.json",
+        "reason": "バリデーションエラーメッセージを画面表示する方法を直接説明するページ"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーションの入力値チェックに使うInjectFormインターセプタの実装方法を説明するページ"
+      },
+      {
+        "path": "component/handlers/handlers-HttpErrorHandler.json",
+        "reason": "ApplicationExceptionをErrorMessagesに変換してリクエストスコープに設定する仕組みを説明するページ"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationのエラーメッセージ定義方法とウェブアプリ向け設定を説明するページ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの入力値チェック機能詳細の索引ページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-error-message.json",
+        "section_id": "ROOT",
+        "relevance": "high",
+        "reason": "バリデーションエラーメッセージの表示方法（ErrorMessages・Thymeleaf実装例）を直接説明している"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "@InjectFormと@OnErrorを使ったバリデーション実行の実装例がある"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@OnErrorでバリデーションエラー時の遷移先を指定する必要がある旨を説明している"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ApplicationExceptionをErrorMessagesに変換してリクエストスコープのerrorsキーに設定する仕組みを説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラー時のエラーメッセージをプロパティファイルで定義する方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "BeanValidationStrategyの設定方法（ウェブアプリでBean Validationを使うための必須設定）"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 115601,
+    "duration_api_ms": 112526,
+    "num_turns": 13,
+    "total_cost_usd": 0.72703425,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 6772,
+      "cache_read_input_tokens": 662730,
+      "cache_creation_input_tokens": 112867
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3237,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033569999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 6772,
+        "cacheReadInputTokens": 662730,
+        "cacheCreationInputTokens": 112867,
+        "webSearchRequests": 0,
+        "costUSD": 0.72367725,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 78455,
+  "duration_api_ms": 74482,
+  "ttft_ms": 7098,
+  "num_turns": 4,
+  "result": "**結論**: `$if(プロパティ名) {SQL条件}` 構文をSQLファイルに記述することで、Beanのプロパティ値がnullまたは空文字の場合にその条件を自動的に除外できます。\n\n**根拠**:\n\n`$if` 構文のルール:\n- `$if(プロパティ名) {SQL文の条件}` の形式で記述する\n- プロパティ値がnullや空文字（String型）の場合、条件がSQL文から除外される\n- 配列・`java.util.Collection` の場合、nullまたはサイズ0の場合に除外される\n- 使用できる箇所はwhere句のみ（`$if` のネストは不可）\n\n実際の検索機能のSQLサンプル（Exampleアプリの `Project.sql`）:\n```sql\nSEARCH_PROJECT =\nSELECT\n    PROJECT_ID,\n    PROJECT_NAME,\n    ...\nFROM\n    PROJECT\nWHERE\n    USER_ID = :userId\n    AND $if(clientId)              {CLIENT_ID = :clientId}\n    AND $if(projectName)           {PROJECT_NAME LIKE :%projectName%}\n    AND $if(projectType)           {PROJECT_TYPE = :projectType}\n    AND $if(projectClass)          {PROJECT_CLASS IN (:projectClass[])}\n    AND $if(projectStartDateBegin) {PROJECT_START_DATE >= :projectStartDateBegin}\n    AND $if(projectStartDateEnd)   {PROJECT_START_DATE <= :projectStartDateEnd}\n```\n\nJava側の実装（JDBCラッパー直接使用の場合）:\n```java\n// Beanを生成してプロパティに値を設定（入力があった項目のみ設定）\nUserEntity entity = new UserEntity();\nentity.setUserName(\"なまえ\");\n// userKbn は未入力のため設定しない → SQL条件から除外される\n\nAppDbConnection connection = DbConnectionContext.getConnection();\n\n// Beanオブジェクトを第2引数に渡すことで可変条件を組み立てる\nParameterizedSqlPStatement statement = connection.prepareParameterizedSqlStatementBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#searchUser\", entity);\n\nSqlResultSet result = statement.retrieve(entity);\n```\n\nUniversalDAO使用の場合:\n```java\n// フォームの値を検索条件BeanにBeanUtilでコピー\nProjectSearchDto searchCondition = BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);\n\n// UniversalDaoでSQLIDを指定して検索\nreturn UniversalDao\n    .page(searchCondition.getPageNumber())\n    .per(20L)\n    .findAllBySqlFile(Project.class, \"SEARCH_PROJECT\", searchCondition);\n```\n\nin句の条件を可変にしたい場合は、名前付きパラメータの末尾に `[]` を付加します:\n```sql\nAND $if(projectClass) {PROJECT_CLASS IN (:projectClass[])}\n```\n\n**注意点**:\n- `$if` は「条件だけが異なる複数のSQLの共通化」目的では使わないこと。SQL変更時に意図しない不具合を埋め込む原因となるため、その場合はSQLを複数定義する。\n- in句でプロパティ値がnullまたはサイズ0になる可能性がある場合は、必ず `$if` と組み合わせること（そうしないと `IN (null)` となり正しく検索できない）。\n\n参照: `component/libraries/libraries-database.json:s21`, `component/libraries/libraries-database.json:s22`, `processing-pattern/web-application/web-application-getting-started-project-search.json:s1`\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-database.json\", \"reason\": \"SQLの動的条件構築（$if構文）を含むデータベースアクセスライブラリの知識ファイル\"},\n      {\"path\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"reason\": \"ウェブアプリケーションの検索機能実装例（可変条件SQLの実用例）を含むページ\"}\n    ],\n    \"excluded_pages\": [],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s21\", \"relevance\": \"high\", \"reason\": \"$if構文の仕様と動作ルールを直接説明するセクション\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s22\", \"relevance\": \"high\", \"reason\": \"$if構文を用いたSQLサンプルとJava実装例を含むセクション\"},\n      {\"file\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"section_id\": \"s1\", \"relevance\": \"partial\", \"reason\": \"ウェブ検索機能での$if実用例（SEARCH_PROJECT SQL）を含むセクション\"}\n    ],\n    \"excluded_sections\": []\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-database.json:s21\",\n      \"component/libraries/libraries-database.json:s22\",\n      \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/libraries/libraries-database.json:s21\", \"reason\": \"$if構文の仕様・ルール（null/空文字/配列の扱い）の根拠として使用\"},\n        {\"ref\": \"component/libraries/libraries-database.json:s22\", \"reason\": \"Java実装例（ParameterizedSqlPStatement使用）と注意点の根拠として使用\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\", \"reason\": \"SEARCH_PROJECT SQLサンプルとUniversalDAO使用例の根拠として使用\"}\n      ],\n      \"unused\": []\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "b8459629-c140-4843-a1dc-aba3297b485c",
+  "total_cost_usd": 0.5382081,
+  "usage": {
+    "input_tokens": 5,
+    "cache_creation_input_tokens": 1388,
+    "cache_read_input_tokens": 130932,
+    "output_tokens": 2623,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 1388
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3257,
+      "outputTokens": 26,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003387,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 13,
+      "outputTokens": 4408,
+      "cacheReadInputTokens": 370182,
+      "cacheCreationInputTokens": 95362,
+      "webSearchRequests": 0,
+      "costUSD": 0.5348211,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "81dd1e97-26c6-4e58-86fe-08f18ce237fd"
+}

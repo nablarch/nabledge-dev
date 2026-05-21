@@ -1,0 +1,199 @@
+{
+  "scenario_id": "pre-01",
+  "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい",
+  "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答中に「NablarchバッチアプリケーションはMainクラス（`nablarch.fw.launcher.Main`）をjavaコマンドで直接起動するスタンドアロンアプリです」と明記されており、factの内容（javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する）が含まれている。",
+      "fact": "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that `-requestPath` takes the format of 'アクションのクラス名/リクエストID' (action class name/request ID), and provides an example `-requestPath=com.sample.SampleBatchAction/BATCH0001`, which matches the fact being checked.",
+      "fact": "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "NablarchバッチアプリケーションはMainクラス（nablarch.fw.launcher.Main）をjavaコマンドで直接起動するスタンドアロンアプリ",
+        "supported": true
+      },
+      {
+        "claim": "-requestPathの書式は「アクションのクラス名/リクエストID」",
+        "supported": true
+      },
+      {
+        "claim": "指定例: -requestPath=com.sample.SampleBatchAction/BATCH0001",
+        "supported": true
+      },
+      {
+        "claim": "必須オプションは-diConfig、-requestPath、-userIdの3つ",
+        "supported": true
+      },
+      {
+        "claim": "いずれかが欠けている場合は即座に異常終了する（終了コード = 127）",
+        "supported": true
+      },
+      {
+        "claim": "-diConfigはシステムリポジトリの設定ファイルのパス",
+        "supported": true
+      },
+      {
+        "claim": "-userIdの値はuser.idとしてセッションコンテキストに格納される",
+        "supported": true
+      },
+      {
+        "claim": "javaコマンドによる起動例（batch-config.xml、admin.DataUnloadBatchAction/BC0012、testUser）",
+        "supported": true
+      },
+      {
+        "claim": "Mavenプロジェクトからの起動例（mvn exec:java）のコマンド内容",
+        "supported": true
+      },
+      {
+        "claim": "リクエストIDは各バッチプロセスの識別子として用いられる",
+        "supported": true
+      },
+      {
+        "claim": "同一の業務アクションクラスを実行するプロセスを複数起動する場合、リクエストIDが識別子となる",
+        "supported": true
+      },
+      {
+        "claim": "-userIdはセッションコンテキスト変数に格納される（答えでは「セッションコンテキスト」と表現）",
+        "supported": false
+      }
+    ],
+    "reason": "答えの大部分はナレッジセクションと一致しているが、-userIdの格納先について、ナレッジセクションでは「セッションコンテキスト変数」(session context variable)と明記されているのに対し、答えでは「セッションコンテキスト」と記載されており表現が不正確である。さらに、答えの表中で「`user.id`としてセッションコンテキストに格納される」と説明しているが、ナレッジでは「セッションコンテキスト変数に`user.id`という名前で格納される」が正確な表現であり、微妙に異なる。ただし、これは軽微な表現の差異であり、より重大な問題として、ナレッジには存在しない「セッションコンテキスト」という用語の使い方が確認されたため、FАILと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 答えの大部分はナレッジセクションと一致しているが、-userIdの格納先について、ナレッジセクションでは「セッションコンテキスト変数」(session context variable)と明記されているのに対し、答えでは「セッションコンテキスト」と記載されており表現が不正確である。さらに、答えの表中で「`user.id`としてセッションコンテキストに格納される」と説明しているが、ナレッジでは「セッションコンテキスト変数に`user.id`という名前で格納される」が正確な表現であり、微妙に異なる。ただし、これは軽微な表現の差異であり、より重大な問題として、ナレッジには存在しない「セッションコンテキスト」という用語の使い方が確認されたため、FАILと判定する。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "-requestPathの書式とアーキテクチャ概要を直接説明するs1/s2を含む"
+      },
+      {
+        "path": "component/handlers/handlers-main.json",
+        "reason": "共通起動ランチャの必須3オプションと実行例を含むs3を含む"
+      },
+      {
+        "path": "setup/blank-project/blank-project-setup-NablarchBatch.json",
+        "reason": "都度起動・常駐バッチの具体的なmvn起動コマンド例を含む"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "起動方法による分類（都度起動 vs 常駐）の概要を含む"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "-requestPathを含む具体的なmvnコマンド例がある"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "-requestPathの書式（アクションのクラス名/リクエストID）とリクエストIDの意味を直接説明する"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "必須3オプション(-diConfig/-requestPath/-userId)と実行例を含む"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "Nablarchバッチアプリがjavaコマンドで起動するスタンドアロンアプリであることとMainクラスの役割を説明する"
+      },
+      {
+        "file": "setup/blank-project/blank-project-setup-NablarchBatch.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "都度起動バッチのmvn起動コマンド例と成功ログを含む"
+      },
+      {
+        "file": "setup/blank-project/blank-project-setup-NablarchBatch.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "常駐バッチのmvn起動コマンド例と停止方法を含む"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "DispatchHandlerが-requestPathでアクションクラスを特定する処理の流れを補足説明する"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "都度起動バッチの最小ハンドラ構成を示す"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "常駐バッチの最小ハンドラ構成を示す"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "共通起動ランチャのMavenモジュール依存関係を示す"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "任意オプションパラメータの追加方法を示す"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 268357,
+    "duration_api_ms": 266247,
+    "num_turns": 7,
+    "total_cost_usd": 1.1738784500000001,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6105,
+      "cache_read_input_tokens": 244570,
+      "cache_creation_input_tokens": 39865
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3225,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003365,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13058,
+        "outputTokens": 20239,
+        "cacheReadInputTokens": 725644,
+        "cacheCreationInputTokens": 162683,
+        "webSearchRequests": 0,
+        "costUSD": 1.17051345,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

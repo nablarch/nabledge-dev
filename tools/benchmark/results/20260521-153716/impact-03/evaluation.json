@@ -1,0 +1,114 @@
+{
+  "scenario_id": "impact-03",
+  "description": "REST APIで登録処理を実装している。入力されたメールアドレスがDB上で重複していないか、バリデーションの段階でチェックしたい。",
+  "input": "Bean Validationの中でDBに問い合わせて重複チェックしたい。カスタムバリデータでDB検索する実装でいいのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答にはファクトの内容が完全に含まれています。具体的には、「データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する」という点と、「Bean Validation実行中のオブジェクトの値は安全である保証がない」という点の両方が、回答中の引用部分および説明に明確に記載されています。",
+      "fact": "データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する。Bean Validation実行中のオブジェクトの値は安全である保証がない"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Bean Validationを使ってデータベースに対する相関バリデーションを実施した場合、バリデーション実施前の安全ではない値を使ってデータベースアクセスを行うことになる",
+        "supported": true
+      },
+      {
+        "claim": "SQLインジェクションなどの脆弱性の原因となるため、さけるべき実装である",
+        "supported": true
+      },
+      {
+        "claim": "バリデーション実行後に業務アクションでバリデーションを行うことで、バリデーション済みの安全な値を使用してデータベースへアクセスできる",
+        "supported": true
+      },
+      {
+        "claim": "ValidationUtil#createMessageForPropertyを使用してエラーメッセージを構築し、ApplicationExceptionを送出する",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta Bean Validationではバリデーションの実行順序は保証されない",
+        "supported": true
+      },
+      {
+        "claim": "throw new ApplicationException(ValidationUtil.createMessageForProperty(\"form.mailAddress\", \"duplicate.mailAddress\"))というコード例",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張（DB相関バリデーションを業務アクション側で実装すべき理由、SQLインジェクションリスク、ValidationUtil#createMessageForProperty、ApplicationException、バリデーション実行順序非保証）はナレッジセクション（s12/s13相当）に直接記載されており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationのデータベース相関バリデーションに関するセクション(s12)を含む最も直接的なページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの入力値チェック(s2)の処理方式固有の情報を含む"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "DB相関バリデーションをBean Validationで行うべきでない理由と代替案を直接説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "partial",
+        "reason": "業務アクション側でバリデーションエラーを特定項目に紐づける実装例を提供している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "相関バリデーションの実装パターンとして参考になる"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 80177,
+    "duration_api_ms": 76485,
+    "num_turns": 8,
+    "total_cost_usd": 0.5062978,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 3956,
+      "cache_read_input_tokens": 514821,
+      "cache_creation_input_tokens": 77094
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3247,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003382,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 3956,
+        "cacheReadInputTokens": 514821,
+        "cacheCreationInputTokens": 77094,
+        "webSearchRequests": 0,
+        "costUSD": 0.5029158,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

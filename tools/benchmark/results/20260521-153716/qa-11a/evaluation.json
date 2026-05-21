@@ -1,0 +1,240 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "Answerの「2. HTTPエラー制御ハンドラ」セクションに、例外種別に応じたステータスコード（404、HttpErrorResponse#getResponse()、Error#getStatusCode()、500など）を返すことが明記されています。また、「`HttpErrorResponse`の原因例外が`ApplicationException`の場合、エラーメッセージ情報を`ErrorMessages`に変換してリクエストスコープ（デフォルトキー:`errors`）に設定し、JSPでエラー表示できるようにします。」という記述が含まれており、Factの内容が完全にカバーされています。",
+      "fact": "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "HttpErrorHandlerの例外テーブルで「上記以外すべて | FATAL | 500 | 予期しない例外」と記述しており、ThreadDeathおよびVirtualMachineError（StackOverflowError以外）もFATAL/500として扱われるかのように示している",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandlerの例外テーブルで「上記以外 | FATALレベルでログ出力、InternalErrorを生成して返却」と記述し、VirtualMachineError（StackOverflowError・OutOfMemoryError以外）もInternalErrorを返すと示している",
+        "supported": false
+      },
+      {
+        "claim": "NoMoreHandlerException → INFO / 404",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponse → ログ出力なし / HttpErrorResponse#getResponse()",
+        "supported": true
+      },
+      {
+        "claim": "Result.Error → writeFailureLogPatternの正規表現にマッチすればFATAL / Error#getStatusCode()",
+        "supported": true
+      },
+      {
+        "claim": "StackOverflowError → FATAL / 500",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseの原因例外がApplicationExceptionの場合、ErrorMessagesをリクエストスコープ（デフォルトキー:errors）に設定する",
+        "supported": true
+      },
+      {
+        "claim": "defaultPagesのXML設定例（4.., 404, 5.., 503）",
+        "supported": true
+      },
+      {
+        "claim": "デフォルトページはweb.xmlのerror-page要素で設定することを推奨",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandler: ServiceError → ServiceError#writeLogを呼び出しログ出力、ServiceErrorを返却",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandler: Result.Error → FATALレベルのログ出力、Result.Errorを返却",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandler: ThreadDeath → INFOレベルでログ出力後リスロー",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandler: StackOverflowError/OutOfMemoryError → FATALレベルでログ出力、InternalErrorを生成して返却",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorアノテーションをアクションメソッドに付与してエラー遷移先を指定できる",
+        "supported": true
+      },
+      {
+        "claim": "システム共通エラーページへの遷移にはプロジェクト固有のエラー処理ハンドラを実装する",
+        "supported": true
+      },
+      {
+        "claim": "ExampleErrorForwardHandlerでNoDataExceptionとOptimisticLockExceptionを個別にHttpErrorResponseに変換する実装例",
+        "supported": true
+      },
+      {
+        "claim": "FailureLogUtil.logErrorで障害ログを出力する",
+        "supported": true
+      },
+      {
+        "claim": "障害通知ログはロガー名MONITORで専用ファイルに出力",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorHandlerはHTTPレスポンスハンドラおよびHTTPアクセスログハンドラより後ろに配置する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerはできるだけハンドラキューの先頭に配置する",
+        "supported": true
+      }
+    ],
+    "reason": "HttpErrorHandlerの例外テーブルにおいて、知識セクションが明示的に定義している「ThreadDeathおよびVirtualMachineError（StackOverflowError以外）→ 何もせずリスロー（ログ出力・レスポンス生成なし）」の行が完全に省略され、代わりに「上記以外すべて | FATAL | 500」としてまとめられている。これはThreadDeathやVirtualMachineError（非StackOverflowError）に対してFATAL/500を返すという誤った挙動を示しており、ナブラーク固有の仕様に関する事実誤認（ハルシネーション）である。また、GlobalErrorHandlerのテーブルでもVirtualMachineError（StackOverflowError・OutOfMemoryError以外）→ FATALログ後リスローという行が省略され、「上記以外 → InternalError返却」に誤って含められている。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — HttpErrorHandlerの例外テーブルにおいて、知識セクションが明示的に定義している「ThreadDeathおよびVirtualMachineError（StackOverflowError以外）→ 何もせずリスロー（ログ出力・レスポンス生成なし）」の行が完全に省略され、代わりに「上記以外すべて | FATAL | 500」としてまとめられている。これはThreadDeathやVirtualMachineError（非StackOverflowError）に対してFATAL/500を返すという誤った挙動を示しており、ナブラーク固有の仕様に関する事実誤認（ハルシネーション）である。また、GlobalErrorHandlerのテーブルでもVirtualMachineError（StackOverflowError・OutOfMemoryError以外）→ FATALログ後リスローという行が省略され、「上記以外 → InternalError返却」に誤って含められている。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-HttpErrorHandler.json",
+        "reason": "ウェブアプリケーションのエラー制御ハンドラで、例外の種類に応じたログ出力とエラーレスポンス生成を行うコアコンポーネント"
+      },
+      {
+        "path": "component/handlers/handlers-global-error-handler.json",
+        "reason": "未捕捉例外を捕捉してログ出力するグローバルエラーハンドラで、ウェブアプリのエラー処理の基盤"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "ウェブアプリケーションのハンドラキュー構成を示し、エラー処理ハンドラの配置位置を説明している"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "reason": "エラー時の遷移先指定方法（OnErrorインターセプタ、カスタムハンドラ）を解説する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションのエラー時の画面遷移とステータスコードの概要を提供する"
+      },
+      {
+        "path": "component/libraries/libraries-failure-log.json",
+        "reason": "障害ログの出力方針と実装方法を詳細に解説するライブラリドキュメント"
+      },
+      {
+        "path": "component/handlers/handlers-on-error.json",
+        "reason": "アクションレベルでのエラー遷移先指定であるOnErrorインターセプタの使い方を説明する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "例外の種類に応じたログレベル・ステータスコードの対応表が質問の核心に直接答える"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "グローバルエラーハンドラの例外・エラー別処理内容の詳細表が仕組みを理解するために必須"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-architecture.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "最小ハンドラ構成の表でエラー処理ハンドラの配置順序と役割が一覧で確認できる"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ハンドラレベルでのシステム共通エラーページ遷移の実装パターンを具体的なコードで示す"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "エラー時の画面遷移とステータスコードの手段を体系的にまとめたナビゲーションセクション"
+      },
+      {
+        "file": "component/libraries/libraries-failure-log.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "障害ログの出力方針（MONITORロガー、FATAL/ERRORレベル）の設計を理解するために必須"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "Result.Errorのログ出力条件（writeFailureLogPattern）を理解するための補足情報"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "デフォルトエラーページの設定方法の具体例"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "グローバルエラーハンドラの配置制約（ハンドラキュー先頭）を理解するための補足"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "1つの例外に複数の遷移先が必要な場合のtry-catchによる実装パターン"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "@OnErrorアノテーションの具体的な使用例"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 130995,
+    "duration_api_ms": 127055,
+    "num_turns": 12,
+    "total_cost_usd": 0.7221675000000001,
+    "usage": {
+      "input_tokens": 3817,
+      "output_tokens": 7907,
+      "cache_read_input_tokens": 579175,
+      "cache_creation_input_tokens": 110660
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3249,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033840000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 3817,
+        "outputTokens": 7907,
+        "cacheReadInputTokens": 579175,
+        "cacheCreationInputTokens": 110660,
+        "webSearchRequests": 0,
+        "costUSD": 0.7187835000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

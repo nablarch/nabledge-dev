@@ -1,0 +1,154 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that language-specific property files should be prepared and supported languages should be configured in 'locales' of PropertiesStringResourceLoader, which directly matches the fact. This is shown both in the conclusion section and in the XML configuration example with the 'locales' property.",
+      "fact": "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "言語ごとのプロパティファイル（messages_en.properties等）を用意し、PropertiesStringResourceLoader.localesにサポート言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "defaultLocaleの設定は必須で、未設定だとLocale.getDefault().getLanguage()が採用されOSの設定に依存し障害原因になる",
+        "supported": true
+      },
+      {
+        "claim": "メッセージ取得時に使用される言語はThreadContext#getLanguageが返すロケールで決まる",
+        "supported": true
+      },
+      {
+        "claim": "messages.propertiesが存在しない場合はエラーとして処理を終了する",
+        "supported": true
+      },
+      {
+        "claim": "UTF-8で作成すればよくnative2asciiは不要",
+        "supported": true
+      },
+      {
+        "claim": "LanguageAttributeInHttpCookieのコンポーネント名をlanguageAttributeにする必要がある",
+        "supported": true
+      },
+      {
+        "claim": "LanguageAttributeInHttpUtil.keepLanguage()でクッキーとスレッドコンテキスト両方に言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "指定言語がsupportedLanguagesに含まれない場合はクッキー・スレッドコンテキストへの設定を行わない",
+        "supported": true
+      },
+      {
+        "claim": "JSPのswitchリンクにn:submitLinkとn:paramタグを使用する",
+        "supported": true
+      },
+      {
+        "claim": "DirectoryBasedResourcePathRuleをHttpResponseHandlerのcontentPathRuleに設定することでJSPを言語ごとに切り替えられる",
+        "supported": true
+      },
+      {
+        "claim": "ディレクトリ構成はコンテキストルート直下にen/jaディレクトリを作成する",
+        "supported": true
+      },
+      {
+        "claim": "BasicStaticDataCache, StringResourceHolder, BasicApplicationInitializerの設定例",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有のAPI名・クラス名・設定方法・動作仕様はすべてknowledgeセクションの記載と一致しており、fabricatedな情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-message.json",
+        "reason": "メッセージ管理ライブラリに「多言語化対応」セクションが含まれており、質問に直接対応する"
+      },
+      {
+        "path": "component/handlers/handlers-thread-context-handler.json",
+        "reason": "「ユーザが言語を選択する画面を作る」セクションがあり、言語切り替えの実装方法を提供する"
+      },
+      {
+        "path": "component/handlers/handlers-http-response-handler.json",
+        "reason": "「言語毎のコンテンツパスの切り替え」セクションがあり、JSPファイルの多言語対応方法を提供する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "多言語化の核心：プロパティファイル構成、PropertiesStringResourceLoaderの設定、ThreadContextとの連携を説明"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ユーザ操作で言語を切り替えるハンドラ実装とJSP例を提供する"
+      },
+      {
+        "file": "component/handlers/handlers-http-response-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "JSPファイル自体を言語ごとに切り替えるオプション機能の設定方法を提供する"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "プロパティファイルの記述形式とUTF-8利用など基本設定の背景情報を提供する"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "LanguageAttributeクラスの使用方法とコンポーネント設定ファイルの記述例を提供する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 124057,
+    "duration_api_ms": 119511,
+    "num_turns": 11,
+    "total_cost_usd": 0.7890217500000001,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 6699,
+      "cache_read_input_tokens": 993210,
+      "cache_creation_input_tokens": 103257
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3199,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003324,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 6699,
+        "cacheReadInputTokens": 993210,
+        "cacheCreationInputTokens": 103257,
+        "webSearchRequests": 0,
+        "costUSD": 0.7856977500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

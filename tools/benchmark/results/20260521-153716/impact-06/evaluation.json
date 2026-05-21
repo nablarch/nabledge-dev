@@ -1,0 +1,189 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "Answerの表中に「DBストア」の特徴として「ローリングメンテナンス等でAPサーバが停止してもセッション変数を復元可能」と明記されており、保存先も「データベース上のテーブル」と記載されている。これはFactの内容と完全に一致する。",
+      "fact": "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の表中にHIDDENストアの保存先として「クライアントサイド（hiddenタグ）」と明記されており、factの内容（HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する）と同じ情報が含まれている。",
+      "fact": "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "DBストアはAPサーバ停止時もセッション変数を復元できる",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはスケールアウト時に工夫が必要",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは冗長化時に暗号化キーの明示設定が必要",
+        "supported": true
+      },
+      {
+        "claim": "RedisストアはDBストアと同じ特徴",
+        "supported": true
+      },
+      {
+        "claim": "Redisは期限切れセッションを自動削除しバッチ不要",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは定期的な削除バッチが必要",
+        "supported": true
+      },
+      {
+        "claim": "有効期間はデフォルトでHTTPセッションに保存される",
+        "supported": true
+      },
+      {
+        "claim": "DbManagedExpirationで有効期間をDBに保存できる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアのXML設定例（AesEncryptor, Base64Key, key/iv値）",
+        "supported": true
+      },
+      {
+        "claim": "スケールアウト対応時に2重サブミット防止・スレッドコンテキスト変数管理ハンドラ・HTTPリライトハンドラ・hidden暗号化も確認が必要",
+        "supported": true
+      },
+      {
+        "claim": "USER_SESSIONテーブルの作成が必要",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有クレームはすべてナレッジセクションに記載された内容と一致しており、fabricatedな情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッションストア機能の主ページ。s16「セッションストアの特長と選択基準」が質問に直接対応する"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "reason": "セッション変数保存ハンドラページ。有効期間をDBに変更する設定（スケールアウト対応）を含む"
+      },
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "reason": "APサーバのスケールアウト問題とHTTPセッション非依存化の説明が質問と直接関連する"
+      },
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "reason": "Redisストアはスケールアウトの重要な選択肢。有効期限の自動管理というDBストアとの差別化特徴を含む"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "全ストアの特徴と選択基準表を含む、質問への直接回答となるセクション"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "HTTPセッションがスケールアウトを妨げる理由と従来の3つの対処法を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "デフォルトでHTTPセッションに依存している機能一覧。スケールアウト対応の全体スコープを把握するために必要"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "HIDDENストアの冗長化時の問題（復号失敗）と対処（明示的キー設定）を説明する"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s15",
+        "relevance": "high",
+        "reason": "Redisの有効期限による自動削除という、DBストアとの重要な差別化特徴を説明する"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "有効期間の保存先をDBに変更する方法（DbManagedExpiration）を説明するスケールアウト対応の必須手順"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "有効期間がデフォルトでHTTPセッションに保存されることとDB/Redis変更可能な旨を示す背景情報"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "DBストアのテーブル定義と定期削除バッチ必要性という運用上の注意点を含む"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "DB vs HIDDENストアの使い分け（複数タブ許容/不許容）の具体的指針"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "認証情報はDBストアを使う具体例。選択基準表のs16を補完する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 344584,
+    "duration_api_ms": 340228,
+    "num_turns": 8,
+    "total_cost_usd": 0.9963450499999998,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 7772,
+      "cache_read_input_tokens": 333116,
+      "cache_creation_input_tokens": 12652
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3279,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003404,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 25086,
+        "outputTokens": 20283,
+        "cacheReadInputTokens": 611856,
+        "cacheCreationInputTokens": 114635,
+        "webSearchRequests": 0,
+        "costUSD": 0.9929410499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

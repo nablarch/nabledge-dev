@@ -1,0 +1,367 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチのアーキテクチャ全体構成、ハンドラ構成、データリーダ、アクションクラスを直接説明するページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "BatchActionとUniversalDaoを使ったDB書き込みの具体的な実装例を提供するページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチのデータベースアクセスや実行制御に関する機能詳細を示すページ"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "DB to DBパターンと都度起動バッチの選択基準を直接説明するページ"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "N+1問題やフレームワーク外ループのアンチパターンを説明し、正しい実装に不可欠な情報を提供するページ"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "トランザクションループ制御ハンドラのコミット間隔設定など、DB to DBバッチの実装に必要なハンドラ詳細を提供するページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "about/about-nablarch/about-nablarch-about-nablarch.json",
+        "reason": "Nablarchの概要説明であり、DB to DBバッチの実装方法に直接関係しない"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-architecture.json",
+        "reason": "Jakartaバッチの説明であり、処理方式がNablarchバッチと異なる"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "ウェブアプリケーションの説明であり、Nablarchバッチとは処理方式が異なる"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "RESTfulウェブサービスの説明であり、Nablarchバッチとは処理方式が異なる"
+      },
+      {
+        "path": "processing-pattern/db-messaging/db-messaging-architecture.json",
+        "reason": "テーブルをキューとして使ったメッセージングの説明であり、定期集計バッチには不適切"
+      },
+      {
+        "path": "processing-pattern/mom-messaging/mom-messaging-architecture.json",
+        "reason": "MOMメッセージングの説明であり、Nablarchバッチとは処理方式が異なる"
+      },
+      {
+        "path": "processing-pattern/http-messaging/http-messaging-architecture.json",
+        "reason": "HTTPメッセージングの説明であり、Nablarchバッチとは処理方式が異なる"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "ユニバーサルDAOの詳細はgetting-startedのコード例で十分カバーされており、追加読み込みは不要と判断"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "JDBCラッパーの詳細説明であり、今回の質問ではUniversalDao利用が推奨されるため優先度低"
+      },
+      {
+        "path": "component/handlers/handlers-data-read-handler.json",
+        "reason": "アーキテクチャページのハンドラ構成表で役割が説明されており、追加詳細は不要と判断"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.json",
+        "reason": "エラー処理の詳細は今回の実装構成の主旨から外れるため除外"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-functional-comparison.json",
+        "reason": "Jakarta BatchとNablarchバッチの比較表であり、実装方法の質問には不要"
+      },
+      {
+        "path": "component/handlers/handlers-multi-thread-execution-handler.json",
+        "reason": "マルチスレッド制御の詳細は今回の基本構成の説明範囲外"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストであり、バッチ実装構成の質問とは関係しない"
+      },
+      {
+        "path": "development-tools/testing-framework/testing-framework-02-requestunittest-batch.json",
+        "reason": "テスト方法の説明であり、実装構成の質問には不要"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "都度起動バッチが定期処理に適していることを直接説明している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "DB to DBパターンの選択肢と都度起動/常駐の組み合わせ表を提供している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "DB to DBパターンの特徴（1レコード処理、トランザクション保証）を直接説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "DataReader→handle→Resultという処理の流れを説明し、実装構造の理解に必須"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "DB接続あり都度起動バッチの最小ハンドラ構成（9段）を具体的に示している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "DatabaseRecordReaderがDB読み込みの標準データリーダであることを明示している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BatchActionが汎用バッチアクションのテンプレートクラスであることを説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "BatchAction継承、createReader、handle、UniversalDao.insertの具体的な実装例を示している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "N+1問題のアンチパターンを説明し、createReaderでJOINすべきという解決策を示している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "handle内での自前ループがトランザクションログ逼迫を引き起こすアンチパターンを説明している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "フレームワーク管理のループを使うよう解決法を明示している"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "commitIntervalプロパティによるコミット間隔設定の具体的な設定例を示している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "バッチアプリケーションがスタンドアロンでjavaコマンドから起動することの背景情報"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "LoopHandlerのtransactionFactory設定例を提供し、s5の理解を補完する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s3",
+        "reason": "FILE to DBパターンの説明であり、今回はDB to DBが対象"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s5",
+        "reason": "DB to FILEパターンの説明であり、今回は別テーブルへの書き込みなのでDB to DBが対象"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s6",
+        "reason": "FILE to FILEパターン（使わない）の説明であり不要"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s2",
+        "reason": "-requestPathの指定方法は今回の構成説明の主旨から外れる"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s4",
+        "reason": "ハンドラ一覧はs5の最小ハンドラ構成表で十分カバーされており重複"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s6",
+        "reason": "常駐バッチの構成であり、定期実行の都度起動バッチが対象のため不要"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s1",
+        "reason": "概要説明のみでコード等の実装内容はs2/s3に含まれる"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s2",
+        "reason": "ファイル読み込みのリーダ作成例であり、DB to DBではDatabaseRecordReaderを使うため直接は不要"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s1",
+        "reason": "Webアプリケーション向けの説明であり、今回のバッチには不要"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s2",
+        "reason": "Webアプリケーションのマルチスレッドバグであり、バッチとは無関係"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s3",
+        "reason": "バッチのアンチパターン導入文であり、内容はs4/s9に含まれる"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s6",
+        "reason": "N+1問題のNG例SQLコードのみであり、s4の説明で概念は十分理解できる"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s7",
+        "reason": "N+1問題のNG例handleメソッドSQLのみであり、s4の説明で十分"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s8",
+        "reason": "N+1問題のOK例（JOIN SQL）であり参考になるが、s4の説明で解決策は理解できる"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s10",
+        "reason": "フレームワーク外ループのNG例コードであり、s9の説明で概念は十分理解できる"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s12",
+        "reason": "Jakarta Batchのアンチパターン説明であり、今回はNablarchバッチが対象"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s13",
+        "reason": "Jakarta BatchのBatchlet誤用に関する説明であり、Nablarchバッチには不要"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみでありs4/s5の設定例で十分"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s2",
+        "reason": "モジュール一覧（Maven依存関係）のみであり今回の実装構成説明には不要"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s3",
+        "reason": "制約（データベース接続管理ハンドラより後ろに設定）は重要だがs5の設定例と合わせて理解できる"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s6",
+        "reason": "トランザクション終了コールバックは高度な拡張であり基本構成には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s9",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s11",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "component/handlers/handlers-loop-handler.json:s4",
+      "component/handlers/handlers-loop-handler.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+          "reason": "都度起動バッチが日次/月次の定期処理に使用する旨の根拠として使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+          "reason": "DB to DBパターンの選択肢表の根拠として使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+          "reason": "DB to DBパターンの特徴（1レコード処理、トランザクション保証）の根拠として使用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s3",
+          "reason": "DataReader→handle→Resultの処理フロー説明の根拠として使用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s5",
+          "reason": "都度起動バッチの最小ハンドラ構成表（9段）の根拠として使用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s7",
+          "reason": "DatabaseRecordReaderがDB読み込みの標準リーダであることの根拠として使用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s8",
+          "reason": "BatchActionが汎用バッチアクションのテンプレートクラスであることの根拠として使用"
+        },
+        {
+          "ref": "nablarch-batch-getting-started-nablarch-batch.json:s3",
+          "reason": "BatchAction継承・createReader・handle・UniversalDao.insertの実装例コードの根拠として使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchアンチパターン.json:s4",
+          "reason": "N+1問題（handleでSELECT発行禁止）の注意点の根拠として使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchアンチパターン.json:s9",
+          "reason": "handle内自前ループのアンチパターン（トランザクションログ逼迫）の根拠として使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchアンチパターン.json:s11",
+          "reason": "ループ処理はフレームワークに委ねるという解決法の根拠として使用"
+        },
+        {
+          "ref": "handlers-loop-handler.json:s5",
+          "reason": "commitIntervalプロパティの設定例の根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "nablarch-batch-architecture.json:s1",
+          "reason": "スタンドアロン起動の背景情報として読んだが、回答の構成説明に必要な情報はs3/s5で十分カバーされたため未使用"
+        },
+        {
+          "ref": "handlers-loop-handler.json:s4",
+          "reason": "LoopHandlerのtransactionFactory設定例を読んだが、今回の回答ではcommitIntervalの説明（s5）のみで十分であったため未使用"
+        }
+      ]
+    }
+  }
+}

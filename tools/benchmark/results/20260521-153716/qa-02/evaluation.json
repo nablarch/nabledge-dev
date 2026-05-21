@@ -1,0 +1,273 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の`createReader`メソッド内のコメントおよびコード例に`new DatabaseRecordReader()`が明示されており、「DatabaseRecordReaderを使用してDBから読み込む」という記述が含まれている。これはファクトの「DatabaseRecordReaderでデータベースからデータを読み込む」と同じ情報を伝えている。",
+      "fact": "DatabaseRecordReaderでデータベースからデータを読み込む"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states '`BatchAction` を継承したアクションクラス' in the conclusion and provides a concrete code example showing `public class AggregationBatchAction extends BatchAction<AggregationForm>`, which directly demonstrates implementing an action class that inherits from BatchAction.",
+      "fact": "BatchActionを継承したアクションクラスを実装する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "BatchActionを継承したアクションクラスを使用する",
+        "supported": true
+      },
+      {
+        "claim": "DatabaseRecordReaderを使用してDBから読み込む",
+        "supported": true
+      },
+      {
+        "claim": "createReaderメソッドでリーダを返す",
+        "supported": true
+      },
+      {
+        "claim": "handleメソッドで1レコード分の業務ロジックを実装する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insertで結果テーブルへ書き込む",
+        "supported": true
+      },
+      {
+        "claim": "都度起動バッチ（DB接続有り）の最小ハンドラ構成が9ハンドラで構成される",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成：1.ステータスコード→プロセス終了コード変換ハンドラ（メイン）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成：2.グローバルエラーハンドラ（メイン）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成：3.データベース接続管理ハンドラ初期処理用（メイン）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成：4.トランザクション制御ハンドラ初期処理用（メイン）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成：5.リクエストディスパッチハンドラ（メイン）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成：6.マルチスレッド実行制御ハンドラ（メイン）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成：7.データベース接続管理ハンドラ業務処理用（サブ）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成：8.トランザクションループ制御ハンドラ（LoopHandler）（サブ）",
+        "supported": true
+      },
+      {
+        "claim": "ハンドラ構成：9.データリードハンドラ（サブ）",
+        "supported": true
+      },
+      {
+        "claim": "LoopHandlerのcommitIntervalプロパティでコミット間隔を設定する",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.fw.handler.LoopHandlerクラスを使用する",
+        "supported": true
+      },
+      {
+        "claim": "handleメソッド内で追加のSELECTを発行するとN+1問題が発生する",
+        "supported": true
+      },
+      {
+        "claim": "集計に必要なデータはcreateReaderのSQLでJOINして1回で取得すべき",
+        "supported": true
+      },
+      {
+        "claim": "handle内で自前ループを実装するとフレームワークのコミット制御が効かずトランザクションログを逼迫する",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.fw.launcher.Mainをメインクラスとして起動する",
+        "supported": true
+      },
+      {
+        "claim": "-requestPathでアクションクラスとリクエストIDを指定する",
+        "supported": true
+      },
+      {
+        "claim": "DB to DBパターンは都度起動バッチで実装する",
+        "supported": true
+      },
+      {
+        "claim": "1レコードの処理中の更新は全て同一トランザクション下で実行される",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張（クラス名、ハンドラ構成、設定方法、動作仕様）はナレッジセクションの記述と一致しており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチのアーキテクチャ全体構成、ハンドラ構成、データリーダ、アクションクラスを直接説明するページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "BatchActionとUniversalDaoを使ったDB書き込みの具体的な実装例を提供するページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチのデータベースアクセスや実行制御に関する機能詳細を示すページ"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "DB to DBパターンと都度起動バッチの選択基準を直接説明するページ"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "N+1問題やフレームワーク外ループのアンチパターンを説明し、正しい実装に不可欠な情報を提供するページ"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "トランザクションループ制御ハンドラのコミット間隔設定など、DB to DBバッチの実装に必要なハンドラ詳細を提供するページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "都度起動バッチが定期処理に適していることを直接説明している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "DB to DBパターンの選択肢と都度起動/常駐の組み合わせ表を提供している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "DB to DBパターンの特徴（1レコード処理、トランザクション保証）を直接説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "DataReader→handle→Resultという処理の流れを説明し、実装構造の理解に必須"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "DB接続あり都度起動バッチの最小ハンドラ構成（9段）を具体的に示している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "DatabaseRecordReaderがDB読み込みの標準データリーダであることを明示している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BatchActionが汎用バッチアクションのテンプレートクラスであることを説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "BatchAction継承、createReader、handle、UniversalDao.insertの具体的な実装例を示している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "N+1問題のアンチパターンを説明し、createReaderでJOINすべきという解決策を示している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "handle内での自前ループがトランザクションログ逼迫を引き起こすアンチパターンを説明している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "フレームワーク管理のループを使うよう解決法を明示している"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "commitIntervalプロパティによるコミット間隔設定の具体的な設定例を示している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "バッチアプリケーションがスタンドアロンでjavaコマンドから起動することの背景情報"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "LoopHandlerのtransactionFactory設定例を提供し、s5の理解を補完する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 253125,
+    "duration_api_ms": 248486,
+    "num_turns": 4,
+    "total_cost_usd": 1.1364118,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 7749,
+      "cache_read_input_tokens": 103164,
+      "cache_creation_input_tokens": 36168
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3255,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00343,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 19,
+        "outputTokens": 17288,
+        "cacheReadInputTokens": 1000866,
+        "cacheCreationInputTokens": 152892,
+        "webSearchRequests": 0,
+        "costUSD": 1.1329818,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. Formクラスの作成」セクションに「リクエストボディのJSONを受け取るFormを作成する」と明記されており、ProjectFormクラスのコード例も示されている。これはFactの「Formクラスでクライアントから送信された値を受け付ける」という内容と同等の情報を含んでいる。",
+      "fact": "Formクラスでクライアントから送信された値を受け付ける"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. Formクラスの作成」セクションに「プロパティは全て`String`型で宣言する。」と明示的に記載されており、ファクトの内容が含まれている。",
+      "fact": "プロパティは全てString型で宣言する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "@Path/@POST/@Consumes(APPLICATION_JSON)アノテーションでリソースクラスのメソッドをマッピングする",
+        "supported": true
+      },
+      {
+        "claim": "フォームのプロパティは全てString型で宣言する",
+        "supported": true
+      },
+      {
+        "claim": "@Required/@Domain アノテーションでバリデーションルールを設定する",
+        "supported": true
+      },
+      {
+        "claim": "@Consumes(MediaType.APPLICATION_JSON)でJSON形式のリクエストボディを受け付ける",
+        "supported": true
+      },
+      {
+        "claim": "@ValidアノテーションでBean Validationによるバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy()でFormをEntityクラスに変換する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert()でDBに登録する",
+        "supported": true
+      },
+      {
+        "claim": "HttpResponse(201)を返すことで201 Createdをクライアントに返す",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsHttpRequestをメソッド引数として使用できる",
+        "supported": true
+      },
+      {
+        "claim": "SampleForm formとJaxRsHttpRequest requestを組み合わせて引数として使用できる",
+        "supported": true
+      },
+      {
+        "claim": "void戻り値は204 NoContentを示す",
+        "supported": true
+      },
+      {
+        "claim": "フォーム(Java Beans)戻り値はレスポンスボディにJSONを返す",
+        "supported": true
+      },
+      {
+        "claim": "@ConsumesのMIMEとContent-Typeが一致しない場合ステータスコード415が返却される",
+        "supported": true
+      },
+      {
+        "claim": "@QueryParam/@PathParam（Jakarta RESTful Web Services規定）は使用できない",
+        "supported": true
+      },
+      {
+        "claim": "パスパラメータはJaxRsHttpRequest#getPathParam()で取得する",
+        "supported": true
+      },
+      {
+        "claim": "クエリパラメータはJaxRsHttpRequest#getParamMap()で取得する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張（APIクラス名、アノテーション、動作仕様）はナレッジセクションによって裏付けられており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "RESTful WebサービスでのJSON受け取り・DB登録の登録機能実装サンプルが含まれる"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "reason": "リソースクラスのメソッドシグネチャ（引数・戻り値のパターン）が解説されている"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "reason": "リクエストボディをFormに変換する処理の仕組みが解説されている"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "reason": "@Pathアノテーションを使ったURLマッピング定義方法が解説されている"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTful Webサービスの機能詳細（入力チェック・DB・マッピング等の参照先）が整理されている"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "JSONを受け取りDBに登録するリソースクラスの完全な実装例（Form・メソッド・URLマッピング）が含まれる"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "リソースクラスのメソッドで使える引数・戻り値の型が網羅されている"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "@ConsumesとBodyConverterの関係を補足する背景情報として有用"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "@Pathアノテーションによるマッピング定義の具体的な実装例を補足する"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "パスパラメータの取得方法（JaxRsHttpRequest）を補足情報として提供"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "レスポンスヘッダを個別に設定するEntityResponseパターンを補足"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 96548,
+    "duration_api_ms": 94401,
+    "num_turns": 10,
+    "total_cost_usd": 0.5769871000000001,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 5176,
+      "cache_read_input_tokens": 712317,
+      "cache_creation_input_tokens": 75244
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3269,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003454,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 5176,
+        "cacheReadInputTokens": 712317,
+        "cacheCreationInputTokens": 75244,
+        "webSearchRequests": 0,
+        "costUSD": 0.5735331,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-data-bind.json",
+        "reason": "CSVをJava Beansオブジェクトとして読み込む機能を直接カバーしている（s7: データをJava Beansオブジェクトとして読み込む、s15: CSVフォーマット指定）"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "Nablarchバッチでファイルをデータリーダで読み込む実装例（ZipCodeFileReader + ImportZipCodeFileAction）を含む"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチのファイル入出力で使用できる標準データリーダ（FileDataReader等）の一覧を含む"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "FILE to DBパターンの概要のみで、Java Beansバインドの実装詳細はない"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "アーキテクチャ概要であり実装方法の詳細は別ページに委ねている"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ObjectMapperFactoryとObjectMapperを使ってCSVを1行ずつJava Beansとして読み込む実装例を含む"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s15",
+        "relevance": "high",
+        "reason": "@Csv/@CsvFormatアノテーションでCSVフォーマットをBeanに定義する方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "外部データのプロパティ全String型要件という重要な制約を記載している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "DataReaderの実装（ZipCodeFileReader）とObjectMapperIteratorを使ったCSV読み込みの完全な実装例を含む"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "BatchActionのcreateReaderとhandleメソッドの実装例を含む"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "標準提供のデータリーダ（FileDataReader等）一覧を示す"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s1",
+        "reason": "概要のみでs2と内容が重複"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s3",
+        "reason": "Mapオブジェクトへの読み込み（今回の質問対象外）"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s8",
+        "reason": "書き込み処理であり読み込みに関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s16",
+        "reason": "固定長ファイルのフォーマット指定（CSVと無関係）"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s21",
+        "reason": "フォーマットセット一覧の参考情報でありs15で十分カバーされている"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "component/libraries/libraries-data-bind.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-data-bind.json:s7",
+          "reason": "ObjectMapperFactory/ObjectMapperを使ったJava Beans読み込みのコード例を引用"
+        },
+        {
+          "ref": "libraries-data-bind.json:s15",
+          "reason": "@Csv/@CsvFormatアノテーションのフォーマット定義方法とコード例を引用"
+        },
+        {
+          "ref": "libraries-data-bind.json:s2",
+          "reason": "外部データのプロパティ全String型という注意点を引用"
+        },
+        {
+          "ref": "nablarch-batch-getting-started-nablarch-batch.json:s2",
+          "reason": "ZipCodeFormのアノテーション定義とZipCodeFileReaderのDataReader実装例を引用"
+        },
+        {
+          "ref": "nablarch-batch-getting-started-nablarch-batch.json:s3",
+          "reason": "BatchActionのcreateReader/handleメソッド実装例を引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "nablarch-batch-feature-details.json:s5",
+          "reason": "標準データリーダの一覧は今回の実装例では不要であり回答に含めなかった"
+        }
+      ]
+    }
+  }
+}

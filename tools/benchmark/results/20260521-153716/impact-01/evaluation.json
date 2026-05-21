@@ -1,0 +1,150 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that `SimpleDbTransactionManager` is used to define individual (separate) transactions, both in the conclusion and in the detailed implementation examples. The answer describes defining `SimpleDbTransactionManager` in the component configuration file and using it to execute SQL in a transaction independent from the business transaction, which directly matches the fact.",
+      "fact": "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "SimpleDbTransactionManagerを使用して別トランザクションを定義できる",
+        "supported": true
+      },
+      {
+        "claim": "JDBCラッパー使用時はSimpleDbTransactionExecutorを使用してSQLを実行する",
+        "supported": true
+      },
+      {
+        "claim": "ユニバーサルDAO使用時はUniversalDao.Transactionを使用してSQLを実行する",
+        "supported": true
+      },
+      {
+        "claim": "このトランザクションは業務トランザクションのロールバックの影響を受けない（独立したトランザクション）",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント設定ファイルでSimpleDbTransactionManagerにconnectionFactoryとtransactionFactoryプロパティを設定する",
+        "supported": true
+      },
+      {
+        "claim": "dbTransactionNameプロパティでトランザクションを識別する名前を設定する",
+        "supported": true
+      },
+      {
+        "claim": "SystemRepository.get()でSimpleDbTransactionManagerを取得できる",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionExecutorのdoTransaction()メソッドでトランザクションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "execute(AppDbConnection connection)メソッドをオーバーライドしてSQLを実装する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.Transactionを継承したクラスのコンストラクタでsuper()にコンポーネント名を指定する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.TransactionのexecuteメソッドにUniversalDAOを使った処理を実装する",
+        "supported": true
+      },
+      {
+        "claim": "正常終了時はコミット、例外・エラー時はロールバックされる",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionManagerを直接使わず必ずトランザクション制御クラス経由で実行すること",
+        "supported": true
+      },
+      {
+        "claim": "FindPersonsTransactionを生成すると別のトランザクションで実行される",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張（クラス名・API名・設定方法・動作仕様）はナレッジセクションに記載の内容と一致しており、ハルシネーションは検出されなかった。コード例・XML設定例もナレッジセクションの記述と一致している。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s29に「現在のトランザクションとは異なるトランザクションでSQLを実行する」が直接記載されている"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s20に「現在のトランザクションとは異なるトランザクションで実行する」がユニバーサルDAO向けに記載されている"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "s8に「別トランザクションで実行する」が記載されており、Domaアダプタを使用する場合の実装方法を提供している"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "業務処理失敗時も確実にDBへの変更を確定する個別トランザクションの実装方法（SimpleDbTransactionManager+SimpleDbTransactionExecutor）が直接記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "ユニバーサルDAO使用時の別トランザクション実装方法（UniversalDao.Transaction）が直接記載されている"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "Domaアダプタ使用時の別トランザクション実装方法（DomaConfig.getTransactionManager().requiresNew()）が記載されており、参考になる"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 132921,
+    "duration_api_ms": 128071,
+    "num_turns": 4,
+    "total_cost_usd": 0.95809015,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 2922,
+      "cache_read_input_tokens": 130460,
+      "cache_creation_input_tokens": 4416
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3255,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0034000000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14853,
+        "outputTokens": 7890,
+        "cacheReadInputTokens": 910083,
+        "cacheCreationInputTokens": 138335,
+        "webSearchRequests": 0,
+        "costUSD": 0.9546901500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

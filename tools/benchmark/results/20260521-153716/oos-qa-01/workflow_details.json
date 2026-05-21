@@ -1,0 +1,159 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "処理方式マッチ（ウェブアプリ）かつServlet API基盤の説明でWebSocketフィジビリティに直接関連する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリの機能一覧として権威的なリスト — WebSocket記載の有無を確認するために選択（有用なセクションは抽出なし）"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json",
+        "reason": "NablarchウェブアプリでのAsync処理パターンを直接説明しており、リアルタイム通知ユースケースに最も近い"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json",
+        "reason": "「進捗状況」のタイトルを持ち、バッチ進捗情報の出力方法を説明する"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "「バッチ実行中の状態の保持」セクションを含み、進捗データをWebアプリに橋渡しする手段として関連する"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-retention-state.json",
+        "reason": "バッチ実行中の状態保持の詳細 — セクション定義なしのためセクション選択はなし"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/jakarta-batch/*（progress-log以外）",
+        "reason": "Jakarta Batchの他ページはウェブ通知・非同期パターンに直接関連しない"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/*（feature-details以外）",
+        "reason": "バッチ処理の個別機能ページはWebSocket・リアルタイム通知に関連しない"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/*",
+        "reason": "RESTfulウェブサービス向けの処理方式 — 今回はウェブアプリケーション"
+      },
+      {
+        "path": "processing-pattern/messaging/*",
+        "reason": "メッセージング処理方式ページ（ただし非同期パターンとして関連するguideは別途選択済み）"
+      },
+      {
+        "path": "about/*, security/*, testing/*, setup/*",
+        "reason": "概要・セキュリティ・テスト・セットアップカテゴリはWebSocket実装に無関係"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-architecture.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "NablarchウェブアプリがServlet APIを基盤とすることを示し、WebSocketネイティブサポートがない背景説明になる"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-architecture.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "提供ハンドラ一覧にWebSocketハンドラが存在しないことを確認 — WebSocketサポートなしの根拠"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "Nablarchの非同期処理推奨パターン（テーブルキュー vs 常駐バッチ）を説明し、代替アーキテクチャとして参照できる"
+      },
+      {
+        "file": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "バッチ進捗ログで出力される情報（TPS・未処理件数・終了予測時間）を定義する"
+      },
+      {
+        "file": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ProgressManagerを使ったBatchletでの進捗出力実装例を提供する"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "バッチ実行中の状態保持機能への参照 — 進捗データを外部に橋渡しする仕組みとして関連"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-architecture.json",
+        "section_id": "s2",
+        "reason": "リクエスト/レスポンス処理フローの説明 — WebSocket回答に追加価値なし"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-architecture.json",
+        "section_id": "s4",
+        "reason": "最小ハンドラ構成の詳細 — s3で十分"
+      },
+      {
+        "file": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json",
+        "section_id": "s2",
+        "reason": "進捗ログの専用ファイル出力設定 — ウェブ通知には無関係"
+      },
+      {
+        "file": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json",
+        "section_id": "s4",
+        "reason": "ChunkステップでのProgressManager使用例 — Batchlet(s3)と概念的に重複"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json",
+        "section_id": "s1（page-level content）",
+        "reason": "page introのcontent（非セクション）がテーブルキューパターンの核心 — セクションとして選択不可だがs1から間接的に参照"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/web-application/web-application-architecture.json:s1",
+      "processing-pattern/web-application/web-application-architecture.json:s3",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1",
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1",
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s9"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "processing-pattern/web-application/web-application-architecture.json:s1",
+          "reason": "WebFrontControllerがServletフィルタであることの根拠 — WebSocketネイティブサポートなしの背景説明に使用"
+        },
+        {
+          "ref": "processing-pattern/web-application/web-application-architecture.json:s3",
+          "reason": "ハンドラ一覧にWebSocketがないことの確認 — WebSocketサポートなしの直接的根拠として使用"
+        },
+        {
+          "ref": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1",
+          "reason": "テーブルキュー方式が推奨される非同期パターンであることの説明に使用"
+        },
+        {
+          "ref": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1",
+          "reason": "バッチ進捗情報（TPS・未処理件数・終了予測時間）の説明に使用"
+        },
+        {
+          "ref": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s3",
+          "reason": "ProgressManagerを使ったBatchlet実装例（コードブロック）として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s9",
+          "reason": "状態保持へのリンク参照のみで実質的なコンテンツがなく、回答に引用できる具体情報がなかった"
+        }
+      ]
+    }
+  }
+}
