@@ -159,7 +159,6 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
-- [x] B-4-1. run-1 安定化（エラーゼロ確認）— 30件全件エラーゼロ、WF詳細正常取得 — `1e44a77d7`
 - [x] B-4-pre. ユーザープロンプトレビュー — qa.md 大幅改修（Step 1-2-5）、PEレビュー 0 Findings — `86b319939`〜`2d2cfe3fa`
 - [x] B-4-1-B. purpose ヒアリング追加（goal廃止・purpose7択追加・PEレビュー0 Findings）— `dbad4cf64`
 - [x] B-4-1-C. evaluate.py 幻覚検証ロジック修正（search_sections を sections_text に追加、TDD 5テスト追加）— `563d8b4aa`
