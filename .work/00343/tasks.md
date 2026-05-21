@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-22 (session 10)
+**Updated**: 2026-05-22 (session 11)
 
 ## Rules
 
@@ -14,7 +14,7 @@
 ### B-4. 新スキルE2Eベンチマーク
 
 - [x] run-2 実行 → `v1-new-search/run-2` に保存（エラー0件）
-- [ ] run-3 実行 → `v1-new-search/run-3` に保存（実行中 — バックグラウンド job bywi1t1tl）
+- [ ] run-3 実行 → `v1-new-search/run-3` に保存
 - [ ] 結果をコミット（run-2は未コミット、run-3完了後にまとめてコミット）
 - [ ] QAエキスパート（別エージェント）に生データを渡して比較評価させる（実装者が自己採点しない）
 - [ ] [BLOCKED: ユーザーがQAエキスパートの評価を確認し、B-5着手の承認を出す]
