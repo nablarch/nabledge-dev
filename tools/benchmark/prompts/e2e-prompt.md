@@ -5,7 +5,7 @@ Follow the workflow and additional instructions below, then answer the question.
 
 ### Additional instructions
 
-**Step 1 and Step 2**: The question already contains the hearing result. Skip to Step 3.
+**Step 1 and Step 2**: Skip both steps. The question already contains the hearing result (`（処理方式: X）（目的: Y）`). Start from Step 3.
 
 **Step 3**: Save the full `results` array returned by semantic-search.md as `stage2_sections`.
 
