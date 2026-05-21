@@ -161,14 +161,14 @@ def parse_stage1_response(response: dict) -> list[dict]:
 
 
 def parse_stage2_response(response: dict) -> list[dict]:
-    if "results" not in response:
-        raise ValueError("Response missing 'results' key")
-    if not isinstance(response["results"], list):
-        raise ValueError(f"'results' must be a list, got {type(response['results']).__name__!r}")
-    for r in response["results"]:
+    if "selected_sections" not in response:
+        raise ValueError("Response missing 'selected_sections' key")
+    if not isinstance(response["selected_sections"], list):
+        raise ValueError(f"'selected_sections' must be a list, got {type(response['selected_sections']).__name__!r}")
+    for r in response["selected_sections"]:
         if r.get("relevance") not in ("high", "partial"):
             raise ValueError(f"Invalid relevance: {r.get('relevance')!r}")
-    return response["results"][:30]
+    return response["selected_sections"][:30]
 
 
 def _aggregate_stage_metrics(stage1: dict, stage2: dict) -> dict:
@@ -273,7 +273,7 @@ def simulate_scenario(
     return {
         "scenario_id": scenario_id,
         "stage1": {"files": stage1_files, "trace": stage1_trace, "metrics": stage1_metrics},
-        "stage2": {"results": stage2_results, "trace": stage2_trace, "metrics": stage2_metrics},
+        "stage2": {"selected_sections": stage2_results, "trace": stage2_trace, "metrics": stage2_metrics},
         "comparison": comparison,
         "metrics": _aggregate_stage_metrics(stage1_metrics, stage2_metrics),
     }

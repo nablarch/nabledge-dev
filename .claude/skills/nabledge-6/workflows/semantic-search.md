@@ -11,7 +11,7 @@
 Pointer JSON:
 ```json
 {
-  "results": [
+  "selected_sections": [
     {"file": "processing-pattern/nablarch-batch/page.json", "section_id": "s1", "relevance": "high"},
     {"file": "component/libraries/universal-dao.json", "section_id": "s3", "relevance": "partial"}
   ]
@@ -38,7 +38,7 @@ For each page in the index, judge whether it contains information needed to answ
 
 Select up to 10 pages, ordered by confidence (highest first). If more than 10 candidates exist, select the 10 most direct matches. If fewer than 3 high-confidence pages exist, do not pad to 10.
 
-If no pages match, return `{"results": []}` immediately.
+If no pages match, return `{"selected_sections": []}` immediately.
 
 Save the selected page paths (relative to knowledge/) as `selected_pages`.
 
@@ -67,7 +67,7 @@ Do NOT select:
 Return:
 ```json
 {
-  "results": [
+  "selected_sections": [
     {"file": "<path relative to knowledge/>", "section_id": "sN", "relevance": "high|partial"}
   ]
 }

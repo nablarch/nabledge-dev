@@ -140,7 +140,7 @@ Execute `workflows/semantic-search.md` with:
   - If `hearing_answer.processing_type` is not null: `"{user's question}（処理方式: {hearing_answer.processing_type}）（目的: {hearing_answer.purpose}）"`
   - If `hearing_answer.processing_type` is null: `"{user's question}（目的: {hearing_answer.purpose}）"`
 
-Save the returned `results` array as `selected_sections`.
+Save the returned `selected_sections` array as `selected_sections`.
 
 ---
 

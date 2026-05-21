@@ -257,7 +257,7 @@ class TestParseStage1Response:
 class TestParseStage2Response:
     def test_valid_response(self):
         response = {
-            "results": [
+            "selected_sections": [
                 {"file": "a/b.json", "section_id": "s1", "relevance": "high"},
                 {"file": "a/b.json", "section_id": "s3", "relevance": "partial"},
             ]
@@ -267,21 +267,21 @@ class TestParseStage2Response:
         assert result[0]["relevance"] == "high"
 
     def test_empty_results(self):
-        result = parse_stage2_response({"results": []})
+        result = parse_stage2_response({"selected_sections": []})
         assert result == []
 
-    def test_missing_results_key(self):
-        with pytest.raises(ValueError, match="results"):
+    def test_missing_selected_sections_key(self):
+        with pytest.raises(ValueError, match="selected_sections"):
             parse_stage2_response({})
 
-    def test_results_not_a_list(self):
+    def test_selected_sections_not_a_list(self):
         with pytest.raises(ValueError, match="must be a list"):
-            parse_stage2_response({"results": "not a list"})
+            parse_stage2_response({"selected_sections": "not a list"})
 
     def test_invalid_relevance(self):
         with pytest.raises(ValueError, match="relevance"):
             parse_stage2_response({
-                "results": [{"file": "a.json", "section_id": "s1", "relevance": "low"}]
+                "selected_sections": [{"file": "a.json", "section_id": "s1", "relevance": "low"}]
             })
 
     def test_exactly_30_results(self):
@@ -289,7 +289,7 @@ class TestParseStage2Response:
             {"file": "a.json", "section_id": f"s{i}", "relevance": "high"}
             for i in range(30)
         ]
-        result = parse_stage2_response({"results": results})
+        result = parse_stage2_response({"selected_sections": results})
         assert len(result) == 30
 
     def test_max_30_results(self):
@@ -297,7 +297,7 @@ class TestParseStage2Response:
             {"file": "a.json", "section_id": f"s{i}", "relevance": "high"}
             for i in range(35)
         ]
-        result = parse_stage2_response({"results": results})
+        result = parse_stage2_response({"selected_sections": results})
         assert len(result) == 30
 
 
@@ -432,7 +432,7 @@ class TestSimulateScenario:
         }
         stage1_response = {"files": [{"path": "component/libs/test.json", "reason": "理由"}]}
         stage2_response = {
-            "results": [
+            "selected_sections": [
                 {"file": "component/libs/test.json", "section_id": "s1", "relevance": "high"},
             ]
         }
@@ -452,7 +452,7 @@ class TestSimulateScenario:
         assert result["comparison"]["must_hit"] == 1
         assert result["comparison"]["hit_rate"] == 1.0
         assert len(result["stage1"]["files"]) == 1
-        assert len(result["stage2"]["results"]) == 1
+        assert len(result["stage2"]["selected_sections"]) == 1
         assert "metrics" in result["stage1"]
         assert "metrics" in result["stage2"]
         assert result["metrics"]["total_duration_ms"] == 200
@@ -475,7 +475,7 @@ class TestSimulateScenario:
             if call_count == 1:
                 assert "なし" in prompt
                 return _wrap_llm_response({"files": [{"path": "component/libs/test.json", "reason": "r"}]})
-            return _wrap_llm_response({"results": [{"file": "component/libs/test.json", "section_id": "s1", "relevance": "high"}]})
+            return _wrap_llm_response({"selected_sections": [{"file": "component/libs/test.json", "section_id": "s1", "relevance": "high"}]})
 
         result = simulate_scenario(scenario, "idx", self.tmpdir, llm_fn=mock_llm)
         assert result["comparison"]["must_hit"] == 1
@@ -499,7 +499,7 @@ class TestSimulateScenario:
                     {"path": "nonexistent.json", "reason": "r"},
                     {"path": "component/libs/test.json", "reason": "r2"},
                 ]})
-            return _wrap_llm_response({"results": []})
+            return _wrap_llm_response({"selected_sections": []})
 
         result = simulate_scenario(scenario, "idx", self.tmpdir, llm_fn=mock_llm)
         assert result["stage1"]["files"][0]["path"] == "nonexistent.json"
@@ -514,7 +514,7 @@ class TestSimulateScenario:
         def mock_llm(prompt, schema, model="sonnet"):
             if "インデックス" in prompt or "index" in prompt.lower():
                 return _wrap_llm_response({"files": []})
-            return _wrap_llm_response({"results": []})
+            return _wrap_llm_response({"selected_sections": []})
 
         result = simulate_scenario(scenario, "idx", self.tmpdir, llm_fn=mock_llm)
         assert "scenario_id" in result
@@ -525,7 +525,7 @@ class TestSimulateScenario:
         assert "files" in result["stage1"]
         assert "trace" in result["stage1"]
         assert "metrics" in result["stage1"]
-        assert "results" in result["stage2"]
+        assert "selected_sections" in result["stage2"]
         assert "trace" in result["stage2"]
         assert "metrics" in result["stage2"]
 
@@ -549,7 +549,7 @@ class TestSimulateScenario:
             call_count += 1
             if call_count == 1:
                 return _wrap_llm_response({"files": [], "trace": stage1_trace})
-            return _wrap_llm_response({"results": [], "trace": stage2_trace})
+            return _wrap_llm_response({"selected_sections": [], "trace": stage2_trace})
 
         result = simulate_scenario(scenario, "idx", self.tmpdir, llm_fn=mock_llm)
         assert result["stage1"]["trace"] == stage1_trace
@@ -565,7 +565,7 @@ class TestSimulateScenario:
         def mock_llm(prompt, schema, model="sonnet"):
             if "インデックス" in prompt or "index" in prompt.lower():
                 return _wrap_llm_response({"files": []})
-            return _wrap_llm_response({"results": []})
+            return _wrap_llm_response({"selected_sections": []})
 
         result = simulate_scenario(scenario, "idx", self.tmpdir, llm_fn=mock_llm)
         assert result["stage1"]["trace"] is None
@@ -614,7 +614,7 @@ class TestSimulateAll:
     def _mock_llm(self, prompt, schema, model="sonnet"):
         if "インデックス" in prompt or "index" in prompt.lower():
             return _wrap_llm_response({"files": [{"path": "component/libs/test.json", "reason": "r"}]})
-        return _wrap_llm_response({"results": [
+        return _wrap_llm_response({"selected_sections": [
             {"file": "component/libs/test.json", "section_id": "s1", "relevance": "high"},
         ]})
 

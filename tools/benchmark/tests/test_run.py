@@ -227,7 +227,7 @@ def _make_mock_llm():
             })
         elif stage == 1:
             return _wrap_llm_response({
-                "results": [
+                "selected_sections": [
                     {"file": "component/libs/test.json", "section_id": "s1", "relevance": "high"},
                 ]
             })
@@ -347,7 +347,7 @@ class TestRunScenario:
                 })
             elif call_count["n"] == 2:
                 return _wrap_llm_response({
-                    "results": [
+                    "selected_sections": [
                         {"file": "component/libs/test.json", "section_id": "s1", "relevance": "high"},
                     ]
                 })
@@ -381,7 +381,7 @@ class TestRunScenario:
                 })
             elif call_count["n"] == 2:
                 return _wrap_llm_response({
-                    "results": [
+                    "selected_sections": [
                         {"file": "component/libs/test.json", "section_id": "s1", "relevance": "high"},
                     ]
                 })
