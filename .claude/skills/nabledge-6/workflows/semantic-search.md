@@ -28,29 +28,28 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
 
 ## Step 2: Select pages
 
-Read the question. Write one sentence: what does the user want to know? If the question contains `（処理方式: X）`, note X as the processing type constraint. If the question contains `（目的: X）`, note X as the purpose.
+1. Read the question. Write one sentence: what does the user want to know?
+2. Extract constraints: if the question contains `（処理方式: X）`, note X as the processing type constraint. If it contains `（目的: X）`, note X as the purpose.
+3. For each page in the index, apply this decision procedure:
+   - Does this page cover the exact feature, component, or topic the question is asking about? → **candidate**
+   - Does this page cover a feature that directly solves the technical problem in the question? → **candidate**
+   - Does this page cover the processing type in the question (if one was specified)? → **candidate**; if it covers a *different* processing type → **skip**
+   - All other pages → **skip**
+4. Collect all candidates. Assign each a confidence level (high / medium / low) based on how directly it answers the question.
+5. If a purpose was noted, move pages in the corresponding priority categories to the front within the same confidence level.
 
-For each page in the index, apply this decision procedure:
-1. Does this page cover the exact feature, component, or topic the question is asking about? → **candidate**
-2. Does this page cover a feature that directly solves the technical problem in the question? → **candidate**
-3. Does this page cover the processing type in the question (if one was specified)? → **candidate**; if it covers a *different* processing type → **skip**
-4. All other pages → **skip**
+   | 目的 | Priority categories |
+   |------|-------------------|
+   | 実装したい | processing-pattern/*, component/libraries |
+   | 仕組み・動作を理解したい | component/handlers, component/libraries, about/about-nablarch |
+   | 不具合・エラーを調査したい | component/handlers, component/libraries, processing-pattern/* |
+   | テストを書きたい | development-tools/testing-framework, component/libraries |
+   | バージョンアップしたい | about/migration, releases/releases, about/release-notes |
+   | 実装パターン・サンプルを参考にしたい | guide/nablarch-patterns, guide/biz-samples, processing-pattern/* |
+   | セキュリティ対応したい | check/security-check, component/handlers, processing-pattern/* |
 
-Collect all candidates. If a purpose was noted, reorder: move pages in the corresponding priority categories to the front.
-
-| 目的 | Priority categories |
-|------|-------------------|
-| 実装したい | processing-pattern/*, component/libraries |
-| 仕組み・動作を理解したい | component/handlers, component/libraries, about/about-nablarch |
-| 不具合・エラーを調査したい | component/handlers, component/libraries, processing-pattern/* |
-| テストを書きたい | development-tools/testing-framework, component/libraries |
-| バージョンアップしたい | about/migration, releases/releases, about/release-notes |
-| 実装パターン・サンプルを参考にしたい | guide/nablarch-patterns, guide/biz-samples, processing-pattern/* |
-| セキュリティ対応したい | check/security-check, component/handlers, processing-pattern/* |
-
-Take up to 10 candidates, ordered by confidence (highest first). Within the same confidence level, use the purpose priority table to break ties. If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately.
-
-Save the selected page paths (relative to knowledge/) as `selected_pages`.
+6. Take up to 10 candidates, ordered by confidence (highest first). If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately.
+7. Save the selected page paths (relative to knowledge/) as `selected_pages`.
 
 ---
 
