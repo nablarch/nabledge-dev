@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-21 (session 2)
+**Updated**: 2026-05-21 (session 3)
 
 ## Rules
 
@@ -24,13 +24,26 @@
 - [x] purpose 未注入の影響を調査する — `processing_type` は正しく注入済み。`purpose` は Step 1 自己推測にフォールバックするため、推測誤りが発生した可能性あり
 - [x] run_e2e.py / e2e-prompt.md の実装を整合させる（semantic-search.md リファクタリングに合わせた修正）— `b00d53b7d`
 - [x] 無効な run-1 結果を削除 — `20d0051a6`
-- [ ] run-1 全件を再実行する（qa.json修正済み・e2e-prompt.md整合済み）
+- [ ] run_e2e.py を e2e-prompt.md に合わせて修正する（TDD）
+  - `build_e2e_prompt`: e2e-prompt.md を読み込み `{workflow}`/`{question}` を置換
+  - `parse_e2e_response`: `### Workflow Details` で上下分割 → `answer` と `workflow_details` を返す
+  - `evaluate_scenario`: 幻覚チェックの知識を `workflow_details.step3.selected_pages` から取得
+  - テスト更新（hearing関連テスト削除、新フォーマット対応テスト追加）
+  - `tools/benchmark/results/20260521-124927/` を削除（無効な結果）
+  - テスト全件GREEN確認: `python3 -m pytest tools/benchmark/tests/ -x`
+- [ ] 3件試し実行してエラーゼロ確認
+  ```bash
+  python3 -m tools.benchmark.scripts.run_e2e \
+    --scenarios tools/benchmark/scenarios/qa.json \
+    --skill-dir .claude/skills/nabledge-6 \
+    --scenario-ids pre-01,pre-02,pre-03
+  ```
+- [ ] run-1 全件を再実行する
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
     --skill-dir .claude/skills/nabledge-6
   ```
-  出力先: デフォルト（タイムスタンプ付き）→ `v1-new-search/run-1/` にコピー（既存を上書き）
 - [ ] エラーゼロを確認する
 - [ ] 結果をコミット
 - [ ] [BLOCKED: エラーゼロ確認後、ユーザーに報告して B-4（run-2/run-3）進行承認を得る]
