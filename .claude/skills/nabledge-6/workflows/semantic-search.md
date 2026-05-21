@@ -30,13 +30,12 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
 
 1. Read the question. Write one sentence: what does the user want to know?
 2. Extract constraints: if the question contains `（処理方式: X）`, note X as the processing type constraint. If it contains `（目的: X）`, note X as the purpose.
-3. For each page in the index, apply this decision procedure:
+3. For each page in the index, apply this decision procedure and collect all candidates:
    - Does this page cover the exact feature, component, or topic the question is asking about? → **candidate**
    - Does this page cover a feature that directly solves the technical problem in the question? → **candidate**
    - Does this page cover the processing type in the question (if one was specified)? → **candidate**; if it covers a *different* processing type → **skip**
    - All other pages → **skip**
-4. Collect all candidates. Assign each a confidence level (high / medium / low) based on how directly it answers the question.
-5. If a purpose was noted, move pages in the corresponding priority categories to the front within the same confidence level.
+4. If a purpose was noted, move pages in the corresponding priority categories to the front.
 
    | 目的 | Priority categories |
    |------|-------------------|
@@ -48,8 +47,8 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
    | 実装パターン・サンプルを参考にしたい | guide/nablarch-patterns, guide/biz-samples, processing-pattern/* |
    | セキュリティ対応したい | check/security-check, component/handlers, processing-pattern/* |
 
-6. Take up to 10 candidates, ordered by confidence (highest first). If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately.
-7. Save the selected page paths (relative to knowledge/) as `selected_pages`.
+5. Take up to 10 candidates in order. If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately.
+6. Save the selected page paths (relative to knowledge/) as `selected_pages`.
 
 ---
 
