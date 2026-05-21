@@ -4,7 +4,7 @@ Searches knowledge files and returns relevant sections for the question.
 
 ## Input
 
-- `{question}`: User's question. May contain hearing result appended as `（処理方式: X）（目的: Y）`.
+- `{question}`: User's question.
 
 ## Output
 
