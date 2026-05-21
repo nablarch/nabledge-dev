@@ -1,7 +1,7 @@
 ## Workflow
 {workflow}
 
-### Benchmark instructions
+### Additional instructions
 
 If the question contains `処理方式:` and `目的:`, hearing_answer is already determined. Skip Step 1 and Step 2 and start from Step 3.
 
