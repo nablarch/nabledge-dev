@@ -16,10 +16,6 @@ Follow the workflow and additional instructions below, then answer the question.
 ### Workflow Details
 ```json
 {
-  "hearing": {
-    "processing_type": "<processing type from `処理方式:` in the question text. null if cross-functional>",
-    "purpose": "<purpose from `目的:` in the question text>"
-  },
   "stage2_sections": [
     {"file": "<file path>", "section_id": "<sN>", "relevance": "<high|partial>"}
   ],
