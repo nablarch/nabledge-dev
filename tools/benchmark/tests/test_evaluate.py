@@ -326,17 +326,26 @@ class TestParseHallucinationResponse:
             parse_hallucination_response({"claims": [], "reason": "x"})
 
 
+SAMPLE_WORKFLOW_DETAILS = {
+    "step3": {
+        "selected_pages": [{"path": "a.json", "reason": "relevant"}],
+        "excluded_pages": [],
+        "selected_sections": [{"file": "a.json", "section_id": "s1", "relevance": "high", "reason": "key"}],
+        "excluded_sections": [],
+    },
+    "step4": {"read_sections": ["a.json:s1"]},
+    "step8": {"answer_sections": {"used": [], "unused": []}},
+}
+
+
 class TestLoadRunnerOutput:
     def setup_method(self):
         self.tmpdir = tempfile.mkdtemp()
         scenario_dir = Path(self.tmpdir) / "pre-01"
         scenario_dir.mkdir()
         (scenario_dir / "answer.md").write_text("テスト回答です", encoding="utf-8")
-        (scenario_dir / "hearing.json").write_text(
-            json.dumps({"status": "skipped", "questions": []}), encoding="utf-8"
-        )
-        (scenario_dir / "search.json").write_text(
-            json.dumps({"section_ids": ["a.json:s1"]}), encoding="utf-8"
+        (scenario_dir / "workflow_details.json").write_text(
+            json.dumps(SAMPLE_WORKFLOW_DETAILS), encoding="utf-8"
         )
         (scenario_dir / "metrics.json").write_text(
             json.dumps({"duration_ms": 1000, "total_tokens": 500, "tool_uses": 3}),
@@ -346,8 +355,7 @@ class TestLoadRunnerOutput:
     def test_load_all_outputs(self):
         output = load_runner_output(self.tmpdir, "pre-01")
         assert output["answer"] == "テスト回答です"
-        assert output["hearing"]["status"] == "skipped"
-        assert output["search"]["section_ids"] == ["a.json:s1"]
+        assert output["workflow_details"]["step3"]["selected_pages"][0]["path"] == "a.json"
         assert output["metrics"]["duration_ms"] == 1000
 
     def test_missing_scenario_dir_raises(self):
@@ -490,8 +498,7 @@ class TestEvaluateScenario:
         }
         runner_output = {
             "answer": "回答",
-            "hearing": {},
-            "search": {"section_ids": ["b.json:s2"]},
+            "workflow_details": {"step3": {"selected_pages": [{"path": "b.json", "reason": "relevant"}], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}},
             "metrics": {},
         }
 
@@ -526,8 +533,7 @@ class TestEvaluateScenario:
         }
         runner_output = {
             "answer": "回答",
-            "hearing": {},
-            "search": {"section_ids": ["b.json:s2"]},
+            "workflow_details": {"step3": {"selected_pages": [{"path": "b.json", "reason": "relevant"}], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}},
             "metrics": {},
         }
 
@@ -558,8 +564,7 @@ class TestEvaluateScenario:
         }
         runner_output = {
             "answer": "回答",
-            "hearing": {},
-            "search": {"section_ids": ["a.json:s1"]},  # duplicate
+            "workflow_details": {"step3": {"selected_pages": [{"path": "a.json", "reason": "dup"}], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}},
             "metrics": {},
         }
 
@@ -592,8 +597,7 @@ class TestEvaluateScenario:
         }
         runner_output = {
             "answer": "回答",
-            "hearing": {},
-            "search": {"section_ids": []},
+            "workflow_details": {"step3": {"selected_pages": [], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}},
             "metrics": {},
         }
 
@@ -620,8 +624,7 @@ class TestEvaluateScenario:
         }
         runner_output = {
             "answer": "回答",
-            "hearing": {},
-            "search": {"section_ids": ["nonexistent.json:s99"]},
+            "workflow_details": {"step3": {"selected_pages": [{"path": "nonexistent.json", "reason": "test"}], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}},
             "metrics": {},
         }
 
@@ -647,11 +650,8 @@ class TestEvaluateAll:
         scenario_dir = Path(tmpdir) / "pre-01"
         scenario_dir.mkdir()
         (scenario_dir / "answer.md").write_text("テスト回答", encoding="utf-8")
-        (scenario_dir / "hearing.json").write_text(
-            json.dumps({"status": "skipped", "questions": []}), encoding="utf-8"
-        )
-        (scenario_dir / "search.json").write_text(
-            json.dumps({"section_ids": []}), encoding="utf-8"
+        (scenario_dir / "workflow_details.json").write_text(
+            json.dumps({"step3": {"selected_pages": [], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}}), encoding="utf-8"
         )
         (scenario_dir / "metrics.json").write_text(
             json.dumps({"duration_ms": 1000, "total_tokens": 500, "tool_uses": 3}),
@@ -693,11 +693,8 @@ class TestEvaluateAll:
         scenario_dir = Path(tmpdir) / "test-01"
         scenario_dir.mkdir()
         (scenario_dir / "answer.md").write_text("回答テキスト", encoding="utf-8")
-        (scenario_dir / "hearing.json").write_text(
-            json.dumps({"status": "skipped", "questions": []}), encoding="utf-8"
-        )
-        (scenario_dir / "search.json").write_text(
-            json.dumps({"section_ids": []}), encoding="utf-8"
+        (scenario_dir / "workflow_details.json").write_text(
+            json.dumps({"step3": {"selected_pages": [], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}}), encoding="utf-8"
         )
         (scenario_dir / "metrics.json").write_text(
             json.dumps({"duration_ms": 2000, "total_tokens": 1000, "tool_uses": 5}),

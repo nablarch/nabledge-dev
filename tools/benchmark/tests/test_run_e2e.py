@@ -59,142 +59,126 @@ SAMPLE_SCENARIO = {
 class TestBuildE2ePrompt:
     def setup_method(self):
         self.workflow_content = "# QA Workflow\n\nStep 1: Search\nStep 2: Answer"
+        # e2e-prompt.md template with {workflow} and {question} placeholders
+        self.prompt_template = (
+            "Follow the workflow below.\n\n"
+            "## Workflow\n{workflow}\n\n"
+            "## Question\n{question}\n"
+        )
 
     def test_includes_workflow(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "# QA Workflow" in prompt
 
     def test_includes_question(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "テスト質問です" in prompt
 
     def test_includes_hearing_answer_processing_type(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "Nablarchバッチ" in prompt
 
     def test_includes_hearing_answer_purpose(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "実装したい" in prompt
 
-    def test_includes_benchmark_markers_instruction(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
-        assert "BENCHMARK_HEARING" in prompt
-        assert "BENCHMARK_SEARCH" in prompt
-        assert "BENCHMARK_ANSWER" in prompt
-
-    def test_no_hearing_answer_excludes_hearing_section(self):
+    def test_no_hearing_answer_excludes_context(self):
         scenario_no_hearing = {
             **SAMPLE_SCENARIO,
             "when": {**SAMPLE_SCENARIO["when"], "hearing_answer": None},
         }
-        prompt = build_e2e_prompt(scenario_no_hearing, self.workflow_content)
+        prompt = build_e2e_prompt(scenario_no_hearing, self.workflow_content, self.prompt_template)
         assert "Nablarchバッチ" not in prompt
         assert "実装したい" not in prompt
 
     def test_hearing_answer_present_injects_context(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "Nablarchバッチ" in prompt
         assert "実装したい" in prompt
 
-    def test_hearing_answer_injected_into_question_not_separate_section(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
-        assert "コンテキスト（ヒアリング結果）" not in prompt
-
     def test_no_unreplaced_placeholders(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content)
+        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "{question}" not in prompt
         assert "{workflow}" not in prompt
 
 
+SAMPLE_WORKFLOW_DETAILS = {
+    "step3": {
+        "selected_pages": [
+            {"path": "path/to/file.json", "reason": "relevant page"}
+        ],
+        "excluded_pages": [],
+        "selected_sections": [
+            {"file": "path/to/file.json", "section_id": "s1", "relevance": "high", "reason": "key section"}
+        ],
+        "excluded_sections": [],
+    },
+    "step4": {"read_sections": ["path/to/file.json:s1"]},
+    "step8": {
+        "answer_sections": {
+            "used": [{"ref": "path/to/file.json:s1", "reason": "used in answer"}],
+            "unused": [],
+        }
+    },
+}
+
+
 class TestParseE2eResponse:
-    def _make_response(self, hearing_json, search_json, answer_text):
+    def _make_response(self, answer_text, workflow_details=None):
+        details = workflow_details or SAMPLE_WORKFLOW_DETAILS
         return (
-            f"何か前置きテキスト\n"
-            f"<<<BENCHMARK_HEARING>>>\n{hearing_json}\n<<<END_BENCHMARK_HEARING>>>\n"
-            f"<<<BENCHMARK_SEARCH>>>\n{search_json}\n<<<END_BENCHMARK_SEARCH>>>\n"
-            f"<<<BENCHMARK_ANSWER>>>\n{answer_text}\n<<<END_BENCHMARK_ANSWER>>>"
+            f"{answer_text}\n\n"
+            f"### Workflow Details\n"
+            f"```json\n{json.dumps(details, ensure_ascii=False, indent=2)}\n```\n"
         )
-
-    def test_parses_hearing_skipped(self):
-        response = self._make_response(
-            '{"status": "skipped", "questions": []}',
-            '{"section_ids": []}',
-            "回答テキスト",
-        )
-        result = parse_e2e_response(response)
-        assert result["hearing"]["status"] == "skipped"
-        assert result["hearing"]["questions"] == []
-
-    def test_parses_hearing_asked(self):
-        response = self._make_response(
-            '{"status": "asked", "questions": ["処理方式は？"]}',
-            '{"section_ids": []}',
-            "回答テキスト",
-        )
-        result = parse_e2e_response(response)
-        assert result["hearing"]["status"] == "asked"
-        assert "処理方式は？" in result["hearing"]["questions"]
-
-    def test_parses_search_section_ids(self):
-        response = self._make_response(
-            '{"status": "skipped", "questions": []}',
-            '{"section_ids": ["path/to/file.json:s1", "other/file.json:s2"]}',
-            "回答テキスト",
-        )
-        result = parse_e2e_response(response)
-        assert "path/to/file.json:s1" in result["search"]["section_ids"]
-        assert "other/file.json:s2" in result["search"]["section_ids"]
 
     def test_parses_answer_text(self):
         answer = "**結論**: バッチは-requestPathで起動します\n\n**根拠**: ..."
-        response = self._make_response(
-            '{"status": "skipped", "questions": []}',
-            '{"section_ids": []}',
-            answer,
-        )
+        response = self._make_response(answer)
         result = parse_e2e_response(response)
         assert result["answer"] == answer
 
-    def test_raises_on_missing_hearing_marker(self):
-        response = (
-            "<<<BENCHMARK_SEARCH>>>\n{}\n<<<END_BENCHMARK_SEARCH>>>\n"
-            "<<<BENCHMARK_ANSWER>>>\n回答\n<<<END_BENCHMARK_ANSWER>>>"
-        )
-        with pytest.raises(ValueError, match="BENCHMARK_HEARING"):
-            parse_e2e_response(response)
-
-    def test_raises_on_missing_search_marker(self):
-        response = (
-            "<<<BENCHMARK_HEARING>>>\n{}\n<<<END_BENCHMARK_HEARING>>>\n"
-            "<<<BENCHMARK_ANSWER>>>\n回答\n<<<END_BENCHMARK_ANSWER>>>"
-        )
-        with pytest.raises(ValueError, match="BENCHMARK_SEARCH"):
-            parse_e2e_response(response)
-
-    def test_raises_on_missing_answer_marker(self):
-        response = (
-            "<<<BENCHMARK_HEARING>>>\n{}\n<<<END_BENCHMARK_HEARING>>>\n"
-            "<<<BENCHMARK_SEARCH>>>\n{}\n<<<END_BENCHMARK_SEARCH>>>"
-        )
-        with pytest.raises(ValueError, match="BENCHMARK_ANSWER"):
-            parse_e2e_response(response)
-
-    def test_empty_section_ids(self):
-        response = self._make_response(
-            '{"status": "skipped", "questions": []}',
-            '{"section_ids": []}',
-            "回答なし",
-        )
+    def test_parses_workflow_details(self):
+        response = self._make_response("回答テキスト")
         result = parse_e2e_response(response)
-        assert result["search"]["section_ids"] == []
+        assert "step3" in result["workflow_details"]
+        assert "step4" in result["workflow_details"]
+        assert "step8" in result["workflow_details"]
+
+    def test_parses_selected_pages(self):
+        response = self._make_response("回答テキスト")
+        result = parse_e2e_response(response)
+        pages = result["workflow_details"]["step3"]["selected_pages"]
+        assert pages[0]["path"] == "path/to/file.json"
+
+    def test_parses_selected_sections(self):
+        response = self._make_response("回答テキスト")
+        result = parse_e2e_response(response)
+        sections = result["workflow_details"]["step3"]["selected_sections"]
+        assert sections[0]["section_id"] == "s1"
+
+    def test_raises_on_missing_workflow_details(self):
+        response = "回答だけで Workflow Details がない"
+        with pytest.raises(ValueError, match="Workflow Details"):
+            parse_e2e_response(response)
+
+    def test_raises_on_invalid_json_in_workflow_details(self):
+        response = "回答\n\n### Workflow Details\n```json\n{invalid json\n```\n"
+        with pytest.raises(ValueError, match="JSON"):
+            parse_e2e_response(response)
+
+    def test_answer_excludes_workflow_details_section(self):
+        response = self._make_response("本文回答")
+        result = parse_e2e_response(response)
+        assert "Workflow Details" not in result["answer"]
+        assert "step3" not in result["answer"]
 
 
 class TestSaveE2eResults:
     def _make_data(self, **overrides):
         base = {
             "scenario_id": "pre-01",
-            "hearing": {"status": "skipped", "questions": []},
-            "search": {"section_ids": ["file.json:s1"]},
+            "workflow_details": SAMPLE_WORKFLOW_DETAILS,
             "answer": "テスト回答",
             "metrics": DUMMY_METRICS,
             "trace": {"result": "テスト", "duration_ms": 1000},
@@ -202,17 +186,11 @@ class TestSaveE2eResults:
         base.update(overrides)
         return base
 
-    def test_saves_hearing_json(self):
+    def test_saves_workflow_details_json(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             save_e2e_results(tmpdir, "pre-01", self._make_data())
-            hearing = json.loads((Path(tmpdir) / "pre-01" / "hearing.json").read_text())
-            assert hearing["status"] == "skipped"
-
-    def test_saves_search_json(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            save_e2e_results(tmpdir, "pre-01", self._make_data())
-            search = json.loads((Path(tmpdir) / "pre-01" / "search.json").read_text())
-            assert "file.json:s1" in search["section_ids"]
+            wd = json.loads((Path(tmpdir) / "pre-01" / "workflow_details.json").read_text())
+            assert "step3" in wd
 
     def test_saves_answer_md(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -258,16 +236,11 @@ class TestRunE2eScenario:
         return json.dumps(output)
 
     def _make_valid_e2e_response(self):
+        details = json.dumps(SAMPLE_WORKFLOW_DETAILS, ensure_ascii=False, indent=2)
         return (
-            "<<<BENCHMARK_HEARING>>>\n"
-            '{"status": "skipped", "questions": []}\n'
-            "<<<END_BENCHMARK_HEARING>>>\n"
-            "<<<BENCHMARK_SEARCH>>>\n"
-            '{"section_ids": ["path/to/file.json:s1"]}\n'
-            "<<<END_BENCHMARK_SEARCH>>>\n"
-            "<<<BENCHMARK_ANSWER>>>\n"
-            "**結論**: テスト回答\n"
-            "<<<END_BENCHMARK_ANSWER>>>"
+            "**結論**: テスト回答\n\n"
+            "### Workflow Details\n"
+            f"```json\n{details}\n```\n"
         )
 
     def _make_mock_proc(self, result_text=None, returncode=0):
@@ -286,21 +259,13 @@ class TestRunE2eScenario:
                 result = run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
             assert result["scenario_id"] == "pre-01"
 
-    def test_returns_hearing(self):
+    def test_returns_workflow_details(self):
         with tempfile.TemporaryDirectory() as skill_dir:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()):
                 result = run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
-            assert result["hearing"]["status"] == "skipped"
-
-    def test_returns_search(self):
-        with tempfile.TemporaryDirectory() as skill_dir:
-            Path(skill_dir, "workflows").mkdir(parents=True)
-            (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
-            with patch("subprocess.run", return_value=self._make_mock_proc()):
-                result = run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
-            assert "section_ids" in result["search"]
+            assert "step3" in result["workflow_details"]
 
     def test_returns_answer(self):
         with tempfile.TemporaryDirectory() as skill_dir:
@@ -458,17 +423,8 @@ class TestRunE2eAll:
         return json.dumps(output)
 
     def _make_valid_e2e_response(self):
-        return (
-            "<<<BENCHMARK_HEARING>>>\n"
-            '{"status": "skipped", "questions": []}\n'
-            "<<<END_BENCHMARK_HEARING>>>\n"
-            "<<<BENCHMARK_SEARCH>>>\n"
-            '{"section_ids": []}\n'
-            "<<<END_BENCHMARK_SEARCH>>>\n"
-            "<<<BENCHMARK_ANSWER>>>\n"
-            "テスト回答\n"
-            "<<<END_BENCHMARK_ANSWER>>>"
-        )
+        details = json.dumps(SAMPLE_WORKFLOW_DETAILS, ensure_ascii=False)
+        return f"テスト回答\n\n### Workflow Details\n```json\n{details}\n```\n"
 
     def _make_mock_proc(self):
         return type("P", (), {
@@ -582,17 +538,8 @@ class TestRunE2eAllErrorHandling:
         return scenarios_path
 
     def _make_valid_proc(self):
-        valid_response = (
-            "<<<BENCHMARK_HEARING>>>\n"
-            '{"status": "skipped", "questions": []}\n'
-            "<<<END_BENCHMARK_HEARING>>>\n"
-            "<<<BENCHMARK_SEARCH>>>\n"
-            '{"section_ids": []}\n'
-            "<<<END_BENCHMARK_SEARCH>>>\n"
-            "<<<BENCHMARK_ANSWER>>>\n"
-            "テスト回答\n"
-            "<<<END_BENCHMARK_ANSWER>>>"
-        )
+        details = json.dumps(SAMPLE_WORKFLOW_DETAILS, ensure_ascii=False)
+        valid_response = f"テスト回答\n\n### Workflow Details\n```json\n{details}\n```\n"
         claude_out = json.dumps({
             "result": valid_response,
             "duration_ms": 10000,
@@ -835,11 +782,8 @@ class TestMain:
         }), "stderr": ""})()
 
     def _make_valid_e2e_response(self):
-        return (
-            "<<<BENCHMARK_HEARING>>>\n{\"status\": \"skipped\", \"questions\": []}\n<<<END_BENCHMARK_HEARING>>>\n"
-            "<<<BENCHMARK_SEARCH>>>\n{\"section_ids\": [\"f.json:s1\"]}\n<<<END_BENCHMARK_SEARCH>>>\n"
-            "<<<BENCHMARK_ANSWER>>>\n回答\n<<<END_BENCHMARK_ANSWER>>>"
-        )
+        details = json.dumps(SAMPLE_WORKFLOW_DETAILS, ensure_ascii=False)
+        return f"回答\n\n### Workflow Details\n```json\n{details}\n```\n"
 
     def _setup_skill_dir(self, tmpdir):
         skill_dir = Path(tmpdir) / "skill"

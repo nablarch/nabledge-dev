@@ -30,6 +30,7 @@ def default_output_dir() -> Path:
 from tools.benchmark.scripts.evaluate import evaluate_scenario
 
 WORKFLOW_FILE = "workflows/qa.md"
+E2E_PROMPT_FILE = Path(__file__).parent.parent / "prompts" / "e2e-prompt.md"
 TIMEOUT = 360
 
 class MarkerError(ValueError):
@@ -44,24 +45,6 @@ class MarkerError(ValueError):
         self.raw_response = raw_response
         self.claude_output = claude_output
 
-
-MARKER_HEARING_START = "<<<BENCHMARK_HEARING>>>"
-MARKER_HEARING_END = "<<<END_BENCHMARK_HEARING>>>"
-MARKER_SEARCH_START = "<<<BENCHMARK_SEARCH>>>"
-MARKER_SEARCH_END = "<<<END_BENCHMARK_SEARCH>>>"
-MARKER_ANSWER_START = "<<<BENCHMARK_ANSWER>>>"
-MARKER_ANSWER_END = "<<<END_BENCHMARK_ANSWER>>>"
-
-
-def _extract_between_markers(text: str, start_marker: str, end_marker: str) -> str:
-    """Extract text between start and end markers. Raises ValueError if not found."""
-    start_idx = text.find(start_marker)
-    if start_idx == -1:
-        raise ValueError(f"Marker not found in response: {start_marker}")
-    end_idx = text.find(end_marker, start_idx)
-    if end_idx == -1:
-        raise ValueError(f"End marker not found in response: {end_marker}")
-    return text[start_idx + len(start_marker):end_idx].strip()
 
 
 def _build_question(scenario: dict) -> str:
@@ -78,65 +61,48 @@ def _build_question(scenario: dict) -> str:
     return "".join(parts)
 
 
-def build_e2e_prompt(scenario: dict, workflow_content: str) -> str:
-    """Build the E2E prompt that instructs the model to follow qa.md."""
+def build_e2e_prompt(scenario: dict, workflow_content: str, prompt_template: str | None = None) -> str:
+    """Build the E2E prompt from e2e-prompt.md template."""
+    if prompt_template is None:
+        prompt_template = E2E_PROMPT_FILE.read_text(encoding="utf-8")
     question = _build_question(scenario)
+    return prompt_template.replace("{workflow}", workflow_content).replace("{question}", question)
 
-    return f"""以下のワークフロー（qa.md）に従って質問に回答してください。
 
-## ワークフロー
-{workflow_content}
-
-## 質問
-{question}
-
-## 出力要件
-
-回答を出力した後、以下のマーカー形式でベンチマーク診断情報を出力してください。全マーカーの出力は必須です。
-
-{MARKER_HEARING_START}
-{{"status": "skipped" または "asked", "questions": ["質問1", "質問2"]}}
-{MARKER_HEARING_END}
-
-{MARKER_SEARCH_START}
-{{"section_ids": ["path/to/file.json:s1", "path/to/file.json:s3"]}}
-{MARKER_SEARCH_END}
-
-{MARKER_ANSWER_START}
-回答テキスト全文をここに出力
-{MARKER_ANSWER_END}
-"""
+_WORKFLOW_DETAILS_HEADING = "### Workflow Details"
 
 
 def parse_e2e_response(response_text: str) -> dict:
-    """Parse structured benchmark markers from the workflow response.
+    """Parse e2e-prompt.md formatted response.
 
-    Raises ValueError if any required marker is missing.
+    Splits on '### Workflow Details': text above is the answer, the JSON
+    block below is workflow_details.
+
+    Raises ValueError if the heading or JSON block is missing.
     """
-    hearing_raw = _extract_between_markers(
-        response_text, MARKER_HEARING_START, MARKER_HEARING_END
-    )
-    search_raw = _extract_between_markers(
-        response_text, MARKER_SEARCH_START, MARKER_SEARCH_END
-    )
-    answer_text = _extract_between_markers(
-        response_text, MARKER_ANSWER_START, MARKER_ANSWER_END
-    )
+    idx = response_text.find(_WORKFLOW_DETAILS_HEADING)
+    if idx == -1:
+        raise ValueError("Workflow Details section not found in response")
+
+    answer = response_text[:idx].strip()
+
+    details_section = response_text[idx + len(_WORKFLOW_DETAILS_HEADING):]
+    # extract content from ```json ... ``` fence
+    fence_start = details_section.find("```json")
+    fence_end = details_section.find("```", fence_start + 3) if fence_start != -1 else -1
+    if fence_start == -1 or fence_end == -1:
+        json_raw = details_section.strip()
+    else:
+        json_raw = details_section[fence_start + len("```json"):fence_end].strip()
 
     try:
-        hearing = json.loads(hearing_raw)
+        workflow_details = json.loads(json_raw)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON in BENCHMARK_HEARING: {e}") from e
-
-    try:
-        search = json.loads(search_raw)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON in BENCHMARK_SEARCH: {e}") from e
+        raise ValueError(f"Invalid JSON in Workflow Details: {e}") from e
 
     return {
-        "hearing": hearing,
-        "search": search,
-        "answer": answer_text,
+        "answer": answer,
+        "workflow_details": workflow_details,
     }
 
 
@@ -163,11 +129,8 @@ def save_e2e_results(output_dir: str | Path, scenario_id: str, data: dict) -> No
     scenario_dir = Path(output_dir) / scenario_id
     scenario_dir.mkdir(parents=True, exist_ok=True)
 
-    (scenario_dir / "hearing.json").write_text(
-        json.dumps(data["hearing"], ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    (scenario_dir / "search.json").write_text(
-        json.dumps(data["search"], ensure_ascii=False, indent=2), encoding="utf-8"
+    (scenario_dir / "workflow_details.json").write_text(
+        json.dumps(data["workflow_details"], ensure_ascii=False, indent=2), encoding="utf-8"
     )
     (scenario_dir / "answer.md").write_text(data["answer"], encoding="utf-8")
     (scenario_dir / "metrics.json").write_text(
@@ -228,8 +191,7 @@ def run_e2e_scenario(
 
     return {
         "scenario_id": scenario["id"],
-        "hearing": parsed["hearing"],
-        "search": parsed["search"],
+        "workflow_details": parsed["workflow_details"],
         "answer": parsed["answer"],
         "metrics": metrics,
         "trace": claude_output,
@@ -279,10 +241,10 @@ def run_e2e_all(
                 json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8"
             )
 
+            selected = result["workflow_details"].get("step3", {}).get("selected_sections", [])
             scenario_summaries.append({
                 "id": result["scenario_id"],
-                "search_sections": len(result["search"]["section_ids"]),
-                "hearing_status": result["hearing"].get("status", "unknown"),
+                "search_sections": len(selected),
             })
         except Exception as exc:
             exc_type = type(exc).__name__
@@ -345,8 +307,7 @@ def main():
             print(f"  {s['id']}: ERROR — {s.get('error', '')}", file=sys.stderr)
         else:
             sections = s["search_sections"]
-            hearing = s["hearing_status"]
-            print(f"  {s['id']}: {sections} sections found, hearing={hearing}", file=sys.stderr)
+            print(f"  {s['id']}: {sections} sections selected", file=sys.stderr)
 
 
 if __name__ == "__main__":

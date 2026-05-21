@@ -153,13 +153,12 @@ def load_runner_output(run_dir: str, scenario_id: str) -> dict:
     if not scenario_dir.is_dir():
         raise FileNotFoundError(f"Scenario directory not found: {scenario_dir}")
     answer_path = scenario_dir / "answer.md"
-    hearing_path = scenario_dir / "hearing.json"
-    search_path = scenario_dir / "search.json"
+    workflow_details_path = scenario_dir / "workflow_details.json"
     metrics_path = scenario_dir / "metrics.json"
     result = {
         "answer": answer_path.read_text(encoding="utf-8") if answer_path.exists() else "",
     }
-    for key, path in [("hearing", hearing_path), ("search", search_path), ("metrics", metrics_path)]:
+    for key, path in [("workflow_details", workflow_details_path), ("metrics", metrics_path)]:
         if path.exists():
             with open(path, encoding="utf-8") as f:
                 result[key] = json.load(f)
@@ -298,9 +297,14 @@ def evaluate_scenario(
             pass
 
     seen_files: set[str] = set()
-    for ref in runner_output.get("search", {}).get("section_ids", []):
-        file_path, _ = parse_section_ref(ref)
-        if file_path in seen_files:
+    selected_pages = (
+        runner_output.get("workflow_details", {})
+        .get("step3", {})
+        .get("selected_pages", [])
+    )
+    for page in selected_pages:
+        file_path = page.get("path", "")
+        if not file_path or file_path in seen_files:
             continue
         seen_files.add(file_path)
         try:
@@ -333,8 +337,12 @@ def evaluate_scenario(
         "needs_human_review": len(review_items) > 0,
         "human_review_items": review_items,
         "diagnostics": {
-            "hearing": runner_output.get("hearing", {}),
-            "search_sections": runner_output.get("search", {}).get("section_ids", []),
+            "selected_pages": selected_pages,
+            "selected_sections": (
+                runner_output.get("workflow_details", {})
+                .get("step3", {})
+                .get("selected_sections", [])
+            ),
         },
         "metrics": runner_output.get("metrics", {}),
     }
