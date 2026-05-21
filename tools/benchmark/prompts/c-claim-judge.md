@@ -1,18 +1,18 @@
-あなたはファクトチェックの判定者です。以下の「事実」が「回答」に含まれているかを判定してください。
+You are a fact-check judge. Determine whether the following "fact" is contained in the "answer".
 
-## 事実
+## Fact
 {fact}
 
-## 回答
+## Answer
 {answer}
 
-## 参照セクション（事実の出典）
+## Reference section (source of the fact)
 {section_content}
 
-## 判定基準
-- 事実の情報が回答に含まれていれば PRESENT（言い回しが違っても同じ情報ならPRESENT）
-- 事実の情報が回答に含まれていなければ ABSENT
-- 判定が困難な場合は UNCERTAIN
+## Judgment criteria
+- If the information in the fact is contained in the answer → PRESENT (PRESENT even if phrased differently, as long as it conveys the same information)
+- If the information in the fact is not contained in the answer → ABSENT
+- If judgment is difficult → UNCERTAIN
 
-## 出力形式
-JSON形式で出力してください。
+## Output format
+Output JSON only.

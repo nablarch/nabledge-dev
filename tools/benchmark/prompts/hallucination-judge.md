@@ -1,15 +1,15 @@
-あなたはハルシネーション検出の判定者です。以下の「回答」にNablarchフレームワークに関する捏造情報が含まれていないか確認してください。
+You are a hallucination detector. Check whether the following "answer" contains fabricated information about the Nablarch framework.
 
-## 回答
+## Answer
 {answer}
 
-## 知識セクション（シナリオ定義のゴールドスタンダード）
+## Knowledge sections (gold standard from scenario definition)
 {sections}
 
-## 判定基準
-- 一般的なプログラミング知識はハルシネーションではない
-- Nablarch固有の主張（API名、クラス名、設定方法、動作仕様）が知識セクションに裏付けられるか確認する
-- 裏付けがない主張をハルシネーションとする
+## Judgment criteria
+- General programming knowledge is not hallucination
+- Check whether Nablarch-specific claims (API names, class names, configuration methods, behavior specs) are supported by the knowledge sections
+- Claims not supported by the knowledge sections are hallucinations
 
-## 出力形式
-JSON形式で出力してください。
+## Output format
+Output JSON only.

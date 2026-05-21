@@ -270,7 +270,7 @@ class TestBuildHallucinationPrompt:
         )
         assert "テスト回答" in prompt
         assert "セクション1" in prompt
-        assert "ハルシネーション" in prompt
+        assert "hallucination" in prompt
         assert "Nablarch" in prompt
 
 
@@ -372,7 +372,7 @@ class TestEvaluateScenario:
         call_count = {"claim": 0, "hallucination": 0}
 
         def mock_llm(prompt, json_schema):
-            if "ファクトチェック" in prompt:
+            if "fact-check judge" in prompt:
                 call_count["claim"] += 1
                 return _wrap_llm_response({"verdict": "PRESENT", "reason": "含まれている"})
             else:
@@ -462,7 +462,7 @@ class TestEvaluateScenario:
         section_loader_called_with = []
 
         def mock_llm(prompt, json_schema):
-            if "ファクトチェック" in prompt:
+            if "fact-check judge" in prompt:
                 return _wrap_llm_response({"verdict": "PRESENT", "reason": "回答に含まれている"})
             return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
 
@@ -498,7 +498,7 @@ class TestEvaluateScenario:
         loaded_pages = []
 
         def mock_llm(prompt, json_schema):
-            if "ファクトチェック" in prompt:
+            if "fact-check judge" in prompt:
                 return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
             # hallucination judge: full page content of b.json should be in prompt
             assert "b.jsonの全内容" in prompt
@@ -532,7 +532,7 @@ class TestEvaluateScenario:
         }
 
         def mock_llm(prompt, json_schema):
-            if "ファクトチェック" in prompt:
+            if "fact-check judge" in prompt:
                 return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
             return _wrap_llm_response({
                 "verdict": "FAIL",
@@ -566,7 +566,7 @@ class TestEvaluateScenario:
         load_count = {"a.json:s1": 0}
 
         def mock_llm(prompt, json_schema):
-            if "ファクトチェック" in prompt:
+            if "fact-check judge" in prompt:
                 return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
             # content should appear exactly once (no duplicate --- block)
             count = prompt.count("a.json:s1の内容")
@@ -598,7 +598,7 @@ class TestEvaluateScenario:
         }
 
         def mock_llm(prompt, json_schema):
-            if "ファクトチェック" in prompt:
+            if "fact-check judge" in prompt:
                 return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
             return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
 
@@ -626,7 +626,7 @@ class TestEvaluateScenario:
         }
 
         def mock_llm(prompt, json_schema):
-            if "ファクトチェック" in prompt:
+            if "fact-check judge" in prompt:
                 return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
             return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
 
