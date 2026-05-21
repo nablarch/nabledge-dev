@@ -48,7 +48,7 @@ Collect all candidates. If a purpose was noted, reorder: move pages in the corre
 | 実装パターン・サンプルを参考にしたい | guide/nablarch-patterns, guide/biz-samples, processing-pattern/* |
 | セキュリティ対応したい | check/security-check, component/handlers, processing-pattern/* |
 
-Take up to 10 candidates in order. If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately.
+Take up to 10 candidates, ordered by confidence (highest first). Within the same confidence level, use the purpose priority table to break ties. If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately.
 
 Save the selected page paths (relative to knowledge/) as `selected_pages`.
 
@@ -67,6 +67,8 @@ For each path in `selected_pages` (up to 10):
    - Sections with only general overview and no specific information
    - Module lists, revision histories, and other boilerplate
    - Sections that only restate information already present in a selected high section
+   - Sections that contain only concept definitions with no implementation details
+   - Sections that explain the same information as a high section from a different angle
 
 Collect all high sections first. Fill remaining slots with partial sections until the total reaches 30. If 30 high sections already exist, add no partial sections.
 
