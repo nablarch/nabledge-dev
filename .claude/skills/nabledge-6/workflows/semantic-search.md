@@ -35,7 +35,7 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
    - Does this page cover a feature that directly solves the technical problem in the question? → **candidate**
    - Does this page cover the processing type in the question (if one was specified)? → **candidate**; if it covers a *different* processing type → **skip**
    - All other pages → **skip**
-4. If a purpose was noted, move pages in the corresponding priority categories to the front.
+4. If a purpose was noted, sort candidates using the priority categories for that purpose: pages in the priority categories come first.
 
    | 目的 | Priority categories |
    |------|-------------------|
