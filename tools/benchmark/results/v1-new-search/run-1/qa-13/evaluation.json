@@ -1,0 +1,224 @@
+{
+  "scenario_id": "qa-13",
+  "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。",
+  "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that in REST API, a Form class is used to receive values (@Valid annotation is applied for validation), and after converting to an entity with BeanUtil.createAndCopy, UniversalDao.insert is used to register the data in the DB. This directly matches the fact being checked.",
+      "fact": "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "フォームクラスのプロパティは全てString型で宣言すること",
+        "supported": true
+      },
+      {
+        "claim": "アクションクラスのメソッドに@POST・@Consumes(MediaType.APPLICATION_JSON)・@Validを付与する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopyでフォームをエンティティに変換する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insertでDBに登録する",
+        "supported": true
+      },
+      {
+        "claim": "登録完了時のレスポンスはステータスコード201(CREATED)を返却する",
+        "supported": true
+      },
+      {
+        "claim": "BodyConvertHandler（リクエストボディ変換ハンドラ）がJSONをフォームクラスに変換する",
+        "supported": true
+      },
+      {
+        "claim": "@ValidアノテーションによりJaxRsBeanValidationHandler（Bean Validationハンドラ）がバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "バリデーションエラー時はApplicationExceptionが送出される",
+        "supported": true
+      },
+      {
+        "claim": "最小ハンドラ構成はグローバルエラーハンドラ→Jakartaレスポンスハンドラ→DB接続管理ハンドラ→トランザクション制御ハンドラ→ルーティングアダプタ→リクエストボディ変換ハンドラ→Bean Validationハンドラの順",
+        "supported": true
+      },
+      {
+        "claim": "BasicDaoContextFactoryをコンポーネント設定ファイルに追加する",
+        "supported": true
+      },
+      {
+        "claim": "未対応のMIMEの場合はステータスコード415が返却される",
+        "supported": true
+      },
+      {
+        "claim": "@Path(\"/projects\")アノテーションをクラスに付与する",
+        "supported": true
+      }
+    ],
+    "reason": "answerに含まれるNablarch固有の主張（APIクラス名、アノテーション、ハンドラ構成、動作仕様）はすべてknowledge sectionsの記述と一致しており、fabricatedな情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "RESTfulウェブサービスの登録機能サンプルを直接扱うページで、フォームからDBへの登録処理の完全な実装例が含まれる。"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細（入力チェック、DBアクセスなど）を網羅するページ。"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "RESTfulウェブサービスのハンドラ構成と処理の流れを示すページで、DB登録処理に必要な構成を理解するために必要。"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "reason": "アクションクラスのメソッドシグネチャ（引数・戻り値）を定義するページ。"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "DBへの登録処理で使用するUniversalDao（insert等）の使い方を直接解説するページ。"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "フォームのバリデーションルール設定方法（Stringプロパティ必須等）を説明するページ。"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "reason": "リクエストボディをフォームクラスに変換するBodyConvertHandlerの動作と設定を説明するページ。"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTful向けBean ValidationハンドラとValidアノテーションの使用方法を説明するページ。"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-application-design.json",
+        "reason": "RESTfulウェブサービスのアクション・フォーム・エンティティクラスの責務配置を説明するページ。"
+      },
+      {
+        "path": "component/adapters/adapters-jaxrs-adaptor.json",
+        "reason": "Jakarta RESTful Web ServicesアダプタでBodyConvertHandlerとBean Validationハンドラが自動設定されることを確認するために選択。"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "フォームクラス作成からUniversalDao.insertによるDB登録まで、質問に直接答える完全な実装例が含まれる。"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "DB登録処理に必要な最小ハンドラ構成（データベース接続管理・トランザクション制御・BodyConvertHandler等）を示している。"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "@Consumes(APPLICATION_JSON)とBodyConvertHandlerによるリクエストボディからフォームへの変換の動作を具体的な実装例で示している。"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@Validアノテーションを使ったフォームバリデーションの実装例を示している。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "フォームクラスのプロパティを全てString型にする必要がある理由と実装例を説明している。"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "リクエスト受信からレスポンス返却までの処理の流れを理解するための背景情報を提供する。"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスで使用できる標準ハンドラの一覧を示し、DB登録に必要なハンドラを選択する際の参考となる。"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "BodyConvertHandlerのbodyConvertersプロパティ設定方法を示し、JSONサポートのためのコンバータ設定を理解するのに必要。"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "UniversalDaoのCRUD機能（登録を含む）の概要とJakarta PersistenceアノテーションによるEntity定義の背景を提供する。"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "UniversalDaoを使用するために必要なBasicDaoContextFactoryのコンポーネント設定を説明している。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスでのバリデーション方法（@Validアノテーション）への参照を提供する。"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "アクションクラスのメソッド引数（フォームクラス）と戻り値（HttpResponse）の定義方法を示す背景情報を提供する。"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 231636,
+    "duration_api_ms": 230659,
+    "num_turns": 4,
+    "total_cost_usd": 1.252841,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 6559,
+      "cache_read_input_tokens": 96958,
+      "cache_creation_input_tokens": 40660
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3243,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003368,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 950,
+        "outputTokens": 16329,
+        "cacheReadInputTokens": 941960,
+        "cacheCreationInputTokens": 191760,
+        "webSearchRequests": 0,
+        "costUSD": 1.249473,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

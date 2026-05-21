@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-21 (session 8)
+**Updated**: 2026-05-21 (session 9)
 
 ## Rules
 
@@ -32,22 +32,27 @@
 - [x] `bash tools/tests/test-read-sections.sh` 全テスト PASS 確認 — 9/9 PASS
 - [x] コミット・プッシュ — `11c9160ec`
 - [x] qa-12a で動作確認 — SECTION_NOT_FOUND 解消・cat バイパスなし確認済み
-- [BLOCKED: run-1再測定の承認を得る]
+- [x] run-1 全件再実行 — `tools/benchmark/results/v1-new-search/run-1/` に保存（エラー0件）
+- [BLOCKED: run-1レポート確認・run-2/run-3進行承認を得る]
 
 ### B-4-1. run-1 再測定（B-4-1-fix完了後）
 
 **背景**: read-sections.sh修正後、sections:[]ファイルを含むシナリオ（qa-12a等）の回答品質が変わる可能性があるため再測定する。
 
+**結果** (2026-05-21):
+- 結果ディレクトリ: `tools/benchmark/results/v1-new-search/run-1/`
+- エラー: 0件（pre-02/qa-13 タイムアウト→再実行で回収済み）
+- Claims PRESENT: 41/42 (97.6%)
+- 幻覚PASS: 28/30 (93.3%)（FAIL 1件: impact-08、UNCERTAIN 1件: qa-12a）
+- 精度ABSENT: qa-12b（1/2）
+- 合計コスト: $27.56
+
 **ステップ**:
-- [ ] run-1 全件を再実行する
-  ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa.json \
-    --skill-dir .claude/skills/nabledge-6
-  ```
-- [ ] エラーゼロ・ワークフロー詳細が正しく取得できていることを確認
+- [x] run-1 全件を再実行する
+- [x] エラーゼロ・ワークフロー詳細が正しく取得できていることを確認
 - [ ] 結果をコミット
-- [ ] [BLOCKED: 結果をユーザーに報告し、B-4（run-2/run-3）進行承認を得る]
+- [ ] report.md を `tools/benchmark/results/v1-new-search/run-1/report.md` に保存
+- [BLOCKED: run-1レポート確認・run-2/run-3進行承認を得る]
 
 ## Not Started
 

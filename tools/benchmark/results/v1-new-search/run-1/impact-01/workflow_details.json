@@ -1,0 +1,188 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s29がSimpleDbTransactionManagerを使った別トランザクション実行を直接説明している"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s20がUniversalDAOで同じ別トランザクション実行を直接説明している"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "s8がDomaを使った別トランザクション実行（requiresNew）を直接説明している"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "JdbcTransactionFactoryの設定背景としてs5が関連"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "s7が複数トランザクション利用の代替アプローチを説明"
+      },
+      {
+        "path": "component/handlers/handlers-database-connection-management-handler.json",
+        "reason": "s5が複数DB接続（トランザクション）の設定方法を説明"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチの処理方式で業務トランザクションを制御するハンドラ構成の背景として関連"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "他ページへの参照リンクのみでDB接続の実装情報を含まない"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/",
+        "reason": "JakartaバッチはNablarchバッチとは異なる処理方式"
+      },
+      {
+        "path": "processing-pattern/web/",
+        "reason": "ウェブアプリケーションは対象処理方式外"
+      },
+      {
+        "path": "processing-pattern/rest/",
+        "reason": "RESTはNablarchバッチとは異なる処理方式"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "業務処理が失敗しても確定したい場合のSimpleDbTransactionManagerによる別トランザクション実行を直接説明"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "UniversalDao.Transactionを使った別トランザクション実行を直接説明"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "DomaのrequiresNewによる別トランザクション実行を直接説明"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "s29のconnectionFactoryプロパティ設定に必要な接続設定の背景"
+      },
+      {
+        "file": "component/libraries/libraries-transaction.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "s29/s20のtransactionFactoryに使うJdbcTransactionFactoryの設定方法"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "UniversalDAO使用に必要なBasicDaoContextFactoryの設定"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "複数のTransactionManagementHandlerを使った並行トランザクション管理の代替アプローチ"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "トランザクション制御ハンドラの基本設定（transactionNameによる識別）"
+      },
+      {
+        "file": "component/handlers/handlers-database-connection-management-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "複数DB接続（トランザクション）をハンドラキューで管理する方法"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "Nablarchバッチの業務トランザクションがトランザクションループ制御ハンドラ（No.8）で管理されることを確認"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s1",
+        "reason": "概要説明のみで別トランザクション実装に直接関係しない"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s7",
+        "reason": "Domaの一般的なデータアクセス実装方法で、別トランザクション固有の情報を含まない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/adapters/adapters-doma-adaptor.json:s8",
+      "component/libraries/libraries-database.json:s10",
+      "component/libraries/libraries-transaction.json:s5",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "component/handlers/handlers-transaction-management-handler.json:s7",
+      "component/handlers/handlers-transaction-management-handler.json:s4",
+      "component/handlers/handlers-database-connection-management-handler.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManager+SimpleDbTransactionExecutorによる別トランザクション実行の実装例を引用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s20",
+          "reason": "UniversalDao.Transactionによる別トランザクション実行の実装例を引用"
+        },
+        {
+          "ref": "adapters-doma-adaptor.json:s8",
+          "reason": "DomaのrequiresNewによる別トランザクション実行の実装例を引用"
+        },
+        {
+          "ref": "libraries-transaction.json:s5",
+          "reason": "JdbcTransactionFactoryの設定に関する注意点として引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-database.json:s10",
+          "reason": "connectionFactoryの具体的な設定例はs29内で言及済みのため個別引用不要"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s6",
+          "reason": "UniversalDAOの基本設定は今回の質問の焦点（別トランザクション）に直接必要でない"
+        },
+        {
+          "ref": "handlers-transaction-management-handler.json:s7",
+          "reason": "ハンドラキューで複数トランザクションを並行管理するアプローチはSimpleDbTransactionManagerと異なる方向性であり、質問の主要な回答ではない"
+        },
+        {
+          "ref": "handlers-transaction-management-handler.json:s4",
+          "reason": "基本設定の背景説明のみで今回の実装に追加情報を提供しない"
+        },
+        {
+          "ref": "handlers-database-connection-management-handler.json:s5",
+          "reason": "複数DB接続の管理方法は質問の核心（別トランザクションでの確定）とは異なる"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s5",
+          "reason": "バッチハンドラ構成の背景確認に使用したが回答本文には不要"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states under '1. 環境要件の変更' that 'アプリケーションサーバ: Jakarta EE 10対応のアプリケーションサーバに変更が必要（名前空間変更により後方互換性なし）', which directly conveys the fact that Jakarta EE 10 is supported and that the application must run on a Jakarta EE 10-compatible application server.",
+      "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「7. Nablarchの機能名称変更」セクションにて、JAX-RSやJSPなどのJava EE仕様名がJakarta EEのものに変更されたことが明示されています。また、回答全体を通じてJava EEのパッケージ名（javax.*）がJakarta EEのもの（jakarta.*）に変更されることも詳細に説明されており、ファクトの内容（Java EEの仕様名およびパッケージ名がJakarta EEのものに変更）が含まれています。",
+      "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Java 17以上が必要（Nablarch 6モジュールはJava 17でコンパイルされている）",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta EE 10対応のアプリケーションサーバへの移行が必要",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-bomのバージョンを6に変更する",
+        "supported": true
+      },
+      {
+        "claim": "jakarta.jakartaee-bom version 10.0.0 のBOM利用を推奨",
+        "supported": true
+      },
+      {
+        "claim": "Java Servlet、JSP、JSTL、JPA、JAX-RS、Common AnnotationsをJakarta EE版に変更",
+        "supported": true
+      },
+      {
+        "claim": "Hibernate Validator、Jersey、ActiveMQをJakarta EE対応版に更新",
+        "supported": true
+      },
+      {
+        "claim": "javax.* から jakarta.* への名前空間変更が必要",
+        "supported": true
+      },
+      {
+        "claim": "web.xmlのXMLスキーマをJakarta EE 10対応版に変更（version 6.0）",
+        "supported": true
+      },
+      {
+        "claim": "JSPタグライブラリのネームスペースをjakarta.tags.coreに変更",
+        "supported": true
+      },
+      {
+        "claim": "JAX-RS BeanValidationハンドラ→Jakarta RESTful Web Services Bean Validationハンドラ等の名称変更",
+        "supported": true
+      },
+      {
+        "claim": "クラス・パッケージ名は後方互換を維持するため変更なし",
+        "supported": true
+      },
+      {
+        "claim": "ETL基盤、帳票ライブラリ、ワークフローライブラリはNablarch 6では非サポート",
+        "supported": true
+      },
+      {
+        "claim": "waitt-maven-pluginはJakarta EE非対応のためjetty-ee10-maven-pluginへの変更が必要",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-testing-jetty6/jetty9をnablarch-testing-jetty12に変更が必要",
+        "supported": true
+      },
+      {
+        "claim": "HttpServerFactoryJetty6→HttpServerFactoryJetty12のコンポーネント定義変更が必要",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有のすべての主張（Java 17要件、Jakarta EE 10対応、依存関係変更手順、名前空間変更手順、機能名称変更テーブル、非サポートコンポーネント、テスト用モジュール変更）はいずれもナレッジセクションの内容と一致しており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "about/migration/migration-migration.json",
+        "reason": "Nablarch 5→6の主要移行ガイドで、Jakarta EE 10対応の全手順と具体的なコード例を含む"
+      },
+      {
+        "path": "releases/releases/releases-nablarch6-releasenote-6.json",
+        "reason": "Nablarch 6リリースノートでJakarta EE 10対応のシステム影響を公式に確認できる"
+      },
+      {
+        "path": "releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json",
+        "reason": "5u25→6u2の包括的変更一覧で、削除された機能（UI開発基盤など）を含む"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-jakarta-ee.json",
+        "reason": "v5→v6でJakarta EE対応により変更されたNablarch機能名称の対応表を含む"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "Jakarta EE 10の意味（javax→jakarta名前空間変更）とアプリケーションサーバ変更の必要性を説明"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "Java 17以上が必要という実行環境への直接影響を記載"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "移行で必要な2つの作業（Nablarchバージョンアップ＋Jakarta EE対応）の全体像を提示"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "Java EE API依存関係のJakarta EE版への変更方法とBOM活用の推奨を説明"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "Java EE仕様の実装ライブラリ（Hibernate Validator等）もJakarta EE版に更新が必要なことを説明"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s26",
+        "relevance": "high",
+        "reason": "最重要変更：アプリケーションコード全体のjavax→jakarta名前空間変更の手順と注意点を詳述"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s27",
+        "relevance": "high",
+        "reason": "web.xmlのXMLスキーマ宣言をJakarta EE 10形式に変更するBefore/After例を含む"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s28",
+        "relevance": "high",
+        "reason": "JSPのtaglibディレクティブのネームスペース変更（http://java.sun.com/jsp/jstl/core→jakarta.tags.core）のBefore/After例"
+      },
+      {
+        "file": "releases/releases/releases-nablarch6-releasenote-6.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "公式リリースノートでシステム影響「あり」を明記、パッケージ名・依存関係変更が必要と確認"
+      },
+      {
+        "file": "about/about-nablarch/about-nablarch-jakarta-ee.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "v5→v6でJAX-RS/JSP/JSR352などNablarch機能名がJakarta EE対応で変更された対応表"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 232414,
+    "duration_api_ms": 230633,
+    "num_turns": 6,
+    "total_cost_usd": 1.0930459,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 6958,
+      "cache_read_input_tokens": 204367,
+      "cache_creation_input_tokens": 39948
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3229,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003424,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7641,
+        "outputTokens": 15278,
+        "cacheReadInputTokens": 614163,
+        "cacheCreationInputTokens": 174208,
+        "webSearchRequests": 0,
+        "costUSD": 1.0896219,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

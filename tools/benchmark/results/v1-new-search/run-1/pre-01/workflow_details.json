@@ -1,0 +1,144 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチの-requestPathとアーキテクチャを直接説明するページ"
+      },
+      {
+        "path": "component/handlers/handlers-main.json",
+        "reason": "共通起動ランチャ（Mainクラス）の起動方法と必須オプションを説明するページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチアプリケーションの起動方法へのリンクを含む機能詳細ページ"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "バッチ起動方法の分類を説明するパターンガイドページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/jakarta-batch/*",
+        "reason": "Nablarchバッチではなくjakarta-batchの処理方式であるため除外"
+      },
+      {
+        "path": "processing-pattern/web-application/*",
+        "reason": "処理方式がウェブアプリケーションであり質問の処理方式（Nablarchバッチ）と異なる"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/*",
+        "reason": "処理方式がRESTfulウェブサービスであり除外"
+      },
+      {
+        "path": "processing-pattern/db-messaging/*",
+        "reason": "テーブルキューメッセージングは別処理方式のため除外"
+      },
+      {
+        "path": "processing-pattern/http-messaging/*",
+        "reason": "HTTPメッセージングは別処理方式のため除外"
+      },
+      {
+        "path": "processing-pattern/mom-messaging/*",
+        "reason": "MOMメッセージングは別処理方式のため除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "-requestPathの書式と指定例を直接説明するセクション"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "必須オプション3つと実行例を示すコアセクション"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "Mainクラスがスタンドアロン起動の起点であることを示すコンテキスト"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "システムリポジトリ初期化が-diConfigオプションで行われることの補足"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "任意オプションの追加方法を示す補足セクション"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "reason": "処理の流れの図であり、起動方法の直接的な説明ではない"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s4",
+        "reason": "ハンドラ一覧であり起動方法の質問には不要"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "reason": "最小ハンドラ構成の詳細は起動方法の直接回答ではない"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s1",
+        "reason": "起動方法の分類概要は既にarchitectureページでカバー済み"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s5",
+        "reason": "例外時の処理内容は起動方法の実装とは無関係"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2",
+      "component/handlers/handlers-main.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s2",
+      "component/handlers/handlers-main.json:s4"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "nablarch-batch-architecture.json:s2",
+          "reason": "-requestPathの書式（アクションのクラス名/リクエストID）と指定例を回答の根拠として使用"
+        },
+        {
+          "ref": "handlers-main.json:s3",
+          "reason": "必須オプション3つの説明・実行例コードを回答の根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "nablarch-batch-architecture.json:s1",
+          "reason": "Mainクラスがスタンドアロン起動の起点であることは回答に含めたが、このセクション固有の情報（図）は使用せず"
+        },
+        {
+          "ref": "nablarch-batch-feature-details.json:s2",
+          "reason": "システムリポジトリ初期化はhandlers-main.json:s3でカバー済みのため個別引用不要"
+        },
+        {
+          "ref": "handlers-main.json:s4",
+          "reason": "任意オプションの追加方法は質問の主旨（必須の起動方法と-requestPath）に含まれないため未使用"
+        }
+      ]
+    }
+  }
+}

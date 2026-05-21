@@ -1,0 +1,156 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「切り替えの仕組み」セクションに「テスト環境のコンポーネント設定ファイルで上記テスト用クラスに差し替えるだけでよく、アプリケーションコードの変更は不要」と明記されており、コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられるという事実が含まれている。",
+      "fact": "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "SystemTimeProviderインタフェースの実装クラスをコンポーネント定義で差し替えることでシステム日時を切り替えられる",
+        "supported": true
+      },
+      {
+        "claim": "テスト時はFixedSystemTimeProviderを使うと任意の日時に固定できる",
+        "supported": true
+      },
+      {
+        "claim": "本番用の設定ではBasicSystemTimeProviderを使用し、コンポーネント名はsystemTimeProviderと指定する",
+        "supported": true
+      },
+      {
+        "claim": "FixedSystemTimeProviderのfixedDateプロパティに日時を設定する",
+        "supported": true
+      },
+      {
+        "claim": "fixedDateのフォーマットはyyyyMMddHHmmss（14桁）またはyyyyMMddHHmmssSSS（17桁）",
+        "supported": false
+      },
+      {
+        "claim": "NablarchはsystemTimeProviderという名前のコンポーネントからシステム日時を取得する",
+        "supported": true
+      },
+      {
+        "claim": "アプリケーションコードの変更は不要で、コンポーネント設定ファイルの差し替えのみでよい",
+        "supported": true
+      },
+      {
+        "claim": "Mavenプロファイルを使って環境ごとにコンポーネント設定ファイルを切り替えられる",
+        "supported": true
+      },
+      {
+        "claim": "FixedSystemTimeProviderはnablarch-testingモジュールに含まれる",
+        "supported": false
+      }
+    ],
+    "reason": "fixedDateのフォーマットの桁数について、回答は「yyyyMMddHHmmss（14桁）」「yyyyMMddHHmmssSSS（17桁）」と記載しているが、ナレッジセクションでは「yyyyMMddHHmmss (12桁)」「yyyyMMddHHmmssSSS (15桁)」と記載されており、桁数の記述が一致しない。また「FixedSystemTimeProviderはnablarch-testingモジュールに含まれる」という記述はナレッジセクションには存在しない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — fixedDateのフォーマットの桁数について、回答は「yyyyMMddHHmmss（14桁）」「yyyyMMddHHmmssSSS（17桁）」と記載しているが、ナレッジセクションでは「yyyyMMddHHmmss (12桁)」「yyyyMMddHHmmssSSS (15桁)」と記載されており、桁数の記述が一致しない。また「FixedSystemTimeProviderはnablarch-testingモジュールに含まれる」という記述はナレッジセクションには存在しない。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-date.json",
+        "reason": "日付管理機能、システム日時(OS日時)と業務日付の切り替えを直接カバーするページ"
+      },
+      {
+        "path": "development-tools/testing-framework/testing-framework-03-Tips.json",
+        "reason": "s11「システム日時を任意の値に固定したい」を含み、テスト時の固定方法を直接説明しているページ"
+      },
+      {
+        "path": "setup/setting-guide/setting-guide-ManagingEnvironmentalConfiguration.json",
+        "reason": "環境ごとにコンポーネントを切り替える方法（本番とテストの切り替え手段）を説明しているページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "コンポーネント定義でクラスを差し替えることで日時を切り替えられるという核心的な仕組みを説明している"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "本番で使用するBasicSystemTimeProviderの設定方法を示している"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "テスト時にシステム日時を切り替える手順を説明している"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-03-Tips.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "FixedSystemTimeProviderを使った固定値への切り替え方法を説明している"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-03-Tips.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "FixedSystemTimeProviderの具体的な設定例（fixedDateプロパティ）を含んでいる"
+      },
+      {
+        "file": "setup/setting-guide/setting-guide-ManagingEnvironmentalConfiguration.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "環境ごとのコンポーネント切り替えの概要説明"
+      },
+      {
+        "file": "setup/setting-guide/setting-guide-ManagingEnvironmentalConfiguration.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "環境ごとのコンポーネント設定ファイルの作成・切り替え方法"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 114180,
+    "duration_api_ms": 112040,
+    "num_turns": 15,
+    "total_cost_usd": 0.8694690999999999,
+    "usage": {
+      "input_tokens": 4240,
+      "output_tokens": 7240,
+      "cache_read_input_tokens": 1107362,
+      "cache_creation_input_tokens": 110026
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3223,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003343,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4240,
+        "outputTokens": 7240,
+        "cacheReadInputTokens": 1107362,
+        "cacheCreationInputTokens": 110026,
+        "webSearchRequests": 0,
+        "costUSD": 0.8661261,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
