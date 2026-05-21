@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-21 (session 6)
+**Updated**: 2026-05-21 (session 7)
 
 ## Rules
 
@@ -11,41 +11,11 @@
 
 ## In Progress
 
-### B-4-1. run-1 安定化（エラーゼロになるまで繰り返す）
-
-**Status**: `purpose` 未注入問題を修正済み。run-1 は `purpose` が注入されない状態で計測されたため、再実行が必要。
-
-**run-1 (1回目) 結果**: 30件中29件正常完了。qa-04のみ MarkerError。`purpose` 未注入のため全件が不正確な可能性。
-
-**run-1 (2回目) 結果**: qa-04 のみ再実行（accuracy=1.0/hallucination=PASS）。ただし残り29件は `purpose` 未注入状態のまま。
-
-- [x] qa-04 MarkerError の原因を確認し修正する — `79677a793`（`goal`→`purpose` 修正、329テストGREEN）
-- [x] run-1 qa-04 再実行・エラーゼロ確認 — `65c938bf6`
-- [x] purpose 未注入の影響を調査する — `processing_type` は正しく注入済み。`purpose` は Step 1 自己推測にフォールバックするため、推測誤りが発生した可能性あり
-- [x] run_e2e.py / e2e-prompt.md の実装を整合させる（semantic-search.md リファクタリングに合わせた修正）— `b00d53b7d`
-- [x] 無効な run-1 結果を削除 — `20d0051a6`
-- [x] run_e2e.py を e2e-prompt.md に合わせて修正する（TDD）— `8f4d7175c`（324テストGREEN）
-- [x] 3件試し実行してエラーゼロ確認 — `tools/benchmark/results/20260521-150826/` (pre-01/02/03 全件 accuracy=1.0, hallucination=PASS)
-- [ ] ワークフロー詳細（step3/step4/step8）をユーザーに提示してOKをもらう
-  - 3件のフル workflow_details.json をユーザーに提示済み（session 5）
-  - [BLOCKED: ユーザーのOK待ち — run-1全件実行に進んでよいか確認]
-- [ ] run-1 全件を再実行する
-  ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa.json \
-    --skill-dir .claude/skills/nabledge-6
-  ```
-- [ ] エラーゼロ・ワークフロー詳細が正しく取得できていることを確認
-- [ ] 結果をコミット
-- [ ] [BLOCKED: エラーゼロ確認後、ユーザーに報告して B-4（run-2/run-3）進行承認を得る]
-
-## Not Started
-
 ### B-4-1-fix. read-sections.sh: sections:[] ファイルの content 返却対応
 
 **背景**: RBKC仕様（rbkc-json-schema-design.md §3-2）では h2/h3 がないファイルは `sections:[]`、内容は `content` フィールドに格納する。しかし read-sections.sh は `sections[]` からIDで検索するのみで、`sections:[]` のファイルの `content` を取得できない。qa-12aのベンチマークでエージェントが SECTION_NOT_FOUND を受けて `cat` でバイパスした根本原因。
 
-**対応**: セクションIDで検索して SECTION_NOT_FOUND かつ `sections:[]` の場合、`content` フィールドを返すよう修正する。
+**対応**: `sections:[]` のファイルはセクションIDに関わらず `content` を返す。
 
 **影響ファイル**:
 - `.claude/skills/nabledge-6/scripts/read-sections.sh`
@@ -57,12 +27,29 @@
 
 **ステップ**:
 - [ ] `sections:[]` のファイルが v6 知識ファイルに何件あるか確認
-- [ ] テスト追加（RED）: `sections:[]` ファイルに対してセクションID指定で `content` が返ること
-- [ ] read-sections.sh 修正（GREEN）: `sections:[]` かつ SECTION_NOT_FOUND のとき `content` を返す
+- [ ] テスト追加（RED）: `sections:[]` ファイルに対して `content` が返ること
+- [ ] read-sections.sh 修正（GREEN）: `sections:[]` のとき `content` を返す
 - [ ] 全5版に同じ修正を適用
 - [ ] `bash tools/tests/test-read-sections.sh` 全テスト PASS 確認
 - [ ] コミット・プッシュ
-- [ ] [BLOCKED: ユーザーに結果報告し、B-4（run-2/run-3）進行承認を得る]
+- [ ] [BLOCKED: run-1再測定の承認を得る]
+
+### B-4-1. run-1 再測定（B-4-1-fix完了後）
+
+**背景**: read-sections.sh修正後、sections:[]ファイルを含むシナリオ（qa-12a等）の回答品質が変わる可能性があるため再測定する。
+
+**ステップ**:
+- [ ] run-1 全件を再実行する
+  ```bash
+  python3 -m tools.benchmark.scripts.run_e2e \
+    --scenarios tools/benchmark/scenarios/qa.json \
+    --skill-dir .claude/skills/nabledge-6
+  ```
+- [ ] エラーゼロ・ワークフロー詳細が正しく取得できていることを確認
+- [ ] 結果をコミット
+- [ ] [BLOCKED: 結果をユーザーに報告し、B-4（run-2/run-3）進行承認を得る]
+
+## Not Started
 
 ### B-4. 新スキルE2Eベンチマーク（B-4-1完了後）
 
@@ -172,6 +159,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-4-1. run-1 安定化（エラーゼロ確認）— 30件全件エラーゼロ、WF詳細正常取得 — `1e44a77d7`
 - [x] B-4-pre. ユーザープロンプトレビュー — qa.md 大幅改修（Step 1-2-5）、PEレビュー 0 Findings — `86b319939`〜`2d2cfe3fa`
 - [x] B-4-1-B. purpose ヒアリング追加（goal廃止・purpose7択追加・PEレビュー0 Findings）— `dbad4cf64`
 - [x] B-4-1-C. evaluate.py 幻覚検証ロジック修正（search_sections を sections_text に追加、TDD 5テスト追加）— `563d8b4aa`
