@@ -27,14 +27,18 @@
 - [x] run_e2e.py を e2e-prompt.md に合わせて修正する（TDD）— `8f4d7175c`（324テストGREEN）
 - [ ] 3件試し実行してエラーゼロ確認（実行中: pre-01 OK、pre-02/pre-03 待ち）
   出力先: `tools/benchmark/results/20260521-150826/`
-  完了後にエラーゼロを確認してから次へ進む
+  完了後にエラーゼロを確認
+- [ ] ワークフロー詳細（step3/step4/step8）をユーザーに提示してOKをもらう
+  - pre-01/pre-02/pre-03 のうち1件の workflow_details.json を表示
+  - 回答テキスト（answer.md）も合わせて提示
+  - [BLOCKED: ユーザーのOK待ち]
 - [ ] run-1 全件を再実行する
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa.json \
     --skill-dir .claude/skills/nabledge-6
   ```
-- [ ] エラーゼロを確認する
+- [ ] エラーゼロ・ワークフロー詳細が正しく取得できていることを確認
 - [ ] 結果をコミット
 - [ ] [BLOCKED: エラーゼロ確認後、ユーザーに報告して B-4（run-2/run-3）進行承認を得る]
 
