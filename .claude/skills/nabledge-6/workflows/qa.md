@@ -54,10 +54,7 @@ Purpose categories:
 
 ### Result
 
-If both `processing_type` and `purpose` are determined (not UNCLEAR) → build `hearing_answer` and proceed to Step 3:
-```
-hearing_answer = { "processing_type": "<type or null>", "purpose": "<category>" }
-```
+If both `processing_type` and `purpose` are determined (not UNCLEAR) → proceed to Step 3.
 
 If either is UNCLEAR → proceed to Step 2.
 
@@ -125,7 +122,7 @@ Otherwise, ask only about what is UNCLEAR.
 8. その他
 ```
 
-Wait for the user's response. Then build `hearing_answer`:
+Wait for the user's response. Then set:
 - `processing_type`: from Step 1 or user's selection (「その他」or 8 → null)
 - `purpose`: from Step 1 or user's selection (「その他」or 8 → 実装したい)
 
@@ -137,8 +134,8 @@ Proceed to Step 3.
 
 Execute `workflows/semantic-search.md` with:
 - `{question}` = user's question with hearing result appended:
-  - If `hearing_answer.processing_type` is not null: `"{user's question}（処理方式: {hearing_answer.processing_type}）（目的: {hearing_answer.purpose}）"`
-  - If `hearing_answer.processing_type` is null: `"{user's question}（目的: {hearing_answer.purpose}）"`
+  - If `processing_type` is not null: `"{user's question}（処理方式: {processing_type}）（目的: {purpose}）"`
+  - If `processing_type` is null: `"{user's question}（目的: {purpose}）"`
 
 Save the returned `selected_sections` array as `selected_sections`.
 
@@ -174,7 +171,7 @@ and stop.
 Otherwise, generate a Japanese answer following the steps below.
 
 1. Read all sections in `sections_content`.
-2. If `hearing_answer` contains a processing type, focus on approaches that match that type.
+2. If `processing_type` is not null, focus on approaches that match that type.
 3. Identify the information that directly answers the question. For any gap in the sections, write "この情報は知識ファイルの対象範囲外です" — do not infer.
 4. Write the answer in the format below. Stay within 500 tokens (up to 800 for complex questions).
 
