@@ -136,10 +136,9 @@ Proceed to Step 3.
 ## Step 3: Semantic search
 
 Execute `workflows/semantic-search.md` with:
-- `{question}` = user's question
-- `{hearing_answer}` = formatted hearing string from Step 2:
-  - If `processing_type` is not null: `"処理方式: {processing_type}\n目的: {purpose}"`
-  - If `processing_type` is null: `"目的: {purpose}"`
+- `{question}` = user's question with hearing result appended:
+  - If `processing_type` is not null: `"{user's question}（処理方式: {processing_type}）（目的: {purpose}）"`
+  - If `processing_type` is null: `"{user's question}（目的: {purpose}）"`
 
 Save the returned `results` array as `selected_sections`.
 

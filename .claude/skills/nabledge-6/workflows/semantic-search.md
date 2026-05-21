@@ -4,8 +4,7 @@
 
 ## Input
 
-- `{question}`: User's question
-- `{hearing_answer}`: Formatted hearing result ("処理方式: X\n目的: Y") or "なし"
+- `{question}`: User's question. May contain hearing result appended as `（処理方式: X）（目的: Y）`.
 
 ## Output
 
@@ -29,12 +28,12 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
 
 ## Step 2: Stage 1 — Page selection
 
-Read the question and hearing answer. Identify in one sentence what the user wants to know.
+Read the question. Identify in one sentence what the user wants to know. If the question contains `（処理方式: X）`, use that as the processing type context.
 
 For each page in the index, judge whether it contains information needed to answer the question:
 - Select pages that directly correspond to the question's operation target
 - Select pages for features that solve the question's technical problem
-- Select pages for the processing type identified in the hearing answer
+- Select pages for the processing type in the question
 - Do NOT select pages for a different processing type than the question
 
 Select up to 10 pages, ordered by confidence (highest first). If more than 10 candidates exist, select the 10 most direct matches. If fewer than 3 high-confidence pages exist, do not pad to 10.

@@ -5,7 +5,7 @@ Follow the workflow and additional instructions below, then answer the question.
 
 ### Additional instructions
 
-**Step 1 and Step 2**: If the question contains `処理方式:` and `目的:`, hearing_answer is already determined. Skip Step 1 and Step 2 and start from Step 3.
+**Step 1 and Step 2**: The question already contains the hearing result. Skip to Step 3.
 
 **Step 3**: Save the full `results` array returned by semantic-search.md as `stage2_sections`.
 
