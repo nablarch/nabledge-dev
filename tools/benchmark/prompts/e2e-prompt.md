@@ -1,18 +1,13 @@
-Follow the workflow below and answer the question.
-
 ## Workflow
 {workflow}
 
-## Question
-{question}
+### Benchmark instructions
 
-## Additional instructions
-
-If the question text contains `処理方式:` and `目的:`, hearing_answer is already determined. Skip Step 1 and Step 2 and start from Step 3.
+If the question contains `処理方式:` and `目的:`, hearing_answer is already determined. Skip Step 1 and Step 2 and start from Step 3.
 
 After outputting final_answer in Step 8, output the following.
 
-## Workflow Details
+### Workflow Details
 ```json
 {
   "hearing": {
@@ -35,3 +30,6 @@ After outputting final_answer in Step 8, output the following.
   }
 }
 ```
+
+## Question
+{question}
