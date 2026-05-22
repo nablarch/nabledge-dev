@@ -12,7 +12,7 @@
 ## ステップ 1: 1シナリオで動作確認
 
 ```bash
-python3 -m tools.benchmark.scripts.run_e2e \
+python3 -m tools.benchmark.scripts.run_qa \
   --scenarios tools/benchmark/scenarios/qa.json \
   --skill-dir .claude/skills/nabledge-6 \
   --scenario-ids pre-01
@@ -34,7 +34,7 @@ rm -rf tools/benchmark/results/YYYYMMDD-HHMMSS
 ## ステップ 2: 全シナリオ実行（1 run）
 
 ```bash
-python3 -m tools.benchmark.scripts.run_e2e \
+python3 -m tools.benchmark.scripts.run_qa \
   --scenarios tools/benchmark/scenarios/qa.json \
   --skill-dir .claude/skills/nabledge-6
 ```

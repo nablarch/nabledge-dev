@@ -173,7 +173,7 @@ deepevalによるLLM判定は別Issueとして対応。現時点は自前の `ev
 
 ### シナリオファイルとhearing_answer
 
-hearing_answerをプロンプトに注入するかどうかはシナリオファイルが制御する。`run_e2e.py` はシナリオに `hearing_answer`（非null）が設定されていれば注入し、なければ注入しない。スクリプト側にモード切り替えはない。
+hearing_answerをプロンプトに注入するかどうかはシナリオファイルが制御する。`run_qa.py` はシナリオに `hearing_answer`（非null）が設定されていれば注入し、なければ注入しない。スクリプト側にモード切り替えはない。
 
 | ベンチマーク | シナリオファイル | hearing_answer |
 |---|---|---|
@@ -237,7 +237,7 @@ tools/benchmark/
     qa-current.json    ← QAシナリオ（hearing_answerなし）— 現行スキルベースライン用
     keyword-search.json
   scripts/
-    run_e2e.py         ← E2Eベンチマーク実行
+    run_qa.py         ← E2Eベンチマーク実行
     evaluate.py        ← 評価（C-claim + ハルシネーション）
     report.py          ← レポート生成
     simulate_*.py      ← 部品ベンチマーク
@@ -261,7 +261,7 @@ tools/benchmark/
 
 run-labelの例: `baseline-current`（現行スキル）、`v1-new-search`（新スキル第1版）
 
-各 run は `run_e2e.py` を1回実行した結果。タイムスタンプディレクトリ（`results/YYYYMMDD-HHMMSS/`）として生成され、完了後に `results/{run-label}/run-{N}/` にリネームする。
+各 run は `run_qa.py` を1回実行した結果。タイムスタンプディレクトリ（`results/YYYYMMDD-HHMMSS/`）として生成され、完了後に `results/{run-label}/run-{N}/` にリネームする。
 
 ## summary.json
 

@@ -1,4 +1,4 @@
-"""E2E benchmark runner: executes skill workflow end-to-end via claude -p.
+"""QA benchmark runner: executes qa.md skill workflow end-to-end via claude -p.
 
 Runs the qa.md workflow for each scenario, capturing diagnostic markers from
 the response to extract hearing, search, and answer information.
@@ -30,7 +30,7 @@ def default_output_dir() -> Path:
 from tools.benchmark.scripts.evaluate import evaluate_scenario
 
 WORKFLOW_FILE = "workflows/qa.md"
-E2E_PROMPT_FILE = Path(__file__).parent.parent / "prompts" / "e2e-prompt.md"
+QA_PROMPT_FILE = Path(__file__).parent.parent / "prompts" / "e2e-prompt.md"
 TIMEOUT = 360
 
 class MarkerError(ValueError):
@@ -61,18 +61,18 @@ def _build_question(scenario: dict) -> str:
     return "".join(parts)
 
 
-def build_e2e_prompt(scenario: dict, workflow_content: str, prompt_template: str | None = None) -> str:
+def build_qa_prompt(scenario: dict, workflow_content: str, prompt_template: str | None = None) -> str:
     """Build the E2E prompt from e2e-prompt.md template."""
     if prompt_template is None:
-        prompt_template = E2E_PROMPT_FILE.read_text(encoding="utf-8")
+        prompt_template = QA_PROMPT_FILE.read_text(encoding="utf-8")
     question = _build_question(scenario)
     return prompt_template.replace("{workflow}", workflow_content).replace("{question}", question)
 
 
-_WORKFLOW_DETAILS_HEADING = "### Workflow Details"
+_QA_WORKFLOW_DETAILS_HEADING = "### Workflow Details"
 
 
-def parse_e2e_response(response_text: str) -> dict:
+def parse_qa_response(response_text: str) -> dict:
     """Parse e2e-prompt.md formatted response.
 
     Splits on '### Workflow Details': text above is the answer, the JSON
@@ -80,13 +80,13 @@ def parse_e2e_response(response_text: str) -> dict:
 
     Raises ValueError if the heading or JSON block is missing.
     """
-    idx = response_text.find(_WORKFLOW_DETAILS_HEADING)
+    idx = response_text.find(_QA_WORKFLOW_DETAILS_HEADING)
     if idx == -1:
         raise ValueError("Workflow Details section not found in response")
 
     answer = response_text[:idx].strip()
 
-    details_section = response_text[idx + len(_WORKFLOW_DETAILS_HEADING):]
+    details_section = response_text[idx + len(_QA_WORKFLOW_DETAILS_HEADING):]
     # extract content from ```json ... ``` fence
     fence_start = details_section.find("```json")
     fence_end = details_section.find("```", fence_start + 3) if fence_start != -1 else -1
@@ -124,7 +124,7 @@ def _extract_metrics(claude_output: dict) -> dict:
     }
 
 
-def save_e2e_results(output_dir: str | Path, scenario_id: str, data: dict) -> None:
+def save_qa_results(output_dir: str | Path, scenario_id: str, data: dict) -> None:
     """Save E2E scenario results."""
     scenario_dir = Path(output_dir) / scenario_id
     scenario_dir.mkdir(parents=True, exist_ok=True)
@@ -141,7 +141,7 @@ def save_e2e_results(output_dir: str | Path, scenario_id: str, data: dict) -> No
     )
 
 
-def run_e2e_scenario(
+def run_qa_scenario(
     scenario: dict,
     skill_dir: str | Path,
 ) -> dict:
@@ -158,7 +158,7 @@ def run_e2e_scenario(
     """
     skill_dir = Path(skill_dir)
     workflow_content = (skill_dir / WORKFLOW_FILE).read_text(encoding="utf-8")
-    prompt = build_e2e_prompt(scenario, workflow_content)
+    prompt = build_qa_prompt(scenario, workflow_content)
 
     proc = subprocess.run(
         [
@@ -184,7 +184,7 @@ def run_e2e_scenario(
     result_text = claude_output.get("result", "")
 
     try:
-        parsed = parse_e2e_response(result_text)
+        parsed = parse_qa_response(result_text)
     except ValueError as exc:
         raise MarkerError(str(exc), raw_response=result_text, claude_output=claude_output) from exc
     metrics = _extract_metrics(claude_output)
@@ -198,7 +198,7 @@ def run_e2e_scenario(
     }
 
 
-def run_e2e_all(
+def run_qa_all(
     scenarios_path: str,
     skill_dir: str | Path,
     output_dir: str | Path | None = None,
@@ -233,8 +233,8 @@ def run_e2e_all(
 
         print(f"Running {sid}...", file=sys.stderr)
         try:
-            result = run_e2e_scenario(scenario, skill_dir)
-            save_e2e_results(str(out), sid, result)
+            result = run_qa_scenario(scenario, skill_dir)
+            save_qa_results(str(out), sid, result)
 
             evaluation = evaluate_scenario(scenario, result, knowledge_dir)
             (out / sid / "evaluation.json").write_text(
@@ -283,7 +283,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Run E2E QA benchmark: skill workflow end-to-end"
+        description="Run QA benchmark: qa.md skill workflow end-to-end"
     )
     parser.add_argument("--scenarios", required=True, help="Path to scenarios JSON")
     parser.add_argument("--skill-dir", required=True, help="Path to skill directory")
@@ -294,7 +294,7 @@ def main():
     output_dir = default_output_dir()
     print(f"Output dir: {output_dir}", file=sys.stderr)
 
-    summary = run_e2e_all(
+    summary = run_qa_all(
         args.scenarios,
         args.skill_dir,
         output_dir=str(output_dir),

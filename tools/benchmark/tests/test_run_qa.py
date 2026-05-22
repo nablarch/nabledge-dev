@@ -1,4 +1,4 @@
-"""Tests for E2E benchmark runner: runs skill workflow end-to-end."""
+"""Tests for QA benchmark runner: runs qa.md skill workflow end-to-end."""
 import json
 import tempfile
 from pathlib import Path
@@ -6,12 +6,12 @@ from unittest.mock import patch
 
 import pytest
 
-from tools.benchmark.scripts.run_e2e import (
-    build_e2e_prompt,
-    parse_e2e_response,
-    save_e2e_results,
-    run_e2e_all,
-    run_e2e_scenario,
+from tools.benchmark.scripts.run_qa import (
+    build_qa_prompt,
+    parse_qa_response,
+    save_qa_results,
+    run_qa_all,
+    run_qa_scenario,
 )
 
 DUMMY_METRICS = {
@@ -67,19 +67,19 @@ class TestBuildE2ePrompt:
         )
 
     def test_includes_workflow(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
+        prompt = build_qa_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "# QA Workflow" in prompt
 
     def test_includes_question(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
+        prompt = build_qa_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "テスト質問です" in prompt
 
     def test_includes_hearing_answer_processing_type(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
+        prompt = build_qa_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "Nablarchバッチ" in prompt
 
     def test_includes_hearing_answer_purpose(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
+        prompt = build_qa_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "実装したい" in prompt
 
     def test_no_hearing_answer_excludes_context(self):
@@ -87,17 +87,17 @@ class TestBuildE2ePrompt:
             **SAMPLE_SCENARIO,
             "when": {**SAMPLE_SCENARIO["when"], "hearing_answer": None},
         }
-        prompt = build_e2e_prompt(scenario_no_hearing, self.workflow_content, self.prompt_template)
+        prompt = build_qa_prompt(scenario_no_hearing, self.workflow_content, self.prompt_template)
         assert "Nablarchバッチ" not in prompt
         assert "実装したい" not in prompt
 
     def test_hearing_answer_present_injects_context(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
+        prompt = build_qa_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "Nablarchバッチ" in prompt
         assert "実装したい" in prompt
 
     def test_no_unreplaced_placeholders(self):
-        prompt = build_e2e_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
+        prompt = build_qa_prompt(SAMPLE_SCENARIO, self.workflow_content, self.prompt_template)
         assert "{question}" not in prompt
         assert "{workflow}" not in prompt
 
@@ -135,41 +135,41 @@ class TestParseE2eResponse:
     def test_parses_answer_text(self):
         answer = "**結論**: バッチは-requestPathで起動します\n\n**根拠**: ..."
         response = self._make_response(answer)
-        result = parse_e2e_response(response)
+        result = parse_qa_response(response)
         assert result["answer"] == answer
 
     def test_parses_workflow_details(self):
         response = self._make_response("回答テキスト")
-        result = parse_e2e_response(response)
+        result = parse_qa_response(response)
         assert "step3" in result["workflow_details"]
         assert "step4" in result["workflow_details"]
         assert "step8" in result["workflow_details"]
 
     def test_parses_selected_pages(self):
         response = self._make_response("回答テキスト")
-        result = parse_e2e_response(response)
+        result = parse_qa_response(response)
         pages = result["workflow_details"]["step3"]["selected_pages"]
         assert pages[0]["path"] == "path/to/file.json"
 
     def test_parses_selected_sections(self):
         response = self._make_response("回答テキスト")
-        result = parse_e2e_response(response)
+        result = parse_qa_response(response)
         sections = result["workflow_details"]["step3"]["selected_sections"]
         assert sections[0]["section_id"] == "s1"
 
     def test_raises_on_missing_workflow_details(self):
         response = "回答だけで Workflow Details がない"
         with pytest.raises(ValueError, match="Workflow Details"):
-            parse_e2e_response(response)
+            parse_qa_response(response)
 
     def test_raises_on_invalid_json_in_workflow_details(self):
         response = "回答\n\n### Workflow Details\n```json\n{invalid json\n```\n"
         with pytest.raises(ValueError, match="JSON"):
-            parse_e2e_response(response)
+            parse_qa_response(response)
 
     def test_answer_excludes_workflow_details_section(self):
         response = self._make_response("本文回答")
-        result = parse_e2e_response(response)
+        result = parse_qa_response(response)
         assert "Workflow Details" not in result["answer"]
         assert "step3" not in result["answer"]
 
@@ -188,19 +188,19 @@ class TestSaveE2eResults:
 
     def test_saves_workflow_details_json(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            save_e2e_results(tmpdir, "pre-01", self._make_data())
+            save_qa_results(tmpdir, "pre-01", self._make_data())
             wd = json.loads((Path(tmpdir) / "pre-01" / "workflow_details.json").read_text())
             assert "step3" in wd
 
     def test_saves_answer_md(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            save_e2e_results(tmpdir, "pre-01", self._make_data(answer="テスト回答テキスト"))
+            save_qa_results(tmpdir, "pre-01", self._make_data(answer="テスト回答テキスト"))
             answer = (Path(tmpdir) / "pre-01" / "answer.md").read_text()
             assert "テスト回答テキスト" in answer
 
     def test_saves_metrics_json(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            save_e2e_results(tmpdir, "pre-01", self._make_data())
+            save_qa_results(tmpdir, "pre-01", self._make_data())
             metrics = json.loads((Path(tmpdir) / "pre-01" / "metrics.json").read_text())
             assert metrics["duration_ms"] == 45230
             assert metrics["total_cost_usd"] == 0.045
@@ -208,13 +208,13 @@ class TestSaveE2eResults:
     def test_saves_trace_json(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             trace_data = {"result": "raw output", "duration_ms": 5000, "num_turns": 3}
-            save_e2e_results(tmpdir, "pre-01", self._make_data(trace=trace_data))
+            save_qa_results(tmpdir, "pre-01", self._make_data(trace=trace_data))
             trace = json.loads((Path(tmpdir) / "pre-01" / "trace.json").read_text())
             assert trace["duration_ms"] == 5000
 
     def test_creates_scenario_subdirectory(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            save_e2e_results(tmpdir, "qa-001", self._make_data(scenario_id="qa-001"))
+            save_qa_results(tmpdir, "qa-001", self._make_data(scenario_id="qa-001"))
             assert (Path(tmpdir) / "qa-001").is_dir()
 
 
@@ -256,7 +256,7 @@ class TestRunE2eScenario:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()):
-                result = run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                result = run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             assert result["scenario_id"] == "pre-01"
 
     def test_returns_workflow_details(self):
@@ -264,7 +264,7 @@ class TestRunE2eScenario:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()):
-                result = run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                result = run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             assert "step3" in result["workflow_details"]
 
     def test_returns_answer(self):
@@ -272,7 +272,7 @@ class TestRunE2eScenario:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()):
-                result = run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                result = run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             assert "テスト回答" in result["answer"]
 
     def test_returns_metrics(self):
@@ -280,7 +280,7 @@ class TestRunE2eScenario:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()):
-                result = run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                result = run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             assert result["metrics"]["duration_ms"] == 45230
             assert result["metrics"]["total_cost_usd"] == 0.045
 
@@ -289,7 +289,7 @@ class TestRunE2eScenario:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()):
-                result = run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                result = run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             assert "trace" in result
             assert "result" in result["trace"]
 
@@ -299,14 +299,14 @@ class TestRunE2eScenario:
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc(returncode=1)):
                 with pytest.raises(RuntimeError, match="claude"):
-                    run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                    run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
 
     def test_uses_skill_dir_as_cwd(self):
         with tempfile.TemporaryDirectory() as skill_dir:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()) as mock_run:
-                run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             call_kwargs = mock_run.call_args[1]
             assert str(call_kwargs.get("cwd", "")) == str(skill_dir)
 
@@ -315,7 +315,7 @@ class TestRunE2eScenario:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()) as mock_run:
-                run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             cmd = mock_run.call_args[0][0]
             assert "sonnet" in cmd
 
@@ -324,7 +324,7 @@ class TestRunE2eScenario:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()) as mock_run:
-                run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             cmd = mock_run.call_args[0][0]
             allowed_tools_idx = cmd.index("--allowedTools")
             allowed_tools_value = cmd[allowed_tools_idx + 1]
@@ -337,7 +337,7 @@ class TestRunE2eScenario:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()) as mock_run:
-                run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             call_kwargs = mock_run.call_args[1]
             assert call_kwargs.get("timeout") == 360
 
@@ -361,7 +361,7 @@ class TestRunE2eScenario:
                 "stderr": "",
             })()
             with patch("subprocess.run", return_value=mock_proc):
-                result = run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                result = run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             assert "model_usage" in result["metrics"]
             assert "claude-sonnet-4-6" in result["metrics"]["model_usage"]
 
@@ -370,7 +370,7 @@ class TestRunE2eScenario:
             Path(skill_dir, "workflows").mkdir(parents=True)
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()):
-                result = run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                result = run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
             assert "model_usage" in result["metrics"]
             assert result["metrics"]["model_usage"] == {}
 
@@ -385,7 +385,7 @@ class TestRunE2eScenario:
                 return self._make_mock_proc()
 
             with patch("subprocess.run", side_effect=capture_run):
-                run_e2e_scenario(SAMPLE_SCENARIO, skill_dir)
+                run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
 
             assert "Nablarchバッチ" in captured_prompts[0]
 
@@ -404,7 +404,7 @@ class TestRunE2eScenario:
                 return self._make_mock_proc()
 
             with patch("subprocess.run", side_effect=capture_run):
-                run_e2e_scenario(scenario_no_hearing, skill_dir)
+                run_qa_scenario(scenario_no_hearing, skill_dir)
 
             assert "Nablarchバッチ" not in captured_prompts[0]
 
@@ -455,8 +455,8 @@ class TestRunE2eAll:
         scenarios_path = self._setup_scenarios(tmpdir, scenarios)
         output_dir = Path(tmpdir) / "results"
         with patch("subprocess.run", return_value=self._make_mock_proc()), \
-             patch("tools.benchmark.scripts.run_e2e.evaluate_scenario", return_value=self.FAKE_EVAL):
-            summary = run_e2e_all(
+             patch("tools.benchmark.scripts.run_qa.evaluate_scenario", return_value=self.FAKE_EVAL):
+            summary = run_qa_all(
                 str(scenarios_path), str(skill_dir),
                 output_dir=str(output_dir),
                 scenario_ids=scenario_ids,
@@ -508,8 +508,8 @@ class TestRunE2eAll:
             scenarios_path = self._setup_scenarios(tmpdir)
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", return_value=self._make_mock_proc()), \
-                 patch("tools.benchmark.scripts.run_e2e.evaluate_scenario", return_value=self.FAKE_EVAL) as mock_eval:
-                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                 patch("tools.benchmark.scripts.run_qa.evaluate_scenario", return_value=self.FAKE_EVAL) as mock_eval:
+                run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
             assert mock_eval.call_count == 1
 
     def test_saves_evaluation_json(self):
@@ -522,7 +522,7 @@ class TestRunE2eAll:
 
 
 class TestRunE2eAllErrorHandling:
-    """Tests for error handling in run_e2e_all: failures are isolated per scenario."""
+    """Tests for error handling in run_qa_all: failures are isolated per scenario."""
 
     def _setup_skill_dir(self, base_dir):
         skill_dir = Path(base_dir) / "skill"
@@ -571,8 +571,8 @@ class TestRunE2eAllErrorHandling:
             scenarios_path = self._setup_scenarios(tmpdir, [scenario1, scenario2])
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", side_effect=side_effect), \
-                 patch("tools.benchmark.scripts.run_e2e.evaluate_scenario", return_value=self.FAKE_EVAL):
-                summary = run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                 patch("tools.benchmark.scripts.run_qa.evaluate_scenario", return_value=self.FAKE_EVAL):
+                summary = run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
 
         assert summary["total_scenarios"] == 2
         assert summary["scenarios"][1]["id"] == "s2"
@@ -591,7 +591,7 @@ class TestRunE2eAllErrorHandling:
             scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", side_effect=side_effect):
-                summary = run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                summary = run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
 
         assert summary["scenarios"][0]["status"] == "error"
 
@@ -608,7 +608,7 @@ class TestRunE2eAllErrorHandling:
             scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", side_effect=side_effect):
-                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
 
             error_path = output_dir / "s1" / "error.json"
             assert error_path.exists()
@@ -628,7 +628,7 @@ class TestRunE2eAllErrorHandling:
             scenarios_path = self._setup_scenarios(tmpdir, [SAMPLE_SCENARIO])
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", side_effect=side_effect):
-                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
 
             assert (output_dir / "summary.json").exists()
 
@@ -655,8 +655,8 @@ class TestRunE2eAllErrorHandling:
             scenarios_path = self._setup_scenarios(tmpdir, [scenario1, scenario2])
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", side_effect=side_effect), \
-                 patch("tools.benchmark.scripts.run_e2e.evaluate_scenario", return_value=self.FAKE_EVAL):
-                summary = run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                 patch("tools.benchmark.scripts.run_qa.evaluate_scenario", return_value=self.FAKE_EVAL):
+                summary = run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
 
         assert summary["total_scenarios"] == 2
         assert summary["scenarios"][0]["status"] == "error"
@@ -682,7 +682,7 @@ class TestRunE2eAllErrorHandling:
             scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", side_effect=side_effect):
-                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
 
             trace_path = output_dir / "s1" / "trace.json"
             assert trace_path.exists(), "trace.json must be saved even on marker error"
@@ -702,7 +702,7 @@ class TestRunE2eAllErrorHandling:
             scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", side_effect=side_effect):
-                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
 
             trace_path = output_dir / "s1" / "trace.json"
             assert not trace_path.exists(), "trace.json must not be saved when there is no response"
@@ -719,7 +719,7 @@ class TestRunE2eAllErrorHandling:
             scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", side_effect=side_effect):
-                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
 
             trace_path = output_dir / "s1" / "trace.json"
             assert not trace_path.exists(), "trace.json must not be saved when claude exits non-zero"
@@ -744,7 +744,7 @@ class TestRunE2eAllErrorHandling:
             scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", side_effect=side_effect):
-                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
 
             raw_path = output_dir / "s1" / "raw_response.txt"
             assert raw_path.exists(), "raw_response.txt must be saved on marker error"
@@ -763,7 +763,7 @@ class TestRunE2eAllErrorHandling:
             scenarios_path = self._setup_scenarios(tmpdir, [scenario1])
             output_dir = Path(tmpdir) / "results"
             with patch("subprocess.run", side_effect=side_effect):
-                run_e2e_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
+                run_qa_all(str(scenarios_path), str(skill_dir), output_dir=str(output_dir))
 
             raw_path = output_dir / "s1" / "raw_response.txt"
             assert not raw_path.exists(), "raw_response.txt must not be saved when there is no response"
@@ -802,7 +802,7 @@ class TestMain:
     def test_main_does_not_crash_when_scenario_has_error(self):
         """main() must not raise KeyError when summary contains error scenarios."""
         import sys
-        from tools.benchmark.scripts.run_e2e import main
+        from tools.benchmark.scripts.run_qa import main
         scenario_ok = {**SAMPLE_SCENARIO, "id": "s1"}
         scenario_err = {**SAMPLE_SCENARIO, "id": "s2"}
         call_count = [0]
@@ -823,11 +823,11 @@ class TestMain:
             skill_dir = self._setup_skill_dir(tmpdir)
             scenarios_path = self._setup_scenarios(tmpdir, [scenario_ok, scenario_err])
             output_dir = Path(tmpdir) / "results"
-            argv = ["run_e2e.py", "--scenarios", str(scenarios_path),
+            argv = ["run_qa.py", "--scenarios", str(scenarios_path),
                     "--skill-dir", str(skill_dir)]
             with patch("subprocess.run", side_effect=side_effect), \
-                 patch("tools.benchmark.scripts.run_e2e.evaluate_scenario", return_value=self.FAKE_EVAL), \
-                 patch("tools.benchmark.scripts.run_e2e.default_output_dir", return_value=output_dir), \
+                 patch("tools.benchmark.scripts.run_qa.evaluate_scenario", return_value=self.FAKE_EVAL), \
+                 patch("tools.benchmark.scripts.run_qa.default_output_dir", return_value=output_dir), \
                  patch.object(sys, "argv", argv):
                 main()  # must not raise
 
@@ -835,18 +835,18 @@ class TestMain:
 class TestDefaultOutputDir:
     def test_default_output_dir_uses_timestamp(self):
         import re
-        from tools.benchmark.scripts.run_e2e import default_output_dir
+        from tools.benchmark.scripts.run_qa import default_output_dir
         result = default_output_dir()
         assert re.match(r".*/tools/benchmark/results/\d{8}-\d{6}$", str(result))
 
     def test_default_output_dir_is_under_results(self):
-        from tools.benchmark.scripts.run_e2e import default_output_dir
+        from tools.benchmark.scripts.run_qa import default_output_dir
         result = default_output_dir()
         assert "tools/benchmark/results/" in str(result)
 
     def test_default_output_dir_changes_each_second(self):
         import time
-        from tools.benchmark.scripts.run_e2e import default_output_dir
+        from tools.benchmark.scripts.run_qa import default_output_dir
         d1 = default_output_dir()
         time.sleep(1.1)
         d2 = default_output_dir()

@@ -53,7 +53,7 @@ B-5完了後。v6で確定した検索をv5/v1.xに展開。
 
 - [ ] v5: ワークフロー・アセット・スクリプトをコピー（パス置換のみ）
   ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
+  python3 -m tools.benchmark.scripts.run_qa \
     --scenarios tools/benchmark/scenarios/qa.json \
     --skill-dir .claude/skills/nabledge-5 \
     --scenario-ids pre-01

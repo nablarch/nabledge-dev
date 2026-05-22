@@ -153,7 +153,7 @@ Analyzed qa.md and all sub-workflows across all 5 versions. All versions are log
 
 ### Finding: --allowedTools pattern must include `bash` prefix
 
-**Context**: `run_e2e.py` passes `--allowedTools` to `claude -p` to restrict tool use in the skill agent.
+**Context**: `run_qa.py` passes `--allowedTools` to `claude -p` to restrict tool use in the skill agent.
 
 **Root cause**: The skill workflows call scripts as `bash scripts/read-sections.sh ...` and
 `bash scripts/keyword-search.sh ...`. The old pattern `Bash(read-sections.sh *)` does not match
@@ -163,7 +163,7 @@ this invocation form — Claude Code matches against the full command string inc
 - Old pattern `Bash(read-sections.sh *)`: `permission_denials` recorded, tool blocked, LLM returned "requires approval"
 - New pattern `Bash(bash scripts/read-sections.sh *)`: tool executed successfully, section content returned
 
-**Fix**: `run_e2e.py` line 206 changed to `Bash(bash scripts/keyword-search.sh *) Bash(bash scripts/read-sections.sh *) Read` — committed `44076bcbc`.
+**Fix**: `run_qa.py` line 206 changed to `Bash(bash scripts/keyword-search.sh *) Bash(bash scripts/read-sections.sh *) Read` — committed `44076bcbc`.
 
 ### Finding: qa.md Step 4 (read-sections.sh) is not redundant
 
