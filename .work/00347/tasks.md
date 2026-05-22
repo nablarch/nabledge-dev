@@ -2,7 +2,7 @@
 
 **PR**: #348
 **Issue**: #347
-**Updated**: 2026-05-22 (updated end-of-session)
+**Updated**: 2026-05-22 (updated end-of-session 2)
 
 ## Rule: Fact-based judgment only
 
@@ -41,24 +41,36 @@
 - [x] 現在の `_build_p1_sections` の section 生成ロジックを正確に把握する
   - `xlsx_common.py:487-540`：1データ行→1セクション生成（マージ無視）
 
-**設計（確定）:**
-- [x] 修正アプローチを決定: **Option A（RawSheetに`merged_col_groups`フィールド追加）**
-  - Software Engineer expert review 実施: 0 Findings — Option A推奨
-  - Option B（forward-fill）は`read_sheet()`がタイトル列を知れないため不採用
-  - 発動条件: `data_start`以降のタイトル列がrow-spanningマージのslaveである行のみグループ化
-  - 全量調査（RBKC mapped xlsx全29ファイル全シート）実施: 影響は`2.チェックリスト` 4シートのみ（v5/v6 各日/英）
-  - リリースノートのヘッダ行マージ（パターンA）・非タイトル列マージ（パターンC）は発動しない
-- [DECISION: この設計で進めてよいか] `tools/rbkc/docs/rbkc-converter-design.md` §8-4 P1 `sections`行に新挙動を追記する
-- [ ] `tools/rbkc/docs/xlsx-sheet-mapping.md` の `2.チェックリスト` 行（v5/v6両方）に Notes 追加
-- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` への影響: **変更不要**（Excel QC1-QC3はセル値ベース、セクション境界非依存）
-- [ ] `tools/rbkc/docs/rbkc-json-schema-design.md` への影響: **変更不要**（スキーマ構造は変わらない）
+**設計（確定 — 2セッション目で Option B に変更）:**
+- [x] 修正アプローチを決定: **Option B（`xlsx-sheet-mapping.md` に `P1-merged` サブタイプを明示）**
+  - 前セッションで Option A（auto-detect）を採用していたが、SE エキスパートレビューで再評価
+  - **Option A を棄却した理由**:
+    1. 将来追加シートへの意図しない発動リスク（ゼロトレランス違反）
+    2. verify が実行時に `openpyxl.ws.merged_cells` を独立に読む → Excel 再保存でマージ解除時に converter と verify が無音乖離するリスク
+  - **Option B が正しい理由**:
+    - P2-1/P2-3/P2-4 の既存パターンと完全一致（確立済み設計パターン）
+    - converter と verify が同じマッピングファイルを参照 → 乖離しない
+    - 影響範囲がマッピングファイルを読めば常に確定できる
+    - 新しいシートへの適用は明示的エントリ追加が必要 → 意図しない発動ゼロ
+  - **実装方針**:
+    - `xlsx-sheet-mapping.md` の `2.チェックリスト` 4行（v5/v6 日英）を `P1` → `P1-merged` に変更
+    - converter: `P1-merged` のとき `_build_p1_sections()` がグループ集約を行う（`P1` は従来通り）
+    - verify: `P1-merged` のとき QP・トークン生成がグループ数ベースに切り替わる（`P1` は従来通り）
+    - data_rows = グループ先頭行のみ格納（section 数 = data_rows 数 = グループ数で統一）
+  - **既存影響**: 発動はマッピングに `P1-merged` と明記された4シートのみ。他シートへの影響ゼロ。
+- [ ] 設計書4本を更新する（内容は下記のステップに分解）
 
-**⚠️ ユーザー承認待ち — 設計承認後にコミット・次タスクへ進む**
-- [ ] コミット: `docs: design for merged-row P1 grouping in security checklist (#347)`
+**設計書更新ステップ:**
+- [ ] `tools/rbkc/docs/xlsx-sheet-mapping.md`: `2.チェックリスト` の subtype を `P1` → `P1-merged` に変更（v5/v6 日英 4行）
+- [ ] `tools/rbkc/docs/rbkc-converter-design.md` §8-4: `P1-merged` サブタイプの挙動を追記（グループ集約、data_rows = 先頭行のみ）
+- [ ] `tools/rbkc/docs/rbkc-json-schema-design.md` §3-4: `P1-merged` の sections 定義を追記
+- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` §3-1（複製数）・§3-4（QP）: `P1-merged` のグループ数ベース検証を追記
+- [ ] コミット: `docs: design for P1-merged subtype in security checklist (#347)`
+- [ ] プッシュしてユーザーにレビュー依頼
 
 **調査ファクト（notes.md参照）:**
 - 全量調査スクリプト実行済み: 37シートにタイトル列行マージあり、うちデータ行マージ（P1に影響）は`2.チェックリスト`と`改訂履歴`/`Revision History`のみ
-- `改訂履歴`はヘッダ行内マージ（data_start前）→発動しない
+- `改訂履歴`はヘッダ行内マージ（data_start前）→ `P1-merged` に指定する必要なし
 - verify FAILリスク: なし（集約後も全セル値は section.content に `{列名}: {値}` 形式で含まれる）
 
 ---
