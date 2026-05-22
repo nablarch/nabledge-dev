@@ -33,108 +33,13 @@ HOW-TO-RUN.md ステップ3に従い、run-1〜3を1runずつ妥当性評価 →
 
 ## Not Started
 
-### B-4-re-prep. 現行検索ベンチ用の準備（このワークツリーで実施）
+### B-4-re. 現行検索ベースライン再取得
 
-**実施場所**: このワークツリー（work1）  
-**前提**: このタスクを完了させてから、ユーザーがブランチ `343-baseline-rerun` を別ワークツリーに切り出す。
+**ブランチ**: `343-baseline-rerun`（mainベース）で別途実施  
+**タスクファイル**: `.work/00343/tasks-baseline-rerun.md`  
+**このブランチとは独立して並行実施可能**
 
-現行検索スキル（mainブランチ）を新ベンチマーク基盤（run_e2e.py）で計測するには、以下の2つの問題を解決する必要がある:
-
-- **問題1**: `e2e-prompt.md` に「Step 1/2をSkip（hearing結果が質問に埋め込まれている）」指示がある → 旧スキルに使うとknowledge searchがスキップされエラー
-- **問題2**: `parse_e2e_response()` が `### Workflow Details` マーカーを必須とする → 旧スキルの qa.md にはこの出力指示がないのでMarkerErrorになる
-- **問題3**: `hearing_answer` を質問に埋め込むと旧スキルに不当なアドバンテージを与える
-
-**解決策**: 旧スキル用の専用プロンプトファイル `e2e-prompt-baseline.md` と、専用シナリオファイル `qa-baseline.json` を作成し、run_e2e.py に `--prompt-template` オプションを追加する。
-
-- [BLOCKED: ステップ6コミット完了後に実施] run_e2e.py に `--prompt-template` オプションを追加する（TDD）
-  - `build_e2e_prompt()` はすでに `prompt_template` 引数を受け取れる設計になっている
-  - `main()` の argparse に `--prompt-template` を追加し、指定があれば読み込んで渡す
-  - テスト: `tools/tests/` に `--prompt-template` オプションのテストを追加
-  - 受入条件: `python3 -m pytest tools/tests/ -x` が GREEN
-- [ ] `tools/benchmark/prompts/e2e-prompt-baseline.md` を作成する
-  - `e2e-prompt.md` から以下を変更:
-    - 「Step 1/2をSkip」指示を削除（旧スキルはヒアリングなし、Step 1から実行する）
-    - Workflow Detailsの出力指示は**残す**（parse_e2e_response()がマーカーを必要とするため）
-    - Step 3/4/8 の詳細記録指示は残す
-  - 受入条件: 「Step 1 and Step 2: Skip」の文字列が含まれないこと
-    ```bash
-    grep "Skip both steps" tools/benchmark/prompts/e2e-prompt-baseline.md && echo "NG" || echo "OK"
-    ```
-- [ ] `tools/benchmark/scenarios/qa-baseline.json` を作成する（`hearing_answer` フィールドを除いたシナリオファイル）
-  - 旧スキルにはヒアリングステップがなく、`hearing_answer` を渡すと不当なアドバンテージになる
-  - `qa.json` の全30シナリオから `when.hearing_answer` キーを削除して保存
-  - 受入条件:
-    ```bash
-    python3 -c "import json; d=json.load(open('tools/benchmark/scenarios/qa-baseline.json')); assert all(s['when'].get('hearing_answer') is None for s in d['scenarios']); print('OK')"
-    ```
-- [ ] ステップ1（動作確認）を旧スキルで実行して e2e-prompt-baseline.md が機能することを確認
-  - **このステップは B-4-re ブランチで実施**: ワークツリー切り出し後に実行
-  - コマンド:
-    ```bash
-    python3 -m tools.benchmark.scripts.run_e2e \
-      --scenarios tools/benchmark/scenarios/qa-baseline.json \
-      --skill-dir .claude/skills/nabledge-6 \
-      --prompt-template tools/benchmark/prompts/e2e-prompt-baseline.md \
-      --scenario-ids pre-01
-    ```
-  - 受入条件: 終了コード0、`pre-01/workflow_details.json` が存在する、`pre-01/answer.md` が存在する
-  - 動作確認ディレクトリを削除する
-- [ ] コミット・プッシュ（ブランチ: `343-improve-search-quality`）
-
-### B-4-re. 現行検索ベースライン再取得（別ブランチ `343-baseline-rerun` で実施）
-
-**実施場所**: ブランチ `343-baseline-rerun`（mainベース: 旧スキルが入っている）を別ワークツリーに切り出して実施  
-**ブランチ作成**: `git branch 343-baseline-rerun main`（mainの `_knowledge-search.md` が入っているブランチ）  
-**前提**: B-4-re-prep が完了していること（run_e2e.py に `--prompt-template` 追加、e2e-prompt-baseline.md 作成、qa-baseline.json 作成）  
-**このブランチのタスクと並行して実施可能**
-
-HOW-TO-RUN.md ステップ1〜6に従う。以下が差分（通常手順からの変更点のみ）:
-- `--skill-dir`: `.claude/skills/nabledge-6`（このブランチ自体が旧スキル）
-- `--scenarios`: `tools/benchmark/scenarios/qa-baseline.json`
-- `--prompt-template`: `tools/benchmark/prompts/e2e-prompt-baseline.md`（追加オプション）
-- 結果保存先ラベル: `baseline-current-v2`
-
-- [ ] ワークツリー作成
-  ```bash
-  git worktree add .tmp/baseline-rerun 343-baseline-rerun
-  ```
-  - 受入条件（旧スキル確認）:
-    ```bash
-    ls .tmp/baseline-rerun/.claude/skills/nabledge-6/workflows/_knowledge-search.md  # 存在すること
-    ls .tmp/baseline-rerun/.claude/skills/nabledge-6/workflows/semantic-search.md    # 存在しないこと（エラーになること）
-    ```
-- [ ] 最新の run_e2e.py・シナリオ・プロンプトを取得する
-  ```bash
-  cd .tmp/baseline-rerun
-  git checkout 343-improve-search-quality -- \
-    tools/benchmark/scripts/run_e2e.py \
-    tools/benchmark/scenarios/qa-baseline.json \
-    tools/benchmark/prompts/e2e-prompt-baseline.md
-  ```
-  - 受入条件: 3ファイルが存在すること
-- [ ] ステップ1（動作確認）: pre-01 を1シナリオ実行
-  ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa-baseline.json \
-    --skill-dir .claude/skills/nabledge-6 \
-    --prompt-template tools/benchmark/prompts/e2e-prompt-baseline.md \
-    --scenario-ids pre-01
-  ```
-  - 受入条件: 終了コード0、`workflow_details.json` / `answer.md` / `metrics.json` が存在する
-  - 動作確認ディレクトリを削除する
-- [ ] ステップ2（全30シナリオ）を3回実行し、各runを `baseline-current-v2/run-N/` にリネーム保存
-  - run間でエラーが出た場合は HOW-TO-RUN.md の「エラー時の調査」に従って単体再実行で回収する
-- [ ] HOW-TO-RUN.md ステップ3（妥当性評価）: 各runのFAIL/UNCERTAINを評価し report.md に保存
-- [ ] HOW-TO-RUN.md ステップ4（集計）: `baseline-current-v2/report.md` を作成
-- [ ] 結果ファイルを `343-improve-search-quality` に反映する
-  ```bash
-  # 343-improve-search-quality ブランチで実施
-  git checkout 343-baseline-rerun -- tools/benchmark/results/baseline-current-v2/
-  ```
-  - v1-new-search/report.md の比較表を `baseline-current-v2` ベースに更新
-- [ ] ワークツリー削除: `git worktree remove .tmp/baseline-rerun`
-
-**前提:** B-4-re-prep 完了後、このブランチのタスクと並行して実施可能。
+- [BLOCKED: 343-baseline-rerun ブランチの作業完了・マージ待ち] v1-new-search/report.md の比較表を `baseline-current-v2` ベースに更新
 
 ### B-X. terms.json抽出ルールの見直し検討
 
