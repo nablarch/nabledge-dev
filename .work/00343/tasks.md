@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-22 (session 16)
+**Updated**: 2026-05-22 (session 17)
 
 ## Rules
 
@@ -12,14 +12,6 @@
 ## In Progress
 
 ## Not Started
-
-### B-4-re. 現行検索ベースライン再取得
-
-**ブランチ**: `343-baseline-rerun`（mainベース）で別途実施  
-**タスクファイル**: `.work/00343/tasks-baseline-rerun.md`  
-**このブランチとは独立して並行実施可能**
-
-- [BLOCKED: 343-baseline-rerun ブランチの作業完了・マージ待ち] v1-new-search/report.md の比較表を `baseline-current-v2` ベースに更新
 
 ### B-X. terms.json抽出ルールの見直し検討
 
@@ -42,13 +34,13 @@ keyword-search-design.md のterm抽出ルールについて、以下の点を検
 
 ### B-5. 改善サイクル
 
-B-4で現行未満の項目がある場合に実施。
+v1-new-search の結果（精度95.6%、幻覚88.9%）はbaseline-current（精度83.7%、幻覚14.4%）を大幅上回るため、基本的にスキップ可能。qa-05（1/3）は揺らぎ扱い。
 
+残課題がある場合のみ実施:
 - [ ] QAエキスパートの評価から劣化シナリオを特定
 - [ ] 劣化原因を部品ベンチマークで特定（`simulate_*.py --scenario-ids <id>`）
 - [ ] PE（プロンプト変更）またはSE（スクリプト変更）に改善案を相談してから実装
 - [ ] E2Eベンチマーク再実行（`results/v2-new-search/` に保存）
-- [ ] QAエキスパートによる再評価
 - [ ] 全シナリオで baseline-current 以上になるまで繰り返し
 
 ### B-6. バージョン展開
