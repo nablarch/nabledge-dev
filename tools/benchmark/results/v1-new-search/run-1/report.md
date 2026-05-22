@@ -78,4 +78,4 @@ Baseline (3-run average, old search): accuracy 83.7%, hallucination PASS 14.4%
 
 ## Known Issues
 
-- **ナレッジ誤記**: `testing-framework-03-Tips.json:s12` の fixedDate フォーマット桁数が誤記（「12桁」「15桁」→正しくは「14桁」「17桁」）。RBKC修正が必要。
+- **公式ドキュメント誤記**: `06_TestFWGuide/03_Tips.rst` の fixedDate フォーマット桁数が誤記（「12桁」「15桁」→正しくは「14桁」「17桁」）。RSTが誤っており、ナレッジはRSTを正しく変換している。
