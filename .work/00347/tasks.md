@@ -1,6 +1,6 @@
 # Tasks: Fix security checklist Excel merged-row grouping (#347)
 
-**PR**: (TBD)
+**PR**: #348
 **Issue**: #347
 **Updated**: 2026-05-22
 
@@ -21,14 +21,14 @@
 
 ## Not Started
 
-### Task 1: ベースライン記録 — 全5バージョンの verify FAIL 数を記録
+### ~~Task 1: ベースライン記録 — 全5バージョンの verify FAIL 数を記録~~ ✅
 **Steps:**
-- [ ] `bash rbkc.sh verify v6` 実行、FAIL 数を記録
-- [ ] `bash rbkc.sh verify v5` 実行、FAIL 数を記録
-- [ ] `bash rbkc.sh verify v1.4` 実行、FAIL 数を記録
-- [ ] `bash rbkc.sh verify v1.3` 実行、FAIL 数を記録
-- [ ] `bash rbkc.sh verify v1.2` 実行、FAIL 数を記録
-- [ ] 結果を `.work/00347/notes.md` に記録
+- [x] `bash rbkc.sh verify 6` 実行、FAIL 0 件
+- [x] `bash rbkc.sh verify 5` 実行、FAIL 0 件
+- [x] `bash rbkc.sh verify 1.4` 実行、FAIL 0 件
+- [x] `bash rbkc.sh verify 1.3` 実行、FAIL 0 件
+- [x] `bash rbkc.sh verify 1.2` 実行、FAIL 0 件
+- [x] 結果を `.work/00347/notes.md` に記録
 - [ ] コミット: `docs: record baseline verify FAIL counts for #347`
 
 ---
