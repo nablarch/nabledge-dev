@@ -1363,10 +1363,47 @@ def _trailing_extra_rows(rows: list[list[str]], data_start: int) -> int:
     return last - data_start
 
 
+def _read_title_col_merge_groups(
+    source_path,
+    sheet_name: str,
+    title_col: int,
+    data_start: int,
+    nrows: int,
+) -> list[tuple[int, int]]:
+    """Read title-column merge groups from xlsx merged_cells (independent of converter).
+
+    Returns list of (start_row, end_row) pairs (0-indexed into sheet rows).
+    Single-row segments (not merged) become (r, r) groups.
+    Rows before data_start are ignored.
+    """
+    ext = str(source_path).lower().rsplit(".", 1)[-1]
+    merge_ends: dict[int, int] = {}
+    if ext != "xls":
+        import openpyxl
+        wb = openpyxl.load_workbook(str(source_path), data_only=True)
+        ws = wb[sheet_name]
+        for m in ws.merged_cells.ranges:
+            if m.min_row != m.max_row and (m.min_col - 1) == title_col:
+                start = max(m.min_row - 1, data_start)
+                merge_ends[start] = m.max_row - 1
+
+    groups: list[tuple[int, int]] = []
+    r = data_start
+    while r < nrows:
+        if r in merge_ends:
+            groups.append((r, merge_ends[r]))
+            r = merge_ends[r] + 1
+        else:
+            groups.append((r, r))
+            r += 1
+    return groups
+
+
 def _xlsx_source_tokens(
     source_path,
     sheet_name: str | None = None,
     sheet_type: str | None = None,
+    sheet_subtype: str | None = None,
 ) -> list[str]:
     """Return non-empty cell tokens from *source_path*.
 
@@ -1377,6 +1414,7 @@ def _xlsx_source_tokens(
 
     When ``sheet_type == "P1"`` (and ``sheet_name`` is given), header-row
     cell values are duplicated by data-row count per spec §3-1 Excel 節.
+    For ``sheet_subtype == "P1-merged"``, duplication count = group count.
     Without ``sheet_type`` the raw 1:1 tokenisation is returned.
     """
     sheets_rows = _read_sheet_matrix(source_path, sheet_name)
@@ -1399,7 +1437,7 @@ def _xlsx_source_tokens(
         if detected is not None:
             header_start, data_start, columns = detected
             width = len(columns)
-            data_rows = _data_rows(rows, data_start, width)
+            title_col_idx = _pick_title_col_idx(columns)
             tokens: list[str] = []
             # §8-4 sheet-name title fallback: the JSON title comes first
             # in the concatenated JSON text, so emit it first to match
@@ -1412,38 +1450,76 @@ def _xlsx_source_tokens(
                 for v in r:
                     if v:
                         tokens.append(" ".join(v.split()))
-            # Emit tokens in JSON appearance order (spec §8-4) so the
-            # existing forward-scan sequential-delete stays tight (QC3
-            # still catches reordering).  Per §8-4:
-            #   section.title = title-col cell value (or first non-No. col)
-            #   section.content = lines of {列名}: {値} for non-empty cells
-            # Thus for each data row R we emit:
-            #   1. title-col cell value (section.title)
-            #   2. for each non-empty col C (in column order):
-            #        merged column-name + cell value  (= {列名}: {値} line)
-            # The title-col cell therefore appears twice — inherent to §8-4,
-            # not a converter artifact.
-            title_col_idx = _pick_title_col_idx(columns)
-            for row in data_rows:
-                title_val = row[title_col_idx] if 0 <= title_col_idx < len(row) else ""
-                if not title_val:
-                    # Fallback: first non-empty cell (mirrors converter
-                    # §8-4 section-title fallback)
-                    title_val = next((c for c in row if c), "")
-                if title_val:
-                    # §8-4 line-based format forbids embedded newlines in
-                    # values (see ``check_xlsx_p1_pairing``).  Flatten
-                    # whitespace so tokens match the JSON form.
-                    tokens.append(" ".join(title_val.split()))
-                for cx, col in enumerate(columns):
-                    if cx >= len(row):
+
+            if sheet_subtype == "P1-merged":
+                # §3-1 P1-merged: group rows by title-column merged ranges.
+                # Token order per group: head row title first (section.title),
+                # then all rows in the group in column order ({列名}: {値}).
+                merge_groups = _read_title_col_merge_groups(
+                    source_path, sheet_name, title_col_idx, data_start, len(rows)
+                )
+                for group_start, group_end in merge_groups:
+                    group_rows_raw = rows[group_start:group_end + 1]
+                    group_rows = [
+                        [c for c in r[:width]] + [""] * max(0, width - len(r))
+                        for r in group_rows_raw
+                    ]
+                    non_empty = [r for r in group_rows if any(r)]
+                    if not non_empty:
                         continue
-                    cell = row[cx]
-                    if not col or not cell:
-                        continue
-                    tokens.append(col)
-                    tokens.append(" ".join(cell.split()))
-            # Trailing rows after data_rows (usually none; guard anyway).
+                    head = non_empty[0]
+                    # section.title token
+                    title_val = head[title_col_idx] if 0 <= title_col_idx < len(head) else ""
+                    if not title_val:
+                        title_val = next((c for c in head if c), "")
+                    if title_val:
+                        tokens.append(" ".join(title_val.split()))
+                    # section.content tokens: all rows in group
+                    for row in non_empty:
+                        for cx, col in enumerate(columns):
+                            if cx >= len(row):
+                                continue
+                            cell = row[cx]
+                            if not col or not cell:
+                                continue
+                            tokens.append(col)
+                            tokens.append(" ".join(cell.split()))
+            else:
+                # Standard P1: one section per data row.
+                data_rows = _data_rows(rows, data_start, width)
+                # Emit tokens in JSON appearance order (spec §8-4) so the
+                # existing forward-scan sequential-delete stays tight (QC3
+                # still catches reordering).  Per §8-4:
+                #   section.title = title-col cell value (or first non-No. col)
+                #   section.content = lines of {列名}: {値} for non-empty cells
+                # Thus for each data row R we emit:
+                #   1. title-col cell value (section.title)
+                #   2. for each non-empty col C (in column order):
+                #        merged column-name + cell value  (= {列名}: {値} line)
+                # The title-col cell therefore appears twice — inherent to §8-4,
+                # not a converter artifact.
+                for row in data_rows:
+                    title_val = row[title_col_idx] if 0 <= title_col_idx < len(row) else ""
+                    if not title_val:
+                        # Fallback: first non-empty cell (mirrors converter
+                        # §8-4 section-title fallback)
+                        title_val = next((c for c in row if c), "")
+                    if title_val:
+                        # §8-4 line-based format forbids embedded newlines in
+                        # values (see ``check_xlsx_p1_pairing``).  Flatten
+                        # whitespace so tokens match the JSON form.
+                        tokens.append(" ".join(title_val.split()))
+                    for cx, col in enumerate(columns):
+                        if cx >= len(row):
+                            continue
+                        cell = row[cx]
+                        if not col or not cell:
+                            continue
+                        tokens.append(col)
+                        tokens.append(" ".join(cell.split()))
+
+            # Trailing rows after data section (usually none; guard anyway).
+            data_rows_all = _data_rows(rows, data_start, width)
             trailing_end = data_start + _trailing_extra_rows(rows, data_start)
             for r in rows[trailing_end:]:
                 for v in r:
@@ -1520,16 +1596,11 @@ def check_xlsx_p1_pairing(source_path, data: dict, sheet_name: str) -> list[str]
         return []
     _, data_start, columns = detected
     width = len(columns)
-    data_rows = _data_rows(rows, data_start, width)
+    title_col_idx = _pick_title_col_idx(columns)
 
     issues: list[str] = []
     sections = data.get("sections", [])
-    if len(sections) != len(data_rows):
-        issues.append(
-            f"[QP] {file_id} sheet={sheet_name!r}: section count mismatch — "
-            f"JSON has {len(sections)} sections, Excel has {len(data_rows)} data rows"
-        )
-        # Continue with the overlap so downstream mismatches are also reported.
+    sheet_subtype = data.get("sheet_subtype")
 
     # Duplicate column-name guard (zero-tolerance resolution of the spec
     # gap): two source columns sharing the same header name make the
@@ -1552,47 +1623,110 @@ def check_xlsx_p1_pairing(source_path, data: dict, sheet_name: str) -> list[str]
             f"{col!r} in Excel header — {{列名}}: {{値}} line format is ambiguous"
         )
 
-    for idx, (sec, row) in enumerate(zip(sections, data_rows), start=1):
-        expected: dict[str, str] = {}
-        for cx, col in enumerate(columns):
-            if cx >= len(row):
-                continue
-            cell = row[cx]
-            if not cell:
-                continue
-            if not col:
-                continue
-            if col in dup_cols:
-                # Ambiguous column already reported at header level; do
-                # not re-flag per row.
-                continue
-            # §8-4 line-based `{列名}: {値}` format cannot preserve
-            # embedded newlines/tabs.  Flatten whitespace on both sides
-            # for comparison (verify-side derivation from §8-4, not
-            # converter mirroring).
-            expected[col] = " ".join(cell.split())
-        actual = dict(_parse_section_pairs(sec.get("content", "")))
-        # pair_missing: expected column absent or value mismatched.
-        for col, val in expected.items():
-            if col not in actual:
-                issues.append(
-                    f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
-                    f"missing column {col!r} (expected value {val!r})"
-                )
-            elif actual[col] != val:
-                issues.append(
-                    f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
-                    f"column {col!r} value mismatch — "
-                    f"expected {val!r}, got {actual[col]!r}"
-                )
-        # pair_extra: JSON section has a column name not present in expected.
-        # (spec allows omitting empty cells; extras indicate converter leakage.)
-        for col in actual:
-            if col not in expected:
-                issues.append(
-                    f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
-                    f"unexpected column {col!r} not in Excel header"
-                )
+    if sheet_subtype == "P1-merged":
+        # §3-4 P1-merged: section N corresponds to merge group N.
+        # Group count is derived independently from merged_cells.
+        merge_groups = _read_title_col_merge_groups(
+            source_path, sheet_name, title_col_idx, data_start, len(rows)
+        )
+        # Skip all-empty groups.
+        non_empty_groups = [
+            (gs, ge) for gs, ge in merge_groups
+            if any(any(r) for r in rows[gs:ge + 1])
+        ]
+        if len(sections) != len(non_empty_groups):
+            issues.append(
+                f"[QP] {file_id} sheet={sheet_name!r}: section count mismatch — "
+                f"JSON has {len(sections)} sections, "
+                f"Excel has {len(non_empty_groups)} merge groups"
+            )
+        for idx, (sec, (group_start, group_end)) in enumerate(
+            zip(sections, non_empty_groups), start=1
+        ):
+            # Build expected pairs: union of all non-empty {col: val} across
+            # all rows in the group.  Per spec §3-4 P1-merged: the section
+            # content must contain every pair from every row in the group.
+            expected_pairs: list[tuple[str, str]] = []
+            for r in rows[group_start:group_end + 1]:
+                cells = [c for c in r[:width]] + [""] * max(0, width - len(r))
+                for cx, col in enumerate(columns):
+                    if cx >= len(cells):
+                        continue
+                    cell = cells[cx]
+                    if not cell or not col or col in dup_cols:
+                        continue
+                    expected_pairs.append((col, " ".join(cell.split())))
+            actual_pairs = _parse_section_pairs(sec.get("content", ""))
+            # Build multiset: same (col, val) may appear multiple times
+            # (once per row in the group).
+            from collections import Counter
+            exp_counter = Counter(expected_pairs)
+            act_counter = Counter(actual_pairs)
+            for pair, count in exp_counter.items():
+                col, val = pair
+                if act_counter[pair] < count:
+                    issues.append(
+                        f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
+                        f"missing or insufficient column {col!r} "
+                        f"(expected value {val!r})"
+                    )
+            for pair in act_counter:
+                col = pair[0]
+                if col not in {c for c, _ in exp_counter} and col:
+                    issues.append(
+                        f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
+                        f"unexpected column {col!r} not in Excel header"
+                    )
+    else:
+        data_rows = _data_rows(rows, data_start, width)
+        if len(sections) != len(data_rows):
+            issues.append(
+                f"[QP] {file_id} sheet={sheet_name!r}: section count mismatch — "
+                f"JSON has {len(sections)} sections, Excel has {len(data_rows)} data rows"
+            )
+            # Continue with the overlap so downstream mismatches are also reported.
+
+        for idx, (sec, row) in enumerate(zip(sections, data_rows), start=1):
+            expected: dict[str, str] = {}
+            for cx, col in enumerate(columns):
+                if cx >= len(row):
+                    continue
+                cell = row[cx]
+                if not cell:
+                    continue
+                if not col:
+                    continue
+                if col in dup_cols:
+                    # Ambiguous column already reported at header level; do
+                    # not re-flag per row.
+                    continue
+                # §8-4 line-based `{列名}: {値}` format cannot preserve
+                # embedded newlines/tabs.  Flatten whitespace on both sides
+                # for comparison (verify-side derivation from §8-4, not
+                # converter mirroring).
+                expected[col] = " ".join(cell.split())
+            actual = dict(_parse_section_pairs(sec.get("content", "")))
+            # pair_missing: expected column absent or value mismatched.
+            for col, val in expected.items():
+                if col not in actual:
+                    issues.append(
+                        f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
+                        f"missing column {col!r} (expected value {val!r})"
+                    )
+                elif actual[col] != val:
+                    issues.append(
+                        f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
+                        f"column {col!r} value mismatch — "
+                        f"expected {val!r}, got {actual[col]!r}"
+                    )
+            # pair_extra: JSON section has a column name not present in expected.
+            # (spec allows omitting empty cells; extras indicate converter leakage.)
+            for col in actual:
+                if col not in expected:
+                    issues.append(
+                        f"[QP] {file_id} sheet={sheet_name!r} section[{idx}]: "
+                        f"unexpected column {col!r} not in Excel header"
+                    )
     return issues
 
 
@@ -1614,6 +1748,7 @@ def _verify_xlsx(source_path, data: dict, sheet_name: str | None = None) -> list
         source_path,
         sheet_name=sheet_name,
         sheet_type=data.get("sheet_type"),
+        sheet_subtype=data.get("sheet_subtype"),
     )
     if not tokens:
         return []
