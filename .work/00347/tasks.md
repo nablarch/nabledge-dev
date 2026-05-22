@@ -2,7 +2,7 @@
 
 **PR**: #348
 **Issue**: #347
-**Updated**: 2026-05-22
+**Updated**: 2026-05-22 (updated end-of-session)
 
 ## Rule: Fact-based judgment only
 
@@ -29,25 +29,37 @@
 - [x] `bash rbkc.sh verify 1.3` 実行、FAIL 0 件
 - [x] `bash rbkc.sh verify 1.2` 実行、FAIL 0 件
 - [x] 結果を `.work/00347/notes.md` に記録
-- [ ] コミット: `docs: record baseline verify FAIL counts for #347`
+- [x] コミット: `docs: record baseline verify FAIL counts for #347` — `108d9bc5b`
 
 ---
 
 ### Task 2: 設計 — 修正方針の設計書作成とユーザー確認
-**前提調査（設計前に事実確認）:**
-- [ ] Excel の `2.チェックリスト` シートで `ws.merged_cells.ranges` を全列挙し、タイトル列（C 列）のマージ範囲を特定する
-- [ ] `openpyxl` の `MergedCellRange` API を確認し、行マージ検出の方法を empirically 確認する
-- [ ] 現在の `_build_p1_sections` の section 生成ロジックを正確に把握する
+**前提調査（完了）:**
+- [x] Excel の `2.チェックリスト` シートで `ws.merged_cells.ranges` を全列挙し、タイトル列（C 列）のマージ範囲を特定する
+  - C列に12グループ（脆弱性単位）のマージあり（rows 9-13=SQLi, 14-15=OSコマンド, ... 56-57=アクセス制御）
+- [x] `openpyxl` の `MergedCellRange` API を確認 — `ws.merged_cells.ranges` で列挙、`m.min_col/max_col/min_row/max_row` で範囲特定
+- [x] 現在の `_build_p1_sections` の section 生成ロジックを正確に把握する
+  - `xlsx_common.py:487-540`：1データ行→1セクション生成（マージ無視）
 
-**設計:**
-- [ ] 修正アプローチを決定する（TDD: グループ化 or フォワードフィル）
-  - Software Engineer expert review を subagent で実施し、設計を評価する
-- [ ] `tools/rbkc/docs/rbkc-converter-design.md` §8 に新挙動の仕様を追記する
-- [ ] `tools/rbkc/docs/xlsx-sheet-mapping.md` の `2.チェックリスト` 行に注記を追加する
-- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` への影響を確認し、必要なら更新する
+**設計（確定）:**
+- [x] 修正アプローチを決定: **Option A（RawSheetに`merged_col_groups`フィールド追加）**
+  - Software Engineer expert review 実施: 0 Findings — Option A推奨
+  - Option B（forward-fill）は`read_sheet()`がタイトル列を知れないため不採用
+  - 発動条件: `data_start`以降のタイトル列がrow-spanningマージのslaveである行のみグループ化
+  - 全量調査（RBKC mapped xlsx全29ファイル全シート）実施: 影響は`2.チェックリスト` 4シートのみ（v5/v6 各日/英）
+  - リリースノートのヘッダ行マージ（パターンA）・非タイトル列マージ（パターンC）は発動しない
+- [DECISION: この設計で進めてよいか] `tools/rbkc/docs/rbkc-converter-design.md` §8-4 P1 `sections`行に新挙動を追記する
+- [ ] `tools/rbkc/docs/xlsx-sheet-mapping.md` の `2.チェックリスト` 行（v5/v6両方）に Notes 追加
+- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` への影響: **変更不要**（Excel QC1-QC3はセル値ベース、セクション境界非依存）
+- [ ] `tools/rbkc/docs/rbkc-json-schema-design.md` への影響: **変更不要**（スキーマ構造は変わらない）
 
-**⚠️ ユーザー確認が必要 — 設計書更新後にPRでユーザーに確認を求める**
+**⚠️ ユーザー承認待ち — 設計承認後にコミット・次タスクへ進む**
 - [ ] コミット: `docs: design for merged-row P1 grouping in security checklist (#347)`
+
+**調査ファクト（notes.md参照）:**
+- 全量調査スクリプト実行済み: 37シートにタイトル列行マージあり、うちデータ行マージ（P1に影響）は`2.チェックリスト`と`改訂履歴`/`Revision History`のみ
+- `改訂履歴`はヘッダ行内マージ（data_start前）→発動しない
+- verify FAILリスク: なし（集約後も全セル値は section.content に `{列名}: {値}` 形式で含まれる）
 
 ---
 
