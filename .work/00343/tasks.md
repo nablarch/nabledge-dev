@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-22 (session 19)
+**Updated**: 2026-05-22 (session 20)
 
 ## Rules
 
@@ -13,29 +13,29 @@
 
 ## Not Started
 
-### B-5. 改善サイクル
+### C-1. ゴミ確認・部品ベンチ削除
 
-v1-new-search の結果（精度95.6%、幻覚88.9%）はbaseline-current（精度83.7%、幻覚14.4%）を大幅上回るため、基本的にスキップ可能。qa-05（1/3）は揺らぎ扱い。
+- [ ] `tools/benchmark/` 以下を確認し、部品ベンチマーク（`components/`, `simulate_*.py`）など不要ファイルを特定してリスト化
+- [ ] ユーザーに削除対象を確認してから削除
+- [ ] 新検索スキル（v6）の実装ファイルを確認し、不要ファイル（旧ワークフロー残骸等）がないかチェック・報告
 
-残課題がある場合のみ実施:
-- [ ] QAエキスパートの評価から劣化シナリオを特定
-- [ ] 劣化原因を部品ベンチマークで特定（`simulate_*.py --scenario-ids <id>`）
-- [ ] PE（プロンプト変更）またはSE（スクリプト変更）に改善案を相談してから実装
-- [ ] E2Eベンチマーク再実行（`results/v2-new-search/` に保存）
-- [ ] 全シナリオで baseline-current 以上になるまで繰り返し
+### C-2. 設計書再作成（実装ベース）
 
-### B-6. バージョン展開
+既存設計書を削除してから、実装を見て最新状態として書き直す。変更履歴・経緯は不要。実装から分からない設計意図を含める。
 
-B-5完了後。v6で確定した検索をv5/v1.xに展開。
+**対象設計書**: `.work/00343/design/` 以下の全ファイル
 
-- [ ] v5: ワークフロー・アセット・スクリプトをコピー（パス置換のみ）
-  ```bash
-  python3 -m tools.benchmark.scripts.run_qa \
-    --scenarios tools/benchmark/scenarios/qa.json \
-    --skill-dir .claude/skills/nabledge-5 \
-    --scenario-ids pre-01
-  ```
-- [ ] v1.4, v1.3, v1.2: 同上
+- [ ] 既存設計書を削除（`git rm .work/00343/design/`）
+- [ ] 新検索実装（v6 workflows/scripts）を読み、検索設計書を作成
+- [ ] ベンチマーク実装（`tools/benchmark/`）を読み、ベンチマーク設計書を作成
+
+### C-3. 他バージョン展開・差分チェック
+
+C-2完了後。v6設計書をチェックリストとして他バージョンを確認し品質担保。
+
+- [ ] v6の正解状態からチェックリストを作成
+- [ ] v5/v1.4/v1.3/v1.2 の各ファイルをチェックリストと照合（バージョン固有差分は許容）
+- [ ] NGがあれば修正してコミット
 
 ### B-7. nabledge-test削除
 
@@ -95,6 +95,8 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-6. バージョン展開（v5/v1.4/v1.3/v1.2 keyword+semantic search 展開）— `c0dd1657f`
+- [x] B-5. 改善サイクル — スキップ（v1-new-search 精度95.6%/幻覚88.9%、qa-05は揺らぎ扱い、ユーザー承認済み）
 - [x] B-X. terms.json廃止 → 全文スキャン（impact-09: recall 0→1、26テストGREEN、QO5削除）— `99f8f3bfb`〜`feabbeb22`
 - [x] ベンチマーク ステップ3〜6（妥当性評価・集計・根本原因調査・qa-05揺らぎ判定）— `8d1252b39`, qa-05対処不要ユーザー承認
 - [x] B-4. 新スキルE2Eベンチマーク（run-1/2/3 実行完了） — run-1: `1e44a77d7`, run-2/3: `6f8dd0872`
