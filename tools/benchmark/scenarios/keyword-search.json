@@ -74,17 +74,16 @@
       }
     },
     {
-      "id": "review-03",
+      "id": "review-03a",
       "given": {
         "usecase": "review",
         "category": "validation",
-        "description": "REST APIのリソースクラスで@Validアノテーションを付けてJSONリクエストのバリデーションを行っている。Beanクラスにドメインバリデーション用のアノテーションを設定している。"
+        "description": "REST APIのリソースクラスで@Validアノテーションを付けてJSONリクエストのバリデーションを行っている。"
       },
       "when": {
         "workflow": "keyword-search",
         "input": [
-          "@Valid",
-          "ドメインバリデーション"
+          "@Valid"
         ]
       },
       "then": {
@@ -92,7 +91,30 @@
           {
             "fact": "リソースクラスのメソッドにValidアノテーションを設定してバリデーションを実行する",
             "section": "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4"
-          },
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/handlers/handlers-jaxrs-bean-validation-handler.json:s5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-03b",
+      "given": {
+        "usecase": "review",
+        "category": "validation",
+        "description": "BeanクラスにNablarchのドメインバリデーション用のアノテーションを設定している。"
+      },
+      "when": {
+        "workflow": "keyword-search",
+        "input": [
+          "ドメインバリデーション"
+        ]
+      },
+      "then": {
+        "must": [
           {
             "fact": "ドメインBeanにドメインごとのバリデーションルールを定義する",
             "section": "component/libraries/libraries-bean-validation.json:s9"
@@ -100,7 +122,7 @@
         ],
         "acceptable": [
           {
-            "section": "component/libraries/libraries-bean-validation.json:s17"
+            "section": "component/libraries/libraries-bean-validation.json:s8"
           }
         ]
       }
@@ -196,12 +218,11 @@
       "given": {
         "usecase": "impact",
         "category": "batch-impl",
-        "description": "DataReadHandlerのソースを見ている。バッチでエラーが起きたときにどこまで処理済みか分からなくなることがある。リランや継続実行の仕組みを確認したい。"
+        "description": "バッチでエラーが起きたときにどこまで処理済みか分からなくなることがある。リランや継続実行の仕組みを確認したい。"
       },
       "when": {
         "workflow": "keyword-search",
         "input": [
-          "DataReadHandler",
           "リラン"
         ]
       },
