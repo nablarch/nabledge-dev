@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-22 (session 15)
+**Updated**: 2026-05-22 (session 16)
 
 ## Rules
 
@@ -10,26 +10,6 @@
 - 各ステップ完了・中断のたびにタスクリストを更新してコミット・プッシュする（いつでも中断・再開できる状態を保つ）
 
 ## In Progress
-
-### ベンチマーク ステップ3: run-1〜3の妥当性評価
-
-HOW-TO-RUN.md ステップ3に従い、run-1〜3を1runずつ妥当性評価 → ユーザー承認 → FAILを確定させる。
-
-- [x] HOW-TO-RUN.md ステップ3以降をゼロベース書き直し（3a/3b/3c → ステップ3/4/5/6の構造に変更） — `8f2ac2155`
-- [x] HOW-TO-RUN.md ステップ3bに妥当性評価観点を追記（mustの充足確認、RST誤記の遡及確認） — `3a4625b71`
-- [x] run-1 妥当性評価完了・レポート更新 — 確定FAIL 0件 — `0099e7026`
-- [x] [DECISION: run-1 妥当性評価を承認（確定FAIL 0件）]
-- [x] run-2 妥当性評価完了 — 確定FAIL 0件（4件すべて問題なし）— `1243f2471`
-- [x] run-3 妥当性評価完了 — 確定FAIL 1件（qa-05: JaxbBodyConverter誤説明）— `1243f2471`
-- [x] run-2/run-3 レポートとtasks.mdをコミット・プッシュ — `1243f2471`
-- [x] qa.md / semantic-search.md: 「実装パターン・サンプルを参考にしたい」を「実装したい」に統合（v6のみ）— `acbf0d217`
-- [x] qa.json: シナリオ修正（qa-05/qa-13 purpose変更、qa-05 must追加、qa-12a移動）— `acbf0d217`
-- [x] semantic-search.md: 「実装したい」優先カテゴリに component/adapters 追加 — `02eedcccd`
-- [x] qa-05 3回再実行（+4回追加）→ adapters-jaxrs-adaptor.json が選ばれない構造的問題を確認。現状の限界として受け入れ（ユーザー承認）
-- [x] ステップ4: 3 run集計レポート作成 → `v1-new-search/report.md` に保存
-- [x] ステップ5: 確定FAILの根本原因調査・提案（qa-05: 揺らぎ候補/要改善） → ユーザーが対応要否を判定
-- [BLOCKED: qa-05対応要否をユーザーが判定してからコミット] ステップ6: コミット・プッシュ
-
 
 ## Not Started
 
@@ -142,6 +122,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] ベンチマーク ステップ3〜6（妥当性評価・集計・根本原因調査・qa-05揺らぎ判定）— `8d1252b39`, qa-05対処不要ユーザー承認
 - [x] B-4. 新スキルE2Eベンチマーク（run-1/2/3 実行完了） — run-1: `1e44a77d7`, run-2/3: `6f8dd0872`
 - [x] B-4-1-fix. read-sections.sh sections:[] 対応（9テスト追加・全バージョン修正）— `11c9160ec`
 - [x] B-4-1. run-1 再測定（B-4-1-fix後）— Claims 96.7%, Hal 93.3%, $27.56 — `1e44a77d7`, `66f936c6e`
