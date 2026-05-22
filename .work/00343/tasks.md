@@ -45,8 +45,10 @@ HOW-TO-RUN.md ステップ3に従い、run-1〜3を1runずつ妥当性評価 →
   - 全30シナリオの `when.hearing_answer` を削除したファイル `tools/benchmark/scenarios/qa-baseline.json` を生成
   - 受入条件: `python3 -c "import json; d=json.load(open('tools/benchmark/scenarios/qa-baseline.json')); assert all(s['when'].get('hearing_answer') is None for s in d['scenarios'])"` が通ること
 - [ ] 現行検索スキル（mainブランチの `.claude/skills/nabledge-6`）を用意する
-  - `git worktree add .tmp/baseline-rerun main`
-  - 受入条件: `.tmp/baseline-rerun/.claude/skills/nabledge-6/workflows/qa.md` が存在すること
+  - このブランチから別ブランチを作り、別ワークツリーで実行すれば本ブランチの作業と並行可能
+  - `git branch 343-baseline-rerun main` で mainベースのブランチを作成
+  - `git worktree add .tmp/baseline-rerun 343-baseline-rerun`
+  - 受入条件: `.tmp/baseline-rerun/.claude/skills/nabledge-6/workflows/qa.md` が存在すること（旧スキル: `_knowledge-search.md` がある、`semantic-search.md` がない）
 - [ ] 3 run 実行 → `tools/benchmark/results/baseline-current-v2/` に保存
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
