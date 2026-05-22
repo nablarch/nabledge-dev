@@ -39,7 +39,7 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
 
    | 目的 | Priority categories |
    |------|-------------------|
-   | 実装したい | processing-pattern/*, component/libraries |
+   | 実装したい | processing-pattern/*, component/libraries, component/adapters |
    | 仕組み・動作を理解したい | component/handlers, component/libraries, about/about-nablarch |
    | 不具合・エラーを調査したい | component/handlers, component/libraries, processing-pattern/* |
    | テストを書きたい | development-tools/testing-framework, component/libraries |
