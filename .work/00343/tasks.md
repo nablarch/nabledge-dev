@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-22 (session 20)
+**Updated**: 2026-05-22 (session 21)
 
 ## Rules
 
@@ -15,9 +15,16 @@
 
 ### C-1. ゴミ確認・部品ベンチ削除
 
-- [ ] `tools/benchmark/` 以下を確認し、部品ベンチマーク（`components/`, `simulate_*.py`）など不要ファイルを特定してリスト化
-- [ ] ユーザーに削除対象を確認してから削除
-- [ ] 新検索スキル（v6）の実装ファイルを確認し、不要ファイル（旧ワークフロー残骸等）がないかチェック・報告
+- [x] `tools/benchmark/` 以下を確認し、部品ベンチマーク（`components/`, `simulate_*.py`）など不要ファイルを特定してリスト化
+- [x] ユーザーに削除対象を確認してから削除（承認済み）
+- [ ] 削除実施:
+  - `git rm -r tools/benchmark/scripts/run.py tools/benchmark/scripts/simulate_*.py`
+  - `git rm -r tools/benchmark/components/`
+  - `git rm tools/benchmark/tests/test_run.py tools/benchmark/tests/test_simulate_*.py`
+  - `rm -rf tools/benchmark/results/20260522-165151/ tools/benchmark/results/20260522-170658/`
+- [ ] 動作確認: `python3 -m pytest tools/benchmark/ -x -q` が全 PASS（削除後に残ったテストが壊れていないことを確認）
+  - 受入条件: 終了コード 0、test_run_qa / test_run_keyword_search / test_evaluate / test_report が全て PASS
+- [x] 新検索スキル（v6）の実装ファイルを確認し、不要ファイルなし（確認済み）
 
 ### C-2. 設計書再作成（実装ベース）
 
