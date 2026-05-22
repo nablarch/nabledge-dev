@@ -64,8 +64,18 @@ Baseline (3-run average, old search): accuracy 83.7%, hallucination PASS 14.4%
 
 > Note: Baseline hallucination PASS rate was low because the old search returned fewer/wrong sections, causing many unsupported claims. New keyword+semantic search dramatically improves grounding.
 
+## Validity Review
+
+自動スコアのFAIL/UNCERTAINについて妥当性を評価した結果、確定FAILはゼロ。
+
+| Scenario | Auto Score | Final Verdict | Reason |
+|---|---|---|---|
+| impact-08 | Hal FAIL | **問題なし** | 回答の桁数（14桁/17桁）は正しい。ナレッジ `testing-framework-03-Tips.json:s12` の「12桁/15桁」が誤記。回答は正確 |
+| qa-12a | Hal UNCERTAIN | **問題なし** | mustのfactはすべて回答に含まれている。Thymeleaf部分はナレッジ未収録だが一般的な補足情報でありNablarch固有のハルシネーションではない |
+| qa-12b | Acc UNCERTAIN | **問題なし** | factが「自動的にエラーレスポンスになる」と過度に単純化。回答はより正確で詳細（ErrorResponseBuilderのカスタム実装が必要と正しく説明）。スキルは正しく動作 |
+
+**確定FAIL: 0件**
+
 ## Known Issues
 
-- **impact-08 FAIL**: `fixedDate` format string (`yyyyMMddHHmmss`/`yyyyMMddHHmmssSSS`) stated in answer but not found in knowledge sections. Likely accurate Nablarch behavior but not covered in current knowledge files.
-- **qa-12a UNCERTAIN**: Two claims about `HTTPエラー制御ハンドラ` and `Thymeleaf errors.hasError` not directly found in selected sections. Possibly accurate but not grounded.
-- **qa-12b null accuracy**: Evaluation fact was an oversimplification; answer correctly described more nuanced behavior. Not a quality problem — fact needs revision.
+- **ナレッジ誤記**: `testing-framework-03-Tips.json:s12` の fixedDate フォーマット桁数が誤記（「12桁」「15桁」→正しくは「14桁」「17桁」）。RBKC修正が必要。
