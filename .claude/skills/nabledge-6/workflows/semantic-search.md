@@ -44,7 +44,6 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
    | 不具合・エラーを調査したい | component/handlers, component/libraries, processing-pattern/* |
    | テストを書きたい | development-tools/testing-framework, component/libraries |
    | バージョンアップしたい | about/migration, releases/releases, about/release-notes |
-   | 実装パターン・サンプルを参考にしたい | guide/nablarch-patterns, guide/biz-samples, processing-pattern/* |
    | セキュリティ対応したい | check/security-check, component/handlers, processing-pattern/* |
 
 5. Take up to 10 candidates in order. If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately.

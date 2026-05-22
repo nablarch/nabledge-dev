@@ -46,7 +46,6 @@ Purpose categories:
 - 不具合・エラーを調査したい
 - テストを書きたい
 - バージョンアップしたい
-- 実装パターン・サンプルを参考にしたい
 - セキュリティ対応したい
 
 - Purpose is clear from the question → `purpose = <that category>`
@@ -87,9 +86,8 @@ Otherwise, ask only about what is UNCLEAR.
 3. 不具合・エラーを調査したい
 4. テストを書きたい
 5. バージョンアップしたい
-6. 実装パターン・サンプルを参考にしたい
-7. セキュリティ対応したい
-8. その他
+6. セキュリティ対応したい
+7. その他
 ```
 
 **If only processing_type is UNCLEAR**, output:
@@ -117,9 +115,8 @@ Otherwise, ask only about what is UNCLEAR.
 3. 不具合・エラーを調査したい
 4. テストを書きたい
 5. バージョンアップしたい
-6. 実装パターン・サンプルを参考にしたい
-7. セキュリティ対応したい
-8. その他
+6. セキュリティ対応したい
+7. その他
 ```
 
 Wait for the user's response. Then set:
