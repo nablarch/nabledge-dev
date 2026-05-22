@@ -158,11 +158,11 @@
 
 ---
 
-### Task 10: PR レビュー依頼
+### ~~Task 10: PR レビュー依頼~~ ✅
+
 **Steps:**
-- [ ] Task 9 のユーザー確認完了後、PR に expert review リンクを追加する
-- [ ] PR の Success Criteria Check テーブルを更新する
-- [ ] ユーザーにレビュー依頼する
+- [x] PR body に expert review リンク追加
+- [x] Success Criteria Check テーブルを全件 ✅ Met に更新
 
 ---
 
