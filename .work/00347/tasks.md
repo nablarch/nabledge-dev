@@ -2,7 +2,7 @@
 
 **PR**: #348
 **Issue**: #347
-**Updated**: 2026-05-22 (Task 4 done)
+**Updated**: 2026-05-22 (Task 5 done)
 
 ## Rule: Fact-based judgment only
 
@@ -105,14 +105,19 @@
 
 ---
 
-### Task 5: 実装 — merged-row グループ化を `xlsx_common.py` に追加
+### ~~Task 5: 実装 — merged-row グループ化を `xlsx_common.py` に追加~~ ✅
 *Task 2 の設計・Task 3 のユーザー確認・Task 4 の RED テストが完了してから着手すること*
 
 **Steps:**
-- [ ] `tools/rbkc/scripts/create/converters/xlsx_common.py` を修正する
-  - `read_sheet` でマージセル情報を保持するか、`_build_p1_sections` でグループ化するかは設計に従う
-- [ ] `pytest` 実行 → GREEN を確認（新テスト + 既存テスト全通過）
-- [ ] コミット: `feat: group merged-row cells in P1 section builder (#347)`
+- [x] `tools/rbkc/scripts/create/converters/xlsx_common.py` を修正する
+  - RawSheet に `merged_ranges` フィールド追加
+  - `read_sheet` で xlsx の merged ranges を収集
+  - `load_sheet_subtype_map` に P1-merged を追加
+  - `_build_p1_sections` に `merge_groups` パラメータ追加 + `_build_p1_merged_sections` 追加
+  - `_build_merge_groups` ヘルパー追加
+  - `sheet_to_result` で P1-merged 分岐追加
+- [x] `pytest` 実行 → GREEN を確認（16 新テスト + 552 既存 = 568 全通過）
+- [x] コミット: `feat: group merged-row cells in P1 section builder (#347)` — `97ff4af8d`
 
 ---
 
