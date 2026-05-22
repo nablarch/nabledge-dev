@@ -40,18 +40,22 @@ HOW-TO-RUN.md ステップ3に従い、run-1〜3を1runずつ妥当性評価 →
 **背景**: output_tokens が1.5倍増えた主因は Step 8 の Workflow Details JSON 出力。input_tokens が13.5倍増えた主因は qa.md がプロンプトに埋め込まれるようになったため。旧 baseline-current はこれらが存在しない条件で取得されており、比較が不公平。
 
 **ステップ:**
-- [ ] 現行検索スキル（mainブランチの `.claude/skills/nabledge-6`）を一時的にローカルで用意する
-  - `git show main:.claude/skills/nabledge-6/` でディレクトリ構成確認
-  - `git worktree add .tmp/baseline-rerun main` または `git stash` で旧スキルに切り替え
-  - 現在の run_e2e.py と qa.json は新版（現ブランチ）のものを使う
+- [ ] `qa-baseline.json` を作成する（`hearing_answer` フィールドを除いたシナリオファイル）
+  - 旧スキルにはヒアリングステップがなく、`hearing_answer` を埋め込むと旧スキルに不当なアドバンテージを与える
+  - 全30シナリオの `when.hearing_answer` を削除したファイル `tools/benchmark/scenarios/qa-baseline.json` を生成
+  - 受入条件: `python3 -c "import json; d=json.load(open('tools/benchmark/scenarios/qa-baseline.json')); assert all(s['when'].get('hearing_answer') is None for s in d['scenarios'])"` が通ること
+- [ ] 現行検索スキル（mainブランチの `.claude/skills/nabledge-6`）を用意する
+  - `git worktree add .tmp/baseline-rerun main`
+  - 受入条件: `.tmp/baseline-rerun/.claude/skills/nabledge-6/workflows/qa.md` が存在すること
 - [ ] 3 run 実行 → `tools/benchmark/results/baseline-current-v2/` に保存
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa.json \
+    --scenarios tools/benchmark/scenarios/qa-baseline.json \
     --skill-dir .tmp/baseline-rerun/.claude/skills/nabledge-6
   ```
 - [ ] report.md を作成（3 run 集計、v1-new-search との比較）
 - [ ] v1-new-search/report.md の比較表を `baseline-current-v2` ベースに更新
+- [ ] worktree 削除: `git worktree remove .tmp/baseline-rerun`
 
 **前提:** B-4（v1-new-search）完了後に実施。ステップ6コミット前でもよい。
 
