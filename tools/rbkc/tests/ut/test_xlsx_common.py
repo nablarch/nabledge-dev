@@ -48,7 +48,7 @@ class TestBuildP1SectionsP1Merged:
         )
 
         assert len(sections) == 2
-        assert len(data_rows) == 2
+        assert len(data_rows) == 4  # all non-empty rows across both groups
 
     def test_group_title_is_head_row_title(self):
         """section.title = タイトル列 value of the first row in the group."""
@@ -156,7 +156,7 @@ class TestBuildP1SectionsP1MergedEdgeCases:
         assert sections[0].title == "A"
         assert sections[1].title == "B"
         assert sections[2].title == "C"
-        assert len(data_rows) == 3
+        assert len(data_rows) == 6  # all non-empty rows: 1+3+2=6
 
         # Group B content must include all 3 rows
         b_content = sections[1].content

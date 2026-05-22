@@ -88,6 +88,9 @@ def _render_full(data: dict, docs_md_path: Path, knowledge_dir: Path) -> str:
     # P2 uses plain-text flow.  Non-xlsx JSON has no sheet_type and falls
     # through to the default section layout.
     sheet_type = data.get("sheet_type")
+    sheet_subtype = data.get("sheet_subtype")
+    if sheet_type == "P1" and sheet_subtype == "P1-merged":
+        return _render_xlsx_p1(data)
     if sheet_type == "P1":
         return _render_xlsx_p1(data)
     if sheet_type == "P2":

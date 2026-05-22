@@ -621,7 +621,11 @@ def _build_p1_merged_sections(
             title=section_title,
             content="\n".join(content_lines),
         ))
-        data_rows.append(head_cells)
+        # data_rows: all non-empty rows in the group (for docs MD full table).
+        for r in group_rows:
+            cells = [c for c in r[:width]] + [""] * max(0, width - len(r))
+            if any(cells):
+                data_rows.append(cells)
 
     return sections, data_rows
 
