@@ -2,7 +2,7 @@
 
 **PR**: #348
 **Issue**: #347
-**Updated**: 2026-05-22 (updated end-of-session 2)
+**Updated**: 2026-05-22 (updated session 3 — design docs committed)
 
 ## Rule: Fact-based judgment only
 
@@ -58,15 +58,15 @@
     - verify: `P1-merged` のとき QP・トークン生成がグループ数ベースに切り替わる（`P1` は従来通り）
     - data_rows = グループ先頭行のみ格納（section 数 = data_rows 数 = グループ数で統一）
   - **既存影響**: 発動はマッピングに `P1-merged` と明記された4シートのみ。他シートへの影響ゼロ。
-- [ ] 設計書4本を更新する（内容は下記のステップに分解）
+- [x] 設計書4本を更新する（内容は下記のステップに分解）
 
 **設計書更新ステップ:**
-- [ ] `tools/rbkc/docs/xlsx-sheet-mapping.md`: `2.チェックリスト` の subtype を `P1` → `P1-merged` に変更（v5/v6 日英 4行）
-- [ ] `tools/rbkc/docs/rbkc-converter-design.md` §8-4: `P1-merged` サブタイプの挙動を追記（グループ集約、data_rows = 先頭行のみ）
-- [ ] `tools/rbkc/docs/rbkc-json-schema-design.md` §3-4: `P1-merged` の sections 定義を追記
-- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` §3-1（複製数）・§3-4（QP）: `P1-merged` のグループ数ベース検証を追記
-- [ ] コミット: `docs: design for P1-merged subtype in security checklist (#347)`
-- [ ] プッシュしてユーザーにレビュー依頼
+- [x] `tools/rbkc/docs/xlsx-sheet-mapping.md`: `2.チェックリスト` の subtype を `P1` → `P1-merged` に変更（v5/v6 2行）
+- [x] `tools/rbkc/docs/rbkc-converter-design.md` §8-4: `P1-merged` サブタイプの挙動を追記（グループ集約、data_rows = 先頭行のみ）
+- [x] `tools/rbkc/docs/rbkc-json-schema-design.md` §3-4: `P1-merged` の sections 定義を追記
+- [x] `tools/rbkc/docs/rbkc-verify-quality-design.md` §3-1（複製数）・§3-4（QP）: `P1-merged` のグループ数ベース検証を追記
+- [x] コミット: `docs: design for P1-merged subtype in security checklist (#347)` — `9c33a084a`
+- [x] プッシュ済み — ユーザーにレビュー依頼
 
 **調査ファクト（notes.md参照）:**
 - 全量調査スクリプト実行済み: 37シートにタイトル列行マージあり、うちデータ行マージ（P1に影響）は`2.チェックリスト`と`改訂履歴`/`Revision History`のみ
