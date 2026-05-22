@@ -5183,3 +5183,176 @@ class TestCheckJsonDocsMdConsistency_QO2_P2_1:
         docs = "# T\n\n## セクションA\n"
         issues = self._check(data, docs)
         assert any("QO2" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B: Excel P1-merged — merged-row grouping verification
+# ---------------------------------------------------------------------------
+
+
+class TestVerifyFileExcelP1Merged:
+    """Spec §3-1 / §3-4 Excel P1-merged: verify handles title-column merged
+    rows by grouping them into one section per merge group.
+
+    - Token duplication count = group count (not raw data-row count)
+    - QP section count check uses group count
+    - All rows within a group must appear in the corresponding section
+    - verify derives groups from openpyxl merged_cells independently of
+      the converter implementation
+    """
+
+    def _check(self, source_path, data, sheet_name=None):
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            return verify_file(source_path, jpath, "xlsx", sheet_name=sheet_name)
+        finally:
+            os.unlink(jpath)
+
+    def _check_qp(self, source_path, data, sheet_name):
+        from scripts.verify.verify import check_xlsx_p1_pairing
+        return check_xlsx_p1_pairing(source_path, data, sheet_name)
+
+    def _p1_merged_xlsx(self, tmp_path):
+        """Two merge groups: group A (rows 3-4), group B (rows 5-6).
+        Title column (B) is merged per group.  3 columns: No., タイトル, 対策.
+        """
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "チェックリスト"
+        # Header row
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "対策"
+        # Group A: rows 2-3 (0-indexed: 1-2), タイトル column merged
+        ws["A2"] = "1"
+        ws["B2"] = "脆弱性A"
+        ws["C2"] = "対策A1"
+        ws["A3"] = ""
+        ws["B3"] = ""    # merged slave
+        ws["C3"] = "対策A2"
+        ws.merge_cells("B2:B3")
+        # Group B: rows 4-5 (0-indexed: 3-4), タイトル column merged
+        ws["A4"] = "2"
+        ws["B4"] = "脆弱性B"
+        ws["C4"] = "対策B1"
+        ws["A5"] = ""
+        ws["B5"] = ""    # merged slave
+        ws["C5"] = "対策B2"
+        ws.merge_cells("B4:B5")
+        path = tmp_path / "check.xlsx"
+        wb.save(str(path))
+        return path
+
+    def _correct_json(self):
+        """Correct P1-merged JSON: 2 sections (one per group), each
+        containing all rows in the group."""
+        return {
+            "id": "chk",
+            "title": "チェックリスト",
+            "content": "",
+            "sheet_type": "P1",
+            "sheet_subtype": "P1-merged",
+            "sections": [
+                {
+                    "id": "s1",
+                    "title": "脆弱性A",
+                    "content": (
+                        "No.: 1\nタイトル: 脆弱性A\n対策: 対策A1\n"
+                        "対策: 対策A2"
+                    ),
+                },
+                {
+                    "id": "s2",
+                    "title": "脆弱性B",
+                    "content": (
+                        "No.: 2\nタイトル: 脆弱性B\n対策: 対策B1\n"
+                        "対策: 対策B2"
+                    ),
+                },
+            ],
+        }
+
+    # --- QC1/QC3: token duplication count = group count ---
+
+    def test_pass_p1_merged_correct_output(self, tmp_path):
+        """Correct P1-merged JSON (2 groups, all rows covered) must PASS."""
+        path = self._p1_merged_xlsx(tmp_path)
+        data = self._correct_json()
+        issues = self._check(str(path), data, sheet_name="チェックリスト")
+        assert issues == [], issues
+
+    def test_fail_p1_merged_tail_row_value_missing_from_section(self, tmp_path):
+        """Tail row value within a group absent from JSON must raise QC1."""
+        path = self._p1_merged_xlsx(tmp_path)
+        data = self._correct_json()
+        # Remove 対策A2 from section A
+        data["sections"][0]["content"] = "No.: 1\nタイトル: 脆弱性A\n対策: 対策A1"
+        issues = self._check(str(path), data, sheet_name="チェックリスト")
+        assert any("[QC1]" in i and "対策A2" in i for i in issues), issues
+
+    def test_fail_p1_merged_group_title_missing(self, tmp_path):
+        """A group title (head row) absent from JSON must raise QC1."""
+        path = self._p1_merged_xlsx(tmp_path)
+        data = self._correct_json()
+        # Remove 脆弱性B entirely from section B's content
+        data["sections"][1]["content"] = "No.: 2\n対策: 対策B1\n対策: 対策B2"
+        data["sections"][1]["title"] = "No2"  # title changed too
+        issues = self._check(str(path), data, sheet_name="チェックリスト")
+        assert any("[QC1]" in i and "脆弱性B" in i for i in issues), issues
+
+    # --- QP: section count = group count ---
+
+    def test_qp_pass_section_count_equals_group_count(self, tmp_path):
+        """QP must pass when sections == group count (2)."""
+        path = self._p1_merged_xlsx(tmp_path)
+        data = self._correct_json()
+        issues = self._check_qp(str(path), data, sheet_name="チェックリスト")
+        assert issues == [], issues
+
+    def test_qp_fail_section_count_equals_raw_row_count(self, tmp_path):
+        """QP must FAIL when JSON has raw data-row count (4) instead of
+        group count (2) — this was the pre-fix converter behaviour."""
+        path = self._p1_merged_xlsx(tmp_path)
+        data = self._correct_json()
+        # Expand to 4 sections (1 per raw row) — wrong for P1-merged
+        data["sections"] = [
+            {"id": "s1", "title": "脆弱性A", "content": "No.: 1\nタイトル: 脆弱性A\n対策: 対策A1"},
+            {"id": "s2", "title": "対策A2",  "content": "対策: 対策A2"},
+            {"id": "s3", "title": "脆弱性B", "content": "No.: 2\nタイトル: 脆弱性B\n対策: 対策B1"},
+            {"id": "s4", "title": "対策B2",  "content": "対策: 対策B2"},
+        ]
+        issues = self._check_qp(str(path), data, sheet_name="チェックリスト")
+        assert any("[QP]" in i and "section count" in i for i in issues), issues
+
+    def test_qp_pass_regular_p1_unaffected(self, tmp_path):
+        """Regular P1 (no sheet_subtype) with row-per-section must still PASS."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "S"
+        ws["A1"] = "タイトル"
+        ws["B1"] = "説明"
+        ws["A2"] = "行1"
+        ws["B2"] = "説明1"
+        ws["A3"] = "行2"
+        ws["B3"] = "説明2"
+        path = tmp_path / "p1.xlsx"
+        wb.save(str(path))
+        data = {
+            "id": "p",
+            "title": "S",
+            "content": "",
+            "sheet_type": "P1",
+            # no sheet_subtype — regular P1
+            "sections": [
+                {"id": "s1", "title": "行1", "content": "タイトル: 行1\n説明: 説明1"},
+                {"id": "s2", "title": "行2", "content": "タイトル: 行2\n説明: 説明2"},
+            ],
+        }
+        issues = self._check_qp(str(path), data, sheet_name="S")
+        assert issues == [], issues

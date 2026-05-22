@@ -143,6 +143,13 @@ KC (`tools/knowledge-creator/`) は h2/h3 が無いファイルに対して `sec
 - `sheet_type: "P1"`
 - `columns[]` / `data_rows[][]`: docs MD の table reconstruction 用
 
+**P1-merged** (`xlsx-sheet-mapping.md` で `P1-merged` と明示指定されたシートのみ):
+- P1 の全フィールドを継承。以下の差分のみ:
+- `sections`: 1 マージグループ = 1 section（脆弱性単位）。`section.title` はグループ代表行のタイトル列値。`section.content` はグループ内全行の `{列名}: {値}\n` を連結した縦列挙形式
+- `data_rows[][]`: グループ先頭行のみを 1 エントリとして格納（section 数 = data_rows 数 = グループ数）
+- `sheet_type: "P1"` (sheet_type は P1 のまま)
+- `sheet_subtype: "P1-merged"` (verify が QP・複製数計算をグループ数ベースに切り替えるためのフラグ)
+
 **P2 (段落主体)**:
 - `title`: `■…` (なければシート名)
 - `content`: シート全体のテキスト

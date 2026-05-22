@@ -487,3 +487,77 @@ class TestAssetsExcluded:
         assert (docs / "other" / "a.md").exists()
         # No MD written for the asset.
         assert not (docs / "assets" / "etl-etl" / "chunk_replace.md").exists()
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B: Excel P1-merged docs MD rendering
+# ---------------------------------------------------------------------------
+
+
+class TestRenderXlsxP1Merged:
+    """docs MD rendering for P1-merged sheets (sheet_subtype == 'P1-merged').
+
+    Spec §8-5 P1-merged: same layout as P1 (# title + preamble + full MD
+    table), but rendered via an explicit sheet_subtype branch in docs.py
+    (following the P2-1/P2-3/P2-4 pattern).
+    """
+
+    def _render(self, data: dict) -> str:
+        from scripts.create.docs import _render_full
+        return _render_full(data, docs_md_path=None, knowledge_dir=None)
+
+    def _p1_merged_data(self):
+        """P1-merged JSON with 2 groups, 4 data rows total."""
+        return {
+            "id": "chk",
+            "title": "2.チェックリスト",
+            "content": "前文テキスト",
+            "sheet_type": "P1",
+            "sheet_subtype": "P1-merged",
+            "columns": ["No.", "タイトル", "対策"],
+            "data_rows": [
+                ["1", "脆弱性A", "対策A1"],
+                ["",  "",       "対策A2"],
+                ["2", "脆弱性B", "対策B1"],
+                ["",  "",       "対策B2"],
+            ],
+            "sections": [
+                {"id": "s1", "title": "脆弱性A",
+                 "content": "No.: 1\nタイトル: 脆弱性A\n対策: 対策A1\n対策: 対策A2"},
+                {"id": "s2", "title": "脆弱性B",
+                 "content": "No.: 2\nタイトル: 脆弱性B\n対策: 対策B1\n対策: 対策B2"},
+            ],
+        }
+
+    def test_p1_merged_renders_h1_title(self):
+        """P1-merged must render # title as first line."""
+        md = self._render(self._p1_merged_data())
+        assert md.startswith("# 2.チェックリスト")
+
+    def test_p1_merged_renders_preamble(self):
+        """P1-merged must render preamble text below # title."""
+        md = self._render(self._p1_merged_data())
+        assert "前文テキスト" in md
+
+    def test_p1_merged_renders_all_data_rows_in_table(self):
+        """P1-merged must render all 4 data rows in the MD table."""
+        md = self._render(self._p1_merged_data())
+        assert "対策A2" in md
+        assert "対策B1" in md
+        assert "対策B2" in md
+
+    def test_p1_merged_renders_column_header(self):
+        """P1-merged must include column headers in the MD table."""
+        md = self._render(self._p1_merged_data())
+        assert "No." in md
+        assert "タイトル" in md
+        assert "対策" in md
+
+    def test_p1_merged_tail_row_values_in_docs_md(self):
+        """Tail-row values must appear in docs MD so QO2 one-way check passes."""
+        md = self._render(self._p1_merged_data())
+        # QO2 checks that each section.content value appears in docs MD.
+        # Tail-row value "対策A2" is in section[0].content but only appears
+        # in docs MD if data_rows has all rows (not just head rows).
+        assert "対策A2" in md
+        assert "対策B2" in md

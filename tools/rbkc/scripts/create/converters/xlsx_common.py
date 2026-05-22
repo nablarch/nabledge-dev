@@ -24,9 +24,12 @@ class RawSheet:
     """Sheet contents normalised to a 2-D list of stripped strings.
 
     Empty cells become ``""``.  Row lengths are uniform (padded with "").
+    ``merged_ranges``: list of ``(col_0idx, min_row_0idx, max_row_0idx)`` for
+    every merged-cell block in the worksheet (xlsx only; None for .xls).
     """
     name: str
     rows: list[list[str]]  # rows[r][c] -- all strings, "" when empty
+    merged_ranges: list[tuple[int, int, int]] | None = None
 
     @property
     def nrows(self) -> int:
@@ -40,14 +43,14 @@ class RawSheet:
 def load_sheet_subtype_map(mapping_path: Path) -> dict[tuple[str, str], str]:
     """Parse xlsx-sheet-mapping.md and return (file_basename, sheet_name) → subtype.
 
-    Only P2-1, P2-3, and P2-4 entries are returned (P1/P2-2 use default handling).
+    Returns P1-merged, P2-1, P2-3, and P2-4 entries (P1/P2-2 use default handling).
     Returns an empty dict if the file does not exist.
     """
     if not mapping_path.exists():
         return {}
     result: dict[tuple[str, str], str] = {}
     import re
-    row_re = re.compile(r'^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(P2-1|P2-3|P2-4)\s*\|')
+    row_re = re.compile(r'^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(P1-merged|P2-1|P2-3|P2-4)\s*\|')
     for line in mapping_path.read_text(encoding="utf-8").splitlines():
         m = row_re.match(line)
         if m:
@@ -73,6 +76,7 @@ def list_sheet_names(path: Path) -> list[str]:
 def read_sheet(path: Path, sheet_name: str) -> RawSheet:
     """Read one worksheet into :class:`RawSheet` (stripped strings, "" for empty)."""
     ext = path.suffix.lower()
+    merged_ranges: list[tuple[int, int, int]] = []
     if ext == ".xls":
         import xlrd
         wb = xlrd.open_workbook(str(path))
@@ -94,6 +98,12 @@ def read_sheet(path: Path, sheet_name: str) -> RawSheet:
                 str(v).strip() if v is not None else ""
                 for v in row
             ])
+        # Capture merged-cell ranges (0-indexed col, 0-indexed min/max row).
+        merged_ranges: list[tuple[int, int, int]] = [
+            (m.min_col - 1, m.min_row - 1, m.max_row - 1)
+            for m in ws.merged_cells.ranges
+            if m.min_row != m.max_row  # row-spanning merges only
+        ]
     # Trim trailing fully-empty rows (common in xlsx).  Keep leading empties —
     # they preserve row numbering for reference.
     while rows and all(c == "" for c in rows[-1]):
@@ -108,7 +118,11 @@ def read_sheet(path: Path, sheet_name: str) -> RawSheet:
         for r in rows:
             r.pop()
         width -= 1
-    return RawSheet(name=sheet_name, rows=rows)
+    return RawSheet(
+        name=sheet_name,
+        rows=rows,
+        merged_ranges=merged_ranges if merged_ranges else None,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -410,18 +424,28 @@ def sheet_to_result(
         preamble = _collect_preamble(
             sheet.rows, body_start, header_start, title_row_extras
         )
-        sections, data_rows = _build_p1_sections(sheet, data_start, columns)
+        merge_groups: list[tuple[int, int]] | None = None
+        if sheet_subtype == "P1-merged":
+            title_col = _pick_title_col(columns)
+            merge_groups = _build_merge_groups(
+                sheet, data_start, title_col
+            )
+        sections, data_rows = _build_p1_sections(
+            sheet, data_start, columns, merge_groups=merge_groups
+        )
         result = RSTResult(
             title=title,
             no_knowledge_content=False,
             content=preamble,
             sections=sections,
         )
-        meta = {
+        meta: dict = {
             "sheet_type": "P1",
             "columns": columns,
             "data_rows": data_rows,
         }
+        if sheet_subtype == "P1-merged":
+            meta["sheet_subtype"] = "P1-merged"
         return result, meta
 
     # P2: JSON content always uses flattened whitespace (AI keyword search).
@@ -488,8 +512,18 @@ def _build_p1_sections(
     sheet: RawSheet,
     data_start: int,
     columns: list[str],
+    merge_groups: list[tuple[int, int]] | None = None,
 ) -> tuple[list[Section], list[list[str]]]:
-    """Emit one section per data row; return also the raw row matrix."""
+    """Emit sections and data_rows for a P1 sheet.
+
+    When ``merge_groups`` is None (default P1), each non-empty data row
+    becomes one section.  When ``merge_groups`` is provided (P1-merged),
+    rows within the same merge group are aggregated into one section;
+    ``data_rows`` contains only the head row of each group.
+    """
+    if merge_groups is not None:
+        return _build_p1_merged_sections(sheet, data_start, columns, merge_groups)
+
     sections: list[Section] = []
     data_rows: list[list[str]] = []
     # Identify the "title column" — either a column named "タイトル", or
@@ -540,6 +574,62 @@ def _build_p1_sections(
     return sections, data_rows
 
 
+def _build_p1_merged_sections(
+    sheet: RawSheet,
+    data_start: int,
+    columns: list[str],
+    merge_groups: list[tuple[int, int]],
+) -> tuple[list[Section], list[list[str]]]:
+    """P1-merged: aggregate rows in each merge group into one section.
+
+    ``merge_groups`` is a list of ``(start_row, end_row)`` pairs (0-indexed
+    into ``sheet.rows``).  Each pair defines one section; ``data_rows``
+    contains only the head row of each group.
+    """
+    sections: list[Section] = []
+    data_rows: list[list[str]] = []
+    title_col = _pick_title_col(columns)
+    width = len(columns)
+
+    for group_start, group_end in merge_groups:
+        group_rows = sheet.rows[group_start:group_end + 1]
+        content_lines: list[str] = []
+        head_cells: list[str] | None = None
+
+        for r in group_rows:
+            cells = [c for c in r[:width]] + [""] * max(0, width - len(r))
+            if not any(cells):
+                continue
+            if head_cells is None:
+                head_cells = cells
+            for cx, col in enumerate(columns):
+                if cx >= len(cells):
+                    continue
+                val = cells[cx]
+                if not val:
+                    continue
+                if not col:
+                    continue
+                content_lines.append(f"{col}: {_flatten_ws(val)}")
+
+        if head_cells is None:
+            continue
+
+        raw_title = head_cells[title_col] if 0 <= title_col < width else ""
+        section_title = _flatten_ws(raw_title or _first_non_empty(head_cells))
+        sections.append(Section(
+            title=section_title,
+            content="\n".join(content_lines),
+        ))
+        # data_rows: all non-empty rows in the group (for docs MD full table).
+        for r in group_rows:
+            cells = [c for c in r[:width]] + [""] * max(0, width - len(r))
+            if any(cells):
+                data_rows.append(cells)
+
+    return sections, data_rows
+
+
 def _pick_title_col(columns: list[str]) -> int:
     """Choose the column index whose value we use as section title."""
     for cx, name in enumerate(columns):
@@ -557,6 +647,42 @@ def _pick_title_col(columns: list[str]) -> int:
 
 def _first_non_empty(cells: list[str]) -> str:
     return next((c for c in cells if c), "")
+
+
+def _build_merge_groups(
+    sheet: RawSheet,
+    data_start: int,
+    title_col: int,
+) -> list[tuple[int, int]]:
+    """Return merge groups for the title column as (start_row, end_row) pairs.
+
+    Each pair is 0-indexed into ``sheet.rows``.  Rows not covered by any
+    merged range in the title column are treated as single-row groups.
+    Rows before ``data_start`` are ignored.
+    """
+    # Build a dict: row → end_row for each title-col merge that overlaps data.
+    merge_ends: dict[int, int] = {}
+    if sheet.merged_ranges:
+        for col, min_row, max_row in sheet.merged_ranges:
+            if col == title_col and max_row >= data_start:
+                start = max(min_row, data_start)
+                merge_ends[start] = max_row
+
+    groups: list[tuple[int, int]] = []
+    r = data_start
+    n = sheet.nrows
+    while r < n:
+        row = sheet.rows[r]
+        if not any(row):
+            r += 1
+            continue
+        if r in merge_ends:
+            groups.append((r, merge_ends[r]))
+            r = merge_ends[r] + 1
+        else:
+            groups.append((r, r))
+            r += 1
+    return groups
 
 
 def _build_p2_1_meta(
