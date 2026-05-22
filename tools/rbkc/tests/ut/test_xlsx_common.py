@@ -89,8 +89,8 @@ class TestBuildP1SectionsP1Merged:
         assert "チェック: 済" in content
         assert "チェック: 未" in content
 
-    def test_data_rows_contains_only_head_rows(self):
-        """data_rows must contain only the first row of each group."""
+    def test_data_rows_contains_all_rows(self):
+        """data_rows must contain all non-empty rows (for docs MD table), not just head rows."""
         rows = [
             ["脆弱性A", "対策1", "済"],
             ["",        "対策2", "未"],
@@ -105,12 +105,8 @@ class TestBuildP1SectionsP1Merged:
             sheet, data_start=0, columns=columns, merge_groups=merge_groups
         )
 
-        # data_rows must have 2 entries, each being the head row of the group
-        assert len(data_rows) == 2
-        assert data_rows[0][0] == "脆弱性A"
-        assert data_rows[1][0] == "脆弱性B"
-        # Tail rows must NOT appear as separate data_rows entries
-        assert all(r[0] != "" for r in data_rows)
+        # data_rows must contain all 4 rows (for full MD table reconstruction)
+        assert len(data_rows) == 4
 
 
 # ---------------------------------------------------------------------------
@@ -135,7 +131,7 @@ class TestBuildP1SectionsP1MergedEdgeCases:
 
         assert len(sections) == 1
         assert sections[0].title == "脆弱性A"
-        assert len(data_rows) == 1
+        assert len(data_rows) == 1  # single row group → 1 row total
 
     def test_mixed_group_sizes(self):
         """Groups of different sizes are handled independently."""
@@ -182,9 +178,9 @@ class TestBuildP1SectionsP1MergedEdgeCases:
             sheet, data_start=0, columns=columns, merge_groups=merge_groups
         )
 
-        # Still 1 section, 1 data_rows entry
+        # 1 section, but data_rows = non-empty rows only (all-empty tail row excluded)
         assert len(sections) == 1
-        assert len(data_rows) == 1
+        assert len(data_rows) == 1  # only head row is non-empty
         # Content only from non-empty cells
         content = sections[0].content
         assert "タイトル: 脆弱性A" in content
@@ -330,15 +326,16 @@ class TestSheetToResultP1Merged:
 
         assert len(result.sections) == 2
 
-    def test_data_rows_count_equals_group_count(self, tmp_path):
-        """data_rows count must equal sections count (groups), not total data rows."""
+    def test_data_rows_count_equals_all_data_rows(self, tmp_path):
+        """data_rows must contain all rows (4 total), not just group heads (2)."""
         from scripts.create.converters.xlsx_common import read_sheet, sheet_to_result
 
         path = self._make_p1_merged_xlsx(tmp_path)
         sheet = read_sheet(path, "2.チェックリスト")
         _, meta = sheet_to_result(sheet, sheet_subtype="P1-merged")
 
-        assert len(meta["data_rows"]) == 2
+        # 4 data rows total (2 groups × 2 rows each), not 2 group heads
+        assert len(meta["data_rows"]) == 4
 
     def test_section_titles_from_head_rows(self, tmp_path):
         """section titles must come from the head row of each merge group."""
