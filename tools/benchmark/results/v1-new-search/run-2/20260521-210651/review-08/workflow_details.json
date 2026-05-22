@@ -1,0 +1,155 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッションストアの中核ページ。s9に入力～確認～完了画面間での使い分け、s16にDBストアとHIDDENストアの特長と選択基準が記載"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "reason": "HIDDENストア使用時のハンドラ配置制約など仕組みの理解に必要"
+      },
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "reason": "ステートレスWebアプリ設計でのセッションストア・hidden暗号化の役割に関する背景情報を含む"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "HIDDENストアで使用するhiddenStoreタグや暗号化の仕組みに関する情報を含む可能性あり"
+      },
+      {
+        "path": "component/libraries/libraries-create-example.json",
+        "reason": "入力→確認→完了の実装例が記載されており、セッションストアの実際の使い方を示す"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの機能詳細。「入力データの保持」がセッションストア選択と関連"
+      },
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "reason": "RedisストアはDBストアと同じ特徴を持つ代替手段として言及されている"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストであり、セッションストアの選択基準に関する情報はない"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/",
+        "reason": "処理方式がウェブアプリケーションと異なるバッチ系のページ"
+      },
+      {
+        "path": "component/libraries/libraries-db-double-submit.json",
+        "reason": "二重サブミット防止であり、セッションストアのDBストア/HIDDENストア選択と直接無関係"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "DBストアとHIDDENストアの特長の詳細比較と選択基準表を含む。質問に直接答える核心セクション"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "複数タブ許容/非許容での使い分け方とHIDDENストア使用時のJSP実装例を含む"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "3種類のストアの一覧とRedisストアの言及。背景情報として提供"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "HIDDENストア使用時の冗長化環境での暗号化キー設定の注意点を含む"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "HIDDENストア使用時のハンドラ配置順の制約を説明"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "SessionManagerとSessionStoreHandlerの設定方法。仕組み理解に寄与"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s4",
+        "reason": "モジュール一覧（Mavenの依存関係）。仕組みの理解には不要"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s10",
+        "reason": "認証情報の保持に関するセクション。入力→確認→完了画面間の保持についての質問対象外"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s17",
+        "reason": "有効期間の管理方法。DBストア/HIDDENストアの使い分けとは直接関係なし"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s6",
+        "reason": "改竄チェックの仕組み。使い分けの判断基準とは別"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/handlers/handlers-SessionStoreHandler.json:s4",
+      "component/handlers/handlers-SessionStoreHandler.json:s3",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s17"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-session-store.json:s9",
+          "reason": "複数タブ許容/非許容での使い分けルールとHIDDENストアのJSP実装例を引用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s16",
+          "reason": "DBストアとHIDDENストアの特長一覧と選択基準表を引用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s12",
+          "reason": "HIDDENストアを冗長化環境で使う際の暗号化キー設定の注意点として引用"
+        },
+        {
+          "ref": "component/handlers/handlers-SessionStoreHandler.json:s3",
+          "reason": "HIDDENストア使用時のハンドラ配置順制約として引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-session-store.json:s2",
+          "reason": "3種類のストアの一覧は概要レベルの情報で、s16でより詳細に説明されているため省略"
+        },
+        {
+          "ref": "component/handlers/handlers-SessionStoreHandler.json:s4",
+          "reason": "SessionStoreHandlerの設定例は実装レベルで、仕組み理解が目的の今回の質問には不要"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s17",
+          "reason": "有効期間の管理方法はDBストア/HIDDENストアの使い分けとは直接関係がなく、回答内容に含めなかった"
+        }
+      ]
+    }
+  }
+}

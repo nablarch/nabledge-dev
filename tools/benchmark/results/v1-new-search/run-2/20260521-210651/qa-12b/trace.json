@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 229169,
+  "duration_api_ms": 227050,
+  "ttft_ms": 5164,
+  "num_turns": 5,
+  "result": "Step 5: 回答を生成します。\n\n---\n\n**結論**: リソースクラスのメソッドに `@Valid` アノテーションを付け、`ErrorResponseBuilder` を継承してエラーメッセージ付きのレスポンスを返す実装を行う。\n\n**根拠**:\n\n### 1. バリデーションの実行（`@Valid` アノテーション）\n\nリソース（アクション）クラスのメソッドに `@Valid` を付けると、受け取った Form/Bean に対して Bean Validation が実行される。バリデーションエラーが発生すると `ApplicationException` がスローされる。\n\n```java\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```\n\n### 2. エラーメッセージの定義（プロパティファイル）\n\nデフォルトでは `NablarchMessageInterpolator` が使用され、プロパティファイルからメッセージを構築する。アノテーションのデフォルトメッセージIDをキーにして定義する。アノテーションの属性値（`{max}` など）をプレースホルダとして埋め込める。\n\n```properties\nnablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。\nnablarch.core.validation.ee.Length.min.max.message={min}文字以上{max}文字以内で入力してください。\nnablarch.core.validation.ee.Required.message=必ず入力してください。\n```\n\n### 3. エラーレスポンスへのメッセージ設定（`ErrorResponseBuilder` の拡張）\n\n`JaxRsResponseHandler` に設定した `ErrorResponseBuilder` がエラーレスポンスを生成する。エラーメッセージをレスポンスボディに含めるには継承クラスを作成する。\n\n```java\npublic class SampleErrorResponseBuilder extends ErrorResponseBuilder {\n\n    private final ObjectMapper objectMapper = new ObjectMapper();\n\n    @Override\n    public HttpResponse build(final HttpRequest request,\n            final ExecutionContext context, final Throwable throwable) {\n        if (throwable instanceof ApplicationException) {\n            return createResponseBody((ApplicationException) throwable);\n        } else {\n            return super.build(request, context, throwable);\n        }\n    }\n\n    private HttpResponse createResponseBody(final ApplicationException ae) {\n        final HttpResponse response = new HttpResponse(400);\n        response.setContentType(MediaType.APPLICATION_JSON);\n\n        // エラーメッセージの生成処理は省略\n\n        try {\n            response.write(objectMapper.writeValueAsString(errorMessages));\n        } catch (JsonProcessingException ignored) {\n            return new HttpResponse(500);\n        }\n        return response;\n    }\n}\n```\n\nコンポーネント定義ファイルで `JaxRsResponseHandler` に設定する:\n\n```xml\n<component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n  <property name=\"errorResponseBuilder\">\n    <component class=\"sample.SampleErrorResponseBuilder\" />\n  </property>\n</component>\n```\n\n### 4. 特定項目に紐づくエラーメッセージ（アクション内で手動スロー）\n\nDB重複チェックなどアクションハンドラ内のバリデーションで、特定フィールドのエラーとして返したい場合は `ValidationUtil#createMessageForProperty` を使用する。\n\n```java\nthrow new ApplicationException(\n        ValidationUtil.createMessageForProperty(\"form.mailAddress\", \"duplicate.mailAddress\"));\n```\n\n**注意点**:\n- Form/Bean のプロパティは必ず `String` 型で定義すること。`String` 以外の型にすると、不正な値が送信された際にバリデーション前の変換処理が失敗し、予期しない例外が発生する。\n- `ErrorResponseBuilder` 内で例外が発生すると、レスポンスを返せずステータス500になる。実装中に例外が発生しないよう注意する。\n\n参照: `handlers-jaxrs-bean-validation-handler.json:s4`, `handlers-jaxrs-response-handler.json:s4`, `handlers-jaxrs-response-handler.json:s7`, `libraries-bean-validation.json:s7`, `libraries-bean-validation.json:s8`, `libraries-bean-validation.json:s13`\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"reason\": \"RESTfulウェブサービスの機能詳細ページで「エラー時に返却するレスポンス」セクションが直接質問に対応する\"},\n      {\"path\": \"component/libraries/libraries-bean-validation.json\", \"reason\": \"RESTfulウェブサービスの入力チェックはBean Validationで行い、エラーメッセージ定義やRESTful固有のチェック方法のセクションが存在する\"},\n      {\"path\": \"component/libraries/libraries-message.json\", \"reason\": \"エラーメッセージはプロパティファイルで定義するため、メッセージ管理ライブラリの情報が必要\"},\n      {\"path\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json\", \"reason\": \"Bean Validationをリソースクラスで実行するハンドラで、@Validアノテーションの使い方が記載されている\"},\n      {\"path\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"reason\": \"例外からHTTPレスポンスを生成するハンドラで、エラーメッセージをレスポンスに含める拡張方法が記載されている\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json\", \"reason\": \"RESTfulウェブサービスの登録機能の具体的な実装例で@Validとフォームバリデーションの全体像が確認できる\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-nablarch-validation.json\", \"reason\": \"旧バリデーションライブラリでRESTfulウェブサービス向けのセクションがなく対象外\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-architecture.json\", \"reason\": \"アーキテクチャ概要ページでエラーメッセージ返却の実装詳細が含まれない\"},\n      {\"path\": \"processing-pattern/web-application/**\", \"reason\": \"ウェブアプリケーション処理方式で質問の処理方式（RESTful）と異なる\"},\n      {\"path\": \"processing-pattern/batch/**\", \"reason\": \"バッチ処理方式で質問の処理方式と異なる\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"section_id\": \"s11\", \"relevance\": \"high\", \"reason\": \"「エラー時に返却するレスポンス」として2つの拡張パターンへのリンクを直接提示している\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"バリデーションエラーメッセージをプロパティファイルで定義する方法を具体的に説明している\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s13\", \"relevance\": \"high\", \"reason\": \"特定フィールドに紐づくエラーメッセージをApplicationExceptionとして送出する実装例がある\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s17\", \"relevance\": \"high\", \"reason\": \"RESTfulウェブサービスで@Validアノテーションによる入力チェックの方法を明示している\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"@Validアノテーションをアクションメソッドに付けてバリデーション実行する具体的なコード例がある\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"ErrorResponseBuilderが例外をHTTPレスポンスに変換するメカニズムと設定方法を説明している\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"ApplicationExceptionのエラーメッセージをJSON形式でレスポンスボディに設定する実装例がある\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s8\", \"relevance\": \"high\", \"reason\": \"特定の例外に対して個別のステータスコードとボディを返す実装パターンを示している\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s6\", \"relevance\": \"partial\", \"reason\": \"MessageInterpolatorの設定でデフォルトのNablarchMessageInterpolatorの説明がある\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s8\", \"relevance\": \"partial\", \"reason\": \"バリデーションルールをアノテーションで設定する方法とStringプロパティの制約を説明している\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s16\", \"reason\": \"ウェブアプリケーション固有のセクションで処理方式が異なる\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s18\", \"reason\": \"JSPリクエストスコープはウェブアプリケーション固有の機能\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s21\", \"reason\": \"バリデーションエラー時の任意処理はウェブアプリケーションの例のみ\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s5\", \"relevance\": \"partial\", \"reason\": \"エラーログ出力の話でユーザーへのメッセージ返却とは無関係\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\",\n      \"component/libraries/libraries-bean-validation.json:s7\",\n      \"component/libraries/libraries-bean-validation.json:s13\",\n      \"component/libraries/libraries-bean-validation.json:s17\",\n      \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\",\n      \"component/handlers/handlers-jaxrs-response-handler.json:s4\",\n      \"component/handlers/handlers-jaxrs-response-handler.json:s7\",\n      \"component/handlers/handlers-jaxrs-response-handler.json:s8\",\n      \"component/libraries/libraries-bean-validation.json:s6\",\n      \"component/libraries/libraries-bean-validation.json:s8\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"handlers-jaxrs-bean-validation-handler.json:s4\", \"reason\": \"@Validアノテーションの実装例として使用\"},\n        {\"ref\": \"libraries-bean-validation.json:s7\", \"reason\": \"プロパティファイルでのエラーメッセージ定義例として使用\"},\n        {\"ref\": \"libraries-bean-validation.json:s8\", \"reason\": \"Stringプロパティ必須の制約として注意点に使用\"},\n        {\"ref\": \"libraries-bean-validation.json:s13\", \"reason\": \"ValidationUtil#createMessageForPropertyの実装例として使用\"},\n        {\"ref\": \"handlers-jaxrs-response-handler.json:s4\", \"reason\": \"JaxRsResponseHandlerのErrorResponseBuilder設定方法として使用\"},\n        {\"ref\": \"handlers-jaxrs-response-handler.json:s7\", \"reason\": \"ErrorResponseBuilderを継承したJSONエラーレスポンス実装例として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\", \"reason\": \"他セクションで詳細を説明済みのため概要リンクのみのセクションは回答に含めなかった\"},\n        {\"ref\": \"libraries-bean-validation.json:s17\", \"reason\": \"handlers-jaxrs-bean-validation-handler.json:s4で同じ内容を具体的に説明しているため省略\"},\n        {\"ref\": \"libraries-bean-validation.json:s6\", \"reason\": \"NablarchMessageInterpolatorをデフォルトとして言及するにとどめ詳細設定は省略\"},\n        {\"ref\": \"handlers-jaxrs-response-handler.json:s8\", \"reason\": \"特定エラーの個別レスポンスは回答の主旨に含めたが、コード例はs7の例で十分なため個別掲載は省略\"}\n      ]\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "33a0a877-89da-4575-97c2-545dd6e3dbe0",
+  "total_cost_usd": 0.80390745,
+  "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 39456,
+    "cache_read_input_tokens": 153785,
+    "output_tokens": 6004,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 39456
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3235,
+      "outputTokens": 28,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003375,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 14266,
+      "outputTokens": 14429,
+      "cacheReadInputTokens": 240269,
+      "cacheCreationInputTokens": 125125,
+      "webSearchRequests": 0,
+      "costUSD": 0.8005324499999998,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "62660b04-6d98-4db2-bf3e-3b40e5ac3894"
+}

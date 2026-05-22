@@ -1,0 +1,327 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「アクションクラスとデータリーダの実装」セクションで、`createReader`メソッド内で`DatabaseRecordReader`を使用してデータベースからデータを読み込む実装例が明示されており、ファクトの内容が含まれている。",
+      "fact": "DatabaseRecordReaderでデータベースからデータを読み込む"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states 'BatchActionを継承したアクションクラス' and shows a code example with 'public class AggregationBatchAction extends BatchAction<AggregationForm>', which directly conveys the fact that an action class inheriting from BatchAction should be implemented.",
+      "fact": "BatchActionを継承したアクションクラスを実装する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "都度起動バッチと常駐バッチの2種類がある",
+        "supported": true
+      },
+      {
+        "claim": "日次・月次などの定期処理には都度起動バッチを使う",
+        "supported": true
+      },
+      {
+        "claim": "DB to DBパターンは入力がSELECT文の結果セットの各レコードで、1レコード分のデータを受け取ってDBを更新する",
+        "supported": true
+      },
+      {
+        "claim": "1レコードの処理中に行われる更新は全て同一トランザクション下で実行される",
+        "supported": true
+      },
+      {
+        "claim": "最小ハンドラ構成（DB接続あり）はNo1〜9の9ハンドラ構成",
+        "supported": true
+      },
+      {
+        "claim": "No1: StatusCodeConvertHandler（ステータスコード変換）",
+        "supported": true
+      },
+      {
+        "claim": "No2: GlobalErrorHandler（グローバルエラーハンドラ）",
+        "supported": true
+      },
+      {
+        "claim": "No3: DbConnectionManagementHandler（初期処理用）",
+        "supported": true
+      },
+      {
+        "claim": "No4: TransactionManagementHandler（初期処理用）",
+        "supported": true
+      },
+      {
+        "claim": "No5: RequestPathJavaPackageMapping（リクエストディスパッチハンドラ）",
+        "supported": true
+      },
+      {
+        "claim": "No6: MultiThreadExecutionHandler（マルチスレッド実行制御ハンドラ）",
+        "supported": true
+      },
+      {
+        "claim": "No7: DbConnectionManagementHandler（業務処理用）",
+        "supported": true
+      },
+      {
+        "claim": "No8: LoopHandler（トランザクションループ制御ハンドラ）",
+        "supported": true
+      },
+      {
+        "claim": "No9: DataReadHandler（データリードハンドラ）",
+        "supported": true
+      },
+      {
+        "claim": "BatchActionを継承したアクションクラスを使う",
+        "supported": true
+      },
+      {
+        "claim": "DatabaseRecordReaderを使ったデータリーダ",
+        "supported": true
+      },
+      {
+        "claim": "handleメソッド内でSELECT結果1件ずつを処理する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insertで書き込む",
+        "supported": true
+      },
+      {
+        "claim": "createReaderメソッドでDataReaderのインスタンスを返す",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.defer()を使って遅延ロードする",
+        "supported": true
+      },
+      {
+        "claim": "DeferredEntityListはダウンキャストして取得する",
+        "supported": true
+      },
+      {
+        "claim": "try-with-resourcesでDeferredEntityList#closeを呼び出す",
+        "supported": true
+      },
+      {
+        "claim": "LoopHandlerのcommitIntervalプロパティでコミット間隔を調整できる",
+        "supported": true
+      },
+      {
+        "claim": "N+1問題はcreateReaderのSQLでJOINして回避する",
+        "supported": true
+      },
+      {
+        "claim": "handleメソッド内で自前ループするとフレームワークのコミット制御が効かずトランザクションログが逼迫する",
+        "supported": true
+      },
+      {
+        "claim": "集計SQLはSQLファイルで管理しUniversalDao.findAllBySqlFileで呼び出す",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有のクレーム（アーキテクチャ、ハンドラ構成、クラス名、API名、動作仕様、アンチパターン）はすべてナレッジセクションの内容と一致しており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "DB to DBパターンが質問の「DBから読み込んで別テーブルに書き込む」に直接対応している"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチのアーキテクチャ、ハンドラ構成、DataReader・Actionの全体像が実装に必須"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "BatchAction実装とUniversalDao.insertの具体的サンプルコードを含む"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチのDBアクセス・実行制御の機能詳細（DatabaseRecordReader等）を網羅"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "DB to DB実装で陥りやすいN+1問題と自前ループ禁止のアンチパターンが重要"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "DB読み込み・書き込みに使うUniversalDAOの遅延ロード・バッチ実行などの実装方法が必要"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "コミット間隔制御（commitInterval）の設定方法が実装に必要"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "都度起動バッチ（定期処理）の使い分けを直接説明している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "DB to DBパターンが都度起動バッチと組み合わせ可能であることを示す表"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "DB to DBの動作説明（1レコード受け取ってDB更新、同一トランザクション保証）"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "スタンドアロン起動・Main・ハンドラキューのアーキテクチャ全体像"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "DataReader→ハンドラ→Actionの処理フロー（実装の骨格）"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "都度起動バッチ（DB接続あり）の最小ハンドラ構成の具体的な表"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "DatabaseRecordReaderの存在を示す標準データリーダ一覧"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BatchAction等の標準アクションクラス一覧"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "BatchAction継承・handleメソッド・UniversalDao.insertの具体的実装例"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "バッチでのDBアクセス方法（DatabaseRecordReader）への参照"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "N+1問題（handle内で再SELECTするアンチパターン）の説明"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "フレームワーク外ループ禁止（handle内自前for文）のアンチパターン"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "上記アンチパターンの解決法（createReaderでSQLを発行）"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "大量データ処理で必須の遅延ロード（UniversalDao.defer()）の使い方"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "コミット間隔（commitInterval）の設定方法"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "DataReader実装パターン（ファイル例だがread/hasNext/closeの構造は共通）"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "コミット間隔制御へのリファレンス"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "バッチアンチパターン全体の概要説明"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s14",
+        "relevance": "partial",
+        "reason": "batchInsert/batchUpdateによる一括処理の存在を示す"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "SQLファイルによる集計クエリ管理方法"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "LoopHandlerのトランザクション設定（transactionFactory）の設定例"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 256452,
+    "duration_api_ms": 254107,
+    "num_turns": 4,
+    "total_cost_usd": 1.1292170000000001,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 7058,
+      "cache_read_input_tokens": 103159,
+      "cache_creation_input_tokens": 37380
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3255,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003395,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 17,
+        "outputTokens": 17754,
+        "cacheReadInputTokens": 826720,
+        "cacheCreationInputTokens": 163052,
+        "webSearchRequests": 0,
+        "costUSD": 1.125822,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

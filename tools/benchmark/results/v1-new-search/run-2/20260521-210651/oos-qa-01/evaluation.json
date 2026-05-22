@@ -1,0 +1,130 @@
+{
+  "scenario_id": "oos-qa-01",
+  "description": "バッチ処理の進捗をリアルタイムにクライアントへ通知する機能を実装したい。WebSocketを使いたいが、NablarchでWebSocketが使えるか確認したい。",
+  "input": "バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states 'NablarchはWebSocketを直接サポートしていません' (Nablarch does not directly support WebSocket) and further explains that WebSocket is not listed as a supported feature in Nablarch, confirming the fact that the answer states Nablarch has no WebSocket support.",
+      "fact": "NablarchにはWebSocketのサポートがないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchはWebSocketを直接サポートしていない",
+        "supported": true
+      },
+      {
+        "claim": "NablarchのウェブアプリケーションはServletAPIを前提に構築されている",
+        "supported": true
+      },
+      {
+        "claim": "アーキテクチャはServletフィルタ（WebFrontController）とハンドラキューで構成されている",
+        "supported": true
+      },
+      {
+        "claim": "WebSocketはNablarch 5→6移行ガイドのJava EE/Jakarta EE仕様対応表（javax.websocket → jakarta.websocket）で言及されているのみ",
+        "supported": true
+      },
+      {
+        "claim": "Nablarchには非同期処理パターンとして「テーブルをキューとして使ったメッセージング」が提供されている",
+        "supported": true
+      },
+      {
+        "claim": "「テーブルをキューとして使ったメッセージング」はWebアプリからバックエンドへ処理を非同期委譲するパターンであり、ブラウザへのリアルタイムプッシュ通知には対応していない",
+        "supported": true
+      },
+      {
+        "claim": "Nablarchの基本方針としてフレームワーク本体はOSSを使用せずServletAPIの範囲で設計されている",
+        "supported": true
+      },
+      {
+        "claim": "WebSocketエンドポイントはNablarchのハンドラキューではなくサーブレットコンテナの仕組みで動作する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有の主張はすべてナレッジセクションによって裏付けられている。ServletAPI前提のアーキテクチャ、WebFrontController、ハンドラキュー、OSSを使用しない方針、テーブルをキューとして使ったメッセージングの説明はいずれもナレッジに記載されており、捏造された情報は見当たらない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json",
+        "reason": "Nablarchのウェブアプリケーションにおける非同期処理パターンを説明しており、リアルタイム通知の代替アプローチとして直接関連する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "ウェブアプリケーションのアーキテクチャ（ServletAPIベース）を説明しており、WebSocketサポートの範囲を理解するために必要"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-policy.json",
+        "reason": "NablarchがOSSを使用しないというポリシーを記載しており、WebSocketが提供されない背景を裏付ける"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの機能一覧を提供しており、WebSocketが機能として含まれていないことを確認するため"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "Nablarchでの非同期処理パターン（テーブルキューメッセージング）の具体的な説明を提供し、WebSocket代替の文脈で必要"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-architecture.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "NablarchウェブアプリケーションがServletAPIを前提としている点を直接記述しており、WebSocketが対象外である根拠となる"
+      },
+      {
+        "file": "about/about-nablarch/about-nablarch-policy.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "NablarchはOSSを使用しないというポリシーを記述しており、WebSocketサポートがない背景の補足情報となる"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 157919,
+    "duration_api_ms": 156247,
+    "num_turns": 4,
+    "total_cost_usd": 1.0294691,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 3343,
+      "cache_read_input_tokens": 103171,
+      "cache_creation_input_tokens": 32305
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3259,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003389,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 55,
+        "outputTokens": 9660,
+        "cacheReadInputTokens": 1251542,
+        "cacheCreationInputTokens": 134814,
+        "webSearchRequests": 0,
+        "costUSD": 1.0260801,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

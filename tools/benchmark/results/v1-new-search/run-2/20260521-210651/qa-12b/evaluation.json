@@ -1,0 +1,200 @@
+{
+  "scenario_id": "qa-12b",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "UNCERTAIN",
+      "reason": "The answer states that when @Valid annotation is applied to a resource method, Bean Validation is executed and if validation errors occur, an ApplicationException is thrown. However, the fact claims that @Valid automatically converts validation errors into error responses. The answer clarifies that an ApplicationException is thrown, but converting it to an error response requires additional implementation (extending ErrorResponseBuilder). So @Valid alone does not automatically produce an error response — extra configuration is needed. The fact oversimplifies the process, making this judgment uncertain.",
+      "fact": "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のセクション3「エラーレスポンスへのメッセージ設定（ErrorResponseBuilderの拡張）」において、「エラーメッセージをレスポンスボディに含めるには継承クラスを作成する」と明示されており、SampleErrorResponseBuilderクラスがErrorResponseBuilderを継承してレスポンスボディにエラーメッセージを設定する実装例も示されている。これはファクトの内容と一致する。",
+      "fact": "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "リソースクラスのメソッドに@Validアノテーションを付けると、受け取ったForm/BeanにBean Validationが実行される",
+        "supported": true
+      },
+      {
+        "claim": "バリデーションエラーが発生するとApplicationExceptionがスローされる",
+        "supported": true
+      },
+      {
+        "claim": "デフォルトではNablarchMessageInterpolatorが使用され、プロパティファイルからメッセージを構築する",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.core.validation.ee.Length.max.messageなどのプロパティキーでメッセージを定義する",
+        "supported": true
+      },
+      {
+        "claim": "アノテーションの属性値（{max}など）をプレースホルダとして埋め込める",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderの継承クラスを作成してエラーレスポンスを生成する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsResponseHandlerにerrorResponseBuilderプロパティでSampleErrorResponseBuilderを設定する",
+        "supported": true
+      },
+      {
+        "claim": "ValidationUtil#createMessageForPropertyを使用して特定フィールドのエラーメッセージを構築する",
+        "supported": true
+      },
+      {
+        "claim": "Form/BeanのプロパティはString型で定義すること",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilder内で例外が発生するとステータス500になる",
+        "supported": true
+      },
+      {
+        "claim": "プロパティファイルのキー nablarch.core.validation.ee.Required.message で必須エラーメッセージを定義する",
+        "supported": false
+      }
+    ],
+    "reason": "回答中のプロパティファイルの定義例に 'nablarch.core.validation.ee.Required.message=必ず入力してください。' が含まれているが、ナレッジセクションのメッセージ定義例では Required に対応するキーとして 'nablarch.core.validation.ee.Required.message=入力してください。' が示されており、キー自体は存在するものの、回答ではLengthアノテーションのキー体系（min.message/max.message/min.max.message）と同列に並べて示す一方、ナレッジではRequiredのキーはItemNamedの例でしか示されず、Lengthのmin.messageも 'nablarch.core.validation.ee.Length.min.message' として存在する。より重大な問題として、回答のプロパティ定義例に 'nablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。' があるが、ナレッジでは同キーが 'nablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。' と一致する。しかし、回答では 'nablarch.core.validation.ee.Required.message=必ず入力してください。' と記載しているが、ナレッジの実際の例では 'nablarch.core.validation.ee.Required.message=入力してください。' となっており、メッセージ内容が異なる。これはNablarch固有のメッセージ内容についての誤りであり、ハルシネーションと判断される。"
+  },
+  "scores": {
+    "accuracy": null,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: UNCERTAIN — @Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+    "hallucination: FAIL — 回答中のプロパティファイルの定義例に 'nablarch.core.validation.ee.Required.message=必ず入力してください。' が含まれているが、ナレッジセクションのメッセージ定義例では Required に対応するキーとして 'nablarch.core.validation.ee.Required.message=入力してください。' が示されており、キー自体は存在するものの、回答ではLengthアノテーションのキー体系（min.message/max.message/min.max.message）と同列に並べて示す一方、ナレッジではRequiredのキーはItemNamedの例でしか示されず、Lengthのmin.messageも 'nablarch.core.validation.ee.Length.min.message' として存在する。より重大な問題として、回答のプロパティ定義例に 'nablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。' があるが、ナレッジでは同キーが 'nablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。' と一致する。しかし、回答では 'nablarch.core.validation.ee.Required.message=必ず入力してください。' と記載しているが、ナレッジの実際の例では 'nablarch.core.validation.ee.Required.message=入力してください。' となっており、メッセージ内容が異なる。これはNablarch固有のメッセージ内容についての誤りであり、ハルシネーションと判断される。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細ページで「エラー時に返却するレスポンス」セクションが直接質問に対応する"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "RESTfulウェブサービスの入力チェックはBean Validationで行い、エラーメッセージ定義やRESTful固有のチェック方法のセクションが存在する"
+      },
+      {
+        "path": "component/libraries/libraries-message.json",
+        "reason": "エラーメッセージはプロパティファイルで定義するため、メッセージ管理ライブラリの情報が必要"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "Bean Validationをリソースクラスで実行するハンドラで、@Validアノテーションの使い方が記載されている"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-response-handler.json",
+        "reason": "例外からHTTPレスポンスを生成するハンドラで、エラーメッセージをレスポンスに含める拡張方法が記載されている"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "RESTfulウェブサービスの登録機能の具体的な実装例で@Validとフォームバリデーションの全体像が確認できる"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "「エラー時に返却するレスポンス」として2つの拡張パターンへのリンクを直接提示している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラーメッセージをプロパティファイルで定義する方法を具体的に説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "特定フィールドに紐づくエラーメッセージをApplicationExceptionとして送出する実装例がある"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスで@Validアノテーションによる入力チェックの方法を明示している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@Validアノテーションをアクションメソッドに付けてバリデーション実行する具体的なコード例がある"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ErrorResponseBuilderが例外をHTTPレスポンスに変換するメカニズムと設定方法を説明している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ApplicationExceptionのエラーメッセージをJSON形式でレスポンスボディに設定する実装例がある"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "特定の例外に対して個別のステータスコードとボディを返す実装パターンを示している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "MessageInterpolatorの設定でデフォルトのNablarchMessageInterpolatorの説明がある"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "バリデーションルールをアノテーションで設定する方法とStringプロパティの制約を説明している"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 229169,
+    "duration_api_ms": 227050,
+    "num_turns": 5,
+    "total_cost_usd": 0.80390745,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 6004,
+      "cache_read_input_tokens": 153785,
+      "cache_creation_input_tokens": 39456
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3235,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003375,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14266,
+        "outputTokens": 14429,
+        "cacheReadInputTokens": 240269,
+        "cacheCreationInputTokens": 125125,
+        "webSearchRequests": 0,
+        "costUSD": 0.8005324499999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

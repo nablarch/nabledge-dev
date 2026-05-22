@@ -1,0 +1,196 @@
+{
+  "scenario_id": "oos-impact-01",
+  "description": "既存システムをNablarch 6に移行するにあたり、OAuth2/OpenID Connect認証が必要かどうか影響調査している。NablarchにOAuth2/OIDCの仕組みが組み込まれているか確認したい。",
+  "input": "NablarchでOAuth2やOpenID Connectによる認証を実装したい。Nablarchにその仕組みは組み込まれているか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭で「NablarchにはOAuth2/OpenID Connect認証の仕組みは組み込まれていない」と明示されており、さらに「認証はプロジェクト要件により仕様が異なるため、フレームワークとして提供していない」という方針も記載されている。これはFactが述べる「OAuth2/OpenID Connect認証の組み込み機能がない」という内容と同一の情報を含んでいる。",
+      "fact": "NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchにはOAuth2/OpenID Connect認証の仕組みは組み込まれていない",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-biz-sample-all に nablarch-oidc パッケージとして OIDCサンプルが提供されている",
+        "supported": true
+      },
+      {
+        "claim": "パッケージ名は please.change.me.common.oidc.verification",
+        "supported": true
+      },
+      {
+        "claim": "想定構成: NablarchをRESTfulウェブサービスのバックエンドとして稼働",
+        "supported": true
+      },
+      {
+        "claim": "フロントエンド（SPA、モバイルアプリ等）がIDトークンを取得してバックエンドに送信",
+        "supported": true
+      },
+      {
+        "claim": "認証成功後にステートフルなログインセッションを確立",
+        "supported": true
+      },
+      {
+        "claim": "対応IdP: Amazon Cognito ユーザープール と Azure Active Directory B2C",
+        "supported": true
+      },
+      {
+        "claim": "Auth0製JWTライブラリ java-jwt 4.4.0 と jwks-rsa 0.22.1 を使用",
+        "supported": true
+      },
+      {
+        "claim": "CognitoIdTokenVerifier クラスが提供される",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント設定に region, userPoolId, clientId, signatureAlgorithmProvider プロパティを設定",
+        "supported": true
+      },
+      {
+        "claim": "LoginActionで SessionUtil.changeId と CsrfTokenUtil.regenerateCsrfToken を呼び出す",
+        "supported": true
+      },
+      {
+        "claim": "decodedJWT.getSubject() でユーザIDを取得",
+        "supported": true
+      },
+      {
+        "claim": "IDトークン検証失敗時はHTTPステータス401（Unauthorized）を返す",
+        "supported": true
+      },
+      {
+        "claim": "Nablarchのプロダクションコードはフレームワーク本体ではOSSを使用しない方針",
+        "supported": true
+      },
+      {
+        "claim": "署名に使う公開鍵はJWKSエンドポイントから動的取得する設計",
+        "supported": true
+      },
+      {
+        "claim": "秘匿情報はバージョン管理ファイルに書かず、OS環境変数かシステムプロパティで設定",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のすべてのNablarch固有の主張（クラス名・パッケージ名・設定方法・ライブラリバージョン・動作仕様・方針など）はナレッジセクションの内容と一致しており、捏造された情報は確認されない。コード例は知識セクションのコードを一部簡略化した表現であり、誤りではない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "guide/biz-samples/biz-samples-12.json",
+        "reason": "OIDCのIDトークンを用いた認証サンプルそのものであり、質問に直接対応する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの認証（s13）について、フレームワークの基本方針が記述されている"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-policy.json",
+        "reason": "OSSを使用しないというNablarchの基本方針（s6）がOIDC対応の背景を理解するために必要"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティ対応の目的があるため候補として検討"
+      },
+      {
+        "path": "guide/biz-samples/biz-samples-01.json",
+        "reason": "パスワード認証サンプルはOIDCではなく関連が薄いが候補"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "OIDCサンプルの全体概要・対応IdP・想定構成を説明しており、質問への直接回答に不可欠"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "実装に必要なJWTライブラリの依存関係を示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "Cognito接続に必要な環境依存値の設定方法を説明する"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "コンポーネント設定ファイルへの定義方法を示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "IDトークン検証の具体的な実装コードを示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "認証成功時のセッション確立とエラー時のレスポンス返却を示す"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "Nablarchが認証をフレームワーク提供していないという方針を明示"
+      },
+      {
+        "file": "about/about-nablarch/about-nablarch-policy.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "OSSを使わない方針の背景説明に必要"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 134529,
+    "duration_api_ms": 133002,
+    "num_turns": 10,
+    "total_cost_usd": 0.7465592500000001,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 8354,
+      "cache_read_input_tokens": 703080,
+      "cache_creation_input_tokens": 108507
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3251,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003391,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 8354,
+        "cacheReadInputTokens": 703080,
+        "cacheCreationInputTokens": 108507,
+        "webSearchRequests": 0,
+        "costUSD": 0.7431682500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

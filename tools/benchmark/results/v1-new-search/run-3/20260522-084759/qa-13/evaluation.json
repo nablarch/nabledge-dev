@@ -1,0 +1,212 @@
+{
+  "scenario_id": "qa-13",
+  "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。",
+  "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes using a Form class (ProjectForm) to receive values, applying @Valid for validation, and calling UniversalDao.insert for registration in a REST API context. This matches the fact exactly, including all three key elements: Form class for receiving values, @Valid for validation, and UniversalDao.insert for registration.",
+      "fact": "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Formクラスのプロパティは必ずすべてString型で宣言する",
+        "supported": true
+      },
+      {
+        "claim": "@Required と @Domain アノテーションをFormプロパティに付与する",
+        "supported": true
+      },
+      {
+        "claim": "@Path アノテーションでURLパスをマッピングする",
+        "supported": true
+      },
+      {
+        "claim": "@POST アノテーションでHTTPメソッドをマッピングする",
+        "supported": true
+      },
+      {
+        "claim": "@Consumes(MediaType.APPLICATION_JSON) を指定することでリクエストボディ変換ハンドラがapplication/jsonとしてFormクラスへ変換する",
+        "supported": true
+      },
+      {
+        "claim": "@Valid を指定することでJaxRsBeanValidationHandlerがバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy でフォームをエンティティに変換する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert でDB登録する",
+        "supported": true
+      },
+      {
+        "claim": "正常登録時は HttpResponse.Status.CREATED (201) を返す",
+        "supported": true
+      },
+      {
+        "claim": "BodyConvertHandler と JaxRsBeanValidationHandler を RoutesMapping 配下（JaxRsMethodBinderFactory の handlerList）に設定する",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta RESTful Web ServicesアダプタはBodyConvertHandlerとBean Validationハンドラを自動的に追加する",
+        "supported": true
+      },
+      {
+        "claim": "RESTfulウェブサービスでは ETag/If-Match を使った楽観的ロックはサポートされていない",
+        "supported": true
+      },
+      {
+        "claim": "楽観的ロックが必要な場合はリクエストボディにバージョン番号を直接含める設計にする",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるNablarch固有の主張はすべてナレッジセクションの記述と一致しており、捏造された情報は確認されない。クラス名・アノテーション名・XML設定例・バリデーション動作・楽観的ロック制約のいずれも根拠があるためPASS。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "RESTfulウェブサービスの登録機能の実装パターンをそのまま提供するページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "最小ハンドラ構成（BodyConvertHandler / BeanValidationHandler）の設定例を含む"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "reason": "リソースクラスのメソッド引数としてFormクラスを受け取る方法が定義されている"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "reason": "JSONリクエストボディをFormクラスに変換する仕組みと設定例を含む"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "@Valid アノテーションによるバリデーション実行方法を含む"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "DB登録に使用するUniversalDao.insertの機能説明を含む"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "FormプロパティをString型にする制約とバリデーションルール設定方法を含む"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "reason": "@Pathと@POSTによるURLマッピング実装例を含む"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulでの排他制御の注意点（ETag/If-Match非対応）を含む"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "FormクラスからDB登録までの完全な実装パターン（コード例込み）を提供"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "必須ハンドラ構成とBodyConvertHandler/BeanValidationHandlerの配置設定例を含む"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "メソッド引数にフォームクラスを定義する方法が明示されている"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "bodyConvertersプロパティへのコンバータ設定方法と設定例を含む"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "@ConsumesによるMIME指定とFormへの変換処理のコード例を含む"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@Validアノテーションでバリデーションをトリガーするコード例を含む"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "SQLを書かずに登録できるCRUD機能の説明がある"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "FormプロパティをString型にする理由と制約が詳細に記載されている"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "@Pathと@POSTを使ったURLマッピングの実装例が含まれる"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "RESTfulでの排他制御の制約（ETag非対応）という注意点を含む"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 193817,
+    "duration_api_ms": 192113,
+    "num_turns": 5,
+    "total_cost_usd": 0.9455039000000001,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 6603,
+      "cache_read_input_tokens": 150977,
+      "cache_creation_input_tokens": 39163
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3243,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003368,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11549,
+        "outputTokens": 13488,
+        "cacheReadInputTokens": 516238,
+        "cacheCreationInputTokens": 146746,
+        "webSearchRequests": 0,
+        "costUSD": 0.9421359,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

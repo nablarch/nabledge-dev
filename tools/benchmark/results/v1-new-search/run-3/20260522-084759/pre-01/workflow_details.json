@@ -1,0 +1,108 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "バッチアーキテクチャとリクエストパスの仕様を直接カバーするページ"
+      },
+      {
+        "path": "component/handlers/handlers-main.json",
+        "reason": "Main クラスの起動コマンドと必須オプションを直接カバーするページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチ起動方法へのリンク参照を含むページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "起動方法の分類は含むが、上位3ファイルで質問は完全にカバーされるためスキップ"
+      },
+      {
+        "path": "setup/blank-project/blank-project-setup-NablarchBatch.json",
+        "reason": "ブランクプロジェクトのセットアップ手順であり起動コマンドの説明には不要"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "-requestPathの書式とアクション/リクエストIDの説明を直接含む"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "起動コマンド全体と3つの必須オプションの具体例を含む"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "Mainクラスをjavaコマンドで起動するという文脈を提供する"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "-requestPathがDispatchHandlerでどう使われるかの処理フローを説明する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s4",
+        "reason": "ハンドラ一覧であり起動・requestPath質問には不要"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "reason": "ハンドラテーブルの詳細であり質問の範囲外"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s4",
+        "reason": "オプションパラメータの詳細であり基本起動の説明には不要"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s5",
+        "reason": "例外ハンドリングの説明であり質問と無関係"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2",
+      "component/handlers/handlers-main.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "nablarch-batch-architecture.json:s2",
+          "reason": "-requestPathの書式（アクション名/リクエストID）と具体例の根拠として使用"
+        },
+        {
+          "ref": "handlers-main.json:s3",
+          "reason": "起動コマンド全体・3つの必須オプション・終了コード127の根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "nablarch-batch-architecture.json:s1",
+          "reason": "s2とs3で起動方法は十分カバーされたため使用しなかった"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s3",
+          "reason": "DispatchHandlerの処理フローの補足として言及したが、主要な根拠ではないため参照欄に含めなかった"
+        }
+      ]
+    }
+  }
+}

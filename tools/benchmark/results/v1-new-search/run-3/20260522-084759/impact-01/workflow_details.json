@@ -1,0 +1,202 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "「現在のトランザクションとは異なるトランザクションでSQLを実行する」セクション(s29)が質問に直接回答する"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDAO版の別トランザクション実行(s20)が質問に直接回答する"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "SimpleDbTransactionManagerが必要とするJdbcTransactionFactoryの設定説明(s5)を含む"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "複数トランザクション設定(s7)とロールバック後コールバック(s6)の情報を含む"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "Nablarchバッチの業務トランザクション制御とロールバック後コールバック(s6)の説明を含む"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチのハンドラ構成で業務トランザクション層を示す(s5)"
+      },
+      {
+        "path": "component/handlers/handlers-database-connection-management-handler.json",
+        "reason": "複数DB接続の設定方法(s5)でnamed connectionの利用パターンを補足する"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "全セクションが他ページへの参照のみで実装情報がない"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "Doma使用時の別トランザクション(s8)は有効だが、質問はDoma使用を前提としていないため優先度が低く10件制限で除外"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/*",
+        "reason": "処理方式がJakartaバッチであり質問のNablarchバッチとは異なる"
+      },
+      {
+        "path": "processing-pattern/web-application/*",
+        "reason": "処理方式が異なる"
+      },
+      {
+        "path": "about/*, check/*, development-tools/*, guide/*, releases/*, setup/*",
+        "reason": "ドキュメント・セキュリティ・ツール・セットアップ関連でトランザクション実装情報を含まない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "「現在のトランザクションとは異なるトランザクションでSQLを実行する」— SimpleDbTransactionManager+SimpleDbTransactionExecutorパターンのXML/Javaコード例を含み質問に直接回答する"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "UniversalDAO版の別トランザクション実行パターン(UniversalDao.Transaction)のXML/Javaコード例を含み質問に直接回答する"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "s29が参照するConnectionFactory(BasicDbConnectionFactoryForDataSource等)の設定方法を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-transaction.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "s29/s20が必要とするJdbcTransactionFactory(transactionFactory)の設定例を含み、SimpleDbTransactionManagerへの言及もある"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "ハンドラキューに複数TransactionManagementHandlerを設定して複数トランザクションを制御する方法を示す"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "ロールバック後のコールバックが新しいトランザクションで実行されコミットされる仕組みを説明する"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "Nablarchバッチ固有のLoopHandlerでロールバック後コールバックが新トランザクションで実行される仕組みを説明する"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "LoopHandlerのトランザクション設定(transactionFactory/transactionName)が業務トランザクションの正体を示す"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "都度起動バッチのハンドラ構成でトランザクションループ制御ハンドラが業務トランザクション層であることを示す"
+      },
+      {
+        "file": "component/handlers/handlers-database-connection-management-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "named connectionの設定とDbConnectionContext.getConnection(name)の利用パターンを示す"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s1-s8,s11-s28,s30-s36",
+        "reason": "機能概要・モジュール一覧・CLOB/スキーマ置換等、別トランザクション実行と無関係のセクション"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s1-s19,s21-end",
+        "reason": "ページング・楽観ロック・CLOB等、別トランザクション実行と無関係のセクション"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s5",
+        "reason": "特定例外時にコミットさせる設定であり、別トランザクション実行とは異なるユースケース"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "reason": "10件制限の都合で除外。Doma使用時の別トランザクション実装として有効だが、質問はDoma使用を前提としていない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/libraries/libraries-database.json:s10",
+      "component/libraries/libraries-transaction.json:s5",
+      "component/handlers/handlers-transaction-management-handler.json:s7",
+      "component/handlers/handlers-transaction-management-handler.json:s6",
+      "component/handlers/handlers-loop-handler.json:s6",
+      "component/handlers/handlers-loop-handler.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "component/handlers/handlers-database-connection-management-handler.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManager+SimpleDbTransactionExecutorのXML設定とJava実装例を回答の根拠として引用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s20",
+          "reason": "UniversalDao.TransactionのXML設定とJava実装例を回答の根拠として引用"
+        },
+        {
+          "ref": "handlers-loop-handler.json:s6",
+          "reason": "ロールバック後コールバックが新トランザクションで実行される仕組みを補足情報として引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-database.json:s10",
+          "reason": "ConnectionFactory設定はs29内の参照リンクで示されており、回答に個別引用は不要と判断"
+        },
+        {
+          "ref": "libraries-transaction.json:s5",
+          "reason": "JdbcTransactionFactory設定はs29/s20のXML例に既に含まれており、回答に個別引用は不要と判断"
+        },
+        {
+          "ref": "handlers-transaction-management-handler.json:s7",
+          "reason": "ハンドラキューに複数TransactionManagementHandlerを設定する方法はSimpleDbTransactionManagerアプローチの補完情報だが、回答の主旨には含めなかった"
+        },
+        {
+          "ref": "handlers-transaction-management-handler.json:s6",
+          "reason": "LoopHandler版のコールバック(s6)で同内容をカバーしているため、TransactionManagementHandler版は重複として除外"
+        },
+        {
+          "ref": "handlers-loop-handler.json:s4",
+          "reason": "LoopHandlerのtransactionFactory/transactionName設定はコンテキスト補足だが、回答の主旨に直接必要ではない"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s5",
+          "reason": "ハンドラ構成表はコンテキスト理解に有用だが、実装方法の回答に引用は不要"
+        },
+        {
+          "ref": "handlers-database-connection-management-handler.json:s5",
+          "reason": "複数DB接続の設定例は参考情報だが、質問の主旨である別トランザクション実行の直接的な根拠ではない"
+        }
+      ]
+    }
+  }
+}

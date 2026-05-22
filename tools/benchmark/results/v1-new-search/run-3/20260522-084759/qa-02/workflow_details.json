@@ -1,0 +1,186 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "バッチ全体構成・ハンドラ一覧・データリーダ・アクションクラスを網羅するコアページ"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "DB to DBパターンを明示的に分類・説明するパターンガイド"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "N+1問題と自前ループというDB集計バッチ固有のアンチパターンを説明"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "DB読み込みとDB書き込みに使用するUniversalDAOの遅延ロード・batchInsertを説明"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "コミット間隔設定など、DB to DBバッチのループ制御設定を説明"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/jakarta-batch/*",
+        "reason": "処理方式がJakartaバッチであり、Nablarchバッチの質問と異なる"
+      },
+      {
+        "path": "processing-pattern/web-application/*",
+        "reason": "処理方式がウェブアプリケーションであり対象外"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "FILE to DBの例であり、DB to DBの質問に対してアーキテクチャ・パターン系ページで十分カバーされる"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "DB読み込み→アクション処理→結果書き込みの処理フローを説明"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "都度起動バッチ（DB接続有り）の最小ハンドラ構成テーブルを提供"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "DatabaseRecordReaderを含むDB読み込み用データリーダの一覧"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BatchActionなど使用するアクションクラスの一覧"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "DB to DBパターンの概要（入力はSELECT結果、1レコードずつDB更新）を直接説明"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "handleメソッド内でSELECTを発行するN+1問題を説明"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "handleメソッド内で自前ループするアンチパターンを説明"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "自前ループをcreateReaderのSQLで解決する方針を提示"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "大量データ処理でのUniversalDao.defer()による遅延ロードの使い方とコード例"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "別テーブルへの一括登録にbatchInsertを使用する方法と注意点"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "commitIntervalプロパティによるコミット間隔設定のコード例"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s6",
+        "reason": "常駐バッチの構成であり、定期処理（都度起動）の回答には不要"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s6",
+        "reason": "排他制御の詳細は今回の質問の主眼ではなく、注意点として言及するに留める"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s9",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s11",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/libraries/libraries-universal-dao.json:s14",
+      "component/handlers/handlers-loop-handler.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "nablarch-batch-architecture.json:s3",
+          "reason": "処理フロー（DataReader→handle→Result）の説明に使用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s5",
+          "reason": "都度起動バッチ（DB接続有り）のハンドラ構成テーブルに使用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s7",
+          "reason": "DatabaseRecordReaderの名称と役割の説明に使用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s8",
+          "reason": "BatchActionの名称と役割の説明に使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+          "reason": "DB to DBパターンの概要説明に使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchアンチパターン.json:s4",
+          "reason": "N+1問題の注意点説明に使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchアンチパターン.json:s9",
+          "reason": "自前ループアンチパターンの注意点説明に使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchアンチパターン.json:s11",
+          "reason": "createReaderのSQLで解決する方針の説明に使用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s9",
+          "reason": "UniversalDao.defer()の遅延ロードコード例に使用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s14",
+          "reason": "batchInsertの説明とbatchUpdate排他制御なしの注意点に使用"
+        },
+        {
+          "ref": "handlers-loop-handler.json:s5",
+          "reason": "commitIntervalの設定XMLコード例に使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-message.json",
+        "reason": "メッセージ管理機能のページで、多言語化対応セクションが直接存在する"
+      },
+      {
+        "path": "component/handlers/handlers-thread-context-handler.json",
+        "reason": "言語をスレッドコンテキストに設定するハンドラで、言語選択画面の実装例を含む"
+      },
+      {
+        "path": "component/handlers/handlers-http-response-handler.json",
+        "reason": "言語毎のコンテンツパス切り替え機能を持つHTTPレスポンスハンドラ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "メッセージタグの使用方法はlibraries-messageページで参照済みのため補助情報として読んだが、独立ページとしては主要候補ではない"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "国際化対応の概要のみで実装詳細はlibraries-messageとthreadcontext-handlerが担う"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "処理方式が特定されていないため除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "多言語化対応の具体的な実装手順（プロパティファイル設定・XMLコンフィグ例）を完全に含む"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ユーザが言語を選択する画面とハンドラの実装例を提供する"
+      },
+      {
+        "file": "component/handlers/handlers-http-response-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "JSPファイル自体を言語ごとに切り替える追加手段を提供する"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "プロパティファイルのフォーマット例を提供し、s8の前提知識となる"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "JSPでn:messageタグを使ってメッセージを表示する方法を示す"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "ThreadContextHandlerにLanguageAttributeを設定する方法を示す"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s1",
+        "reason": "概要のみで実装詳細なし"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s2",
+        "reason": "プロパティファイルをデフォルトとする理由の説明のみ"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s8",
+        "reason": "タイムゾーン選択の実装例で、今回の質問（言語切り替え）とは別トピック"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/libraries/libraries-message.json:s7",
+      "component/libraries/libraries-message.json:s11",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/handlers/handlers-thread-context-handler.json:s4",
+      "component/handlers/handlers-http-response-handler.json:s7"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-message.json:s8",
+          "reason": "多言語化の設定手順（locales・defaultLocale・ファイル命名規則・XMLコンフィグ）を直接引用"
+        },
+        {
+          "ref": "libraries-message.json:s7",
+          "reason": "プロパティファイルのフォーマット例を引用（UTF-8で記述可能な点）"
+        },
+        {
+          "ref": "libraries-message.json:s11",
+          "reason": "n:messageタグの使用例をJSP実装例として引用"
+        },
+        {
+          "ref": "handlers-thread-context-handler.json:s7",
+          "reason": "言語切り替えハンドラの実装例・JSPのsubmitLinkを引用"
+        },
+        {
+          "ref": "handlers-thread-context-handler.json:s4",
+          "reason": "ThreadContextHandlerにLanguageAttributeInHttpCookieを設定するXML例を引用"
+        },
+        {
+          "ref": "handlers-http-response-handler.json:s7",
+          "reason": "DirectoryBasedResourcePathRuleによるJSPファイル切り替え設定例を引用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

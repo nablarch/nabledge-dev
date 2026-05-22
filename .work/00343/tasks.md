@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-22 (session 11)
+**Updated**: 2026-05-22 (session 12)
 
 ## Rules
 
@@ -11,13 +11,19 @@
 
 ## In Progress
 
-### B-4. 新スキルE2Eベンチマーク
+### B-5. 改善サイクル
 
-- [x] run-2 実行 → `v1-new-search/run-2` に保存（エラー0件）
-- [ ] run-3 実行 → `v1-new-search/run-3` に保存
-- [ ] 結果をコミット（run-2は未コミット、run-3完了後にまとめてコミット）
-- [ ] QAエキスパート（別エージェント）に生データを渡して比較評価させる（実装者が自己採点しない）
-- [ ] [BLOCKED: ユーザーがQAエキスパートの評価を確認し、B-5着手の承認を出す]
+QAエキスパート評価結果:
+- run-1/2/3 平均: Claims PRESENT 95.6%, Hal PASS 88.9%
+- ベースライン比: 精度+11.9pp、幻覚+74.5pp — 改善確定
+- run-2固有 FAIL (impact-03, review-08): 揺らぎ扱い（ナレッジ欠落でなく回答生成の省略/追加）
+- 対処要: qa-12a (Thymeleaf API未収録、全3run), impact-08 (fixedDate format未収録、2/3run), qa-12b (fact over-spec、全3run)
+
+- [ ] qa-12a / pre-02 / qa-12b: 対処内容を決定して実施（ナレッジ追加 or fact修正）
+- [ ] impact-08: 対処内容を決定して実施
+- [ ] run-4 実行 → `v1-new-search/run-4` に保存
+- [ ] run-4結果確認・3件とも改善確認
+- [ ] [BLOCKED: ユーザーがrun-4結果を確認し、B-6着手の承認を出す]
 
 
 ## Not Started
@@ -123,6 +129,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-4. 新スキルE2Eベンチマーク（3 run完了、QAエキスパート評価完了） — run-1: `1e44a77d7`, run-2/run-3: このコミット
 - [x] B-4-1-fix. read-sections.sh sections:[] 対応（9テスト追加・全バージョン修正）— `11c9160ec`
 - [x] B-4-1. run-1 再測定（B-4-1-fix後）— Claims 96.7%, Hal 93.3%, $27.56 — `1e44a77d7`, `66f936c6e`
 - [x] B-4-pre. ユーザープロンプトレビュー — qa.md 大幅改修（Step 1-2-5）、PEレビュー 0 Findings — `86b319939`〜`2d2cfe3fa`

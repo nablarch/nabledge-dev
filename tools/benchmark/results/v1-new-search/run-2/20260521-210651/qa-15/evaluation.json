@@ -1,0 +1,200 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that Nablarchのカスタムタグを使うと、HTML出力は自動的にエスケープされるため、IPA基準の「5-(i) 全出力要素へのエスケープ処理」という根本的解決が可能です, which conveys the same information as the fact that NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能. The answer also includes a table showing that カスタムタグ corresponds to the 5-(i) 全出力要素へのエスケープ処理 item with status 〇.",
+      "fact": "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "カスタムタグはデフォルトでHTMLエスケープ（サニタイジング）を行う",
+        "supported": true
+      },
+      {
+        "claim": "HTMLエスケープ変換表: & → &amp;, < → &lt;, > → &gt;, \" → &#034;, ' → &#039;",
+        "supported": true
+      },
+      {
+        "claim": "EL式（${...}）はHTMLエスケープを行わない",
+        "supported": true
+      },
+      {
+        "claim": "5-(i) カスタムタグで対応 〇",
+        "supported": true
+      },
+      {
+        "claim": "5-(ii) URL出力の検証はNablarch非対応 ×",
+        "supported": true
+      },
+      {
+        "claim": "5-(iii) script要素の動的生成禁止はNablarch非対応 ×",
+        "supported": true
+      },
+      {
+        "claim": "5-(iv) スタイルシート取り込み禁止はNablarch非対応 ×",
+        "supported": true
+      },
+      {
+        "claim": "5-(vi) HTMLテキスト入力時のスクリプト排除はNablarch非対応 ×",
+        "supported": true
+      },
+      {
+        "claim": "5-(viii) Content-Type charset設定はHTTP文字エンコード制御ハンドラ＋セキュアハンドラで対応 〇",
+        "supported": true
+      },
+      {
+        "claim": "5-(x) XSS対策レスポンスヘッダはセキュアハンドラで対応 〇（保険的対策）",
+        "supported": true
+      },
+      {
+        "claim": "CSPはセキュアハンドラのContentSecurityPolicyHeaderで設定し、カスタムタグのscript要素にnonceが自動付与される",
+        "supported": true
+      },
+      {
+        "claim": "JavaScriptへのエスケープ処理はカスタムタグが提供しない",
+        "supported": true
+      },
+      {
+        "claim": "rawWriteタグ・prettyPrintタグはHTMLエスケープを行わない",
+        "supported": true
+      },
+      {
+        "claim": "prettyPrintタグは非推奨",
+        "supported": true
+      },
+      {
+        "claim": "JSP静的解析ツールでカスタムタグ以外のタグ使用やEL式による直接出力を検出できる",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるNablarch固有の主張（エスケープ変換内容、各IPA対策項目の対応状況、セキュアハンドラ・ContentSecurityPolicyHeader・nonceの動作、rawWrite/prettyPrintタグの非エスケープ動作、JSP静的解析ツールの機能）はいずれもナレッジセクションの記述と一致しており、捏造された情報は確認されない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "XSSを含む脆弱性別のNablarch対応状況チェックリスト。s21-s30がXSSの対策項目を直接カバー"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "JSPカスタムタグのHTMLエスケープ動作を説明。質問「カスタムタグを使えばサニタイジングされるのか」への直接回答"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "セキュリティヘッダ設定とCSP対応を提供するハンドラ。XSSの保険的対策として重要"
+      },
+      {
+        "path": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "reason": "JSP静的解析ツール。カスタムタグ以外によるエスケープ漏れを検出できる補完的セキュリティ対策"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "カスタムタグがサニタイジングを行うこと、5-(ii)-(iv)はプロジェクト対応が必要なことを明示"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s22",
+        "relevance": "high",
+        "reason": "URL出力の検証はNablarch対応なし（×）。カバーできない範囲の明示"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s23",
+        "relevance": "high",
+        "reason": "script要素の動的生成禁止はNablarch対応なし（×）"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s26",
+        "relevance": "high",
+        "reason": "HTMLテキスト入力許可の場合はNablarch対応なし（×）。カスタムタグのエスケープが機能しないケース"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s28",
+        "relevance": "high",
+        "reason": "Content-Type charset設定はNablarch対応（〇）。全ウェブアプリ共通の重要対策"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s30",
+        "relevance": "high",
+        "reason": "セキュアハンドラによるXSS保険的対策レスポンスヘッダはNablarch対応（〇）"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "カスタムタグがデフォルトHTMLエスケープすること、JavaScriptエスケープは非対応という制限を明示"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s50",
+        "relevance": "high",
+        "reason": "HTMLエスケープ変換内容の詳細。EL式はエスケープしないという重要な注意事項"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s27",
+        "relevance": "high",
+        "reason": "rawWrite/prettyPrintタグはHTMLエスケープなし。XSS脆弱性の直接要因になると明示"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSPがXSSインジェクション攻撃を検知・軽減する仕組みとカスタムタグとの連携方法"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 260765,
+    "duration_api_ms": 258184,
+    "num_turns": 5,
+    "total_cost_usd": 1.1582591999999998,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 6103,
+      "cache_read_input_tokens": 155973,
+      "cache_creation_input_tokens": 41979
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3283,
+        "outputTokens": 40,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003483,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11313,
+        "outputTokens": 16411,
+        "cacheReadInputTokens": 372799,
+        "cacheCreationInputTokens": 203422,
+        "webSearchRequests": 0,
+        "costUSD": 1.1547762000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,194 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-data-bind.json",
+        "reason": "Directly covers reading CSV as Java Beans objects using ObjectMapperFactory/ObjectMapper with @Csv/@CsvFormat annotations — the core feature the question asks about."
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "Provides a concrete end-to-end example of reading a CSV file line-by-line in a Nablarch batch context using DataReader and BatchAction."
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Covers which DataReaders and action classes to use (and which to avoid) when using データバインド in a Nablarch batch."
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Covers file I/O details for Nablarch batch including standard DataReaders for file reading."
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "Covers FILE to DB batch pattern which is the canonical pattern when reading CSV files in Nablarch batch."
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-data-format.json",
+        "reason": "汎用データフォーマット is an alternative to データバインド; since the question specifically asks for Java Beans binding, this secondary approach was deprioritized."
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-architecture.json",
+        "reason": "Different processing type (Jakartaバッチ, not Nablarchバッチ) — skip per processing type constraint."
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "Different processing type (ウェブアプリケーション) — skip per processing type constraint."
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "Different processing type (RESTfulウェブサービス) — skip per processing type constraint."
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "Directly shows how to read a file one item at a time as Java Beans using ObjectMapperFactory#create and ObjectMapper#read()."
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s15",
+        "relevance": "high",
+        "reason": "Explains how to specify CSV format on the Java Beans class using @Csv and @CsvFormat annotations."
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "Shows the complete DataReader implementation using ObjectMapperIterator to supply one CSV row at a time to the batch action."
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "Shows BatchAction implementation with createReader method returning the custom DataReader."
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "Critical constraint: standard FileDataReader uses 汎用データフォーマット, so it must NOT be used with データバインド."
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "Critical constraint: standard FileBatchAction uses 汎用データフォーマット, so BatchAction must be used instead when using データバインド."
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "Specifies that all properties must be String type for externally received file data — important constraint."
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s21",
+        "relevance": "partial",
+        "reason": "Lists available CSV format sets (DEFAULT, RFC4180, EXCEL, TSV) for @Csv type attribute selection."
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "Explains the batch processing flow showing how DataReader feeds one record at a time to the action handler."
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s1",
+        "reason": "General overview section with no specific implementation details."
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s3",
+        "reason": "Covers Map object binding, not Java Beans binding — not relevant."
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s8",
+        "reason": "Covers writing Java Beans to file — out of scope for this read-focused question."
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s16",
+        "reason": "Fixed-length file format — not relevant to CSV question."
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s1",
+        "reason": "Overview section only — no concrete implementation details."
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s2",
+        "reason": "Explains -requestPath startup parameter — not directly relevant to CSV reading."
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s3",
+        "reason": "FILE to DB pattern description provides context but does not add implementation details beyond what getting-started sections provide."
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s2",
+      "component/libraries/libraries-data-bind.json:s15",
+      "component/libraries/libraries-data-bind.json:s21",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s7",
+          "reason": "Provided the core ObjectMapperFactory/ObjectMapper read pattern and code example."
+        },
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s2",
+          "reason": "Provided the constraint that all Java Beans properties must be String type for externally received files."
+        },
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s15",
+          "reason": "Provided @Csv and @CsvFormat annotation examples."
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+          "reason": "Provided the complete DataReader/ObjectMapperIterator implementation example."
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+          "reason": "Provided the BatchAction implementation with createReader method."
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+          "reason": "Provided the critical constraint that standard FileDataReader must not be used with データバインド."
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+          "reason": "Provided the critical constraint that FileBatchAction must not be used with データバインド."
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s21",
+          "reason": "CSV format set table was read for context but not included as it would add length without being critical."
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+          "reason": "Batch processing flow description was read for context but not quoted as the getting-started sections convey the flow sufficiently."
+        }
+      ]
+    }
+  }
+}
