@@ -13,19 +13,6 @@
 
 ## Not Started
 
-### C-1. ゴミ確認・部品ベンチ削除
-
-- [x] `tools/benchmark/` 以下を確認し、部品ベンチマーク（`components/`, `simulate_*.py`）など不要ファイルを特定してリスト化
-- [x] ユーザーに削除対象を確認してから削除（承認済み）
-- [ ] 削除実施:
-  - `git rm -r tools/benchmark/scripts/run.py tools/benchmark/scripts/simulate_*.py`
-  - `git rm -r tools/benchmark/components/`
-  - `git rm tools/benchmark/tests/test_run.py tools/benchmark/tests/test_simulate_*.py`
-  - `rm -rf tools/benchmark/results/20260522-165151/ tools/benchmark/results/20260522-170658/`
-- [ ] 動作確認: `python3 -m pytest tools/benchmark/ -x -q` が全 PASS（削除後に残ったテストが壊れていないことを確認）
-  - 受入条件: 終了コード 0、test_run_qa / test_run_keyword_search / test_evaluate / test_report が全て PASS
-- [x] 新検索スキル（v6）の実装ファイルを確認し、不要ファイルなし（確認済み）
-
 ### C-2. 設計書再作成（実装ベース）
 
 - [ ] 既存設計書を削除（`git rm .work/00343/design/`）— 削除してから作業開始。既存設計書は参照しない
@@ -139,6 +126,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 - [x] A-4. read-sections.sh テスト追加 — `b65064dce`
 - [x] A-5. 部品スクリプトの移動 — `d2e6db620`, `0724b3faa`
 - [x] A-6. マージ — `8d95af52e`
+- [x] C-1. ゴミ確認・部品ベンチ削除 — `5614a04f5`（159テストPASS、E2E pre-01動作確認済み）
 
 ### ベンチマーク基盤（完了済み）
 
