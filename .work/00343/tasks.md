@@ -30,6 +30,8 @@
 - [ ] keyword-search.sh を全文スキャンに書き換え（TDD: 20テストGREEN維持）
 - [ ] terms.py 削除 + rbkc.sh / run.py から terms 呼び出し除去
 - [ ] knowledge/terms.json 削除
+- [ ] QO5削除: verify.py から `check_terms_coverage()` と QO5 呼び出しを削除、対応テスト削除
+- [ ] verify設計書（rbkc-verify-quality-design.md）から QO5・terms.json 記述を削除
 - [ ] keyword-search.json 12シナリオで再実行 → 前後比較レポート作成
 - [ ] 設計書（keyword-search-design.md）更新
 - [ ] 全テスト（`python3 -m pytest tools/ -x`）GREEN確認
