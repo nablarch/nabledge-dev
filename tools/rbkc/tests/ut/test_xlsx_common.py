@@ -260,7 +260,6 @@ class TestSheetToResultP1Merged:
     def _make_p1_merged_xlsx(self, tmp_path) -> "Path":
         """Create a minimal xlsx with merged title column cells."""
         import openpyxl
-        from openpyxl.utils import get_column_letter
 
         wb = openpyxl.Workbook()
         ws = wb.active

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 from scripts.common.labels import build_label_map  # noqa: F401 (used by run.py)
@@ -1659,7 +1660,6 @@ def check_xlsx_p1_pairing(source_path, data: dict, sheet_name: str) -> list[str]
             actual_pairs = _parse_section_pairs(sec.get("content", ""))
             # Build multiset: same (col, val) may appear multiple times
             # (once per row in the group).
-            from collections import Counter
             exp_counter = Counter(expected_pairs)
             act_counter = Counter(actual_pairs)
             for pair, count in exp_counter.items():
