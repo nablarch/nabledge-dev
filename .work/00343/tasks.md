@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-22 (session 12)
+**Updated**: 2026-05-22 (session 13)
 
 ## Rules
 
@@ -18,9 +18,18 @@ HOW-TO-RUN.md ステップ3に従い、run-1〜3を1runずつ妥当性評価 →
 - [x] HOW-TO-RUN.md ステップ3以降をゼロベース書き直し（3a/3b/3c → ステップ3/4/5/6の構造に変更） — `8f2ac2155`
 - [x] HOW-TO-RUN.md ステップ3bに妥当性評価観点を追記（mustの充足確認、RST誤記の遡及確認） — `3a4625b71`
 - [x] run-1 妥当性評価完了・レポート更新 — 確定FAIL 0件 — `0099e7026`
-- [ ] [DECISION: run-1 妥当性評価を承認してもらう（確定FAIL 0件）]
-- [ ] run-2 妥当性評価 → レポート更新 → ユーザー承認
-- [ ] run-3 妥当性評価 → レポート更新 → ユーザー承認
+- [x] [DECISION: run-1 妥当性評価を承認（確定FAIL 0件）]
+- [x] run-2 妥当性評価完了 — 確定FAIL 0件（4件すべて問題なし）
+- [x] run-3 妥当性評価完了 — 確定FAIL 1件（qa-05: JaxbBodyConverter誤説明）
+- [ ] run-2/run-3 レポートとtasks.mdをコミット・プッシュ
+- [ ] qa.md / semantic-search.md: 「実装パターン・サンプルを参考にしたい」を「実装したい」に統合（v6のみ）
+  - qa.md: Step 1カテゴリ一覧、Step 2の選択肢2箇所から削除。番号を詰める
+  - semantic-search.md: 優先カテゴリ表の該当行を削除
+- [ ] qa.json: シナリオ修正
+  - qa-05, qa-13: purpose → 「実装したい」
+  - qa-05: must追加（Jackson2BodyConverter）
+  - qa-12a: HttpErrorHandler mustをacceptableに移動
+- [ ] qa-05 3回再実行 → 結果確認
 - [ ] ステップ4: 3 run集計レポート作成 → `v1-new-search/report.md` に保存
 - [ ] ステップ5: 確定FAILの根本原因調査・提案 → ユーザーが対応要否を判定
 - [ ] ステップ6: コミット・プッシュ

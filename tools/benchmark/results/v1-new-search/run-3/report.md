@@ -53,10 +53,21 @@
 | oos-impact-01 | 1.0 | PASS | |
 | oos-qa-01 | 1.0 | PASS | |
 
+## Validity Review
+
+自動スコアのFAIL/UNCERTAIN/0.0について妥当性を評価した結果、確定FAILは2件。
+
+| Scenario | Auto Score | Final Verdict | Reason |
+|---|---|---|---|
+| impact-08 | Hal FAIL | **問題なし** | run-1と同じ。RSTの誤記（12桁/15桁）に起因。回答の14桁/17桁が正確 |
+| qa-05 | Hal FAIL | **確定FAIL** | JaxbBodyConverterをapplication/json用と説明しているが、ナレッジ（handlers-body-convert-handler.json s4）ではapplication/xml用と明示されており事実誤認 |
+| pre-02 | Hal UNCERTAIN | **問題なし** | run-2 qa-12a / run-1 qa-12aと同じThymeleaf補足情報。Nablarch固有のハルシネーションではない |
+| qa-15 | Hal UNCERTAIN | **問題なし** | X-XSS-ProtectionとReferrer-Policyのデフォルト値。ナレッジにクラス名はあるがデフォルト値が未記載。補足情報として問題なし |
+| qa-12a | Acc 0.0 | **問題なし** | mustの「HttpErrorHandler言及」はpurpose=実装したいに対して過剰。`@InjectForm + @OnError + <n:errors>` で答えるのが正しく、ハンドラ内部動作の説明は不要 |
+| qa-12b | Acc null | **問題なし** | run-1/2と同パターン（factの過単純化）。回答品質の問題ではない |
+
+**確定FAIL: 1件（qa-05）**
+
 ## Known Issues
 
-- **impact-08 FAIL**: `fixedDate` フォーマット文字列がナレッジ未収録（run-1でも同様）
-- **qa-05 FAIL**: JaxbBodyConverterがapplication/jsonコンバータという記述がナレッジセクションに未収録
-- **pre-02 UNCERTAIN / qa-12a 0.0**: Thymeleaf関連のエラー表示API / HttpErrorHandlerの動作詳細がナレッジ未収録（qa-12aはrun-2でHal FAILだったが今回はaccuracy ABSENT）
-- **qa-15 UNCERTAIN**: SecureHandlerのデフォルトヘッダ値がナレッジセクションに明示なし
-- **qa-12b null accuracy**: Factのovershimplificationによる（回答品質の問題ではない）
+- **qa-05 (確定FAIL)**: JaxbBodyConverterをapplication/json用と誤説明。ナレッジ（handlers-body-convert-handler.json:s4）はapplication/xml用と明示。JSON用コンバータの設定例はナレッジ未収録

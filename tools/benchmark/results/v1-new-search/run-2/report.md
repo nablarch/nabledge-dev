@@ -52,9 +52,19 @@
 | oos-impact-01 | 1.0 | PASS | |
 | oos-qa-01 | 1.0 | PASS | |
 
+## Validity Review
+
+自動スコアのFAILについて妥当性を評価した結果、確定FAILは1件。
+
+| Scenario | Auto Score | Final Verdict | Reason |
+|---|---|---|---|
+| review-08 | Hal FAIL | **問題なし** | 不支持クレーム「マルチパートリクエストハンドラより後ろ、かつ内部フォーワードハンドラより前」はナレッジs3に明示されており正確。評価器が「HTTPレスポンスハンドラより後ろ」制約の省略を誤ってFAILと判定 |
+| impact-03 | Hal FAIL | **問題なし** | 不支持クレーム「ApplicationException送出 → JAX-RSレスポンスハンドラがエラーレスポンス生成」はhandlers-jaxrs-response-handler.json s4（例外に応じてErrorResponseBuilderがレスポンス生成）から合理的に導出できる正当な推論 |
+| qa-12a | Hal FAIL | **問題なし** | Thymeleaf APIはナレッジ未収録だが、run-1のqa-12aと同じ状況。一般的な補足情報でありNablarch固有のハルシネーションではない（run-1では同判定で問題なし） |
+| qa-12b | Hal FAIL + Acc null | **問題なし** | Required.messageキー名はナレッジに記載あり。メッセージ値の差（「必ず入力」vs「入力」）は例示レベル。accuracy=nullはrun-1と同パターン（factの過単純化） |
+
+**確定FAIL: 0件**
+
 ## Known Issues
 
-- **review-08 FAIL**: HIDDENストア使用時のハンドラ配置順の説明が不完全（マルチパートリクエストハンドラより後に配置する必要があるという部分が不正確）
-- **impact-03 FAIL**: `ApplicationException送出 → JAX-RSレスポンスハンドラがエラーレスポンス生成` — ナレッジにJaxRsResponseHandlerへの参照はあるが動作仕様の明示がない
-- **qa-12a FAIL**: Thymeleafのエラー表示API（errors.hasError等）がナレッジセクションに未収録
-- **qa-12b FAIL + null accuracy**: Required.messageのプロパティ値がナレッジと異なる表記; accuracy=nullはfactのovershimplificationによる
+なし
