@@ -48,9 +48,10 @@ def get_merged_groups(ws, title_col, data_start_row):
 
 
 def flatten_cell(val):
+    """Mirror RBKC's _flatten_ws: collapse all whitespace (incl. \\n, 　) to single spaces."""
     if val is None:
         return ""
-    return str(val).replace("\n", " ").strip()
+    return " ".join(str(val).split())
 
 
 def build_section_content(ws, start_row, end_row, columns):
