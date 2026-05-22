@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-22 (session 18)
+**Updated**: 2026-05-22 (session 19)
 
 ## Rules
 
@@ -12,34 +12,6 @@
 ## In Progress
 
 ## Not Started
-
-### B-X. キーワード検索: terms.json廃止 → 全文検索への切り替え
-
-**方針**: keyword-search.sh の検索対象を terms.json から knowledge/配下の全JSONファイル（353件）の直接スキャンに切り替える。terms.json は廃止。
-
-**理由**: terms.json はterm抽出ルールに合致するもののみ索引するため取りこぼしが発生する構造的問題がある。ルール追加では解決しない。全文スキャンは約1.6ms/クエリで terms.json 読み込み（229ms）より速い。
-
-**変更対象**:
-- `keyword-search.sh`: terms.json 読み込み廃止 → knowledge/全JSONをスキャン
-- 既存ロジック（2文字未満除外、大文字小文字無視、ページAND/セクションOR、no_knowledge_content除外）はそのまま維持
-- `knowledge/terms.json` 削除
-- `tools/rbkc/scripts/create/terms.py` 削除（terms.json生成処理）
-
-**前提作業（完了済み）**:
-- [x] `run_keyword_search.py` 新規作成（TDD, 32テスト GREEN）— `db568f64c`
-- [x] `run_e2e.py` → `run_qa.py` リネーム（関数名・ドキュメント全更新）— `6c7b88bd3`
-- [x] `run_qa.py` 動作確認（pre-01, qa-01, qa-02 正常完了）
-
-**ステップ**:
-- [ ] keyword-search.json 12シナリオでベースライン取得（`python3 -m tools.benchmark.scripts.run_keyword_search --scenarios tools/benchmark/scenarios/keyword-search.json --skill-dir .claude/skills/nabledge-6`）
-- [ ] keyword-search.sh を全文スキャンに書き換え（TDD: 20テストGREEN維持）
-- [ ] terms.py 削除 + rbkc.sh / run.py から terms 呼び出し除去
-- [ ] knowledge/terms.json 削除
-- [ ] QO5削除: verify.py から `check_terms_coverage()` と QO5 呼び出しを削除、対応テスト削除
-- [ ] verify設計書（rbkc-verify-quality-design.md）から QO5・terms.json 記述を削除
-- [ ] keyword-search.json 12シナリオで再実行 → 前後比較レポート作成
-- [ ] 設計書（keyword-search-design.md）更新
-- [ ] 全テスト（`python3 -m pytest tools/ -x`）GREEN確認
 
 ### B-5. 改善サイクル
 
@@ -123,6 +95,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-X. terms.json廃止 → 全文スキャン（impact-09: recall 0→1、26テストGREEN、QO5削除）— `99f8f3bfb`〜`feabbeb22`
 - [x] ベンチマーク ステップ3〜6（妥当性評価・集計・根本原因調査・qa-05揺らぎ判定）— `8d1252b39`, qa-05対処不要ユーザー承認
 - [x] B-4. 新スキルE2Eベンチマーク（run-1/2/3 実行完了） — run-1: `1e44a77d7`, run-2/3: `6f8dd0872`
 - [x] B-4-1-fix. read-sections.sh sections:[] 対応（9テスト追加・全バージョン修正）— `11c9160ec`
