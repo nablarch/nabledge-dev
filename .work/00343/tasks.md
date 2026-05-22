@@ -11,19 +11,19 @@
 
 ## In Progress
 
-### B-5. 改善サイクル
+### ベンチマーク ステップ3: run-1〜3の妥当性評価
 
-QAエキスパート評価結果:
-- run-1/2/3 平均: Claims PRESENT 95.6%, Hal PASS 88.9%
-- ベースライン比: 精度+11.9pp、幻覚+74.5pp — 改善確定
-- run-2固有 FAIL (impact-03, review-08): 揺らぎ扱い（ナレッジ欠落でなく回答生成の省略/追加）
-- 対処要: qa-12a (Thymeleaf API未収録、全3run), impact-08 (fixedDate format未収録、2/3run), qa-12b (fact over-spec、全3run)
+HOW-TO-RUN.md ステップ3に従い、run-1〜3を1runずつ妥当性評価 → ユーザー承認 → FAILを確定させる。
 
-- [ ] qa-12a / pre-02 / qa-12b: 対処内容を決定して実施（ナレッジ追加 or fact修正）
-- [ ] impact-08: 対処内容を決定して実施
-- [ ] run-4 実行 → `v1-new-search/run-4` に保存
-- [ ] run-4結果確認・3件とも改善確認
-- [ ] [BLOCKED: ユーザーがrun-4結果を確認し、B-6着手の承認を出す]
+- [x] HOW-TO-RUN.md ステップ3以降をゼロベース書き直し（3a/3b/3c → ステップ3/4/5/6の構造に変更） — `8f2ac2155`
+- [x] HOW-TO-RUN.md ステップ3bに妥当性評価観点を追記（mustの充足確認、RST誤記の遡及確認） — `3a4625b71`
+- [x] run-1 妥当性評価完了・レポート更新 — 確定FAIL 0件 — `0099e7026`
+- [ ] [DECISION: run-1 妥当性評価を承認してもらう（確定FAIL 0件）]
+- [ ] run-2 妥当性評価 → レポート更新 → ユーザー承認
+- [ ] run-3 妥当性評価 → レポート更新 → ユーザー承認
+- [ ] ステップ4: 3 run集計レポート作成 → `v1-new-search/report.md` に保存
+- [ ] ステップ5: 確定FAILの根本原因調査・提案 → ユーザーが対応要否を判定
+- [ ] ステップ6: コミット・プッシュ
 
 
 ## Not Started
@@ -129,7 +129,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
-- [x] B-4. 新スキルE2Eベンチマーク（3 run完了、QAエキスパート評価完了） — run-1: `1e44a77d7`, run-2/run-3: このコミット
+- [x] B-4. 新スキルE2Eベンチマーク（run-1/2/3 実行完了） — run-1: `1e44a77d7`, run-2/3: `6f8dd0872`
 - [x] B-4-1-fix. read-sections.sh sections:[] 対応（9テスト追加・全バージョン修正）— `11c9160ec`
 - [x] B-4-1. run-1 再測定（B-4-1-fix後）— Claims 96.7%, Hal 93.3%, $27.56 — `1e44a77d7`, `66f936c6e`
 - [x] B-4-pre. ユーザープロンプトレビュー — qa.md 大幅改修（Step 1-2-5）、PEレビュー 0 Findings — `86b319939`〜`2d2cfe3fa`
