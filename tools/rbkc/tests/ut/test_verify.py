@@ -586,16 +586,6 @@ class TestCheckIndexCoverage:
         assert any("a.json" in i for i in per_file)
         assert any("b.json" in i for i in per_file)
 
-    def test_terms_json_excluded_from_scan(self, tmp_path):
-        """Spec §3-3 metadata exclusion: terms.json must not be required in index.md."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
-        (kdir / "terms.json").write_text(json.dumps({"SomeClass": ["a.json:s1"]}))
-        idx = tmp_path / "index.md"
-        self._write_index_md(idx, ["a.json"])
-        assert self._check(kdir, idx) == []
-
     def test_index_md_itself_excluded_from_scan(self, tmp_path):
         """Spec §3-3 metadata exclusion: index.md in knowledge_dir is not a content JSON."""
         kdir = tmp_path / "knowledge"
@@ -605,95 +595,6 @@ class TestCheckIndexCoverage:
         idx = kdir / "index.md"
         self._write_index_md(idx, ["a.json"])
         assert self._check(kdir, idx) == []
-
-
-# ---------------------------------------------------------------------------
-# QO5: terms.json 整合性 (check_terms_coverage)
-# ---------------------------------------------------------------------------
-
-class TestCheckTermsCoverage:
-    """QO5: terms.json must exist and all path:sN references must resolve."""
-
-    def _check(self, knowledge_dir, terms_path):
-        from scripts.verify.verify import check_terms_coverage
-        return check_terms_coverage(knowledge_dir, terms_path)
-
-    def _make_json(self, kdir, rel, sections=None):
-        """Write a minimal knowledge JSON at kdir/rel."""
-        path = kdir / rel
-        path.parent.mkdir(parents=True, exist_ok=True)
-        data = {"id": rel.replace("/", "-").replace(".json", ""), "title": "T",
-                "sections": sections or []}
-        path.write_text(json.dumps(data), encoding="utf-8")
-
-    def test_pass_valid_terms_json(self, tmp_path):
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        self._make_json(kdir, "comp/foo.json", [{"id": "s1", "title": "T", "content": ""}])
-        terms = {"SomeClass": ["comp/foo.json:s1"]}
-        terms_path = kdir / "terms.json"
-        terms_path.write_text(json.dumps(terms), encoding="utf-8")
-        assert self._check(kdir, terms_path) == []
-
-    def test_fail_terms_json_missing(self, tmp_path):
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        issues = self._check(kdir, kdir / "terms.json")
-        assert any("QO5" in i and "terms.json" in i and "missing" in i for i in issues)
-
-    def test_fail_dangling_json_path(self, tmp_path):
-        """A reference to a non-existent JSON file is a dangling reference."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        terms = {"SomeClass": ["nonexistent.json:s1"]}
-        terms_path = kdir / "terms.json"
-        terms_path.write_text(json.dumps(terms), encoding="utf-8")
-        issues = self._check(kdir, terms_path)
-        assert any("QO5" in i and "nonexistent.json" in i for i in issues)
-
-    def test_fail_dangling_section_id(self, tmp_path):
-        """A reference to a JSON that exists but lacks the specified section is dangling."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        self._make_json(kdir, "comp/foo.json", [{"id": "s1", "title": "T", "content": ""}])
-        terms = {"SomeClass": ["comp/foo.json:s99"]}  # s99 does not exist
-        terms_path = kdir / "terms.json"
-        terms_path.write_text(json.dumps(terms), encoding="utf-8")
-        issues = self._check(kdir, terms_path)
-        assert any("QO5" in i and "foo.json" in i and "s99" in i for i in issues)
-
-    def test_pass_empty_terms_json(self, tmp_path):
-        """An empty terms.json (no terms) is valid — small corpus or no sections."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        terms_path = kdir / "terms.json"
-        terms_path.write_text("{}", encoding="utf-8")
-        assert self._check(kdir, terms_path) == []
-
-    def test_pass_multiple_refs_all_valid(self, tmp_path):
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        self._make_json(kdir, "a/foo.json", [
-            {"id": "s1", "title": "T1", "content": ""},
-            {"id": "s2", "title": "T2", "content": ""},
-        ])
-        self._make_json(kdir, "b/bar.json", [{"id": "s1", "title": "T", "content": ""}])
-        terms = {"MyClass": ["a/foo.json:s1", "b/bar.json:s1"], "otherTerm": ["a/foo.json:s2"]}
-        terms_path = kdir / "terms.json"
-        terms_path.write_text(json.dumps(terms), encoding="utf-8")
-        assert self._check(kdir, terms_path) == []
-
-    def test_fail_mixed_valid_and_dangling(self, tmp_path):
-        """Only the dangling references are reported, valid ones are not."""
-        kdir = tmp_path / "knowledge"
-        kdir.mkdir()
-        self._make_json(kdir, "a/foo.json", [{"id": "s1", "title": "T", "content": ""}])
-        terms = {"MyClass": ["a/foo.json:s1", "missing.json:s1"]}
-        terms_path = kdir / "terms.json"
-        terms_path.write_text(json.dumps(terms), encoding="utf-8")
-        issues = self._check(kdir, terms_path)
-        assert any("missing.json" in i for i in issues)
-        assert not any("foo.json" in i for i in issues)
 
 
 # ---------------------------------------------------------------------------
@@ -808,16 +709,6 @@ class TestCheckDocsCoverage:
         (kdir / "assets" / "etl-etl" / "chunk_replace.json").write_text(
             '{ "mode": "ABORT"  // comment breaks json\n}', encoding="utf-8"
         )
-        (ddir / "README.md").write_text("1ページ\n")
-        assert self._check(kdir, ddir) == []
-
-    def test_terms_json_excluded_from_qo3_scan(self, tmp_path):
-        """Spec §3-3 metadata exclusion: terms.json must not require a docs MD."""
-        kdir = tmp_path / "knowledge"; kdir.mkdir()
-        ddir = tmp_path / "docs"; ddir.mkdir()
-        self._write_json(kdir, "about/a.json")
-        self._write_md(ddir, "about/a.md")
-        (kdir / "terms.json").write_text(json.dumps({"MyClass": ["about/a.json:s1"]}))
         (ddir / "README.md").write_text("1ページ\n")
         assert self._check(kdir, ddir) == []
 
