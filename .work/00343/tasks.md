@@ -33,33 +33,42 @@ HOW-TO-RUN.md ステップ3に従い、run-1〜3を1runずつ妥当性評価 →
 
 ## Not Started
 
-### B-4-re. 現行検索ベースライン再取得（正当な比較のため）
+### B-4-re-prep. 現行検索ベンチ用ブランチ・シナリオファイルの準備（このワークツリーで実施）
 
-新スキルのベンチマーク（v1-new-search）ではワークフロー詳細出力（Step 8: Workflow Details）が追加されており、旧ベンチマーク（baseline-current）と計測条件が異なる。正当なコスト・実行時間比較のために、現行検索スキルも同じ計測条件（新 run_e2e.py + 新 qa.json）で再取得する。
+**実施場所**: このワークツリー（work1）  
+**前提**: このタスクを完了させてから、ユーザーがブランチ `343-baseline-rerun` を別ワークツリーに切り出す。
 
-**背景**: output_tokens が1.5倍増えた主因は Step 8 の Workflow Details JSON 出力。input_tokens が13.5倍増えた主因は qa.md がプロンプトに埋め込まれるようになったため。旧 baseline-current はこれらが存在しない条件で取得されており、比較が不公平。
+新スキル（v1-new-search）と公平に比較するため、同じ計測条件（新 run_e2e.py + 新 qa.json + 新 Workflow Details 出力）で現行検索スキルのベースラインを取得する。計測条件の差異:
+- output_tokens 1.5倍増: Step 8 の Workflow Details JSON 出力（旧ベンチにはなかった）
+- input_tokens 13.5倍増: qa.md がプロンプトに埋め込まれるようになったため
 
-**ステップ:**
-- [ ] `qa-baseline.json` を作成する（`hearing_answer` フィールドを除いたシナリオファイル）
-  - 旧スキルにはヒアリングステップがなく、`hearing_answer` を埋め込むと旧スキルに不当なアドバンテージを与える
-  - 全30シナリオの `when.hearing_answer` を削除したファイル `tools/benchmark/scenarios/qa-baseline.json` を生成
+- [BLOCKED: ステップ6コミット完了後に実施] `qa-baseline.json` を作成する（`hearing_answer` フィールドを除いたシナリオファイル）
+  - 旧スキルにはヒアリングステップがなく、`hearing_answer` を渡すと不当なアドバンテージになる
+  - `tools/benchmark/scenarios/qa.json` の全30シナリオから `when.hearing_answer` キーを削除して `tools/benchmark/scenarios/qa-baseline.json` として保存
   - 受入条件: `python3 -c "import json; d=json.load(open('tools/benchmark/scenarios/qa-baseline.json')); assert all(s['when'].get('hearing_answer') is None for s in d['scenarios'])"` が通ること
-- [ ] 現行検索スキル（mainブランチの `.claude/skills/nabledge-6`）を用意する
-  - このブランチから別ブランチを作り、別ワークツリーで実行すれば本ブランチの作業と並行可能
-  - `git branch 343-baseline-rerun main` で mainベースのブランチを作成
-  - `git worktree add .tmp/baseline-rerun 343-baseline-rerun`
-  - 受入条件: `.tmp/baseline-rerun/.claude/skills/nabledge-6/workflows/qa.md` が存在すること（旧スキル: `_knowledge-search.md` がある、`semantic-search.md` がない）
+  - コミット・プッシュ（ブランチ: `343-improve-search-quality`）
+
+### B-4-re. 現行検索ベースライン再取得（別ブランチ `343-baseline-rerun` で実施）
+
+**実施場所**: ブランチ `343-baseline-rerun` を別ワークツリーに切り出して実施  
+**ブランチ作成**: `git branch 343-baseline-rerun main`（mainベース: 旧スキルが入っている）  
+**前提**: B-4-re-prep（qa-baseline.json 作成）が完了していること
+
+- [ ] ワークツリー作成: `git worktree add <path> 343-baseline-rerun`
+  - 受入条件: `<path>/.claude/skills/nabledge-6/workflows/_knowledge-search.md` が存在し、`semantic-search.md` が存在しないこと（旧スキルであることの確認）
+- [ ] `qa-baseline.json` を `343-improve-search-quality` ブランチから取得
+  - `git checkout 343-improve-search-quality -- tools/benchmark/scenarios/qa-baseline.json`
 - [ ] 3 run 実行 → `tools/benchmark/results/baseline-current-v2/` に保存
   ```bash
   python3 -m tools.benchmark.scripts.run_e2e \
     --scenarios tools/benchmark/scenarios/qa-baseline.json \
-    --skill-dir .tmp/baseline-rerun/.claude/skills/nabledge-6
+    --skill-dir .claude/skills/nabledge-6
   ```
-- [ ] report.md を作成（3 run 集計、v1-new-search との比較）
-- [ ] v1-new-search/report.md の比較表を `baseline-current-v2` ベースに更新
-- [ ] worktree 削除: `git worktree remove .tmp/baseline-rerun`
+- [ ] report.md を作成（3 run 集計）
+- [ ] 結果を `343-improve-search-quality` にマージまたは cherry-pick して v1-new-search/report.md の比較表を更新
+- [ ] worktree 削除: `git worktree remove <path>`
 
-**前提:** B-4（v1-new-search）完了後に実施。ステップ6コミット前でもよい。
+**前提:** B-4-re-prep 完了後、このブランチのタスクと並行して実施可能。
 
 ### B-X. terms.json抽出ルールの見直し検討
 
