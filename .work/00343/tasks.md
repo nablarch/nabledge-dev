@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-22 (session 17)
+**Updated**: 2026-05-22 (session 18)
 
 ## Rules
 
@@ -25,8 +25,13 @@
 - `knowledge/terms.json` 削除
 - `tools/rbkc/scripts/create/terms.py` 削除（terms.json生成処理）
 
+**前提作業（完了済み）**:
+- [x] `run_keyword_search.py` 新規作成（TDD, 32テスト GREEN）— `db568f64c`
+- [x] `run_e2e.py` → `run_qa.py` リネーム（関数名・ドキュメント全更新）— `6c7b88bd3`
+- [x] `run_qa.py` 動作確認（pre-01, qa-01, qa-02 正常完了）
+
 **ステップ**:
-- [ ] keyword-search.json 12シナリオでベースライン取得（変更前）
+- [ ] keyword-search.json 12シナリオでベースライン取得（`python3 -m tools.benchmark.scripts.run_keyword_search --scenarios tools/benchmark/scenarios/keyword-search.json --skill-dir .claude/skills/nabledge-6`）
 - [ ] keyword-search.sh を全文スキャンに書き換え（TDD: 20テストGREEN維持）
 - [ ] terms.py 削除 + rbkc.sh / run.py から terms 呼び出し除去
 - [ ] knowledge/terms.json 削除
