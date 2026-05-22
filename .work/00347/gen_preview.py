@@ -1,10 +1,10 @@
 """
-Prototype script for Task 3: generate expected docs MD for security-check-2 sheet
+Prototype script for Task 3: generate expected JSON + docs MD for security-check-2 sheet
 with P1-merged grouping applied.
 
 This is a one-off script — not production code.
 """
-import sys
+import json
 import openpyxl
 from pathlib import Path
 
@@ -60,6 +60,10 @@ def flatten_cell(val):
     if val is None:
         return ""
     return str(val).replace("\n", " ").strip()
+
+def build_data_row(ws, row_idx, col_count):
+    """Build a data_row list (raw cell values, LF preserved) as current JSON has."""
+    return [ws.cell(row=row_idx, column=c).value or "" for c in range(1, col_count + 1)]
 
 def build_section_content(ws, start_row, end_row, headers):
     """Build section content string for a group of rows."""
@@ -121,14 +125,60 @@ def main():
         md_lines.append("| " + " | ".join(row_cells) + " |")
     md_lines.append("")
 
-    # Sections summary
-    print(f"=== Sections ({len(sections)}) ===")
-    for i, (title, content) in enumerate(sections, 1):
-        row_count = content.count("\n") + 1
-        print(f"  s{i}: '{title}' ({row_count} content lines)")
+    # --- Build JSON preview ---
+    col_count = ws.max_column
 
-    print()
-    print("=== MD preview (sections as ## headings) ===")
+    # columns list: same as current P1 (flatten header)
+    columns = []
+    for col_idx in range(1, col_count + 1):
+        columns.append(headers.get(col_idx, ""))
+
+    # data_rows: one entry per group (representative/first row only, per P1-merged spec)
+    json_data_rows = []
+    for start_row, _ in groups:
+        json_data_rows.append(build_data_row(ws, start_row, col_count))
+
+    # sections: one per group
+    json_sections = []
+    for i, (title, content) in enumerate(sections, 1):
+        json_sections.append({
+            "id": f"s{i}",
+            "title": title,
+            "content": content,
+        })
+
+    # index: __file__ entry + one per section
+    json_index = [{"id": "__file__", "title": "2.チェックリスト"}]
+    for s in json_sections:
+        json_index.append({"id": s["id"], "title": s["title"]})
+
+    # Preamble text for content field
+    preamble_text = "\n".join(preamble_lines)
+
+    json_out = {
+        "id": "security-check-2.チェックリスト",
+        "title": "2.チェックリスト",
+        "content": preamble_text,
+        "no_knowledge_content": False,
+        "sections": json_sections,
+        "sheet_type": "P1",
+        "sheet_subtype": "P1-merged",
+        "columns": columns,
+        "data_rows": json_data_rows,
+        "index": json_index,
+    }
+
+    json_path = Path(__file__).parent / "preview-security-check-2-checklist.json"
+    json_path.write_text(json.dumps(json_out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Written JSON to: {json_path}")
+
+    # Sections summary
+    print(f"\n=== JSON sections ({len(json_sections)}) ===")
+    for s in json_sections:
+        line_count = s['content'].count("\n") + 1
+        print(f"  {s['id']}: '{s['title']}' ({line_count} content lines)")
+
+    # --- Build MD preview ---
     preview_lines = list(md_lines)
     for title, content in sections:
         preview_lines.append(f"## {title}")
@@ -136,10 +186,9 @@ def main():
         preview_lines.append(content)
         preview_lines.append("")
 
-    output = "\n".join(preview_lines)
-    out_path = Path(__file__).parent / "preview-security-check-2-checklist.md"
-    out_path.write_text(output, encoding="utf-8")
-    print(f"Written to: {out_path}")
+    md_path = Path(__file__).parent / "preview-security-check-2-checklist.md"
+    md_path.write_text("\n".join(preview_lines), encoding="utf-8")
+    print(f"Written MD  to: {md_path}")
 
 if __name__ == "__main__":
     main()
