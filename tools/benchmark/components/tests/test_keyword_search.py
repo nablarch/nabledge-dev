@@ -9,8 +9,6 @@ import pytest
 
 SCRIPT_PATH = (
     Path(__file__).resolve().parents[2]
-    / "tools"
-    / "benchmark"
     / "components"
     / "scripts"
     / "keyword-search.sh"
@@ -19,7 +17,7 @@ SCRIPT_PATH = (
 
 @pytest.fixture()
 def knowledge_dir():
-    """Create a minimal knowledge directory with terms.json and knowledge files."""
+    """Create a minimal knowledge directory with knowledge files (no terms.json)."""
     with tempfile.TemporaryDirectory() as tmpdir:
         kdir = Path(tmpdir) / "knowledge"
         kdir.mkdir()
@@ -86,42 +84,6 @@ def knowledge_dir():
             encoding="utf-8",
         )
 
-        terms = {
-            "UniversalDao": [
-                "component/libraries/libraries-universal-dao.json:s1",
-                "component/libraries/libraries-universal-dao.json:s2",
-                "component/libraries/libraries-universal-dao.json:s3",
-            ],
-            "batchUpdate": [
-                "component/libraries/libraries-universal-dao.json:s2",
-            ],
-            "findAllBySqlFile": [
-                "component/libraries/libraries-universal-dao.json:s3",
-            ],
-            "ドメインバリデーション": [
-                "component/libraries/libraries-bean-validation.json:s2",
-            ],
-            "Bean Validation": [
-                "component/libraries/libraries-bean-validation.json:s1",
-                "component/libraries/libraries-bean-validation.json:s2",
-            ],
-            "CORS": [
-                "component/handlers/handlers-cors.json:s1",
-                "component/handlers/handlers-cors.json:s2",
-            ],
-            "CorsHandler": [
-                "component/handlers/handlers-cors.json:s2",
-            ],
-            "概要": [
-                "about/about-nablarch.json:s1",
-                "component/libraries/libraries-universal-dao.json:s1",
-                "component/libraries/libraries-bean-validation.json:s1",
-            ],
-        }
-        kdir.joinpath("terms.json").write_text(
-            json.dumps(terms, ensure_ascii=False), encoding="utf-8"
-        )
-
         yield kdir
 
 
@@ -151,8 +113,16 @@ class TestBasicMatching:
         result = parse_output(proc)
         section_ids = _extract_section_ids(result)
         assert "component/libraries/libraries-universal-dao.json:s1" in section_ids
-        assert "component/libraries/libraries-universal-dao.json:s2" in section_ids
-        assert "component/libraries/libraries-universal-dao.json:s3" in section_ids
+
+    def test_exact_match_all_sections(self, knowledge_dir):
+        """All sections whose title or content contains the keyword are returned."""
+        proc = run_keyword_search(knowledge_dir, "UniversalDao")
+        result = parse_output(proc)
+        section_ids = _extract_section_ids(result)
+        # s1 title contains UniversalDao, s2 content contains batchUpdate (no UniversalDao)
+        # s3 content has findAllBySqlFile (no UniversalDao)
+        # Only s1 matches "UniversalDao" in title or content
+        assert "component/libraries/libraries-universal-dao.json:s1" in section_ids
 
     def test_case_insensitive(self, knowledge_dir):
         proc = run_keyword_search(knowledge_dir, "universaldao")
@@ -166,11 +136,17 @@ class TestBasicMatching:
         section_ids = _extract_section_ids(result)
         assert "component/libraries/libraries-universal-dao.json:s1" in section_ids
 
-    def test_partial_match(self, knowledge_dir):
+    def test_partial_match_in_content(self, knowledge_dir):
         proc = run_keyword_search(knowledge_dir, "batchUpdate")
         result = parse_output(proc)
         section_ids = _extract_section_ids(result)
         assert "component/libraries/libraries-universal-dao.json:s2" in section_ids
+
+    def test_partial_match_in_title(self, knowledge_dir):
+        proc = run_keyword_search(knowledge_dir, "ドメインバリデーション")
+        result = parse_output(proc)
+        section_ids = _extract_section_ids(result)
+        assert "component/libraries/libraries-bean-validation.json:s2" in section_ids
 
     def test_japanese_keyword(self, knowledge_dir):
         proc = run_keyword_search(knowledge_dir, "ドメインバリデーション")
@@ -186,11 +162,18 @@ class TestBasicMatching:
         assert "component/handlers/handlers-cors.json:s2" in section_ids
 
     def test_partial_substring_match(self, knowledge_dir):
-        """'Validation' partially matches 'Bean Validation' term."""
+        """'Validation' partially matches 'Bean Validation' in section title/content."""
         proc = run_keyword_search(knowledge_dir, "Validation")
         result = parse_output(proc)
         section_ids = _extract_section_ids(result)
         assert "component/libraries/libraries-bean-validation.json:s1" in section_ids
+
+    def test_keyword_matches_page_title(self, knowledge_dir):
+        """Keyword matching the page-level title/content includes sections."""
+        proc = run_keyword_search(knowledge_dir, "CorsHandler")
+        result = parse_output(proc)
+        section_ids = _extract_section_ids(result)
+        assert "component/handlers/handlers-cors.json:s2" in section_ids
 
 
 class TestMultiKeywordAND:
@@ -202,7 +185,6 @@ class TestMultiKeywordAND:
         section_ids = _extract_section_ids(result)
         assert "component/libraries/libraries-universal-dao.json:s1" in section_ids
         assert "component/libraries/libraries-universal-dao.json:s2" in section_ids
-        assert "component/libraries/libraries-universal-dao.json:s3" in section_ids
         assert not any("bean-validation" in sid for sid in section_ids)
 
     def test_two_keywords_no_common_page(self, knowledge_dir):
@@ -286,6 +268,32 @@ class TestOutputFormat:
             assert counts == sorted(counts, reverse=True)
 
 
+class TestFullTextScan:
+    """Full-text scan specific: searches across title and content of all sections."""
+
+    def test_no_terms_json_needed(self, knowledge_dir):
+        """Script works without terms.json present."""
+        assert not (knowledge_dir / "terms.json").exists()
+        proc = run_keyword_search(knowledge_dir, "UniversalDao")
+        assert proc.returncode == 0
+
+    def test_keyword_in_section_content_only(self, knowledge_dir):
+        """Keyword found only in section content (not title) is matched."""
+        proc = run_keyword_search(knowledge_dir, "findAllBySqlFile")
+        result = parse_output(proc)
+        section_ids = _extract_section_ids(result)
+        assert "component/libraries/libraries-universal-dao.json:s3" in section_ids
+
+    def test_keyword_only_in_page_content_returns_no_sections(self, knowledge_dir):
+        """Keyword only in page-level content (not any section) returns empty — sections must match."""
+        # "バリデーション機能" appears only in page-level content, not in any section
+        proc = run_keyword_search(knowledge_dir, "バリデーション機能")
+        result = parse_output(proc)
+        section_ids = _extract_section_ids(result)
+        # Page-level content match does NOT cause sections to be returned
+        assert not any("libraries-bean-validation" in sid for sid in section_ids)
+
+
 class TestErrorHandling:
     """Edge cases and error conditions."""
 
@@ -306,7 +314,8 @@ class TestErrorHandling:
         result = parse_output(proc)
         assert result == []
 
-    def test_missing_terms_json(self):
+    def test_empty_knowledge_dir(self):
+        """Empty knowledge directory returns empty result (no crash)."""
         with tempfile.TemporaryDirectory() as tmpdir:
             kdir = Path(tmpdir) / "knowledge"
             kdir.mkdir()
@@ -318,8 +327,8 @@ class TestErrorHandling:
                 text=True,
                 env=env,
             )
-            assert proc.returncode == 1
-            assert "terms.json" in proc.stderr
+            assert proc.returncode == 0
+            assert json.loads(proc.stdout) == []
 
 
 def _extract_section_ids(result: list) -> set:

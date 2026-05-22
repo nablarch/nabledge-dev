@@ -7,10 +7,7 @@ from pathlib import Path
 import pytest
 
 SCRIPT_PATH = (
-    Path(__file__).resolve().parents[2]
-    / "tools"
-    / "benchmark"
-    / "components"
+    Path(__file__).resolve().parents[1]
     / "scripts"
     / "read-sections.sh"
 )
