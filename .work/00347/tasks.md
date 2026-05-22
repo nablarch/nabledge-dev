@@ -2,7 +2,7 @@
 
 **PR**: #348
 **Issue**: #347
-**Updated**: 2026-05-22 (updated session 3 — design docs committed)
+**Updated**: 2026-05-22 (updated session 3 end)
 
 ## Rule: Fact-based judgment only
 
@@ -72,6 +72,7 @@
 - 全量調査スクリプト実行済み: 37シートにタイトル列行マージあり、うちデータ行マージ（P1に影響）は`2.チェックリスト`と`改訂履歴`/`Revision History`のみ
 - `改訂履歴`はヘッダ行内マージ（data_start前）→ `P1-merged` に指定する必要なし
 - verify FAILリスク: なし（集約後も全セル値は section.content に `{列名}: {値}` 形式で含まれる）
+- **実装上の重要ファクト**: `tools/rbkc/scripts/create/converters/xlsx_common.py:40` の `load_sheet_subtype_map` 関数の正規表現が `P2-1|P2-3|P2-4` のみを対象にしている。Task 4/5 で `P1-merged` を追加する必要あり
 
 ---
 
