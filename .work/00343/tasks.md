@@ -54,18 +54,16 @@ HOW-TO-RUN.md ステップ3に従い、run-1〜3を1runずつ妥当性評価 →
 **ブランチ作成**: `git branch 343-baseline-rerun main`（mainベース: 旧スキルが入っている）  
 **前提**: B-4-re-prep（qa-baseline.json 作成）が完了していること
 
+HOW-TO-RUN.md の手順に従う。以下が差分:
+- シナリオファイル: `qa-baseline.json`（`hearing_answer` なし）
+- スキルディレクトリ: `.claude/skills/nabledge-6`（このブランチ自体が旧スキル）
+- 結果保存先: `tools/benchmark/results/baseline-current-v2/`
+
 - [ ] ワークツリー作成: `git worktree add <path> 343-baseline-rerun`
-  - 受入条件: `<path>/.claude/skills/nabledge-6/workflows/_knowledge-search.md` が存在し、`semantic-search.md` が存在しないこと（旧スキルであることの確認）
-- [ ] `qa-baseline.json` を `343-improve-search-quality` ブランチから取得
-  - `git checkout 343-improve-search-quality -- tools/benchmark/scenarios/qa-baseline.json`
-- [ ] 3 run 実行 → `tools/benchmark/results/baseline-current-v2/` に保存
-  ```bash
-  python3 -m tools.benchmark.scripts.run_e2e \
-    --scenarios tools/benchmark/scenarios/qa-baseline.json \
-    --skill-dir .claude/skills/nabledge-6
-  ```
-- [ ] report.md を作成（3 run 集計）
-- [ ] 結果を `343-improve-search-quality` にマージまたは cherry-pick して v1-new-search/report.md の比較表を更新
+  - 受入条件: `_knowledge-search.md` あり・`semantic-search.md` なし（旧スキル確認）
+- [ ] `qa-baseline.json` を取得: `git checkout 343-improve-search-quality -- tools/benchmark/scenarios/qa-baseline.json`
+- [ ] HOW-TO-RUN.md ステップ1〜6 を実行（上記差分を適用）
+- [ ] 結果を `343-improve-search-quality` に cherry-pick し、v1-new-search/report.md の比較表を更新
 - [ ] worktree 削除: `git worktree remove <path>`
 
 **前提:** B-4-re-prep 完了後、このブランチのタスクと並行して実施可能。
