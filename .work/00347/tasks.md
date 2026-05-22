@@ -2,7 +2,7 @@
 
 **PR**: #348
 **Issue**: #347
-**Updated**: 2026-05-22 (updated session 4 end)
+**Updated**: 2026-05-22 (Task 4 done)
 
 ## Rule: Fact-based judgment only
 
@@ -92,16 +92,16 @@
 
 ---
 
-### Task 4: TDD — 失敗するテストを追加
+### ~~Task 4: TDD — 失敗するテストを追加~~ ✅
 *TDD ルール: 実装前にテストを書き RED を確認すること*
 
 **Steps:**
-- [ ] `tools/rbkc/tests/ut/test_xlsx_common.py` を新規作成（またはテスト対象ファイルを確認）
-- [ ] `_build_p1_sections` での merged-row グループ化を検証するテストを追加する
+- [x] `tools/rbkc/tests/ut/test_xlsx_common.py` を新規作成（またはテスト対象ファイルを確認）
+- [x] `_build_p1_sections` での merged-row グループ化を検証するテストを追加する
   - テスト設計: タイトル列がマージされている場合、同一マージグループの行が1セクションになること
   - エッジケース: グループ内に空行がある場合、複数のマージグループが連続する場合
-- [ ] `pytest` 実行 → RED を確認
-- [ ] コミット: `test: add failing tests for merged-row P1 grouping (#347)`
+- [x] `pytest` 実行 → RED を確認 (13 failures)
+- [x] コミット: `test: add failing tests for P1-merged grouping in xlsx_common (#347)` — `0405571d4`
 
 ---
 
