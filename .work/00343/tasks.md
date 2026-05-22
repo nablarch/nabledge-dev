@@ -26,9 +26,9 @@ HOW-TO-RUN.md ステップ3に従い、run-1〜3を1runずつ妥当性評価 →
 - [x] qa.json: シナリオ修正（qa-05/qa-13 purpose変更、qa-05 must追加、qa-12a移動）— `acbf0d217`
 - [x] semantic-search.md: 「実装したい」優先カテゴリに component/adapters 追加 — `02eedcccd`
 - [x] qa-05 3回再実行（+4回追加）→ adapters-jaxrs-adaptor.json が選ばれない構造的問題を確認。現状の限界として受け入れ（ユーザー承認）
-- [ ] ステップ4: 3 run集計レポート作成 → `v1-new-search/report.md` に保存
-- [ ] ステップ5: 確定FAILの根本原因調査・提案 → ユーザーが対応要否を判定
-- [ ] ステップ6: コミット・プッシュ
+- [x] ステップ4: 3 run集計レポート作成 → `v1-new-search/report.md` に保存
+- [x] ステップ5: 確定FAILの根本原因調査・提案（qa-05: 揺らぎ候補/要改善） → ユーザーが対応要否を判定
+- [BLOCKED: qa-05対応要否をユーザーが判定してからコミット] ステップ6: コミット・プッシュ
 
 
 ## Not Started
