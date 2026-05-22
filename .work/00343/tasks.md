@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-22 (session 14)
+**Updated**: 2026-05-22 (session 15)
 
 ## Rules
 
@@ -32,6 +32,28 @@ HOW-TO-RUN.md ステップ3に従い、run-1〜3を1runずつ妥当性評価 →
 
 
 ## Not Started
+
+### B-4-re. 現行検索ベースライン再取得（正当な比較のため）
+
+新スキルのベンチマーク（v1-new-search）ではワークフロー詳細出力（Step 8: Workflow Details）が追加されており、旧ベンチマーク（baseline-current）と計測条件が異なる。正当なコスト・実行時間比較のために、現行検索スキルも同じ計測条件（新 run_e2e.py + 新 qa.json）で再取得する。
+
+**背景**: output_tokens が1.5倍増えた主因は Step 8 の Workflow Details JSON 出力。input_tokens が13.5倍増えた主因は qa.md がプロンプトに埋め込まれるようになったため。旧 baseline-current はこれらが存在しない条件で取得されており、比較が不公平。
+
+**ステップ:**
+- [ ] 現行検索スキル（mainブランチの `.claude/skills/nabledge-6`）を一時的にローカルで用意する
+  - `git show main:.claude/skills/nabledge-6/` でディレクトリ構成確認
+  - `git worktree add .tmp/baseline-rerun main` または `git stash` で旧スキルに切り替え
+  - 現在の run_e2e.py と qa.json は新版（現ブランチ）のものを使う
+- [ ] 3 run 実行 → `tools/benchmark/results/baseline-current-v2/` に保存
+  ```bash
+  python3 -m tools.benchmark.scripts.run_e2e \
+    --scenarios tools/benchmark/scenarios/qa.json \
+    --skill-dir .tmp/baseline-rerun/.claude/skills/nabledge-6
+  ```
+- [ ] report.md を作成（3 run 集計、v1-new-search との比較）
+- [ ] v1-new-search/report.md の比較表を `baseline-current-v2` ベースに更新
+
+**前提:** B-4（v1-new-search）完了後に実施。ステップ6コミット前でもよい。
 
 ### B-X. terms.json抽出ルールの見直し検討
 
