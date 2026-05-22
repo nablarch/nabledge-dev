@@ -2,7 +2,7 @@
 
 **PR**: #348
 **Issue**: #347
-**Updated**: 2026-05-22 (updated session 3 end)
+**Updated**: 2026-05-22 (updated session 4 end)
 
 ## Rule: Fact-based judgment only
 
@@ -76,18 +76,19 @@
 
 ---
 
-### Task 3: 閲覧用MD プレビュー生成とユーザー確認（実装前）
-*閲覧用MDで見栄えに関する変更のため、実装前に期待出力を確認する*
+### ~~Task 3: 閲覧用MD + JSON プレビュー生成とユーザー確認（実装前）~~ ✅
 
 **Steps:**
-- [ ] 期待出力のプロトタイプを生成するスクリプトを `.work/00347/` に作成する（本番コードではなく one-off）
-- [ ] プロトタイプを実行して期待 docs MD を生成する
-  - ファクト確認: 生成された MD のセクション数・タイトルを確認
-- [ ] 期待 docs MD を `.work/00347/preview-security-check-2-checklist.md` に保存する
-- [ ] コミット: `docs: preview expected security-check-2 docs MD (#347)`
-- [ ] プッシュ
+- [x] プロトタイプスクリプト `.work/00347/gen_preview.py` を作成する
+- [x] JSON プレビュー `.work/00347/preview-security-check-2-checklist.json` を生成する（11セクション）
+- [x] MD プレビュー `.work/00347/preview-security-check-2-checklist.md` を生成する
+- [x] Excel vs JSON（行・列・順序の位置ベース）: 全11グループ 0件不一致 確認済み
+- [x] Excel vs MD テーブル（行・列・順序の位置ベース）: 全50行 0件不一致 確認済み
+- [x] コミット・プッシュ済み — `b606f6b32`
+- [x] ユーザー確認完了（OK）
 
-**⚠️ ユーザー確認が必要 — PRでユーザーに閲覧用MDを確認してもらう**
+**確認済みファクト:**
+- flatten: RBKC の `_flatten_ws` = `" ".join(str(val).split())` と一致させた（`\n\n`・`　` の扱いが `replace("\n"," ")` と異なるため修正が必要だった）
 
 ---
 
