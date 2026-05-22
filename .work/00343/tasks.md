@@ -13,24 +13,26 @@
 
 ## Not Started
 
-### B-X. terms.json抽出ルールの見直し検討
+### B-X. キーワード検索: terms.json廃止 → 全文検索への切り替え
 
-keyword-search-design.md のterm抽出ルールについて、以下の点を検討・必要に応じて修正する。
+**方針**: keyword-search.sh の検索対象を terms.json から knowledge/配下の全JSONファイル（353件）の直接スキャンに切り替える。terms.json は廃止。
 
-**検討項目:**
-- 設定値・機能名が拾えるか？（現行7カテゴリで十分か）
-- ドット区切り3セグメント以上という閾値は妥当か？（2セグメントも有効では？）
-- 高頻度term除外の7%閾値は妥当か？（緩めてよい？）
-- 「ログ」で検索して機能横断のログ関連セクションを列挙できるか？（ユースケース確認）
-- 絞り込みはページレベルANDで担保されるので、抽出は1〜7をもっと緩くして良いのでは？
+**理由**: terms.json はterm抽出ルールに合致するもののみ索引するため取りこぼしが発生する構造的問題がある。ルール追加では解決しない。全文スキャンは約1.6ms/クエリで terms.json 読み込み（229ms）より速い。
 
-**ステップ:**
-- [ ] 実際のterms.jsonを使って「ログ」「設定」等で試し検索し、過不足を確認
-- [ ] ドット区切り2セグメント、高頻度閾値10〜15%等の代替案をベンチマークシナリオで評価
-- [ ] 設計書（keyword-search-design.md）と実装（terms.py / keyword-search.sh）を更新
-- [ ] 20テストがGREENであること確認
+**変更対象**:
+- `keyword-search.sh`: terms.json 読み込み廃止 → knowledge/全JSONをスキャン
+- 既存ロジック（2文字未満除外、大文字小文字無視、ページAND/セクションOR、no_knowledge_content除外）はそのまま維持
+- `knowledge/terms.json` 削除
+- `tools/rbkc/scripts/create/terms.py` 削除（terms.json生成処理）
 
-**前提:** B-5（改善サイクル）完了後、B-6（バージョン展開）前に実施。v6で確定してから展開。
+**ステップ**:
+- [ ] keyword-search.json 12シナリオでベースライン取得（変更前）
+- [ ] keyword-search.sh を全文スキャンに書き換え（TDD: 20テストGREEN維持）
+- [ ] terms.py 削除 + rbkc.sh / run.py から terms 呼び出し除去
+- [ ] knowledge/terms.json 削除
+- [ ] keyword-search.json 12シナリオで再実行 → 前後比較レポート作成
+- [ ] 設計書（keyword-search-design.md）更新
+- [ ] 全テスト（`python3 -m pytest tools/ -x`）GREEN確認
 
 ### B-5. 改善サイクル
 
