@@ -56,16 +56,16 @@ class TestPieChartWithColors:
 class TestSlocChartsPromtsColor:
     """render_sloc_section passes PROMPTS_COLOR to both SLOC pie charts."""
 
-    def _make_current(self, ns, np, kp, kt, kpr):
+    def _make_current(self, ns, np, kp, kt):
         return {
             "nabledge": {"scripts": {"dummy": ns}, "prompts": np},
-            "kc": {"scripts_prod": {"dummy": kp}, "scripts_test": {"dummy": kt}, "prompts": kpr},
+            "rbkc": {"scripts_create": {"dummy": kp}, "scripts_test": {"dummy": kt}},
         }
 
-    def test_prompts_color_present_in_both_charts(self):
-        current = self._make_current(ns=951, np=1010, kp=4347, kt=5736, kpr=509)
+    def test_prompts_color_present_in_nabledge_chart(self):
+        current = self._make_current(ns=951, np=1010, kp=4347, kt=5736)
         lines = render_sloc_section(current, {}, [])
         charts = [l for l in lines if "pie title" in l]
         assert len(charts) == 2, "Expected exactly 2 pie charts"
-        assert PROMPTS_COLOR in charts[0], "PROMPTS_COLOR missing from v6 chart"
-        assert PROMPTS_COLOR in charts[1], "PROMPTS_COLOR missing from KC chart"
+        assert PROMPTS_COLOR in charts[0], "PROMPTS_COLOR missing from Nabledge v6 chart"
+        # RBKC SLOC chart has no Prompts entry — PROMPTS_COLOR is not expected there
