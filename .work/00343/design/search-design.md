@@ -1,197 +1,293 @@
-# Nabledge 検索アーキテクチャ設計
+# 検索設計書
 
-**Status**: Draft
-**Date**: 2026-05-15
-
-## フェーズ
-
-本設計は2フェーズで実現する。
-
-**フェーズA（部品実装+部品ベンチマーク）**:
-- 新検索の各コンポーネント設計・実装（`tools/benchmark/components/prompts/`にプロンプト、`tools/benchmark/components/scripts/`にスクリプト）
-- 部品単位のベンチマーク（`simulate_*.py`で各コンポーネントを個別評価）
-- RBKC変更は要件設計のみ
-- 現行検索は一切変更しない
-
-**フェーズB（RBKC変更+新検索デプロイ+E2Eベンチマーク）**:
-- RBKCの変更（index.md生成、terms.json出力、セキュリティチェックExcel修正）
-- 新検索のスキルへのデプロイ（ワークフロー、アセット）
-- 現行検索のE2Eベンチマーク（v6のみ）
-- 新検索のE2Eベンチマーク（v6のみ）
-- 現行vs新の比較、現行以上になるまで改善
-- 残りバージョンへの展開
-
-## 検索要件
-
-精度最優先。SoRシステム（金融・決済）の知識検索であり、以下の2条件を満たすこと。
-
-**回答精度**: 質問の意図を踏まえて、最低限必須の知識が回答に含まれていること。
-
-**ハルシネーション防止**: 知識ベースにない捏造が回答に含まれないこと。
-
-## ベンチマーク要件
-
-回答精度・ハルシネーション防止はLLMで自動判定し、知識ベースとのマッチで評価する。ただしLLM判定は知識にマッチしないものをNGにする傾向があるため、人間が最終評価する。
-
-実行時間とコストはベンチマークで計測し報告する。検索要件としては扱わない。
-
-具体的な計測方法と閾値はベンチマーク設計で定義する。
+v6の検索実装（`workflows/`, `scripts/`）の設計。
 
 ---
 
-## 前提・制約
+## 概要
 
-1. **LLMがフロー制御** — CC（Claude Code）とGHC（GitHub Copilot）の両方に対応するため、検索フローはLLMが制御する構成とする
-2. **知識ファイル・インデックスはすべてルールベース生成** — 手動ヒント等を入れるとイタチごっこになり汎用性能が出ないため、RBKCによる機械的生成のみ
-3. **要件の2条件（回答精度・ハルシネーション防止）は必須** — これを満たさない設計変更は採用しない
-
----
-
-## UX
-
-ユーザーから見た体験は以下の2パターン。
-
-**パターン1: 具体的な質問（ヒアリングなし）**
-```
-User: 「UniversalDaoの使い方」
-System: （検索+回答）
-        UniversalDaoでは...（引用付き回答）
-```
-
-**パターン2: 曖昧な質問（ヒアリングあり）**
-```
-User: 「入力チェックのやり方」
-System: 対象のアプリケーション種別を教えてもらえますか？
-        - ウェブアプリケーション（HTML画面のフォーム入力）
-        - RESTful API（JSONリクエストのバリデーション）
-User: 「RESTです」
-System: （検索+回答）
-        REST APIの入力チェックでは...（引用付き回答）
-```
-
-ヒアリングで質問を十分に絞り込んでから意味検索に渡す。意味検索の精度はヒアリングの質に依存する。
+ユーザーの質問に対して関連するナレッジセクションを探し出し、回答を生成する。  
+QAワークフロー（`workflows/qa.md`）が全体を束ね、意味検索・キーワード検索の2つの検索経路を持つ。
 
 ---
 
-## アーキテクチャ
+## QAワークフロー（`workflows/qa.md`）
 
-### ワークフロー構成
+### 全体フロー
 
 ```
-qa.md（質問応答オーケストレーション）
-  ├── qa/hearing.md         ヒアリング
-  ├── semantic-search.md    意味検索 → セクションIDリスト
-  ├── read-sections.sh      セクション本文取得
-  ├── qa/answer.md          回答生成
-  └── qa/verify.md          根拠検証
-
-code-analysis.md（コード分析）
-  ├── keyword-search.md     キーワード検索 → セクションIDリスト
-  ├── read-sections.sh      セクション本文取得
-  └── レポート生成
+入力（質問テキスト）
+  ↓
+Step 1: 質問を分類（processing_type / purpose）
+  ↓ （未確定の軸がある場合）
+Step 2: ユーザーへ確認
+  ↓
+Step 3: 意味検索 → selected_sections（最大30件）
+  ↓
+Step 4: セクション内容を読む（最大10件）
+  ↓ （sections_content が空）→ 「知識ファイルに含まれていません」で終了
+Step 5: 回答生成
+  ↓
+Step 6: ハルシネーション検証
+  ↓
+Step 7: FAIL時 → Step 5 を再実行（問題のclaimを除外）
+  ↓
+Step 8: 最終回答を出力
 ```
 
-### 知識検索の2経路
+### Step 1: 質問分類
 
-知識検索は2つの独立した公開ワークフローとして提供する。出力インタフェース（セクションIDリスト）は共通。
+2つの軸を独立して判定する。
 
-| ワークフロー | 入力 | 方式 | 利用想定 |
-|------------|------|------|--------|
-| keyword-search.md | キーワード（1つ以上） | スクリプトによる機械的マッチ | コード分析（セクションポインタ取得） |
-| semantic-search.md | 自然言語の質問文、ヒアリング結果（hearing_answer） | AIによるインデックスからのセクション選定 | 質問 |
+| 軸 | 確定条件 | 値 |
+|---|---|---|
+| `processing_type` | 質問が明確に1種類の処理方式に属する | その処理方式名 |
+| `processing_type` | 横断的（テストフレームワーク、i18n、ロギング等） | `null` |
+| `processing_type` | 判断できない | `UNCLEAR` |
+| `purpose` | 質問から明確に判定できる | カテゴリ名 |
+| `purpose` | 判断できない | `UNCLEAR` |
 
-keyword-searchは既知の用語で確実にヒットさせる（precision重視）。semantic-searchは語彙ギャップを超えて関連セクションを発見し、重要度（high/partial）を付与する（recall重視）。コード分析はStep 1でNablarchクラス名が確定するため、keyword-searchのみを使う。
+**処理方式の選択肢**: ウェブアプリケーション / RESTfulウェブサービス / Nablarchバッチ / Jakartaバッチ / テーブルをキューとして使ったメッセージング / HTTPメッセージング / MOMメッセージング
+
+**目的の選択肢**: 実装したい / 仕組み・動作を理解したい / 不具合・エラーを調査したい / テストを書きたい / バージョンアップしたい / セキュリティ対応したい
+
+両軸が確定済み → Step 3 へスキップ。どちらかが `UNCLEAR` → Step 2 へ。
+
+なお、トランザクション・バリデーション・DBアクセス・SQLなど、処理方式によって設定や実装が異なる概念は「横断的」には分類しない。
+
+### Step 2: ユーザーへの確認
+
+`UNCLEAR` な軸についてのみ質問する。両軸が `UNCLEAR` なら1メッセージにまとめる。  
+ユーザーが「その他」または8を選択した場合: `processing_type = null` / `purpose = 実装したい` とする。  
+回答を受け取ったら Step 3 へ進む。
+
+### Step 3: 意味検索
+
+`workflows/semantic-search.md` を実行する。
+
+質問テキストの構築:
+- `processing_type` が null でない場合: `"{質問}（処理方式: {processing_type}）（目的: {purpose}）"`
+- `processing_type` が null の場合: `"{質問}（目的: {purpose}）"`
+
+返値の `selected_sections` を保存する。
+
+### Step 4: セクション内容の読み取り
+
+`selected_sections` から読み取り対象を選ぶ:
+1. `high` セクションを優先
+2. 空きスロットに `partial` セクションを追加
+3. 合計最大10件
+
+```bash
+bash scripts/read-sections.sh "file1.json:s1" "file2.json:s3" ...
+```
+
+出力を `sections_content` として保存。`selected_sections` が空なら `sections_content = ""`。
+
+### Step 5: 回答生成
+
+`sections_content` が空なら「この情報は知識ファイルに含まれていません。」を出力して終了。
+
+そうでなければ以下の形式で日本語回答を生成する（500トークン以内、複雑な質問は最大800トークン）:
+
+```
+**結論**: 質問への直接回答（1〜2文）
+  - 具体的なメソッド名・クラス名・方式を含む
+  - 質問の言い換えにしない
+
+**根拠**: 結論を裏付けるコード例・設定例・仕様情報
+  - コード/設定例はコードブロックで表示
+  - 優先順位: 実装例 > 設定例 > API仕様 > 概念説明
+  - セクションのコード例は verbatim（変更不可）
+
+**注意点**: 制約・リソース管理・よくある誤り（該当なければ省略）
+
+参照: 回答で実際に引用したセクション（file.json:sN形式、カテゴリパス省略）
+```
+
+`processing_type` が null でない場合はその処理方式に合致する情報を優先する。  
+セクションにない情報のギャップは「この情報は知識ファイルの対象範囲外です」と記述（推測しない）。
+
+一般的なJava/プログラミング知識（try-catch、Bean、getter/setter等）はナレッジセクションと併用可。
+
+結果を `answer_text` として保存。
+
+### Step 6: ハルシネーション検証
+
+`answer_text` 中のNablarch固有クレームを抽出し、各クレームが `sections_content` で裏付けられているか検証する。
+
+**抽出対象（Nablarch固有クレーム）**:
+
+| カテゴリ | 例 |
+|---|---|
+| API名 | `UniversalDao.deferメソッド`、`@InjectFormアノテーション` |
+| クラス名 | `DatabaseRecordReader`、`BatchAction` |
+| 設定方法 | `web-component-configuration.xmlに設定`、`コンポーネント定義ファイルに記述` |
+| 動作仕様 | `遅延ロードはDB接続をストリーミングする`、`バリデーションエラー時にステータスコード400を返す` |
+| 制約 | `closeしないとリソースリーク`、`Formのプロパティは全てString型` |
+| パラメータ | `-requestPathで指定`、`SQLID` |
+
+**抽出しない（一般知識）**:
+
+| カテゴリ | 例 |
+|---|---|
+| 一般Java | `Beanクラスを作成する`、`try-with-resourcesを使う` |
+| 一般プログラミング | `バリデーションを実行する`、`エラーメッセージを表示する` |
+| フロー記述 | `まず〜して、次に〜する` |
+| 一般Webの概念 | `HTTPリクエスト`、`JSONレスポンス` |
+
+各クレームの判定順序:
+1. セクション内容に直接記述がある → 裏付けあり
+2. セクション内容の言い換え（paraphrase/省略/同義語）→ 裏付けあり
+3. 明示されていない属性・動作・制約 → 裏付けなし（技術的に妥当でも）
+
+いずれかのクレームが裏付けなしなら `verify_result = FAIL`（`issues` に未裏付けクレーム一覧を記録）。すべて裏付けあれば `verify_result = PASS`。
+
+### Step 7: 検証結果の処理
+
+- **PASS**: `final_answer = answer_text`
+- **FAIL**: `issues` に含まれるクレームを含めずに Step 5 を再実行し、結果を `final_answer` とする
+
+### Step 8: 出力
+
+`final_answer` をユーザーに出力する。
 
 ---
 
-## ディレクトリ構成
+## 意味検索（`workflows/semantic-search.md`）
 
-### フェーズA: 部品実装+部品ベンチマーク
+### 入力
 
-フェーズAでは現行スキルを一切変更しない。部品（プロンプト・スクリプト）はすべて `tools/benchmark/` 内に配置する。
+`{question}`: ユーザーの質問テキスト（処理方式・目的の補足文を含む）
 
-```
-tools/benchmark/
-  components/
-    prompts/
-      hearing-classify.md             ← ヒアリング分類プロンプト
-      hearing-extract.md              ← ヒアリング抽出プロンプト
-      semantic-search-stage1.md       ← 意味検索Stage1プロンプト
-      semantic-search-stage2.md       ← 意味検索Stage2プロンプト
-      answer.md                       ← 回答生成プロンプト
-      verify.md                       ← 根拠検証プロンプト
-    scripts/
-      keyword-search.sh              ← キーワード検索スクリプト
-      read-sections.sh               ← セクション本文取得
-  prompts/
-    c-claim-judge.md                  ← 回答精度LLM判定プロンプト
-    hallucination-judge.md            ← ハルシネーション判定プロンプト
-  scripts/
-    simulate_hearing.py               ← ヒアリング部品ベンチマーク
-    simulate_semantic_search.py       ← 意味検索部品ベンチマーク
-    simulate_answer.py                ← 回答生成部品ベンチマーク
-    simulate_verify.py                ← 検証部品ベンチマーク
-    simulate_answer_verify.py         ← 回答+検証部品ベンチマーク
-    run.py                            ← 部品チェーン実行（hearing→search→answer）
-    evaluate.py                       ← 評価（ルールベース+LLM判定）
-    report.py                         ← レポート生成
-    generate_index.py                 ← index.md生成（ベンチマーク用）
-  scenarios/
-    qa.json                           ← QAシナリオ（15件）
-    keyword-search.json               ← キーワード検索シナリオ（12件）
-```
+### 出力
 
-- `components/` はフェーズBでスキルにデプロイする部品。ベンチマーク内で開発・評価する
-- `prompts/` はベンチマーク専用（LLM判定用）。スキルにはデプロイしない
-- `scripts/` はベンチマーク実行インフラ。スキルにはデプロイしない
+ポインタJSON（`selected_sections` 配列）
 
-### フェーズB: RBKC変更+スキルデプロイ+E2Eベンチマーク
+### ステップ
 
-フェーズAの部品をスキルにデプロイし、RBKC変更を実施する。
+**Step 1: インデックス読み取り**
 
-```
-.claude/skills/nabledge-6/
-  knowledge/
-    {category}/                       ← 知識ファイル（RBKC生成、カテゴリ別サブディレクトリ）
-      about/
-      assets/
-      check/
-      component/
-      development-tools/
-      guide/
-      processing-pattern/
-      releases/
-      setup/
-    index.md                          ← セクション目次（RBKC生成）
-    terms.json                        ← term→section_idマップ（RBKC生成）
-  workflows/
-    qa.md                             ← 質問応答オーケストレーション
-    qa/                               ← qa.md が参照するサブワークフロー（コロケーション）
-      hearing.md                      ← ヒアリング（LLMプロンプトをインライン）
-      answer.md                       ← 回答生成（LLMプロンプトをインライン）
-      verify.md                       ← 根拠検証（LLMプロンプトをインライン）
-    keyword-search.md                 ← キーワード検索（公開）
-    semantic-search.md                ← 意味検索（公開、LLMプロンプトをインライン）
-    code-analysis.md                  ← コード分析
-    code-analysis/                    ← code-analysis.md が参照するテンプレート（コロケーション）
-      template.md                     ← コード分析テンプレート
-      template-guide.md               ← テンプレートガイド
-      template-examples.md            ← テンプレート例
-  scripts/
-    keyword-search.sh                 ← components/scripts/ からデプロイ
-    read-sections.sh                  ← components/scripts/ からデプロイ
+`knowledge/index.md` を読む。内容を `index_content` として保存。
 
-tools/rbkc/
-  scripts/create/
-    index.py                          ← index.md生成（index.toon → index.mdへ変更）
-    terms.py                          ← terms.json生成
+**Step 2: ページ選定**
+
+1. 質問の要約（1文）を書く
+2. `（処理方式: X）` / `（目的: X）` の制約を抽出する
+3. インデックス内の各ページに対して以下の決定手順を適用する:
+   - 質問が尋ねている機能・コンポーネント・トピックをカバーするページ → **候補**
+   - 質問の技術的問題を直接解決する機能をカバーするページ → **候補**
+   - 質問で指定された処理方式をカバーするページ → **候補**（*異なる*処理方式をカバーするページ → **スキップ**）
+   - それ以外 → **スキップ**
+4. 目的が特定された場合、以下の優先カテゴリ順で候補をソートする:
+
+| 目的 | 優先カテゴリ |
+|---|---|
+| 実装したい | `processing-pattern/*`, `component/libraries`, `component/adapters` |
+| 仕組み・動作を理解したい | `component/handlers`, `component/libraries`, `about/about-nablarch` |
+| 不具合・エラーを調査したい | `component/handlers`, `component/libraries`, `processing-pattern/*` |
+| テストを書きたい | `development-tools/testing-framework`, `component/libraries` |
+| バージョンアップしたい | `about/migration`, `releases/releases`, `about/release-notes` |
+| セキュリティ対応したい | `check/security-check`, `component/handlers`, `processing-pattern/*` |
+
+5. 候補がゼロなら `{"selected_sections": []}` を即時返す。そうでなければ上位10件を選ぶ（3件未満でもパディングしない）
+6. 選択したページパス（`knowledge/` からの相対パス）を `selected_pages` として保存する
+
+**Step 3: セクション選定**
+
+`selected_pages` 内の各パスについて（最大10件）:
+1. `knowledge/{path}` を読む
+2. 各セクションに以下の決定手順を適用する:
+   - 「このセクションなしに質問への完全な回答は不可能か？」→ **high**
+   - 「このセクションは high セクションを使う際に必要な背景や設定を提供しており、high セクションだけからは推測できないか？」→ **partial**
+   - それ以外 → **skip**
+
+   常にスキップ:
+   - 具体的な情報のない一般概要のみのセクション
+   - モジュール一覧・改訂履歴・その他定型文
+   - 選択済みの high セクションと同じ情報を再述するセクション
+   - 実装の詳細を持たない概念定義のみのセクション
+   - high セクションと同じ情報を別の角度から説明するセクション
+
+high セクションを優先して収集する。合計30件になるまで partial セクションを追加する（high が30件ある場合は partial を追加しない）。
+
+返値: relevance 降順（high → partial）でソートしたポインタJSON
+
+---
+
+## キーワード検索（`workflows/keyword-search.md`）
+
+### 入力
+
+`{keywords}`: 検索キーワードのリスト（例: `UniversalDao`, `batchUpdate`, `ページング`）
+
+### 出力
+
+ポインタJSON（`results` 配列）
+
+### ステップ
+
+**Step 1: キーワード検索スクリプトの実行**
+
+```bash
+bash scripts/keyword-search.sh <keyword1> [keyword2] ...
 ```
 
-**ファイル配置の原則（コロケーション）**:
-- ワークフローとその依存ファイルは同一ディレクトリまたは直下のサブディレクトリに配置する
-- LLMへのプロンプト指示はワークフローMD（`qa/hearing.md`等）にインライン化する（`assets/`参照なし）
-- `qa/`サブディレクトリは`qa.md`専用。`code-analysis/`サブディレクトリは`code-analysis.md`専用
+`{keywords}` が空なら `{"results": []}` を即時返す。
 
-- keyword-search.md、semantic-search.mdは公開ワークフロー。PJ側で独自ワークフローから直接呼べる
-- qa/配下もベンチマークから個別に呼べるよう公開
-- フェーズAの `components/` をフェーズBでスキルにデプロイする
+スクリプトの出力はカテゴリ > ページ > セクションの階層JSON。`section_id` フィールドは `"ファイルパス:セクションID"` の完全形式。
+
+出力が空配列 `[]` なら `{"results": []}` を即時返す。
+
+**Step 2: ポインタJSONへの変換**
+
+各セクションエントリを変換する:
+- `section_id` を**最後の `:`** で分割 → `file` と `sid`
+- エントリを作成: `{"file": file, "section_id": sid, "relevance": "partial"}`
+- `(file, section_id)` で重複除去
+
+---
+
+## キーワード検索スクリプト（`scripts/keyword-search.sh`）
+
+### 動作仕様
+
+全知識JSONファイルを全文スキャンして、キーワードにマッチするセクションを返す。
+
+| 仕様項目 | 詳細 |
+|---|---|
+| 大文字小文字 | 区別しない（lowercase変換して比較） |
+| マッチ方式 | 部分一致（substring） |
+| マッチ対象フィールド | セクションの `title` と `content` |
+| 複数キーワード時のページ条件 | AND（全キーワードがそのファイルのいずれかのセクションにヒットすること） |
+| 複数キーワード時のセクション条件 | OR（いずれかのキーワードにヒットするセクションを返す） |
+| 最小キーワード長 | 2文字（2文字未満は無視） |
+| 結果上限 | なし |
+| スキップ条件 | `no_knowledge_content: true` のファイル |
+
+### 出力形式
+
+カテゴリ > ページ > セクションの階層JSON。`section_id` は `"相対ファイルパス:sN"` の完全形式。
+
+---
+
+## セクション読み取りスクリプト（`scripts/read-sections.sh`）
+
+### 動作仕様
+
+`"ファイルパス:セクションID"` ペアを引数として受け取り、各セクションの内容を返す。
+
+入力バリデーション: 絶対パス（`/`始まり）と `../` を含むパスは拒否する。
+
+### 出力形式
+
+```
+=== relative-file-path : section-id ===
+# {ページタイトル} > {セクションタイトル}
+[セクション内容]
+=== END ===
+```
+
+ファイルが存在しない場合は `FILE_NOT_FOUND`、セクションが存在しない場合は `SECTION_NOT_FOUND` を出力する。
+
+セクションを持たないページ（単一コンテンツのページ）の場合は、`# {ページタイトル}` に続いてページ全体の内容を返す。
