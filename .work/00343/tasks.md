@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-25 (session end)
+**Updated**: 2026-05-25
 
 ## Rules
 
