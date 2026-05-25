@@ -98,8 +98,7 @@ Output directory: .nabledge/20260210
 5. **Classify dependencies**:
    - Project code (proman-*): Trace further
    - Nablarch framework: Note for knowledge search
-   - JDK/Jakarta EE: Note but don't trace
-   - Third-party libraries: Note but don't trace
+   - Others (JDK, third-party libraries): Note but don't trace
 
 6. **Determine trace depth** (ask user if unclear):
    - Default: Trace project code until reaching framework/entities/utilities
