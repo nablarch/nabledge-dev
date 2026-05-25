@@ -337,7 +337,7 @@ verify_dynamic() {
         local ghc_log_dir="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.ghc-logs"
         mkdir -p "$ghc_log_dir"
         local output
-        output=$(script -qc "cd '$project_dir' && timeout 120 copilot -p '${ghc_prompt_basename}' --model claude-haiku-4.5 --yolo --log-dir '$ghc_log_dir' --log-level debug" /dev/null 2>&1) || true
+        output=$(script -qc "cd '$project_dir' && timeout 240 copilot -p '${ghc_prompt_basename}' --model claude-haiku-4.5 --yolo --log-dir '$ghc_log_dir' --log-level debug" /dev/null 2>&1) || true
         rm -f "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
     else
         if ! command -v claude &>/dev/null; then
@@ -356,7 +356,7 @@ verify_dynamic() {
         # CC uses short model alias "haiku"; GHC uses full model ID "claude-haiku-4.5" (copilot requirement)
         # stream-json+verbose outputs full conversation including tool_use events with file paths
         local cc_log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
-        timeout 120 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "/n${v} ${query}") --model haiku --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
+        timeout 240 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "/n${v} ${query}") --model haiku --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
         output=$(cat "$cc_log_file")
     fi
 
