@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-25 (session 2)
+**Updated**: 2026-05-25 (session 3)
 
 ## Rules
 
@@ -28,9 +28,8 @@ C-2設計書レビュー承認後。他バージョン展開前にv6の全フロ
   - 受入条件: セクション一覧が返る
 - [x] semantic-search: `/n6 semantic-search "ページング検索の実装方法"`
   - 受入条件: セクションポインタのJSON（またはサマリー）が返る ✅ PASS（11セクション選定）
-- [ ] code-analysis: `/n6 code-analysis`
-  - 受入条件: 解析対象クラスの確認が届く。ユーザー回答後にドキュメント生成が始まる
-  - 状態: 確認メッセージ送信済み（「解析対象のクラスまたはファイルを指定してください」） — ユーザー回答待ち
+- [x] code-analysis: `/n6 code-analysis`
+  - 受入条件: 解析対象クラスの確認が届く。ユーザー回答後にドキュメント生成が始まる ✅ PASS（ProjectAction、.nabledge/20260525/に出力）
 - [BLOCKED: ユーザーに結果を報告し承認を得る] 全フローPASS確認後、C-3へ
 
 ### C-3. 他バージョン展開・差分チェック
