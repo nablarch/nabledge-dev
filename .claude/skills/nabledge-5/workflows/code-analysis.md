@@ -164,8 +164,8 @@ Output directory: .nabledge/20260210
 
 **MUST READ FIRST** (use single cat command for efficiency):
 ```bash
-cat .claude/skills/nabledge-5/assets/code-analysis-template.md \
-    .claude/skills/nabledge-5/assets/code-analysis-template-guide.md
+cat .claude/skills/nabledge-5/workflows/code-analysis/template.md \
+    .claude/skills/nabledge-5/workflows/code-analysis/template-guide.md
 ```
 
 **Note**: Template examples are inlined in Step 3.4 below. Do NOT read code-analysis-template-examples.md.
@@ -599,8 +599,8 @@ mapper.close();
 
 ## Output template
 
-**Template file**: `.claude/skills/nabledge-5/assets/code-analysis-template.md`
-**Template guide**: `.claude/skills/nabledge-5/assets/code-analysis-template-guide.md`
+**Template file**: `.claude/skills/nabledge-5/workflows/code-analysis/template.md`
+**Template guide**: `.claude/skills/nabledge-5/workflows/code-analysis/template-guide.md`
 **Note**: Template examples are inlined in Step 3.4
 
 The template provides structured format with sections:
