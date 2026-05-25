@@ -4,21 +4,10 @@
 **Issue**: #350
 **Updated**: 2026-05-25
 
-## In Progress
-
-### 動的チェック: 回答完走確認を追加
-
-動的チェックの合否判定は現在「SKILL.md が読まれたか」のみ。
-回答フォーマット（`**結論**:` の出現）を確認することで「回答まで到達したか」を検出できる。
-
-**Steps:**
-- [x] `verify_dynamic` に `**結論**:` 出現チェックを追加（CC: log_file grep、GHC: output grep）
-- [x] `[OK]` 行に `answered: yes/no` を表示
-- [x] 合否判定に使う（SKILL.md read と同様）
-- [ ] 全バージョン実行で確認
 
 ## Done
 
+- [x] 動的チェック: 回答完走確認を追加（合否判定に使用）— `30d622b74`
 - [x] タイムアウトを 120s → 240s に変更 — `{TBD}`
 - [x] 動的チェッククエリを処理方式・目的入り質問文に変更 — `7eae854b4`
 - [x] Fix `add_skill_permissions` to create `.vscode/` before writing `settings.json` — `37bb0d509`
