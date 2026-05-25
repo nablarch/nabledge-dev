@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-25 (session 8)
+**Updated**: 2026-05-25 (session 9)
 
 ## Rules
 
@@ -105,10 +105,14 @@ B-7完了後、PRマージ前に実施。「マージしたら壊れる」を事
 B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施。
 **前提**: mainマージ済みであること（test-setup.sh は nablarch/nabledge:develop からスキルを取得するため）
 
+**session 9 で追加修正済み**:
+- `a2b1abaea`: test-setup.sh のマーカーベースのプロンプト抽出を削除（CC: `/n${v} query` スラッシュコマンド直呼び、GHC: プロンプトファイル全体を使用）
+- `f80be352d`: setup-ghc.sh に `rm -f n${v}*.prompt.md` 追加（旧ファイル削除）、nabledge-skill.md ルール更新
+
 **確認対象**:
 - `test-setup.sh` は GUIDE-CC.md / GUIDE-GHC.md からsetupスクリプトURLを取得
 - setupスクリプトでスキルをインストール（静的チェック: SKILL.md / knowledge/ / docs/ / コマンドファイル）
-- 動的チェック: `claude -p` でSKILL.mdが読まれるか（B-7で `_scenario_field` を削除してハードコードに変更済み）
+- 動的チェック: `claude -p "/n${v} query"` でSKILL.mdが読まれるか
 - 全バージョン（v6/v5/v1.4/v1.3/v1.2/upgrade）× CC/GHC
 
 **ステップ**:
@@ -117,7 +121,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
   cd .tmp/nabledge-test-b8 && bash /path/to/tools/tests/test-setup.sh v6
   ```
   - 受入条件: 終了コード0、静的チェックOK、動的チェックOK（SKILL.md read）
-- [ ] 問題があればB-7の修正内容を確認・修正してコミット
+- [ ] 問題があれば修正してコミット
 - [ ] 全バージョン確認:
   ```bash
   bash tools/tests/test-setup.sh
