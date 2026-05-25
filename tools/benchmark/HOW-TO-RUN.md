@@ -1,6 +1,6 @@
 # E2Eベンチマーク実行手順
 
-評価軸・スコアリング・ファイルフォーマットの定義は `.work/00343/design/benchmark-design.md` を参照。
+評価軸・スコアリング・ファイルフォーマットの定義は `docs/benchmark-design.md` を参照。
 
 ## 前提
 
