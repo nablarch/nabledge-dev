@@ -4,7 +4,7 @@ This guide explains how to use the code analysis documentation template.
 
 ## Template File
 
-**Location**: `.claude/skills/nabledge-5/assets/code-analysis-template.md`
+**Location**: `.claude/skills/nabledge-5/workflows/code-analysis/template.md`
 
 The template provides a structured format for the generated documentation. See the template file for the complete structure with placeholders.
 
@@ -83,7 +83,7 @@ Replace the following placeholders with actual content (using `{{variable}}` for
 Read the template file to understand the structure:
 
 ```bash
-Read: .claude/skills/nabledge-5/assets/code-analysis-template.md
+Read: .claude/skills/nabledge-5/workflows/code-analysis/template.md
 ```
 
 ### Step 2: Build Content for Each Placeholder
@@ -246,6 +246,6 @@ Link: ../../proman-web/src/main/java/com/nablarch/example/proman/web/action/Logi
 
 ## See Also
 
-- **Template File**: `assets/code-analysis-template.md`
+- **Template File**: `workflows/code-analysis/template.md`
 - **Workflow**: `workflows/code-analysis.md`
 - **Skill Definition**: `SKILL.md`
