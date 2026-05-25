@@ -419,32 +419,6 @@ ${prompt}"
     fi
 }
 
-# _scenario_field: read a field from nabledge-test scenarios.json (single source of truth)
-# Args:
-#   $1 - nabledge version (e.g. "6", "5", "1.4")
-#   $2 - scenario id (e.g. "qa-001", "qa-002")
-#   $3 - field: "question" or "keywords" (all expectation keywords, comma-separated)
-_scenario_field() {
-    local v="$1"
-    local scenario_id="$2"
-    local field="$3"
-    python3 -c "
-import json, sys
-path = '${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-test/scenarios/nabledge-${v}/scenarios.json'
-try:
-    d = json.load(open(path))
-    s = next((x for x in d['scenarios'] if x['id'] == '${scenario_id}'), None)
-    if not s:
-        print('ERROR: scenario ${scenario_id} not found in ' + path, file=sys.stderr); sys.exit(1)
-    if '${field}' == 'question':
-        print(s['question'])
-    else:
-        print(','.join(kw for aspect in s['expectations'].values() for kw in aspect))
-except Exception as e:
-    print('ERROR: ' + str(e), file=sys.stderr); sys.exit(1)
-"
-}
-
 echo "[Static checks]"
 should_run "v6"   && verify_env "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"               "cc"
 should_run "v6"   && verify_env "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"               "ghc"
@@ -461,12 +435,16 @@ should_run "upgrade"  && verify_env "upgrade/test-ghc"  "upgrade/test-ghc/nablar
 
 echo ""
 echo "[Dynamic checks]"
-# Questions and keywords come from nabledge-test scenarios (single source of truth, no double management)
-Q_V6=$(  _scenario_field 6   qa-002 question); KW_V6=$( _scenario_field 6   qa-002 keywords)
-Q_V5=$(  _scenario_field 5   qa-002 question); KW_V5=$( _scenario_field 5   qa-002 keywords)
-Q_V14=$( _scenario_field 1.4 qa-001 question); KW_V14=$(_scenario_field 1.4 qa-001 keywords)
-Q_V13=$( _scenario_field 1.3 qa-001 question); KW_V13=$(_scenario_field 1.3 qa-001 keywords)
-Q_V12=$( _scenario_field 1.2 qa-001 question); KW_V12=$(_scenario_field 1.2 qa-001 keywords)
+Q_V6="UniversalDaoでページング検索を実装するには？"
+KW_V6="UniversalDao,page,per,findAllBySqlFile,Pagination,getPagination,pageNumber,listSearchResult"
+Q_V5="UniversalDaoでページング検索を実装するには？"
+KW_V5="UniversalDao,page,per,findAllBySqlFile,Pagination,getPagination,pageNumber,listSearchResult"
+Q_V14="コードリストのプルダウン入力を実装するには？"
+KW_V14="n:codeSelect,codeId,n:select,コード値"
+Q_V13="コードリストのプルダウン入力を実装するには？"
+KW_V13="n:codeSelect,codeId,n:select,コード値"
+Q_V12="コードリストのプルダウン入力を実装するには？"
+KW_V12="n:codeSelect,codeId,n:select,コード値"
 should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "$Q_V6"  "$KW_V6"  "cc"
 should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "$Q_V6"  "$KW_V6"  "ghc"
 should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "$Q_V5"  "$KW_V5"  "cc"
