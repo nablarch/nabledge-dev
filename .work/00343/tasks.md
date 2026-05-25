@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-25 (session 3 end)
+**Updated**: 2026-05-25 (session 4)
 
 ## Rules
 
@@ -15,17 +15,49 @@
 
 ### C-3. 他バージョン展開・差分チェック＋動作確認
 
-C-2完了・承認済み。v6設計書をチェックリストとして他バージョンを確認し、全バージョンの動作確認も実施。
+C-2完了・承認済み。v6が正解、他バージョンはv6に合わせる（バージョン固有差分を除く）。
 
-**方針（ユーザー承認済み2026-05-25）**:
-- 今回の PR で変更したスキルファイル（`workflows/`, `scripts/` 等）が v5/v1.4/v1.3/v1.2 にも正しく展開されているか確認
-- v6 が「正解」で、他バージョンは「v6と同じであるべきもの」と「バージョン固有差分として許容されるもの（ファイルパス・バージョン番号等）」に分けてチェック
-- 各バージョンで C-2b と同じ5フローの動作確認を実施し、結果のみユーザーに報告
+**チェック方針**:
+1. `git diff main...HEAD --name-only | grep "^\.claude/"` で PR変更ファイルを全列挙
+2. v6に関するファイルを洗い出し、他バージョンに対応するファイルを特定
+3. v6ファイルをベースに `sed "s/nabledge-6/$v/g"` で期待値を生成し、実ファイルと diff
+4. バージョン依存差分（許容）とそれ以外（要修正）を区別してチェックをつける
 
-**ステップ1: 差分チェック**
-- [ ] `git diff main...HEAD --name-only` で今回の PR の変更ファイルを確認し、版間展開対象のファイルを特定
-- [ ] v6の正解状態からチェックリストを作成（v6ファイル vs 他バージョンファイルの対比リスト）
-- [ ] v5/v1.4/v1.3/v1.2 の各ファイルをチェックリストと照合（バージョン固有差分は許容）
+**許容差分（バージョン依存）**:
+- ファイルパス・バージョン名の置換: `nabledge-6` → `nabledge-5` / `nabledge-1.4` 等
+- `workflows/qa.md` 処理タイプリスト: バージョンごとに処理方式が異なる（`.claude/rules/nabledge-skill.md` で明文化）
+- `workflows/semantic-search.md` カテゴリリスト: 各バージョンのknowledgeに存在するカテゴリのみ（例: `about/migration` は v6 のみ、`component/adapters` は v5/v6 のみ）
+- `template-guide.md` / `template-examples.md` のURL: `LATEST`（v6）vs `5-LATEST`（v5/v1.x）— mainから既存の差分
+- `template.md` / `template-examples.md` の `Knowledge Base (Nabledge-5)` が v1.4/v1.2 に残る: mainから既存の誤り、今回スコープ外
+
+**ステップ1: 差分チェック＋展開（session 4で実施）**
+
+`.claude/commands/` の変更ファイル:
+- [x] `n6.md` が正解 — keyword-search/semantic-search examples追加済み
+- [ ] `n5.md` / `n1.4.md` / `n1.3.md` / `n1.2.md` — keyword-search/semantic-search examples 未追加 → 修正必要
+
+`.claude/skills/nabledge-6/` の変更ファイル vs 他バージョン:
+- [x] `SKILL.md` — バージョン名差分のみ ✅
+- [x] `knowledge/index.md` — バージョンごとのコンテンツ差分（許容）✅
+- [x] `knowledge/index.toon` — v6固有ファイル（v5にも存在するが今回スコープ外）✅
+- [x] `scripts/full-text-search.sh` — 全バージョンで削除済み ✅
+- [x] `scripts/keyword-search.sh` — 全バージョン一致 ✅
+- [x] `scripts/prefill-template.sh` — 修正済み（session 4: テンプレートパス `assets/` → `workflows/code-analysis/`）✅
+- [x] `scripts/read-sections.sh` — 修正済み（session 4: jqフィルタをv6版に更新）✅
+- [x] `workflows/_knowledge-search.md` 他4ファイル — 全バージョンで削除済み ✅
+- [ ] `workflows/code-analysis.md` — v5/v1.4/v1.3/v1.2 が未更新（full-text-search+_section-judgement → keyword-search workflow に変更が未展開）→ 修正必要
+- [x] `workflows/code-analysis/template.md` → `assets/code-analysis-template.md` — バージョン名差分のみ ✅
+- [x] `workflows/code-analysis/template-guide.md` → `assets/code-analysis-template-guide.md` — URL差分は既存（許容）✅
+- [x] `workflows/code-analysis/template-examples.md` → `assets/code-analysis-template-examples.md` — バージョン名・URL差分は既存（許容）✅
+- [x] `workflows/keyword-search.md` — 全バージョン一致 ✅
+- [x] `workflows/qa.md` — 処理タイプリストのみ差分（許容）、「その他」の番号はリスト数に対応 ✅
+- [x] `workflows/semantic-search.md` — カテゴリ差分は各バージョンのknowledge構成による（許容）✅
+
+**残作業（未チェック項目の修正）**:
+- [ ] `workflows/code-analysis.md` を v5/v1.4/v1.3/v1.2 に展開（v6をベースに version置換）
+- [ ] `.claude/commands/n5.md` / `n1.4.md` / `n1.3.md` / `n1.2.md` に keyword-search/semantic-search examples を追加
+- [ ] 修正後、diff で全チェック項目が ✅ になることを確認
+- [ ] コミット・プッシュ
 
 **ステップ2: 動作確認（C-2b と同じ5フロー × 4バージョン）**
 - [ ] v5: QA（ヒアリングなし）/ QA（ヒアリングあり）/ keyword-search / semantic-search / code-analysis
