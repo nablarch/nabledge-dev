@@ -108,7 +108,7 @@ else
 fi
 
 # Template file location
-TEMPLATE_FILE="$PROJECT_ROOT/.claude/skills/nabledge-1.2/assets/code-analysis-template.md"
+TEMPLATE_FILE="$PROJECT_ROOT/.claude/skills/nabledge-1.2/workflows/code-analysis/template.md"
 
 # Validate template file exists and is readable
 if [[ ! -f "$TEMPLATE_FILE" ]]; then
