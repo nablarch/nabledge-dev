@@ -56,4 +56,3 @@ nabledge-1.4 semantic-search "<question>"
 **"semantic-search" argument** (`nabledge-1.4 semantic-search "<question>"`):
 - Execute `workflows/semantic-search.md` with the provided question
 
-
