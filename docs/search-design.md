@@ -55,8 +55,10 @@ Nablarch公式ドキュメント（RST/Markdown/Excel）
 
 | 環境 | 入口 | 実行方式 |
 |---|---|---|
-| Claude Code（CC） | `/n6 <質問またはコマンド>` | サブエージェント（別コンテキスト）で SKILL.md を読んで実行 |
-| GitHub Copilot（GHC） | `@n6 <質問またはコマンド>` | サブエージェント（`#runSubagent`）で SKILL.md を読んで実行 |
+| Claude Code（CC） | `/n6 <質問またはコマンド>` | メインエージェントで SKILL.md を読んで実行 |
+| GitHub Copilot（GHC） | `@n6 <質問またはコマンド>` | メインエージェントで SKILL.md を読んで実行 |
+
+メインエージェントで実行するため、`qa.md` のヒアリング（Step 2）や `code-analysis.md` のターゲット確認など、ユーザーとの対話が機能する。
 
 どちらも SKILL.md のルーティング定義に従い、引数によって実行するワークフローを切り替える:
 
