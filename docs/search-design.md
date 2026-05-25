@@ -6,16 +6,14 @@ v6の検索実装（`workflows/`, `scripts/`）の設計。
 
 ## 概要
 
-4つの独立したワークフローが入口として存在する:
+4つのワークフローを提供する:
 
-| ワークフロー | 入口 | 概要 |
-|---|---|---|
-| `workflows/qa.md` | ユーザーの質問（自然言語） | 質問を分類し、意味検索でナレッジを取得して回答を生成する |
-| `workflows/semantic-search.md` | ユーザーの質問 | インデックスとナレッジJSONを読んで関連セクションのポインタを返す |
-| `workflows/keyword-search.md` | キーワードリスト | キーワードスクリプトを呼び出してセクションのポインタを返す |
-| `workflows/code-analysis.md` | ユーザーのコード指定 | コードの依存を追跡し、意味検索でナレッジを取得してドキュメントを生成する |
-
-`qa.md` と `code-analysis.md` は内部で `semantic-search.md` を呼び出す。`keyword-search.md` は独立して呼び出せるほか、コードレビュー等で直接利用される。
+| ワークフロー | 用途 |
+|---|---|
+| `workflows/qa.md` | Nablarchの使い方を質問すると、日本語で回答する |
+| `workflows/semantic-search.md` | 質問の内容に関連するナレッジセクションを探す |
+| `workflows/keyword-search.md` | クラス名・メソッド名などのキーワードで、言及しているナレッジセクションを探す |
+| `workflows/code-analysis.md` | 既存コードを指定すると、依存関係を追跡しNablarch観点でドキュメントを生成する |
 
 ---
 
