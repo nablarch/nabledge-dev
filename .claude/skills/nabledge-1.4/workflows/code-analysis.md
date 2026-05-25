@@ -90,7 +90,7 @@ Output directory: .nabledge/20260210
    ```
    Replace `<path/to/file.java>` with the actual path(s) returned by find-file.sh. Pass paths exactly as output (e.g., `./src/main/java/Foo.java`) — do not modify or normalize the path.
 
-4. **Read target files** and extract dependencies:
+4. **Extract dependencies** from the file content read in step 3:
    - Imports → External dependencies
    - Field types, method parameters → Direct dependencies
    - Method calls → Behavioral dependencies
@@ -121,48 +121,35 @@ Output directory: .nabledge/20260210
 9. **Identify Nablarch components** for knowledge search:
    - UniversalDao, ValidationUtil, ExecutionContext, Handler chain, etc.
 
-10. **Extract key concepts** for knowledge search:
-    - Technical terms: DAO, transaction, handler
-    - Operations: search, register, update, validation
-    - Patterns: CRUD, pagination, error handling
-
-**Output**: Target files list, dependency graph, component list with Nablarch components identified
+**Output**: Target files list, dependency graph, component list with Nablarch class/method/annotation names identified
 
 ### Step 2: Search Nablarch knowledge
 
-**Tools**: Bash (scripts/full-text-search.sh, scripts/read-sections.sh)
+**Tools**: workflows/keyword-search.md, Bash (scripts/read-sections.sh)
 
 **Action**: Search relevant knowledge for all Nablarch components identified in Step 1.
 
 **Search process**:
 
-1. **Collect search keywords** from Step 1 analysis:
-   - Use Nablarch component names identified in Step 1 as search keywords
-   - Include class names, Japanese feature names, and related technical terms
-   - Example: ["UniversalDao", "ExecutionContext", "ValidationUtil", "validation", "transaction"]
+1. **Execute keyword search**:
+   - Extract Nablarch class names, method names, and annotation names identified in Step 1 as the keyword list
+   - Execute `workflows/keyword-search.md` with `{keywords}` = that list
+   - Output: pointer JSON `{results: [{file, section_id, relevance}]}`
 
-2. **Execute full-text search**:
-   ```bash
-   bash .claude/skills/nabledge-1.4/scripts/full-text-search.sh "UniversalDao" "ExecutionContext" "ValidationUtil" "validation" "transaction"
-   ```
-   - Output: Scored and ranked candidate sections (max 15 results)
-
-3. **Execute section judgement**:
-   - Read `workflows/_knowledge-search/_section-judgement.md`
-   - Before passing candidates: convert pipe separators to colons (`file|section_id` → `file:section_id`)
-   - Follow the workflow with candidate sections from step 2
-   - Output: Filtered sections (High and Partial relevance only)
-
-4. **Collect knowledge file basenames** for Step 3.2:
-   - Extract unique knowledge files from section-judgement output
+2. **Collect knowledge file basenames** for Step 3.2:
+   - Extract unique `file` values from search results
    - Use basenames only (filename without path and extension)
    - Example: `libraries-universal_dao,libraries-data_bind`
    - prefill-template.sh will automatically search and include all matches
-   - Deduplicate: Multiple sections may come from same file
    - Format as comma-separated list for --knowledge-files parameter
 
-5. **Collect knowledge content** for documentation:
-   - Use `scripts/read-sections.sh` to read High-relevance sections
+3. **Collect knowledge content** for documentation:
+   - From the pointer JSON returned in step 1, extract all `{file}:{section_id}` pairs
+   - Pass them to `scripts/read-sections.sh`:
+     ```bash
+     bash scripts/read-sections.sh "file1.json:s1" "file2.json:s3" ...
+     ```
+   - All results have `"relevance": "partial"` — read all of them (up to 10 sections; if more, prioritize sections whose titles directly match the Nablarch class names from Step 1)
    - Collect: API usage patterns, configuration requirements, code examples, best practices
 
 **Output**: Knowledge file basenames for Step 3.2, and relevant knowledge content for documentation
