@@ -4,7 +4,7 @@
 **Issue**: #350
 **Updated**: 2026-05-25
 
-## Not Started
+## In Progress
 
 ### 動的チェック: 回答完走確認を追加
 
@@ -12,9 +12,9 @@
 回答フォーマット（`**結論**:` の出現）を確認することで「回答まで到達したか」を検出できる。
 
 **Steps:**
-- [ ] `verify_dynamic` に `**結論**:` 出現チェックを追加（CC: log_file grep、GHC: output grep）
-- [ ] `[OK]` 行に `answered: yes/no` を表示
-- [ ] 合否判定には使わない（参考情報扱い）— SKILL.md read と同じ扱いにするか要確認
+- [x] `verify_dynamic` に `**結論**:` 出現チェックを追加（CC: log_file grep、GHC: output grep）
+- [x] `[OK]` 行に `answered: yes/no` を表示
+- [x] 合否判定に使う（SKILL.md read と同様）
 - [ ] 全バージョン実行で確認
 
 ## Done
