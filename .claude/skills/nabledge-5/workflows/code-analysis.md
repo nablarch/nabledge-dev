@@ -22,12 +22,10 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 ### Confirm analysis target (required before Step 0)
 
-**Tool**: AskUserQuestion
-
 Check whether the user's invocation explicitly names a specific class or file.
 
 - If specified → save as `target` and proceed to Step 0
-- If not specified → ask now, do not proceed until the user answers:
+- If not specified → output the following and wait for the user's response:
 
   "解析対象のクラスまたはファイルを指定してください (例: ImportZipCodeFileAction)"
 
