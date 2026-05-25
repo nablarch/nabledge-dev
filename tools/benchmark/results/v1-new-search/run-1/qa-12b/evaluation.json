@@ -1,0 +1,171 @@
+{
+  "scenario_id": "qa-12b",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "UNCERTAIN",
+      "reason": "The answer states that @Valid annotation causes JaxRsBeanValidationHandler to execute Bean Validation and throw ApplicationException on error, but it does NOT automatically become an error response — it requires additional custom ErrorResponseBuilder implementation to convert the exception into an error response. The fact claims @Valid automatically results in an error response, which is an oversimplification not fully supported by the answer's content. The answer implies a two-step process is needed.",
+      "fact": "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes creating a custom class that extends ErrorResponseBuilder (継承したカスタムクラス) and setting error messages in the response body, including a concrete implementation example (SampleErrorResponseBuilder) that sets error messages in JSON format in the response body. This directly corresponds to the fact about setting error messages in the response body using a subclass of ErrorResponseBuilder.",
+      "fact": "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "リソースクラスのメソッドに@Validアノテーションを付けることでバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsBeanValidationHandlerが@Validを検知しBean Validationを実行し、エラー時にApplicationExceptionを送出する",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderを継承したカスタムクラスでエラーレスポンスを構築できる",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsResponseHandlerのerrorResponseBuilderプロパティにカスタムクラスを設定する",
+        "supported": true
+      },
+      {
+        "claim": "SampleErrorResponseBuilderの実装例（ApplicationExceptionを判定してJSON形式の400レスポンスを返す）",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント設定XMLでJaxRsResponseHandlerにSampleErrorResponseBuilderを登録する",
+        "supported": true
+      },
+      {
+        "claim": "デフォルトではNablarchMessageInterpolatorが使用され、アノテーションのmessage属性に{messageId}形式でIDを指定する",
+        "supported": true
+      },
+      {
+        "claim": "プロパティファイルにnablarch.core.validation.ee.Length.max.messageなどのキーでメッセージを定義する",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderの処理中に例外が発生するとフレームワークはWARNログを出力しステータスコード500のレスポンスを返す",
+        "supported": true
+      }
+    ],
+    "reason": "回答内の全てのNablarch固有の主張（クラス名・設定方法・動作仕様・コード例）はナレッジセクションの記述と一致しており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": null,
+    "hallucination": 1
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: UNCERTAIN — @Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細ページで、入力値チェックとエラー時レスポンスの実装方法を直接カバーしている"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-response-handler.json",
+        "reason": "JaxRsResponseHandlerはRESTfulウェブサービスのエラーレスポンス生成を担うハンドラで、エラーメッセージのレスポンス設定方法を解説している"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTfulウェブサービスでBean Validationを実行するハンドラで、@Validアノテーションによるバリデーション実行方法を解説している"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationライブラリ全般の解説ページで、RESTful向けの入力チェック方法とエラーメッセージ定義を含む"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@Validアノテーションを使ったRESTfulウェブサービスでのバリデーション実行方法のコード例を含む"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラー発生時にエラーメッセージをレスポンスボディに設定するErrorResponseBuilderの実装例を含む"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ErrorResponseBuilderの設定方法とカスタマイズ時の注意点（例外発生時の挙動）を含む"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスでのユーザ入力値チェック方法の説明"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラー時のエラーメッセージ定義方法（プロパティファイルへの定義ルール）を含む"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "エラー時のレスポンス関連ドキュメントへの参照先として有用"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "入力値チェックに関するドキュメントへの参照先として有用"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "JaxRsBeanValidationHandlerのクラス名情報"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 93910,
+    "duration_api_ms": 92094,
+    "num_turns": 10,
+    "total_cost_usd": 0.6670623,
+    "usage": {
+      "input_tokens": 5351,
+      "output_tokens": 5659,
+      "cache_read_input_tokens": 480481,
+      "cache_creation_input_tokens": 111628
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3235,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003375,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5351,
+        "outputTokens": 5659,
+        "cacheReadInputTokens": 480481,
+        "cacheCreationInputTokens": 111628,
+        "webSearchRequests": 0,
+        "costUSD": 0.6636873,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

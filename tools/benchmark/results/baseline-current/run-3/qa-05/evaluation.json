@@ -1,0 +1,125 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. フォームクラスの作成」セクションに「リクエストボディのJSONを受け取るフォームを定義します」と記載されており、ProjectFormクラスの実装例も示されています。また「メソッドシグネチャの選択肢」の表でも「フォーム（Java Beans）: リクエストボディから変換した値を処理する」と明記されており、Formクラスでクライアントから送信された値を受け付けるという事実が含まれています。",
+      "fact": "Formクラスでクライアントから送信された値を受け付ける"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「1. フォームクラスの作成」セクションに「プロパティは全て `String` 型で宣言します。」と明記されており、事実と同じ情報が含まれている。",
+      "fact": "プロパティは全てString型で宣言する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "@Path・@POST・@Consumes(APPLICATION_JSON)アノテーションをアクションクラスのメソッドに付与する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert()でDB登録する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy()でフォームをエンティティに変換する",
+        "supported": true
+      },
+      {
+        "claim": "@ValidでBeanValidationを実行する",
+        "supported": true
+      },
+      {
+        "claim": "HttpResponse.Status.CREATED（ステータスコード201）を返却する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsHttpRequestはパスパラメータ・クエリパラメータ・HTTPヘッダを取得する場合に使用する",
+        "supported": true
+      },
+      {
+        "claim": "ExecutionContextはスコープ変数にアクセスする場合に使用する",
+        "supported": true
+      },
+      {
+        "claim": "複数の引数型を組み合わせ可能",
+        "supported": true
+      },
+      {
+        "claim": "@Contextアノテーションによるインジェクションは使用不可",
+        "supported": false
+      },
+      {
+        "claim": "@PathParam・@QueryParamは使用不可でJaxRsHttpRequestを使うこと",
+        "supported": false
+      },
+      {
+        "claim": "ハンドラキューにデータベース接続管理ハンドラとトランザクション制御ハンドラが必要",
+        "supported": false
+      },
+      {
+        "claim": "最小ハンドラ構成：GlobalErrorHandler→JaxRsResponseHandler→DB接続管理→トランザクション制御→ルーティング→BodyConvertHandler→BeanValidationハンドラ",
+        "supported": false
+      }
+    ],
+    "reason": "コアとなるコード実装（フォームクラス、リソースクラス、アノテーション、UniversalDao、BeanUtil）は知識セクションで裏付けられPASSとなる。一方、「@Contextアノテーションによるインジェクション不可」「@PathParam・@QueryParam使用不可」の記述は知識セクションに明示的な根拠がない。また「最小ハンドラ構成（GlobalErrorHandler→JaxRsResponseHandler→DB接続管理→トランザクション制御→ルーティング→BodyConvertHandler→BeanValidationハンドラ）」という具体的なハンドラ順序の記述も知識セクションに裏付けがなく、捏造の可能性がある。これらは一般的なプログラミング知識ではなくNablarch固有の主張であるため、UNCERTAIN判定とする。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — コアとなるコード実装（フォームクラス、リソースクラス、アノテーション、UniversalDao、BeanUtil）は知識セクションで裏付けられPASSとなる。一方、「@Contextアノテーションによるインジェクション不可」「@PathParam・@QueryParam使用不可」の記述は知識セクションに明示的な根拠がない。また「最小ハンドラ構成（GlobalErrorHandler→JaxRsResponseHandler→DB接続管理→トランザクション制御→ルーティング→BodyConvertHandler→BeanValidationハンドラ）」という具体的なハンドラ順序の記述も知識セクションに裏付けがなく、捏造の可能性がある。これらは一般的なプログラミング知識ではなくNablarch固有の主張であるため、UNCERTAIN判定とする。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 125987,
+    "duration_api_ms": 123954,
+    "num_turns": 7,
+    "total_cost_usd": 0.5635345,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 3339,
+      "cache_read_input_tokens": 276630,
+      "cache_creation_input_tokens": 35960
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1187,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001357,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1166,
+        "outputTokens": 7522,
+        "cacheReadInputTokens": 597865,
+        "cacheCreationInputTokens": 71064,
+        "webSearchRequests": 0,
+        "costUSD": 0.5621775,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

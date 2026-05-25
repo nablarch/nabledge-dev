@@ -1,0 +1,104 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「コンポーネント設定ファイルにSimpleDbTransactionManagerを定義する」という手順が明示されており、XMLの設定例も示されている。事実である「SimpleDbTransactionManagerを使って個別トランザクションを定義する」という情報が回答に含まれている。",
+      "fact": "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "SimpleDbTransactionManager と SimpleDbTransactionExecutor（JDBCラッパー）または UniversalDao.Transaction（UniversalDAO）を使って独立したトランザクションを実現できる",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionManager のXML定義に connectionFactory・transactionFactory・dbTransactionName の3プロパティが必要",
+        "supported": true
+      },
+      {
+        "claim": "システムリポジトリから SimpleDbTransactionManager を取得し SimpleDbTransactionExecutor に渡して doTransaction() で実行する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.Transaction を継承したクラスを作成し、コンストラクタで super(\"find-persons-transaction\") を呼ぶ",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.Transaction の execute() メソッドに UniversalDAO を使った処理を実装する",
+        "supported": true
+      },
+      {
+        "claim": "FindPersonsTransaction を new するだけで別トランザクションで実行され、getPersons() で結果を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionManager を直接使わずラッパークラスを使用すること",
+        "supported": true
+      },
+      {
+        "claim": "システムリポジトリからの取得だけでなく SimpleDbTransactionManager をDIして使用することも可能",
+        "supported": true
+      },
+      {
+        "claim": "業務処理が失敗（ロールバック）しても別トランザクションの更新を確定できる",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有のAPI名（SimpleDbTransactionManager、SimpleDbTransactionExecutor、UniversalDao.Transaction）、XML設定プロパティ、実装コード例、動作仕様のすべてが知識セクションの記述と一致しており、捏造と判定される主張は見当たらない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 96272,
+    "duration_api_ms": 93857,
+    "num_turns": 4,
+    "total_cost_usd": 0.6253714999999999,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 2446,
+      "cache_read_input_tokens": 98395,
+      "cache_creation_input_tokens": 26812
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1194,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013189999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1130,
+        "outputTokens": 6327,
+        "cacheReadInputTokens": 819150,
+        "cacheCreationInputTokens": 74670,
+        "webSearchRequests": 0,
+        "costUSD": 0.6240524999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

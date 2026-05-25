@@ -389,8 +389,9 @@ def check_docs_coverage(knowledge_dir, docs_dir) -> list[str]:
 
     # Per-file existence check — JSON → MD direction.
     for json_path in sorted(kdir.rglob("*.json")):
+        rel_path = json_path.relative_to(kdir)
         # Skip literalinclude source copies under assets/ — not content JSON.
-        if "assets" in json_path.relative_to(kdir).parts:
+        if "assets" in rel_path.parts:
             continue
         rel = json_path.relative_to(kdir).with_suffix(".md")
         docs_md_path = ddir / rel
@@ -418,57 +419,51 @@ def check_docs_coverage(knowledge_dir, docs_dir) -> list[str]:
 # QO4: check_index_coverage
 # ---------------------------------------------------------------------------
 
-def _parse_toon_index(text: str) -> list[str]:
-    """Parse the files[] table from an index.toon.
+def _parse_index_md_paths(text: str) -> list[str]:
+    """Parse 'path: {rel}' lines from an index.md file.
 
-    RBKC's create side (`scripts/create/index.py`) emits a single fixed
-    schema `files[N,]{title,type,category,processing_patterns,path}:`
-    with 2-space indented rows, path as the last comma-separated field.
-    This parser targets that shape; structural drift would surface as
-    a create-side bug (verify does not own adversarial-input parsing).
+    index.md format (scripts/create/index.py):
+      # Knowledge Index
+      ## category
+      ### file_title
+      path: rel/path.json
+      - sN: section title
     """
     paths: list[str] = []
-    in_table = False
     for line in text.splitlines():
         stripped = line.strip()
-        if not in_table:
-            if stripped.startswith("files[") and stripped.endswith(":"):
-                in_table = True
-            continue
-        if not line.startswith("  ") or not stripped:
-            continue
-        last_comma = stripped.rfind(",")
-        if last_comma < 0:
-            continue
-        # Normalise path separator on parse so a Windows writer would
-        # still round-trip against forward-slash JSON relpaths.
-        paths.append(stripped[last_comma + 1:].strip().replace("\\", "/"))
+        if stripped.startswith("path: "):
+            rel = stripped[len("path: "):].strip().replace("\\", "/")
+            if rel:
+                paths.append(rel)
     return paths
 
 
 def check_index_coverage(knowledge_dir, index_path) -> list[str]:
-    """QO4: index.toon must list exactly the content JSON files on disk.
+    """QO4: index.md must have a 'path:' entry for every content JSON.
 
     Per rbkc-verify-quality-design.md §3-3:
-    - index.toon missing: every content JSON is reported as FAIL.
-    - JSON on disk not in index.toon: FAIL (not searchable).
-    - Path in index.toon without a matching JSON on disk: FAIL (dangling).
+    - index.md missing: every content JSON is reported as FAIL.
+    - JSON on disk not in index.md: FAIL (not searchable via semantic search).
+    - Path in index.md without a matching JSON on disk: FAIL (dangling).
     - JSON parse failures: FAIL (no silent skip).
+    - index.md itself is excluded from the scan.
     """
     issues: list[str] = []
     kdir = Path(knowledge_dir)
     idx = Path(index_path)
 
     # Track JSON files separately by state so we can give accurate
-    # messages (Z-1 r7 QO4 F1/F2): content, no_knowledge, broken.
+    # messages: content, no_knowledge, broken.
     content_jsons: dict[str, Path] = {}
     no_knowledge_jsons: set[str] = set()
     broken_jsons: set[str] = set()
     for jf in sorted(kdir.rglob("*.json")):
+        rel_path = jf.relative_to(kdir)
         # Skip literalinclude source copies under assets/ — not content JSON.
-        if "assets" in jf.relative_to(kdir).parts:
+        if "assets" in rel_path.parts:
             continue
-        rel = str(jf.relative_to(kdir)).replace("\\", "/")
+        rel = str(rel_path).replace("\\", "/")
         try:
             d = json.loads(jf.read_text(encoding="utf-8"))
         except Exception as exc:
@@ -483,33 +478,30 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
     if not idx.exists():
         if not content_jsons:
             return issues
-        issues.append(f"[QO4] index.toon missing: {idx}")
+        issues.append(f"[QO4] index.md missing: {idx}")
         for rel in sorted(content_jsons):
-            issues.append(f"[QO4] {rel}: JSON not registered in index.toon (index.toon absent)")
+            issues.append(f"[QO4] {rel}: JSON not registered in index.md (index.md absent)")
         return issues
 
-    indexed_set = set(_parse_toon_index(idx.read_text(encoding="utf-8")))
+    indexed_set = set(_parse_index_md_paths(idx.read_text(encoding="utf-8")))
 
     # Forward: every content JSON must appear in the index.
     for rel in sorted(content_jsons):
         if rel not in indexed_set:
-            issues.append(f"[QO4] {Path(rel).name}: JSON not registered in index.toon: {rel}")
+            issues.append(f"[QO4] {Path(rel).name}: JSON not registered in index.md: {rel}")
 
     # Reverse: every path in the index must correspond to a real content JSON.
-    # Distinct messages for each orthogonal failure mode so operators don't
-    # chase a phantom "missing file" when the file exists but is broken or
-    # no_knowledge (F1/F2).
+    # Distinct messages for each orthogonal failure mode.
     for rel in sorted(indexed_set):
         if rel in content_jsons:
             continue
         if rel in broken_jsons:
-            # Already reported as parse failure above; do not re-flag as
-            # missing (F2: avoid double FAIL with misleading second message).
+            # Already reported as parse failure; do not double-report.
             continue
         if rel in no_knowledge_jsons:
-            issues.append(f"[QO4] index.toon lists no_knowledge JSON: {rel}")
+            issues.append(f"[QO4] index.md lists no_knowledge JSON: {rel}")
             continue
-        issues.append(f"[QO4] index.toon lists missing JSON: {rel}")
+        issues.append(f"[QO4] index.md lists missing JSON: {rel}")
 
     return issues
 

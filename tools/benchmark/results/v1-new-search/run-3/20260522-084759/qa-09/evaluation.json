@@ -1,0 +1,185 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly shows `BusinessDateUtil.getDate()` for obtaining business dates, with the comment '業務日付の取得（区分省略時はdefaultSegmentが使われる）', directly confirming that BusinessDateUtil is used to retrieve business dates.",
+      "fact": "BusinessDateUtilを使用して業務日付を取得する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that the business date is managed in a database via BasicBusinessDateProvider, shows the XML configuration for the component, and mentions that it needs to be registered in the initialization list. This covers both key aspects of the fact: DB-based management of multiple business dates and the requirement to configure BasicBusinessDateProvider.",
+      "fact": "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "SystemTimeUtil is used to get system time (OS time)",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateUtil is used to get business date",
+        "supported": true
+      },
+      {
+        "claim": "BasicSystemTimeProvider is configured with component name 'systemTimeProvider'",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProvider is configured with component name 'businessDateProvider'",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProvider has properties: tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManager",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateProvider must be registered in the initialization list",
+        "supported": true
+      },
+      {
+        "claim": "Business date table has two columns: segment (PK) and date (yyyyMMdd format)",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateUtil.getDate() retrieves business date, BusinessDateUtil.getDate(\"01\") retrieves by segment",
+        "supported": true
+      },
+      {
+        "claim": "setDate() on BasicBusinessDateProvider updates the business date",
+        "supported": true
+      },
+      {
+        "claim": "System property format for overriding: -DBasicBusinessDateProvider.batch=20160317",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-common-jdbc module is required for business date management",
+        "supported": true
+      },
+      {
+        "claim": "For web apps running in a single process, directly change the DB date instead of using system properties",
+        "supported": true
+      },
+      {
+        "claim": "SystemRepository.get(\"businessDateProvider\") is used to retrieve the provider",
+        "supported": true
+      }
+    ],
+    "reason": "All Nablarch-specific claims in the answer are supported by the knowledge sections. The XML configuration, Java API usage, table layout, system property override format, and module dependencies all match the gold standard content exactly."
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-date.json",
+        "reason": "日付管理の専用ライブラリページ。インデックスに「システム日時(OS日時)と業務日付の切り替えができる」と明記されており、質問に直接対応する。"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "コンポーネント定義の差し替えだけでシステム日時と業務日付の取得方法を切り替えられるという中核概念を説明する。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "BasicSystemTimeProviderのXMLコンポーネント定義（システム日時側の設定）を提供する。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "SystemTimeUtilによるOS日時取得APIを示す。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "BasicBusinessDateProviderの完全なXML定義・DBテーブルレイアウト・初期化設定を含む、業務日付実装の核心セクション。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BusinessDateUtilによる業務日付取得APIを示す。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "締め処理の再実行時にシステムプロパティで業務日付を上書きできる仕組みを説明する。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s10",
+        "relevance": "high",
+        "reason": "setDate()による業務日付のプログラム的更新方法を示す（締め処理での日付進行に直接必要）。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "業務日付管理に必要なMavenモジュール依存関係を提供する。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "SystemTimeProviderの拡張方法（実装クラス差し替え手順）を示す。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s13",
+        "relevance": "partial",
+        "reason": "BusinessDateProviderの拡張方法（実装クラス差し替え手順）を示す。"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 149169,
+    "duration_api_ms": 145814,
+    "num_turns": 8,
+    "total_cost_usd": 0.9094737500000001,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 5311,
+      "cache_read_input_tokens": 295324,
+      "cache_creation_input_tokens": 35670
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3219,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003344,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 17,
+        "outputTokens": 9429,
+        "cacheReadInputTokens": 659425,
+        "cacheCreationInputTokens": 151151,
+        "webSearchRequests": 0,
+        "costUSD": 0.9061297500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,231 @@
+{
+  "scenario_id": "qa-04",
+  "description": "Bean Validationに対応したFormクラスの単体テストを書きたい。文字種や桁数のテストケースをどう準備すればいいかわからない。",
+  "input": "Bean ValidationのFormクラスの単体テストを書きたい。テストクラスの作り方とテストデータの準備方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that the test class should inherit from `nablarch.test.core.db.EntityTestSupport`, and provides a code example showing `public class UserRegistrationFormTest extends EntityTestSupport`. This directly matches the fact being checked.",
+      "fact": "EntityTestSupportを継承してテストクラスを作成する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that test data is externalized to Excel files ('テストデータをExcelファイルに外部化して実施する') and provides detailed information about Excel file placement and format, confirming that test data is described in Excel files.",
+      "fact": "テストデータはExcelファイルに記述する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "テストクラスはnablarch.test.core.db.EntityTestSupportを継承する",
+        "supported": true
+      },
+      {
+        "claim": "テストクラスのパッケージはテスト対象Formと同じ",
+        "supported": true
+      },
+      {
+        "claim": "クラス名は<Form名>Test",
+        "supported": true
+      },
+      {
+        "claim": "Excelファイルはテストソースコードとディレクトリおよびベース名が同じ（拡張子のみ異なる）",
+        "supported": true
+      },
+      {
+        "claim": "Excelセルの書式はすべて文字列形式にする",
+        "supported": true
+      },
+      {
+        "claim": "文字種・文字列長テストのカラム: propertyName, allowEmpty, min, max, messageIdWhenEmptyInput, messageIdWhenNotApplicable, 半角英字〜外字",
+        "supported": true
+      },
+      {
+        "claim": "メソッドtestValidateCharsetAndLength(TARGET_CLASS, sheetName, id)を使用する",
+        "supported": true
+      },
+      {
+        "claim": "単項目精査（その他）のカラム: propertyName, case, input1, messageId",
+        "supported": true
+      },
+      {
+        "claim": "メソッドtestSingleValidation(TARGET_CLASS, sheetName, id)を使用する",
+        "supported": true
+      },
+      {
+        "claim": "項目間精査のテストケース表IDは\"testShots\"固定、入力パラメータ表IDは\"params\"固定",
+        "supported": true
+      },
+      {
+        "claim": "メソッドtestBeanValidation(TARGET_CLASS, sheetName)を使用する",
+        "supported": true
+      },
+      {
+        "claim": "メソッドtestSetterAndGetter(TARGET_CLASS, sheetName, id)を使用する",
+        "supported": true
+      },
+      {
+        "claim": "testSetterAndGetterでテスト可能な型: String, BigDecimal, java.util.Date, valueOf(String)メソッドを持つクラス",
+        "supported": true
+      },
+      {
+        "claim": "List<String>等はtestSetterAndGetterで対応できず個別実装が必要",
+        "supported": true
+      },
+      {
+        "claim": "プロパティとして別のFormを保持する親FormにはtestValidateCharsetAndLength/testSingleValidationは使用できない",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント設定クラスnablarch.test.core.entity.EntityTestConfiguration",
+        "supported": true
+      },
+      {
+        "claim": "BeanValidationTestStrategyをvalidationTestStrategyに指定する",
+        "supported": true
+      },
+      {
+        "claim": "characterGeneratorにBasicJapaneseCharacterGeneratorを使用する",
+        "supported": true
+      },
+      {
+        "claim": "設定項目: maxMessageId, maxAndMinMessageId, fixLengthMessageId, underLimitMessageId, minMessageId, emptyInputMessageId",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるNablarch固有のAPI名・クラス名・設定方法・動作仕様はすべてナレッジセクションで裏付けられており、fabricatedな情報は確認されなかった。一部カラム（group、messageIdWhenInvalidLength、interpolateKey_nなど）が省略されているが、これは情報の省略であって虚偽の記述ではない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "reason": "Bean ValidationのForm/Entity単体テストに特化したドキュメントで、質問に直接対応する"
+      },
+      {
+        "path": "development-tools/testing-framework/testing-framework-01-Abstract.json",
+        "reason": "自動テストフレームワークの基本（Excelファイルの命名規約、データタイプ、特殊記法）を説明しており、テストデータ準備に必要な背景情報を提供する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "テストクラスの作り方（継承クラス、パッケージ、クラス名）を直接説明する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "テストデータ（Excelファイル）の準備方法を直接説明する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "文字種・文字列長テストケース表の作成方法（カラム定義）を説明する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "testValidateCharsetAndLengthメソッドの使い方とコード例を提供する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "その他の単項目精査テストケース表の作成方法を説明する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "testSingleValidationメソッドの使い方とコード例を提供する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "項目間精査テストケース表の作成方法を説明する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "testBeanValidationメソッドの使い方とコード例を提供する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "setter/getterテストのコード例と注意点（型制限）を提供する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "EntityTestConfigurationの設定項目一覧を説明する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "コンポーネント設定ファイルの記述例（BeanValidationTestStrategy）を提供する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-Abstract.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "ExcelファイルのパスおよびファイルURL命名規約を説明する"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-Abstract.json",
+        "section_id": "s14",
+        "relevance": "partial",
+        "reason": "セルの書式（文字列形式）に関する重要な注意事項を説明する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 113965,
+    "duration_api_ms": 112871,
+    "num_turns": 7,
+    "total_cost_usd": 0.59400445,
+    "usage": {
+      "input_tokens": 9751,
+      "output_tokens": 7875,
+      "cache_read_input_tokens": 250494,
+      "cache_creation_input_tokens": 98167
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3217,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003352,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9751,
+        "outputTokens": 7875,
+        "cacheReadInputTokens": 250494,
+        "cacheCreationInputTokens": 98167,
+        "webSearchRequests": 0,
+        "costUSD": 0.59065245,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

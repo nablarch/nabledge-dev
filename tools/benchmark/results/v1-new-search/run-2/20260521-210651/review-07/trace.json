@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 152056,
+  "duration_api_ms": 147671,
+  "ttft_ms": 7326,
+  "num_turns": 5,
+  "result": "セクション内容を確認しました。回答を生成します。\n\n---\n\n**結論**: NablarchにはCSRFトークン検証ハンドラ（`CsrfTokenVerificationHandler`）が用意されており、ハンドラキューに追加するだけでCSRF対策が適用されます。\n\n**根拠**:\n\n### ハンドラキューへの追加\n\nJSPカスタムタグを使用する標準的なウェブアプリケーションでの設定例:\n\n```xml\n<!-- ハンドラ構成 -->\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <!-- 他のハンドラは省略 -->\n\n      <!-- セッションストアハンドラ -->\n      <component-ref name=\"sessionStoreHandler\" />\n\n      <!-- Nablarchカスタムタグ制御ハンドラ -->\n      <component-ref name=\"nablarchTagHandler\"/>\n\n      <!-- CSRFトークン検証ハンドラ -->\n      <component-ref name=\"csrfTokenVerificationHandler\"/>\n    </list>\n  </property>\n</component>\n\n<component name=\"csrfTokenVerificationHandler\"\n           class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\" />\n```\n\n### デフォルト動作\n\n- `GET` `HEAD` `TRACE` `OPTIONS` は検証対象外、`POST` `PUT` 等は検証対象\n- CSRFトークンはセッションストアに格納（キー名: `nablarch_csrf-token`）\n- リクエストからトークンを取得する際のパラメータ名: `csrf-token`、ヘッダ名: `X-CSRF-TOKEN`\n- 検証失敗時: `400 BadRequest` を返す\n\n### 配置制約\n\n- **セッション変数保存ハンドラより後ろ**に配置すること（セッションストアへのトークン格納のため）\n- JSPカスタムタグ使用時は**Nablarchカスタムタグ制御ハンドラより後ろ**に配置すること（hidden暗号化でCSRFトークンを画面出力するため）\n\n### ログイン時のトークン再生成\n\nログイン処理でセッションIDのみ再生成する実装の場合、CSRFトークンも明示的に再生成する必要があります:\n\n```java\nCsrfTokenUtil.regenerateCsrfToken(executionContext);\n```\n\nセッションストアを破棄・再生成する実装であれば、CSRFトークンも自動的に破棄・再生成されるため不要です。\n\n### リクエスト単体テストでの無効化\n\nテスト時はCSRFトークン検証が失敗するため、以下の設定で無効化できます:\n\n```xml\n<!-- CSRF対策の無効化 -->\n<component name=\"csrfTokenVerificationHandler\" class=\"nablarch.test.NopHandler\" />\n```\n\n**注意点**:\n- データベースを使用した二重サブミット防止機能はCSRF対策に対応していません。CSRF対策には必ずこのハンドラを使用してください\n- `HttpSession`を使用した二重サブミット防止機能はCSRF対策と同等の効果がありますが、アプリケーション側で明示的に実装する必要があり対応漏れのリスクがあります。ハンドラ追加で一括対応できるこの機能の使用を推奨します\n\n参照: `handlers-csrf-token-verification-handler.json:s3`, `handlers-csrf-token-verification-handler.json:s4`, `handlers-csrf-token-verification-handler.json:s5`, `security-check-2.チェックリスト.json:s31`\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"reason\": \"質問のコアであるCSRFトークン検証ハンドラの設定・動作・制約を直接説明するページ\"},\n      {\"path\": \"check/security-check/security-check-2.チェックリスト.json\", \"reason\": \"CSRF対策チェックリストにNablarch機能の推奨理由と二重サブミット防止機能との違いが含まれる\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"ウェブアプリケーション処理方式の機能詳細にCSRF対策セクション（s19）が含まれる\"},\n      {\"path\": \"component/handlers/handlers-nablarch-tag-handler.json\", \"reason\": \"CSRFハンドラの配置制約（NablarchTagHandlerより後ろ）の理解に必要\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-tag.json\", \"reason\": \"CSRFトークン自動出力はhandlers-csrf-token-verification-handlerで説明済みで重複\"},\n      {\"path\": \"バッチ・RESTful関連全ページ\", \"reason\": \"処理方式がウェブアプリケーション指定のため対象外\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"設定XML・デフォルト動作・カスタマイズ方法・テスト無効化方法を網羅する中核セクション\"},\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"ハンドラの配置制約（SessionStoreHandler/NablarchTagHandlerより後ろ）を説明する必須セクション\"},\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s5\", \"relevance\": \"high\", \"reason\": \"ログイン時のCSRFトークン再生成（CsrfTokenUtil.regenerateCsrfToken）を説明するセクション\"},\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s31\", \"relevance\": \"high\", \"reason\": \"CSRF対策機能の推奨理由・二重サブミット防止機能との違い・DBを使った二重サブミット防止の非対応を説明\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s19\", \"relevance\": \"partial\", \"reason\": \"ウェブアプリケーション処理方式の文脈でCSRF対策の位置づけを示すが内容はリンクのみ\"},\n      {\"file\": \"component/handlers/handlers-nablarch-tag-handler.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"NablarchTagHandler自体の配置制約を説明するが、CSRFハンドラの制約（s3）で十分カバーされている\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s1\", \"reason\": \"ハンドラクラス名のみでボイラープレート\"},\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s2\", \"reason\": \"モジュール一覧のみでボイラープレート\"},\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s32\", \"reason\": \"「6-(i)-aの対策を実施する」のみで実質的情報なし\"},\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s34\", \"reason\": \"保険的対策（メール送信）でNablarch機能対応なし、質問の焦点と異なる\"},\n      {\"file\": \"component/handlers/handlers-nablarch-tag-handler.json\", \"section_id\": \"s4\", \"reason\": \"hidden暗号化の復号エラー設定であり、CSRF対策とは直接関係しない\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s4\",\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s3\",\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s5\",\n      \"check/security-check/security-check-2.チェックリスト.json:s31\",\n      \"processing-pattern/web-application/web-application-feature-details.json:s19\",\n      \"component/handlers/handlers-nablarch-tag-handler.json:s3\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s4\", \"reason\": \"設定XMLと動作説明の主要ソース\"},\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s3\", \"reason\": \"ハンドラ配置制約の説明に使用\"},\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s5\", \"reason\": \"ログイン時トークン再生成の説明に使用\"},\n        {\"ref\": \"security-check-2.チェックリスト.json:s31\", \"reason\": \"CSRF対策機能推奨の根拠と二重サブミット防止との違いの説明に使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"web-application-feature-details.json:s19\", \"reason\": \"CSRFトークン検証ハンドラへのリンクのみで回答に追加情報なし\"},\n        {\"ref\": \"handlers-nablarch-tag-handler.json:s3\", \"reason\": \"NablarchTagHandlerの配置制約はCSRFハンドラのs3で既にカバーされており重複\"}\n      ]\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "010c9f6e-c919-47fe-bcb6-135d9412ae85",
+  "total_cost_usd": 0.7634626999999999,
+  "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 36018,
+    "cache_read_input_tokens": 150857,
+    "output_tokens": 4230,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 36018
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3261,
+      "outputTokens": 28,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003401,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 4494,
+      "outputTokens": 9119,
+      "cacheReadInputTokens": 341524,
+      "cacheCreationInputTokens": 135290,
+      "webSearchRequests": 0,
+      "costUSD": 0.7600617,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "3e4cba13-10c0-4451-be44-d957d1487819"
+}

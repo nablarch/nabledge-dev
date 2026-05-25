@@ -1,0 +1,190 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-message.json",
+        "reason": "多言語化対応セクション(s8)とプロパティファイル定義(s7)を含む中核ページ"
+      },
+      {
+        "path": "component/handlers/handlers-thread-context-handler.json",
+        "reason": "言語切り替えUI実装(s7)とThreadContextHandler言語属性設定(s4)を含む"
+      },
+      {
+        "path": "component/handlers/handlers-http-response-handler.json",
+        "reason": "言語毎のJSPコンテンツパス切り替え方式(s7)を解説"
+      },
+      {
+        "path": "component/libraries/libraries-code.json",
+        "reason": "コード名称（ラベル）の多言語化対応(s8)とテーブル構造(s6)を含む"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "messageタグ(s31)とリソースパス切り替え対応タグ一覧(s32)を含む"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリの国際化対応全体像(s12)と2方式の使い分け指針を提供"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/http-messaging/http-messaging-feature-details.json",
+        "reason": "s6が既選択セクションへの参照リンクのみで独自の実装情報なし"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "バリデーションエラーメッセージ定義は扱うが、言語切り替えの仕組み実装には直接答えない"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "s8はlibraries-message/libraries-codeへの参照のみで独自の実装詳細なし（partial候補として検討したが10セクション上限で優先度低）"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "PropertiesStringResourceLoaderのlocales/defaultLocale設定と言語別プロパティファイル命名規則を完全に解説。質問への直接回答に必須"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "LanguageAttributeInHttpCookieとLanguageAttributeInHttpUtil.keepLanguageを使った言語切り替えUIの具体的実装例を含む"
+      },
+      {
+        "file": "component/handlers/handlers-http-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "DirectoryBasedResourcePathRule/FilenameBasedResourcePathRuleによるJSPパス切り替えの完全な実装ガイド"
+      },
+      {
+        "file": "component/libraries/libraries-code.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "コード名称テーブルのLANGカラムとCodeUtil.getName(Locale)によるラベル多言語化を解説"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s31",
+        "relevance": "high",
+        "reason": "<n:message>タグによるJSP多言語文言切り替えの実装例を含む"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "2つの方式（messageタグ vs リソースパス切り替え）の使い分け指針（レイアウト崩れ注意）を提供"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s32",
+        "relevance": "partial",
+        "reason": "a/img/link/script/includeタグがResourcePathRuleで言語別パス切り替えに対応していることを解説"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "ThreadContextHandlerにLanguageAttributeを設定する方法の背景知識として必要"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "メッセージプロパティファイルの基本形式（UTF-8、フォーマット）。s8の前提理解に必要"
+      },
+      {
+        "file": "component/libraries/libraries-code.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "コード名称テーブルのスキーマ（LANGカラム含む）とBasicCodeManager設定。s8多言語化対応の前提"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s14",
+        "reason": "プロパティファイル格納場所変更の補足情報。基本的な多言語化実装には不要"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s15",
+        "reason": "DBでメッセージ管理する代替実装。基本的なプロパティファイル方式で十分"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s8",
+        "reason": "タイムゾーン選択画面の実装例。言語切り替えとは無関係"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s8",
+        "reason": "REST用国際化指針だが既選択セクションの情報と重複するため10セクション上限で除外"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/handlers/handlers-http-response-handler.json:s7",
+      "component/libraries/libraries-code.json:s8",
+      "component/libraries/libraries-tag.json:s31",
+      "processing-pattern/web-application/web-application-feature-details.json:s12",
+      "component/libraries/libraries-tag.json:s32",
+      "component/handlers/handlers-thread-context-handler.json:s4",
+      "component/libraries/libraries-message.json:s7",
+      "component/libraries/libraries-code.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-message.json:s8",
+          "reason": "PropertiesStringResourceLoaderのXML設定例とプロパティファイル命名規則を回答のメッセージ多言語化セクションに使用"
+        },
+        {
+          "ref": "handlers-thread-context-handler.json:s7",
+          "reason": "LanguageAttributeInHttpCookieの設定例、JSPのn:submitLinkリンク実装例、I18nHandlerのkeeLanguage呼び出し例を回答の言語切り替えUIセクションに使用"
+        },
+        {
+          "ref": "handlers-http-response-handler.json:s7",
+          "reason": "DirectoryBasedResourcePathRuleの設定例とJSPディレクトリ構造例を回答のリソースパス切り替え方式セクションに使用"
+        },
+        {
+          "ref": "libraries-code.json:s8",
+          "reason": "コード名称テーブルデータ例とCodeUtil.getName(Locale)のコード例を回答のコード名称多言語化セクションに使用"
+        },
+        {
+          "ref": "libraries-tag.json:s31",
+          "reason": "<n:message>タグによる文言切り替えの説明を回答のメッセージタグ方式セクションに使用"
+        },
+        {
+          "ref": "web-application-feature-details.json:s12",
+          "reason": "2方式の使い分け指針（messageタグはレイアウト崩れの可能性）を回答の注意点と方式比較表に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-tag.json:s32",
+          "reason": "リソースパス切り替え対応タグの一覧情報だが、回答の簡潔さを保つため詳細タグ一覧は省略（DirectoryBasedResourcePathRuleの説明で十分）"
+        },
+        {
+          "ref": "handlers-thread-context-handler.json:s4",
+          "reason": "ThreadContextHandlerの背景知識として参照したが、回答はs7の具体的実装例で完結するため直接引用せず"
+        },
+        {
+          "ref": "libraries-message.json:s7",
+          "reason": "プロパティファイルの基本形式（UTF-8）は回答内で言及したが、フォーマット例は多言語化に直接関係しないため省略"
+        },
+        {
+          "ref": "libraries-code.json:s6",
+          "reason": "BasicCodeManagerの設定構造を確認したが、回答の多言語化説明にはs8のデータ例で十分なため直接引用せず"
+        }
+      ]
+    }
+  }
+}

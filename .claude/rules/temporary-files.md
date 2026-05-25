@@ -13,16 +13,16 @@ Use `.tmp/` directory in repository root for temporary files and workspaces.
 
 ## Use Cases
 
-- Test evaluation workspaces (nabledge-test)
+- Test evaluation workspaces (test-setup.sh)
 - Temporary build outputs
 - Cache files during processing
 - Intermediate data files
 
 ## Examples
 
-**nabledge-test workspaces**:
+**test-setup.sh workspaces**:
 ```
-.tmp/nabledge-test/eval-handlers-001-143025/
+.tmp/nabledge-test/v6/test-cc/
 ```
 
 **Temporary processing**:

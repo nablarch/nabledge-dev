@@ -1,0 +1,102 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答はコンポーネント設定ファイルにSimpleDbTransactionManagerを定義する手順をXMLコード例とともに明示しており、個別トランザクションを定義するために使用することが記載されている。",
+      "fact": "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "SimpleDbTransactionManagerとSimpleDbTransactionExecutorを使用して独立したトランザクションでSQLを実行できる",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント設定ファイルにSimpleDbTransactionManagerを定義し、connectionFactory・transactionFactory・dbTransactionNameプロパティを設定する",
+        "supported": true
+      },
+      {
+        "claim": "SystemRepository.get()でSimpleDbTransactionManagerを取得できる",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionExecutorのdoTransaction()メソッドでトランザクションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionExecutorはトランザクションの開始・コミット・ロールバックを自動制御するラッパーである",
+        "supported": true
+      },
+      {
+        "claim": "業務処理がロールバックされても、このトランザクション内でコミットした更新は独立して残る",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionManagerを直接操作せず、必ずSimpleDbTransactionExecutorを介してトランザクション制御を行うこと",
+        "supported": true
+      },
+      {
+        "claim": "トランザクションタイムアウトを使用している場合、別トランザクションのタイムアウトは独立してチェックされる",
+        "supported": false
+      }
+    ],
+    "reason": "ほとんどの主張は知識セクションに裏付けられているが、「トランザクションタイムアウトを使用している場合、別トランザクションのタイムアウトは独立してチェックされる」という注意点は知識セクションに記載がなく、Nablarch固有の動作仕様としての裏付けがないためハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — ほとんどの主張は知識セクションに裏付けられているが、「トランザクションタイムアウトを使用している場合、別トランザクションのタイムアウトは独立してチェックされる」という注意点は知識セクションに記載がなく、Nablarch固有の動作仕様としての裏付けがないためハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "libraries-database.json:s29",
+      "libraries-transaction.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 77950,
+    "duration_api_ms": 77760,
+    "num_turns": 4,
+    "total_cost_usd": 0.5187036999999999,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 1722,
+      "cache_read_input_tokens": 98409,
+      "cache_creation_input_tokens": 26366
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1194,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001309,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 22,
+        "outputTokens": 4559,
+        "cacheReadInputTokens": 642779,
+        "cacheCreationInputTokens": 68296,
+        "webSearchRequests": 0,
+        "costUSD": 0.5173946999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

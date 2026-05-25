@@ -1,0 +1,149 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のDBストアセクションに「保存先: データベース上のテーブル」と「ローリングメンテナンスなどでAPサーバが停止してもセッション変数を復元可能」という記載があり、事実の「DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能」という内容が含まれている。",
+      "fact": "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のHIDDENストアの説明に「保存先: クライアントサイド（hidden タグを使って画面間でセッション変数を引き回す）」と記載されており、事実の内容と一致している。",
+      "fact": "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Nablarchが標準提供するセッションストアはDBストア、HIDDENストア、HTTPセッションストアの3種類＋Redisストア（Lettuceアダプタ）の計4種類",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはデータベース上のテーブルに保存し、スケールアウトに自然に対応できる",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはローリングメンテナンス等でAPサーバが停止してもセッション変数を復元可能",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは同一セッションの処理が複数スレッドで同時実行された場合は後勝ち",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはクライアントサイド（hiddenタグを使用）に保存",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはAPサーバ台数に影響されない",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数タブでの画面操作を許容できる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数スレッド同時実行ではスレッドごとに独立したデータとして保存される",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはAPサーバのヒープ領域に保存（設定によってはDBやファイルの場合もある）",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはスケールアウト時に工夫が必要",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアは認証情報など全体で頻繁に使う情報の保持に適している",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアは大量データを保存するとヒープを圧迫する恐れがある",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアは同一セッションの処理が複数スレッドで実行された場合後勝ちとなる",
+        "supported": false
+      },
+      {
+        "claim": "Redisストアのセッション情報は`nablarch.session.<セッションID>`というキーで保存される",
+        "supported": false
+      },
+      {
+        "claim": "RedisストアはCluster / Sentinel / Standalone等Redisの構成に合わせた設定が可能",
+        "supported": false
+      },
+      {
+        "claim": "用途別選択基準の表の内容（DBストア、HIDDENストア、HTTPセッションストア、使用しない）",
+        "supported": true
+      }
+    ],
+    "reason": "2つのハルシネーションが検出された。①「HTTPセッションストアは同一セッションの処理が複数スレッドで実行された場合後勝ちとなる」という記載が回答には存在しないが、回答のHTTPセッションストアの説明にこの特性への言及が欠落しており知識セクションには明記されている点は問題ないものの、②回答中「Redisストアのセッション情報は`nablarch.session.<セッションID>`というキーで保存される」という具体的なキー名の記述、および③「Cluster / Sentinel / Standalone等Redisの構成に合わせた設定が可能」という記述は、知識セクションのいずれにも裏付けがなく、Nablarch固有の仕様としてのハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 2つのハルシネーションが検出された。①「HTTPセッションストアは同一セッションの処理が複数スレッドで実行された場合後勝ちとなる」という記載が回答には存在しないが、回答のHTTPセッションストアの説明にこの特性への言及が欠落しており知識セクションには明記されている点は問題ないものの、②回答中「Redisストアのセッション情報は`nablarch.session.<セッションID>`というキーで保存される」という具体的なキー名の記述、および③「Cluster / Sentinel / Standalone等Redisの構成に合わせた設定が可能」という記述は、知識セクションのいずれにも裏付けがなく、Nablarch固有の仕様としてのハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s17",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s14"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 72889,
+    "duration_api_ms": 70949,
+    "num_turns": 13,
+    "total_cost_usd": 0.36123145,
+    "usage": {
+      "input_tokens": 14,
+      "output_tokens": 4410,
+      "cache_read_input_tokens": 558574,
+      "cache_creation_input_tokens": 33639
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1196,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013210000000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 4410,
+        "cacheReadInputTokens": 558574,
+        "cacheCreationInputTokens": 33639,
+        "webSearchRequests": 0,
+        "costUSD": 0.35991045000000005,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

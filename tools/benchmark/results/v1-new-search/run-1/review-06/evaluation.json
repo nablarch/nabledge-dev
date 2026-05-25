@@ -1,0 +1,191 @@
+{
+  "scenario_id": "review-06",
+  "description": "REST APIのリソースクラスでJaxRsHttpRequestからクエリーパラメータを取得する処理を書いている。URLパスの一部をパスパラメータとして使う箇所もある。",
+  "input": "REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "answerにはルーティング設定（routes.xmlまたは@Pathアノテーション）でパスパラメータの名前を定義し（例：`users/:id`の`id`や`{param}`）、リソースクラスで`JaxRsHttpRequest#getPathParam(パラメータ名)`を使って受け取る実装方法が明確に説明されている。これはfactの「パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る」という内容と一致する。",
+      "fact": "パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that query parameters are obtained from JaxRsHttpRequest using `getParamMap()` method, and that the resource method must define `JaxRsHttpRequest` as a parameter argument. This directly matches the fact that query parameters are retrieved from JaxRsHttpRequest.",
+      "fact": "クエリーパラメータはJaxRsHttpRequestから取得する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "パスパラメータの取得にJaxRsHttpRequestのgetPathParam()を使用する",
+        "supported": true
+      },
+      {
+        "claim": "クエリーパラメータの取得にJaxRsHttpRequestのgetParamMap()を使用する",
+        "supported": true
+      },
+      {
+        "claim": "routes.xmlでパスパラメータを':パラメータ名'形式で定義する",
+        "supported": true
+      },
+      {
+        "claim": "<requirements>/<requirement>でパスパラメータの形式を正規表現で制約できる",
+        "supported": true
+      },
+      {
+        "claim": "クエリーパラメータはルーティング設定に含めずパスのみ定義する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy()でgetParamMap()の結果をFormクラスにマッピングする",
+        "supported": true
+      },
+      {
+        "claim": "ValidatorUtil.validate()でバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "@PathアノテーションによるルーティングはPathOptionsProviderRoutesMapping+JaxRsPathOptionsProviderを設定する",
+        "supported": true
+      },
+      {
+        "claim": "@Pathアノテーション方式では{パラメータ名}形式でパスの可変部分を定義する",
+        "supported": true
+      },
+      {
+        "claim": "{パラメータ名 : 正規表現}で書式を制約できる",
+        "supported": true
+      },
+      {
+        "claim": "@Pathアノテーション方式でもgetPathParam()でパスパラメータを取得する",
+        "supported": true
+      },
+      {
+        "claim": "JBoss/WildFlyではPathアノテーション方式は使用できない",
+        "supported": true
+      },
+      {
+        "claim": "RoutesMapping/PathOptionsProviderRoutesMappingをハンドラキューの最後に設定し初期化対象リストにも追加する",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta RESTful Web Servicesの@PathParamおよび@QueryParamアノテーションは使用できない",
+        "supported": true
+      }
+    ],
+    "reason": "answerに記載されたNablarch固有のすべての主張（API名、クラス名、設定方法、動作仕様）はknowledgeセクションによって支持されており、fabricatedな情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "reason": "パスパラメータ・クエリーパラメータの実装方法を直接扱うページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細でURIマッピングとパスパラメータの項目を含む"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "reason": "ルーティング設定（routes.xmlおよび@Pathアノテーション方式）を直接扱うページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "パスパラメータの実装方法（ルーティング設定とJaxRsHttpRequest使用）を直接説明している"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "クエリーパラメータの実装方法（ルーティング設定とBeanUtil使用）を直接説明している"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "JaxRsHttpRequestをメソッド引数に使う場面をメソッドシグネチャとして説明しており、s2/s3の背景として必要"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ディスパッチハンドラの設定方法（RoutesMapping）を説明しており、ルーティング設定の前提として必要"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "routes.xmlファイルの作成方法を説明しておりルーティング設定の背景情報として必要"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "@Pathアノテーションによるマッピング実装方法を具体例付きで説明している"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "@Pathアノテーション方式でのパスパラメータ定義方法を具体例付きで説明している"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "URIとリソースクラスのマッピングに関する機能詳細の参照先を示す"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "パスパラメータやクエリーパラメータの機能詳細の参照先を示す"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 167147,
+    "duration_api_ms": 165380,
+    "num_turns": 4,
+    "total_cost_usd": 0.75434365,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 5417,
+      "cache_read_input_tokens": 130514,
+      "cache_creation_input_tokens": 5685
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3275,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003415,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 15,
+        "outputTokens": 10874,
+        "cacheReadInputTokens": 579858,
+        "cacheCreationInputTokens": 110351,
+        "webSearchRequests": 0,
+        "costUSD": 0.7509286500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,236 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that HttpErrorHandler returns status codes based on exception type (404 for NoMoreHandlerException, 500 for StackOverflowError and other exceptions, etc.) and that when HttpErrorResponse's cause exception is ApplicationException, the error messages are set in the request scope under the key 'errors'. This matches the fact that HttpErrorHandler returns responses with status codes based on exception type and sets ApplicationException error messages in the request scope.",
+      "fact": "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "HttpErrorHandlerでNoMoreHandlerExceptionはINFOログ、404レスポンス",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorHandlerでHttpErrorResponseはログ出力なし、HttpErrorResponse#getResponse()に従う",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorHandlerでResult.ErrorはwriteFailureLogPatternの設定による、Error#getStatusCode()に従う",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorHandlerでStackOverflowErrorはFATAL、500",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorHandlerで上記以外の例外・エラーはFATAL、500",
+        "supported": true
+      },
+      {
+        "claim": "defaultPagesの設定XMLはnablarch.fw.web.handler.HttpErrorHandlerのpropertyとして記述",
+        "supported": true
+      },
+      {
+        "claim": "defaultPagesよりweb.xmlのerror-page要素での設定が推奨される",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseの原因例外がApplicationExceptionの場合、リクエストスコープのキーerrorsにエラーメッセージを設定",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerでServiceError（サブクラス含む）はServiceError#writeLogでログ出力後返却",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerでResult.Error（サブクラス含む）はFATALログ出力後返却",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerで上記以外の例外はFATALログ後InternalErrorを生成して返却",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerでStackOverflowErrorはFATALログ後InternalErrorを返却",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerでOutOfMemoryErrorは標準エラー出力後FATALログ、InternalErrorを返却",
+        "supported": true
+      },
+      {
+        "claim": "OnErrorアノテーションのコード例（ApplicationException、/WEB-INF/view/project/index.jsp）",
+        "supported": true
+      },
+      {
+        "claim": "ExampleErrorForwardHandlerのコード例（NoDataException→404、OptimisticLockException→400）",
+        "supported": true
+      },
+      {
+        "claim": "障害通知ログはFATAL/ERROR、ロガー名MONITOR",
+        "supported": true
+      },
+      {
+        "claim": "障害解析ログはFATAL/ERROR、ロガー名はクラス名",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorHandlerはHttpResponseHandlerより後ろに配置する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorHandlerはHttpAccessLogHandlerより後ろに配置する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerはできるだけハンドラキューの先頭に配置する",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerより前のハンドラで例外が発生した場合、ウェブアプリケーションサーバやJVMが処理する",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerは設定で実装を切り替えられないため、要件を満たせない場合はプロジェクト固有のハンドラを作成する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有のクラス名・設定方法・動作仕様はすべてknowledgeセクションの記述と一致しており、fabricatedな情報は検出されなかった。GlobalErrorHandlerのテーブルでThreadDeathやVirtualMachineErrorの行が省略されているが、虚偽の記述はなく、omissionに留まる。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-HttpErrorHandler.json",
+        "reason": "ウェブアプリケーション用のHTTPエラー制御ハンドラで、例外種類別のログ出力とエラー画面遷移を直接担う"
+      },
+      {
+        "path": "component/handlers/handlers-global-error-handler.json",
+        "reason": "未捕捉例外を最終的に処理するグローバルエラーハンドラで、ログ出力仕組みの中核"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの機能詳細にエラー時の画面遷移とステータスコードの項目が含まれる"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "reason": "ウェブアプリケーションのエラー遷移先指定方法を直接説明するページ"
+      },
+      {
+        "path": "component/handlers/handlers-on-error.json",
+        "reason": "アクションメソッド単位でエラー時の遷移先を指定するOnErrorインターセプタの詳細"
+      },
+      {
+        "path": "component/libraries/libraries-failure-log.json",
+        "reason": "フレームワークの障害ログ出力方針（通知ログ/解析ログの使い分け）を説明する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "例外の種類に応じたログレベルとステータスコードの対応表が直接答えになる"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "Result.Errorのログ出力制御（writeFailureLogPattern）の仕組みを説明する"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "デフォルトエラーページの設定方法とweb.xml推奨についての情報"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "グローバルエラーハンドラが例外・エラーの種類別にどう処理するかの詳細"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "要件を満たせない場合の対処方法の説明"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションにおけるエラー時の画面遷移とステータスコードの全体像"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ハンドラで共通エラーページを定義するパターンのコード例"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "OnErrorアノテーションの使用例"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "エラー時の遷移先画面に初期表示データを引き渡すフォワードパターン"
+      },
+      {
+        "file": "component/libraries/libraries-failure-log.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "障害ログの出力方針（通知ログと解析ログの使い分け、MONITORロガー）"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 110370,
+    "duration_api_ms": 108892,
+    "num_turns": 13,
+    "total_cost_usd": 0.7059797000000001,
+    "usage": {
+      "input_tokens": 4223,
+      "output_tokens": 6774,
+      "cache_read_input_tokens": 589439,
+      "cache_creation_input_tokens": 109732
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3249,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033740000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4223,
+        "outputTokens": 6774,
+        "cacheReadInputTokens": 589439,
+        "cacheCreationInputTokens": 109732,
+        "webSearchRequests": 0,
+        "costUSD": 0.7026057000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

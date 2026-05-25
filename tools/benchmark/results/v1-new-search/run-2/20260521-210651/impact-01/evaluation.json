@@ -1,0 +1,170 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that SimpleDbTransactionManager should be defined in the component configuration file (コンポーネント設定ファイルに `SimpleDbTransactionManager` を定義する) as the first step for executing SQL in an individual/separate transaction, which directly corresponds to the fact being checked.",
+      "fact": "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "SimpleDbTransactionManagerをコンポーネント設定ファイルに定義する",
+        "supported": true
+      },
+      {
+        "claim": "connectionFactoryプロパティにConnectionFactory実装クラスを設定する",
+        "supported": true
+      },
+      {
+        "claim": "transactionFactoryプロパティにTransactionFactory実装クラスを設定する",
+        "supported": true
+      },
+      {
+        "claim": "dbTransactionNameプロパティでトランザクションを識別する名前を設定する",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionExecutorを使って別トランザクションでSQLを実行する",
+        "supported": true
+      },
+      {
+        "claim": "SystemRepository.get()でSimpleDbTransactionManagerを取得する",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionExecutorのコンストラクタにSimpleDbTransactionManagerを指定する",
+        "supported": true
+      },
+      {
+        "claim": "doTransaction()メソッドでトランザクションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "ユニバーサルDAOではUniversalDao.Transactionを継承したクラスを作成する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.Transactionのコンストラクタにコンポーネント定義で指定した名前を渡す",
+        "supported": true
+      },
+      {
+        "claim": "executeメソッドが自動的に別のトランザクションで実行される",
+        "supported": true
+      },
+      {
+        "claim": "正常終了時はコミット、例外・エラー発生時はロールバックされる",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionManagerを直接使わずSimpleDbTransactionExecutorまたはUniversalDao.Transactionを経由する",
+        "supported": true
+      },
+      {
+        "claim": "この別トランザクションは業務トランザクションのロールバックとは独立している",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべての主要な技術的クレーム（クラス名、設定方法、APIの使い方、動作仕様）はナレッジセクションの内容と一致しており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s29に「現在のトランザクションとは異なるトランザクションでSQLを実行する」という質問に完全一致するセクションがある"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s20に「現在のトランザクションとは異なるトランザクションで実行する」というユニバーサルDAO版のセクションがある"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "s8に「別トランザクションで実行する」というセクションがあり、Domaアダプタ経由での別トランザクション実行方法が記載されている"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "処理方式がNablarchバッチのため、バッチのデータベースアクセス機能詳細が候補となる"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "トランザクション管理ライブラリはSimpleDbTransactionManagerの背景知識として関連する"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "s7に「アプリケーションで複数のトランザクションを使用する」というセクションがある"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "NablarchバッチのトランザクションループはSimpleDbTransactionManagerとの関係で候補"
+      },
+      {
+        "path": "component/handlers/handlers-database-connection-management-handler.json",
+        "reason": "s5に「アプリケーションで複数のデータベース接続（トランザクション）を使用する」というセクションがある"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "「業務処理が失敗した場合でも必ずデータベースへの変更を確定したい場合」という質問の要件に正確に対応し、SimpleDbTransactionManagerとSimpleDbTransactionExecutorの具体的な実装例が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "ユニバーサルDAO経由での別トランザクション実行方法がUniversalDao.Transactionの実装例とともに記載されており、完全な回答に必要"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "Domaアダプタを使用している場合の別トランザクション実行方法が記載されており、補足情報として有用"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 170815,
+    "duration_api_ms": 166238,
+    "num_turns": 4,
+    "total_cost_usd": 1.12441015,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 4594,
+      "cache_read_input_tokens": 103159,
+      "cache_creation_input_tokens": 33264
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3255,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0034000000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 18,
+        "outputTokens": 11404,
+        "cacheReadInputTokens": 993783,
+        "cacheCreationInputTokens": 173803,
+        "webSearchRequests": 0,
+        "costUSD": 1.1210101500000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

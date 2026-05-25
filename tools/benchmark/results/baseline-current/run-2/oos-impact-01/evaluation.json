@@ -1,0 +1,111 @@
+{
+  "scenario_id": "oos-impact-01",
+  "description": "既存システムをNablarch 6に移行するにあたり、OAuth2/OpenID Connect認証が必要かどうか影響調査している。NablarchにOAuth2/OIDCの仕組みが組み込まれているか確認したい。",
+  "input": "NablarchでOAuth2やOpenID Connectによる認証を実装したい。Nablarchにその仕組みは組み込まれているか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭に「NablarchにはOIDC/OAuth2の仕組みは含まれていません」と明記されており、OAuth2/OpenID Connect認証の組み込み機能がないことが明確に述べられている。",
+      "fact": "NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "Nablarch本体にはOIDC/OAuth2の仕組みは含まれていない",
+        "supported": false
+      },
+      {
+        "claim": "公式のビジネスサンプル（nablarch-biz-sample-all）としてOIDCのIDトークンを用いた認証のサンプル実装が提供されている",
+        "supported": false
+      },
+      {
+        "claim": "Auth0製ライブラリ（com.auth0:java-jwt:4.4.0、com.auth0:jwks-rsa:0.22.1）を依存ライブラリとして使用する",
+        "supported": false
+      },
+      {
+        "claim": "CognitoIdTokenVerifierクラス（please.change.me.common.oidc.verification.cognito.jwt.CognitoIdTokenVerifier）が存在し、region/userPoolId/clientId/signatureAlgorithmProviderプロパティを持つ",
+        "supported": false
+      },
+      {
+        "claim": "SessionUtil.changeId(context)でセッションIDを再生成する",
+        "supported": false
+      },
+      {
+        "claim": "CsrfTokenUtil.regenerateCsrfToken(context)でCSRFトークンを再生成する",
+        "supported": false
+      },
+      {
+        "claim": "SessionUtil.put(context, key, value)でセッションに値を格納する",
+        "supported": false
+      },
+      {
+        "claim": "参照元ファイルとしてguide/biz-samples/biz-samples-12.jsonが存在する",
+        "supported": false
+      },
+      {
+        "claim": "サンプルは2024年9月時点の仕様に基づいている",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクション（ゴールドスタンダード）が空のため、回答中のNablarch固有の主張（クラス名・API名・サンプルの存在・設定方法・参照ファイルパス等）を裏付ける根拠が一切存在しない。判定基準上は裏付けなき主張はハルシネーションとみなすが、知識セクション自体が提供されていないため真偽の断定が不可能であり、UNCERTAINとする。検証するには実際のnablarch-biz-sample-allリポジトリの内容との照合が必要。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — 知識セクション（ゴールドスタンダード）が空のため、回答中のNablarch固有の主張（クラス名・API名・サンプルの存在・設定方法・参照ファイルパス等）を裏付ける根拠が一切存在しない。判定基準上は裏付けなき主張はハルシネーションとみなすが、知識セクション自体が提供されていないため真偽の断定が不可能であり、UNCERTAINとする。検証するには実際のnablarch-biz-sample-allリポジトリの内容との照合が必要。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "guide/biz-samples/biz-samples-12.json:s2",
+      "guide/biz-samples/biz-samples-12.json:s14",
+      "guide/biz-samples/biz-samples-12.json:s16",
+      "guide/biz-samples/biz-samples-12.json:s11",
+      "guide/biz-samples/biz-samples-12.json:s13",
+      "guide/biz-samples/biz-samples-12.json:s1",
+      "guide/biz-samples/biz-samples-12.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 151410,
+    "duration_api_ms": 150027,
+    "num_turns": 5,
+    "total_cost_usd": 0.516752,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 3268,
+      "cache_read_input_tokens": 184842,
+      "cache_creation_input_tokens": 31972
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1185,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001325,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1729,
+        "outputTokens": 10903,
+        "cacheReadInputTokens": 347600,
+        "cacheCreationInputTokens": 64644,
+        "webSearchRequests": 0,
+        "costUSD": 0.515427,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes defining SimpleDbTransactionManager in the component configuration file and using it to execute SQL in an individual transaction, which directly corresponds to the fact. The answer includes XML configuration examples and Java code showing how to use SimpleDbTransactionManager with SimpleDbTransactionExecutor for individual transactions.",
+      "fact": "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "SimpleDbTransactionManagerとSimpleDbTransactionExecutorを使うことで、業務トランザクションとは独立した個別トランザクションでSQLを実行できる",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDAO使用時はUniversalDao.Transactionを使う",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント設定ファイルにSimpleDbTransactionManagerを定義し、connectionFactory・transactionFactory・dbTransactionNameプロパティを設定する",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionExecutorのコード例（SystemRepository.get、execute(AppDbConnection)、doTransaction()）",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.TransactionのコンストラクタでコンポーネントDefinition名をsuper()に渡す",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.TransactionのexecuteメソッドにUniversalDaoを使った処理を実装し、正常終了でコミット・例外でロールバック",
+        "supported": true
+      },
+      {
+        "claim": "生成すると別のトランザクションで実行される",
+        "supported": true
+      },
+      {
+        "claim": "LoopHandlerのコールバックでtransactionAbnormalEndが新しいトランザクションで実行されコミットされる",
+        "supported": true
+      },
+      {
+        "claim": "コールバック処理中にエラーや例外が発生した場合、残りのハンドラへのコールバックは実行されない",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionManagerを直接操作せずSimpleDbTransactionExecutorまたはUniversalDao.Transactionを使うこと",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のすべての主張（APIクラス名・設定方法・動作仕様・コード例）はナレッジセクションに記載された内容と一致しており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "「現在のトランザクションとは異なるトランザクションでSQLを実行する」セクション(s29)が質問に直接回答する"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDAO版の別トランザクション実行(s20)が質問に直接回答する"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "SimpleDbTransactionManagerが必要とするJdbcTransactionFactoryの設定説明(s5)を含む"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "複数トランザクション設定(s7)とロールバック後コールバック(s6)の情報を含む"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "Nablarchバッチの業務トランザクション制御とロールバック後コールバック(s6)の説明を含む"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチのハンドラ構成で業務トランザクション層を示す(s5)"
+      },
+      {
+        "path": "component/handlers/handlers-database-connection-management-handler.json",
+        "reason": "複数DB接続の設定方法(s5)でnamed connectionの利用パターンを補足する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "「現在のトランザクションとは異なるトランザクションでSQLを実行する」— SimpleDbTransactionManager+SimpleDbTransactionExecutorパターンのXML/Javaコード例を含み質問に直接回答する"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "UniversalDAO版の別トランザクション実行パターン(UniversalDao.Transaction)のXML/Javaコード例を含み質問に直接回答する"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "s29が参照するConnectionFactory(BasicDbConnectionFactoryForDataSource等)の設定方法を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-transaction.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "s29/s20が必要とするJdbcTransactionFactory(transactionFactory)の設定例を含み、SimpleDbTransactionManagerへの言及もある"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "ハンドラキューに複数TransactionManagementHandlerを設定して複数トランザクションを制御する方法を示す"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "ロールバック後のコールバックが新しいトランザクションで実行されコミットされる仕組みを説明する"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "Nablarchバッチ固有のLoopHandlerでロールバック後コールバックが新トランザクションで実行される仕組みを説明する"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "LoopHandlerのトランザクション設定(transactionFactory/transactionName)が業務トランザクションの正体を示す"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "都度起動バッチのハンドラ構成でトランザクションループ制御ハンドラが業務トランザクション層であることを示す"
+      },
+      {
+        "file": "component/handlers/handlers-database-connection-management-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "named connectionの設定とDbConnectionContext.getConnection(name)の利用パターンを示す"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 342589,
+    "duration_api_ms": 340279,
+    "num_turns": 7,
+    "total_cost_usd": 1.81247215,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6370,
+      "cache_read_input_tokens": 249906,
+      "cache_creation_input_tokens": 42769
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3255,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0034000000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 21587,
+        "outputTokens": 24367,
+        "cacheReadInputTokens": 1241733,
+        "cacheCreationInputTokens": 268343,
+        "webSearchRequests": 0,
+        "costUSD": 1.80907215,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "scenario_id": "qa-03",
+  "description": "会員登録フォームで、メールアドレスと確認用メールアドレスの一致チェックが必要。Nablarchの入力チェックの仕組みでどうやるのかわからない。",
+  "input": "2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes using `@AssertTrue` annotation in Jakarta Bean Validation to perform correlation validation, including a code example showing the `isEqualsMailAddress()` method with `@AssertTrue(message = \"{compareMailAddress}\")` on a form class that checks if mailAddress and confirmMailAddress match. This directly matches the fact stated.",
+      "fact": "Jakarta Bean Validationの@AssertTrueを使って相関バリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Bean Validationの相関バリデーションは@AssertTrueアノテーション付きのBooleanを返すメソッドで実装する",
+        "supported": true
+      },
+      {
+        "claim": "isEqualsMailAddressメソッドでStringUtil.isNullOrEmptyによる未入力チェックを行う実装例",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント設定ファイルにBeanValidationStrategyをvalidationStrategyという名前で定義する",
+        "supported": true
+      },
+      {
+        "claim": "業務アクションに@InjectFormと@OnErrorを設定する",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch Validationの相関バリデーションは@ValidateFor付きのstaticメソッドで実装する",
+        "supported": true
+      },
+      {
+        "claim": "ValidationUtil.validate(context, new String[]{...})で各項目のバリデーションを実施する",
+        "supported": true
+      },
+      {
+        "claim": "context.isValid()でエラー有無を確認し、エラー時は相関バリデーションをスキップする",
+        "supported": true
+      },
+      {
+        "claim": "context.createObject()でフォームオブジェクトを生成する",
+        "supported": true
+      },
+      {
+        "claim": "context.addMessage(\"compareMailAddress\")でエラーメッセージを追加する",
+        "supported": true
+      },
+      {
+        "claim": "Bean Validationではバリデーションの実行順序が保証されないため相関バリデーションが先に呼ばれる場合がある",
+        "supported": true
+      },
+      {
+        "claim": "Bean ValidationのFormクラスのプロパティはすべてString型で定義すること",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch ValidationでsetterにDomainアノテーションを設定する",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有のAPI名・クラス名・設定方法・動作仕様はすべてknowledgeセクションの記載内容と一致しており、fabricatedな情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "相関バリデーション(s11)とウェブアプリケーションでのBean Validation使用方法(s16)を直接カバーするため"
+      },
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "相関バリデーション(s14)のメールアドレス照合例を直接カバーするため"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーションでのバリデーション起動に必須のInjectFormインターセプタの使用方法(s3)を含むため"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーション処理方式の入力値チェック概要(s2)を含むため"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "@AssertTrueを使ったメールアドレス一致確認の相関バリデーション実装例を直接提供するため"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションでBeanValidationを使用するためのBeanValidationStrategy設定方法を提供するため"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "@ValidateForとValidationContextを使ったメールアドレス相関バリデーション実装例を直接提供するため"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションアクションでのInjectFormアノテーション使用方法とバリデーション起動を説明するため"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "Bean Validationを使うためのMessageInterpolator等の設定を提供するため"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "@AssertTrueのmessage属性に指定するメッセージIDの定義方法を説明するため"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "FormクラスのプロパティはString型とすべきという制約を説明するため"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "Nablarch ValidationのValidationManager設定方法を提供するため"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "ValidationUtil.validateの基本使用方法を説明するため"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s21",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでのNablarch ValidationはInjectFormインターセプタを使用すると説明するため"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 161729,
+    "duration_api_ms": 159488,
+    "num_turns": 5,
+    "total_cost_usd": 0.73373285,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 4528,
+      "cache_read_input_tokens": 179148,
+      "cache_creation_input_tokens": 10830
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3269,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003389,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16263,
+        "outputTokens": 10046,
+        "cacheReadInputTokens": 348387,
+        "cacheCreationInputTokens": 113693,
+        "webSearchRequests": 0,
+        "costUSD": 0.73034385,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

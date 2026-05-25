@@ -37,7 +37,7 @@ tools/rbkc/scripts/
 │   ├── converters/ ← フォーマット別 AST → RSTResult 変換
 │   └── docs.py     ← RSTResult → docs MD 生成
 └── verify/         ← 検証実装（create からのインポート禁止）
-    └── verify.py   ← JSON / docs MD / index.toon の品質チェック
+    └── verify.py   ← JSON / docs MD / index.md の品質チェック
 ```
 
 ---

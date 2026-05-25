@@ -1,0 +1,120 @@
+{
+  "scenario_id": "qa-07",
+  "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。",
+  "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「ObjectMapperFactory.create(Person.class, inputStream)でObjectMapperを生成」し、「mapper.read()をnullになるまでループして1行ずつ処理」するという内容が明示されており、事実「ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む」と同じ情報が含まれている。",
+      "fact": "ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "ObjectMapperFactory#createでObjectMapperを生成する",
+        "supported": true
+      },
+      {
+        "claim": "mapper.read()がnullを返すまでループして1件ずつ読み込む",
+        "supported": true
+      },
+      {
+        "claim": "@Csvアノテーションにtype/properties/headers属性を指定する",
+        "supported": true
+      },
+      {
+        "claim": "@CsvFormatでカスタムフォーマットを指定できる",
+        "supported": true
+      },
+      {
+        "claim": "try-with-resourcesでclose処理を自動化できる",
+        "supported": true
+      },
+      {
+        "claim": "InvalidDataFormatExceptionでフォーマット不正を処理する",
+        "supported": true
+      },
+      {
+        "claim": "Java BeansバインドではDataBindConfigは使用できずMapバインド時のみ使用可能",
+        "supported": true
+      },
+      {
+        "claim": "フォーマットセットRFC4180はヘッダなし(false)・空行無視false",
+        "supported": false
+      },
+      {
+        "claim": "フォーマットセットEXCELはカンマ区切り・ヘッダなし(false)・空行無視false",
+        "supported": false
+      },
+      {
+        "claim": "フォーマットセットTSVはタブ区切り・ヘッダなし(false)・空行無視false",
+        "supported": false
+      },
+      {
+        "claim": "外部ファイル(アップロードデータなど)を扱う場合はJava BeansクラスのプロパティをすべてString型で定義すること",
+        "supported": false
+      },
+      {
+        "claim": "ObjectMapperはスレッドアンセーフであり複数スレッドで共有しないこと",
+        "supported": false
+      }
+    ],
+    "reason": "フォーマットセット（RFC4180・EXCEL・TSV）の具体的な設定値（ヘッダ有無・空行無視の真偽値）、外部ファイル処理時にプロパティをString型にすべきという注意点、およびObjectMapperのスレッドアンセーフ警告は、提供された知識セクションに裏付けがなくNablarch固有の主張であるため、ハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — フォーマットセット（RFC4180・EXCEL・TSV）の具体的な設定値（ヘッダ有無・空行無視の真偽値）、外部ファイル処理時にプロパティをString型にすべきという注意点、およびObjectMapperのスレッドアンセーフ警告は、提供された知識セクションに裏付けがなくNablarch固有の主張であるため、ハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "component/libraries/libraries-data-bind.json:s21",
+      "component/libraries/libraries-data-bind.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 141217,
+    "duration_api_ms": 139191,
+    "num_turns": 9,
+    "total_cost_usd": 0.52319185,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 3252,
+      "cache_read_input_tokens": 320729,
+      "cache_creation_input_tokens": 33334
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1185,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001315,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5044,
+        "outputTokens": 9287,
+        "cacheReadInputTokens": 394212,
+        "cacheCreationInputTokens": 66447,
+        "webSearchRequests": 0,
+        "costUSD": 0.52187685,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

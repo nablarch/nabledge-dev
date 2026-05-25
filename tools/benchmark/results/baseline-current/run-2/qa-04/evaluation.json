@@ -1,0 +1,118 @@
+{
+  "scenario_id": "qa-04",
+  "description": "Bean Validationに対応したFormクラスの単体テストを書きたい。文字種や桁数のテストケースをどう準備すればいいかわからない。",
+  "input": "Bean ValidationのFormクラスの単体テストを書きたい。テストクラスの作り方とテストデータの準備方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「継承: `nablarch.test.core.db.EntityTestSupport` を継承」と明記されており、コード例でも `public class UserRegistrationFormTest extends EntityTestSupport` として示されている。事実の「EntityTestSupportを継承してテストクラスを作成する」という情報が明確に含まれている。",
+      "fact": "EntityTestSupportを継承してテストクラスを作成する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「テストデータ（Excelファイル）の準備方法」セクションに「テストデータはテストクラスと同じディレクトリに、同じ名前・拡張子のみ`.xlsx`で配置します」と記載されており、テストデータをExcelファイルに記述するという事実が含まれている。",
+      "fact": "テストデータはExcelファイルに記述する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "テストクラスのパッケージはテスト対象のForm/Entityと同じにする",
+        "supported": true
+      },
+      {
+        "claim": "クラス名は<Form名>Test形式にする",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.test.core.db.EntityTestSupportを継承する",
+        "supported": true
+      },
+      {
+        "claim": "testValidateCharsetAndLength(Class, String, String)というメソッドを呼び出してテストを実行する",
+        "supported": false
+      },
+      {
+        "claim": "テストデータExcelファイルはテストクラスと同じディレクトリに同じ名前・拡張子のみ異なる形式で配置する",
+        "supported": true
+      },
+      {
+        "claim": "ExcelシートにpropertyName, allowEmpty, group, min, max, messageIdWhenEmptyInput, messageIdWhenInvalidLength, messageIdWhenNotApplicableカラムを用意する",
+        "supported": true
+      },
+      {
+        "claim": "文字種カラム（半角英字〜外字）の許容値はo（許容）またはx（不許容）で指定する",
+        "supported": true
+      },
+      {
+        "claim": "Bean Validationグループの内部クラスは$区切りのFQCNで指定する",
+        "supported": true
+      },
+      {
+        "claim": "メッセージデータやコードマスタなどの静的マスタデータは個別のテストデータとして作成しない前提",
+        "supported": true
+      },
+      {
+        "claim": "精査テスト用シートとsetter/getter用シートで1シートずつ使用する前提",
+        "supported": true
+      }
+    ],
+    "reason": "ほとんどの主張は知識セクションで裏付けられているが、`testValidateCharsetAndLength(Class, String, String)`というメソッド名は知識セクションに明示されていない（知識セクションはコード例を「本項以降参照」として省略しており、確認不能）。このメソッド名はNablarch固有のAPI名であるため、裏付けなき主張として不確実と判定する。また、`interpolateKey_n`/`interpolateValue_n`カラムが回答から省略されているが、これはハルシネーションではなく情報の欠落である。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — ほとんどの主張は知識セクションで裏付けられているが、`testValidateCharsetAndLength(Class, String, String)`というメソッド名は知識セクションに明示されていない（知識セクションはコード例を「本項以降参照」として省略しており、確認不能）。このメソッド名はNablarch固有のAPI名であるため、裏付けなき主張として不確実と判定する。また、`interpolateKey_n`/`interpolateValue_n`カラムが回答から省略されているが、これはハルシネーションではなく情報の欠落である。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s1",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s2",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s3",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s5",
+      "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 157291,
+    "duration_api_ms": 154415,
+    "num_turns": 6,
+    "total_cost_usd": 0.5496537499999999,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 3794,
+      "cache_read_input_tokens": 228378,
+      "cache_creation_input_tokens": 31153
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1188,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001313,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1681,
+        "outputTokens": 10857,
+        "cacheReadInputTokens": 432955,
+        "cacheCreationInputTokens": 66815,
+        "webSearchRequests": 0,
+        "costUSD": 0.54834075,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

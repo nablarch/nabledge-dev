@@ -11,12 +11,12 @@ RBKC は Nablarch 公式ドキュメント（RST / Markdown / Excel）を **nabl
         ↓ RBKC create
 [知識ファイル (JSON)]  ← AI がキーワード検索で引く索引
 [閲覧用 MD (docs MD)]  ← GitHub 上でそのまま読めるレンダリング
-[検索インデックス (index.toon)] ← 検索対象ファイルの一覧
+[検索インデックス (index.md)] ← セマンティック検索のページ選定に使う索引
 ```
 
 - **知識ファイル (JSON)**: nabledge スキルが `jq` クエリ等で読み込む。`id` / `title` / `content` / `sections[]` を持つ構造体。本書で定義するスキーマに従う。
 - **閲覧用 MD (docs MD)**: JSON と 1:1 対応する Markdown ファイル。GitHub 上で人間が直接読める。内容は JSON の人間可読レンダリングであり、JSON と完全一致が要件（verify QO2 で検証）。
-- **検索インデックス (index.toon)**: 全 JSON ファイルの相対パスを列挙したテキストファイル。nabledge スキルはここを起点に知識ファイルを探す。verify QO4 で網羅性を検証。
+- **検索インデックス (index.md)**: 全 JSON ファイルをカテゴリ別に整理した Markdown ファイル。nabledge スキルのセマンティック検索（Stage 1）がここを起点にページを選定する。verify QO4 で網羅性を検証。
 
 ### 用語
 

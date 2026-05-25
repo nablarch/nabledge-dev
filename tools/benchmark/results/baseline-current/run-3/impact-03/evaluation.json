@@ -1,0 +1,117 @@
+{
+  "scenario_id": "impact-03",
+  "description": "REST APIで登録処理を実装している。入力されたメールアドレスがDB上で重複していないか、バリデーションの段階でチェックしたい。",
+  "input": "Bean Validationの中でDBに問い合わせて重複チェックしたい。カスタムバリデータでDB検索する実装でいいのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する」という事実が明確に含まれている。具体的には、「DBを伴うバリデーションは業務アクションメソッド内で実装してください」「Bean Validationを通常どおり実行（フォームの単項目バリデーション）→バリデーション通過後、業務アクションメソッド内でDBを検索」という実装パターンが示されており、事実と同等の情報が含まれている。",
+      "fact": "データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「根拠」セクションに「Bean Validationの実行中はオブジェクトの値の安全性が保証されていません」と明記されており、事実と同じ内容が含まれている。",
+      "fact": "Bean Validation実行中のオブジェクトの値は安全である保証がない"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "ConstraintValidator（カスタムバリデータ）の中でDB検索する実装はNGである",
+        "supported": true
+      },
+      {
+        "claim": "Bean Validationの実行中はオブジェクトの値の安全性が保証されていない",
+        "supported": true
+      },
+      {
+        "claim": "未検証な値でDB検索を行うとSQLインジェクション等の脆弱性につながるため「明示的に禁止」されている",
+        "supported": false
+      },
+      {
+        "claim": "バリデーション通過後、業務アクションメソッド内でDBを検索して重複チェックを行う",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.exists() というAPIが存在し、存在チェック・重複チェックに使用できる",
+        "supported": false
+      },
+      {
+        "claim": "ValidationUtil#createMessageForProperty というAPIが存在し、エラーメッセージを特定の入力項目に紐づけられる",
+        "supported": false
+      },
+      {
+        "claim": "@InjectForm アノテーションが存在し、form属性とprefix属性を持つ",
+        "supported": false
+      },
+      {
+        "claim": "@OnError アノテーションが存在し、type属性とpath属性を持つ",
+        "supported": false
+      },
+      {
+        "claim": "MessageUtil.createMessage(MessageLevel.ERROR, ...) というAPIが存在する",
+        "supported": false
+      },
+      {
+        "claim": "@AssertTrue は項目間の相関チェック（値同士の比較）に使えるがDB検索を伴うチェックには使用禁止",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションはDBバリデーションを業務アクション側で実装すべき理由（SQLインジェクション脆弱性のリスク）という原則のみを述べており、具体的なNablarch固有APIについては一切言及していない。回答中の「明示的に禁止」という表現は知識セクションの「さけるべき実装」より強い主張であり裏付けなし。UniversalDao.exists()、ValidationUtil#createMessageForProperty、@InjectForm、@OnError、MessageUtil.createMessage等のNablarch固有API・クラス名はいずれも知識セクションに裏付けがなくハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションはDBバリデーションを業務アクション側で実装すべき理由（SQLインジェクション脆弱性のリスク）という原則のみを述べており、具体的なNablarch固有APIについては一切言及していない。回答中の「明示的に禁止」という表現は知識セクションの「さけるべき実装」より強い主張であり裏付けなし。UniversalDao.exists()、ValidationUtil#createMessageForProperty、@InjectForm、@OnError、MessageUtil.createMessage等のNablarch固有API・クラス名はいずれも知識セクションに裏付けがなくハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "processing-pattern/web-application/web-application-getting-started-project-update.json:s1",
+      "component/libraries/libraries-bean-validation.json:s11"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 185039,
+    "duration_api_ms": 181918,
+    "num_turns": 5,
+    "total_cost_usd": 0.9962200499999999,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 2753,
+      "cache_read_input_tokens": 184425,
+      "cache_creation_input_tokens": 31165
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1189,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013289999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 37,
+        "outputTokens": 11296,
+        "cacheReadInputTokens": 1133171,
+        "cacheCreationInputTokens": 129437,
+        "webSearchRequests": 0,
+        "costUSD": 0.9948910499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

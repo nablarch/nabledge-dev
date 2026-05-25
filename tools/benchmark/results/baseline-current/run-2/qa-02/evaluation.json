@@ -1,0 +1,120 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答中に「DB読み込みには `DatabaseRecordReader` を使用します。SELECT文の結果セットを1件ずつ読み込み、アクションクラスに渡します。」と明記されており、DatabaseRecordReaderでデータベースからデータを読み込むという事実が含まれている。",
+      "fact": "DatabaseRecordReaderでデータベースからデータを読み込む"
+    },
+    {
+      "verdict": "ABSENT",
+      "reason": "回答にはNablarchバッチのアクションクラスに関する説明があるが、「BatchActionを継承したアクションクラスを実装する」という具体的な事実（BatchActionクラスを継承して実装するという記述）は含まれていない。回答ではアクションクラスの責務について説明しているが、BatchActionを継承することには言及していない。",
+      "fact": "BatchActionを継承したアクションクラスを実装する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "都度起動バッチはプロセスを都度起動して処理を実行し、日次や月次などの定期的なバッチ処理に使用する",
+        "supported": true
+      },
+      {
+        "claim": "DB接続ありの都度起動バッチの最小ハンドラ構成はNo.1〜9の9ハンドラで構成される（ステータスコード変換、グローバルエラー、DB接続管理×2、トランザクション制御、リクエストディスパッチ、マルチスレッド実行制御、トランザクションループ制御、データリードハンドラ）",
+        "supported": true
+      },
+      {
+        "claim": "DatabaseRecordReaderはDB読み込み用の標準データリーダである",
+        "supported": true
+      },
+      {
+        "claim": "標準アクションクラスとしてBatchAction、FileBatchAction、NoInputDataBatchAction、AsyncMessageSendActionが提供されている",
+        "supported": true
+      },
+      {
+        "claim": "トランザクションループ制御ハンドラのJavaクラス名は nablarch.fw.handler.LoopHandler である",
+        "supported": false
+      },
+      {
+        "claim": "コミット間隔の設定プロパティ名は commitInterval である",
+        "supported": false
+      },
+      {
+        "claim": "DB to DBのアクションクラスではUniversalDaoを使用してINSERT/UPDATEを行う",
+        "supported": false
+      },
+      {
+        "claim": "Jakarta BatchのDB読み込みパターンはChunkタイプを使用し、BatchletはSQL1つで処理が完結するタスク指向向けである",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta BatchのChunk実装クラス構成はItemReader、ItemProcessor、ItemWriterで構成される",
+        "supported": true
+      }
+    ],
+    "reason": "ハンドラキュー構成・データリーダ・アクションクラスの記述は知識セクションと一致しており正確。しかし、コミット間隔設定のXMLスニペットで使用されているJavaクラス名 'nablarch.fw.handler.LoopHandler' およびプロパティ名 'commitInterval' は知識セクションに裏付けがなく、Nablarch固有の主張として未確認。また 'UniversalDao' もNablarch固有のAPIであるが知識セクションには言及がなく未確認。これら3点をハルシネーションとして判定する。"
+  },
+  "scores": {
+    "accuracy": 0.5,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[1]: ABSENT — BatchActionを継承したアクションクラスを実装する",
+    "hallucination: FAIL — ハンドラキュー構成・データリーダ・アクションクラスの記述は知識セクションと一致しており正確。しかし、コミット間隔設定のXMLスニペットで使用されているJavaクラス名 'nablarch.fw.handler.LoopHandler' およびプロパティ名 'commitInterval' は知識セクションに裏付けがなく、Nablarch固有の主張として未確認。また 'UniversalDao' もNablarch固有のAPIであるが知識セクションには言及がなく未確認。これら3点をハルシネーションとして判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s2",
+      "processing-pattern/jakarta-batch/jakarta-batch-application-design.json:s2",
+      "component/handlers/handlers-loop-handler.json:s4",
+      "component/handlers/handlers-loop-handler.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 239916,
+    "duration_api_ms": 237736,
+    "num_turns": 6,
+    "total_cost_usd": 0.8946382500000001,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 5202,
+      "cache_read_input_tokens": 231433,
+      "cache_creation_input_tokens": 34039
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1194,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013289999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13391,
+        "outputTokens": 16296,
+        "cacheReadInputTokens": 695225,
+        "cacheCreationInputTokens": 106701,
+        "webSearchRequests": 0,
+        "costUSD": 0.89330925,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

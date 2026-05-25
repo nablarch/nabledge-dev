@@ -1,0 +1,103 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s21「可変条件を持つSQLを実行する」が質問に直接回答するメインページ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "reason": "ウェブアプリの検索機能実装例として$if構文の実際の使い方を示す"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDAO経由でのSQL実行（推奨方式）のコンテキスト"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/*",
+        "reason": "バッチ処理方式であり、ウェブアプリケーションと無関係"
+      },
+      {
+        "path": "component/handlers/*",
+        "reason": "ハンドラの設定であり、SQL動的構築とは無関係"
+      },
+      {
+        "path": "about/*",
+        "reason": "概要・アーキテクチャ説明であり、実装方法の情報を含まない"
+      },
+      {
+        "path": "check/security-check/*",
+        "reason": "セキュリティチェックリストであり、実装方法とは異なる目的"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "バリデーション機能であり、SQL条件の動的構築とは直接関係しない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "$if構文の仕様・制約・コード例が記載されており、質問に直接答える"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "high",
+        "reason": "in句の可変条件（$if + []）の記述方法が記載されており、実務で頻出するユースケース"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ウェブアプリの検索機能でのSQL・Action実装例が$if構文を使った具体的なコードを示す"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで実装方法は含まない"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s12",
+        "reason": "SQLをファイルで管理する一般的な説明であり、可変条件の実装詳細はs21に任せられる"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "reason": "動的SQL構築の機能概要のみで、詳細はs21/s22で補完済み"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s22",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-database.json:s21",
+          "reason": "$if構文の仕様・除外条件・JDBCラッパーのコード例として使用"
+        },
+        {
+          "ref": "libraries-database.json:s22",
+          "reason": "in句の可変条件（:param[]と$if併用）の仕様とコード例として使用"
+        },
+        {
+          "ref": "web-application-getting-started-project-search.json:s1",
+          "reason": "UniversalDAOを使ったウェブアプリ検索機能での実装例（SQL・Actionコード）として使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

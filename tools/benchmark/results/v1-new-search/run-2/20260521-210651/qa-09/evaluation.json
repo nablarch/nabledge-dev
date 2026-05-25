@@ -1,0 +1,167 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答中に「アプリケーションコードでは `BusinessDateUtil` を使用して業務日付を取得します。」と明記されており、ファクトの内容と一致している。",
+      "fact": "BusinessDateUtilを使用して業務日付を取得する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that business dates are managed in a database table with multiple segments (区分), and includes the full BasicBusinessDateProvider component configuration XML. It also mentions that BasicBusinessDateProvider must be added to the initialization list, satisfying all aspects of the fact.",
+      "fact": "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "BasicSystemTimeProvider をコンポーネント定義に設定する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント名は systemTimeProvider と指定する",
+        "supported": true
+      },
+      {
+        "claim": "SystemTimeUtil を使用してOS日時を取得する",
+        "supported": true
+      },
+      {
+        "claim": "業務日付はDBテーブルで管理する",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProvider をコンポーネント定義に設定する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント名は businessDateProvider と指定する",
+        "supported": true
+      },
+      {
+        "claim": "テーブルレイアウトは区分(PK)と日付の2列構成",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateUtil を使用して業務日付を取得する",
+        "supported": true
+      },
+      {
+        "claim": "provider.setDate(segment, date) で業務日付を更新する",
+        "supported": true
+      },
+      {
+        "claim": "システムプロパティ -DBasicBusinessDateProvider.batch=20160317 で業務日付を上書きできる",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-common-jdbc モジュールへの依存が必要",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProvider は初期化対象のリストに設定する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "ウェブアプリケーションのように全機能が1プロセスで動く場合は、DBのデータを直接変更する方法が簡単",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有クレームはナレッジセクションの内容と一致しており、fabricated情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-date.json",
+        "reason": "「日付管理」ページで、システム日時(OS日時)と業務日付の両方を管理する機能を直接カバーしている"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "システム日時の設定方法を直接説明しており、実装に必須"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "システム日時の取得APIを説明しており、実装に必須"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "業務日付管理機能の設定方法（DBテーブル定義とコンポーネント定義）を直接説明"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "業務日付の取得APIを説明しており、実装に必須"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "締め処理での業務日付上書き（再実行時対応）を説明しており質問の要件に直接関係"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s10",
+        "relevance": "high",
+        "reason": "業務日付の更新（日付送り）APIを説明しており締め処理実装に必須"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "システム日時と業務日付の切り替え機能の概要を説明する背景情報"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 73241,
+    "duration_api_ms": 71933,
+    "num_turns": 5,
+    "total_cost_usd": 0.50591155,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 4629,
+      "cache_read_input_tokens": 310686,
+      "cache_creation_input_tokens": 90641
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3219,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003349,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 4629,
+        "cacheReadInputTokens": 310686,
+        "cacheCreationInputTokens": 90641,
+        "webSearchRequests": 0,
+        "costUSD": 0.5025625499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

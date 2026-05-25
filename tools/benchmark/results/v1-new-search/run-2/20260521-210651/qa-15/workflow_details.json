@@ -1,0 +1,183 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "XSSを含む脆弱性別のNablarch対応状況チェックリスト。s21-s30がXSSの対策項目を直接カバー"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "JSPカスタムタグのHTMLエスケープ動作を説明。質問「カスタムタグを使えばサニタイジングされるのか」への直接回答"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "セキュリティヘッダ設定とCSP対応を提供するハンドラ。XSSの保険的対策として重要"
+      },
+      {
+        "path": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "reason": "JSP静的解析ツール。カスタムタグ以外によるエスケープ漏れを検出できる補完的セキュリティ対策"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/",
+        "reason": "処理方式がバッチ。質問はウェブアプリケーション限定"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/",
+        "reason": "処理方式がRESTful。JSPカスタムタグはウェブアプリケーション専用"
+      },
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "reason": "CSRF対策であり、XSSとは別の脆弱性"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "CSPへの参照リンクはあるが実質的な情報はsecure-handlerで既にカバー。上位10件優先のため除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "カスタムタグがサニタイジングを行うこと、5-(ii)-(iv)はプロジェクト対応が必要なことを明示"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s22",
+        "relevance": "high",
+        "reason": "URL出力の検証はNablarch対応なし（×）。カバーできない範囲の明示"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s23",
+        "relevance": "high",
+        "reason": "script要素の動的生成禁止はNablarch対応なし（×）"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s26",
+        "relevance": "high",
+        "reason": "HTMLテキスト入力許可の場合はNablarch対応なし（×）。カスタムタグのエスケープが機能しないケース"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s28",
+        "relevance": "high",
+        "reason": "Content-Type charset設定はNablarch対応（〇）。全ウェブアプリ共通の重要対策"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s30",
+        "relevance": "high",
+        "reason": "セキュアハンドラによるXSS保険的対策レスポンスヘッダはNablarch対応（〇）"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "カスタムタグがデフォルトHTMLエスケープすること、JavaScriptエスケープは非対応という制限を明示"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s50",
+        "relevance": "high",
+        "reason": "HTMLエスケープ変換内容の詳細。EL式はエスケープしないという重要な注意事項"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s27",
+        "relevance": "high",
+        "reason": "rawWrite/prettyPrintタグはHTMLエスケープなし。XSS脆弱性の直接要因になると明示"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSPがXSSインジェクション攻撃を検知・軽減する仕組みとカスタムタグとの連携方法"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s25",
+        "relevance": "partial",
+        "reason": "上位10件優先のため除外。保険的対策の入力値チェックはs28/s30で概念をカバー済み"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "上位10件超過のため除外。CSP設定の具体的実装だがs6で概要カバー済み"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "上位10件超過のため除外。nonceを使ったCSP設定の詳細"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s21",
+      "check/security-check/security-check-2.チェックリスト.json:s22",
+      "check/security-check/security-check-2.チェックリスト.json:s23",
+      "check/security-check/security-check-2.チェックリスト.json:s26",
+      "check/security-check/security-check-2.チェックリスト.json:s28",
+      "check/security-check/security-check-2.チェックリスト.json:s30",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s50",
+      "component/libraries/libraries-tag.json:s27",
+      "component/handlers/handlers-secure-handler.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "security-check-2.チェックリスト.json:s21",
+          "reason": "カスタムタグによる5-(i)根本的解決の対応状況と範囲を回答の骨格として使用"
+        },
+        {
+          "ref": "security-check-2.チェックリスト.json:s22",
+          "reason": "URL出力対策がNablarch非対応（×）という事実を対応範囲表に使用"
+        },
+        {
+          "ref": "security-check-2.チェックリスト.json:s23",
+          "reason": "script動的生成禁止がNablarch非対応（×）という事実を対応範囲表に使用"
+        },
+        {
+          "ref": "security-check-2.チェックリスト.json:s26",
+          "reason": "HTMLテキスト入力許可ケースがNablarch非対応（×）という事実を対応範囲表に使用"
+        },
+        {
+          "ref": "security-check-2.チェックリスト.json:s28",
+          "reason": "Content-Type charset設定がNablarch対応（〇）という事実を対応範囲表に使用"
+        },
+        {
+          "ref": "security-check-2.チェックリスト.json:s30",
+          "reason": "セキュアハンドラによる保険的対策ヘッダがNablarch対応（〇）という事実を対応範囲表に使用"
+        },
+        {
+          "ref": "libraries-tag.json:s2",
+          "reason": "カスタムタグのHTMLエスケープ動作の説明とJavaScriptエスケープ非提供の注意事項に使用"
+        },
+        {
+          "ref": "libraries-tag.json:s50",
+          "reason": "HTMLエスケープ変換内容の一覧表とEL式使用禁止の注意事項に使用"
+        },
+        {
+          "ref": "libraries-tag.json:s27",
+          "reason": "rawWrite/prettyPrintタグのXSSリスク警告を注意点セクションに使用"
+        },
+        {
+          "ref": "handlers-secure-handler.json:s6",
+          "reason": "CSPによるXSS対策の概要説明に使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

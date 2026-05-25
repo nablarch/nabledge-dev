@@ -1,0 +1,203 @@
+{
+  "scenario_id": "qa-11b",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer states that 'JaxRsResponseHandler が後続ハンドラで発生した例外/エラーを捉え、ErrorResponseBuilder でレスポンスを構築する' which directly conveys that JaxRsResponseHandler generates error responses corresponding to exceptions, matching the fact.",
+      "fact": "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「エラーログの出力」セクションに、「JaxRsResponseHandlerのerrorLogWriterプロパティに設定したJaxRsErrorLogWriterが担う」と記載されており、例外に応じたログ出力をJaxRsErrorLogWriterが行うという事実が含まれている。",
+      "fact": "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "JaxRsResponseHandlerが後続ハンドラで発生した例外/エラーを捉える",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderでエラーレスポンスを構築する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsErrorLogWriterでエラーログを出力する",
+        "supported": true
+      },
+      {
+        "claim": "発生した例外がHttpErrorResponseの場合はHttpErrorResponse#getResponse()の内容がそのまま返る",
+        "supported": true
+      },
+      {
+        "claim": "errorResponseBuilderプロパティへの設定例(sample.SampleErrorResponseBuilder)",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderを継承してカスタマイズできる",
+        "supported": true
+      },
+      {
+        "claim": "SampleErrorResponseBuilderでApplicationExceptionを判定しcreateResponseBodyを呼ぶ実装例",
+        "supported": true
+      },
+      {
+        "claim": "errorLogWriterプロパティにJaxRsErrorLogWriterを設定する",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerはできるだけハンドラキューの先頭に配置する",
+        "supported": true
+      },
+      {
+        "claim": "ServiceError(サブクラス含む)はServiceError#writeLogを呼び出してログ出力し、ログレベルは実装クラス依存",
+        "supported": true
+      },
+      {
+        "claim": "Result.Error(サブクラス含む)はFATALレベルでログ出力しResult.Errorを返却",
+        "supported": true
+      },
+      {
+        "claim": "それ以外の例外はFATALレベルでログ出力しInternalErrorを生成して返却",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsAccessLogHandlerがリクエスト処理の開始時と終了時にINFOレベルでHTTP_ACCESSロガーへアクセスログを出力する",
+        "supported": true
+      },
+      {
+        "claim": "終了時にはステータスコードも含まれる",
+        "supported": true
+      },
+      {
+        "claim": "障害通知ログはFATAL/ERRORレベルでMONITORロガーへ出力",
+        "supported": true
+      },
+      {
+        "claim": "障害解析ログはFATAL/ERRORレベルでクラス名ロガーへ出力",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderの処理中に例外が発生した場合、フレームワークはWARNレベルでログ出力しステータスコード500のレスポンスを生成する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張（クラス名、プロパティ名、動作仕様、設定例、ログ出力方針）はナレッジセクションの記述によって裏付けられている。ServiceErrorのログレベルを結論部で「FATALレベル」と単純化している箇所があるが、詳細テーブルでは「実装クラス依存」と正確に記述されており、捏造とは見なせない。GlobalErrorHandlerのエラークラス処理（ThreadDeath、StackOverflowError等）の省略は情報の欠落であり捏造ではない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-jaxrs-response-handler.json",
+        "reason": "RESTful専用レスポンスハンドラで、エラーレスポンス生成とエラーログ出力の主要機能を持つ"
+      },
+      {
+        "path": "component/handlers/handlers-global-error-handler.json",
+        "reason": "未捕捉の例外/エラーを捕捉してログ出力するグローバルエラーハンドラの動作を説明する"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスのエラー時レスポンスに関する機能詳細セクションを含む"
+      },
+      {
+        "path": "component/libraries/libraries-jaxrs-access-log.json",
+        "reason": "RESTful用アクセスログの出力方針と設定方法を説明する"
+      },
+      {
+        "path": "component/libraries/libraries-failure-log.json",
+        "reason": "障害ログの出力方針（通知ログ・解析ログの分離）を説明する"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-access-log-handler.json",
+        "reason": "RESTful用アクセスログハンドラの制約と動作を説明する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ErrorResponseBuilderによるエラーレスポンス生成の仕組みを直接説明している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "JaxRsErrorLogWriterによるエラーログ出力の仕組みを直接説明している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "エラーレスポンスにメッセージを設定するカスタマイズ実装例を示している"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "例外種別に応じたログ出力レベルと処理内容の表を含み、仕組みの理解に不可欠"
+      },
+      {
+        "file": "component/libraries/libraries-jaxrs-access-log.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "RESTful用アクセスログの出力方針（ロガー名・ログレベル）と設定例を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-failure-log.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "障害ログの通知ログと解析ログの分離方針と設定例を説明している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-access-log-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "アクセスログ設定の参照先を示すが内容は他セクションへの参照のみ"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 108689,
+    "duration_api_ms": 105336,
+    "num_turns": 10,
+    "total_cost_usd": 0.7298799000000001,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 7352,
+      "cache_read_input_tokens": 705808,
+      "cache_creation_input_tokens": 107850
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3247,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003387,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 7352,
+        "cacheReadInputTokens": 705808,
+        "cacheCreationInputTokens": 107850,
+        "webSearchRequests": 0,
+        "costUSD": 0.7264929000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

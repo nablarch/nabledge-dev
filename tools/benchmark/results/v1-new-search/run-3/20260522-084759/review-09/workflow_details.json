@@ -1,0 +1,162 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "セキュアハンドラはCSP設定の主要なコンポーネントであり、ContentSecurityPolicyHeader の設定方法が含まれる"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "JSPカスタムタグのCSP対応（nonce埋め込み、cspNonceタグ）が含まれる"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーション機能詳細にCSP対応(s21)のセクションが存在する"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティ対応目的のため、セキュリティチェックリストが関連候補"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/*",
+        "reason": "バッチ処理方式であり、ウェブアプリケーションのCSP設定とは無関係"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/*",
+        "reason": "Jakartaバッチ処理方式であり無関係"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/*",
+        "reason": "RESTfulウェブサービスであり、質問はウェブアプリケーション指定"
+      },
+      {
+        "path": "component/adapters/*",
+        "reason": "アダプタ群はCSP設定に直接関係しない"
+      },
+      {
+        "path": "development-tools/*",
+        "reason": "開発ツールはCSP設定に関係しない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSP対応の概要と全体の仕組みを説明している"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "固定CSPヘッダの具体的な設定方法とXMLコード例を含む"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "nonceを使ったCSP設定方法（generateCspNonce、$cspNonceSource$）を含む"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "report-onlyモードの設定方法を含む"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s38",
+        "relevance": "high",
+        "reason": "nonceを有効にした際のJSPカスタムタグの動作変化を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s39",
+        "relevance": "high",
+        "reason": "cspNonceタグで任意の要素にnonceを埋め込む方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s40",
+        "relevance": "partial",
+        "reason": "CSP対応時にJavaScriptを追加する際の注意点と実装パターンを説明している"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "SecureHandlerの制約（HTTPレスポンスハンドラより後ろに設定）を説明している"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s4",
+        "reason": "デフォルトヘッダの変更方法であり、CSP設定の直接的な内容ではない"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s5",
+        "reason": "カスタムレスポンスヘッダの追加方法であり、CSP特有の情報ではない"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s15",
+        "reason": "サブミット前処理の追加方法でありCSP設定の主要内容ではない（注意事項として言及あり）"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "component/libraries/libraries-tag.json:s38",
+      "component/libraries/libraries-tag.json:s39",
+      "component/libraries/libraries-tag.json:s40"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "handlers-secure-handler.json:s6",
+          "reason": "CSP機能の概要とSecureHandlerとContentSecurityPolicyHeaderの組み合わせを回答の基礎として使用"
+        },
+        {
+          "ref": "handlers-secure-handler.json:s7",
+          "reason": "固定CSPヘッダ設定のXML設定例を回答に引用"
+        },
+        {
+          "ref": "handlers-secure-handler.json:s8",
+          "reason": "nonceを使ったCSP設定のXML設定例とプレースホルダーの説明を回答に引用"
+        },
+        {
+          "ref": "handlers-secure-handler.json:s9",
+          "reason": "report-onlyモードのXML設定例を回答に引用"
+        },
+        {
+          "ref": "libraries-tag.json:s38",
+          "reason": "nonce有効時のJSPカスタムタグの動作変化リストを回答に使用"
+        },
+        {
+          "ref": "libraries-tag.json:s39",
+          "reason": "cspNonceタグの使用例（style要素へのnonce設定）を回答に引用"
+        },
+        {
+          "ref": "libraries-tag.json:s40",
+          "reason": "onclick属性などインラインスクリプトを避けるべきという注意点を回答に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "handlers-secure-handler.json:s3",
+          "reason": "SecureHandlerの制約（HTTPレスポンスハンドラより後ろに設定）を注意点として簡潔に言及したが、詳細設定例は未使用"
+        }
+      ]
+    }
+  }
+}

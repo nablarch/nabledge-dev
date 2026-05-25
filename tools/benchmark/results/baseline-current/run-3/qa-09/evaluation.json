@@ -1,0 +1,122 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「業務日付の取得」セクションに`BusinessDateUtil.getDate()`および`BusinessDateUtil.getDate(\"closing\")`という具体的なコード例が示されており、BusinessDateUtilを使用して業務日付を取得することが明確に含まれている。",
+      "fact": "BusinessDateUtilを使用して業務日付を取得する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「データベースのテーブルを使って複数の業務日付を管理する」という記述があり、BasicBusinessDateProviderのコンポーネント定義も明示されている。事実の両要素（データベースで複数の業務日付を管理、BasicBusinessDateProviderの設定が必要）が回答に含まれている。",
+      "fact": "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "業務日付管理機能はデータベースのテーブルで区分(PK)と日付の2カラム構成で管理する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント名は businessDateProvider、クラスは nablarch.core.date.BasicBusinessDateProvider",
+        "supported": true
+      },
+      {
+        "claim": "プロパティ tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManager を設定する",
+        "supported": true
+      },
+      {
+        "claim": "初期化リスト(initializeList)への登録が必要",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateUtil.getDate() で業務日付を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateUtil.getDate(\"closing\") のように区分を指定して取得できる",
+        "supported": true
+      },
+      {
+        "claim": "provider.setDate(segment, date) で業務日付を更新できる",
+        "supported": false
+      },
+      {
+        "claim": "-DBasicBusinessDateProvider.batch=20160317 というJVM引数でバッチ再実行時に業務日付を上書きできる",
+        "supported": false
+      },
+      {
+        "claim": "システム日時の取得には SystemTimeUtil を使用する",
+        "supported": false
+      },
+      {
+        "claim": "nablarch-common-jdbc の依存追加が必要",
+        "supported": false
+      }
+    ],
+    "reason": "BusinessDateProviderのsetDate()メソッドの存在、-DBasicBusinessDateProvider.batch JVMオプションによる日付上書き機能、SystemTimeUtilクラス名、nablarch-common-jdbcの依存追加という4点が知識セクションに裏付けなく主張されており、ハルシネーションの可能性がある。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — BusinessDateProviderのsetDate()メソッドの存在、-DBasicBusinessDateProvider.batch JVMオプションによる日付上書き機能、SystemTimeUtilクラス名、nablarch-common-jdbcの依存追加という4点が知識セクションに裏付けなく主張されており、ハルシネーションの可能性がある。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s8",
+      "component/libraries/libraries-date.json:s9",
+      "component/libraries/libraries-date.json:s10",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s12",
+      "component/libraries/libraries-date.json:s13"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 105344,
+    "duration_api_ms": 103045,
+    "num_turns": 8,
+    "total_cost_usd": 0.4716478499999999,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 3251,
+      "cache_read_input_tokens": 270424,
+      "cache_creation_input_tokens": 30044
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1191,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001326,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1247,
+        "outputTokens": 6593,
+        "cacheReadInputTokens": 495782,
+        "cacheCreationInputTokens": 58387,
+        "webSearchRequests": 0,
+        "costUSD": 0.47032184999999993,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

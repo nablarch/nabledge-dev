@@ -1,0 +1,121 @@
+{
+  "scenario_id": "pre-01",
+  "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい",
+  "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「javaコマンドで`nablarch.fw.launcher.Main`クラスを起動する」という記述があり、実際の起動コマンド例（`java nablarch.fw.launcher.Main ...`）も示されている。これはjavaコマンドから直接起動するスタンドアロンアプリケーションとして実行するという事実と同等の情報を含んでいる。",
+      "fact": "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する」という事実が明確に含まれている。具体的には「-requestPath には『アクションクラス名/リクエストID』の形式で指定します」という説明、書式「-requestPath=アクションのクラス名/リクエストID」、および具体例「-requestPath=com.sample.SampleBatchAction/BATCH0001」が示されており、事実と同一の情報が記載されている。",
+      "fact": "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Nablarchバッチアプリケーションはnablarchのfw.launcher.Mainクラスをjavaコマンドで起動する",
+        "supported": true
+      },
+      {
+        "claim": "-requestPathの書式は「アクションのクラス名/リクエストID」である",
+        "supported": true
+      },
+      {
+        "claim": "DispatchHandlerがリクエストパスをもとにアクションクラスを特定する",
+        "supported": true
+      },
+      {
+        "claim": "アクションクラスがデータレコード1件ごとに業務ロジックを実行する",
+        "supported": true
+      },
+      {
+        "claim": "Mainクラスがハンドラキューをおよびシステムリポジトリ・ログの初期化を行う",
+        "supported": true
+      },
+      {
+        "claim": "リクエストIDは同一業務アクションクラスを複数プロセス起動する場合の識別子となる",
+        "supported": true
+      },
+      {
+        "claim": "-diConfig・-requestPath・-userId の3オプションは必須であり、いずれかが欠けると即座に異常終了する",
+        "supported": false
+      },
+      {
+        "claim": "必須オプション欠落時の終了コードが127である",
+        "supported": false
+      },
+      {
+        "claim": "-userIdオプションの値がセッションコンテキスト変数 user.id に格納される",
+        "supported": false
+      },
+      {
+        "claim": "リクエストIDは省略可能な場合がある（例: -requestPath SampleBatch）",
+        "supported": false
+      }
+    ],
+    "reason": "-diConfig/-requestPath/-userIdの3つが必須でいずれか欠落時に終了コード127で異常終了するという主張、および-userIdがuser.idに格納されるという主張は、知識セクションに一切記載がなく裏付けのないハルシネーションである。また、リクエストIDが省略可能という主張も知識セクションでは言及されていない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — -diConfig/-requestPath/-userIdの3つが必須でいずれか欠落時に終了コード127で異常終了するという主張、および-userIdがuser.idに格納されるという主張は、知識セクションに一切記載がなく裏付けのないハルシネーションである。また、リクエストIDが省略可能という主張も知識セクションでは言及されていない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2",
+      "component/handlers/handlers-main.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+      "setup/blank-project/blank-project-setup-NablarchBatch.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "component/handlers/handlers-main.json:s4",
+      "development-tools/testing-framework/testing-framework-02-requestunittest-batch.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 132104,
+    "duration_api_ms": 130177,
+    "num_turns": 8,
+    "total_cost_usd": 0.7701610500000001,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 3417,
+      "cache_read_input_tokens": 253834,
+      "cache_creation_input_tokens": 47568
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1179,
+        "outputTokens": 42,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013889999999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 998,
+        "outputTokens": 8515,
+        "cacheReadInputTokens": 669931,
+        "cacheCreationInputTokens": 116553,
+        "webSearchRequests": 0,
+        "costUSD": 0.7687720500000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

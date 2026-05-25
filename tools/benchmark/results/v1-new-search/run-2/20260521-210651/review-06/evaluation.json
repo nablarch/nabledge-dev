@@ -1,0 +1,195 @@
+{
+  "scenario_id": "review-06",
+  "description": "REST APIのリソースクラスでJaxRsHttpRequestからクエリーパラメータを取得する処理を書いている。URLパスの一部をパスパラメータとして使う箇所もある。",
+  "input": "REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には、XMLルート定義方式（`:paramName`記法）と`@Path`アノテーション方式（`{paramName}`記法）の両方でルーティング設定時にパスパラメータの名前を定義し、リソースクラスのメソッドで`JaxRsHttpRequest#getPathParam(パラメータ名)`を使って取得する方法が明示されている。これはファクトの「パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る」という内容を含んでいる。",
+      "fact": "パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "Answerの「クエリパラメータの取得」セクションに「リソースクラスでは `JaxRsHttpRequest#getParamMap()` でパラメータを取得し」と明記されており、クエリーパラメータをJaxRsHttpRequestから取得することが示されている。また注意点にも「パスパラメータ・クエリパラメータはともに `JaxRsHttpRequest` 経由で取得すること」と記載されている。",
+      "fact": "クエリーパラメータはJaxRsHttpRequestから取得する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "パスパラメータはJaxRsHttpRequest#getPathParam()で取得する",
+        "supported": true
+      },
+      {
+        "claim": "クエリパラメータはJaxRsHttpRequest#getParamMap()で取得する",
+        "supported": true
+      },
+      {
+        "claim": "ルーティングはXMLルート定義ファイルか@Pathアノテーションの2方式",
+        "supported": true
+      },
+      {
+        "claim": "RoutesMapping をディスパッチハンドラとしてXMLルーティングに使用する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント名はpackageMappingとする",
+        "supported": true
+      },
+      {
+        "claim": "basePackage属性にアクションクラスのパッケージを設定する",
+        "supported": true
+      },
+      {
+        "claim": "RoutesMappingを初期化対象リストに登録する",
+        "supported": true
+      },
+      {
+        "claim": "クラスパス直下のroutes.xmlにURLとアクションのマッピングを記述する",
+        "supported": true
+      },
+      {
+        "claim": "@PathアノテーションにはPathOptionsProviderRoutesMappingを使用する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsPathOptionsProviderにapplicationPathとbasePackageを設定する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsMethodBinderFactoryとJerseyJaxRsHandlerListFactoryを使用する",
+        "supported": true
+      },
+      {
+        "claim": "XMLルート定義では:paramName記法でパスパラメータを定義し正規表現で書式制限できる",
+        "supported": true
+      },
+      {
+        "claim": "@Pathアノテーションでは{paramName}または{paramName : 正規表現}でパスパラメータを定義する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy()でクエリパラメータをFormクラスにマッピングする",
+        "supported": true
+      },
+      {
+        "claim": "ValidatorUtil.validate()でバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "@PathParamと@QueryParamは使用できない",
+        "supported": true
+      },
+      {
+        "claim": "@Pathアノテーション方式はJBoss/WildflyなどVFSを使用するサーバでは使用できない",
+        "supported": true
+      },
+      {
+        "claim": "PathOptionsProviderRoutesMapping も初期化対象リストへの登録が必要",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有のAPI名・クラス名・設定方法・動作仕様はすべてナレッジセクションの記述と一致しており、ハルシネーションは確認されない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "reason": "パスパラメータ・クエリパラメータの取得方法を直接扱うページ"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "reason": "ルーティング設定（RoutesMapping・@Pathアノテーション方式）を扱うページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細として URI とルーティングの参照先を示すページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "パスパラメータの取得方法（ルーティング定義・getPathParam()）を直接説明している"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "クエリパラメータの取得方法（getParamMap()・BeanUtil）を直接説明している"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "RoutesMapping（XMLルート定義方式）のディスパッチハンドラ設定を説明している"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "@PathアノテーションによるマッピングのJava実装方法を説明している"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "@Path方式でのパスパラメータ定義（{param}・正規表現）を説明している"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "@Path方式で必要なPathOptionsProviderRoutesMappingの設定を説明している"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "JaxRsHttpRequestを引数に取るメソッドシグネチャの背景説明として必要"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 113285,
+    "duration_api_ms": 111687,
+    "num_turns": 8,
+    "total_cost_usd": 0.5833105000000001,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6597,
+      "cache_read_input_tokens": 363630,
+      "cache_creation_input_tokens": 99158
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3275,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0034000000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 6597,
+        "cacheReadInputTokens": 363630,
+        "cacheCreationInputTokens": 99158,
+        "webSearchRequests": 0,
+        "costUSD": 0.5799105,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

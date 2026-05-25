@@ -1,0 +1,132 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の結論部分に「NablarchのJSPカスタムタグ（`<n:write>` 等）を使用している限り、HTMLエスケープ（サニタイジング）は自動で行われ、XSSの根本的解決（IPA 5-(i)）が可能です」と明記されており、事実の内容（カスタムタグのサニタイジングによりXSSの根本的解決が可能）が含まれている。",
+      "fact": "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "カスタムタグ（<n:write>等）はデフォルトでHTMLエスケープ（サニタイジング）を行う",
+        "supported": true
+      },
+      {
+        "claim": "5-(i) 全要素にエスケープ処理: カスタムタグ → 〇",
+        "supported": true
+      },
+      {
+        "claim": "5-(ii) URLスキーム制限: × (プロジェクト対応)",
+        "supported": true
+      },
+      {
+        "claim": "5-(iii) script要素の動的生成禁止: × (プロジェクト対応)",
+        "supported": true
+      },
+      {
+        "claim": "5-(v) 入力値チェック: 入力値チェック機能 → 〇",
+        "supported": true
+      },
+      {
+        "claim": "JSP静的解析ツール（JspStaticAnalysis）でエスケープ漏れを防止できる",
+        "supported": true
+      },
+      {
+        "claim": "5-(ii)〜(iv)はプロジェクト側で対応が必要",
+        "supported": true
+      },
+      {
+        "claim": "HTMLテキスト入力時はOSSのHTMLパーサによるサニタイズが必要",
+        "supported": true
+      },
+      {
+        "claim": "確認画面等では改行→<br />、半角スペース→&nbsp; の変換も追加で行われる",
+        "supported": false
+      },
+      {
+        "claim": "5-(viii) Content-Type文字コード指定: HTTP文字エンコード制御ハンドラ → 〇",
+        "supported": false
+      },
+      {
+        "claim": "5-(x) XSS対策ブラウザ機能有効化: セキュアハンドラ → 〇",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandlerはデフォルトでX-XSS-Protection: 1; mode=blockおよびX-Frame-Options: SAMEORIGINを設定する",
+        "supported": false
+      },
+      {
+        "claim": "ContentSecurityPolicyHeaderを使用するとCSPヘッダによるXSS検知・軽減が設定できる",
+        "supported": false
+      },
+      {
+        "claim": "<n:rawWrite>はエスケープなしで出力する",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有の主張が知識セクションに裏付けられていない。具体的には、(1)確認画面での改行→<br />・半角スペース→&nbsp;変換、(2)IPA 5-(viii)のHTTP文字エンコード制御ハンドラ対応、(3)IPA 5-(x)のセキュアハンドラ対応、(4)SecureHandlerによるX-XSS-ProtectionおよびX-Frame-Optionsヘッダの設定、(5)ContentSecurityPolicyHeaderクラスの存在と機能、(6)<n:rawWrite>タグの存在と仕様について、知識セクションに記載がなく捏造の可能性がある。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のNablarch固有の主張が知識セクションに裏付けられていない。具体的には、(1)確認画面での改行→<br />・半角スペース→&nbsp;変換、(2)IPA 5-(viii)のHTTP文字エンコード制御ハンドラ対応、(3)IPA 5-(x)のセキュアハンドラ対応、(4)SecureHandlerによるX-XSS-ProtectionおよびX-Frame-Optionsヘッダの設定、(5)ContentSecurityPolicyHeaderクラスの存在と機能、(6)<n:rawWrite>タグの存在と仕様について、知識セクションに記載がなく捏造の可能性がある。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s21",
+      "check/security-check/security-check-2.チェックリスト.json:s22",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s27",
+      "component/libraries/libraries-tag.json:s50",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s5",
+      "component/handlers/handlers-secure-handler.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 116046,
+    "duration_api_ms": 115164,
+    "num_turns": 4,
+    "total_cost_usd": 0.7121275499999999,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 3672,
+      "cache_read_input_tokens": 98422,
+      "cache_creation_input_tokens": 27561
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1201,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001371,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5215,
+        "outputTokens": 8297,
+        "cacheReadInputTokens": 801076,
+        "cacheCreationInputTokens": 88089,
+        "webSearchRequests": 0,
+        "costUSD": 0.7107565499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

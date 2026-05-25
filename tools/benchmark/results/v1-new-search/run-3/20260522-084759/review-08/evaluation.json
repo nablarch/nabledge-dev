@@ -1,0 +1,208 @@
+{
+  "scenario_id": "review-08",
+  "description": "Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。",
+  "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states in both the conclusion and the table that when multiple tab operations are not allowed, DBストア should be used, and when multiple tab operations are allowed, HIDDENストア should be used. This directly matches the fact.",
+      "fact": "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "複数タブでの画面操作を許容しない場合はDBストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "複数タブでの画面操作を許容する場合はHIDDENストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはセッション変数をデータベース上のテーブル（USER_SESSION）に保存する",
+        "supported": true
+      },
+      {
+        "claim": "ローリングメンテナンスでサーバが停止してもDBストアはセッション変数を復元可能",
+        "supported": true
+      },
+      {
+        "claim": "DBストアで同一セッションを複数スレッドが処理した場合は後勝ちとなり先のデータは消失する",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはクライアントサイドにhiddenタグでセッション変数を引き回す",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数タブでの操作を許容できる",
+        "supported": true
+      },
+      {
+        "claim": "JSPに<n:hiddenStore>タグを配置する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアにはFormではなくEntityを格納すること",
+        "supported": true
+      },
+      {
+        "claim": "FormはバリデーションME前（バリデーション前）の信頼できない値を含む可能性があるためセキュリティリスクがある",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストア使用時はSessionStoreHandlerをマルチパートリクエストハンドラより後ろに配置すること",
+        "supported": true
+      },
+      {
+        "claim": "SessionStoreHandlerは内部フォーワードハンドラより前に配置すること",
+        "supported": true
+      },
+      {
+        "claim": "内部フォーワードハンドラより後ろに配置すると内部フォワード時に最新のセッション変数を取得できない",
+        "supported": true
+      },
+      {
+        "claim": "デフォルトの暗号化キーはAPサーバごとに自動生成されるため冗長化環境では別サーバで復号に失敗するケースがある",
+        "supported": true
+      },
+      {
+        "claim": "冗長構成では明示的にAESキーを設定すること",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアの改竄検知時にHTTP 400（HttpErrorResponse）を送出する",
+        "supported": true
+      },
+      {
+        "claim": "DBストア等その他のストアの改竄検知時は復号処理時の例外をそのまま送出する",
+        "supported": true
+      },
+      {
+        "claim": "AesEncryptorおよびBase64Keyを用いたXML設定例",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のすべての主要な主張はナブラーチの公式ドキュメント（知識セクション）によって裏付けられている。DBストア・HIDDENストアの選択基準、各ストアの特徴、ハンドラ配置制約、冗長構成での暗号化キー設定、改竄検知時の動作の違い、JSPタグの使用方法、XMLコード例など、すべての内容がナブラーチのドキュメントと一致している。捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッションストア機能の主ドキュメント。DBストア・HIDDENストアの選択基準と入力→確認→完了パターンの説明を含む"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "reason": "セッション変数保存ハンドラのドキュメント。HIDDENストア使用時のハンドラ配置制約と改竄検知の動作の違いを含む"
+      },
+      {
+        "path": "component/libraries/libraries-create-example.json",
+        "reason": "入力→確認→完了パターンの具体的な実装例（SessionUtil.put/get/delete）を含む"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "DBストアとHIDDENストアの特長と選択基準表を含む主要セクション"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "入力→確認→完了画面間でのストア使い分けを直接説明し、hiddenStoreタグの使い方も示す"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "3種類のストア（DB・HIDDEN・HTTPセッション）の概要一覧"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "HIDDENストアの暗号化設定（冗長構成時の注意事項）"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "SessionManagerのコンポーネント設定例とUSER_SESSIONテーブル定義"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "セッション有効期間の管理方法（デフォルトHTTPセッション、DB変更可能）"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "セッションストアに格納するオブジェクトの制約（シリアライズ可能なJava Beans）"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "HIDDENストア使用時のハンドラ配置制約"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "改竄検知時の動作（HIDDENストア vs その他）"
+      },
+      {
+        "file": "component/libraries/libraries-create-example.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "入力画面初期表示でのSessionUtil.delete使用例"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 254495,
+    "duration_api_ms": 250931,
+    "num_turns": 9,
+    "total_cost_usd": 1.2907937,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 6826,
+      "cache_read_input_tokens": 370560,
+      "cache_creation_input_tokens": 49506
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3269,
+        "outputTokens": 33,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0034340000000000004,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2765,
+        "outputTokens": 15775,
+        "cacheReadInputTokens": 1072474,
+        "cacheCreationInputTokens": 192186,
+        "webSearchRequests": 0,
+        "costUSD": 1.2873597,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "scenario_id": "pre-01",
+  "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい",
+  "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer states that NablarchバッチアプリケーションはJavaのメインクラス `nablarch.fw.launcher.Main` を `java` コマンドで直接起動します, which conveys the same information as the fact that the application runs as a standalone application launched directly from the java command.",
+      "fact": "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that `-requestPath` command-line argument is used to specify the action class name and request ID, using the format `-requestPath=アクションのクラス名/リクエストID`, which matches the fact exactly.",
+      "fact": "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchバッチアプリケーションはJavaのメインクラス `nablarch.fw.launcher.Main` を `java` コマンドで直接起動する",
+        "supported": true
+      },
+      {
+        "claim": "起動時に必須の `-diConfig`・`-requestPath`・`-userId` の3つのオプションを指定する",
+        "supported": true
+      },
+      {
+        "claim": "`-requestPath` には `アクションのクラス名/リクエストID` の書式で記述する",
+        "supported": true
+      },
+      {
+        "claim": "起動コマンドの例: `java nablarch.fw.launcher.Main -diConfig file:./batch-config.xml -requestPath admin.DataUnloadBatchAction/BC0012 -userId testUser`",
+        "supported": true
+      },
+      {
+        "claim": "`-diConfig` はシステムリポジトリの設定ファイルパスを指定する",
+        "supported": true
+      },
+      {
+        "claim": "`-userId` の値はセッションコンテキスト変数 `user.id` に格納される",
+        "supported": true
+      },
+      {
+        "claim": "3つの必須オプションのうち1つでも欠けていると終了コード127で即座に異常終了する",
+        "supported": true
+      },
+      {
+        "claim": "リクエストIDは各バッチプロセスの識別子であり、同一の業務アクションクラスを複数プロセス起動する場合などにプロセスを区別するために使われる",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のすべての主要なクレームはナレッジセクションに記載された内容と一致している。クラス名、必須オプション名、書式、終了コード127、userId の格納先 `user.id`、起動コマンド例はすべてナレッジセクションで裏付けられており、捏造された情報は見当たらない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチの-requestPathとアーキテクチャを直接説明するページ"
+      },
+      {
+        "path": "component/handlers/handlers-main.json",
+        "reason": "共通起動ランチャ（Mainクラス）の起動方法と必須オプションを説明するページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチアプリケーションの起動方法へのリンクを含む機能詳細ページ"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "バッチ起動方法の分類を説明するパターンガイドページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "-requestPathの書式と指定例を直接説明するセクション"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "必須オプション3つと実行例を示すコアセクション"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "Mainクラスがスタンドアロン起動の起点であることを示すコンテキスト"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "システムリポジトリ初期化が-diConfigオプションで行われることの補足"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "任意オプションの追加方法を示す補足セクション"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 111786,
+    "duration_api_ms": 109405,
+    "num_turns": 10,
+    "total_cost_usd": 0.62335205,
+    "usage": {
+      "input_tokens": 4128,
+      "output_tokens": 5969,
+      "cache_read_input_tokens": 357781,
+      "cache_creation_input_tokens": 109517
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3225,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00341,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4128,
+        "outputTokens": 5969,
+        "cacheReadInputTokens": 357781,
+        "cacheCreationInputTokens": 109517,
+        "webSearchRequests": 0,
+        "costUSD": 0.6199420499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

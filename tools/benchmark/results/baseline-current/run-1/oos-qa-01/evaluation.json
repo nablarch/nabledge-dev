@@ -1,0 +1,99 @@
+{
+  "scenario_id": "oos-qa-01",
+  "description": "バッチ処理の進捗をリアルタイムにクライアントへ通知する機能を実装したい。WebSocketを使いたいが、NablarchでWebSocketが使えるか確認したい。",
+  "input": "バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭で「NablarchにはWebSocketのサポートはありません」と明示しており、さらに「NablarchはWebSocketを直接サポートしていないため」とも繰り返し述べている。事実の内容が回答に明確に含まれている。",
+      "fact": "NablarchにはWebSocketのサポートがないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "NablarchにはWebSocketのサポートはない",
+        "supported": false
+      },
+      {
+        "claim": "Nablarch 6が対応する処理方式はWebアプリケーション、RESTful Webサービス、バッチ処理、メッセージングである",
+        "supported": false
+      },
+      {
+        "claim": "ProgressManagerを使ったログ出力機能（jakarta-batch-progress-log）が用意されている",
+        "supported": false
+      },
+      {
+        "claim": "progressManager.setInputCount()で処理対象件数を設定できる",
+        "supported": false
+      },
+      {
+        "claim": "progressManager.outputProgressInfo()で進捗ログを出力できる",
+        "supported": false
+      },
+      {
+        "claim": "Chunkステップではジョブ定義ファイルにprogressLogListenerを登録することで自動的に進捗ログが出力される",
+        "supported": false
+      },
+      {
+        "claim": "ChunkステップでRetrying Exceptionsを設定している場合、進捗ログリスナーが正しく機能しなくなる",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションが空であるため、回答内のNablarch固有の主張（ProgressManager API、progressLogListener、jakarta-batch-progress-log、WebSocketの非サポート、Retrying Exceptionsとの干渉など）を検証する根拠が存在しない。これらの主張が正しいか捏造かを判断できないため、UNCERTAINとする。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — 知識セクションが空であるため、回答内のNablarch固有の主張（ProgressManager API、progressLogListener、jakarta-batch-progress-log、WebSocketの非サポート、Retrying Exceptionsとの干渉など）を検証する根拠が存在しない。これらの主張が正しいか捏造かを判断できないため、UNCERTAINとする。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1",
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s3",
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 158007,
+    "duration_api_ms": 156132,
+    "num_turns": 6,
+    "total_cost_usd": 0.9571688,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 2193,
+      "cache_read_input_tokens": 184142,
+      "cache_creation_input_tokens": 30434
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1194,
+        "outputTokens": 31,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001349,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1982,
+        "outputTokens": 9179,
+        "cacheReadInputTokens": 1576046,
+        "cacheCreationInputTokens": 90500,
+        "webSearchRequests": 0,
+        "costUSD": 0.9558198,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

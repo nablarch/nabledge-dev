@@ -1,0 +1,188 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「例外の種類に応じてログレベルとHTTPステータスコードが決まる」という記述があり、各例外種別とステータスコードの対応表が示されている。また「HttpErrorResponseの原因例外がApplicationException（バリデーションエラー等）の場合は、エラーメッセージ情報をerrorsキーでリクエストスコープに設定し、JSPでエラー表示できるようにする」と明示されており、ファクトの内容（例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する）が完全に含まれている。",
+      "fact": "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NoMoreHandlerException → INFOログ / 404",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponse → ログ出力なし / HttpErrorResponse#getResponse()",
+        "supported": true
+      },
+      {
+        "claim": "Result.Error → 設定による / Error#getStatusCode()、writeFailureLogPatternの正規表現マッチ時にFATAL",
+        "supported": true
+      },
+      {
+        "claim": "StackOverflowError → FATAL / 500",
+        "supported": true
+      },
+      {
+        "claim": "上記以外の例外 → FATAL / 500",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseの原因例外がApplicationExceptionの場合、errorsキーでリクエストスコープに設定",
+        "supported": true
+      },
+      {
+        "claim": "defaultPagesのXML設定例（4xx→USER_ERROR.jsp等）",
+        "supported": true
+      },
+      {
+        "claim": "ExampleErrorForwardHandlerのカスタムハンドラ実装例（NoDataException/OptimisticLockException）",
+        "supported": true
+      },
+      {
+        "claim": "OnErrorインターセプタの使用例（ApplicationException → /WEB-INF/view/project/index.jsp）",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandler: ServiceError→writeLog、Result.Error→FATAL、StackOverflowError→FATAL+InternalError、ThreadDeath→INFO+rethrow",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorHandlerはHTTPレスポンスハンドラ・HTTPアクセスログハンドラより後ろに配置",
+        "supported": true
+      },
+      {
+        "claim": "defaultPages使用時はweb.xmlのerror-page設定も必要、NablarchはそちらへのDEFAULT設定を推奨",
+        "supported": true
+      },
+      {
+        "claim": "システム全体で共通エラーページに遷移させる場合、OnError個別設定よりカスタムハンドラによる集約制御を推奨",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有の主張（クラス名・ログレベル・ステータスコード・設定方法・コード例）はすべてナレッジセクションの記述と一致している。GlobalErrorHandlerのエラー処理についてOutOfMemoryErrorやVirtualMachineErrorの扱いが省略されているが、記載内容自体に誤りや捏造はなく、ナレッジに支持されない情報は見当たらない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-HttpErrorHandler.json",
+        "reason": "ウェブアプリケーションのエラー処理専用ハンドラで、例外種別ごとのログ出力とエラー画面生成を直接扱う"
+      },
+      {
+        "path": "component/handlers/handlers-global-error-handler.json",
+        "reason": "未捕捉例外を処理するハンドラで、エラー時のログ出力の仕組みを理解するために必須"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションのエラー時の画面遷移とステータスコードの機能概要が記載されている"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "reason": "エラー時の遷移先の指定方法（カスタムハンドラ・複数遷移先）を解説している"
+      },
+      {
+        "path": "component/handlers/handlers-on-error.json",
+        "reason": "アクションメソッド単位でエラー時遷移先を指定するOnErrorインターセプタの仕組みを説明している"
+      },
+      {
+        "path": "component/libraries/libraries-failure-log.json",
+        "reason": "障害ログの出力方針と設定方法を説明しており、ログ出力の仕組みを理解するために関連する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "例外の種類に応じたログレベルとHTTPステータスコードの対応表を直接説明している"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "デフォルトエラーページの設定方法（configXML例）を説明している"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "グローバルエラーハンドラが各例外・エラーに対してどのようなログ出力と処理を行うかを説明している"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "エラー時の画面遷移とステータスコードの全体像へのリンクをまとめている"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "カスタムハンドラでシステム全体の共通エラーページを設定する実装例を示している"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "OnErrorインターセプタの基本的な使用方法（アノテーション設定例）を示している"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "Result.Errorのログ出力条件（writeFailureLogPatternの正規表現）を補足説明している"
+      },
+      {
+        "file": "component/libraries/libraries-failure-log.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "障害ログの出力方針（ロガー名MONITOR、ログファイル設定例）を示している"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 116936,
+    "duration_api_ms": 112954,
+    "num_turns": 11,
+    "total_cost_usd": 0.76615455,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 7149,
+      "cache_read_input_tokens": 802761,
+      "cache_creation_input_tokens": 110579
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3249,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033840000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 7149,
+        "cacheReadInputTokens": 802761,
+        "cacheCreationInputTokens": 110579,
+        "webSearchRequests": 0,
+        "costUSD": 0.76277055,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

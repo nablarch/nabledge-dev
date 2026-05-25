@@ -1,0 +1,117 @@
+{
+  "scenario_id": "pre-01",
+  "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい",
+  "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の注意点セクションに「Nablarchバッチはスタンドアロンアプリケーションとして動作するため、Webアプリケーションとは起動方式が異なります」と明記されており、また冒頭の結論でも「javaコマンドでnablarch.fw.launcher.Mainを起点に起動します」と述べられている。これは事実の「javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する」という内容を含んでいる。",
+      "fact": "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「`-requestPath` コマンドライン引数でアクションクラス名とリクエストIDを指定する」という事実が明確に含まれている。具体的には「`-requestPath` には「アクションクラス名/リクエストID」という書式で実行対象を指定します」と述べられており、書式例（`-requestPath=アクションのクラス名/リクエストID`）と具体例（`-requestPath=com.sample.SampleBatchAction/BATCH0001`）も示されている。",
+      "fact": "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Nablarchバッチアプリケーションは `nablarch.fw.launcher.Main` を起点に起動する",
+        "supported": true
+      },
+      {
+        "claim": "`-requestPath` には「アクションクラス名/リクエストID」という書式で実行対象を指定する",
+        "supported": true
+      },
+      {
+        "claim": "起動コマンドに `-diConfig`、`-requestPath`、`-userId` の3オプションが存在する",
+        "supported": false
+      },
+      {
+        "claim": "3オプションのいずれか1つでも欠けると終了コード127で即座に異常終了する",
+        "supported": false
+      },
+      {
+        "claim": "`-userId` はユーザIDを設定し、`user.id` としてセッションコンテキスト変数に格納される",
+        "supported": false
+      },
+      {
+        "claim": "処理の流れ: MainがハンドラキューをExecuteし、DataReaderが1件ずつ読み込む",
+        "supported": true
+      },
+      {
+        "claim": "DispatchHandlerが `-requestPath` を元にアクションクラスを特定し、ハンドラキューに追加する",
+        "supported": true
+      },
+      {
+        "claim": "アクションクラスがデータ1件ごとに業務ロジックを実行しResultを返す",
+        "supported": true
+      },
+      {
+        "claim": "StatusCodeConvertHandlerがプロセス終了コードに変換して返す",
+        "supported": true
+      },
+      {
+        "claim": "リクエストIDは各バッチプロセスの識別子として使われる",
+        "supported": true
+      }
+    ],
+    "reason": "起動コマンドの必須オプション（`-diConfig`、`-requestPath`、`-userId`）および「欠けると終了コード127で異常終了する」という仕様は、知識セクションに一切記載がなく裏付けがない。また `-userId` が `user.id` としてセッションコンテキスト変数に格納されるという詳細仕様も知識セクションに存在しない。これらはNablarch固有の主張であり、ハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 起動コマンドの必須オプション（`-diConfig`、`-requestPath`、`-userId`）および「欠けると終了コード127で異常終了する」という仕様は、知識セクションに一切記載がなく裏付けがない。また `-userId` が `user.id` としてセッションコンテキスト変数に格納されるという詳細仕様も知識セクションに存在しない。これらはNablarch固有の主張であり、ハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/handlers/handlers-main.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 110655,
+    "duration_api_ms": 109464,
+    "num_turns": 5,
+    "total_cost_usd": 0.5433438999999999,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 2731,
+      "cache_read_input_tokens": 167330,
+      "cache_creation_input_tokens": 44236
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1179,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013239999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 25,
+        "outputTokens": 7187,
+        "cacheReadInputTokens": 382508,
+        "cacheCreationInputTokens": 85170,
+        "webSearchRequests": 0,
+        "costUSD": 0.5420198999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

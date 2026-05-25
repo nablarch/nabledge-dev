@@ -1,0 +1,180 @@
+{
+  "scenario_id": "oos-impact-01",
+  "description": "既存システムをNablarch 6に移行するにあたり、OAuth2/OpenID Connect認証が必要かどうか影響調査している。NablarchにOAuth2/OIDCの仕組みが組み込まれているか確認したい。",
+  "input": "NablarchでOAuth2やOpenID Connectによる認証を実装したい。Nablarchにその仕組みは組み込まれているか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の冒頭で「NablarchにはOAuth2やOpenID Connect（OIDC）の仕組みは組み込まれていない」と明示されており、さらに「認証については、プロジェクト要件により仕様が異なるため、フレームワークとしては提供していない」という根拠も示されている。これはファクトの内容（NablarchにはOAuth2/OpenID Connect認証の組み込み機能がない）と同一の情報を含んでいる。",
+      "fact": "NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchにはOAuth2やOpenID Connectの仕組みは組み込まれていない",
+        "supported": true
+      },
+      {
+        "claim": "認証はフレームワーク側では提供しておらず、プロジェクト要件に応じてPJで実装する",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-biz-sample-allにOIDCのIDトークンを用いた認証サンプルが提供されている",
+        "supported": true
+      },
+      {
+        "claim": "NablarchをRESTfulウェブサービスのバックエンドとして使用する構成を想定",
+        "supported": true
+      },
+      {
+        "claim": "IDトークンはフロントエンド（SPA、モバイルアプリ等）で取得し、バックエンドに送信する",
+        "supported": true
+      },
+      {
+        "claim": "認証成功時にセッションを確立（ステートフルなセッション管理）",
+        "supported": true
+      },
+      {
+        "claim": "認証処理は業務アクションで実装する",
+        "supported": true
+      },
+      {
+        "claim": "対応済みIDプロバイダーとしてAWS Amazon Cognitoユーザープールを挙げている",
+        "supported": true
+      },
+      {
+        "claim": "対応済みIDプロバイダーとしてMicrosoft Azure Active Directory B2C (ADB2C)を挙げている",
+        "supported": true
+      },
+      {
+        "claim": "Auth0のjava-jwt（バージョン4.4.0）とjwks-rsa-java（バージョン0.22.1）を使用",
+        "supported": true
+      },
+      {
+        "claim": "CognitoIdTokenVerifierクラスがコンポーネント設定ファイルに定義される",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネントのプロパティとしてregion、userPoolId、clientId、signatureAlgorithmProviderを設定",
+        "supported": true
+      },
+      {
+        "claim": "業務アクションでSessionUtil.changeId(context)を呼び出す",
+        "supported": true
+      },
+      {
+        "claim": "業務アクションでCsrfTokenUtil.regenerateCsrfToken(context)を呼び出す",
+        "supported": true
+      },
+      {
+        "claim": "decodedJWT.getSubject()でユーザーIDを取得する",
+        "supported": true
+      },
+      {
+        "claim": "SessionUtil.put(context, \"user.id\", userId)でセッションにユーザー情報を格納する",
+        "supported": true
+      },
+      {
+        "claim": "サンプルは2024年9月時点の仕様に基づいている",
+        "supported": true
+      },
+      {
+        "claim": "秘匿情報はOSEnvironment変数やシステムプロパティで設定することを推奨",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有のクラス名、設定方法、動作仕様、ライブラリバージョン、IDプロバイダー対応状況はすべてナレッジセクションの内容と一致しており、fabricatedな情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "guide/biz-samples/biz-samples-12.json",
+        "reason": "OIDCのIDトークンを用いた認証サンプルそのものであり、質問に直接回答する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの認証セクション(s13)にフレームワークの認証方針が記載されている"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "OIDCサンプルの概要と対応IDプロバイダーを説明しており、Nablarchの認証サポート範囲の全体像がわかる"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "JWTライブラリの依存関係追加方法を示しており、実装の出発点となる"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "IDトークン検証コンポーネントのコンポーネント定義設定方法を示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "IDトークン検証の具体的なコード実装（JWTVerifier、署名検証）を示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "業務アクションでの認証処理とセッション確立の実装コードを示す"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "Nablarchとして認証機能はフレームワーク提供ではないという基本方針を明示する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 88812,
+    "duration_api_ms": 86444,
+    "num_turns": 8,
+    "total_cost_usd": 0.51603535,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 5321,
+      "cache_read_input_tokens": 502187,
+      "cache_creation_input_tokens": 75239
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3251,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003391,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 5321,
+        "cacheReadInputTokens": 502187,
+        "cacheCreationInputTokens": 75239,
+        "webSearchRequests": 0,
+        "costUSD": 0.51264435,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

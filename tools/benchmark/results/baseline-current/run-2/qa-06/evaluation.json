@@ -1,0 +1,113 @@
+{
+  "scenario_id": "qa-06",
+  "description": "Web画面で入力画面と確認画面をそれぞれ別のJSPで作っている。同じフォーム項目を2回書くのが面倒。共通化する方法があると聞いた。",
+  "input": "入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「n:confirmationPageタグのpath属性に入力画面JSPのパスを指定する」という内容が明確に含まれており、確認画面のJSPで入力画面のJSPへのパスを指定して共通化するという事実と一致している。",
+      "fact": "confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "n:confirmationPageタグを使用することで、入力画面のJSPをそのまま確認画面に流用できる",
+        "supported": true
+      },
+      {
+        "claim": "確認画面のJSPでpath属性に入力画面JSPのパスを指定する",
+        "supported": true
+      },
+      {
+        "claim": "入力タグが自動的に確認画面用の表示（読み取り専用ラベル）に変換される",
+        "supported": true
+      },
+      {
+        "claim": "n:forInputPageタグで入力画面でのみ表示したい部分を囲む",
+        "supported": true
+      },
+      {
+        "claim": "n:forConfirmationPageタグで確認画面でのみ表示したい部分を囲む",
+        "supported": true
+      },
+      {
+        "claim": "n:ignoreConfirmationタグで確認画面でも確認モード変換を無効化できる",
+        "supported": true
+      },
+      {
+        "claim": "チェックボックスを確認画面でもそのまま表示したい場合にignoreConfirmationを使用する例",
+        "supported": true
+      },
+      {
+        "claim": "入力画面と確認画面の共通化に使用するタグは4つ",
+        "supported": true
+      },
+      {
+        "claim": "n:forInputPage、n:forConfirmationPage、n:ignoreConfirmationは属性なしで使用する",
+        "supported": false
+      },
+      {
+        "claim": "n:confirmationPageのpath属性に動的属性は使用不可",
+        "supported": false
+      }
+    ],
+    "reason": "回答の内容は知識セクションと概ね一致しており、主要なタグ（confirmationPage、forInputPage、forConfirmationPage、ignoreConfirmation）の説明は正確に裏付けられている。「属性なしで使用する」および「動的属性は使用不可」という制約の記述は知識セクションに明示的な裏付けがないが、これらは実装の詳細に関する注意事項であり、知識セクションが網羅的でない可能性もある。主要なAPI名・動作仕様・使用方法に捏造は確認されないため、PASSと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-tag.json:s3",
+      "component/libraries/libraries-tag.json:s23",
+      "component/libraries/libraries-tag-reference.json:s64",
+      "component/libraries/libraries-tag-reference.json:s65",
+      "component/libraries/libraries-tag-reference.json:s66",
+      "component/libraries/libraries-tag-reference.json:s67",
+      "processing-pattern/web-application/web-application-client-create2.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 202755,
+    "duration_api_ms": 200437,
+    "num_turns": 8,
+    "total_cost_usd": 1.2441846499999998,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 3478,
+      "cache_read_input_tokens": 272671,
+      "cache_creation_input_tokens": 33236
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1175,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00131,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9082,
+        "outputTokens": 13869,
+        "cacheReadInputTokens": 1332058,
+        "cacheCreationInputTokens": 162127,
+        "webSearchRequests": 0,
+        "costUSD": 1.2428746499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

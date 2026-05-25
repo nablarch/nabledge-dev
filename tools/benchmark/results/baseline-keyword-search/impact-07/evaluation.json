@@ -1,0 +1,24 @@
+{
+  "scenario_id": "impact-07",
+  "must": [
+    {
+      "section": "component/libraries/libraries-exclusive-control.json:s8",
+      "fact": "悲観的ロックにはExclusiveControlUtil#updateVersionを使用する",
+      "found": true
+    },
+    {
+      "section": "component/libraries/libraries-exclusive-control.json:s8",
+      "fact": "排他制御用テーブルのバージョン番号を更新することでトランザクション完了まで対象行がロックされる",
+      "found": true
+    }
+  ],
+  "acceptable": [
+    {
+      "section": "component/libraries/libraries-exclusive-control.json:s5",
+      "found": false
+    }
+  ],
+  "scores": {
+    "recall": 1.0
+  }
+}

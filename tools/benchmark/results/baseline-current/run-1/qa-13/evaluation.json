@@ -1,0 +1,131 @@
+{
+  "scenario_id": "qa-13",
+  "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。",
+  "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "事実では「REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する」とあるが、回答はWebアプリケーションの3段階フロー（入力→確認→登録）パターンを説明しており、@InjectFormとセッションストアを使用するアプローチを記述している。REST APIにおける@Valid + Formクラスの直接受け取りパターンは回答には含まれていない。",
+      "fact": "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "フォームから受け取ったデータをDBに登録するパターンは「入力画面 → 確認画面 → 登録処理」の3段階フローで実装する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy でフォームをエンティティに変換する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert でDBに登録する",
+        "supported": true
+      },
+      {
+        "claim": "フォームクラスは Serializable を実装し、全プロパティを String 型で宣言する",
+        "supported": true
+      },
+      {
+        "claim": "@Required および @Domain アノテーションでバリデーションルールを指定する",
+        "supported": true
+      },
+      {
+        "claim": "@InjectForm(form = ClientForm.class, prefix = \"form\") でリクエストパラメータをフォームにバインドする",
+        "supported": false
+      },
+      {
+        "claim": "@OnError(type = ApplicationException.class, path = \"forward://input\") でバリデーションエラー時に入力画面へ遷移する",
+        "supported": false
+      },
+      {
+        "claim": "context.getRequestScopedVar(\"form\") でリクエストスコープからフォームを取得する",
+        "supported": false
+      },
+      {
+        "claim": "SessionUtil.put / get / delete でセッションストアにエンティティを保存・取得・削除する",
+        "supported": false
+      },
+      {
+        "claim": "@OnDoubleSubmission アノテーションで二重サブミットを防止する",
+        "supported": false
+      },
+      {
+        "claim": "JSPの確定ボタンに allowDoubleSubmission=\"false\" を設定する",
+        "supported": false
+      },
+      {
+        "claim": "登録完了後は new HttpResponse(303, \"redirect://complete\") でリダイレクトする（PRGパターン）",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao は主キー以外の条件を指定した更新・削除には使えない",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアにはフォームを格納せず、BeanUtil.createAndCopy でエンティティに変換してから保存する",
+        "supported": false
+      }
+    ],
+    "reason": "BeanUtil.createAndCopy、UniversalDao.insert、フォームの String 型宣言、@Required/@Domain、3段階フローは知識セクションで裏付けられる。一方、@InjectForm、@OnError、context.getRequestScopedVar、SessionUtil、@OnDoubleSubmission、allowDoubleSubmission=\"false\"、303リダイレクトの具体的な形式、「セッションにはエンティティを格納する」という注意点は知識セクションに記載がなく、裏付けがない。これらは実際のNablarch APIとして存在する可能性はあるが、提供された知識セクションでは確認できないため UNCERTAIN と判定する。"
+  },
+  "scores": {
+    "accuracy": 0.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する",
+    "hallucination: UNCERTAIN — BeanUtil.createAndCopy、UniversalDao.insert、フォームの String 型宣言、@Required/@Domain、3段階フローは知識セクションで裏付けられる。一方、@InjectForm、@OnError、context.getRequestScopedVar、SessionUtil、@OnDoubleSubmission、allowDoubleSubmission=\"false\"、303リダイレクトの具体的な形式、「セッションにはエンティティを格納する」という注意点は知識セクションに記載がなく、裏付けがない。これらは実際のNablarch APIとして存在する可能性はあるが、提供された知識セクションでは確認できないため UNCERTAIN と判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/web-application/web-application-client-create2.json:s1",
+      "processing-pattern/web-application/web-application-client-create4.json:s1",
+      "component/libraries/libraries-create-example.json:s2",
+      "component/libraries/libraries-create-example.json:s4",
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-bean-util.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 108206,
+    "duration_api_ms": 107648,
+    "num_turns": 7,
+    "total_cost_usd": 0.7078993000000001,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 3162,
+      "cache_read_input_tokens": 227919,
+      "cache_creation_input_tokens": 30325
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1174,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001294,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 24,
+        "outputTokens": 7291,
+        "cacheReadInputTokens": 816011,
+        "cacheCreationInputTokens": 93964,
+        "webSearchRequests": 0,
+        "costUSD": 0.7066053000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

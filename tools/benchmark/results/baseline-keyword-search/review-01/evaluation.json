@@ -1,0 +1,29 @@
+{
+  "scenario_id": "review-01",
+  "must": [
+    {
+      "section": "component/libraries/libraries-universal-dao.json:s14",
+      "fact": "batchUpdateでは排他制御処理を行わない",
+      "found": true
+    },
+    {
+      "section": "component/libraries/libraries-universal-dao.json:s14",
+      "fact": "更新対象のEntityとデータベースのバージョンが不一致でもレコードの更新は行われず正常終了する",
+      "found": true
+    },
+    {
+      "section": "component/libraries/libraries-universal-dao.json:s14",
+      "fact": "排他制御が必要なら一括更新ではなく1レコードごとの更新処理を呼び出す",
+      "found": true
+    }
+  ],
+  "acceptable": [
+    {
+      "section": "component/libraries/libraries-universal-dao.json:s15",
+      "found": true
+    }
+  ],
+  "scores": {
+    "recall": 1.0
+  }
+}

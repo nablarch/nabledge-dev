@@ -1,0 +1,125 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "回答では`ItemReader`でDBからレコードを読み込む実装例として`AbstractItemReader`を継承したカスタムクラス（`SourceDataReader`）と`UniversalDao`を使用しており、`DatabaseRecordReader`というクラス名は一切言及されていない。事実が示す「DatabaseRecordReaderでデータベースからデータを読み込む」という具体的なクラス名が回答に含まれていない。",
+      "fact": "DatabaseRecordReaderでデータベースからデータを読み込む"
+    },
+    {
+      "verdict": "ABSENT",
+      "reason": "回答はJakarta BatchのChunk型実装（AbstractItemReader、AbstractItemWriter等）について説明しており、BatchActionクラスの継承については一切言及していない。参照セクションにはNablarchのBatchActionクラスが記載されているが、回答の中にBatchActionを継承したアクションクラスを実装するという内容は含まれていない。",
+      "fact": "BatchActionを継承したアクションクラスを実装する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Jakarta BatchのChunk型バッチ（都度起動）で実装する",
+        "supported": false
+      },
+      {
+        "claim": "ItemReader、ItemProcessor、ItemWriterでDB to DBパターンを実装する",
+        "supported": false
+      },
+      {
+        "claim": "定期処理（日次・月次など）には都度起動バッチを使用する",
+        "supported": true
+      },
+      {
+        "claim": "AbstractItemReaderを継承してItemReaderを実装する",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao.defer()で遅延ロードを使用する",
+        "supported": false
+      },
+      {
+        "claim": "UniversalDao.batchInsert()でリストを一括登録する",
+        "supported": false
+      },
+      {
+        "claim": "writeItemsメソッド実行後にトランザクションがコミットされる",
+        "supported": false
+      },
+      {
+        "claim": "Batchlet型はSQL1本で完結するような処理向けである",
+        "supported": false
+      },
+      {
+        "claim": "NablarchはDatabaseRecordReaderというデータリーダを標準提供している",
+        "supported": true
+      },
+      {
+        "claim": "1レコードの処理中に行われる更新は全て同一トランザクション下で実行される",
+        "supported": false
+      }
+    ],
+    "reason": "回答はJakarta Batch（ItemReader/ItemProcessor/ItemWriter/AbstractItemReader/AbstractItemWriter/UniversalDao）を使用したChunk型バッチとして説明しているが、知識セクションはNablarchの独自バッチフレームワーク（BatchAction、DatabaseRecordReader、トランザクションループ制御ハンドラ等のハンドラ構成）について説明している。知識セクションにはJakarta Batch固有のAPIやChunk型の概念は一切登場せず、回答の主要な技術的主張（AbstractItemReader、AbstractItemWriter、UniversalDao.defer()、UniversalDao.batchInsert()、writeItems後のコミット、Chunk型のトランザクション境界等）は知識セクションによって裏付けられない。知識セクションはNablarch独自のバッチ基盤（BatchAction、ハンドラキュー構成）を説明しており、回答はこれとは全く異なるフレームワーク（Jakarta Batch）の説明となっているため、Nablarch固有の主張として捏造情報と判定する。"
+  },
+  "scores": {
+    "accuracy": 0.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — DatabaseRecordReaderでデータベースからデータを読み込む",
+    "claim[1]: ABSENT — BatchActionを継承したアクションクラスを実装する",
+    "hallucination: FAIL — 回答はJakarta Batch（ItemReader/ItemProcessor/ItemWriter/AbstractItemReader/AbstractItemWriter/UniversalDao）を使用したChunk型バッチとして説明しているが、知識セクションはNablarchの独自バッチフレームワーク（BatchAction、DatabaseRecordReader、トランザクションループ制御ハンドラ等のハンドラ構成）について説明している。知識セクションにはJakarta Batch固有のAPIやChunk型の概念は一切登場せず、回答の主要な技術的主張（AbstractItemReader、AbstractItemWriter、UniversalDao.defer()、UniversalDao.batchInsert()、writeItems後のコミット、Chunk型のトランザクション境界等）は知識セクションによって裏付けられない。知識セクションはNablarch独自のバッチ基盤（BatchAction、ハンドラキュー構成）を説明しており、回答はこれとは全く異なるフレームワーク（Jakarta Batch）の説明となっているため、Nablarch固有の主張として捏造情報と判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+      "processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s1",
+      "processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s2",
+      "processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json:s4",
+      "processing-pattern/jakarta-batch/jakarta-batch-application-design.json:s2",
+      "processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s2",
+      "processing-pattern/jakarta-batch/jakarta-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 227191,
+    "duration_api_ms": 221116,
+    "num_turns": 7,
+    "total_cost_usd": 0.8619342999999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 5639,
+      "cache_read_input_tokens": 277662,
+      "cache_creation_input_tokens": 35211
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1194,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013239999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4444,
+        "outputTokens": 15589,
+        "cacheReadInputTokens": 575661,
+        "cacheCreationInputTokens": 117532,
+        "webSearchRequests": 0,
+        "costUSD": 0.8606103,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

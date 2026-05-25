@@ -1,0 +1,75 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 207568,
+  "duration_api_ms": 204347,
+  "ttft_ms": 5134,
+  "num_turns": 7,
+  "result": "Step 3: 回答を生成します。\n\n---\n\n**結論**: 入力がある項目だけ条件に含める動的SQLは、`$if` 構文を使って実現できます。\n\n**根拠**:\n\n`$if(プロパティ名) {SQL条件}` の形式でWHERE句に記述します。対応するBeanのプロパティが `null` または空文字列（String型の場合）のとき、その条件は自動的に除外されます。\n\n**SQLの例**（`user_name` と `user_kbn` が可変条件）:\n\n```sql\nSELECT\n  user_id,\n  user_name,\n  user_kbn\nFROM\n  user\nWHERE\n  $if (userName) {user_name LIKE :userName%}\n  AND $if (userKbn) {user_kbn IN ('1', '2')}\n  AND birthday = :birthday\n```\n\n`userName` プロパティのみに値が設定されている場合、`user_kbn` の条件は除外されます。\n\n**Javaの実装例**:\n\n```java\nUserEntity entity = new UserEntity();\nentity.setUserName(\"なまえ\"); // userKbnはnullのまま\n\nAppDbConnection connection = DbConnectionContext.getConnection();\n\nParameterizedSqlPStatement statement =\n    connection.prepareParameterizedSqlStatementBySqlId(\n        \"jp.co.tis.sample.action.SampleAction#searchUser\", entity);\n\nSqlResultSet result = statement.retrieve(entity);\n```\n\n**複数条件の実用例**（Webアプリの検索画面）:\n\n```sql\nSEARCH_PROJECT =\nSELECT PROJECT_ID, PROJECT_NAME, ...\nFROM PROJECT\nWHERE\n    USER_ID = :userId\n    AND $if(projectName) {PROJECT_NAME LIKE :%projectName%}\n    AND $if(projectType) {PROJECT_TYPE = :projectType}\n    AND $if(projectStartDateBegin) {PROJECT_START_DATE >= :projectStartDateBegin}\n    AND $if(projectEndDateBegin) {PROJECT_END_DATE >= :projectEndDateBegin}\n```\n\nUniversalDAOで実行する場合:\n\n```java\nList<Project> results = UniversalDao.findAllBySqlFile(\n    Project.class, \"SEARCH_PROJECT\", searchCondition);\n```\n\n**注意点**:\n\n- `$if` は **WHERE句内でのみ** 使用可能です（SELECT句・ORDER BY句では使えません）\n- `$if` の中に `$if` をネストすることはできません\n- IN句で `$if` と組み合わせる場合は `:プロパティ名[]` の形式でパラメータを記述します\n  ```sql\n  $if (userKbn) {user_kbn IN (:userKbn[])}\n  ```\n  配列または `java.util.Collection` 型のプロパティが `null` またはサイズ0のときに条件が除外されます\n- この機能は **検索画面のように入力内容によって条件が変わる場合** に使うものです。複数のSQLを `$if` で共通化する目的には使用しないでください（保守時に予期しない不具合の原因になります）\n\n参照: `component/libraries/libraries-database.json#s21`, `processing-pattern/web-application/web-application-getting-started-project-search.json#s1`, `component/libraries/libraries-database.json#s22`\n\n---\n\n<<<BENCHMARK_HEARING>>>\n{\"status\": \"skipped\", \"questions\": []}\n<<<END_BENCHMARK_HEARING>>>\n\n<<<BENCHMARK_SEARCH>>>\n{\"section_ids\": [\"component/libraries/libraries-database.json:s21\", \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\", \"component/libraries/libraries-database.json:s6\", \"component/libraries/libraries-database.json:s22\", \"component/libraries/libraries-universal-dao.json:s10\"]}\n<<<END_BENCHMARK_SEARCH>>>\n\n<<<BENCHMARK_ANSWER>>>\n**結論**: 入力がある項目だけ条件に含める動的SQLは、`$if` 構文を使って実現できます。\n\n**根拠**:\n\n`$if(プロパティ名) {SQL条件}` の形式でWHERE句に記述します。対応するBeanのプロパティが `null` または空文字列（String型の場合）のとき、その条件は自動的に除外されます。\n\n**SQLの例**（`user_name` と `user_kbn` が可変条件）:\n\n```sql\nSELECT\n  user_id,\n  user_name,\n  user_kbn\nFROM\n  user\nWHERE\n  $if (userName) {user_name LIKE :userName%}\n  AND $if (userKbn) {user_kbn IN ('1', '2')}\n  AND birthday = :birthday\n```\n\n`userName` プロパティのみに値が設定されている場合、`user_kbn` の条件は除外されます。\n\n**Javaの実装例**:\n\n```java\nUserEntity entity = new UserEntity();\nentity.setUserName(\"なまえ\"); // userKbnはnullのまま\n\nAppDbConnection connection = DbConnectionContext.getConnection();\n\nParameterizedSqlPStatement statement =\n    connection.prepareParameterizedSqlStatementBySqlId(\n        \"jp.co.tis.sample.action.SampleAction#searchUser\", entity);\n\nSqlResultSet result = statement.retrieve(entity);\n```\n\n**複数条件の実用例**（Webアプリの検索画面）:\n\n```sql\nSEARCH_PROJECT =\nSELECT PROJECT_ID, PROJECT_NAME, ...\nFROM PROJECT\nWHERE\n    USER_ID = :userId\n    AND $if(projectName) {PROJECT_NAME LIKE :%projectName%}\n    AND $if(projectType) {PROJECT_TYPE = :projectType}\n    AND $if(projectStartDateBegin) {PROJECT_START_DATE >= :projectStartDateBegin}\n    AND $if(projectEndDateBegin) {PROJECT_END_DATE >= :projectEndDateBegin}\n```\n\nUniversalDAOで実行する場合:\n\n```java\nList<Project> results = UniversalDao.findAllBySqlFile(\n    Project.class, \"SEARCH_PROJECT\", searchCondition);\n```\n\n**注意点**:\n\n- `$if` は **WHERE句内でのみ** 使用可能です（SELECT句・ORDER BY句では使えません）\n- `$if` の中に `$if` をネストすることはできません\n- IN句で `$if` と組み合わせる場合は `:プロパティ名[]` の形式でパラメータを記述します\n  ```sql\n  $if (userKbn) {user_kbn IN (:userKbn[])}\n  ```\n  配列または `java.util.Collection` 型のプロパティが `null` またはサイズ0のときに条件が除外されます\n- この機能は **検索画面のように入力内容によって条件が変わる場合** に使うものです。複数のSQLを `$if` で共通化する目的には使用しないでください（保守時に予期しない不具合の原因になります）\n\n参照: `component/libraries/libraries-database.json#s21`, `processing-pattern/web-application/web-application-getting-started-project-search.json#s1`, `component/libraries/libraries-database.json#s22`\n<<<END_BENCHMARK_ANSWER>>>",
+  "stop_reason": "end_turn",
+  "session_id": "31362780-22b5-438f-9c16-ad990d527559",
+  "total_cost_usd": 0.8760703000000001,
+  "usage": {
+    "input_tokens": 8,
+    "cache_creation_input_tokens": 33864,
+    "cache_read_input_tokens": 227023,
+    "output_tokens": 3124,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 33864
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 1193,
+      "outputTokens": 25,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0013180000000000002,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 34277,
+      "outputTokens": 12513,
+      "cacheReadInputTokens": 467596,
+      "cacheCreationInputTokens": 118386,
+      "webSearchRequests": 0,
+      "costUSD": 0.8747523000000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01GpipRRJtGnDDPMsw4vLMyj",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work1/.claude/skills/nabledge-6/scripts/full-text-search.sh \"動的SQL\" \"dynamic SQL\" \"検索条件\" \"WHERE\" \"条件分岐\" \"UniversalDao\" \"DAO\" \"search\" \"条件\" \"入力\"",
+        "description": "Run full-text search with extracted keywords"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01EUKVz4u6SCcUAvdwxV8ZdS",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work1/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"component/libraries/libraries-database.json:s21\" \\\n  \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\" \\\n  \"component/libraries/libraries-database.json:s6\" \\\n  \"component/libraries/libraries-database.json:s22\" \\\n  \"component/libraries/libraries-universal-dao.json:s10\"",
+        "description": "Read knowledge file sections for dynamic SQL"
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "966d11e0-8df4-4ae9-9bc8-5c7186cef8be"
+}
