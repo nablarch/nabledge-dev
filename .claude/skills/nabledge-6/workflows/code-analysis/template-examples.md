@@ -225,7 +225,7 @@ String batchDate = BusinessDateUtil.getDate("batch");
 **Example**:
 
 ```markdown
-### Knowledge Base (Nabledge-6)
+### Knowledge Base
 
 - [Nablarchバッチ処理](../../.claude/skills/nabledge-6/docs/features/processing/nablarch-batch.md) - BatchActionの詳細、DB to FILEパターン、都度起動バッチ
 - [データバインド](../../.claude/skills/nabledge-6/docs/features/libraries/data-bind.md) - ObjectMapperの詳細仕様、@Csvアノテーション、フォーマット設定

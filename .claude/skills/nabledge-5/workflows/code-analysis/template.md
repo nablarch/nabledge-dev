@@ -61,7 +61,7 @@
 
 {{source_files_links}}
 
-### Knowledge Base (Nabledge-5)
+### Knowledge Base
 
 {{knowledge_base_links}}
 
