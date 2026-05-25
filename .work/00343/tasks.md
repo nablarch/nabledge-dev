@@ -1,7 +1,7 @@
 # Tasks: 検索改善
 
 **Branch**: 343-improve-search-quality
-**Updated**: 2026-05-25
+**Updated**: 2026-05-25 (session: GHC prompts English)
 
 ## Rules
 
@@ -98,6 +98,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] GHC prompt英語化（n6/n5/n1.4/n1.3/n1.2）— `5622e3c79`
 - [x] C-2. 設計書再作成（実装ベース）— `413728c22`〜`f39aa2947`、ユーザー承認済み（2026-05-25）
 - [x] サブエージェント廃止・AskUserQuestion削除（n6/n5/n1.4/n1.3/n1.2 CC+GHC、code-analysis.md 全バージョン）— `4695a69f9`, `e6d0a1a13`
 
