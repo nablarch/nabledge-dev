@@ -181,8 +181,8 @@ for file in "${FILES[@]}"; do
 
     # Process each match
     while IFS= read -r resolved_path; do
-        # Remove leading ./ from path
-        resolved_path=$(echo "$resolved_path" | sed 's|^\./||')
+        # Remove PROJECT_ROOT prefix and leading ./
+        resolved_path=$(echo "$resolved_path" | sed "s|^${PROJECT_ROOT}/||" | sed 's|^\./||')
 
         filename=$(basename "$resolved_path")
         relative_path="${RELATIVE_PREFIX}${resolved_path}"
@@ -228,8 +228,8 @@ for file in "${FILES[@]}"; do
 
     # Process each match
     while IFS= read -r resolved_path; do
-        # Remove leading ./ from path
-        resolved_path=$(echo "$resolved_path" | sed 's|^\./||')
+        # Remove PROJECT_ROOT prefix and leading ./
+        resolved_path=$(echo "$resolved_path" | sed "s|^${PROJECT_ROOT}/||" | sed 's|^\./||')
 
         # Convert knowledge JSON paths to docs MD paths
         # Example: .claude/skills/nabledge-5/knowledge/features/X.json
