@@ -351,7 +351,7 @@ verify_dynamic() {
             verify_fail=1
             return
         fi
-        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 120s)..."
+        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 240s)..."
         local output
         # CC uses short model alias "haiku"; GHC uses full model ID "claude-haiku-4.5" (copilot requirement)
         # stream-json+verbose outputs full conversation including tool_use events with file paths
@@ -376,6 +376,15 @@ verify_dynamic() {
         grep -rqE '\[DEBUG\] view:.*SKILL\.md' "$ghc_log_dir"/ && skill_read=1 || true
     fi
 
+    # Check if a conclusion was produced (i.e., the workflow ran to completion).
+    # For CC: appears in stream-json output. For GHC: appears in stdout captured to output.
+    local answered=0
+    if [ "$tool" = "cc" ]; then
+        grep -q '\*\*結論\*\*' "$log_file" && answered=1 || true
+    else
+        echo "$output" | grep -q '\*\*結論\*\*' && answered=1 || true
+    fi
+
     # Keyword detection (reference only, not used for pass/fail)
     local detected_count=0
     local total_count=0
@@ -389,12 +398,15 @@ verify_dynamic() {
         fi
     done
 
-    if [ "$skill_read" -eq 0 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: SKILL.md not read; keywords: ${detected_count}/${total_count}"
+    local answered_label
+    [ "$answered" -eq 1 ] && answered_label="yes" || answered_label="no"
+
+    if [ "$skill_read" -eq 0 ] || [ "$answered" -eq 0 ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: SKILL.md read: $([ "$skill_read" -eq 1 ] && echo yes || echo no), answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
         echo "         Log: ${log_file}"
         verify_fail=1
     else
-        echo "  [OK]   ${label} nabledge-${v}: SKILL.md read; keywords: ${detected_count}/${total_count}"
+        echo "  [OK]   ${label} nabledge-${v}: SKILL.md read, answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
     fi
 }
 
