@@ -17,6 +17,59 @@ v6の検索実装（`workflows/`, `scripts/`）の設計。
 
 ---
 
+## ディレクトリ構成
+
+```
+.claude/skills/nabledge-6/
+├── SKILL.md           — スキルのエントリーポイント定義・使い方
+├── knowledge/         — RBKC が生成するナレッジJSONとインデックス（353ファイル）
+│   ├── index.md       — 意味検索が読むページ一覧（カテゴリ/ページ/セクション構造）
+│   └── {category}/    — カテゴリ別のナレッジJSON
+├── workflows/         — ワークフロー定義（qa.md, semantic-search.md 等）
+│   └── code-analysis/ — コード分析ワークフローのサブテンプレート
+├── scripts/           — ワークフローが呼び出すBashスクリプト
+├── docs/              — ユーザー向けドキュメント（GUIDE等）
+├── assets/            — 回答テンプレート等
+└── plugin/            — マーケットプレイス配布用メタデータ・CHANGELOG
+```
+
+---
+
+## ナレッジファイルの生成（RBKC）
+
+`knowledge/` 以下のファイルはすべて RBKC（Rule-Based Knowledge Creator）が自動生成する。手動編集は禁止。
+
+```
+Nablarch公式ドキュメント（RST/Markdown/Excel）
+  ↓ tools/rbkc/rbkc.sh create 6
+知識JSON（353ファイル）+ knowledge/index.md
+```
+
+`index.md` は `tools/benchmark/scripts/generate_index.py` が生成する。カテゴリ（H2）→ページ（H3）→セクション（L2/L3）の階層構造で、意味検索の Step 1 でページ選定の手がかりとして使われる。
+
+---
+
+## 実行環境（CC / GHC）
+
+ユーザーからの入口は2つある:
+
+| 環境 | 入口 | 実行方式 |
+|---|---|---|
+| Claude Code（CC） | `/n6 <質問またはコマンド>` | サブエージェント（別コンテキスト）で SKILL.md を読んで実行 |
+| GitHub Copilot（GHC） | `@n6 <質問またはコマンド>` | サブエージェント（`#runSubagent`）で SKILL.md を読んで実行 |
+
+どちらも SKILL.md のルーティング定義に従い、引数によって実行するワークフローを切り替える:
+
+| 引数 | 実行するワークフロー |
+|---|---|
+| なし | ユーザーに QA / コード分析 を選ばせる |
+| `<質問>` | `workflows/qa.md` |
+| `code-analysis` | `workflows/code-analysis.md` |
+| `keyword-search "<terms>"` | `workflows/keyword-search.md` |
+| `semantic-search "<question>"` | `workflows/semantic-search.md` |
+
+---
+
 ## QAワークフロー（`workflows/qa.md`）
 
 ### 全体フロー
