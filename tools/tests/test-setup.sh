@@ -72,6 +72,10 @@ echo "Output directory:    ${OUTPUT_DIR}"
 echo "Version filter:      ${VERSION_FILTER:-all versions}"
 echo ""
 
+# Allow local overrides for setup scripts (for testing local fixes before release)
+LOCAL_SETUP_CC="${LOCAL_SETUP_CC:-}"
+LOCAL_SETUP_GHC="${LOCAL_SETUP_GHC:-}"
+
 # Extract setup script URLs from GUIDE files on NABLEDGE_BRANCH
 # This ensures we use the same URL as users, and detects if the URL changes in the guide.
 echo "[Setup] Fetching setup script URLs from GUIDE files (branch: ${NABLEDGE_BRANCH})..."
@@ -92,6 +96,14 @@ echo "[Setup] Setup CC script URL:  ${SETUP_CC_URL}"
 echo "[Setup] Setup GHC script URL: ${SETUP_GHC_URL}"
 curl -sSfL "$SETUP_CC_URL" -o "$TEMP_DIR/setup-cc.sh"
 curl -sSfL "$SETUP_GHC_URL" -o "$TEMP_DIR/setup-ghc.sh"
+if [ -n "$LOCAL_SETUP_CC" ]; then
+    echo "[Setup] Overriding setup-cc.sh with local file: ${LOCAL_SETUP_CC}"
+    cp "$LOCAL_SETUP_CC" "$TEMP_DIR/setup-cc.sh"
+fi
+if [ -n "$LOCAL_SETUP_GHC" ]; then
+    echo "[Setup] Overriding setup-ghc.sh with local file: ${LOCAL_SETUP_GHC}"
+    cp "$LOCAL_SETUP_GHC" "$TEMP_DIR/setup-ghc.sh"
+fi
 echo "[Setup] Setup scripts downloaded."
 echo ""
 
