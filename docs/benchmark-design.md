@@ -310,51 +310,6 @@ must セクションがないシナリオのリコール率は 1.0。
 
 ---
 
-## 実行手順（HOW-TO-RUN.md の要約）
+## 実行手順
 
-### ステップ 1: 1シナリオで動作確認
-
-```bash
-python3 -m tools.benchmark.scripts.run_qa \
-  --scenarios tools/benchmark/scenarios/qa.json \
-  --skill-dir .claude/skills/nabledge-6 \
-  --scenario-ids pre-01
-```
-
-確認後、動作確認用ディレクトリを削除する。
-
-### ステップ 2: 全シナリオ実行（1 run）
-
-```bash
-python3 -m tools.benchmark.scripts.run_qa \
-  --scenarios tools/benchmark/scenarios/qa.json \
-  --skill-dir .claude/skills/nabledge-6
-```
-
-完了後、出力ディレクトリを `results/{run-label}/run-N/` にリネームする。
-
-### ステップ 3: 妥当性評価
-
-FAIL/UNCERTAIN シナリオについて `workflow_details.json` と `answer.md` を読み、原因を分類する:
-- **評価基準の問題**: factやclaimの記述が不正確
-- **ナレッジ/RSTの問題**: ナレッジに誤りがあり回答の方が正しい
-- **ナレッジ未収録の補足**: Nablarch固有でない一般的な補足情報
-- **スキルの挙動問題**: 検索ミス・回答生成ミス・Nablarch固有のハルシネーション
-
-AIが分類を提案 → ユーザーが承認した FAIL のみ確定FAILとなる。3 run繰り返す。
-
-### ステップ 4: 比較集計（3 run完了後）
-
-3 runの数値を集計し、前回ラベルと比較する。
-
-### ステップ 5: 確定FAILの根本原因調査
-
-確定FAILについて再現性・原因を調査し、「揺らぎ（対処不要）」か「要改善」かをAIが提案。ユーザーが対応要否を判定する。
-
-### ステップ 6: コミット・プッシュ
-
-```bash
-git add tools/benchmark/results/{run-label}/
-git commit -m "chore: save {run-label} E2E benchmark results ({N} runs)"
-git push
-```
+→ `tools/benchmark/HOW-TO-RUN.md` を参照。
