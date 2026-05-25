@@ -6,14 +6,7 @@
 
 ## 概要
 
-QAワークフロー（`workflows/qa.md`）を E2E で実行し、回答精度とハルシネーションを自動評価する。  
-キーワード検索スクリプトの単体評価も独立して実行できる。
-
-**設計意図 — ヒアリングのスキップ**:  
-`qa.md` は Step 2 でユーザーに処理方式・目的を確認するが、ベンチマークでは対話できないためスキップが必要。そのため各シナリオの `hearing_answer` フィールドに処理方式と目的を事前設定し、ランナーが質問テキストに `（処理方式: X）（目的: Y）` を付記してから渡す。これにより `qa.md` は Step 1 で両軸を確定済みと判断し Step 3 へ直接進む。
-
-**設計意図 — 詳細ワークフローによるAI判断の可視化**:  
-ベンチマークでは通常の `qa.md` ではなく `e2e-prompt.md` で拡張したワークフローを実行する。Step 3 のページ/セクション選定理由、Step 4 の実際に読んだセクション、Step 8 の使用/未使用セクションをすべて `Workflow Details` として出力させる。この詳細情報によってAIがどのページを選び、なぜその回答になったかを追跡でき、FAILの根本原因調査が可能になる。ただし、追加の出力指示により実行時間・トークン量は通常使用時より増大する。
+QAワークフロー（`workflows/qa.md`）を E2E で実行し、回答精度とハルシネーションを自動評価する。キーワード検索スクリプトの単体評価も独立して実行できる。
 
 ---
 
@@ -41,6 +34,8 @@ tools/benchmark/
 ---
 
 ## シナリオ定義
+
+**設計意図**: シナリオは「入力・期待値・ヒアリング事前設定」を宣言的に定義し、ランナーと評価ロジックから分離する。期待値（`must`）は「回答に含まれるべき事実」と「その根拠セクション」をセットで持つことで、事実の有無をナレッジと照合して機械的に判定できる。
 
 ### QAシナリオ（`scenarios/qa.json`）
 
@@ -87,7 +82,7 @@ tools/benchmark/
 | `phase` | フェーズ（`pre-benchmark`, `benchmark`, `impact`） |
 | `when.input` | ユーザーの質問テキスト |
 | `when.expected_hearing` | ヒアリングが発生するか（`should_skip`: スキップ予想、`should_ask`: 発生予想） |
-| `when.hearing_answer` | ランナーが Step 1/2 をスキップしてStep 3から開始するための事前設定値 |
+| `when.hearing_answer` | ランナーがStep 1/2をスキップしてStep 3から開始するための事前設定値 |
 | `then.must` | 回答に必ず含まれるべき事実のリスト（`section` はC-claimジャッジが参照するナレッジセクション） |
 | `then.acceptable` | あってもよいセクションのリスト（評価には不使用） |
 
@@ -126,13 +121,19 @@ tools/benchmark/
 
 ## QA E2Eランナー（`scripts/run_qa.py`）
 
+**設計意図**: `qa.md` をそのまま E2E 実行することで、実際のユーザー体験と同じ条件で品質を測る。2点の工夫がある。
+
+1つ目は**ヒアリングのスキップ**。`qa.md` は Step 2 でユーザーに処理方式・目的を確認するが、ベンチマークは非対話型のため実行できない。そこでシナリオの `hearing_answer` を質問テキストに付記（`（処理方式: X）（目的: Y）`）してから渡すことで、`qa.md` が Step 1 で両軸を確定済みと判断し Step 3 へ直接進む。
+
+2つ目は**AI判断の可視化**。通常の `qa.md` に加え `e2e-prompt.md` の追加指示を重ねることで、Step 3 のページ/セクション選定理由、Step 4 の実際に読んだセクション、Step 8 の使用/未使用セクションをすべて `Workflow Details` として出力させる。これによりAIがどのページを選び、なぜその回答になったかを追跡でき、FAILの根本原因調査が可能になる。ただし追加の出力指示により、実行時間・トークン量は通常使用時より増大する。
+
 ### 処理フロー
 
 ```
 シナリオJSON読み込み
   ↓
 各シナリオに対して:
-  1. E2Eプロンプト構築（e2e-prompt.md テンプレート）
+  1. E2Eプロンプト構築（hearing_answer を質問テキストに付記 + e2e-prompt.md テンプレート）
   2. claude -p 実行（TIMEOUT=360秒）
   3. レスポンスのパース（"### Workflow Details" で分割）
   4. 結果ファイル保存
@@ -140,15 +141,6 @@ tools/benchmark/
   6. evaluation.json 保存
   ↓
 summary.json 保存
-```
-
-### 実行コマンド
-
-```bash
-python3 -m tools.benchmark.scripts.run_qa \
-  --scenarios tools/benchmark/scenarios/qa.json \
-  --skill-dir .claude/skills/nabledge-6 \
-  [--scenario-ids pre-01,qa-01]
 ```
 
 ### claude -p の設定
@@ -161,25 +153,6 @@ python3 -m tools.benchmark.scripts.run_qa \
 | `--allowedTools` | `Bash(bash scripts/keyword-search.sh *) Bash(bash scripts/read-sections.sh *) Read` | スキルが使うツールのみ許可 |
 | `cwd` | スキルディレクトリ | スクリプトの相対パスを解決するため |
 
-### E2Eプロンプト構築（`build_qa_prompt`）
-
-`prompts/e2e-prompt.md` テンプレートの `{workflow}` と `{question}` を置換する。
-
-`{question}` の構築:
-- `hearing_answer` がある場合: `"質問（処理方式: X）（目的: Y）"` と付記
-  - `processing_type` が null の場合は `（処理方式: X）` 部分を省略
-- `hearing_answer` がない場合: 質問テキストそのまま
-
-`e2e-prompt.md` の追加指示により、Step 1/2 をスキップして Step 3 から開始する（ヒアリング済みとして扱う）。また、各ステップの判断理由を `Workflow Details` セクションとしてレスポンス末尾に出力させる。
-
-### レスポンスパース（`parse_qa_response`）
-
-レスポンスを `"### Workflow Details"` で分割:
-- 上部 → `answer`（最終回答テキスト）
-- 下部の ` ```json...``` ` ブロック → `workflow_details`（各ステップの詳細JSON）
-
-いずれかが欠如している場合は `MarkerError` を発生させる。
-
 ### 出力ファイル（シナリオごと）
 
 | ファイル | 存在条件 | 内容 |
@@ -191,14 +164,13 @@ python3 -m tools.benchmark.scripts.run_qa \
 | `evaluation.json` | 正常完了時 | 自動評価結果 |
 | `error.json` | エラー時のみ | エラー内容（`error`, `exception_type`） |
 | `raw_response.txt` | MarkerError時のみ | パース失敗したレスポンス全文 |
-
-| ファイル | 内容 |
-|---|---|
-| `summary.json` | 全シナリオのサマリー（`total_scenarios`, `skill_dir`, `scenarios_file`, `executed_at`, per-scenario情報） |
+| `summary.json` | 実行完了時 | 全シナリオのサマリー（`total_scenarios`, `skill_dir`, `scenarios_file`, `executed_at`） |
 
 ---
 
 ## キーワード検索ランナー（`scripts/run_keyword_search.py`）
+
+**設計意図**: LLMを介さず `keyword-search.sh` を直接実行し、リコール率（must セクションをどれだけ発見できたか）のみで評価する。QAと異なりヒアリング・回答生成・ハルシネーション検証がないため、シンプルなスクリプト呼び出しで完結する。
 
 ### 処理フロー
 
@@ -213,15 +185,6 @@ python3 -m tools.benchmark.scripts.run_qa \
 summary.json 保存
 ```
 
-### 実行コマンド
-
-```bash
-python3 -m tools.benchmark.scripts.run_keyword_search \
-  --scenarios tools/benchmark/scenarios/keyword-search.json \
-  --skill-dir .claude/skills/nabledge-6 \
-  [--scenario-ids review-01]
-```
-
 ### 評価指標
 
 **リコール率** = 発見した must セクション数 / must セクション総数  
@@ -231,6 +194,8 @@ must セクションがないシナリオのリコール率は 1.0。
 
 ## 評価ロジック（`scripts/evaluate.py`）
 
+**設計意図**: 評価を2軸に分ける。「回答精度」は期待する事実が回答に含まれているかを測り、「ハルシネーション」はナレッジに根拠のないNablarch固有クレームが混入していないかを測る。どちらの軸も機械判定だけでは確信が持てないケースを `UNCERTAIN` として人間レビューに委ねることで、自動化と信頼性を両立する。
+
 ### 評価の2軸
 
 | 軸 | 評価方法 | 判定値 |
@@ -238,53 +203,32 @@ must セクションがないシナリオのリコール率は 1.0。
 | 回答精度（C-claim） | 各 `must.fact` がanswer.mdに含まれているかをLLMで判定 | `PRESENT` / `ABSENT` / `UNCERTAIN` |
 | ハルシネーション | answer.mdのNablarch固有クレームがナレッジセクションで裏付けられるかをLLMで判定 | `PASS` / `FAIL` / `UNCERTAIN` |
 
-### C-claimジャッジ（`build_claim_prompt`）
+### C-claimジャッジ
 
-各 `must.fact` について:
-1. `c-claim-judge.md` プロンプトテンプレートに `{fact}`, `{answer}`, `{section_content}` を挿入
-2. `call_llm()` でSonnetを呼び出す
-3. `{"verdict": "PRESENT"|"ABSENT"|"UNCERTAIN", "reason": "..."}` を返す
+各 `must.fact` について `c-claim-judge.md` プロンプトに `{fact}`, `{answer}`, `{section_content}` を挿入してLLMで判定する。`must.section` が空の場合はセクション内容に空文字を渡す。
 
-`must.section` が空の場合はセクション内容に空文字を渡す。
+### ハルシネーションジャッジ
 
-### ハルシネーションジャッジ（`build_hallucination_prompt`）
+判定の根拠テキスト（`sections_text`）は2種類のコンテンツを合わせて構築する:
+1. `must` と `acceptable` の全セクション内容
+2. ランナーが選択した `step3.selected_pages` の全ページの全セクション — LLMが意味検索のStep 2でページ全体を読んでいるため、ページ全体を根拠として含める
 
-`sections_text` の構築:
-1. `must` と `acceptable` の全セクションの個別コンテンツを追加（重複除去）
-2. ランナーが選択した `step3.selected_pages` の全ページの全セクションを追加（重複除去）  
-   ※ページ全体を含めるのは、LLMがStep 2でページ全体を読んでいるため
+`hallucination-judge.md` に `{answer}`, `{sections}` を挿入してLLMで判定する。
 
-`hallucination-judge.md` プロンプトテンプレートに `{answer}`, `{sections}` を挿入し、`call_llm()` で判定。
+### スコア計算とUNCERTAIN扱い
 
-返値: `{"verdict": "PASS"|"FAIL"|"UNCERTAIN", "claims": [...], "reason": "..."}`
+**精度スコア**: `UNCERTAIN` が1件でも含まれると `None`（未確定）。それ以外は `PRESENT` 件数 / 総件数。  
+**ハルシネーションスコア**: `PASS` → `1` / `FAIL` → `0` / `UNCERTAIN` → `None`。
 
-### スコア計算
-
-**精度スコア**:
-- `UNCERTAIN` が1件でも含まれる → `None`（未確定）
-- それ以外 → `PRESENT` 件数 / 総件数
-
-**ハルシネーションスコア**:
-- `PASS` → `1`
-- `FAIL` → `0`
-- `UNCERTAIN` → `None`
-
-### 人間レビュー判定
-
-以下の場合に `needs_human_review = true`:
-- いずれかのC-claim判定が `UNCERTAIN` または `ABSENT`
-- ハルシネーション判定が `FAIL` または `UNCERTAIN`
-
-### LLM呼び出し（`call_llm`）
-
-`claude -p` を `subprocess` で実行。JSONスキーマをプロンプト末尾に付与して構造化出力を強制する。  
-モデル: Sonnet。`cwd=/tmp`（スキルディレクトリとは無関係）。
+`UNCERTAIN` スコアのシナリオは集計から除外し、人間レビュー対象としてマークする。承認されたFAILのみが確定FAILとなる。
 
 ---
 
 ## レポート生成（`scripts/report.py`）
 
-### シナリオ別レポート（`format_scenario_report`）
+**設計意図**: 3種類のレポートを用途に応じて出力する。シナリオ別レポートはFAILの原因調査用、サマリーレポートは全体品質の把握用、比較レポートは改善前後の変化確認用。
+
+### シナリオ別レポート
 
 各シナリオの評価結果を表形式で出力:
 - 評価結果表（回答精度・ハルシネーションの自動判定・人間判定・スコア）
@@ -292,15 +236,15 @@ must セクションがないシナリオのリコール率は 1.0。
 - 診断情報（ヒアリング状態・検索セクション）
 - メトリクス（実行時間・トークン量・ツール呼び出し数）
 
-### サマリーレポート（`format_summary_report`）
+### サマリーレポート
 
 全シナリオを集計:
 - 精度・ハルシネーション × 対象件数・確定件数・未確定・平均スコア・最低スコア・全PASS率
 - パフォーマンスサマリー（実行時間・API時間・ターン数・トークン量・コスト の 平均/P50/P95/最大/合計）
 
-**集計ルール**: `UNCERTAIN` を含むシナリオは「未確定」としてカウントし、平均・PASS率の計算から除外する。
+`UNCERTAIN` を含むシナリオは「未確定」としてカウントし、平均・PASS率の計算から除外する。
 
-### 比較レポート（`format_comparison_report`）
+### 比較レポート
 
 2つの実行ラベルを比較:
 - 品質比較（精度平均・ハルシネーションPASS率・差分）
