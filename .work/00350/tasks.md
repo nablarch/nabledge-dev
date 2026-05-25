@@ -4,6 +4,19 @@
 **Issue**: #350
 **Updated**: 2026-05-25
 
+## Not Started
+
+### 全バージョン動作確認（answered チェック追加後）
+
+answered チェック追加後、全バージョンで Exit 0 かつ全 [OK] であることを確認する。
+
+**Steps:**
+- [ ] `LOCAL_SETUP_CC=tools/setup/setup-cc.sh LOCAL_SETUP_GHC=tools/setup/setup-ghc.sh bash tools/tests/test-setup.sh v6` — Exit 0, 全 [OK]
+- [ ] 同上 v5
+- [ ] 同上 v1.4
+- [ ] 同上 v1.3
+- [ ] 同上 v1.2
+- [ ] 同上 upgrade
 
 ## Done
 
