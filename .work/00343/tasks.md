@@ -24,7 +24,7 @@ C-2設計書レビュー承認後。他バージョン展開前にv6の全フロ
   - 受入条件: ヒアリングなしで回答が返る。`参照:` セクションにナレッジファイル引用がある
 - [x] QA（ヒアリングあり）: `/n6 バリデーションの実装方法を教えてください`
   - 受入条件: 処理方式または目的の確認が届く。ユーザー回答後に回答が返る
-- [ ] keyword-search: `/n6 keyword-search "UniversalDao batchUpdate"`
+- [x] keyword-search: `/n6 keyword-search "UniversalDao batchUpdate"`
   - 受入条件: セクション一覧が返る
 - [ ] semantic-search: `/n6 semantic-search "ページング検索の実装方法"`
   - 受入条件: セクションポインタのJSON（またはサマリー）が返る
