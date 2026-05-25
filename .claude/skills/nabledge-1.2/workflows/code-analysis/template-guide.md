@@ -74,7 +74,7 @@ Replace the following placeholders with actual content (using `{{variable}}` for
 
 - `{{source_files_links}}`: List of source file links with relative paths
 - `{{knowledge_base_links}}`: List of knowledge base links (`.claude/skills/nabledge-1.2/docs`)
-- `{{official_docs_links}}`: List of official Nablarch documentation links
+- `{{official_docs_links}}`: Not available for this version (no public official documentation)
 
 ## Usage Instructions
 
@@ -206,14 +206,6 @@ mapper.close();
 - [データバインド](../../.claude/skills/nabledge-1.2/docs/features/libraries/data-bind.md) - ObjectMapperの詳細仕様
 - [業務日付管理](../../.claude/skills/nabledge-1.2/docs/features/libraries/business-date.md) - BusinessDateUtilの使い方
 - [ファイルパス管理](../../.claude/skills/nabledge-1.2/docs/features/libraries/file-path-management.md) - FilePathSettingの設定方法
-```
-
-### {{official_docs_links}}
-
-```markdown
-- [Nablarchバッチ処理](https://nablarch.github.io/docs/5-LATEST/doc/application_framework/application_framework/batch/index.html)
-- [データバインド](https://nablarch.github.io/docs/5-LATEST/doc/application_framework/application_framework/libraries/data_io/data_bind.html)
-- [業務日付管理](https://nablarch.github.io/docs/5-LATEST/doc/application_framework/application_framework/libraries/system_utility/business_date.html)
 ```
 
 ## Tips
