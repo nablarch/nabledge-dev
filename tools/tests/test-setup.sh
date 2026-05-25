@@ -312,27 +312,12 @@ verify_dynamic() {
             return
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via copilot -p..."
-        local ghc_marker="#runSubagent"
-        if ! grep -qF "$ghc_marker" "$prompt_file"; then
-            echo "  [FAIL] ${label} nabledge-${v}: GHC prompt file missing marker: '${ghc_marker}'"
-            echo "         File: ${prompt_file}"
-            echo "         If n${v}.prompt.md format changed, update test-setup.sh accordingly."
-            verify_fail=1
-            return
-        fi
-        local ghc_prompt
-        ghc_prompt=$(sed -n "/^${ghc_marker}/,\$p" "$prompt_file")
-        ghc_prompt="${ghc_prompt//\$ARGUMENTS/$query}"
-        if [ -z "$ghc_prompt" ]; then
-            echo "  [FAIL] ${label} nabledge-${v}: marker extraction produced empty prompt"
-            verify_fail=1
-            return
-        fi
-        ghc_prompt="下記の指示に従って作業してください。
-${ghc_prompt}"
+        local ghc_content
+        ghc_content=$(cat "$prompt_file")
+        ghc_content="${ghc_content//\$ARGUMENTS/$query}"
         local ghc_prompt_file
         ghc_prompt_file=$(mktemp "${OUTPUT_DIR}/ghc-prompt-XXXXXX.md")
-        echo "$ghc_prompt" > "$ghc_prompt_file"
+        echo "$ghc_content" > "$ghc_prompt_file"
         local ghc_prompt_basename
         ghc_prompt_basename=$(basename "$ghc_prompt_file")
         # Copy temp prompt file into project dir so copilot can find it
@@ -355,29 +340,11 @@ ${ghc_prompt}"
             return
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 120s)..."
-        local cc_marker="Delegate the following task"
-        if ! grep -qF "$cc_marker" "$cmd_file"; then
-            echo "  [FAIL] ${label} nabledge-${v}: CC command file missing marker: '${cc_marker}'"
-            echo "         File: ${cmd_file}"
-            echo "         If n${v}.md format changed, update test-setup.sh accordingly."
-            verify_fail=1
-            return
-        fi
-        local prompt
-        prompt=$(sed -n "/^${cc_marker}/,\$p" "$cmd_file")
-        prompt="${prompt//\$ARGUMENTS/$query}"
-        if [ -z "$prompt" ]; then
-            echo "  [FAIL] ${label} nabledge-${v}: marker extraction produced empty prompt"
-            verify_fail=1
-            return
-        fi
-        prompt="下記の指示に従って作業してください。
-${prompt}"
         local output
         # CC uses short model alias "haiku"; GHC uses full model ID "claude-haiku-4.5" (copilot requirement)
         # stream-json+verbose outputs full conversation including tool_use events with file paths
         local cc_log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
-        timeout 120 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "$prompt") --model haiku --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
+        timeout 120 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "/n${v} ${query}") --model haiku --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
         output=$(cat "$cc_log_file")
     fi
 
