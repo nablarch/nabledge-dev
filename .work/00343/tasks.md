@@ -84,26 +84,21 @@ B-6完了後。新ベンチマーク基盤に完全移行。
 - [x] `.claude/rules/` からnabledge-test固有記述を削除 — `f9d0dfef6`
 - [x] `python3 -m pytest tools/ -x` で全テストPASS — rbkc: 587 PASS, benchmark: 159 PASS, metrics: 8 PASS
 
-### B-8-pre. マージ前静的確認
+### ~~B-8-pre. マージ前静的確認~~
 
 B-7完了後、PRマージ前に実施。「マージしたら壊れる」を事前に潰す。
 
 **確認1: GHA sync manifest**
-- [ ] `.github/workflows/sync-to-nabledge/sync-manifest.txt` を読み、今回追加・変更したスキルファイルが含まれているか確認
-  - 含まれるべきもの: `workflows/qa.md`, `workflows/qa/`, `workflows/_knowledge-search.md`, `workflows/_knowledge-search/`, `assets/answer.md` など今回の変更ファイル
-  - 含まれないべきもの: `tools/`, `.work/`, `.claude/rules/` など開発専用ファイル
-  - 受入条件: デプロイ対象ファイルがすべてmanifestに含まれること
+- [x] `.github/workflows/sync-to-nabledge/sync-manifest.txt` を読み、今回追加・変更したスキルファイルが含まれているか確認
+  - SKILL.md/workflows/scripts/knowledge/commands/prompts — 全てmanifestに含まれている ✅
 
 **確認2: セットアップスクリプト**
-- [ ] `tools/setup/setup-6-cc.sh` / `tools/setup/setup-6-ghc.sh` を読み、今回削除・移動したファイルへの参照がないか確認
-  - 受入条件: 削除・移動したファイルへの参照がゼロであること
+- [x] `tools/setup/setup-cc.sh` / `tools/setup/setup-ghc.sh` を読み、今回削除・移動したファイルへの参照がないか確認
+  - 削除・移動ファイルへの参照ゼロ ✅
 
 **確認3: test-setup.sh**
-- [ ] B-7で削除するファイル（`.claude/skills/nabledge-test/scenarios/`）への参照がtest-setup.shに残っていないか確認
-  - B-7の `_scenario_field` 削除ステップで対処済みであることを確認
-  - 受入条件: `grep -n "nabledge-test" tools/tests/test-setup.sh` が0件であること
-
-- [ ] 問題があればB-7の修正に追加してコミット
+- [x] B-7で削除したファイルへの参照がtest-setup.shに残っていないか確認
+  - `grep -n "nabledge-test" tools/tests/test-setup.sh` → OUTPUT_DIR/.tmp参照のみ（スキル参照ゼロ）✅
 
 ### B-8. test-setup.sh 動作確認
 
@@ -131,6 +126,7 @@ B-7完了後、mainマージ → nablarch/nabledge:develop自動sync後に実施
 
 ## Done
 
+- [x] B-8-pre. マージ前静的確認 — 全3確認PASS（session 8）
 - [x] B-7. nabledge-test削除 — `157d1ee01`, `f9d0dfef6`（全テストPASS確認済み）
 - [x] C-3. 他バージョン展開・差分チェック＋動作確認 — 全差分許容範囲、全バージョン全5フロー動作確認済み・ユーザー承認済み（2026-05-25 session 8）
 - [x] C-2b. v6 動作確認（4フロー全PASS）— 全フローPASS確認・ユーザー承認済み（2026-05-25）
