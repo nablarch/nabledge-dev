@@ -33,7 +33,7 @@ from pathlib import Path
 from scripts.common.sources import FileInfo, classify_sources, scan_sources
 from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.create.docs import generate_docs
-from scripts.create.index import generate_index, generate_index_md
+from scripts.create.index import generate_index_md
 from scripts.create.resolver import collect_asset_refs, copy_assets
 from scripts.common.labels import build_label_doc_map, build_label_map  # noqa: F401
 from scripts.verify.verify import (
@@ -215,7 +215,7 @@ def create(
     """Create all knowledge JSON files for the given version.
 
     Pre-cleans output/docs/assets directories, converts all sources, copies
-    assets, generates index.toon, generates browsable docs, and saves a
+    assets, generates index.md, generates browsable docs, and saves a
     snapshot.
 
     Args:
@@ -231,8 +231,6 @@ def create(
     import shutil
 
     docs_dir = output_dir.parent / "docs"
-    index_path = output_dir / "index.toon"
-
     # Pre-clean: remove all previous output so stale files don't persist.
     # This also removes assets/ (output_dir/assets/) as a subdirectory of
     # output_dir.  update() and delete() do NOT pre-clean, so stale assets
@@ -258,7 +256,6 @@ def create(
             all_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
 
     copy_assets(all_asset_refs, output_dir)
-    generate_index(file_infos, output_dir, version, index_path)
     generate_index_md(output_dir, output_dir / "index.md")
     generate_docs(output_dir, docs_dir, version)
 
@@ -308,7 +305,6 @@ def update(
             count += 1
 
     copy_assets(changed_asset_refs, output_dir)
-    generate_index(file_infos, output_dir, version, output_dir / "index.toon")
     generate_index_md(output_dir, output_dir / "index.md")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 
@@ -351,7 +347,6 @@ def delete(
                 json_path.unlink()
                 count += 1
 
-    generate_index(file_infos, output_dir, version, output_dir / "index.toon")
     generate_index_md(output_dir, output_dir / "index.md")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 

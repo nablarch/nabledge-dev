@@ -9,7 +9,7 @@
 ```
 [ソース: RST / MD / Excel]
     ↓ RBKC create         ← 変換
-[JSON + docs MD + index.md + index.toon]
+[JSON + docs MD + index.md]
     ↓ RBKC verify         ← 検証（本書の対象）
 [PASS / FAIL レポート]
 ```
@@ -19,7 +19,6 @@
 - **知識ファイル（JSON）**: nabledge スキルが読み込む構造化テキスト。`id` / `title` / `content` / `sections[]` を持つ。
 - **閲覧用知識（docs MD）**: JSON と 1:1 対応する Markdown ファイル。GitHub 上で人間が読める。JSON の内容を忠実にレンダリングしたもので、両者の内容は一致が要件。
 - **セマンティック検索インデックス（index.md）**: 全 JSON の H3 エントリ（ファイルタイトル・パス・セクション一覧）を列挙した Markdown ファイル。nabledge スキルの意味検索（Stage 1 カテゴリ選定）の起点。
-- **レガシー検索インデックス（index.toon）**: 全 JSON ファイルのパスを TOON 形式で列挙したファイル。後方互換のため残存。QO4 は index.md ベースに移行済み（index.toon の網羅性チェックは廃止）。
 
 ### 品質 ID の読み方
 

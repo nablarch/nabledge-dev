@@ -157,3 +157,60 @@ class TestVerifyMissingDocsMd:
         }
         result = self._run_verify(tmp_path, fi, json_data)
         assert result is True
+
+
+# ---------------------------------------------------------------------------
+# index.toon must NOT be generated (legacy file removed)
+# ---------------------------------------------------------------------------
+
+class TestIndexToonNotGenerated:
+    """create/update/delete must not produce index.toon."""
+
+    def _patches(self, tmp_path):
+        output_dir = tmp_path / "knowledge"
+        output_dir.mkdir()
+        return output_dir, [
+            patch("scripts.run.scan_sources", return_value=[]),
+            patch("scripts.run.classify_sources", return_value=[]),
+            patch("scripts.run.build_label_doc_map", return_value=({}, {})),
+            patch("scripts.run._load_sheet_subtype_map", return_value={}),
+            patch("scripts.run.generate_index_md"),
+            patch("scripts.run.generate_docs"),
+            patch("scripts.run.copy_assets"),
+            patch("scripts.create.scan._source_roots", return_value=[]),
+        ]
+
+    def test_create_does_not_write_index_toon(self, tmp_path):
+        """create() must not produce index.toon."""
+        from scripts.run import create
+        output_dir, patches = self._patches(tmp_path)
+        with patches[0], patches[1], patches[2], patches[3], \
+             patches[4], patches[5], patches[6], patches[7]:
+            create(version="6", repo_root=_REPO_ROOT, output_dir=output_dir,
+                   state_dir=tmp_path, files=None)
+        assert not (output_dir / "index.toon").exists()
+
+    def test_update_does_not_write_index_toon(self, tmp_path):
+        """update() must not produce index.toon."""
+        from scripts.run import update
+        output_dir, patches = self._patches(tmp_path)
+        with patches[0], patches[1], patches[2], patches[3], \
+             patches[4], patches[5], patches[6], patches[7]:
+            update(version="6", repo_root=_REPO_ROOT, output_dir=output_dir,
+                   state_dir=tmp_path, files=None)
+        assert not (output_dir / "index.toon").exists()
+
+    def test_delete_does_not_write_index_toon(self, tmp_path):
+        """delete() must not produce index.toon."""
+        from scripts.run import delete
+        output_dir, patches = self._patches(tmp_path)
+        with patches[0], patches[1], \
+             patch("scripts.run.build_label_doc_map", return_value=({}, {})), \
+             patch("scripts.run.diff_snapshot", return_value=([], [], [])), \
+             patch("scripts.run.load_snapshot", return_value={"files": {}}), \
+             patch("scripts.run.make_snapshot", return_value={"files": {}}), \
+             patch("scripts.run.save_snapshot"), \
+             patches[4], patches[5], patches[6], patches[7]:
+            delete(version="6", repo_root=_REPO_ROOT, output_dir=output_dir,
+                   state_dir=tmp_path, files=None)
+        assert not (output_dir / "index.toon").exists()

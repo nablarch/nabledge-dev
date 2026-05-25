@@ -30,7 +30,13 @@ import os
 import re
 from pathlib import Path
 
-from scripts.create.index import _derive_type_category
+def _derive_type_category(rel_path: Path) -> tuple[str, str]:
+    """Derive (type, category) from a path relative to the knowledge root."""
+    parts = rel_path.parts
+    type_ = parts[0] if len(parts) >= 1 else ""
+    category = parts[1] if len(parts) >= 3 else ""
+    return type_, category
+
 
 # Matches Markdown image and link syntax: ![alt](url) or [text](url)
 _MD_LINK_RE = re.compile(r'(!?\[[^\]]*\])\(([^)]+)\)')
