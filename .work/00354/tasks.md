@@ -95,12 +95,19 @@
 
 ---
 
-### Task 8: Expert review (Software Engineer + Prompt Engineer)
+### Task 8: Expert review (Software Engineer + QA Engineer)
 **Steps:**
 - [ ] Software Engineer レビュー実施（シェルスクリプトのアーキテクチャ・コード品質）
 - [ ] QA Engineer レビュー実施（エッジケース・エラー処理）
 - [ ] Finding があれば修正
 - [ ] レビュー結果を `.work/00354/review-by-software-engineer.md` / `review-by-qa-engineer.md` に保存
+- [ ] git add & commit: `docs: add expert review results`
+
+---
+
+### Task 9: Request user PR review
+**Steps:**
+- [ ] PR #355 のレビューをユーザーに依頼（PR コメントで通知）
 
 ---
 
