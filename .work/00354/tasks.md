@@ -1,6 +1,6 @@
 # Tasks: test-setup.sh — branch selection, metrics collection, and persistent report files
 
-**PR**: (pending)
+**PR**: #355
 **Issue**: #354
 **Updated**: 2026-05-26
 
