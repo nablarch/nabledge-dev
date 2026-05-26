@@ -188,7 +188,7 @@ echo ""
 
 verify_fail=0
 STATIC_RESULTS=()   # each entry: "label|PASS" or "label|FAIL"
-DYNAMIC_RESULTS=()  # each entry: "label|v|tool|PASS/FAIL|time_s|input_tokens|output_tokens|cost_usd|keywords"
+DYNAMIC_RESULTS=()  # each entry: "label|v|tool|PASS/FAIL|time_s|input_tokens|output_tokens|cost_usd|keywords|notes"
 
 # verify_env: static check for one test environment
 # Args:
@@ -346,14 +346,14 @@ verify_dynamic() {
         if ! command -v copilot &>/dev/null; then
             echo "  [FAIL] ${label} nabledge-${v}: copilot CLI not found"
             verify_fail=1
-            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A")
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A|copilot CLI not found")
             return
         fi
         local prompt_file="$project_dir/.github/prompts/n${v}.prompt.md"
         if [ ! -f "$prompt_file" ]; then
             echo "  [FAIL] ${label} nabledge-${v}: GHC prompt file not found: ${prompt_file}"
             verify_fail=1
-            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A")
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A|GHC prompt file not found")
             return
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via copilot -p..."
@@ -389,14 +389,14 @@ verify_dynamic() {
         if ! command -v claude &>/dev/null; then
             echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
             verify_fail=1
-            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A")
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A|claude CLI not found")
             return
         fi
         local cmd_file="$project_dir/.claude/commands/n${v}.md"
         if [ ! -f "$cmd_file" ]; then
             echo "  [FAIL] ${label} nabledge-${v}: CC command file not found: ${cmd_file}"
             verify_fail=1
-            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A")
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A|CC command file not found")
             return
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 240s)..."
@@ -487,6 +487,28 @@ verify_dynamic() {
     local answered_label
     [ "$answered" -eq 1 ] && answered_label="yes" || answered_label="no"
 
+    # Build FAIL detail notes
+    local dynamic_notes=""
+    if [ "$skill_read" -eq 0 ]; then
+        dynamic_notes="SKILL.md not read"
+    fi
+    if [ "$answered" -eq 0 ]; then
+        # Identify which required sections are missing or out of order
+        local missing_sections=""
+        for sec in '結論' '根拠' '注意点' '参照'; do
+            if ! echo "$final_answer_text" | grep -q "$sec"; then
+                missing_sections="${missing_sections:+${missing_sections}, }${sec}"
+            fi
+        done
+        local answered_note
+        if [ -n "$missing_sections" ]; then
+            answered_note="missing sections: ${missing_sections}"
+        else
+            answered_note="sections out of order"
+        fi
+        dynamic_notes="${dynamic_notes:+${dynamic_notes}; }${answered_note}"
+    fi
+
     local result_status
     if [ "$skill_read" -eq 0 ] || [ "$answered" -eq 0 ]; then
         echo "  [FAIL] ${label} nabledge-${v}: SKILL.md read: $([ "$skill_read" -eq 1 ] && echo yes || echo no), answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
@@ -498,7 +520,7 @@ verify_dynamic() {
         result_status="PASS"
     fi
 
-    DYNAMIC_RESULTS+=("${label}|${v}|${tool}|${result_status}|${elapsed_s}|${input_tokens}|${output_tokens}|${cost_usd}|${detected_count}/${total_count}")
+    DYNAMIC_RESULTS+=("${label}|${v}|${tool}|${result_status}|${elapsed_s}|${input_tokens}|${output_tokens}|${cost_usd}|${detected_count}/${total_count}|${dynamic_notes}")
 }
 
 echo "[Static checks]"
@@ -581,16 +603,16 @@ generate_report() {
 
         echo "## Dynamic Checks"
         echo ""
-        echo "| Environment | Version | Tool | Result | Time (s) | Input tokens | Output tokens | Cost (USD) | Keywords |"
-        echo "| ----------- | ------- | ---- | ------ | -------- | ------------ | ------------- | ---------- | -------- |"
+        echo "| Environment | Version | Tool | Result | Time (s) | Input tokens | Output tokens | Cost (USD) | Keywords | Notes |"
+        echo "| ----------- | ------- | ---- | ------ | -------- | ------------ | ------------- | ---------- | -------- | ----- |"
         local total_time=0
         local total_input=0
         local total_output=0
         local total_cost=0
         local has_cost=0
         for entry in "${DYNAMIC_RESULTS[@]}"; do
-            IFS='|' read -r d_label d_v d_tool d_result d_time d_input d_output d_cost d_kw <<< "$entry"
-            echo "| ${d_label} | ${d_v} | ${d_tool} | ${d_result} | ${d_time} | ${d_input} | ${d_output} | ${d_cost} | ${d_kw} |"
+            IFS='|' read -r d_label d_v d_tool d_result d_time d_input d_output d_cost d_kw d_notes <<< "$entry"
+            echo "| ${d_label} | ${d_v} | ${d_tool} | ${d_result} | ${d_time} | ${d_input} | ${d_output} | ${d_cost} | ${d_kw} | ${d_notes} |"
             if [[ "$d_time" =~ ^[0-9]+$ ]]; then
                 total_time=$(( total_time + d_time ))
             fi
