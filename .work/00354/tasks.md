@@ -14,15 +14,29 @@
 
 ## In Progress
 
-### Task 11: Generate final reports (main + develop, v6 first then all)
+### Task 11: Apply user feedback + generate final reports
+
+**Feedback implemented (v6 confirmed, not yet committed):**
+- Report: add Commit row (`gh api repos/.../commits/{branch}` → 7-char SHA)
+- Report: Static Checks table add Notes column (FAIL detail text)
+- Dynamic: GHC output tokens from `assistant.message.data.outputTokens` sum (input still N/A — not in GHC JSON output, confirmed via docs research)
+
+**v6 run results (not yet user-approved):**
+- main v6: `main-20260526-171030.md` — Static FAIL (knowledge/ 9 files, expected 10), Dynamic CC FAIL (answered: no — missing 根拠/参照), GHC PASS
+- develop v6: `develop-20260526-170500.md` — Static PASS, Dynamic CC PASS, GHC PASS
+
+**Open question from user:**
+- main CC FAIL (answered: no) is under investigation — CC returned answer without 根拠/参照 sections; GHC returned correct format. Root cause unclear (LLM variance? knowledge deficit?). User was reviewing when session ended.
 
 **Steps:**
-- [ ] Run `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh v6` — confirm CC/GHC PASS, metrics complete, report generated
-- [ ] Run `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh v6` — confirm CC/GHC PASS, metrics complete, report generated
-- [ ] Show both reports to user for approval
-- [ ] After approval: run full pass for main (all versions)
-- [ ] After approval: run full pass for develop (all versions)
-- [ ] Commit all final reports and push
+- [x] Implement 3 feedback items in test-setup.sh
+- [x] Run main v6 and develop v6 — reports generated
+- [x] Show reports to user
+- [ ] [DECISION: main CC FAIL (answered: no) — is this expected behavior or a bug to investigate further?]
+- [ ] After decision: get user approval to run full pass (all versions)
+- [ ] Run `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh` (all versions)
+- [ ] Run `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh` (all versions)
+- [ ] Commit test-setup.sh changes + all final reports and push
 
 ## Not Started
 

@@ -224,8 +224,12 @@ verify_env() {
         local skill_dir="$project_dir/.claude/skills/nabledge-${v}"
         local cmd_file="$project_dir/.claude/commands/n${v}.md"
 
+        _static_note() { _static_fail_notes="${_static_fail_notes:+${_static_fail_notes}; }$1"; }
+
         if [ ! -f "$skill_dir/SKILL.md" ]; then
-            echo "  [FAIL] ${label} nabledge-${v}: SKILL.md not found (skill not installed)"
+            local msg="nabledge-${v}: SKILL.md not found (skill not installed)"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
             continue
         fi
@@ -236,7 +240,9 @@ verify_env() {
         if [ -d "$knowledge_dir" ]; then
             knowledge_count=$(ls "$knowledge_dir" | wc -l)
         else
-            echo "  [FAIL] ${label} nabledge-${v}: knowledge/ directory not found"
+            local msg="nabledge-${v}: knowledge/ directory not found"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
             continue
         fi
@@ -244,7 +250,9 @@ verify_env() {
         local expected_knowledge_count
         expected_knowledge_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/knowledge" 2>/dev/null | wc -l)
         if [ "$knowledge_count" -ne "$expected_knowledge_count" ]; then
-            echo "  [FAIL] ${label} nabledge-${v}: knowledge/ has ${knowledge_count} files, expected ${expected_knowledge_count}"
+            local msg="nabledge-${v}: knowledge/ has ${knowledge_count} files, expected ${expected_knowledge_count}"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
         fi
 
@@ -254,14 +262,18 @@ verify_env() {
         if [ -d "$docs_dir" ]; then
             docs_count=$(ls "$docs_dir" | wc -l)
         else
-            echo "  [FAIL] ${label} nabledge-${v}: docs/ directory not found"
+            local msg="nabledge-${v}: docs/ directory not found"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
         fi
 
         local expected_docs_count
         expected_docs_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/docs" 2>/dev/null | wc -l)
         if [ -d "$docs_dir" ] && [ "$docs_count" -ne "$expected_docs_count" ]; then
-            echo "  [FAIL] ${label} nabledge-${v}: docs/ has ${docs_count} entries, expected ${expected_docs_count}"
+            local msg="nabledge-${v}: docs/ has ${docs_count} entries, expected ${expected_docs_count}"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
         fi
 
@@ -272,7 +284,9 @@ verify_env() {
         elif [ -f "$cmd_file" ]; then
             cmd_status="ok"
         else
-            echo "  [FAIL] ${label} nabledge-${v}: /n${v} command missing"
+            local msg="nabledge-${v}: /n${v} command missing"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
             cmd_status="FAIL"
         fi
@@ -284,7 +298,9 @@ verify_env() {
             if [ -f "$prompt_file" ]; then
                 ghc_status=", prompt ok"
             else
-                echo "  [FAIL] ${label} nabledge-${v}: n${v}.prompt.md missing"
+                local msg="nabledge-${v}: n${v}.prompt.md missing"
+                echo "  [FAIL] ${label} ${msg}"
+                _static_note "$msg"
                 fail=1
                 ghc_status=", prompt FAIL"
             fi
@@ -295,10 +311,11 @@ verify_env() {
 
     if [ "$fail" -eq 1 ]; then
         verify_fail=1
-        STATIC_RESULTS+=("${label}|FAIL")
+        STATIC_RESULTS+=("${label}|FAIL|${_static_fail_notes:-}")
     else
-        STATIC_RESULTS+=("${label}|PASS")
+        STATIC_RESULTS+=("${label}|PASS|")
     fi
+    unset _static_fail_notes
 }
 
 # verify_dynamic: dynamic check by running a knowledge search
@@ -356,11 +373,17 @@ verify_dynamic() {
         output=$(script -qc "cd '$project_dir' && timeout 240 copilot -p '${ghc_prompt_basename}' --model claude-sonnet-4.6 --yolo --output-format json --log-dir '$ghc_log_dir' --log-level debug" /dev/null 2>&1) || true
         rm -f "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
         elapsed_s=$(( SECONDS - start_time ))
-        # Extract totalApiDurationMs from GHC JSON output if available
+        # Extract totalApiDurationMs and output tokens from GHC JSON output
         local ghc_api_ms
         ghc_api_ms=$(echo "$output" | grep '"type":"result"' | tail -1 | jq -r '.usage.totalApiDurationMs // empty' 2>/dev/null || true)
         if [ -n "$ghc_api_ms" ] && [ "$ghc_api_ms" != "null" ]; then
             elapsed_s=$(( ghc_api_ms / 1000 ))
+        fi
+        # Sum outputTokens from all assistant.message events (input tokens not available in GHC JSON output)
+        local ghc_out_sum
+        ghc_out_sum=$(echo "$output" | grep '"type":"assistant.message"' | jq -r '.data.outputTokens // 0' 2>/dev/null | paste -sd+ | bc 2>/dev/null || true)
+        if [[ "$ghc_out_sum" =~ ^[0-9]+$ ]] && [ "$ghc_out_sum" -gt 0 ]; then
+            output_tokens="$ghc_out_sum"
         fi
     else
         if ! command -v claude &>/dev/null; then
@@ -531,6 +554,8 @@ generate_report() {
     local report_file="${report_dir}/${branch_slug}-$(date +%Y%m%d-%H%M%S).md"
     local run_datetime
     run_datetime=$(date +"%Y-%m-%d %H:%M:%S")
+    local repo_commit
+    repo_commit=$(gh api "repos/${NABLEDGE_REPO}/commits/${NABLEDGE_BRANCH}" --jq '.sha' 2>/dev/null | cut -c1-7 || echo "N/A")
 
     {
         echo "# Nabledge Test Setup Report"
@@ -538,6 +563,7 @@ generate_report() {
         echo "| Item | Value |"
         echo "| ---- | ----- |"
         echo "| Branch | \`${NABLEDGE_BRANCH}\` |"
+        echo "| Commit | \`${repo_commit}\` |"
         echo "| Repository | \`${NABLEDGE_REPO}\` |"
         echo "| Run datetime | ${run_datetime} |"
         echo "| Version filter | ${VERSION_FILTER:-all} |"
@@ -545,11 +571,11 @@ generate_report() {
 
         echo "## Static Checks"
         echo ""
-        echo "| Environment | Result |"
-        echo "| ----------- | ------ |"
+        echo "| Environment | Result | Notes |"
+        echo "| ----------- | ------ | ----- |"
         for entry in "${STATIC_RESULTS[@]}"; do
-            IFS='|' read -r s_label s_result <<< "$entry"
-            echo "| ${s_label} | ${s_result} |"
+            IFS='|' read -r s_label s_result s_notes <<< "$entry"
+            echo "| ${s_label} | ${s_result} | ${s_notes} |"
         done
         echo ""
 
