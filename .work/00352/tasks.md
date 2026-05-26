@@ -12,59 +12,11 @@
 
 ## Not Started
 
-### Task 2: CHANGELOG [Unreleased] 内容の確認・改訂とユーザー承認
-**目的**: `release.md` Step 2 — [Unreleased]内容をユーザー視点に整え、承認を得る
-
-**Steps:**
-- [ ] Task 1の分析結果をもとに、全プラグインの `[Unreleased]` 改訂案を作成
-  - 技術詳細の除去、ユーザー視点への書き換え、`changelog.md`ライティングルール適用
-- [ ] 改訂案をユーザーに提示し、承認を得る（承認なしに次タスクへ進まない）
-
-### Task 3: バージョン決定とユーザー承認
-**目的**: `release.md` Step 3の前提 — 各プラグインとmarketplaceの新バージョンを算出してユーザーに承認
-
-**Steps:**
-- [ ] 現在バージョンを事実確認（`plugin.json` × 5、`marketplace.json`を実際に読む）
-- [ ] `release.md`のバージョンルール（MINOR/PATCH、marketplace = 最高プラグインバージョン）に基づき算出
-- [ ] 算出結果をユーザーに提示し、承認を得る（承認なしに次タスクへ進まない）
-
-### Task 4: 全プラグイン CHANGELOG 更新
-**目的**: `release.md` Step 3 — 全プラグインのCHANGELOG [Unreleased]を承認済みバージョン節に変換
-
-**Steps:**
-- [ ] Task 2・3で承認済みの内容・バージョン・日付でCHANGELOGを更新 (nabledge-6/5/1.4/1.3/1.2 すべて)
-  - `[Unreleased]` → `[X.Y] - YYYY-MM-DD` に変換
-  - ファイル末尾にタグリンクを追記
-- [ ] commit: `release: move [Unreleased] to versioned section in all plugin CHANGELOGs`
-
-### Task 5: plugin.json 更新
-**目的**: `release.md` Step 3 — 全プラグインの plugin.json バージョンを更新
-
-**Steps:**
-- [ ] 全プラグインの `plugin.json` バージョンをTask 3承認済み番号に更新 (nabledge-6/5/1.4/1.3/1.2)
-- [ ] commit: `release: bump version in all plugin.json files`
-
-### Task 6: marketplace ファイル更新
-**目的**: `release.md` Step 3 — marketplace.json と marketplace CHANGELOG.md を更新
-
-**Steps:**
-- [ ] `marketplace.json` のバージョンをTask 3承認済み番号に更新
-- [ ] `marketplace/CHANGELOG.md` のバージョン表に新行を追記
-- [ ] commit: `release: update marketplace.json and marketplace CHANGELOG.md`
-
-### Task 7: 前回リリースPRとの比較確認
-**目的**: `release.md` Step 4 — 必須ファイルセットに欠落がないか確認
-
-**Steps:**
-- [ ] 前回リリースPR (#280) と今回の変更ファイルセットを突き合わせ
-- [ ] 必須4ファイル（plugin CHANGELOG × n、plugin.json × n、marketplace.json、marketplace CHANGELOG）が揃っていることを確認
-- [ ] 確認結果を `.work/00352/notes.md` に記録（欠落がある場合は修正してから次へ）
-
 ### Task 8: 変更差分チェックとユーザー確認
 **目的**: 全コミット対象：PRレビュー依頼前に変更差分が想定した変更のみであることを確認
 
 **Steps:**
-- [ ] `git diff main...HEAD` で全変更ファイルを列挙
+- [ ] `git diff main...HEAD --name-only` で全変更ファイルを列挙
 - [ ] 各変更ファイルが Task 4〜6 のスコープに収まっていることを事実確認
 - [ ] 想定外の変更がある場合はその原因を調査・対処
 - [ ] 確認結果を `.work/00352/diff-check.md` に記録
@@ -81,12 +33,19 @@
 - [ ] レビュー結果を `.work/00352/review-by-{expert-role}.md` に保存
 - [ ] commit: `docs: add expert review results for #352`
 
-### Task 10: PR作成
+### Task 10: PR作成（既存 PR #353 を更新）
 **Steps:**
-- [ ] `Skill(skill: "pr", args: "create")` でPRを作成
+- [ ] PR #353 のbodyをリリース内容を反映した最終版に更新
+- [ ] Success Criteria を ✅ Met に更新
 
 ## Done
 
 - [x] ブランチ作成: `352-release-nabledge` — initial
 - [x] tasks.md 初期作成 — `c728b4cb1`
 - [x] Task 1: コミット分析と作業記録 — `776c9d993`
+- [x] Task 2: CHANGELOG [Unreleased] 改訂案作成・ユーザー承認 — 会話で承認取得済み
+- [x] Task 3: バージョン決定・ユーザー承認 — v6:0.8 / v5:0.3 / v1.4:0.2 / v1.3:0.2 / v1.2:0.2 / marketplace:0.9
+- [x] Task 4: 全プラグイン CHANGELOG 更新 — `1cc82a8f2`
+- [x] Task 5: plugin.json 更新 — `dac751819`
+- [x] Task 6: marketplace ファイル更新 — `8a9207f08`
+- [x] Task 7: 前回リリースPRとの比較確認 — 必須4ファイルセット揃い確認済み（会話内）
