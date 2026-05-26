@@ -78,6 +78,7 @@ Review current `[Unreleased]` section in `.claude/skills/nabledge-6/plugin/CHANG
 - Remove entries where user impact is not clearly demonstrable (case-by-case improvements without concrete numbers)
 - Consolidate related changes into single user-facing statements
 - Use past tense: "〜しました" not "〜します"
+- Add user benefit after the change description where it adds clarity — e.g., "〜になりました。〜できます。"
 
 **Propose revised CHANGELOG content to user and confirm before updating files.**
 
