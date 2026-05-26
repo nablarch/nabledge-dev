@@ -63,9 +63,8 @@ nabledge-6プラグインの主な変更内容を記録しています。
 ### 追加
 - 評価版として、Nablarch 6のバッチ処理に関する基礎知識とコード分析ワークフローを提供
 
-[0.7]: https://github.com/nablarch/nabledge/releases/tag/0.7
 [0.8]: https://github.com/nablarch/nabledge/releases/tag/0.9
-[0.7]: https://github.com/nablarch/nabledge/releases/tag/0.8
+[0.7]: https://github.com/nablarch/nabledge/releases/tag/0.7
 [0.6]: https://github.com/nablarch/nabledge/releases/tag/0.6
 [0.5]: https://github.com/nablarch/nabledge/releases/tag/0.5
 [0.4]: https://github.com/nablarch/nabledge/releases/tag/0.4
