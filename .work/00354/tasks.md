@@ -2,7 +2,7 @@
 
 **PR**: #355
 **Issue**: #354
-**Updated**: 2026-05-26
+**Updated**: 2026-05-26 (final)
 
 ## Fact-Based Work Rule
 
@@ -18,10 +18,6 @@
 
 ## Not Started
 
-### Task 9: Request user PR review
-**Steps:**
-- [ ] PR #355 のレビューをユーザーに依頼（PR コメントで通知）
-
 ---
 
 ## Done
@@ -34,3 +30,5 @@
 - [x] Task 6: Update README to document `main` branch testing and before/after comparison — committed `3858608d0`
 - [x] Task 7: Diff check — committed `c644d86cd`
 - [x] Task 8: Expert review (Software Engineer + QA Engineer) — 2 Findings found and fixed in `a53aaf51d`, committed `58f2de046`
+- [x] Task 9: Fix answered/keyword detection for JSON log formats (CC + GHC) — committed `26b2a9655`
+- [x] Task 10: Request user PR review
