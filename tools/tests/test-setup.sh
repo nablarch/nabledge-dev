@@ -390,7 +390,14 @@ verify_dynamic() {
         if [ -n "$cc_result_line" ]; then
             local cc_duration_ms
             cc_duration_ms=$(echo "$cc_result_line" | jq -r '.duration_ms // empty' 2>/dev/null || true)
-            input_tokens=$(echo "$cc_result_line" | jq -r '.usage.input_tokens // empty' 2>/dev/null || true)
+            # Sum input_tokens + cache_creation_input_tokens + cache_read_input_tokens for actual total
+            local cc_in cc_cache_create cc_cache_read
+            cc_in=$(echo "$cc_result_line" | jq -r '.usage.input_tokens // 0' 2>/dev/null || echo 0)
+            cc_cache_create=$(echo "$cc_result_line" | jq -r '.usage.cache_creation_input_tokens // 0' 2>/dev/null || echo 0)
+            cc_cache_read=$(echo "$cc_result_line" | jq -r '.usage.cache_read_input_tokens // 0' 2>/dev/null || echo 0)
+            if [[ "$cc_in" =~ ^[0-9]+$ ]]; then
+                input_tokens=$(( cc_in + cc_cache_create + cc_cache_read ))
+            fi
             output_tokens=$(echo "$cc_result_line" | jq -r '.usage.output_tokens // empty' 2>/dev/null || true)
             cost_usd=$(echo "$cc_result_line" | jq -r '.total_cost_usd // empty' 2>/dev/null || true)
             if [ -n "$cc_duration_ms" ] && [ "$cc_duration_ms" != "null" ]; then
