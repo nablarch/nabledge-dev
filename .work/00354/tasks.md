@@ -2,7 +2,7 @@
 
 **PR**: #355
 **Issue**: #354
-**Updated**: 2026-05-26 (final)
+**Updated**: 2026-05-26
 
 ## Fact-Based Work Rule
 
@@ -14,7 +14,15 @@
 
 ## In Progress
 
-（なし）
+### Task 11: Generate final reports (main + develop, v6 first then all)
+
+**Steps:**
+- [ ] Run `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh v6` — confirm CC/GHC PASS, metrics complete, report generated
+- [ ] Run `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh v6` — confirm CC/GHC PASS, metrics complete, report generated
+- [ ] Show both reports to user for approval
+- [ ] After approval: run full pass for main (all versions)
+- [ ] After approval: run full pass for develop (all versions)
+- [ ] Commit all final reports and push
 
 ## Not Started
 
