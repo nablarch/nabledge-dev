@@ -41,8 +41,8 @@ Nablarchに関する質問やコード分析を実行するには、`/n5` コマ
 
 | コマンド | 説明 | 入力形式 | 出力場所・内容 |
 |---------|------|---------|--------------|
-| `/n5 <質問>` | 知識検索を実行 | 質問<br>例: `/n5 UniversalDaoのページング` | サマリー結果のみメインコンテキストに返る |
-| `/n5 code-analysis <対象>` | コード分析を実行 | コマンド<br>例: `/n5 code-analysis LoginAction` | サマリー結果のみメインコンテキストに返る<br>詳細: `.nabledge/YYYYMMDD/code-analysis-<target>.md` |
+| `/n5 <質問>` | 知識検索を実行 | 質問<br>例: `/n5 UniversalDaoのページング` | 回答をメインコンテキストに返す |
+| `/n5 code-analysis <対象>` | コード分析を実行 | コマンド<br>例: `/n5 code-analysis LoginAction` | 回答をメインコンテキストに返す<br>詳細: `.nabledge/YYYYMMDD/code-analysis-<target>.md` |
 
 ## バージョンアップ
 
