@@ -187,6 +187,8 @@ echo "Verifying installations..."
 echo ""
 
 verify_fail=0
+STATIC_RESULTS=()   # each entry: "label|PASS" or "label|FAIL"
+DYNAMIC_RESULTS=()  # each entry: "label|v|tool|PASS/FAIL|time_s|input_tokens|output_tokens|cost_usd|keywords"
 
 # verify_env: static check for one test environment
 # Args:
@@ -291,7 +293,12 @@ verify_env() {
         echo "  [OK]   ${label} nabledge-${v}: SKILL.md ok, knowledge/ ${knowledge_count} files, docs/ ${docs_count} entries, command ${cmd_status}${ghc_status}"
     done
 
-    if [ "$fail" -eq 1 ]; then verify_fail=1; fi
+    if [ "$fail" -eq 1 ]; then
+        verify_fail=1
+        STATIC_RESULTS+=("${label}|FAIL")
+    else
+        STATIC_RESULTS+=("${label}|PASS")
+    fi
 }
 
 # verify_dynamic: dynamic check by running a knowledge search
@@ -311,16 +318,25 @@ verify_dynamic() {
     local keywords_str="$5"
     local tool="$6"
 
+    local start_time=$SECONDS
+    local elapsed_s=0
+    local input_tokens="N/A"
+    local output_tokens="N/A"
+    local cost_usd="N/A"
+    local ghc_log_dir=""
+
     if [ "$tool" = "ghc" ]; then
         if ! command -v copilot &>/dev/null; then
             echo "  [FAIL] ${label} nabledge-${v}: copilot CLI not found"
             verify_fail=1
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A")
             return
         fi
         local prompt_file="$project_dir/.github/prompts/n${v}.prompt.md"
         if [ ! -f "$prompt_file" ]; then
             echo "  [FAIL] ${label} nabledge-${v}: GHC prompt file not found: ${prompt_file}"
             verify_fail=1
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A")
             return
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via copilot -p..."
@@ -334,21 +350,30 @@ verify_dynamic() {
         ghc_prompt_basename=$(basename "$ghc_prompt_file")
         # Copy temp prompt file into project dir so copilot can find it
         cp "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
-        local ghc_log_dir="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.ghc-logs"
+        ghc_log_dir="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.ghc-logs"
         mkdir -p "$ghc_log_dir"
         local output
         output=$(script -qc "cd '$project_dir' && timeout 240 copilot -p '${ghc_prompt_basename}' --model claude-haiku-4.5 --yolo --log-dir '$ghc_log_dir' --log-level debug" /dev/null 2>&1) || true
         rm -f "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
+        elapsed_s=$(( SECONDS - start_time ))
+        # Extract totalApiDurationMs from GHC JSON output if available
+        local ghc_api_ms
+        ghc_api_ms=$(echo "$output" | grep '"type":"result"' | tail -1 | jq -r '.usage.totalApiDurationMs // empty' 2>/dev/null || true)
+        if [ -n "$ghc_api_ms" ] && [ "$ghc_api_ms" != "null" ]; then
+            elapsed_s=$(( ghc_api_ms / 1000 ))
+        fi
     else
         if ! command -v claude &>/dev/null; then
             echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
             verify_fail=1
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A")
             return
         fi
         local cmd_file="$project_dir/.claude/commands/n${v}.md"
         if [ ! -f "$cmd_file" ]; then
             echo "  [FAIL] ${label} nabledge-${v}: CC command file not found: ${cmd_file}"
             verify_fail=1
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A")
             return
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 240s)..."
@@ -358,6 +383,23 @@ verify_dynamic() {
         local cc_log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
         timeout 240 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "/n${v} ${query}") --model haiku --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
         output=$(cat "$cc_log_file")
+        elapsed_s=$(( SECONDS - start_time ))
+        # Extract metrics from the {"type":"result"} line in stream-json output
+        local cc_result_line
+        cc_result_line=$(grep '"type":"result"' "$cc_log_file" | tail -1)
+        if [ -n "$cc_result_line" ]; then
+            local cc_duration_ms
+            cc_duration_ms=$(echo "$cc_result_line" | jq -r '.duration_ms // empty' 2>/dev/null || true)
+            input_tokens=$(echo "$cc_result_line" | jq -r '.usage.input_tokens // empty' 2>/dev/null || true)
+            output_tokens=$(echo "$cc_result_line" | jq -r '.usage.output_tokens // empty' 2>/dev/null || true)
+            cost_usd=$(echo "$cc_result_line" | jq -r '.total_cost_usd // empty' 2>/dev/null || true)
+            if [ -n "$cc_duration_ms" ] && [ "$cc_duration_ms" != "null" ]; then
+                elapsed_s=$(( cc_duration_ms / 1000 ))
+            fi
+        fi
+        [ -z "$input_tokens" ]  && input_tokens="N/A"
+        [ -z "$output_tokens" ] && output_tokens="N/A"
+        [ -z "$cost_usd" ]      && cost_usd="N/A"
     fi
 
     local log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
@@ -413,13 +455,18 @@ verify_dynamic() {
     local answered_label
     [ "$answered" -eq 1 ] && answered_label="yes" || answered_label="no"
 
+    local result_status
     if [ "$skill_read" -eq 0 ] || [ "$answered" -eq 0 ]; then
         echo "  [FAIL] ${label} nabledge-${v}: SKILL.md read: $([ "$skill_read" -eq 1 ] && echo yes || echo no), answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
         echo "         Log: ${log_file}"
         verify_fail=1
+        result_status="FAIL"
     else
         echo "  [OK]   ${label} nabledge-${v}: SKILL.md read, answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
+        result_status="PASS"
     fi
+
+    DYNAMIC_RESULTS+=("${label}|${v}|${tool}|${result_status}|${elapsed_s}|${input_tokens}|${output_tokens}|${cost_usd}|${detected_count}/${total_count}")
 }
 
 echo "[Static checks]"
@@ -493,3 +540,82 @@ should_run "v1.2" && echo "  v1.2/test-ghc/nablarch-example-batch - nabledge-1.2
 should_run "upgrade"  && echo "  upgrade/test-cc/nablarch-example-batch   - nabledge-6+5 x Claude Code (version upgrade)"
 should_run "upgrade"  && echo "  upgrade/test-ghc/nablarch-example-batch  - nabledge-1.4+5 x GitHub Copilot (version upgrade)"
 echo "============================================================"
+
+# ------------------------------------------------------------
+# Report generation
+# ------------------------------------------------------------
+generate_report() {
+    local report_dir="${NABLEDGE_DEV_ROOT}/tools/tests/reports"
+    local branch_slug="${NABLEDGE_BRANCH//\//-}"
+    local report_file="${report_dir}/${branch_slug}-$(date +%Y%m%d-%H%M%S).md"
+    local run_datetime
+    run_datetime=$(date +"%Y-%m-%d %H:%M:%S")
+
+    {
+        echo "# Nabledge Test Setup Report"
+        echo ""
+        echo "| Item | Value |"
+        echo "| ---- | ----- |"
+        echo "| Branch | \`${NABLEDGE_BRANCH}\` |"
+        echo "| Repository | \`${NABLEDGE_REPO}\` |"
+        echo "| Run datetime | ${run_datetime} |"
+        echo "| Version filter | ${VERSION_FILTER:-all} |"
+        echo ""
+
+        echo "## Static Checks"
+        echo ""
+        echo "| Environment | Result |"
+        echo "| ----------- | ------ |"
+        for entry in "${STATIC_RESULTS[@]}"; do
+            IFS='|' read -r s_label s_result <<< "$entry"
+            echo "| ${s_label} | ${s_result} |"
+        done
+        echo ""
+
+        echo "## Dynamic Checks"
+        echo ""
+        echo "| Environment | Version | Tool | Result | Time (s) | Input tokens | Output tokens | Cost (USD) | Keywords |"
+        echo "| ----------- | ------- | ---- | ------ | -------- | ------------ | ------------- | ---------- | -------- |"
+        local total_time=0
+        local total_input=0
+        local total_output=0
+        local total_cost=0
+        local has_cost=0
+        for entry in "${DYNAMIC_RESULTS[@]}"; do
+            IFS='|' read -r d_label d_v d_tool d_result d_time d_input d_output d_cost d_kw <<< "$entry"
+            echo "| ${d_label} | ${d_v} | ${d_tool} | ${d_result} | ${d_time} | ${d_input} | ${d_output} | ${d_cost} | ${d_kw} |"
+            if [[ "$d_time" =~ ^[0-9]+$ ]]; then
+                total_time=$(( total_time + d_time ))
+            fi
+            if [[ "$d_input" =~ ^[0-9]+$ ]]; then
+                total_input=$(( total_input + d_input ))
+            fi
+            if [[ "$d_output" =~ ^[0-9]+$ ]]; then
+                total_output=$(( total_output + d_output ))
+            fi
+            if [[ "$d_cost" =~ ^[0-9.]+$ ]]; then
+                total_cost=$(awk "BEGIN{printf \"%.6f\", ${total_cost}+${d_cost}}")
+                has_cost=1
+            fi
+        done
+        echo ""
+        echo "### Totals"
+        echo ""
+        echo "| Metric | Value |"
+        echo "| ------ | ----- |"
+        echo "| Total time (s) | ${total_time} |"
+        local total_tokens_display="N/A"
+        if [ "$total_input" -gt 0 ] || [ "$total_output" -gt 0 ]; then
+            total_tokens_display="$(( total_input + total_output )) (in: ${total_input}, out: ${total_output})"
+        fi
+        echo "| Total tokens | ${total_tokens_display} |"
+        local total_cost_display="N/A"
+        [ "$has_cost" -eq 1 ] && total_cost_display="\$${total_cost}"
+        echo "| Total estimated cost | ${total_cost_display} |"
+    } > "$report_file"
+
+    echo ""
+    echo "Report: ${report_file}"
+}
+
+generate_report
