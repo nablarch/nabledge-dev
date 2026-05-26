@@ -511,41 +511,13 @@ should_run "upgrade"  && verify_dynamic "upgrade/test-ghc"  "upgrade/test-ghc/na
 should_run "upgrade"  && verify_dynamic "upgrade/test-ghc"  "upgrade/test-ghc/nablarch-example-batch"  "5"   "$Q_V5"  "$KW_V5"  "ghc"
 
 echo ""
-if [ "$verify_fail" -eq 0 ]; then
-    echo "All environments verified successfully."
-else
-    echo "ERROR: Some environments failed verification. See [FAIL] entries above."
-    exit 1
-fi
-
-# ------------------------------------------------------------
-# Summary
-# ------------------------------------------------------------
-echo "============================================================"
-echo "Test environment setup complete!"
-echo ""
-echo "Output: ${OUTPUT_DIR}"
-echo ""
-echo "Environments:"
-should_run "v6"   && echo "  v6/test-cc/nablarch-example-batch    - nabledge-6 x Claude Code"
-should_run "v6"   && echo "  v6/test-ghc/nablarch-example-batch   - nabledge-6 x GitHub Copilot"
-should_run "v5"   && echo "  v5/test-cc/nablarch-example-batch    - nabledge-5 x Claude Code"
-should_run "v5"   && echo "  v5/test-ghc/nablarch-example-batch   - nabledge-5 x GitHub Copilot"
-should_run "v1.4" && echo "  v1.4/test-cc/nablarch-example-batch  - nabledge-1.4 x Claude Code"
-should_run "v1.4" && echo "  v1.4/test-ghc/nablarch-example-batch - nabledge-1.4 x GitHub Copilot"
-should_run "v1.3" && echo "  v1.3/test-cc/nablarch-example-batch  - nabledge-1.3 x Claude Code"
-should_run "v1.3" && echo "  v1.3/test-ghc/nablarch-example-batch - nabledge-1.3 x GitHub Copilot"
-should_run "v1.2" && echo "  v1.2/test-cc/nablarch-example-batch  - nabledge-1.2 x Claude Code"
-should_run "v1.2" && echo "  v1.2/test-ghc/nablarch-example-batch - nabledge-1.2 x GitHub Copilot"
-should_run "upgrade"  && echo "  upgrade/test-cc/nablarch-example-batch   - nabledge-6+5 x Claude Code (version upgrade)"
-should_run "upgrade"  && echo "  upgrade/test-ghc/nablarch-example-batch  - nabledge-1.4+5 x GitHub Copilot (version upgrade)"
-echo "============================================================"
 
 # ------------------------------------------------------------
 # Report generation
 # ------------------------------------------------------------
 generate_report() {
     local report_dir="${NABLEDGE_DEV_ROOT}/tools/tests/reports"
+    mkdir -p "$report_dir"
     local branch_slug="${NABLEDGE_BRANCH//\//-}"
     local report_file="${report_dir}/${branch_slug}-$(date +%Y%m%d-%H%M%S).md"
     local run_datetime
@@ -619,3 +591,33 @@ generate_report() {
 }
 
 generate_report
+
+if [ "$verify_fail" -eq 0 ]; then
+    echo "All environments verified successfully."
+else
+    echo "ERROR: Some environments failed verification. See [FAIL] entries above."
+    exit 1
+fi
+
+# ------------------------------------------------------------
+# Summary
+# ------------------------------------------------------------
+echo "============================================================"
+echo "Test environment setup complete!"
+echo ""
+echo "Output: ${OUTPUT_DIR}"
+echo ""
+echo "Environments:"
+should_run "v6"   && echo "  v6/test-cc/nablarch-example-batch    - nabledge-6 x Claude Code"
+should_run "v6"   && echo "  v6/test-ghc/nablarch-example-batch   - nabledge-6 x GitHub Copilot"
+should_run "v5"   && echo "  v5/test-cc/nablarch-example-batch    - nabledge-5 x Claude Code"
+should_run "v5"   && echo "  v5/test-ghc/nablarch-example-batch   - nabledge-5 x GitHub Copilot"
+should_run "v1.4" && echo "  v1.4/test-cc/nablarch-example-batch  - nabledge-1.4 x Claude Code"
+should_run "v1.4" && echo "  v1.4/test-ghc/nablarch-example-batch - nabledge-1.4 x GitHub Copilot"
+should_run "v1.3" && echo "  v1.3/test-cc/nablarch-example-batch  - nabledge-1.3 x Claude Code"
+should_run "v1.3" && echo "  v1.3/test-ghc/nablarch-example-batch - nabledge-1.3 x GitHub Copilot"
+should_run "v1.2" && echo "  v1.2/test-cc/nablarch-example-batch  - nabledge-1.2 x Claude Code"
+should_run "v1.2" && echo "  v1.2/test-ghc/nablarch-example-batch - nabledge-1.2 x GitHub Copilot"
+should_run "upgrade"  && echo "  upgrade/test-cc/nablarch-example-batch   - nabledge-6+5 x Claude Code (version upgrade)"
+should_run "upgrade"  && echo "  upgrade/test-ghc/nablarch-example-batch  - nabledge-1.4+5 x GitHub Copilot (version upgrade)"
+echo "============================================================"
