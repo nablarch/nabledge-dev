@@ -2,7 +2,7 @@
 
 **PR**: #355
 **Issue**: #354
-**Updated**: 2026-05-26 (complete)
+**Updated**: 2026-05-26
 
 ## Fact-Based Work Rule
 
@@ -14,29 +14,48 @@
 
 ## In Progress
 
-### Task 11: Apply user feedback + generate final reports
+### Task 12: Static Checks 改善 → 全バージョン実行 → レポート出力・比較
 
-**Feedback implemented (v6 confirmed, not yet committed):**
-- Report: add Commit row (`gh api repos/.../commits/{branch}` → 7-char SHA)
-- Report: Static Checks table add Notes column (FAIL detail text)
-- Dynamic: GHC output tokens from `assistant.message.data.outputTokens` sum (input still N/A — not in GHC JSON output, confirmed via docs research)
+**背景:**
+- Static Checks は知識ファイルのセットアップ確認。FAIL = セットアップ失敗 = Dynamic を動かしても無意味
+- main ブランチは現在 Static 全 FAIL（知識ファイル不足）→ main が PASS するよう改善が必要
+- Static FAIL が1件でも出たら Dynamic を実行せず終了する変更は実装済み（未コミット）
+- Static Notes 列削除も実装済み（未コミット）
 
-**v6 run results (not yet user-approved):**
-- main v6: `main-20260526-171030.md` — Static FAIL (knowledge/ 9 files, expected 10), Dynamic CC FAIL (answered: no — missing 根拠/参照), GHC PASS
-- develop v6: `develop-20260526-170500.md` — Static PASS, Dynamic CC PASS, GHC PASS
+**手順:**
 
-**Open question from user:**
-- main CC FAIL (answered: no) is under investigation — CC returned answer without 根拠/参照 sections; GHC returned correct format. Root cause unclear (LLM variance? knowledge deficit?). User was reviewing when session ended.
+**Step A: test-setup.sh 改善コミット**
+- [ ] Static FAIL で即終了 + Notes 列削除 をコミット・プッシュ
 
-**Steps:**
-- [x] Implement 3 feedback items in test-setup.sh
-- [x] Run main v6 and develop v6 — reports generated
-- [x] Show reports to user
-- [x] [DECISION: main CC FAIL (answered: no) — expected behavior (knowledge file shortage), proceed]
-- [x] Add FAIL detail notes to Dynamic Checks (missing sections / out of order)
-- [x] Run `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh` (all versions)
-- [x] Run `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh` (all versions)
-- [x] Commit test-setup.sh changes + all final reports and push — committed `4175549c0`
+**Step B: main の Static FAIL 原因調査**
+- [ ] main ブランチの `nablarch/nabledge` の知識ファイル数を実際に確認する
+  - `gh api repos/nablarch/nabledge/contents/.claude/skills/nabledge-6/knowledge?ref=main` で main のファイル一覧取得
+  - develop と比較して何が足りないか特定する（全バージョン: v6/v5/v1.4/v1.3/v1.2）
+- [ ] 不足している知識ファイルを特定し、原因（未マージ PR？ main への反映漏れ？）を調査
+
+**Step C: main を PASS させる対応**
+- [ ] 調査結果をユーザーに報告し、対応方針を確認してから実施
+  - 例: 「main への知識ファイル追加 PR が必要」など
+  - この PR の範囲外の可能性もあるため、まず事実確認してから判断
+
+**Step D: 全バージョン実行**
+- [ ] `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh` — Static 全 PASS を確認してから実行
+- [ ] `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh`
+
+**Step E: レポート内容の詳細セルフチェック（ユーザー報告前）**
+- [ ] 各レポートの全フィールドを目視確認
+  - Branch / Commit / Repository / Run datetime / Version filter が正しいか
+  - Static: 環境名・結果が正しいか
+  - Dynamic: 各行の Version / Tool / Result / Time / tokens / Cost / Keywords が妥当な範囲か
+  - Totals: 合計値が各行の足し算と一致するか
+- [ ] CC input tokens: main（知識少）< develop（知識多）になっているか確認
+- [ ] GHC output tokens: PASS 行は十分な量（500+ tokens）か確認（極端に少ない場合は空振りの可能性）
+- [ ] FAIL の Notes が正確か（missing sections が本当に欠けているかログで確認）
+
+**Step F: 比較レポート出力・コミット・プッシュ**
+- [ ] `tools/tests/reports/comparison-main-vs-develop-YYYYMMDD.md` を更新（旧版は削除）
+- [ ] コミット・プッシュ
+- [ ] ユーザーに結果報告
 
 ## Not Started
 
@@ -54,3 +73,4 @@
 - [x] Task 8: Expert review (Software Engineer + QA Engineer) — 2 Findings found and fixed in `a53aaf51d`, committed `58f2de046`
 - [x] Task 9: Fix answered/keyword detection for JSON log formats (CC + GHC) — committed `26b2a9655`
 - [x] Task 10: Request user PR review
+- [x] Task 11: Apply user feedback (Notes column, Commit SHA, GHC output tokens) + generate reports (main/develop all versions) + comparison report — committed `4175549c0`, `26b673eeb`, `f6297d6ee`
