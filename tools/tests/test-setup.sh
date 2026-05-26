@@ -377,12 +377,24 @@ verify_dynamic() {
     fi
 
     # Check if a conclusion was produced (i.e., the workflow ran to completion).
+    # Detect the four required sections in order: 結論, 根拠, 注意点, 参照
+    # Accepts both bold (**結論**) and heading (## 結論) forms.
     # For CC: appears in stream-json output. For GHC: appears in stdout captured to output.
     local answered=0
+    _has_sections() {
+        local text="$1"
+        local n_ketsuron n_konkyo n_chuui n_sansho
+        n_ketsuron=$(echo "$text" | grep -n '結論' | head -1 | cut -d: -f1)
+        n_konkyo=$(echo "$text"   | grep -n '根拠' | head -1 | cut -d: -f1)
+        n_chuui=$(echo "$text"    | grep -n '注意点' | head -1 | cut -d: -f1)
+        n_sansho=$(echo "$text"   | grep -n '参照' | head -1 | cut -d: -f1)
+        [ -n "$n_ketsuron" ] && [ -n "$n_konkyo" ] && [ -n "$n_chuui" ] && [ -n "$n_sansho" ] \
+            && [ "$n_ketsuron" -lt "$n_konkyo" ] && [ "$n_konkyo" -lt "$n_chuui" ] && [ "$n_chuui" -lt "$n_sansho" ]
+    }
     if [ "$tool" = "cc" ]; then
-        grep -q '\*\*結論\*\*' "$log_file" && answered=1 || true
+        _has_sections "$(cat "$log_file")" && answered=1 || true
     else
-        echo "$output" | grep -q '\*\*結論\*\*' && answered=1 || true
+        _has_sections "$output" && answered=1 || true
     fi
 
     # Keyword detection (reference only, not used for pass/fail)
