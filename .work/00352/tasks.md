@@ -1,6 +1,6 @@
 # Tasks: release nabledge-dev (marketplace next version)
 
-**PR**: TBD
+**PR**: #353
 **Issue**: #352
 **Updated**: 2026-05-26
 
@@ -9,16 +9,6 @@
 すべての調査・判断はコード・ファイル・コマンド出力などの事実を確認した上で行う。推測で進めない。
 
 ## In Progress
-
-### Task 1: コミット分析と作業記録
-**目的**: `release.md` Step 1 — 前回リリース(marketplace 0.8, 2026-03-30)以降のコミットを事実ベースで分類し、作業記録に残す
-
-**Steps:**
-- [ ] 前回リリース以降でデプロイ対象ファイル(`sync-manifest.txt`記載パス)に触れるコミットを列挙
-- [ ] 各コミットのユーザー影響を「あり/なし」で分類（推測不可、`git show --stat`で確認）
-- [ ] 各プラグイン(v6/v5/v1.4/v1.3/v1.2)の `[Unreleased]` 内容がコミット分析結果と一致するか確認
-- [ ] 分析結果を `.work/00352/notes.md` に記録
-- [ ] commit: `docs: add commit analysis and release notes for #352`
 
 ## Not Started
 
@@ -98,4 +88,5 @@
 ## Done
 
 - [x] ブランチ作成: `352-release-nabledge` — initial
-- [x] tasks.md 初期作成 — this commit
+- [x] tasks.md 初期作成 — `c728b4cb1`
+- [x] Task 1: コミット分析と作業記録 — `776c9d993`
