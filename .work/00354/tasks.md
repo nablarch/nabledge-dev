@@ -28,14 +28,16 @@
 
 ### Task 2: Add metrics collection to `verify_dynamic` in `test-setup.sh`
 **SC対応**: "execution time (seconds)" / "token count (input + output, from stream-json for CC; N/A for GHC)" / "cost estimate in USD"  
-**実装方針（事実確認済み）**:
+**実装方針（実機確認済み）**:
 - CC: `cc_log_file` の `{"type":"result"}` 行を jq でパース → `duration_ms` / `usage.input_tokens` / `usage.output_tokens` / `total_cost_usd` を抽出
-- GHC: copilot は stream-json 非対応 → 実行時間は `date` コマンドで計測、token/cost は N/A
+  （確認日: 2026-05-26、コマンド: `claude -p --output-format stream-json --verbose --model haiku`）
+- GHC: `--output-format json` の `{"type":"result"}` 行から `usage.totalApiDurationMs` で実行時間を取得可能。トークン数・コストは GHC 出力に含まれないため N/A
+  （確認日: 2026-05-26、コマンド: `copilot -p --output-format json --allow-all-tools`）
 - 抽出結果はグローバル変数配列（bash associative array）に蓄積し、後段のレポート生成で使用
 **Steps:**
 - [ ] `verify_dynamic` 内の CC パスに実行時間計測（`SECONDS` 変数またはbash `$SECONDS` 利用）を追加
 - [ ] CC: `cc_log_file` から jq で `input_tokens`, `output_tokens`, `total_cost_usd`, `duration_ms` を抽出してグローバル変数に格納
-- [ ] GHC: 実行時間計測（N/A for tokens/cost）をグローバル変数に格納
+- [ ] GHC: `--output-format json` の `{"type":"result"}` 行から `usage.totalApiDurationMs` を抽出してグローバル変数に格納（tokens/cost は N/A）
 - [ ] git add & commit: `feat: collect execution time and token metrics in verify_dynamic`
 
 ---
