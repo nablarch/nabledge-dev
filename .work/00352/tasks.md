@@ -26,3 +26,6 @@
 - [x] Task 8: 変更差分チェックとユーザー確認 — `9ca9e4e30`
 - [x] Task 9: expert review (Technical Writer) — 0 Findings — `001134c89`
 - [x] Task 10: PR #353 body更新・Success Criteria ✅ Met に更新
+- [x] GUIDE-CC/GHC 全バージョン: 使い方例を処理方式・目的を含む形に改善 — `f186f27e8`
+- [x] GUIDE-CC/GHC 全バージョン: コマンドリファレンスの出力説明を実態に合わせ修正 — `1e6ff6ff2`
+- [x] 全バージョン CHANGELOG: サブエージェント廃止・メインコンテキスト実行への変更を追記 — `e082bbc34`
