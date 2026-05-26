@@ -2,7 +2,7 @@
 
 **PR**: #355
 **Issue**: #354
-**Updated**: 2026-05-26
+**Updated**: 2026-05-26 (session end)
 
 ## Fact-Based Work Rule
 
@@ -25,7 +25,7 @@
 **手順:**
 
 **Step A: test-setup.sh 改善コミット**
-- [ ] Static FAIL で即終了 + Notes 列削除 をコミット・プッシュ
+- [x] Static FAIL で即終了 + Notes 列削除 をコミット・プッシュ — committed `5eb22528e`
 
 **Step B: main の Static FAIL 原因調査**
 - [ ] main ブランチの `nablarch/nabledge` の知識ファイル数を実際に確認する
