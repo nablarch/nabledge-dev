@@ -415,36 +415,42 @@ verify_dynamic() {
     fi
 
     # Check if SKILL.md was read during the knowledge search.
-    # This verifies that the skill is properly installed and the workflow started correctly.
-    # For CC: path appears in stream-json output as a JSON string value.
-    # For GHC: path appears as [DEBUG] view: event in --log-dir logs.
+    # Both CC (stream-json) and GHC (--output-format json) include SKILL.md path in their stdout log.
     local skill_read=0
+    grep -q 'SKILL\.md' "$log_file" && skill_read=1 || true
+
+    # Extract final answer text for section and keyword checks.
+    # For CC: {"type":"result"} .result contains the full final answer.
+    # For GHC: the last assistant.message_delta stream; concatenate all deltaContent of the last messageId.
+    local final_answer_text=""
     if [ "$tool" = "cc" ]; then
-        grep -q 'SKILL\.md' "$log_file" && skill_read=1 || true
+        final_answer_text=$(grep '"type":"result"' "$log_file" | tail -1 | jq -r '.result // ""' 2>/dev/null || true)
     else
-        grep -rqE '\[DEBUG\] view:.*SKILL\.md' "$ghc_log_dir"/ && skill_read=1 || true
+        local last_msg_id
+        last_msg_id=$(grep '"type":"assistant.message_delta"' "$log_file" | jq -r '.data.messageId' 2>/dev/null | tail -1)
+        if [ -n "$last_msg_id" ]; then
+            # Concatenate all deltaContent fragments into a single string (deltas can split mid-word)
+            final_answer_text=$(grep '"type":"assistant.message_delta"' "$log_file" \
+                | jq -r --arg id "$last_msg_id" 'select(.data.messageId == $id) | .data.deltaContent // ""' 2>/dev/null \
+                | paste -sd '' || true)
+        fi
     fi
 
     # Check if a conclusion was produced (i.e., the workflow ran to completion).
     # Detect the four required sections in order: 結論, 根拠, 注意点, 参照
-    # Accepts both bold (**結論**) and heading (## 結論) forms.
-    # For CC: appears in stream-json output. For GHC: appears in stdout captured to output.
     local answered=0
     _has_sections() {
         local text="$1"
         local n_ketsuron n_konkyo n_chuui n_sansho
-        n_ketsuron=$(echo "$text" | grep -n '結論' | head -1 | cut -d: -f1)
-        n_konkyo=$(echo "$text"   | grep -n '根拠' | head -1 | cut -d: -f1)
-        n_chuui=$(echo "$text"    | grep -n '注意点' | head -1 | cut -d: -f1)
-        n_sansho=$(echo "$text"   | grep -n '参照' | head -1 | cut -d: -f1)
+        # Use byte offsets (-bo) so the check works whether text is single-line or multi-line
+        n_ketsuron=$(echo "$text" | grep -bo '結論' | head -1 | cut -d: -f1)
+        n_konkyo=$(echo "$text"   | grep -bo '根拠' | head -1 | cut -d: -f1)
+        n_chuui=$(echo "$text"    | grep -bo '注意点' | head -1 | cut -d: -f1)
+        n_sansho=$(echo "$text"   | grep -bo '参照' | head -1 | cut -d: -f1)
         [ -n "$n_ketsuron" ] && [ -n "$n_konkyo" ] && [ -n "$n_chuui" ] && [ -n "$n_sansho" ] \
             && [ "$n_ketsuron" -lt "$n_konkyo" ] && [ "$n_konkyo" -lt "$n_chuui" ] && [ "$n_chuui" -lt "$n_sansho" ]
     }
-    if [ "$tool" = "cc" ]; then
-        _has_sections "$(cat "$log_file")" && answered=1 || true
-    else
-        _has_sections "$output" && answered=1 || true
-    fi
+    _has_sections "$final_answer_text" && answered=1 || true
 
     # Keyword detection (reference only, not used for pass/fail)
     local detected_count=0
@@ -452,11 +458,7 @@ verify_dynamic() {
     IFS=',' read -ra keywords <<< "$keywords_str"
     for kw in "${keywords[@]}"; do
         total_count=$((total_count + 1))
-        if [ "$tool" = "cc" ]; then
-            grep -q "$kw" "$log_file" && detected_count=$((detected_count + 1)) || true
-        else
-            echo "$output" | grep -q "$kw" && detected_count=$((detected_count + 1)) || true
-        fi
+        echo "$final_answer_text" | grep -q "$kw" && detected_count=$((detected_count + 1)) || true
     done
 
     local answered_label
