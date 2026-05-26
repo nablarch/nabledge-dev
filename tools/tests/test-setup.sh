@@ -537,6 +537,12 @@ should_run "v1.2" && verify_env "v1.2/test-ghc" "v1.2/test-ghc/nablarch-example-
 should_run "upgrade"  && verify_env "upgrade/test-cc"   "upgrade/test-cc/nablarch-example-batch"   "6,5"   "cc"
 should_run "upgrade"  && verify_env "upgrade/test-ghc"  "upgrade/test-ghc/nablarch-example-batch"  "1.4,5" "ghc"
 
+if [ "$verify_fail" -ne 0 ]; then
+    echo ""
+    echo "ERROR: Static checks failed. Fix the setup issues above before running dynamic checks."
+    exit 1
+fi
+
 echo ""
 echo "[Dynamic checks]"
 Q_V6="ウェブアプリケーションで入力チェックを実装するには？"
@@ -593,11 +599,11 @@ generate_report() {
 
         echo "## Static Checks"
         echo ""
-        echo "| Environment | Result | Notes |"
-        echo "| ----------- | ------ | ----- |"
+        echo "| Environment | Result |"
+        echo "| ----------- | ------ |"
         for entry in "${STATIC_RESULTS[@]}"; do
             IFS='|' read -r s_label s_result s_notes <<< "$entry"
-            echo "| ${s_label} | ${s_result} | ${s_notes} |"
+            echo "| ${s_label} | ${s_result} |"
         done
         echo ""
 
