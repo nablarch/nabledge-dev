@@ -2,7 +2,7 @@
 
 **PR**: #355
 **Issue**: #354
-**Updated**: 2026-05-26
+**Updated**: 2026-05-26 (complete)
 
 ## Fact-Based Work Rule
 
@@ -32,11 +32,11 @@
 - [x] Implement 3 feedback items in test-setup.sh
 - [x] Run main v6 and develop v6 — reports generated
 - [x] Show reports to user
-- [ ] [DECISION: main CC FAIL (answered: no) — is this expected behavior or a bug to investigate further?]
-- [ ] After decision: get user approval to run full pass (all versions)
-- [ ] Run `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh` (all versions)
-- [ ] Run `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh` (all versions)
-- [ ] Commit test-setup.sh changes + all final reports and push
+- [x] [DECISION: main CC FAIL (answered: no) — expected behavior (knowledge file shortage), proceed]
+- [x] Add FAIL detail notes to Dynamic Checks (missing sections / out of order)
+- [x] Run `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh` (all versions)
+- [x] Run `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh` (all versions)
+- [x] Commit test-setup.sh changes + all final reports and push — committed `4175549c0`
 
 ## Not Started
 
