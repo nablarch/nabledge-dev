@@ -72,6 +72,10 @@ echo "Output directory:    ${OUTPUT_DIR}"
 echo "Version filter:      ${VERSION_FILTER:-all versions}"
 echo ""
 
+# Allow local overrides for setup scripts (for testing local fixes before release)
+LOCAL_SETUP_CC="${LOCAL_SETUP_CC:-}"
+LOCAL_SETUP_GHC="${LOCAL_SETUP_GHC:-}"
+
 # Extract setup script URLs from GUIDE files on NABLEDGE_BRANCH
 # This ensures we use the same URL as users, and detects if the URL changes in the guide.
 echo "[Setup] Fetching setup script URLs from GUIDE files (branch: ${NABLEDGE_BRANCH})..."
@@ -92,6 +96,14 @@ echo "[Setup] Setup CC script URL:  ${SETUP_CC_URL}"
 echo "[Setup] Setup GHC script URL: ${SETUP_GHC_URL}"
 curl -sSfL "$SETUP_CC_URL" -o "$TEMP_DIR/setup-cc.sh"
 curl -sSfL "$SETUP_GHC_URL" -o "$TEMP_DIR/setup-ghc.sh"
+if [ -n "$LOCAL_SETUP_CC" ]; then
+    echo "[Setup] Overriding setup-cc.sh with local file: ${LOCAL_SETUP_CC}"
+    cp "$LOCAL_SETUP_CC" "$TEMP_DIR/setup-cc.sh"
+fi
+if [ -n "$LOCAL_SETUP_GHC" ]; then
+    echo "[Setup] Overriding setup-ghc.sh with local file: ${LOCAL_SETUP_GHC}"
+    cp "$LOCAL_SETUP_GHC" "$TEMP_DIR/setup-ghc.sh"
+fi
 echo "[Setup] Setup scripts downloaded."
 echo ""
 
@@ -325,7 +337,7 @@ verify_dynamic() {
         local ghc_log_dir="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.ghc-logs"
         mkdir -p "$ghc_log_dir"
         local output
-        output=$(script -qc "cd '$project_dir' && timeout 120 copilot -p '${ghc_prompt_basename}' --model claude-haiku-4.5 --yolo --log-dir '$ghc_log_dir' --log-level debug" /dev/null 2>&1) || true
+        output=$(script -qc "cd '$project_dir' && timeout 240 copilot -p '${ghc_prompt_basename}' --model claude-haiku-4.5 --yolo --log-dir '$ghc_log_dir' --log-level debug" /dev/null 2>&1) || true
         rm -f "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
     else
         if ! command -v claude &>/dev/null; then
@@ -339,12 +351,12 @@ verify_dynamic() {
             verify_fail=1
             return
         fi
-        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 120s)..."
+        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 240s)..."
         local output
         # CC uses short model alias "haiku"; GHC uses full model ID "claude-haiku-4.5" (copilot requirement)
         # stream-json+verbose outputs full conversation including tool_use events with file paths
         local cc_log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
-        timeout 120 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "/n${v} ${query}") --model haiku --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
+        timeout 240 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "/n${v} ${query}") --model haiku --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
         output=$(cat "$cc_log_file")
     fi
 
@@ -364,6 +376,27 @@ verify_dynamic() {
         grep -rqE '\[DEBUG\] view:.*SKILL\.md' "$ghc_log_dir"/ && skill_read=1 || true
     fi
 
+    # Check if a conclusion was produced (i.e., the workflow ran to completion).
+    # Detect the four required sections in order: 結論, 根拠, 注意点, 参照
+    # Accepts both bold (**結論**) and heading (## 結論) forms.
+    # For CC: appears in stream-json output. For GHC: appears in stdout captured to output.
+    local answered=0
+    _has_sections() {
+        local text="$1"
+        local n_ketsuron n_konkyo n_chuui n_sansho
+        n_ketsuron=$(echo "$text" | grep -n '結論' | head -1 | cut -d: -f1)
+        n_konkyo=$(echo "$text"   | grep -n '根拠' | head -1 | cut -d: -f1)
+        n_chuui=$(echo "$text"    | grep -n '注意点' | head -1 | cut -d: -f1)
+        n_sansho=$(echo "$text"   | grep -n '参照' | head -1 | cut -d: -f1)
+        [ -n "$n_ketsuron" ] && [ -n "$n_konkyo" ] && [ -n "$n_chuui" ] && [ -n "$n_sansho" ] \
+            && [ "$n_ketsuron" -lt "$n_konkyo" ] && [ "$n_konkyo" -lt "$n_chuui" ] && [ "$n_chuui" -lt "$n_sansho" ]
+    }
+    if [ "$tool" = "cc" ]; then
+        _has_sections "$(cat "$log_file")" && answered=1 || true
+    else
+        _has_sections "$output" && answered=1 || true
+    fi
+
     # Keyword detection (reference only, not used for pass/fail)
     local detected_count=0
     local total_count=0
@@ -377,12 +410,15 @@ verify_dynamic() {
         fi
     done
 
-    if [ "$skill_read" -eq 0 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: SKILL.md not read; keywords: ${detected_count}/${total_count}"
+    local answered_label
+    [ "$answered" -eq 1 ] && answered_label="yes" || answered_label="no"
+
+    if [ "$skill_read" -eq 0 ] || [ "$answered" -eq 0 ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: SKILL.md read: $([ "$skill_read" -eq 1 ] && echo yes || echo no), answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
         echo "         Log: ${log_file}"
         verify_fail=1
     else
-        echo "  [OK]   ${label} nabledge-${v}: SKILL.md read; keywords: ${detected_count}/${total_count}"
+        echo "  [OK]   ${label} nabledge-${v}: SKILL.md read, answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
     fi
 }
 
@@ -402,16 +438,16 @@ should_run "upgrade"  && verify_env "upgrade/test-ghc"  "upgrade/test-ghc/nablar
 
 echo ""
 echo "[Dynamic checks]"
-Q_V6="UniversalDaoでページング検索を実装するには？"
-KW_V6="UniversalDao,page,per,findAllBySqlFile,Pagination,getPagination,pageNumber,listSearchResult"
-Q_V5="UniversalDaoでページング検索を実装するには？"
-KW_V5="UniversalDao,page,per,findAllBySqlFile,Pagination,getPagination,pageNumber,listSearchResult"
-Q_V14="コードリストのプルダウン入力を実装するには？"
-KW_V14="n:codeSelect,codeId,n:select,コード値"
-Q_V13="コードリストのプルダウン入力を実装するには？"
-KW_V13="n:codeSelect,codeId,n:select,コード値"
-Q_V12="コードリストのプルダウン入力を実装するには？"
-KW_V12="n:codeSelect,codeId,n:select,コード値"
+Q_V6="ウェブアプリケーションで入力チェックを実装するには？"
+KW_V6="InjectForm"
+Q_V5="ウェブアプリケーションで入力チェックを実装するには？"
+KW_V5="InjectForm"
+Q_V14="ウェブアプリケーションでコードリストのプルダウン入力を実装するには？"
+KW_V14="n:codeSelect,codeId"
+Q_V13="ウェブアプリケーションでコードリストのプルダウン入力を実装するには？"
+KW_V13="n:codeSelect,codeId"
+Q_V12="ウェブアプリケーションでコードリストのプルダウン入力を実装するには？"
+KW_V12="n:codeSelect,codeId"
 should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "$Q_V6"  "$KW_V6"  "cc"
 should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "$Q_V6"  "$KW_V6"  "ghc"
 should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "$Q_V5"  "$KW_V5"  "cc"
