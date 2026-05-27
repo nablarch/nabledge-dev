@@ -35,6 +35,12 @@
 | GHC output tokens | 24,325 | 33,241 | +8,916 |
 | CC cost (USD) | $3.90 | $3.39 | **+$0.51** |
 
+- CC input tokens は develop が main の約5.4倍（2,801,058 vs 514,318）
+- CC output tokens は develop が main の約3.0倍（18,369 vs 6,052）
+- CC コストは input tokens が少ない main の方が $0.51 高い（$3.90 vs $3.39）
+- GHC output tokens は develop が main の約1.4倍（33,241 vs 24,325）
+- GHC 実行時間は develop が 150s 長い（683s vs 533s）
+
 ---
 
 ## Static Checks 詳細
