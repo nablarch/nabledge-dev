@@ -56,8 +56,8 @@
 | GHC output tokens | 24,325 | 33,241 | +8,916 |
 | CC cost (USD) | $3.90 | $3.39 | **+$0.51** |
 
-- CC input tokens は develop が main の約5.4倍（2,801,058 vs 514,318）
-- CC output tokens は develop が main の約3.0倍（18,369 vs 6,052）
+- CC: develop は main より 59s 速く（355s vs 414s）、$0.51 安い（$3.39 vs $3.90）
+- CC input tokens は develop が main の約5.4倍（2,801,058 vs 514,318）、output tokens は約3.0倍（18,369 vs 6,052）
 - CC cost は `claude -p` が返す `total_cost_usd` の合計値。input tokens は `input + cache_creation + cache_read` の合算で単価が異なるため、トークン合計とコストは単純比較できない
 - GHC output tokens は develop が main の約1.4倍（33,241 vs 24,325）
 - GHC 実行時間は develop が 150s 長い（683s vs 533s）
