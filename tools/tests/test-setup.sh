@@ -248,7 +248,11 @@ verify_env() {
         fi
 
         local expected_knowledge_count
-        expected_knowledge_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/knowledge" 2>/dev/null | wc -l)
+        if [ "$NABLEDGE_BRANCH" = "develop" ]; then
+            expected_knowledge_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/knowledge" 2>/dev/null | wc -l)
+        else
+            expected_knowledge_count=$(gh api "repos/${NABLEDGE_REPO}/contents/plugins/nabledge-${v}/skills/nabledge-${v}/knowledge?ref=${NABLEDGE_BRANCH}" --jq 'length' 2>/dev/null || echo 0)
+        fi
         if [ "$knowledge_count" -ne "$expected_knowledge_count" ]; then
             local msg="nabledge-${v}: knowledge/ has ${knowledge_count} files, expected ${expected_knowledge_count}"
             echo "  [FAIL] ${label} ${msg}"
@@ -269,7 +273,11 @@ verify_env() {
         fi
 
         local expected_docs_count
-        expected_docs_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/docs" 2>/dev/null | wc -l)
+        if [ "$NABLEDGE_BRANCH" = "develop" ]; then
+            expected_docs_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/docs" 2>/dev/null | wc -l)
+        else
+            expected_docs_count=$(gh api "repos/${NABLEDGE_REPO}/contents/plugins/nabledge-${v}/skills/nabledge-${v}/docs?ref=${NABLEDGE_BRANCH}" --jq 'length' 2>/dev/null || echo 0)
+        fi
         if [ -d "$docs_dir" ] && [ "$docs_count" -ne "$expected_docs_count" ]; then
             local msg="nabledge-${v}: docs/ has ${docs_count} entries, expected ${expected_docs_count}"
             echo "  [FAIL] ${label} ${msg}"
