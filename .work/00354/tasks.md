@@ -33,33 +33,23 @@
 **Step C: (Step B の修正で解消済み — 削除)**
 
 **Step D: 全バージョン実行**
-- [x] `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh` — Static 全 PASS 確認済み、レポート生成済み `tools/tests/reports/main-20260527-101040.md`
-- [ ] Dynamic WARN 判定実装 → main レポート再生成（Step D-1 参照）
-- [ ] `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh`
+- [x] `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh` — Static 全 PASS 確認済み、レポート生成済み `tools/tests/reports/main-20260527-121154.md`
+- [x] Dynamic WARN 判定実装 → main レポート再生成（Step D-1 参照）
+- [x] `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh` — レポート生成済み `tools/tests/reports/develop-20260527-113624.md`
 
 **Step D-1: FAIL ログ確認 → WARN 手動書き換え**
-
-**背景:** main ブランチのスキルは旧ワークフローで 結論/根拠/注意点/参照 の 4 セクション形式を返さないが、実用的な回答は返している。レポート生成後にメインエージェントが FAIL 行のログを読んで判定し、実用的な回答なら WARN に書き換える。
-
-**Steps:**
-- [ ] main レポートの FAIL 行をリストアップ
-- [ ] 各 FAIL 行のログファイル（`dynamic-check-*.log`）を読み、`type:result` の `.result` テキストを確認
-  - Nablarch に関する技術的な回答になっていれば → レポートの Result を `WARN`、Notes に `format mismatch (content OK); <不足セクション>` を追記
-  - 回答になっていなければ → FAIL のまま
-- [ ] 書き換え後のレポートをコミット・プッシュ
+- [x] main レポートの FAIL 行をリストアップ（9件）
+- [x] 各 FAIL 行のログを読み判定: CC 全7件 WARN・GHC v1.2/upgrade-1.4 WARN・v6/test-ghc は FAIL 維持（プロンプトファイル不在、回答なし）
+- [x] 書き換え後のレポートを `main-20260527-121154.md` に保存
 
 **Step E: レポート内容の詳細セルフチェック（ユーザー報告前）**
-- [ ] 各レポートの全フィールドを目視確認
-  - Branch / Commit / Repository / Run datetime / Version filter が正しいか
-  - Static: 環境名・結果が正しいか
-  - Dynamic: 各行の Version / Tool / Result / Time / tokens / Cost / Keywords が妥当な範囲か
-  - Totals: 合計値が各行の足し算と一致するか
-- [ ] CC input tokens: main（知識少）< develop（知識多）になっているか確認
-- [ ] GHC output tokens: PASS 行は十分な量（500+ tokens）か確認（極端に少ない場合は空振りの可能性）
-- [ ] FAIL の Notes が正確か（missing sections が本当に欠けているかログで確認）
+- [x] 各レポートの全フィールドを目視確認 — Branch/Commit/Repository/Run datetime/Version filter 全正常
+- [x] CC input tokens: main ~73K < develop 340K-470K ✅
+- [x] GHC output tokens: PASS 行全件 500+ ✅
+- [x] FAIL の Notes が正確か — v6/test-ghc は「prompt file not found; no answer returned」が正確
 
 **Step F: 比較レポート出力・コミット・プッシュ**
-- [ ] `tools/tests/reports/comparison-main-vs-develop-YYYYMMDD.md` を更新（旧版は削除）
+- [x] `tools/tests/reports/comparison-main-vs-develop-20260527.md` を作成（旧版削除）
 - [ ] コミット・プッシュ
 - [ ] ユーザーに結果報告
 
