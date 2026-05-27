@@ -50,7 +50,7 @@
 
 **Step F: 比較レポート出力・コミット・プッシュ**
 - [x] `tools/tests/reports/comparison-main-vs-develop-20260527.md` を作成（旧版削除）
-- [ ] コミット・プッシュ
+- [x] コミット・プッシュ — committed `e265a2d2b`
 - [ ] ユーザーに結果報告
 
 ## Not Started
