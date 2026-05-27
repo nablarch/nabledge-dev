@@ -54,7 +54,7 @@
 | CC input tokens | 514,318 | 2,801,058 | +2,286,740 |
 | CC output tokens | 7,053 | 18,492 | +11,439 |
 | GHC output tokens | 24,325 | 33,241 | +8,916 |
-| CC cost (USD) | $3.90 | $3.39 | **+$0.51** |
+| CC cost (USD, CC only) | $3.90 | $3.39 | **+$0.51** |
 
 - CC: develop は main より 59s 速く（355s vs 414s）、$0.51 安い（$3.39 vs $3.90）
 - CC input tokens は develop が main の約5.4倍（2,801,058 vs 514,318）、output tokens は約3.0倍（18,369 vs 6,052）

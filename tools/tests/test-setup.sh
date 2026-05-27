@@ -675,10 +675,10 @@ generate_report() {
         if [ "$total_input" -gt 0 ] || [ "$total_output" -gt 0 ]; then
             total_tokens_display="$(( total_input + total_output )) (in: ${total_input}, out: ${total_output})"
         fi
-        echo "| Total tokens | ${total_tokens_display} |"
+        echo "| Total tokens (CC only) | ${total_tokens_display} |"
         local total_cost_display="N/A"
         [ "$has_cost" -eq 1 ] && total_cost_display="\$${total_cost}"
-        echo "| Total estimated cost | ${total_cost_display} |"
+        echo "| Total estimated cost (CC only) | ${total_cost_display} |"
     } > "$report_file"
 
     echo ""
