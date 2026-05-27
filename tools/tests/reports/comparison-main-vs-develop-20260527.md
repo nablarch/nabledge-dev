@@ -6,6 +6,27 @@
 | develop commit | `80cbac7` (2026-05-27 11:36:24) |
 | Repository | `nablarch/nabledge` |
 
+## Overview
+
+このレポートは `nablarch/nabledge` リポジトリの main ブランチと develop ブランチで Nabledge スキルのセットアップ状態を比較したものです。
+
+- **Static Checks**: 知識ファイル・コマンドファイル等のセットアップが正しく完了しているかを確認します。FAIL が 1 件でもあればスキルは動作しません。
+- **Dynamic Checks**: 実際に AI ツール（CC / GHC）へ質問を投げ、正しい形式の回答が得られるかを確認します。
+
+### 用語
+
+| 用語 | 説明 |
+| ---- | ---- |
+| Environment | テスト対象の環境名。`v6/test-cc` = Nabledge v6 を Claude Code でテスト |
+| Version | Nabledge のバージョン（6, 5, 1.4, 1.3, 1.2）|
+| Tool | AI ツール。`cc` = Claude Code、`ghc` = GitHub Copilot |
+| Keywords | 回答中にキーワードが含まれた数 / 期待キーワード総数 |
+| PASS | 期待形式の回答が得られた |
+| WARN | 回答内容は正しいが形式が期待と異なる（フォーマット不一致・セクション順序違いなど）|
+| FAIL | 回答が得られなかった、またはセットアップに問題がある |
+| upgrade | v5 → v6 アップグレード手順のテスト環境 |
+| Input tokens | CC のみ取得可能。GHC は N/A |
+
 ---
 
 ## サマリー
@@ -19,9 +40,9 @@
 | Dynamic WARN | 9 / 14 | 3 / 14 |
 | Dynamic FAIL | 1 / 14 | 0 / 14 |
 
-- main の Dynamic WARN は旧フォーマット（結論/根拠/注意点/参照 4セクション形式なし）だが実用的な回答を返している
-- main の Dynamic FAIL 1件（v6/test-ghc）はプロンプトファイルが見つからず回答なし
-- develop の Dynamic WARN 2件（v1.3/test-cc, v1.3/test-ghc）はセクション順序不一致だが内容は正常
+- main の Dynamic WARN（9件）: 回答内容は正しいが、期待する 結論/根拠/注意点/参照 の 4 セクション形式になっていない。main ブランチは旧バージョンのスキルのため形式が異なる
+- main の Dynamic FAIL（1件、v6/test-ghc）: プロンプトファイルが見つからず回答なし
+- develop の Dynamic WARN（2件、v1.3）: セクションが存在するが順序が異なる。内容は正常
 
 ### コスト・トークン・時間
 
@@ -45,6 +66,8 @@
 
 ## Static Checks 詳細
 
+知識ファイル・コマンドファイル等が正しく配置されているかの確認結果です。
+
 | Environment | main | develop |
 | ----------- | ---- | ------- |
 | v6/test-cc | ✅ PASS | ✅ PASS |
@@ -63,6 +86,8 @@
 ---
 
 ## Dynamic Checks 詳細
+
+AI ツールに実際に質問し、回答の内容と形式を確認した結果です。
 
 ### CC (Claude Code)
 
