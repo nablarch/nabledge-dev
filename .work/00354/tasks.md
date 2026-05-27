@@ -37,39 +37,16 @@
 - [ ] Dynamic WARN 判定実装 → main レポート再生成（Step D-1 参照）
 - [ ] `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh`
 
-**Step D-1: Dynamic WARN 判定実装**
+**Step D-1: FAIL ログ確認 → WARN 手動書き換え**
 
-**背景:** main ブランチのスキルは旧ワークフローで 結論/根拠/注意点/参照 の 4 セクション形式を返さないが、実用的な回答は返している。FAIL と WARN を区別したい。
-
-**判定ロジック:**
-- PASS — SKILL.md 読込済み + 4セクション揃い + 順序正しい
-- WARN — SKILL.md 読込済み + セクション形式不一致 + `claude -p` による内容判定で「実用的な回答」と判定
-- FAIL — SKILL.md 未読込 OR 回答テキスト空 OR `claude -p` 判定で「回答になっていない」
-
-**`claude -p` 判定プロンプト（スクリプト内でのみ使用）:**
-```
-あなたはNablarchフレームワークの専門家です。
-以下のテキストを読み、これが「Nablarchに関する技術的な質問への実用的な回答」になっているかを判定してください。
-YESまたはNOのみ答えてください。
-
-<text>
-{final_answer_text の先頭 2000 文字}
-</text>
-```
-
-**`verify_fail` の扱い:** WARN は `verify_fail` をセットしない（exit 0）。
-**Notes:** WARN の場合は `format mismatch (content OK)` + 不足セクション名を記載。
-
-**実装箇所:** `test-setup.sh` の `verify_dynamic` 関数内、`result_status` 決定ロジック（行 520 付近）。
+**背景:** main ブランチのスキルは旧ワークフローで 結論/根拠/注意点/参照 の 4 セクション形式を返さないが、実用的な回答は返している。レポート生成後にメインエージェントが FAIL 行のログを読んで判定し、実用的な回答なら WARN に書き換える。
 
 **Steps:**
-- [ ] `verify_dynamic` の result_status 決定ロジックを PASS/WARN/FAIL の 3 値に変更
-  - `answered=0` かつ `final_answer_text` 非空 の場合 → `claude -p` で判定
-  - `claude -p` が YES → WARN、NO → FAIL
-  - `verify_fail` は FAIL のみセット（WARN はセットしない）
-  - Notes: WARN は `format mismatch (content OK); missing sections: ...`、FAIL は従来通り
-- [ ] main レポートを再生成して確認（WARN が正しく出るか）
-- [ ] コミット・プッシュ
+- [ ] main レポートの FAIL 行をリストアップ
+- [ ] 各 FAIL 行のログファイル（`dynamic-check-*.log`）を読み、`type:result` の `.result` テキストを確認
+  - Nablarch に関する技術的な回答になっていれば → レポートの Result を `WARN`、Notes に `format mismatch (content OK); <不足セクション>` を追記
+  - 回答になっていなければ → FAIL のまま
+- [ ] 書き換え後のレポートをコミット・プッシュ
 
 **Step E: レポート内容の詳細セルフチェック（ユーザー報告前）**
 - [ ] 各レポートの全フィールドを目視確認
