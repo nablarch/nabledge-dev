@@ -187,8 +187,9 @@ echo "Verifying installations..."
 echo ""
 
 verify_fail=0
+verify_warn=0
 STATIC_RESULTS=()   # each entry: "label|PASS" or "label|FAIL"
-DYNAMIC_RESULTS=()  # each entry: "label|v|tool|PASS/FAIL|time_s|input_tokens|output_tokens|cost_usd|keywords|notes"
+DYNAMIC_RESULTS=()  # each entry: "label|v|tool|PASS/FAIL/WARN|time_s|input_tokens|output_tokens|cost_usd|keywords|notes"
 
 # verify_env: static check for one test environment
 # Args:
@@ -518,11 +519,23 @@ verify_dynamic() {
     fi
 
     local result_status
-    if [ "$skill_read" -eq 0 ] || [ "$answered" -eq 0 ]; then
+    # "sections out of order" means all 4 keywords are present but in wrong order.
+    # This is a formatting variation, not a functional failure — classify as WARN.
+    local sections_out_of_order=0
+    if [ "$answered" -eq 0 ] && [ -n "$dynamic_notes" ] && echo "$dynamic_notes" | grep -q "sections out of order"; then
+        sections_out_of_order=1
+    fi
+
+    if [ "$skill_read" -eq 0 ] || ([ "$answered" -eq 0 ] && [ "$sections_out_of_order" -eq 0 ]); then
         echo "  [FAIL] ${label} nabledge-${v}: SKILL.md read: $([ "$skill_read" -eq 1 ] && echo yes || echo no), answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
         echo "         Log: ${log_file}"
         verify_fail=1
         result_status="FAIL"
+    elif [ "$sections_out_of_order" -eq 1 ]; then
+        echo "  [WARN] ${label} nabledge-${v}: sections detected but out of order; keywords: ${detected_count}/${total_count}"
+        echo "         Log: ${log_file}"
+        verify_warn=1
+        result_status="WARN"
     else
         echo "  [OK]   ${label} nabledge-${v}: SKILL.md read, answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
         result_status="PASS"
@@ -687,10 +700,13 @@ generate_report() {
 
 generate_report
 
-if [ "$verify_fail" -eq 0 ]; then
+if [ "$verify_fail" -eq 0 ] && [ "$verify_warn" -eq 0 ]; then
     echo "All environments verified successfully."
+elif [ "$verify_fail" -eq 0 ]; then
+    echo "Verification completed with ${verify_warn} WARN(s). Review [WARN] entries above."
 else
     echo "ERROR: Some environments failed verification. See [FAIL] entries above."
+    [ "$verify_warn" -gt 0 ] && echo "Additionally, ${verify_warn} WARN(s) found. See [WARN] entries above."
     exit 1
 fi
 

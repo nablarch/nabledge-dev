@@ -63,43 +63,7 @@ flowchart LR
 
 ### 開発バージョンのテスト
 
-`nablarch/nabledge:develop` の最新開発バージョンをテストするには、`tools/tests/test-setup.sh` を実行します。
-
-```bash
-# 全バージョン
-bash tools/tests/test-setup.sh
-
-# バージョン指定（v6 / v5 / v1.4 / upgrade）
-bash tools/tests/test-setup.sh v6
-```
-
-スクリプトは `.tmp/nabledge-test/` に環境を構築し、静的チェックと動的チェックを実行します。実行後、`tools/tests/reports/` にブランチ名と日時を含む Markdown レポートが生成されます。
-
-**静的チェック**（ファイル構成の検証）
-
-- `SKILL.md` が存在すること
-- `knowledge/` ディレクトリが存在し、nabledge-dev と同数のファイルがあること
-- `docs/` ディレクトリが存在し、nabledge-dev と同数のエントリがあること
-- `/n{v}` コマンドファイルが存在すること（CC/GHC 共通）
-- `n{v}.prompt.md` が存在すること（GHC のみ）
-
-**動的チェック**（知識検索の動作検証）
-
-CC（`claude -p`）・GHC（`copilot -p`）をヘッドレスモードで実行し、`SKILL.md` が読み込まれたかを検証します。
-
-**前後比較（`main` vs `develop`）**
-
-PR マージ前後の品質を比較するには、両ブランチに対して実行し、生成されたレポートを diff します。
-
-```bash
-# main ブランチの状態をテスト
-NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh
-
-# develop ブランチの状態をテスト（デフォルト）
-NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh
-```
-
-各実行のレポートは `tools/tests/reports/` に蓄積されます（例: `main-20260526-143012.md`、`develop-20260526-151530.md`）。2つのレポートを並べて確認することで、マージによる影響を把握できます。
+詳細は [`tools/tests/README.md`](tools/tests/README.md) を参照してください。
 
 ### リリース手順
 
