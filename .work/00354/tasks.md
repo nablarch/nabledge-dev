@@ -33,7 +33,7 @@
 **Step C: (Step B の修正で解消済み — 削除)**
 
 **Step D: 全バージョン実行**
-- [ ] `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh` — Static 全 PASS を確認してから実行
+- [x] `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh` — Static 全 PASS 確認済み、レポート生成済み `tools/tests/reports/main-20260527-101040.md`
 - [ ] `NABLEDGE_BRANCH=develop bash tools/tests/test-setup.sh`
 
 **Step E: レポート内容の詳細セルフチェック（ユーザー報告前）**
