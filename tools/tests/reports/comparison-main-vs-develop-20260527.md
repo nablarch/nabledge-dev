@@ -1,0 +1,115 @@
+# main vs develop 比較レポート
+
+| 項目 | 値 |
+| ---- | -- |
+| main commit | `9c1f364` (2026-05-27 12:11:54) |
+| develop commit | `80cbac7` (2026-05-27 11:36:24) |
+| Repository | `nablarch/nabledge` |
+
+---
+
+## 結論
+
+- **Static**: main / develop ともに全環境 PASS。セットアップに問題なし
+- **Dynamic**: develop は PASS 11/14。main は WARN 9件（回答内容は正常だが旧フォーマット）、FAIL 1件（v6/test-ghc: プロンプトファイル不在）
+- **CC コスト・速度**: develop は main より 59s 速く、$0.51 安い
+
+---
+
+## サマリー
+
+### 合否
+
+| | main | develop |
+| -- | ---- | ------- |
+| Static PASS | **12 / 12** | **12 / 12** |
+| Dynamic PASS | 4 / 14 | 11 / 14 |
+| Dynamic WARN | 9 / 14 | 3 / 14 |
+| Dynamic FAIL | 1 / 14 | 0 / 14 |
+
+- main の Dynamic WARN（9件）: 回答内容は正しいが、期待する 結論/根拠/注意点/参照 の 4 セクション形式になっていない。main ブランチは旧バージョンのスキルのため形式が異なる
+- main の Dynamic FAIL（1件、v6/test-ghc）: プロンプトファイルが見つからず回答なし
+- develop の Dynamic WARN（2件、v1.3）: セクションが存在するが順序が異なる。内容は正常
+
+### コスト・トークン・時間
+
+| Metric | main | develop | diff |
+| ------ | ---- | ------- | ---- |
+| Total time (s) | 947 | 1,038 | +91 |
+| CC time (s) | 414 | 355 | **-59** |
+| GHC time (s) | 533 | 683 | **+150** |
+| CC input tokens | 514,318 | 2,801,058 | +2,286,740 |
+| CC output tokens | 7,053 | 18,492 | +11,439 |
+| GHC output tokens | 24,325 | 33,241 | +8,916 |
+| CC cost (USD, CC only) | $3.90 | $3.39 | **-$0.51** |
+
+- CC: develop は main より 59s 速く（355s vs 414s）、$0.51 安い（$3.39 vs $3.90）
+- CC input tokens は develop が main の約5.4倍（2,801,058 vs 514,318）、output tokens は約3.0倍（18,369 vs 6,052）
+- CC cost は `claude -p` が返す `total_cost_usd` の合計値。input tokens は `input + cache_creation + cache_read` の合算で単価が異なるため、トークン合計とコストは単純比較できない
+- GHC output tokens は develop が main の約1.4倍（33,241 vs 24,325）
+- GHC 実行時間は develop が 150s 長い（683s vs 533s）
+
+---
+
+## 詳細
+
+### 用語
+
+| 用語 | 説明 |
+| ---- | ---- |
+| Environment | テスト対象の環境名。`v6/test-cc` = Nabledge v6 を Claude Code でテスト |
+| Version | Nabledge のバージョン（6, 5, 1.4, 1.3, 1.2）|
+| Tool | AI ツール。`cc` = Claude Code、`ghc` = GitHub Copilot |
+| Keywords | 回答中にキーワードが含まれた数 / 期待キーワード総数 |
+| PASS | 期待形式の回答が得られた |
+| WARN | 回答内容は正しいが形式が期待と異なる（フォーマット不一致・セクション順序違いなど）|
+| FAIL | 回答が得られなかった、またはセットアップに問題がある |
+| upgrade | v5 → v6 アップグレード手順のテスト環境 |
+| Input tokens | CC のみ取得可能。GHC は N/A |
+
+### Static Checks
+
+知識ファイル・コマンドファイル等が正しく配置されているかの確認結果です。
+
+| Environment | main | develop |
+| ----------- | ---- | ------- |
+| v6/test-cc | ✅ PASS | ✅ PASS |
+| v6/test-ghc | ✅ PASS | ✅ PASS |
+| v5/test-cc | ✅ PASS | ✅ PASS |
+| v5/test-ghc | ✅ PASS | ✅ PASS |
+| v1.4/test-cc | ✅ PASS | ✅ PASS |
+| v1.4/test-ghc | ✅ PASS | ✅ PASS |
+| v1.3/test-cc | ✅ PASS | ✅ PASS |
+| v1.3/test-ghc | ✅ PASS | ✅ PASS |
+| v1.2/test-cc | ✅ PASS | ✅ PASS |
+| v1.2/test-ghc | ✅ PASS | ✅ PASS |
+| upgrade/test-cc | ✅ PASS | ✅ PASS |
+| upgrade/test-ghc | ✅ PASS | ✅ PASS |
+
+### Dynamic Checks — CC (Claude Code)
+
+AI ツールに実際に質問し、回答の内容と形式を確認した結果です。
+
+| Environment | Ver | main Result | main Notes | develop Result | develop Notes | main Time (s) | dev Time (s) | main Input tok | dev Input tok | main Output tok | dev Output tok | main Cost | dev Cost | main KW | dev KW |
+| ----------- | --- | ----------- | ---------- | -------------- | ------------- | ------------- | ------------ | -------------- | ------------- | --------------- | -------------- | --------- | -------- | ------- | ------ |
+| v6/test-cc | 6 | ⚠️ WARN | missing: 結論, 根拠, 参照 | ✅ PASS | — | 64 | 47 | 73,474 | 353,105 | 781 | 2,485 | $0.456 | $0.462 | 0/1 | 1/1 |
+| v5/test-cc | 5 | ⚠️ WARN | missing: 結論, 根拠, 参照 | ✅ PASS | — | 55 | 50 | 73,463 | 470,357 | 855 | 2,633 | $0.622 | $0.537 | 1/1 | 1/1 |
+| v1.4/test-cc | 1.4 | ⚠️ WARN | missing: 結論, 根拠, 参照 | ✅ PASS | — | 51 | 62 | 73,253 | 470,088 | 842 | 2,994 | $0.599 | $0.531 | 2/2 | 2/2 |
+| v1.3/test-cc | 1.3 | ⚠️ WARN | missing: 根拠, 注意点, 参照 | ⚠️ WARN | sections out of order | 66 | 48 | 73,342 | 340,513 | 752 | 2,166 | $0.451 | $0.433 | 2/2 | 2/2 |
+| v1.2/test-cc | 1.2 | ⚠️ WARN | missing: 結論, 根拠, 参照 | ✅ PASS | — | 58 | 51 | 73,406 | 343,857 | 1,013 | 2,572 | $0.558 | $0.448 | 2/2 | 2/2 |
+| upgrade/test-cc | 6 | ⚠️ WARN | missing: 結論, 根拠, 注意点, 参照 | ✅ PASS | — | 61 | 42 | 74,007 | 353,348 | 895 | 2,465 | $0.576 | $0.463 | 1/1 | 1/1 |
+| upgrade/test-cc | 5 | ⚠️ WARN | missing: 結論, 根拠, 参照 | ✅ PASS | — | 59 | 57 | 73,373 | 469,790 | 914 | 3,054 | $0.636 | $0.520 | 1/1 | 1/1 |
+| **CC 合計** | | **0 PASS / 7** | | **6 PASS / 7** | | **414s** | **357s** | **514,318** | **2,801,058** | **6,052** | **18,369** | **$3.90** | **$3.39** | | |
+
+### Dynamic Checks — GHC (GitHub Copilot)
+
+| Environment | Ver | main Result | main Notes | develop Result | develop Notes | main Time (s) | dev Time (s) | main Output tok | dev Output tok | main KW | dev KW |
+| ----------- | --- | ----------- | ---------- | -------------- | ------------- | ------------- | ------------ | --------------- | -------------- | ------- | ------ |
+| v6/test-ghc | 6 | ❌ FAIL | prompt file not found; no answer | ✅ PASS | — | 19 | 91 | 577 | 4,432 | 0/1 | 1/1 |
+| v5/test-ghc | 5 | ✅ PASS | — | ✅ PASS | — | 86 | 102 | 3,920 | 5,001 | 1/1 | 1/1 |
+| v1.4/test-ghc | 1.4 | ✅ PASS | — | ✅ PASS | — | 45 | 96 | 2,191 | 4,339 | 2/2 | 2/2 |
+| v1.3/test-ghc | 1.3 | ✅ PASS | — | ⚠️ WARN | sections out of order | 177 | 93 | 7,724 | 4,836 | 2/2 | 2/2 |
+| v1.2/test-ghc | 1.2 | ⚠️ WARN | missing: 結論, 根拠, 注意点, 参照 | ✅ PASS | — | 68 | 127 | 3,508 | 6,218 | 2/2 | 2/2 |
+| upgrade/test-ghc | 1.4 | ⚠️ WARN | missing: 結論, 根拠, 注意点, 参照 | ✅ PASS | — | 62 | 93 | 3,424 | 4,750 | 1/2 | 2/2 |
+| upgrade/test-ghc | 5 | ✅ PASS | — | ✅ PASS | — | 76 | 79 | 3,982 | 3,788 | 0/1 | 1/1 |
+| **GHC 合計** | | **3 PASS / 7** | | **6 PASS / 7** | | **533s** | **681s** | **25,326** | **33,364** | | |

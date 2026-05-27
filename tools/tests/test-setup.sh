@@ -187,6 +187,8 @@ echo "Verifying installations..."
 echo ""
 
 verify_fail=0
+STATIC_RESULTS=()   # each entry: "label|PASS" or "label|FAIL"
+DYNAMIC_RESULTS=()  # each entry: "label|v|tool|PASS/FAIL|time_s|input_tokens|output_tokens|cost_usd|keywords|notes"
 
 # verify_env: static check for one test environment
 # Args:
@@ -222,8 +224,12 @@ verify_env() {
         local skill_dir="$project_dir/.claude/skills/nabledge-${v}"
         local cmd_file="$project_dir/.claude/commands/n${v}.md"
 
+        _static_note() { _static_fail_notes="${_static_fail_notes:+${_static_fail_notes}; }$1"; }
+
         if [ ! -f "$skill_dir/SKILL.md" ]; then
-            echo "  [FAIL] ${label} nabledge-${v}: SKILL.md not found (skill not installed)"
+            local msg="nabledge-${v}: SKILL.md not found (skill not installed)"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
             continue
         fi
@@ -234,15 +240,23 @@ verify_env() {
         if [ -d "$knowledge_dir" ]; then
             knowledge_count=$(ls "$knowledge_dir" | wc -l)
         else
-            echo "  [FAIL] ${label} nabledge-${v}: knowledge/ directory not found"
+            local msg="nabledge-${v}: knowledge/ directory not found"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
             continue
         fi
 
         local expected_knowledge_count
-        expected_knowledge_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/knowledge" 2>/dev/null | wc -l)
+        if [ "$NABLEDGE_BRANCH" = "develop" ]; then
+            expected_knowledge_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/knowledge" 2>/dev/null | wc -l)
+        else
+            expected_knowledge_count=$(gh api "repos/${NABLEDGE_REPO}/contents/plugins/nabledge-${v}/skills/nabledge-${v}/knowledge?ref=${NABLEDGE_BRANCH}" --jq 'length' 2>/dev/null || echo 0)
+        fi
         if [ "$knowledge_count" -ne "$expected_knowledge_count" ]; then
-            echo "  [FAIL] ${label} nabledge-${v}: knowledge/ has ${knowledge_count} files, expected ${expected_knowledge_count}"
+            local msg="nabledge-${v}: knowledge/ has ${knowledge_count} files, expected ${expected_knowledge_count}"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
         fi
 
@@ -252,14 +266,22 @@ verify_env() {
         if [ -d "$docs_dir" ]; then
             docs_count=$(ls "$docs_dir" | wc -l)
         else
-            echo "  [FAIL] ${label} nabledge-${v}: docs/ directory not found"
+            local msg="nabledge-${v}: docs/ directory not found"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
         fi
 
         local expected_docs_count
-        expected_docs_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/docs" 2>/dev/null | wc -l)
+        if [ "$NABLEDGE_BRANCH" = "develop" ]; then
+            expected_docs_count=$(ls "${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-${v}/docs" 2>/dev/null | wc -l)
+        else
+            expected_docs_count=$(gh api "repos/${NABLEDGE_REPO}/contents/plugins/nabledge-${v}/skills/nabledge-${v}/docs?ref=${NABLEDGE_BRANCH}" --jq 'length' 2>/dev/null || echo 0)
+        fi
         if [ -d "$docs_dir" ] && [ "$docs_count" -ne "$expected_docs_count" ]; then
-            echo "  [FAIL] ${label} nabledge-${v}: docs/ has ${docs_count} entries, expected ${expected_docs_count}"
+            local msg="nabledge-${v}: docs/ has ${docs_count} entries, expected ${expected_docs_count}"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
         fi
 
@@ -270,7 +292,9 @@ verify_env() {
         elif [ -f "$cmd_file" ]; then
             cmd_status="ok"
         else
-            echo "  [FAIL] ${label} nabledge-${v}: /n${v} command missing"
+            local msg="nabledge-${v}: /n${v} command missing"
+            echo "  [FAIL] ${label} ${msg}"
+            _static_note "$msg"
             fail=1
             cmd_status="FAIL"
         fi
@@ -282,7 +306,9 @@ verify_env() {
             if [ -f "$prompt_file" ]; then
                 ghc_status=", prompt ok"
             else
-                echo "  [FAIL] ${label} nabledge-${v}: n${v}.prompt.md missing"
+                local msg="nabledge-${v}: n${v}.prompt.md missing"
+                echo "  [FAIL] ${label} ${msg}"
+                _static_note "$msg"
                 fail=1
                 ghc_status=", prompt FAIL"
             fi
@@ -291,7 +317,13 @@ verify_env() {
         echo "  [OK]   ${label} nabledge-${v}: SKILL.md ok, knowledge/ ${knowledge_count} files, docs/ ${docs_count} entries, command ${cmd_status}${ghc_status}"
     done
 
-    if [ "$fail" -eq 1 ]; then verify_fail=1; fi
+    if [ "$fail" -eq 1 ]; then
+        verify_fail=1
+        STATIC_RESULTS+=("${label}|FAIL|${_static_fail_notes:-}")
+    else
+        STATIC_RESULTS+=("${label}|PASS|")
+    fi
+    unset _static_fail_notes
 }
 
 # verify_dynamic: dynamic check by running a knowledge search
@@ -311,16 +343,25 @@ verify_dynamic() {
     local keywords_str="$5"
     local tool="$6"
 
+    local start_time=$SECONDS
+    local elapsed_s=0
+    local input_tokens="N/A"
+    local output_tokens="N/A"
+    local cost_usd="N/A"
+    local ghc_log_dir=""
+
     if [ "$tool" = "ghc" ]; then
         if ! command -v copilot &>/dev/null; then
             echo "  [FAIL] ${label} nabledge-${v}: copilot CLI not found"
             verify_fail=1
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A|copilot CLI not found")
             return
         fi
         local prompt_file="$project_dir/.github/prompts/n${v}.prompt.md"
         if [ ! -f "$prompt_file" ]; then
             echo "  [FAIL] ${label} nabledge-${v}: GHC prompt file not found: ${prompt_file}"
             verify_fail=1
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A|GHC prompt file not found")
             return
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via copilot -p..."
@@ -334,30 +375,69 @@ verify_dynamic() {
         ghc_prompt_basename=$(basename "$ghc_prompt_file")
         # Copy temp prompt file into project dir so copilot can find it
         cp "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
-        local ghc_log_dir="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.ghc-logs"
+        ghc_log_dir="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.ghc-logs"
         mkdir -p "$ghc_log_dir"
         local output
-        output=$(script -qc "cd '$project_dir' && timeout 240 copilot -p '${ghc_prompt_basename}' --model claude-haiku-4.5 --yolo --log-dir '$ghc_log_dir' --log-level debug" /dev/null 2>&1) || true
+        output=$(script -qc "cd '$project_dir' && timeout 240 copilot -p '${ghc_prompt_basename}' --model claude-sonnet-4.6 --yolo --output-format json --log-dir '$ghc_log_dir' --log-level debug" /dev/null 2>&1) || true
         rm -f "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
+        elapsed_s=$(( SECONDS - start_time ))
+        # Extract totalApiDurationMs and output tokens from GHC JSON output
+        local ghc_api_ms
+        ghc_api_ms=$(echo "$output" | grep '"type":"result"' | tail -1 | jq -r '.usage.totalApiDurationMs // empty' 2>/dev/null || true)
+        if [ -n "$ghc_api_ms" ] && [ "$ghc_api_ms" != "null" ]; then
+            elapsed_s=$(( ghc_api_ms / 1000 ))
+        fi
+        # Sum outputTokens from all assistant.message events (input tokens not available in GHC JSON output)
+        local ghc_out_sum
+        ghc_out_sum=$(echo "$output" | grep '"type":"assistant.message"' | jq -r '.data.outputTokens // 0' 2>/dev/null | paste -sd+ | bc 2>/dev/null || true)
+        if [[ "$ghc_out_sum" =~ ^[0-9]+$ ]] && [ "$ghc_out_sum" -gt 0 ]; then
+            output_tokens="$ghc_out_sum"
+        fi
     else
         if ! command -v claude &>/dev/null; then
             echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
             verify_fail=1
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A|claude CLI not found")
             return
         fi
         local cmd_file="$project_dir/.claude/commands/n${v}.md"
         if [ ! -f "$cmd_file" ]; then
             echo "  [FAIL] ${label} nabledge-${v}: CC command file not found: ${cmd_file}"
             verify_fail=1
+            DYNAMIC_RESULTS+=("${label}|${v}|${tool}|FAIL|N/A|N/A|N/A|N/A|N/A|CC command file not found")
             return
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 240s)..."
         local output
-        # CC uses short model alias "haiku"; GHC uses full model ID "claude-haiku-4.5" (copilot requirement)
+        # CC uses short model alias "sonnet"; GHC uses full model ID "claude-sonnet-4-6" (copilot requirement)
         # stream-json+verbose outputs full conversation including tool_use events with file paths
         local cc_log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
-        timeout 240 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "/n${v} ${query}") --model haiku --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
+        timeout 240 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "/n${v} ${query}") --model sonnet --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
         output=$(cat "$cc_log_file")
+        elapsed_s=$(( SECONDS - start_time ))
+        # Extract metrics from the {"type":"result"} line in stream-json output
+        local cc_result_line
+        cc_result_line=$(grep '"type":"result"' "$cc_log_file" | tail -1)
+        if [ -n "$cc_result_line" ]; then
+            local cc_duration_ms
+            cc_duration_ms=$(echo "$cc_result_line" | jq -r '.duration_ms // empty' 2>/dev/null || true)
+            # Sum input_tokens + cache_creation_input_tokens + cache_read_input_tokens for actual total
+            local cc_in cc_cache_create cc_cache_read
+            cc_in=$(echo "$cc_result_line" | jq -r '.usage.input_tokens // 0' 2>/dev/null || echo 0)
+            cc_cache_create=$(echo "$cc_result_line" | jq -r '.usage.cache_creation_input_tokens // 0' 2>/dev/null || echo 0)
+            cc_cache_read=$(echo "$cc_result_line" | jq -r '.usage.cache_read_input_tokens // 0' 2>/dev/null || echo 0)
+            if [[ "$cc_in" =~ ^[0-9]+$ ]]; then
+                input_tokens=$(( cc_in + cc_cache_create + cc_cache_read ))
+            fi
+            output_tokens=$(echo "$cc_result_line" | jq -r '.usage.output_tokens // empty' 2>/dev/null || true)
+            cost_usd=$(echo "$cc_result_line" | jq -r '.total_cost_usd // empty' 2>/dev/null || true)
+            if [ -n "$cc_duration_ms" ] && [ "$cc_duration_ms" != "null" ]; then
+                elapsed_s=$(( cc_duration_ms / 1000 ))
+            fi
+        fi
+        [ -z "$input_tokens" ]  && input_tokens="N/A"
+        [ -z "$output_tokens" ] && output_tokens="N/A"
+        [ -z "$cost_usd" ]      && cost_usd="N/A"
     fi
 
     local log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
@@ -366,36 +446,42 @@ verify_dynamic() {
     fi
 
     # Check if SKILL.md was read during the knowledge search.
-    # This verifies that the skill is properly installed and the workflow started correctly.
-    # For CC: path appears in stream-json output as a JSON string value.
-    # For GHC: path appears as [DEBUG] view: event in --log-dir logs.
+    # Both CC (stream-json) and GHC (--output-format json) include SKILL.md path in their stdout log.
     local skill_read=0
+    grep -q 'SKILL\.md' "$log_file" && skill_read=1 || true
+
+    # Extract final answer text for section and keyword checks.
+    # For CC: {"type":"result"} .result contains the full final answer.
+    # For GHC: the last assistant.message_delta stream; concatenate all deltaContent of the last messageId.
+    local final_answer_text=""
     if [ "$tool" = "cc" ]; then
-        grep -q 'SKILL\.md' "$log_file" && skill_read=1 || true
+        final_answer_text=$(grep '"type":"result"' "$log_file" | tail -1 | jq -r '.result // ""' 2>/dev/null || true)
     else
-        grep -rqE '\[DEBUG\] view:.*SKILL\.md' "$ghc_log_dir"/ && skill_read=1 || true
+        local last_msg_id
+        last_msg_id=$(grep '"type":"assistant.message_delta"' "$log_file" | jq -r '.data.messageId' 2>/dev/null | tail -1)
+        if [ -n "$last_msg_id" ]; then
+            # Concatenate all deltaContent fragments into a single string (deltas can split mid-word)
+            final_answer_text=$(grep '"type":"assistant.message_delta"' "$log_file" \
+                | jq -r --arg id "$last_msg_id" 'select(.data.messageId == $id) | .data.deltaContent // ""' 2>/dev/null \
+                | paste -sd '' || true)
+        fi
     fi
 
     # Check if a conclusion was produced (i.e., the workflow ran to completion).
     # Detect the four required sections in order: 結論, 根拠, 注意点, 参照
-    # Accepts both bold (**結論**) and heading (## 結論) forms.
-    # For CC: appears in stream-json output. For GHC: appears in stdout captured to output.
     local answered=0
     _has_sections() {
         local text="$1"
         local n_ketsuron n_konkyo n_chuui n_sansho
-        n_ketsuron=$(echo "$text" | grep -n '結論' | head -1 | cut -d: -f1)
-        n_konkyo=$(echo "$text"   | grep -n '根拠' | head -1 | cut -d: -f1)
-        n_chuui=$(echo "$text"    | grep -n '注意点' | head -1 | cut -d: -f1)
-        n_sansho=$(echo "$text"   | grep -n '参照' | head -1 | cut -d: -f1)
+        # Use byte offsets (-bo) so the check works whether text is single-line or multi-line
+        n_ketsuron=$(echo "$text" | grep -bo '結論' | head -1 | cut -d: -f1)
+        n_konkyo=$(echo "$text"   | grep -bo '根拠' | head -1 | cut -d: -f1)
+        n_chuui=$(echo "$text"    | grep -bo '注意点' | head -1 | cut -d: -f1)
+        n_sansho=$(echo "$text"   | grep -bo '参照' | head -1 | cut -d: -f1)
         [ -n "$n_ketsuron" ] && [ -n "$n_konkyo" ] && [ -n "$n_chuui" ] && [ -n "$n_sansho" ] \
             && [ "$n_ketsuron" -lt "$n_konkyo" ] && [ "$n_konkyo" -lt "$n_chuui" ] && [ "$n_chuui" -lt "$n_sansho" ]
     }
-    if [ "$tool" = "cc" ]; then
-        _has_sections "$(cat "$log_file")" && answered=1 || true
-    else
-        _has_sections "$output" && answered=1 || true
-    fi
+    _has_sections "$final_answer_text" && answered=1 || true
 
     # Keyword detection (reference only, not used for pass/fail)
     local detected_count=0
@@ -403,23 +489,46 @@ verify_dynamic() {
     IFS=',' read -ra keywords <<< "$keywords_str"
     for kw in "${keywords[@]}"; do
         total_count=$((total_count + 1))
-        if [ "$tool" = "cc" ]; then
-            grep -q "$kw" "$log_file" && detected_count=$((detected_count + 1)) || true
-        else
-            echo "$output" | grep -q "$kw" && detected_count=$((detected_count + 1)) || true
-        fi
+        echo "$final_answer_text" | grep -q "$kw" && detected_count=$((detected_count + 1)) || true
     done
 
     local answered_label
     [ "$answered" -eq 1 ] && answered_label="yes" || answered_label="no"
 
+    # Build FAIL detail notes
+    local dynamic_notes=""
+    if [ "$skill_read" -eq 0 ]; then
+        dynamic_notes="SKILL.md not read"
+    fi
+    if [ "$answered" -eq 0 ]; then
+        # Identify which required sections are missing or out of order
+        local missing_sections=""
+        for sec in '結論' '根拠' '注意点' '参照'; do
+            if ! echo "$final_answer_text" | grep -q "$sec"; then
+                missing_sections="${missing_sections:+${missing_sections}, }${sec}"
+            fi
+        done
+        local answered_note
+        if [ -n "$missing_sections" ]; then
+            answered_note="missing sections: ${missing_sections}"
+        else
+            answered_note="sections out of order"
+        fi
+        dynamic_notes="${dynamic_notes:+${dynamic_notes}; }${answered_note}"
+    fi
+
+    local result_status
     if [ "$skill_read" -eq 0 ] || [ "$answered" -eq 0 ]; then
         echo "  [FAIL] ${label} nabledge-${v}: SKILL.md read: $([ "$skill_read" -eq 1 ] && echo yes || echo no), answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
         echo "         Log: ${log_file}"
         verify_fail=1
+        result_status="FAIL"
     else
         echo "  [OK]   ${label} nabledge-${v}: SKILL.md read, answered: ${answered_label}; keywords: ${detected_count}/${total_count}"
+        result_status="PASS"
     fi
+
+    DYNAMIC_RESULTS+=("${label}|${v}|${tool}|${result_status}|${elapsed_s}|${input_tokens}|${output_tokens}|${cost_usd}|${detected_count}/${total_count}|${dynamic_notes}")
 }
 
 echo "[Static checks]"
@@ -435,6 +544,12 @@ should_run "v1.2" && verify_env "v1.2/test-cc"  "v1.2/test-cc/nablarch-example-b
 should_run "v1.2" && verify_env "v1.2/test-ghc" "v1.2/test-ghc/nablarch-example-batch" "1.2"             "ghc"
 should_run "upgrade"  && verify_env "upgrade/test-cc"   "upgrade/test-cc/nablarch-example-batch"   "6,5"   "cc"
 should_run "upgrade"  && verify_env "upgrade/test-ghc"  "upgrade/test-ghc/nablarch-example-batch"  "1.4,5" "ghc"
+
+if [ "$verify_fail" -ne 0 ]; then
+    echo ""
+    echo "ERROR: Static checks failed. Fix the setup issues above before running dynamic checks."
+    exit 1
+fi
 
 echo ""
 echo "[Dynamic checks]"
@@ -464,6 +579,114 @@ should_run "upgrade"  && verify_dynamic "upgrade/test-ghc"  "upgrade/test-ghc/na
 should_run "upgrade"  && verify_dynamic "upgrade/test-ghc"  "upgrade/test-ghc/nablarch-example-batch"  "5"   "$Q_V5"  "$KW_V5"  "ghc"
 
 echo ""
+
+# ------------------------------------------------------------
+# Report generation
+# ------------------------------------------------------------
+generate_report() {
+    local report_dir="${NABLEDGE_DEV_ROOT}/tools/tests/reports"
+    mkdir -p "$report_dir"
+    local branch_slug="${NABLEDGE_BRANCH//\//-}"
+    local report_file="${report_dir}/${branch_slug}-$(date +%Y%m%d-%H%M%S).md"
+    local run_datetime
+    run_datetime=$(date +"%Y-%m-%d %H:%M:%S")
+    local repo_commit
+    repo_commit=$(gh api "repos/${NABLEDGE_REPO}/commits/${NABLEDGE_BRANCH}" --jq '.sha' 2>/dev/null | cut -c1-7 || echo "N/A")
+
+    {
+        echo "# Nabledge Test Setup Report"
+        echo ""
+        echo "| Item | Value |"
+        echo "| ---- | ----- |"
+        echo "| Branch | \`${NABLEDGE_BRANCH}\` |"
+        echo "| Commit | \`${repo_commit}\` |"
+        echo "| Repository | \`${NABLEDGE_REPO}\` |"
+        echo "| Run datetime | ${run_datetime} |"
+        echo "| Version filter | ${VERSION_FILTER:-all} |"
+        echo ""
+        echo "## Overview"
+        echo ""
+        echo "このレポートは Nabledge スキルのセットアップ状態を確認するテスト結果です。"
+        echo ""
+        echo "- **Static Checks**: 知識ファイル・コマンドファイル等のセットアップが正しく完了しているかを確認します。FAIL が 1 件でもあればスキルは動作しません。"
+        echo "- **Dynamic Checks**: 実際に AI ツール（CC / GHC）へ質問を投げ、正しい形式の回答が得られるかを確認します。"
+        echo ""
+        echo "### 用語"
+        echo ""
+        echo "| 用語 | 説明 |"
+        echo "| ---- | ---- |"
+        echo "| Environment | テスト対象の環境名。\`v6/test-cc\` = Nabledge v6 を Claude Code でテスト |"
+        echo "| Version | Nabledge のバージョン（6, 5, 1.4, 1.3, 1.2）|"
+        echo "| Tool | AI ツール。\`cc\` = Claude Code、\`ghc\` = GitHub Copilot |"
+        echo "| Keywords | 回答中にキーワードが含まれた数 / 期待キーワード総数 |"
+        echo "| PASS | 期待形式の回答が得られた |"
+        echo "| WARN | 回答内容は正しいが形式が期待と異なる（フォーマット不一致・セクション順序違いなど）|"
+        echo "| FAIL | 回答が得られなかった、またはセットアップに問題がある |"
+        echo "| upgrade | v5 → v6 アップグレード手順のテスト環境 |"
+        echo ""
+
+        echo "## Static Checks"
+        echo ""
+        echo "知識ファイル・コマンドファイル等が正しく配置されているかを確認します。"
+        echo ""
+        echo "| Environment | Result |"
+        echo "| ----------- | ------ |"
+        for entry in "${STATIC_RESULTS[@]}"; do
+            IFS='|' read -r s_label s_result s_notes <<< "$entry"
+            echo "| ${s_label} | ${s_result} |"
+        done
+        echo ""
+
+        echo "## Dynamic Checks"
+        echo ""
+        echo "AI ツールに実際に質問し、回答の内容と形式を確認します。Input tokens は CC のみ（GHC は取得不可のため N/A）。CC の Input tokens は \`input + cache_creation + cache_read\` の合算で単価が異なるため、Cost との単純比較はできない。Cost は \`claude -p\` が返す \`total_cost_usd\` の値。"
+        echo ""
+        echo "| Environment | Version | Tool | Result | Time (s) | Input tokens | Output tokens | Cost (USD) | Keywords | Notes |"
+        echo "| ----------- | ------- | ---- | ------ | -------- | ------------ | ------------- | ---------- | -------- | ----- |"
+        local total_time=0
+        local total_input=0
+        local total_output=0
+        local total_cost=0
+        local has_cost=0
+        for entry in "${DYNAMIC_RESULTS[@]}"; do
+            IFS='|' read -r d_label d_v d_tool d_result d_time d_input d_output d_cost d_kw d_notes <<< "$entry"
+            echo "| ${d_label} | ${d_v} | ${d_tool} | ${d_result} | ${d_time} | ${d_input} | ${d_output} | ${d_cost} | ${d_kw} | ${d_notes} |"
+            if [[ "$d_time" =~ ^[0-9]+$ ]]; then
+                total_time=$(( total_time + d_time ))
+            fi
+            if [[ "$d_input" =~ ^[0-9]+$ ]]; then
+                total_input=$(( total_input + d_input ))
+            fi
+            if [[ "$d_output" =~ ^[0-9]+$ ]]; then
+                total_output=$(( total_output + d_output ))
+            fi
+            if [[ "$d_cost" =~ ^[0-9.]+$ ]]; then
+                total_cost=$(awk "BEGIN{printf \"%.6f\", ${total_cost}+${d_cost}}")
+                has_cost=1
+            fi
+        done
+        echo ""
+        echo "### Totals"
+        echo ""
+        echo "| Metric | Value |"
+        echo "| ------ | ----- |"
+        echo "| Total time (s) | ${total_time} |"
+        local total_tokens_display="N/A"
+        if [ "$total_input" -gt 0 ] || [ "$total_output" -gt 0 ]; then
+            total_tokens_display="$(( total_input + total_output )) (in: ${total_input}, out: ${total_output})"
+        fi
+        echo "| Total tokens (CC only) | ${total_tokens_display} |"
+        local total_cost_display="N/A"
+        [ "$has_cost" -eq 1 ] && total_cost_display="\$${total_cost}"
+        echo "| Total estimated cost (CC only) | ${total_cost_display} |"
+    } > "$report_file"
+
+    echo ""
+    echo "Report: ${report_file}"
+}
+
+generate_report
+
 if [ "$verify_fail" -eq 0 ]; then
     echo "All environments verified successfully."
 else
