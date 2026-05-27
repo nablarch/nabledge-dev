@@ -2,7 +2,7 @@
 
 **PR**: #355
 **Issue**: #354
-**Updated**: 2026-05-26 (session end)
+**Updated**: 2026-05-27
 
 ## Fact-Based Work Rule
 
@@ -27,16 +27,10 @@
 **Step A: test-setup.sh 改善コミット**
 - [x] Static FAIL で即終了 + Notes 列削除 をコミット・プッシュ — committed `5eb22528e`
 
-**Step B: main の Static FAIL 原因調査**
-- [ ] main ブランチの `nablarch/nabledge` の知識ファイル数を実際に確認する
-  - `gh api repos/nablarch/nabledge/contents/.claude/skills/nabledge-6/knowledge?ref=main` で main のファイル一覧取得
-  - develop と比較して何が足りないか特定する（全バージョン: v6/v5/v1.4/v1.3/v1.2）
-- [ ] 不足している知識ファイルを特定し、原因（未マージ PR？ main への反映漏れ？）を調査
+**Step B: main の Static FAIL 原因調査 → 修正**
+- [x] 原因特定: verify_env が knowledge/docs の期待値をローカル nabledge-dev と比較していたため、NABLEDGE_BRANCH=main 時は常に FAIL。ロジックを「develop → ローカル参照 / それ以外 → GitHub API で該当ブランチ参照」に修正 — committed `0463039b9`
 
-**Step C: main を PASS させる対応**
-- [ ] 調査結果をユーザーに報告し、対応方針を確認してから実施
-  - 例: 「main への知識ファイル追加 PR が必要」など
-  - この PR の範囲外の可能性もあるため、まず事実確認してから判断
+**Step C: (Step B の修正で解消済み — 削除)**
 
 **Step D: 全バージョン実行**
 - [ ] `NABLEDGE_BRANCH=main bash tools/tests/test-setup.sh` — Static 全 PASS を確認してから実行
