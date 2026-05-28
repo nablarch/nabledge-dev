@@ -541,17 +541,17 @@ class TestComputeDeepEvalMetrics:
 
     def test_returns_three_metric_keys(self):
         tc = self._make_test_case()
-        result = self._patched_compute(tc, 0.85)
+        result = self._patched_compute(tc, {"score": 0.85, "reason": "ok"})
         assert "answer_correctness" in result
         assert "answer_relevancy" in result
         assert "faithfulness" in result
 
     def test_scores_are_floats_between_0_and_1(self):
         tc = self._make_test_case()
-        result = self._patched_compute(tc, 0.85)
+        result = self._patched_compute(tc, {"score": 0.85, "reason": "ok"})
         for key in ("answer_correctness", "answer_relevancy", "faithfulness"):
-            assert isinstance(result[key], float), f"{key} must be float"
-            assert 0.0 <= result[key] <= 1.0, f"{key} must be in [0, 1]"
+            assert isinstance(result[key]["score"], float), f"{key} score must be float"
+            assert 0.0 <= result[key]["score"] <= 1.0, f"{key} score must be in [0, 1]"
 
     def test_metric_failure_returns_none_not_raises(self):
         tc = self._make_test_case()

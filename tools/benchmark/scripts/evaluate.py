@@ -1,4 +1,4 @@
-"""Benchmark evaluation logic: C-claim judgment, hallucination detection, scoring."""
+"""Benchmark evaluation logic: DeepEval RAG metrics scoring."""
 from __future__ import annotations
 
 import json
@@ -6,41 +6,6 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional
-
-VALID_CLAIM_VERDICTS = {"PRESENT", "ABSENT", "UNCERTAIN"}
-VALID_HALLUCINATION_VERDICTS = {"PASS", "FAIL", "UNCERTAIN"}
-
-PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
-
-CLAIM_JSON_SCHEMA = json.dumps({
-    "type": "object",
-    "properties": {
-        "verdict": {"type": "string", "enum": ["PRESENT", "ABSENT", "UNCERTAIN"]},
-        "reason": {"type": "string"},
-    },
-    "required": ["verdict", "reason"],
-})
-
-HALLUCINATION_JSON_SCHEMA = json.dumps({
-    "type": "object",
-    "properties": {
-        "verdict": {"type": "string", "enum": ["PASS", "FAIL", "UNCERTAIN"]},
-        "claims": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "claim": {"type": "string"},
-                    "supported": {"type": "boolean"},
-                },
-                "required": ["claim", "supported"],
-            },
-        },
-        "reason": {"type": "string"},
-    },
-    "required": ["verdict", "claims", "reason"],
-})
 
 
 def parse_section_ref(ref: str) -> tuple[str, str]:
@@ -68,85 +33,6 @@ def load_page_content(knowledge_dir: str, file_path: str) -> str:
         data = json.load(f)
     parts = [s["content"] for s in data.get("sections", [])]
     return "\n\n---\n\n".join(parts)
-
-
-def calculate_accuracy_score(verdicts: list[dict]) -> float | None:
-    """Calculate accuracy score: PRESENT count / total. Returns None if no verdicts or any UNCERTAIN.
-
-    Design spec: UNCERTAIN-containing scenarios are excluded from aggregation (score=None).
-    Returning None signals the caller to treat this scenario as unconfirmed.
-    """
-    if not verdicts:
-        return None
-    if any(v["verdict"] == "UNCERTAIN" for v in verdicts):
-        return None
-    present = sum(1 for v in verdicts if v["verdict"] == "PRESENT")
-    return present / len(verdicts)
-
-
-def calculate_hallucination_score(verdict: dict) -> int | None:
-    """Calculate hallucination score: 1 for PASS, 0 for FAIL, None for UNCERTAIN."""
-    v = verdict["verdict"]
-    if v == "PASS":
-        return 1
-    if v == "FAIL":
-        return 0
-    return None
-
-
-def determine_human_review_items(
-    claim_verdicts: list[dict], hallucination_verdict: dict
-) -> list[str]:
-    """Determine items needing human review."""
-    items = []
-    for i, cv in enumerate(claim_verdicts):
-        if cv["verdict"] in ("UNCERTAIN", "ABSENT"):
-            items.append(f"claim[{i}]: {cv['verdict']} — {cv['fact']}")
-    hv = hallucination_verdict["verdict"]
-    if hv in ("FAIL", "UNCERTAIN"):
-        items.append(f"hallucination: {hv} — {hallucination_verdict['reason']}")
-    return items
-
-
-def build_claim_prompt(fact: str, answer: str, section_content: str) -> str:
-    """Build the C-claim judgment prompt."""
-    template = (PROMPTS_DIR / "c-claim-judge.md").read_text(encoding="utf-8")
-    return (
-        template
-        .replace("{fact}", fact)
-        .replace("{answer}", answer)
-        .replace("{section_content}", section_content)
-    )
-
-
-def build_hallucination_prompt(answer: str, sections_content: str) -> str:
-    """Build the hallucination judgment prompt."""
-    template = (PROMPTS_DIR / "hallucination-judge.md").read_text(encoding="utf-8")
-    return (
-        template
-        .replace("{answer}", answer)
-        .replace("{sections}", sections_content)
-    )
-
-
-def parse_claim_response(response: dict) -> dict:
-    """Parse and validate a C-claim LLM response."""
-    verdict = response.get("verdict")
-    if verdict not in VALID_CLAIM_VERDICTS:
-        raise ValueError(f"Invalid claim verdict: {verdict!r}")
-    return {"verdict": verdict, "reason": response.get("reason", "")}
-
-
-def parse_hallucination_response(response: dict) -> dict:
-    """Parse and validate a hallucination LLM response."""
-    verdict = response.get("verdict")
-    if verdict not in VALID_HALLUCINATION_VERDICTS:
-        raise ValueError(f"Invalid hallucination verdict: {verdict!r}")
-    return {
-        "verdict": verdict,
-        "claims": response.get("claims", []),
-        "reason": response.get("reason", ""),
-    }
 
 
 def load_runner_output(run_dir: str, scenario_id: str) -> dict:
@@ -250,109 +136,35 @@ def evaluate_scenario(
     scenario: dict,
     runner_output: dict,
     knowledge_dir: str,
-    llm_fn=None,
     section_loader=None,
-    page_loader=None,
-    with_deepeval: bool = False,
     deepeval_model=None,
 ) -> dict:
-    """Evaluate a single scenario. Returns evaluation dict."""
-    if llm_fn is None:
-        llm_fn = call_llm
+    """Evaluate a single scenario using DeepEval RAG metrics. Returns evaluation dict."""
     if section_loader is None:
         section_loader = load_section_content
-    if page_loader is None:
-        page_loader = load_page_content
 
     scenario_id = scenario["id"]
-    answer = runner_output["answer"]
-    must_facts = scenario["then"].get("must", [])
-    acceptable = scenario["then"].get("acceptable", [])
 
-    claim_verdicts = []
-    for mf in must_facts:
-        # out-of-scope scenarios have no section reference — use empty string
-        section_ref = mf.get("section")
-        section_content = section_loader(knowledge_dir, section_ref) if section_ref else ""
-        prompt = build_claim_prompt(mf["fact"], answer, section_content)
-        response = llm_fn(prompt, CLAIM_JSON_SCHEMA)
-        parsed = parse_claim_response(response["result"])
-        parsed["fact"] = mf["fact"]
-        claim_verdicts.append(parsed)
-
-    # Build sections_text for hallucination judge:
-    # - must/acceptable refs: individual section content (for claim grounding)
-    # - search results: full page content (all sections of each retrieved file),
-    #   because the LLM sees the full file during Stage 2 section selection
-    must_acceptable_refs = (
-        [m["section"] for m in must_facts if m.get("section")]
-        + [a["section"] for a in acceptable if a.get("section")]
-    )
-    seen_refs: set[str] = set()
-    sections_content_parts = []
-    for ref in must_acceptable_refs:
-        if ref in seen_refs:
-            continue
-        seen_refs.add(ref)
-        try:
-            content = section_loader(knowledge_dir, ref)
-            sections_content_parts.append(content)
-        except (FileNotFoundError, ValueError):
-            pass
-
-    seen_files: set[str] = set()
-    selected_pages = (
-        runner_output.get("workflow_details", {})
-        .get("step3", {})
-        .get("selected_pages", [])
-    )
-    for page in selected_pages:
-        file_path = page.get("path", "")
-        if not file_path or file_path in seen_files:
-            continue
-        seen_files.add(file_path)
-        try:
-            content = page_loader(knowledge_dir, file_path)
-            sections_content_parts.append(content)
-        except (FileNotFoundError, ValueError):
-            pass
-
-    sections_text = "\n\n---\n\n".join(sections_content_parts) if sections_content_parts else ""
-
-    h_prompt = build_hallucination_prompt(answer, sections_text)
-    h_response = llm_fn(h_prompt, HALLUCINATION_JSON_SCHEMA)
-    hallucination = parse_hallucination_response(h_response["result"])
-
-    accuracy = calculate_accuracy_score(claim_verdicts)
-    h_score = calculate_hallucination_score(hallucination)
-
-    review_items = determine_human_review_items(claim_verdicts, hallucination)
-
-    scores = {
-        "accuracy": accuracy,
-        "hallucination": h_score,
-    }
-
-    if with_deepeval:
-        tc = build_deepeval_test_case(scenario, runner_output, knowledge_dir, section_loader)
-        deepeval_scores = compute_deepeval_metrics(tc, model=deepeval_model)
-        scores.update(deepeval_scores)
+    tc = build_deepeval_test_case(scenario, runner_output, knowledge_dir, section_loader)
+    scores = compute_deepeval_metrics(tc, model=deepeval_model)
 
     return {
         "scenario_id": scenario_id,
         "description": scenario.get("given", {}).get("description", ""),
         "input": scenario.get("when", {}).get("input", ""),
-        "claim_verdicts": claim_verdicts,
-        "hallucination": hallucination,
         "scores": scores,
-        "needs_human_review": len(review_items) > 0,
-        "human_review_items": review_items,
         "diagnostics": {
-            "selected_pages": selected_pages,
-            "selected_sections": (
-                runner_output.get("workflow_details", {})
-                .get("step3", {})
-                .get("selected_sections", [])
+            "search_sections": (
+                runner_output.get("diagnostics", {}).get("search_sections", [])
+                or [
+                    f"{s['file']}:{s['section_id']}"
+                    for s in (
+                        runner_output.get("workflow_details", {})
+                        .get("step3", {})
+                        .get("selected_sections", [])
+                    )
+                    if s.get("file") and s.get("section_id")
+                ]
             ),
         },
         "metrics": runner_output.get("metrics", {}),
@@ -368,9 +180,6 @@ def evaluate_all(
     with open(scenarios_path, encoding="utf-8") as f:
         data = json.load(f)
 
-    def llm_fn(prompt, schema):
-        return call_llm(prompt, schema)
-
     results = []
     for scenario in data["scenarios"]:
         sid = scenario["id"]
@@ -378,7 +187,7 @@ def evaluate_all(
             runner_output = load_runner_output(run_dir, sid)
         except FileNotFoundError:
             continue
-        evaluation = evaluate_scenario(scenario, runner_output, knowledge_dir, llm_fn)
+        evaluation = evaluate_scenario(scenario, runner_output, knowledge_dir)
         out_path = Path(run_dir) / sid / "evaluation.json"
         out_path.write_text(json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8")
         results.append(evaluation)
@@ -449,11 +258,11 @@ def build_deepeval_test_case(
     )
 
 
-def _run_deepeval_metric(metric, test_case) -> float:
-    """Run a single DeepEval metric synchronously and return its score."""
+def _run_deepeval_metric(metric, test_case) -> dict:
+    """Run a single DeepEval metric synchronously and return score + reason."""
     import asyncio
     asyncio.run(metric.a_measure(test_case))
-    return metric.score
+    return {"score": metric.score, "reason": getattr(metric, "reason", "") or ""}
 
 
 def compute_deepeval_metrics(test_case, model=None) -> dict:
@@ -502,8 +311,8 @@ def compute_deepeval_metrics(test_case, model=None) -> dict:
     for key, metric_factory in metrics_config:
         try:
             metric = metric_factory()
-            score = _run_deepeval_metric(metric, test_case)
-            results[key] = float(score)
+            outcome = _run_deepeval_metric(metric, test_case)
+            results[key] = {"score": float(outcome["score"]), "reason": outcome["reason"]}
         except Exception:
             results[key] = None
     return results
