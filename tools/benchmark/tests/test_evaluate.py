@@ -3,16 +3,18 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from tools.benchmark.scripts.evaluate import (
     build_claim_prompt,
+    build_deepeval_test_case,
     build_hallucination_prompt,
     calculate_accuracy_score,
     calculate_hallucination_score,
     call_llm,
+    compute_deepeval_metrics,
     determine_human_review_items,
     evaluate_all,
     evaluate_scenario,
@@ -752,3 +754,207 @@ class TestCallLlm:
         # full_prompt must be passed via stdin
         assert captured["input"] is not None, "prompt must be passed via stdin (input=)"
         assert "test prompt" in captured["input"]
+
+
+class TestBuildDeepEvalTestCase:
+    """Tests for build_deepeval_test_case: scenario + runner_output → LLMTestCase."""
+
+    def setup_method(self):
+        self.tmpdir = tempfile.mkdtemp()
+        knowledge_dir = Path(self.tmpdir) / "batch"
+        knowledge_dir.mkdir(parents=True)
+        data = {
+            "id": "batch-arch",
+            "title": "Batch Architecture",
+            "sections": [
+                {"id": "s1", "title": "Overview", "content": "Batch runs as standalone app.", "level": 2},
+                {"id": "s2", "title": "RequestPath", "content": "Use -requestPath to specify action.", "level": 2},
+            ],
+        }
+        (knowledge_dir / "batch-arch.json").write_text(json.dumps(data), encoding="utf-8")
+        self.scenario = {
+            "id": "pre-01",
+            "when": {"input": "バッチアプリケーションはどのように起動しますか？"},
+            "then": {
+                "must": [
+                    {"fact": "javaコマンドから起動する", "section": "batch/batch-arch.json:s1"},
+                    {"fact": "-requestPathで指定する", "section": "batch/batch-arch.json:s2"},
+                ],
+                "acceptable": [],
+            },
+        }
+
+    def test_input_mapped_from_scenario(self):
+        runner_output = {
+            "answer": "バッチはjavaコマンドで起動します。",
+            "diagnostics": {"search_sections": ["batch/batch-arch.json:s1"]},
+        }
+        tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
+        assert tc.input == "バッチアプリケーションはどのように起動しますか？"
+
+    def test_actual_output_mapped_from_answer(self):
+        runner_output = {
+            "answer": "バッチはjavaコマンドで起動します。",
+            "diagnostics": {"search_sections": []},
+        }
+        tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
+        assert tc.actual_output == "バッチはjavaコマンドで起動します。"
+
+    def test_expected_output_is_must_facts_joined(self):
+        runner_output = {
+            "answer": "回答",
+            "diagnostics": {"search_sections": []},
+        }
+        tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
+        assert "javaコマンドから起動する" in tc.expected_output
+        assert "-requestPathで指定する" in tc.expected_output
+
+    def test_retrieval_context_from_search_sections(self):
+        runner_output = {
+            "answer": "回答",
+            "diagnostics": {
+                "search_sections": [
+                    "batch/batch-arch.json:s1",
+                    "batch/batch-arch.json:s2",
+                ]
+            },
+        }
+        tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
+        assert tc.retrieval_context is not None
+        assert len(tc.retrieval_context) == 2
+        assert "Batch runs as standalone app." in tc.retrieval_context[0]
+        assert "Use -requestPath to specify action." in tc.retrieval_context[1]
+
+    def test_empty_search_sections_gives_empty_retrieval_context(self):
+        runner_output = {
+            "answer": "回答",
+            "diagnostics": {"search_sections": []},
+        }
+        tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
+        assert tc.retrieval_context == []
+
+    def test_unresolvable_section_ref_skipped(self):
+        runner_output = {
+            "answer": "回答",
+            "diagnostics": {"search_sections": ["nonexistent/file.json:s1"]},
+        }
+        tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
+        assert tc.retrieval_context == []
+
+    def test_missing_diagnostics_gives_empty_retrieval_context(self):
+        runner_output = {"answer": "回答"}
+        tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
+        assert tc.retrieval_context == []
+
+
+class TestComputeDeepEvalMetrics:
+    """Tests for compute_deepeval_metrics: LLMTestCase → dict of 3 metric scores."""
+
+    def _make_test_case(self):
+        from deepeval.test_case import LLMTestCase
+        return LLMTestCase(
+            input="バッチはどう起動？",
+            actual_output="javaコマンドで起動します。",
+            expected_output="javaコマンドから起動する",
+            retrieval_context=["Batch runs as standalone app."],
+        )
+
+    def test_returns_three_metric_keys(self):
+        tc = self._make_test_case()
+        mock_model = MagicMock()
+
+        result = compute_deepeval_metrics(tc, model=mock_model)
+
+        assert "answer_correctness" in result
+        assert "answer_relevancy" in result
+        assert "faithfulness" in result
+
+    def test_scores_are_floats_between_0_and_1(self):
+        tc = self._make_test_case()
+        mock_model = MagicMock()
+
+        with patch("tools.benchmark.scripts.evaluate._run_deepeval_metric") as mock_run:
+            mock_run.return_value = 0.85
+            result = compute_deepeval_metrics(tc, model=mock_model)
+
+        for key in ("answer_correctness", "answer_relevancy", "faithfulness"):
+            assert isinstance(result[key], float), f"{key} must be float"
+            assert 0.0 <= result[key] <= 1.0, f"{key} must be in [0, 1]"
+
+    def test_metric_failure_returns_none_not_raises(self):
+        tc = self._make_test_case()
+        mock_model = MagicMock()
+
+        with patch("tools.benchmark.scripts.evaluate._run_deepeval_metric") as mock_run:
+            mock_run.side_effect = Exception("LLM error")
+            result = compute_deepeval_metrics(tc, model=mock_model)
+
+        for key in ("answer_correctness", "answer_relevancy", "faithfulness"):
+            assert result[key] is None, f"{key} must be None on failure"
+
+
+class TestEvaluateScenarioWithDeepEval:
+    """Tests for evaluate_scenario with with_deepeval=True."""
+
+    def test_scores_include_deepeval_metrics(self):
+        scenario = {
+            "id": "deepeval-01",
+            "when": {"input": "質問"},
+            "then": {"must": [{"fact": "fact1", "section": "a.json:s1"}], "acceptable": []},
+        }
+        runner_output = {
+            "answer": "回答",
+            "diagnostics": {"search_sections": ["a.json:s1"]},
+            "metrics": {},
+        }
+
+        def mock_llm(prompt, json_schema):
+            if "fact-check judge" in prompt:
+                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
+            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
+
+        def mock_load_section(knowledge_dir, ref):
+            return "セクション内容"
+
+        deepeval_scores = {
+            "answer_correctness": 0.9,
+            "answer_relevancy": 0.85,
+            "faithfulness": 0.8,
+        }
+
+        with patch("tools.benchmark.scripts.evaluate.compute_deepeval_metrics", return_value=deepeval_scores):
+            with patch("tools.benchmark.scripts.evaluate.build_deepeval_test_case") as mock_build:
+                mock_build.return_value = MagicMock()
+                result = evaluate_scenario(
+                    scenario, runner_output, "/dummy", mock_llm,
+                    section_loader=mock_load_section,
+                    with_deepeval=True,
+                )
+
+        assert result["scores"]["answer_correctness"] == 0.9
+        assert result["scores"]["answer_relevancy"] == 0.85
+        assert result["scores"]["faithfulness"] == 0.8
+
+    def test_scores_without_deepeval_have_no_deepeval_keys(self):
+        scenario = {
+            "id": "no-deepeval-01",
+            "when": {"input": "質問"},
+            "then": {"must": [], "acceptable": []},
+        }
+        runner_output = {"answer": "回答", "metrics": {}}
+
+        def mock_llm(prompt, json_schema):
+            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
+
+        def mock_load_section(knowledge_dir, ref):
+            return "内容"
+
+        result = evaluate_scenario(
+            scenario, runner_output, "/dummy", mock_llm,
+            section_loader=mock_load_section,
+            with_deepeval=False,
+        )
+
+        assert "answer_correctness" not in result["scores"]
+        assert "answer_relevancy" not in result["scores"]
+        assert "faithfulness" not in result["scores"]
