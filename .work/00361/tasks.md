@@ -2,7 +2,7 @@
 
 **PR**: #362
 **Issue**: #361
-**Updated**: 2026-05-28
+**Updated**: 2026-05-28 (T17完了)
 
 ## ルール
 
@@ -15,7 +15,7 @@
 
 ## In Progress
 
-### T12: docs/benchmark-design.md 更新
+### ~~T12: docs/benchmark-design.md 更新~~ — committed `4682e518`
 
 **目的**: 設計書をDeepEval完全置き換えの方針に合わせて書き直す。
 
