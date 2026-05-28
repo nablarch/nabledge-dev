@@ -15,58 +15,147 @@
 
 ## In Progress
 
-### T12: 既存LLMジャッジ削除 + DeepEvalへの完全置き換え
+### T12: docs/benchmark-design.md 更新
 
-**目的**: Issue #361の正しい方針「置き換え」を実装する。LLMジャッジを2系統並存させると評価コストが倍になるため、DeepEvalに一本化する。
+**目的**: 設計書をDeepEval完全置き換えの方針に合わせて書き直す。
 
-**影響ファイル（要grep確認）**:
-- `tools/benchmark/scripts/evaluate.py` — claim-judge / hallucination-judge 呼び出し削除、DeepEvalを常時計算に変更
-- `tools/benchmark/scripts/report.py` — accuracy/hallucination 列削除、DeepEval列のみに変更
-- `tools/benchmark/scripts/run_qa.py` — `--with-deepeval` フラグ削除（常時計算）
-- `tools/benchmark/tests/test_evaluate.py` — 削除した関数のテスト削除、置き換えに伴うテスト更新
-- `tools/benchmark/tests/test_report.py` — accuracy/hallucination 列テスト削除
-- `docs/benchmark-design.md` — 旧LLMジャッジの記述を削除、DeepEval中心の設計に更新
-- `tools/benchmark/HOW-TO-RUN.md` — `--with-deepeval` フラグの記述を削除
+**変更内容**（grepで確認済みの箇所）:
+- 評価軸の表: C-claim/ハルシネーション行を削除、DeepEval3指標の行に置き換え
+- 評価ロジック: LLMジャッジの実装詳細（c-claim-judge/hallucination-judge）をDeepEvalの説明に置き換え
+- スコア計算: PRESENT/ABSENT/UNCERTAIN → DeepEval数値スコア（0.0〜1.0）に変更
+- 設計意図: 「FAILは人間が最終判断」→「閾値で自動判定」に変更
+- UNCERTAIN扱いの節: 削除
+- DeepEval追加の背景: 「並走」→「置き換え」に変更、相関分析は完了済み（96.4%/88.5%一致）として記述
+- ディレクトリ構造: `c-claim-judge.md` / `hallucination-judge.md` の参照を削除
+- 「既存指標との相関確認まで...」の注記を削除
 
-**作業ステップ**:
-- [ ] 影響ファイルと削除対象をgrepで特定・リストアップ
-- [ ] テストを先に更新（RED）: accuracy/hallucination 関連テストを削除、DeepEvalを常時計算前提のテストに更新
-- [ ] evaluate.py から claim-judge / hallucination-judge を削除し、DeepEvalを常時計算に変更（GREEN）
-- [ ] report.py から accuracy/hallucination 列を削除、DeepEval列のみ残す
-- [ ] run_qa.py から `--with-deepeval` フラグを削除
-- [ ] HOW-TO-RUN.md から `--with-deepeval` の記述を削除
-- [ ] docs/benchmark-design.md を DeepEval 中心の設計に更新
-- [ ] 全テスト PASS 確認
-- [ ] コミット
+**受入条件**: benchmark-design.md にLLMジャッジの記述が残っていない
 
-**受入条件**:
-- `evaluate_scenario` が LLM judge を呼ばず DeepEval 3指標のみ返す
-- `--with-deepeval` フラグが存在しない
-- 全テスト PASS
-
-**コミット**: `feat: replace LLM judge with DeepEval metrics in benchmark pipeline (#361)`
+**コミット**: `docs: rewrite benchmark-design.md for DeepEval replacement`
 
 ---
 
-## Not Started
+### T13: tools/benchmark/HOW-TO-RUN.md 更新
 
-### T13: 動作確認（1件実行）
+**目的**: 手順書をDeepEval完全置き換え後のベストプラクティスに合わせて書き直す。
+
+**変更内容**（grepで確認済みの箇所）:
+- 出力ファイル早見表: `evaluation.json` の説明を「DeepEval3指標（answer_correctness/answer_relevancy/faithfulness）」に更新、`--with-deepeval` の記述を削除
+- ステップ1/2のコマンド: `--with-deepeval` フラグを削除（常時計算のため不要）
+- ステップ3「妥当性評価（AIが判断 → ユーザーが承認 → FAILが確定）」を全面書き直し:
+  - 新: 「スコア確認」— レポートの閾値割れシナリオを一覧する
+  - 承認ループ・確定FAILの概念を削除
+  - PRESENT/ABSENT/UNCERTAIN の説明を削除
+- ステップ4: 「確定FAIL一覧」→「閾値割れシナリオ一覧」に変更
+- ステップ5: 「確定FAILの根本原因調査（AIが判断 → ユーザーが承認）」→「閾値割れシナリオの改善判断」に変更
+
+**受入条件**: HOW-TO-RUN.md にLLMジャッジ・UNCERTAINの記述が残っていない
+
+**コミット**: `docs: rewrite HOW-TO-RUN.md for DeepEval replacement`
+
+---
+
+### T14: テスト更新（RED）
+
+**目的**: 削除するコードのテストを先に除去し、置き換え後の期待動作をテストで明確にする。
+
+**削除するテスト**（test_evaluate.py）:
+- `TestCalculateAccuracyScore` クラス全体
+- `TestCalculateHallucinationScore` クラス全体
+- `TestDetermineHumanReviewItems` クラス全体
+- `TestBuildCClaimPrompt` クラス全体
+- `TestBuildHallucinationPrompt` クラス全体
+- `TestParseHallucinationResponse` クラス全体
+- `TestEvaluateScenario` 内の accuracy/hallucination 関連アサーション
+- `evaluate` インポートから `build_hallucination_prompt`, `calculate_accuracy_score` 等を削除
+
+**削除するテスト**（test_report.py）:
+- `_make_evaluation` の `claim_verdicts`/`hallucination`/`accuracy`/`hallucination_score` パラメータ
+- accuracy/hallucination 列に関するアサーション
+- `TestFormatHumanReviewList` クラス全体
+
+**更新するテスト**（test_run_qa.py）:
+- `FAKE_EVAL` の `accuracy`/`hallucination` キーを削除
+
+**新規追加テスト**:
+- `evaluate_scenario` が LLM を呼ばず DeepEval 3指標のみ返すことを確認するテスト
+
+**受入条件**: テストがREDになる（削除予定コードがまだあるためFAIL）
+
+**コミット**: `test: update tests for DeepEval-only evaluation`
+
+---
+
+### T15: evaluate.py 実装変更（GREEN）
+
+**目的**: LLMジャッジを削除し、DeepEvalを常時計算に変更する。
+
+**削除する関数**:
+- `calculate_accuracy_score`
+- `calculate_hallucination_score`
+- `determine_human_review_items`
+- `build_c_claim_prompt`
+- `build_hallucination_prompt`
+- `parse_hallucination_response`
+
+**`evaluate_scenario` の変更**:
+- claim-judge / hallucination-judge の呼び出しをすべて削除
+- `section_loader` / `page_loader` は `build_deepeval_test_case` で使用するので残す
+- `with_deepeval` / `deepeval_model` パラメータを削除（常時計算）
+- `scores` から `accuracy`/`hallucination` を削除、DeepEval3指標のみにする
+- `claim_verdicts` / `hallucination` / `needs_human_review` / `human_review_items` フィールドを返却から削除
+
+**`evaluate_all` の変更**:
+- `llm_fn` パラメータを削除
+
+**受入条件**: 全テスト PASS
+
+**コミット**: `feat: remove LLM judges from evaluate.py, use DeepEval only`
+
+---
+
+### T16: report.py 実装変更
+
+**目的**: accuracy/hallucination 列を削除し DeepEval3指標のみのレポートにする。
+
+**変更内容**:
+- `format_scenario_report`: accuracy/hallucination 節を削除
+- `format_summary`: accuracy/hallucination 集計行を削除、DeepEvalサマリーのみ残す
+- `_avg_accuracy` / `_hallucination_pass` 関数を削除
+- compare機能: accuracy/hallucination 比較列を削除、DeepEval指標の比較に置き換え
+- `format_human_review_list` 関数を削除
+
+**受入条件**: 全テスト PASS
+
+**コミット**: `feat: remove LLM judge columns from report.py`
+
+---
+
+### T17: run_qa.py から --with-deepeval フラグ削除
+
+**変更内容**:
+- `--with-deepeval` 引数を削除
+- `run_qa_all` の `with_deepeval` パラメータを削除
+- `evaluate_scenario` 呼び出しから `with_deepeval=` を削除
+
+**受入条件**: 全テスト PASS
+
+**コミット**: `feat: remove --with-deepeval flag, DeepEval always runs`
+
+---
+
+### T18: 動作確認（1件実行）
 
 **作業**:
-- `python3 -m tools.benchmark.scripts.run_qa --scenarios ... --scenario-ids pre-01` を実行（フラグなし）
-- `evaluation.json` に `answer_correctness`, `answer_relevancy`, `faithfulness` が出力されることを確認
-- `report.md` に DeepEval 3指標が表示され accuracy/hallucination 列がないことを確認
+- `python3 -m tools.benchmark.scripts.run_qa --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6 --scenario-ids pre-01` を実行
+- `evaluation.json` に `answer_correctness`/`answer_relevancy`/`faithfulness` があり `accuracy`/`hallucination` がないことを確認
+- `report.md` にDeepEval3指標が表示され accuracy/hallucination 列がないことを確認
 
 **コミット**: なし（動作確認タスク）
 
 ---
 
-### T14: 変更差分チェック
-
-**作業**:
-- `git diff main...HEAD --stat` で変更ファイル一覧確認
-- 意図しない変更がないかチェック
-- `.work/00361/diff-check.md` を更新
+### T19: 変更差分チェック + diff-check.md 更新
 
 **コミット**: `docs: update diff check for LLM judge removal`
 
@@ -74,20 +163,14 @@
 
 ## Done
 
-- [x] T1: 調査 — DeepEvalのジャッジLLM接続方式確認とLLMTestCase入力マッピング — notes.md に記録済み — `5530ab20`
-- [x] T2: tools/benchmark/requirements.txt 新設 + setup.sh にインストールステップ追加 — `93669a7b`
+- [x] T1: 調査 — DeepEvalのジャッジLLM接続方式確認とLLMTestCase入力マッピング — `5530ab20`
+- [x] T2: requirements.txt 新設 + setup.sh — `93669a7b`
 - [x] T3: テスト追加（RED） — DeepEval 3指標計算のunit test — `1efc394e`
 - [x] T4: evaluate.py 実装（GREEN） — DeepEval 3指標計算関数追加 — `1c7a6a0e`
 - [x] T5: report.py — レポートにDeepEval指標列を追加 — `d87da7de`
 - [x] T6: docs/benchmark-design.md — DeepEval指標設計追記 — `93101e85`
-- [x] T7: 動作確認（1件実行） — pre-01でDeepEval 3指標出力確認、SSL修正 — `77a43974`
-- [x] T8: 動作確認（3件実行） — pre-01/pre-02/qa-01全てDeepEval 3指標出力確認 — (実行のみ)
-- [x] T9: 全件実行 + 相関分析（SC2） — 28/30シナリオ完了、deepeval-validation.md作成 — `bbcc37a50`
-- [x] T10: HOW-TO-RUN.md更新（後でT12で修正予定） — `f6195085c`
-- [x] T11: 変更差分チェック（後でT14で更新予定） — `7d1a0d52d`
-
----
-
-## 方針変更メモ
-
-T1〜T11は「DeepEvalを既存LLMジャッジに追加する」実装だったが、Issue #361の正しい方針は「置き換え」。T12〜で既存LLMジャッジを削除しDeepEvalに一本化する。
+- [x] T7: 動作確認（1件実行）・SSL修正 — `77a43974`
+- [x] T8: 動作確認（3件実行） — (実行のみ)
+- [x] T9: 全件実行 + 相関分析（SC2） — `bbcc37a50`
+- [x] T10: HOW-TO-RUN.md更新（T13で上書き予定） — `f6195085c`
+- [x] T11: 変更差分チェック（T19で更新予定） — `7d1a0d52d`
