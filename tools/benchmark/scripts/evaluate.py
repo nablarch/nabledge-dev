@@ -465,6 +465,11 @@ def compute_deepeval_metrics(test_case, model=None) -> dict:
     from deepeval.metrics import AnswerRelevancyMetric, FaithfulnessMetric, GEval
     from deepeval.test_case import LLMTestCaseParams
 
+    # aiobotocore (used by AmazonBedrockModel async calls) reads AWS_CA_BUNDLE for SSL verification.
+    # Fall back to SSL_CERT_FILE when AWS_CA_BUNDLE is not set to avoid SSL errors in corp envs.
+    if not os.environ.get("AWS_CA_BUNDLE") and os.environ.get("SSL_CERT_FILE"):
+        os.environ["AWS_CA_BUNDLE"] = os.environ["SSL_CERT_FILE"]
+
     if model is None:
         from deepeval.models import AmazonBedrockModel
         model = AmazonBedrockModel(

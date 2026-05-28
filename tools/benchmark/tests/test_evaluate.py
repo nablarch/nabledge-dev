@@ -940,6 +940,37 @@ class TestComputeDeepEvalMetrics:
         for key in ("answer_correctness", "answer_relevancy", "faithfulness"):
             assert result[key] is None, f"{key} must be None on failure"
 
+    def test_sets_aws_ca_bundle_from_ssl_cert_file_when_unset(self):
+        """AWS_CA_BUNDLE is auto-set from SSL_CERT_FILE when not already configured."""
+        import os
+        tc = self._make_test_case()
+        env_without_ca_bundle = {k: v for k, v in os.environ.items() if k != "AWS_CA_BUNDLE"}
+        env_without_ca_bundle["SSL_CERT_FILE"] = "/some/ca.crt"
+
+        with patch.dict(os.environ, env_without_ca_bundle, clear=True), \
+             patch("deepeval.metrics.GEval", MagicMock()), \
+             patch("deepeval.metrics.AnswerRelevancyMetric", MagicMock()), \
+             patch("deepeval.metrics.FaithfulnessMetric", MagicMock()), \
+             patch("tools.benchmark.scripts.evaluate._run_deepeval_metric", return_value=0.5):
+            compute_deepeval_metrics(tc, model=MagicMock())
+            assert os.environ.get("AWS_CA_BUNDLE") == "/some/ca.crt"
+
+    def test_does_not_override_existing_aws_ca_bundle(self):
+        """AWS_CA_BUNDLE is not changed when already set."""
+        import os
+        tc = self._make_test_case()
+        env_with_ca_bundle = dict(os.environ)
+        env_with_ca_bundle["AWS_CA_BUNDLE"] = "/existing/ca.crt"
+        env_with_ca_bundle["SSL_CERT_FILE"] = "/other/ca.crt"
+
+        with patch.dict(os.environ, env_with_ca_bundle, clear=True), \
+             patch("deepeval.metrics.GEval", MagicMock()), \
+             patch("deepeval.metrics.AnswerRelevancyMetric", MagicMock()), \
+             patch("deepeval.metrics.FaithfulnessMetric", MagicMock()), \
+             patch("tools.benchmark.scripts.evaluate._run_deepeval_metric", return_value=0.5):
+            compute_deepeval_metrics(tc, model=MagicMock())
+            assert os.environ.get("AWS_CA_BUNDLE") == "/existing/ca.crt"
+
 
 class TestEvaluateScenarioWithDeepEval:
     """Tests for evaluate_scenario with with_deepeval=True."""
