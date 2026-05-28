@@ -6,6 +6,10 @@
 
 - スキルディレクトリ: `.claude/skills/nabledge-6`
 - シナリオファイル: `tools/benchmark/scenarios/qa.json`
+- DeepEval メトリクスを使用する場合は `deepeval` がインストール済みであること:
+  ```bash
+  pip install -r tools/benchmark/requirements.txt
+  ```
 
 ---
 
@@ -18,11 +22,21 @@ python3 -m tools.benchmark.scripts.run_qa \
   --scenario-ids pre-01
 ```
 
+DeepEval メトリクス（answer_correctness / answer_relevancy / faithfulness）も取得したい場合は `--with-deepeval` を追加:
+```bash
+python3 -m tools.benchmark.scripts.run_qa \
+  --scenarios tools/benchmark/scenarios/qa.json \
+  --skill-dir .claude/skills/nabledge-6 \
+  --scenario-ids pre-01 \
+  --with-deepeval
+```
+
 受入条件:
 - 終了コード 0
 - `tools/benchmark/results/YYYYMMDD-HHMMSS/pre-01/` に `workflow_details.json` / `answer.md` / `metrics.json` / `trace.json` / `evaluation.json` が揃う
 - `summary.json` に `skill_dir`, `scenarios_file`, `executed_at` が含まれる
 - `pre-01/metrics.json` の `model_usage` が空でない
+- `--with-deepeval` 指定時: `pre-01/evaluation.json` の `scores` に `answer_correctness`, `answer_relevancy`, `faithfulness` が含まれる
 
 確認後、動作確認用ディレクトリを削除する:
 ```bash
@@ -37,6 +51,14 @@ rm -rf tools/benchmark/results/YYYYMMDD-HHMMSS
 python3 -m tools.benchmark.scripts.run_qa \
   --scenarios tools/benchmark/scenarios/qa.json \
   --skill-dir .claude/skills/nabledge-6
+```
+
+DeepEval メトリクスも取得したい場合は `--with-deepeval` を追加（実行時間が1シナリオあたり約10〜30秒増加）:
+```bash
+python3 -m tools.benchmark.scripts.run_qa \
+  --scenarios tools/benchmark/scenarios/qa.json \
+  --skill-dir .claude/skills/nabledge-6 \
+  --with-deepeval
 ```
 
 完了後、出力ディレクトリをリネーム:
@@ -62,7 +84,7 @@ mv tools/benchmark/results/YYYYMMDD-HHMMSS tools/benchmark/results/{run-label}/r
 | `error.json` | エラー時のみ | エラー内容（`error`, `exception_type`） |
 | `workflow_details.json` | 正常完了時 | WF全体の詳細。step3: ページ/セクション選択理由、step4: 実際に読んだセクション、step8: 回答に使ったセクション |
 | `answer.md` | 正常完了時 | 最終回答テキスト |
-| `evaluation.json` | 正常完了時 | 自動スコア（claim_verdicts, hallucination） |
+| `evaluation.json` | 正常完了時 | 自動スコア（claim_verdicts, hallucination, および `--with-deepeval` 指定時は answer_correctness / answer_relevancy / faithfulness） |
 | `metrics.json` | 正常完了時 | 実行時間・ターン数・コスト |
 | `trace.json` | 正常完了時 | claudeの生JSON出力（`result`フィールドにLLM出力全文） |
 
