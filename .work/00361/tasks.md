@@ -19,22 +19,24 @@
 
 ## Not Started
 
-### T1: 調査 — DeepEval 認証方式とLLMTestCase入力マッピングの確認
+### T1: 調査 — DeepEvalのジャッジLLM接続方式確認とLLMTestCase入力マッピング
 
 **目的**: 実装前に2点を事実確認する。
 
-1. **認証方式**: DeepEvalのAnthropicモジュールは`ANTHROPIC_API_KEY`直接接続を要求する。現環境はBedrockベース（`jp.anthropic.claude-sonnet-4-6`）。Bedrock経由で使えるか、あるいは`langchain-aws`経由のwrapが必要かを確認する。
+1. **ジャッジLLM接続方式**: DeepEvalの各指標はLLM-as-judgeで動く。DeepEval標準の`deepeval.anthropic.Anthropic`は`ANTHROPIC_API_KEY`（Anthropic直接接続）を要求するが、本環境はAWS Bedrock経由（`jp.anthropic.claude-sonnet-4-6`）で`ANTHROPIC_API_KEY`を持たない。以下3択のどれが現実的かを調べる:
+   - **案A**: DeepEvalのカスタムモデルAPIに`langchain-aws`のBedrock wrapperを渡す
+   - **案B**: DeepEvalのカスタムモデルAPIに既存の`claude CLI`サブプロセス方式をラップして渡す
+   - **案C**: DeepEvalのスコア計算ロジックだけ参考に自前実装（DeepEval不使用）
 2. **LLMTestCaseへのマッピング**: DeepEvalは`LLMTestCase(input, actual_output, expected_output, retrieval_context)`を要求する。既存データからのマッピングを確認する。
    - `input` ← `scenario["when"]["input"]`
    - `actual_output` ← `answer.md`
-   - `expected_output` ← `must.facts`を連結したテキスト（Answer Correctness/Similarity用）
-   - `retrieval_context` ← `workflow_details.step3.selected_pages`の各ページ内容（Faithfulness用）
+   - `expected_output` ← `must.facts`を改行結合したテキスト（Answer Correctness/Similarity用）
+   - `retrieval_context` ← `workflow_details.step3.selected_pages`の各ページ内容リスト（Faithfulness用）
 
 **作業**:
 - `uv pip install deepeval` を `~/venv` に試行して成功を確認
-- `python3 -c "from deepeval.anthropic import Anthropic"` で import確認
-- Bedrock接続可否を確認（`ANTHROPIC_API_KEY`が必要か、Bedrock endpoint対応かを調べる）
-- 結果を `.work/00361/notes.md` に記録
+- DeepEvalのカスタムモデルAPI（`DeepEvalBaseLLM`）仕様を調べ、案A/B/Cの実現可否を確認
+- 採用する接続方式を1つ選んで根拠とともに `.work/00361/notes.md` に記録
 
 **コミット**: なし（調査タスク）
 
