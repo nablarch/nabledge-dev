@@ -278,6 +278,81 @@ AIがFAIL/UNCERTAINの原因を分析しレポートを作成
 
 ---
 
+## 標準RAGメトリクス（DeepEval）
+
+### 指標選定根拠
+
+既存の評価軸（回答精度・ハルシネーション）はLLM-as-judgeによる独自指標であり、RAG研究コミュニティの標準指標と相関を持つかどうかが未検証である。DeepEvalの3指標を追加し、既存指標と並走させることで以下を実現する:
+
+1. **標準指標との相関確認**: 既存の `accuracy`（C-claimジャッジ）と `answer_correctness`（GEval）、`hallucination`（ハルシネーションジャッジ）と `faithfulness`（FaithfulnessMetric）の一致率を測定し、既存指標の妥当性を外部視点から補強する
+2. **DeepEval独自の視点の補完**: `answer_relevancy` は「回答が質問に対して関連しているか」を測定するため、既存指標では捉えられない側面（的外れな回答）を検出できる
+3. **既存指標との関係**: DeepEvalは**補完指標**であり、既存指標を置き換えるものではない
+
+### 指標定義と入力マッピング
+
+3指標はすべて `deepeval` ライブラリ（v最新）と `AmazonBedrockModel`（`jp.anthropic.claude-sonnet-4-6` via Bedrock）をジャッジLLMとして使用する。
+
+| 指標 | DeepEvalクラス | 定義 | `LLMTestCase` 入力 |
+|---|---|---|---|
+| `answer_correctness` | `GEval` | `actual_output` が `expected_output`（must.facts）に列挙された事実を網羅しているか | `actual_output`, `expected_output` |
+| `answer_relevancy` | `AnswerRelevancyMetric` | `actual_output` が `input`（質問）に対して関連した内容を回答しているか | `input`, `actual_output` |
+| `faithfulness` | `FaithfulnessMetric` | `actual_output` の主張が `retrieval_context`（検索セクション内容）で裏付けられているか | `actual_output`, `retrieval_context` |
+
+**`LLMTestCase` へのデータマッピング**:
+
+| `LLMTestCase` フィールド | 取得元 |
+|---|---|
+| `input` | `scenario["when"]["input"]` |
+| `actual_output` | `answer.md` の内容 |
+| `expected_output` | `must.facts` を改行結合したテキスト |
+| `retrieval_context` | `evaluation.json["diagnostics"]["search_sections"]` の各セクション内容リスト |
+
+**注意**: `retrieval_context` は `diagnostics.search_sections`（`path/to/file.json:sN` 形式のセクション参照）から取得する。未解決の参照は無視（スキップ）する。
+
+### ジャッジLLM接続方式
+
+- **方式**: DeepEval組み込みの `AmazonBedrockModel` を使用（案A採用）
+- **モデル**: `jp.anthropic.claude-sonnet-4-6`（環境変数 `BEDROCK_MODEL_ID` で上書き可能）
+- **リージョン**: `ap-northeast-1`（環境変数 `AWS_REGION` で上書き可能）
+- **SSL**: `AWS_CA_BUNDLE` 環境変数で社内CA証明書を指定（`/usr/local/share/ca-certificates/ca.crt`）
+- **認証**: `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_REGION` 環境変数（既存Bedrock接続と共通）
+
+### PASS/FAILしきい値
+
+DeepEvalの各指標はデフォルトで `threshold=0.5` を使用する（DeepEvalデフォルト値）。ただし現時点では**しきい値によるPASS/FAIL判定は行わない**。理由:
+
+- 最初のベンチマーク実行で実際の分布を観察してからしきい値を設定するのが正確
+- 既存指標（accuracy/hallucination）との相関分析（SC2）が完了するまでは、標準指標の絶対値よりも相関パターンを重視する
+
+しきい値の設定は将来の改善タスクとして検討する。
+
+### 有効化
+
+DeepEval指標は `--with-deepeval` フラグで有効化する（デフォルト無効）。
+
+```bash
+# 有効化
+python3 -m tools.benchmark.scripts.run_qa ... --with-deepeval
+
+# 無効（デフォルト）
+python3 -m tools.benchmark.scripts.run_qa ...
+```
+
+無効時は `evaluation.json["scores"]` に DeepEval指標は含まれない（後方互換）。
+
+### 依存関係
+
+`tools/benchmark/requirements.txt` に記載:
+
+```
+deepeval
+aiobotocore
+```
+
+`setup.sh` の `tools/rbkc/requirements.txt` インストールブロックの直後に自動インストールされる。
+
+---
+
 ## 実行手順
 
 → `tools/benchmark/HOW-TO-RUN.md` を参照。
