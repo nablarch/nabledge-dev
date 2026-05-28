@@ -18,8 +18,9 @@ Who is affected and what problem do they face?
 Who benefits and how? Use "[who] can [what]" format.
 
 ### Success Criteria
-- [ ] Verifiable outcomes as checkboxes
-- [ ] Each criterion directly relates to stated benefits
+- [ ] Write each criterion as an observable outcome — something any stakeholder can verify without knowing the implementation
+- [ ] Quantify where possible (benchmark scores, pass rates, counts)
+- [ ] Do not include means, file paths, or implementation details
 
 ## Bug-Specific Success Criteria
 
@@ -89,6 +90,5 @@ Reviewers reconstruct context from commits. Developers lack clear documentation 
 - Maintainers can enforce quality standards
 
 ### Success Criteria
-- [ ] `.claude/skills/pr/workflows/create.md` includes PR template
-- [ ] Template covers Approach, Tasks, Review, Success Criteria
-- [ ] New PRs reference issue numbers and verify criteria
+- [ ] A PR created via `/hi` can be reviewed by the user without asking the author for additional context
+- [ ] PRs created before and after adopting the new format are indistinguishable in structure by a reviewer
