@@ -7,7 +7,6 @@ import pytest
 
 from tools.benchmark.scripts.report import (
     format_comparison_report,
-    format_human_review_list,
     format_scenario_report,
     format_summary_report,
     generate_full_report,
@@ -18,25 +17,21 @@ def _make_evaluation(
     scenario_id="pre-01",
     description="テストシナリオ",
     input_text="テスト入力",
-    claim_verdicts=None,
-    hallucination=None,
-    accuracy=1.0,
-    hallucination_score=1,
-    needs_review=False,
-    review_items=None,
+    deepeval_scores=None,
     hearing=None,
     search=None,
     metrics=None,
 ):
+    scores = deepeval_scores or {
+        "answer_correctness": {"score": 1.0, "reason": "all facts covered"},
+        "answer_relevancy": {"score": 0.9, "reason": "relevant"},
+        "faithfulness": {"score": 1.0, "reason": "no hallucination"},
+    }
     return {
         "scenario_id": scenario_id,
         "description": description,
         "input": input_text,
-        "claim_verdicts": claim_verdicts or [{"fact": "fact1", "verdict": "PRESENT", "reason": "ok"}],
-        "hallucination": hallucination or {"verdict": "PASS", "claims": [], "reason": "ok"},
-        "scores": {"accuracy": accuracy, "hallucination": hallucination_score},
-        "needs_human_review": needs_review,
-        "human_review_items": review_items or [],
+        "scores": scores,
         "diagnostics": {
             "hearing": hearing or {"status": "skipped", "questions": []},
             "search_sections": search or ["a.json:s1"],
@@ -57,26 +52,25 @@ class TestFormatScenarioReport:
         assert "## pre-01" in report
         assert "テストシナリオ" in report
         assert "テスト入力" in report
-        assert "PRESENT" in report
 
-    def test_report_with_review_items(self):
-        evaluation = _make_evaluation(
-            claim_verdicts=[
-                {"fact": "f1", "verdict": "PRESENT", "reason": "ok"},
-                {"fact": "f2", "verdict": "UNCERTAIN", "reason": "unclear"},
-            ],
-            accuracy=0.5,
-            needs_review=True,
-            review_items=["claim[1]: UNCERTAIN — f2"],
-        )
+    def test_deepeval_scores_displayed(self):
+        evaluation = _make_evaluation(deepeval_scores={
+            "answer_correctness": {"score": 0.9, "reason": "facts covered"},
+            "answer_relevancy": {"score": 0.85, "reason": "relevant"},
+            "faithfulness": {"score": 0.8, "reason": "some issues"},
+        })
         report = format_scenario_report(evaluation)
-        assert "UNCERTAIN" in report
-        assert "要レビュー" in report
+        assert "answer_correctness" in report or "0.90" in report
+        assert "faithfulness" in report or "0.80" in report
 
-    def test_report_with_none_accuracy(self):
-        evaluation = _make_evaluation(accuracy=None, claim_verdicts=[])
+    def test_deepeval_none_scores_displayed_as_na(self):
+        evaluation = _make_evaluation(deepeval_scores={
+            "answer_correctness": {"score": None, "reason": ""},
+            "answer_relevancy": {"score": None, "reason": ""},
+            "faithfulness": {"score": None, "reason": ""},
+        })
         report = format_scenario_report(evaluation)
-        assert "N/A" in report
+        assert "## pre-01" in report
 
     def test_report_includes_metrics(self):
         evaluation = _make_evaluation(
@@ -94,44 +88,31 @@ class TestFormatScenarioReport:
 class TestFormatSummaryReport:
     def test_basic_summary(self):
         evaluations = [
-            _make_evaluation(scenario_id="pre-01", accuracy=1.0, hallucination_score=1),
-            _make_evaluation(scenario_id="pre-02", accuracy=0.5, hallucination_score=1),
+            _make_evaluation(scenario_id="pre-01"),
+            _make_evaluation(scenario_id="pre-02", deepeval_scores={
+                "answer_correctness": {"score": 0.5, "reason": "partial"},
+                "answer_relevancy": {"score": 0.9, "reason": "ok"},
+                "faithfulness": {"score": 1.0, "reason": "ok"},
+            }),
         ]
         report = format_summary_report(evaluations)
-        assert "回答精度" in report
-        assert "ハルシネーション" in report
-        assert "2" in report  # 対象件数
+        assert "2" in report
 
-    def test_summary_with_uncertain(self):
+    def test_deepeval_averages_in_summary(self):
         evaluations = [
-            _make_evaluation(scenario_id="pre-01", accuracy=1.0, hallucination_score=1),
-            _make_evaluation(
-                scenario_id="pre-02", accuracy=0.5, hallucination_score=None,
-                needs_review=True,
-            ),
+            _make_evaluation(scenario_id="pre-01", deepeval_scores={
+                "answer_correctness": {"score": 0.9, "reason": "ok"},
+                "answer_relevancy": {"score": 0.85, "reason": "ok"},
+                "faithfulness": {"score": 0.8, "reason": "ok"},
+            }),
+            _make_evaluation(scenario_id="pre-02", deepeval_scores={
+                "answer_correctness": {"score": 0.7, "reason": "ok"},
+                "answer_relevancy": {"score": 0.75, "reason": "ok"},
+                "faithfulness": {"score": 0.9, "reason": "ok"},
+            }),
         ]
         report = format_summary_report(evaluations)
-        assert "未確定" in report
-
-    def test_summary_with_none_accuracy(self):
-        evaluations = [
-            _make_evaluation(scenario_id="pre-01", accuracy=None, hallucination_score=1),
-        ]
-        report = format_summary_report(evaluations)
-        assert "| 回答精度 | 0 | 0 | 0 | N/A | N/A | N/A |" in report
-
-    def test_absent_only_scenario_counted_as_unconfirmed(self):
-        evaluations = [
-            _make_evaluation(
-                scenario_id="pre-01",
-                claim_verdicts=[{"fact": "f1", "verdict": "ABSENT", "reason": "not found"}],
-                accuracy=0.0,
-                needs_review=True,
-                review_items=["claim[0]: ABSENT — f1"],
-            ),
-        ]
-        report = format_summary_report(evaluations)
-        assert "| 回答精度 | 1 | 0 | 1" in report
+        assert "answer_correctness" in report or "DeepEval" in report or "0.80" in report
 
     def test_summary_metrics_section(self):
         def _m(duration_ms):
@@ -155,57 +136,14 @@ class TestFormatSummaryReport:
         assert "0" in report
 
 
-class TestFormatHumanReviewList:
-    def test_no_reviews_needed(self):
-        evaluations = [_make_evaluation()]
-        report = format_human_review_list(evaluations)
-        assert "なし" in report or report.strip() == ""
-
-    def test_reviews_needed(self):
-        evaluations = [
-            _make_evaluation(
-                scenario_id="pre-01",
-                needs_review=True,
-                review_items=["claim[0]: ABSENT — fact1"],
-            ),
-        ]
-        report = format_human_review_list(evaluations)
-        assert "pre-01" in report
-        assert "ABSENT" in report
-
-    def test_multiple_scenarios_need_review(self):
-        evaluations = [
-            _make_evaluation(
-                scenario_id="pre-01",
-                needs_review=True,
-                review_items=["claim[0]: UNCERTAIN — f1"],
-            ),
-            _make_evaluation(scenario_id="pre-02"),
-            _make_evaluation(
-                scenario_id="pre-03",
-                needs_review=True,
-                review_items=["hallucination: FAIL — fake claim"],
-            ),
-        ]
-        report = format_human_review_list(evaluations)
-        assert "pre-01" in report
-        assert "pre-03" in report
-        assert "pre-02" not in report
-
-
 class TestGenerateFullReport:
     def test_contains_all_sections(self):
         evaluations = [
             _make_evaluation(scenario_id="pre-01"),
-            _make_evaluation(
-                scenario_id="pre-02",
-                needs_review=True,
-                review_items=["claim[0]: ABSENT — f1"],
-            ),
+            _make_evaluation(scenario_id="pre-02"),
         ]
         report = generate_full_report(evaluations)
         assert "サマリー" in report
-        assert "人間レビュー対象" in report
         assert "## pre-01" in report
         assert "## pre-02" in report
 
@@ -217,75 +155,22 @@ class TestGenerateFullReport:
         assert summary_pos < scenario_pos
 
 
-def _make_evaluation_with_deepeval(scenario_id="pre-01", deepeval_scores=None):
-    """Helper: make evaluation dict with DeepEval scores."""
-    base = _make_evaluation(scenario_id=scenario_id)
-    if deepeval_scores is not None:
-        base["scores"].update(deepeval_scores)
-    return base
-
-
-class TestFormatScenarioReportWithDeepEval:
-    def test_deepeval_scores_displayed_when_present(self):
-        evaluation = _make_evaluation_with_deepeval(deepeval_scores={
-            "answer_correctness": 0.9,
-            "answer_relevancy": 0.85,
-            "faithfulness": 0.8,
-        })
-        report = format_scenario_report(evaluation)
-        assert "answer_correctness" in report or "0.90" in report
-        assert "faithfulness" in report or "0.80" in report
-
-    def test_deepeval_scores_show_na_when_absent(self):
-        evaluation = _make_evaluation()  # no DeepEval scores
-        report = format_scenario_report(evaluation)
-        # Report must be generated without error; N/A for missing deepeval scores
-        assert "## pre-01" in report
-
-    def test_deepeval_scores_none_displayed_as_na(self):
-        evaluation = _make_evaluation_with_deepeval(deepeval_scores={
-            "answer_correctness": None,
-            "answer_relevancy": None,
-            "faithfulness": None,
-        })
-        report = format_scenario_report(evaluation)
-        assert "## pre-01" in report  # no error on None scores
-
-
-class TestFormatSummaryReportWithDeepEval:
-    def test_deepeval_averages_in_summary_when_present(self):
-        evaluations = [
-            _make_evaluation_with_deepeval(scenario_id="pre-01", deepeval_scores={
-                "answer_correctness": 0.9, "answer_relevancy": 0.85, "faithfulness": 0.8,
-            }),
-            _make_evaluation_with_deepeval(scenario_id="pre-02", deepeval_scores={
-                "answer_correctness": 0.7, "answer_relevancy": 0.75, "faithfulness": 0.9,
-            }),
-        ]
-        report = format_summary_report(evaluations)
-        assert "answer_correctness" in report or "DeepEval" in report or "0.80" in report
-
-    def test_summary_without_deepeval_no_error(self):
-        evaluations = [
-            _make_evaluation(scenario_id="pre-01"),
-            _make_evaluation(scenario_id="pre-02"),
-        ]
-        report = format_summary_report(evaluations)
-        assert "サマリー" in report
-
-
-class TestFormatComparisonReportWithDeepEval:
-    def test_comparison_includes_deepeval_diff_when_present(self):
-        evals_a = [_make_evaluation_with_deepeval(scenario_id="pre-01", deepeval_scores={
-            "answer_correctness": 0.7, "answer_relevancy": 0.8, "faithfulness": 0.75,
+class TestFormatComparisonReport:
+    def test_comparison_includes_deepeval_diff(self):
+        evals_a = [_make_evaluation(scenario_id="pre-01", deepeval_scores={
+            "answer_correctness": {"score": 0.7, "reason": "ok"},
+            "answer_relevancy": {"score": 0.8, "reason": "ok"},
+            "faithfulness": {"score": 0.75, "reason": "ok"},
         })]
-        evals_b = [_make_evaluation_with_deepeval(scenario_id="pre-01", deepeval_scores={
-            "answer_correctness": 0.9, "answer_relevancy": 0.85, "faithfulness": 0.9,
+        evals_b = [_make_evaluation(scenario_id="pre-01", deepeval_scores={
+            "answer_correctness": {"score": 0.9, "reason": "ok"},
+            "answer_relevancy": {"score": 0.85, "reason": "ok"},
+            "faithfulness": {"score": 0.9, "reason": "ok"},
         })]
         report = format_comparison_report("run-1", "run-2", evals_a, evals_b)
-        assert "answer_correctness" in report or "DeepEval" in report
+        assert "answer_correctness" in report or "DeepEval" in report or "品質比較" in report
 
-    def test_comparison_without_deepeval_no_error(self):
+    def test_comparison_no_error_without_scores(self):
         evals_a = [_make_evaluation(scenario_id="pre-01")]
         evals_b = [_make_evaluation(scenario_id="pre-01")]
         report = format_comparison_report("run-1", "run-2", evals_a, evals_b)

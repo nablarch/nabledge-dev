@@ -448,7 +448,7 @@ class TestRunE2eAll:
         scenarios_path.write_text(json.dumps({"scenarios": scenarios}), encoding="utf-8")
         return scenarios_path
 
-    FAKE_EVAL = {"scenario_id": "pre-01", "scores": {"accuracy": 1.0, "hallucination": 1}}
+    FAKE_EVAL = {"scenario_id": "pre-01", "scores": {"answer_correctness": {"score": 1.0, "reason": "ok"}, "answer_relevancy": {"score": 1.0, "reason": "ok"}, "faithfulness": {"score": 1.0, "reason": "ok"}}}
 
     def _run_all(self, tmpdir, scenarios=None, scenario_ids=None):
         skill_dir = self._setup_skill_dir(tmpdir)
@@ -551,7 +551,7 @@ class TestRunE2eAllErrorHandling:
         })
         return type("P", (), {"returncode": 0, "stdout": claude_out, "stderr": ""})()
 
-    FAKE_EVAL = {"scenario_id": "s1", "scores": {"accuracy": 1.0}}
+    FAKE_EVAL = {"scenario_id": "s1", "scores": {"answer_correctness": {"score": 1.0, "reason": "ok"}, "answer_relevancy": {"score": 1.0, "reason": "ok"}, "faithfulness": {"score": 1.0, "reason": "ok"}}}
 
     def test_continues_after_timeout(self):
         """TimeoutExpired on scenario 1 must not prevent scenario 2 from running."""
@@ -797,7 +797,7 @@ class TestMain:
         path.write_text(json.dumps({"scenarios": scenarios}), encoding="utf-8")
         return path
 
-    FAKE_EVAL = {"must": [], "acceptable": [], "hallucination": []}
+    FAKE_EVAL = {"scenario_id": "s1", "scores": {"answer_correctness": {"score": 1.0, "reason": "ok"}, "answer_relevancy": {"score": 1.0, "reason": "ok"}, "faithfulness": {"score": 1.0, "reason": "ok"}}}
 
     def test_main_does_not_crash_when_scenario_has_error(self):
         """main() must not raise KeyError when summary contains error scenarios."""

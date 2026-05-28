@@ -8,35 +8,23 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from tools.benchmark.scripts.evaluate import (
-    build_claim_prompt,
     build_deepeval_test_case,
-    build_hallucination_prompt,
-    calculate_accuracy_score,
-    calculate_hallucination_score,
     call_llm,
     compute_deepeval_metrics,
-    determine_human_review_items,
     evaluate_all,
     evaluate_scenario,
     extract_json_from_result,
     load_page_content,
     load_runner_output,
     load_section_content,
-    parse_claim_response,
-    parse_hallucination_response,
     parse_section_ref,
 )
 
-DUMMY_METRICS = {
-    "duration_ms": 100,
-    "duration_api_ms": 90,
-    "total_cost_usd": 0.001,
-    "usage": {"input_tokens": 500, "output_tokens": 50},
+DUMMY_DEEPEVAL_SCORES = {
+    "answer_correctness": {"score": 0.9, "reason": "facts covered"},
+    "answer_relevancy": {"score": 0.85, "reason": "relevant"},
+    "faithfulness": {"score": 1.0, "reason": "no hallucination"},
 }
-
-
-def _wrap_llm_response(result, metrics=None):
-    return {"result": result, "metrics": metrics or DUMMY_METRICS}
 
 
 class TestExtractJsonFromResult:
@@ -158,176 +146,6 @@ class TestLoadPageContent:
             load_page_content(self.tmpdir, "nonexistent/file.json")
 
 
-class TestCalculateAccuracyScore:
-    def test_all_present(self):
-        verdicts = [
-            {"verdict": "PRESENT"},
-            {"verdict": "PRESENT"},
-        ]
-        assert calculate_accuracy_score(verdicts) == 1.0
-
-    def test_mixed_verdicts(self):
-        verdicts = [
-            {"verdict": "PRESENT"},
-            {"verdict": "ABSENT"},
-        ]
-        assert calculate_accuracy_score(verdicts) == 0.5
-
-    def test_all_absent(self):
-        verdicts = [
-            {"verdict": "ABSENT"},
-            {"verdict": "ABSENT"},
-        ]
-        assert calculate_accuracy_score(verdicts) == 0.0
-
-    def test_uncertain_returns_none(self):
-        # Design spec: UNCERTAIN-containing scenarios are excluded from aggregation (score=None)
-        verdicts = [
-            {"verdict": "PRESENT"},
-            {"verdict": "UNCERTAIN"},
-        ]
-        assert calculate_accuracy_score(verdicts) is None
-
-    def test_empty_returns_none(self):
-        assert calculate_accuracy_score([]) is None
-
-
-class TestCalculateHallucinationScore:
-    def test_pass(self):
-        assert calculate_hallucination_score({"verdict": "PASS"}) == 1
-
-    def test_fail(self):
-        assert calculate_hallucination_score({"verdict": "FAIL"}) == 0
-
-    def test_uncertain(self):
-        assert calculate_hallucination_score({"verdict": "UNCERTAIN"}) is None
-
-
-class TestDetermineHumanReviewItems:
-    def test_no_review_needed(self):
-        claims = [{"fact": "f1", "verdict": "PRESENT", "reason": "ok"}]
-        hallucination = {"verdict": "PASS", "claims": [], "reason": "ok"}
-        items = determine_human_review_items(claims, hallucination)
-        assert items == []
-
-    def test_uncertain_claim(self):
-        claims = [{"fact": "f1", "verdict": "UNCERTAIN", "reason": "unclear"}]
-        hallucination = {"verdict": "PASS", "claims": [], "reason": "ok"}
-        items = determine_human_review_items(claims, hallucination)
-        assert len(items) == 1
-        assert "UNCERTAIN" in items[0]
-
-    def test_absent_claim(self):
-        claims = [{"fact": "f1", "verdict": "ABSENT", "reason": "not found"}]
-        hallucination = {"verdict": "PASS", "claims": [], "reason": "ok"}
-        items = determine_human_review_items(claims, hallucination)
-        assert len(items) == 1
-        assert "ABSENT" in items[0]
-
-    def test_hallucination_fail(self):
-        claims = [{"fact": "f1", "verdict": "PRESENT", "reason": "ok"}]
-        hallucination = {"verdict": "FAIL", "claims": [{"claim": "fake", "supported": False}], "reason": "fabricated"}
-        items = determine_human_review_items(claims, hallucination)
-        assert len(items) == 1
-        assert "FAIL" in items[0]
-
-    def test_hallucination_uncertain(self):
-        claims = []
-        hallucination = {"verdict": "UNCERTAIN", "claims": [], "reason": "unclear"}
-        items = determine_human_review_items(claims, hallucination)
-        assert len(items) == 1
-        assert "UNCERTAIN" in items[0]
-
-    def test_multiple_review_items(self):
-        claims = [
-            {"fact": "f1", "verdict": "ABSENT", "reason": "not found"},
-            {"fact": "f2", "verdict": "UNCERTAIN", "reason": "unclear"},
-            {"fact": "f3", "verdict": "PRESENT", "reason": "ok"},
-        ]
-        hallucination = {"verdict": "FAIL", "claims": [{"claim": "x", "supported": False}], "reason": "bad"}
-        items = determine_human_review_items(claims, hallucination)
-        assert len(items) == 3  # ABSENT + UNCERTAIN + hallucination FAIL
-
-
-class TestBuildClaimPrompt:
-    def test_contains_all_fields(self):
-        prompt = build_claim_prompt(
-            fact="テスト事実",
-            answer="テスト回答",
-            section_content="テストセクション内容",
-        )
-        assert "テスト事実" in prompt
-        assert "テスト回答" in prompt
-        assert "テストセクション内容" in prompt
-        assert "PRESENT" in prompt
-        assert "ABSENT" in prompt
-        assert "UNCERTAIN" in prompt
-
-
-class TestBuildHallucinationPrompt:
-    def test_contains_all_fields(self):
-        prompt = build_hallucination_prompt(
-            answer="テスト回答",
-            sections_content="セクション1\nセクション2",
-        )
-        assert "テスト回答" in prompt
-        assert "セクション1" in prompt
-        assert "hallucination" in prompt
-        assert "Nablarch" in prompt
-
-
-class TestParseClaimResponse:
-    def test_parse_present(self):
-        response = {"verdict": "PRESENT", "reason": "回答に含まれている"}
-        result = parse_claim_response(response)
-        assert result["verdict"] == "PRESENT"
-        assert result["reason"] == "回答に含まれている"
-
-    def test_parse_absent(self):
-        response = {"verdict": "ABSENT", "reason": "回答に含まれていない"}
-        result = parse_claim_response(response)
-        assert result["verdict"] == "ABSENT"
-
-    def test_parse_uncertain(self):
-        response = {"verdict": "UNCERTAIN", "reason": "判定困難"}
-        result = parse_claim_response(response)
-        assert result["verdict"] == "UNCERTAIN"
-
-    def test_invalid_verdict_raises(self):
-        with pytest.raises(ValueError, match="verdict"):
-            parse_claim_response({"verdict": "MAYBE", "reason": "x"})
-
-    def test_missing_verdict_raises(self):
-        with pytest.raises(ValueError, match="verdict"):
-            parse_claim_response({"reason": "x"})
-
-
-class TestParseHallucinationResponse:
-    def test_parse_pass(self):
-        response = {"verdict": "PASS", "claims": [], "reason": "問題なし"}
-        result = parse_hallucination_response(response)
-        assert result["verdict"] == "PASS"
-        assert result["claims"] == []
-
-    def test_parse_fail_with_claims(self):
-        response = {
-            "verdict": "FAIL",
-            "claims": [{"claim": "偽API名", "supported": False}],
-            "reason": "捏造あり",
-        }
-        result = parse_hallucination_response(response)
-        assert result["verdict"] == "FAIL"
-        assert len(result["claims"]) == 1
-
-    def test_invalid_verdict_raises(self):
-        with pytest.raises(ValueError, match="verdict"):
-            parse_hallucination_response({"verdict": "BAD", "claims": [], "reason": "x"})
-
-    def test_missing_verdict_raises(self):
-        with pytest.raises(ValueError, match="verdict"):
-            parse_hallucination_response({"claims": [], "reason": "x"})
-
-
 SAMPLE_WORKFLOW_DETAILS = {
     "step3": {
         "selected_pages": [{"path": "a.json", "reason": "relevant"}],
@@ -365,290 +183,98 @@ class TestLoadRunnerOutput:
             load_runner_output(self.tmpdir, "nonexistent")
 
 
-class TestEvaluateScenario:
-    def test_all_present_no_hallucination(self):
-        scenario = {
-            "id": "test-01",
+class TestEvaluateScenarioDeepEvalOnly:
+    """evaluate_scenario calls DeepEval only — no LLM judge calls."""
+
+    def _make_scenario(self, scenario_id="test-01", must_facts=None):
+        return {
+            "id": scenario_id,
+            "when": {"input": "質問テキスト"},
             "then": {
-                "must": [
-                    {"fact": "fact1", "section": "a.json:s1"},
-                    {"fact": "fact2", "section": "a.json:s2"},
-                ],
-                "acceptable": [{"section": "a.json:s3"}],
-            },
-        }
-        runner_output = {"answer": "テスト回答", "hearing": {}, "search": {}, "metrics": {}}
-
-        call_count = {"claim": 0, "hallucination": 0}
-
-        def mock_llm(prompt, json_schema):
-            if "fact-check judge" in prompt:
-                call_count["claim"] += 1
-                return _wrap_llm_response({"verdict": "PRESENT", "reason": "含まれている"})
-            else:
-                call_count["hallucination"] += 1
-                return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "問題なし"})
-
-        def mock_load_section(knowledge_dir, ref):
-            return "セクション内容"
-
-        result = evaluate_scenario(
-            scenario, runner_output, "/dummy/knowledge", mock_llm,
-            section_loader=mock_load_section,
-        )
-        assert result["scenario_id"] == "test-01"
-        assert result["scores"]["accuracy"] == 1.0
-        assert result["scores"]["hallucination"] == 1
-        assert result["needs_human_review"] is False
-        assert call_count["claim"] == 2
-        assert call_count["hallucination"] == 1
-
-    def test_mixed_verdicts_with_review_needed(self):
-        scenario = {
-            "id": "test-02",
-            "then": {
-                "must": [
-                    {"fact": "fact1", "section": "a.json:s1"},
-                    {"fact": "fact2", "section": "a.json:s2"},
-                ],
+                "must": must_facts or [{"fact": "fact1", "section": "a.json:s1"}],
                 "acceptable": [],
             },
         }
-        runner_output = {"answer": "回答", "hearing": {}, "search": {}, "metrics": {}}
 
-        responses = iter([
-            _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"}),
-            _wrap_llm_response({"verdict": "UNCERTAIN", "reason": "unclear"}),
-            _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"}),
-        ])
+    def _make_runner_output(self):
+        return {
+            "answer": "テスト回答",
+            "diagnostics": {"search_sections": ["a.json:s1"]},
+            "metrics": {},
+        }
 
-        def mock_llm(prompt, json_schema):
-            return next(responses)
+    def test_scores_contain_three_deepeval_keys(self):
+        scenario = self._make_scenario()
+        runner_output = self._make_runner_output()
 
-        def mock_load_section(knowledge_dir, ref):
-            return "内容"
+        with patch("tools.benchmark.scripts.evaluate.compute_deepeval_metrics",
+                   return_value=DUMMY_DEEPEVAL_SCORES), \
+             patch("tools.benchmark.scripts.evaluate.build_deepeval_test_case",
+                   return_value=MagicMock()):
+            result = evaluate_scenario(scenario, runner_output, "/dummy")
 
-        result = evaluate_scenario(
-            scenario, runner_output, "/dummy", mock_llm,
-            section_loader=mock_load_section,
-        )
-        # UNCERTAIN present → score is None (excluded from aggregation per design spec)
-        assert result["scores"]["accuracy"] is None
-        assert result["needs_human_review"] is True
-        assert len(result["human_review_items"]) == 1
+        assert "answer_correctness" in result["scores"]
+        assert "answer_relevancy" in result["scores"]
+        assert "faithfulness" in result["scores"]
+
+    def test_does_not_call_llm_judge(self):
+        scenario = self._make_scenario()
+        runner_output = self._make_runner_output()
+
+        with patch("tools.benchmark.scripts.evaluate.compute_deepeval_metrics",
+                   return_value=DUMMY_DEEPEVAL_SCORES), \
+             patch("tools.benchmark.scripts.evaluate.build_deepeval_test_case",
+                   return_value=MagicMock()), \
+             patch("tools.benchmark.scripts.evaluate.call_llm") as mock_llm:
+            evaluate_scenario(scenario, runner_output, "/dummy")
+
+        mock_llm.assert_not_called()
+
+    def test_scores_structure_has_score_and_reason(self):
+        scenario = self._make_scenario()
+        runner_output = self._make_runner_output()
+
+        with patch("tools.benchmark.scripts.evaluate.compute_deepeval_metrics",
+                   return_value=DUMMY_DEEPEVAL_SCORES), \
+             patch("tools.benchmark.scripts.evaluate.build_deepeval_test_case",
+                   return_value=MagicMock()):
+            result = evaluate_scenario(scenario, runner_output, "/dummy")
+
+        for key in ("answer_correctness", "answer_relevancy", "faithfulness"):
+            assert "score" in result["scores"][key]
+            assert "reason" in result["scores"][key]
+
+    def test_no_claim_verdicts_in_result(self):
+        scenario = self._make_scenario()
+        runner_output = self._make_runner_output()
+
+        with patch("tools.benchmark.scripts.evaluate.compute_deepeval_metrics",
+                   return_value=DUMMY_DEEPEVAL_SCORES), \
+             patch("tools.benchmark.scripts.evaluate.build_deepeval_test_case",
+                   return_value=MagicMock()):
+            result = evaluate_scenario(scenario, runner_output, "/dummy")
+
+        assert "claim_verdicts" not in result
+        assert "hallucination" not in result
+        assert "needs_human_review" not in result
 
     def test_no_must_facts(self):
-        scenario = {
-            "id": "test-03",
-            "then": {"must": [], "acceptable": []},
-        }
-        runner_output = {"answer": "回答", "hearing": {}, "search": {}, "metrics": {}}
+        scenario = self._make_scenario(must_facts=[])
+        runner_output = self._make_runner_output()
 
-        def mock_llm(prompt, json_schema):
-            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
+        with patch("tools.benchmark.scripts.evaluate.compute_deepeval_metrics",
+                   return_value=DUMMY_DEEPEVAL_SCORES), \
+             patch("tools.benchmark.scripts.evaluate.build_deepeval_test_case",
+                   return_value=MagicMock()):
+            result = evaluate_scenario(scenario, runner_output, "/dummy")
 
-        def mock_load_section(knowledge_dir, ref):
-            return "内容"
-
-        result = evaluate_scenario(
-            scenario, runner_output, "/dummy", mock_llm,
-            section_loader=mock_load_section,
-        )
-        assert result["scores"]["accuracy"] is None
-        assert result["scores"]["hallucination"] == 1
-
-
-    def test_out_of_scope_fact_without_section(self):
-        # out-of-scope scenarios have must facts with no section reference
-        scenario = {
-            "id": "oos-01",
-            "then": {
-                "must": [{"fact": "NablarchにはOAuth2認証の組み込み機能がないと回答している"}],
-                "acceptable": [],
-            },
-        }
-        runner_output = {"answer": "NablarchにOAuth2の機能はありません", "hearing": {}, "search": {}, "metrics": {}}
-
-        section_loader_called_with = []
-
-        def mock_llm(prompt, json_schema):
-            if "fact-check judge" in prompt:
-                return _wrap_llm_response({"verdict": "PRESENT", "reason": "回答に含まれている"})
-            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
-
-        def mock_load_section(knowledge_dir, ref):
-            section_loader_called_with.append(ref)
-            return "内容"
-
-        result = evaluate_scenario(
-            scenario, runner_output, "/dummy", mock_llm,
-            section_loader=mock_load_section,
-        )
-        # section_loader must not be called (no section reference)
-        assert section_loader_called_with == []
-        assert result["scores"]["accuracy"] == 1.0
-
-    def test_search_sections_eliminate_false_positive(self):
-        # Claim supported by a non-retrieved section of a retrieved page → should PASS
-        # (page-level loading: all sections of b.json are passed to hallucination judge)
-        scenario = {
-            "id": "fp-01",
-            "then": {
-                "must": [{"fact": "fact1", "section": "a.json:s1"}],
-                "acceptable": [],
-            },
-        }
-        runner_output = {
-            "answer": "回答",
-            "workflow_details": {"step3": {"selected_pages": [{"path": "b.json", "reason": "relevant"}], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}},
-            "metrics": {},
-        }
-
-        loaded_pages = []
-
-        def mock_llm(prompt, json_schema):
-            if "fact-check judge" in prompt:
-                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
-            # hallucination judge: full page content of b.json should be in prompt
-            assert "b.jsonの全内容" in prompt
-            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
-
-        def mock_load_section(knowledge_dir, ref):
-            return f"{ref}の内容"
-
-        def mock_load_page(knowledge_dir, file_path):
-            loaded_pages.append(file_path)
-            return f"{file_path}の全内容"
-
-        evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
-                          section_loader=mock_load_section, page_loader=mock_load_page)
-        assert "b.json" in loaded_pages
-
-    def test_search_sections_true_hallucination_still_caught(self):
-        # Claim unsupported by both must_facts and search_sections → should FAIL
-        scenario = {
-            "id": "th-01",
-            "then": {
-                "must": [{"fact": "fact1", "section": "a.json:s1"}],
-                "acceptable": [],
-            },
-        }
-        runner_output = {
-            "answer": "回答",
-            "workflow_details": {"step3": {"selected_pages": [{"path": "b.json", "reason": "relevant"}], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}},
-            "metrics": {},
-        }
-
-        def mock_llm(prompt, json_schema):
-            if "fact-check judge" in prompt:
-                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
-            return _wrap_llm_response({
-                "verdict": "FAIL",
-                "claims": [{"claim": "捏造事実", "supported": False}],
-                "reason": "裏付けなし",
-            })
-
-        def mock_load_section(knowledge_dir, ref):
-            return f"{ref}の内容"
-
-        result = evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
-                                   section_loader=mock_load_section)
-        assert result["scores"]["hallucination"] == 0
-
-    def test_search_sections_deduplication(self):
-        # A section in both must_facts and search_sections → loaded exactly once
-        scenario = {
-            "id": "dup-01",
-            "then": {
-                "must": [{"fact": "fact1", "section": "a.json:s1"}],
-                "acceptable": [],
-            },
-        }
-        runner_output = {
-            "answer": "回答",
-            "workflow_details": {"step3": {"selected_pages": [{"path": "a.json", "reason": "dup"}], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}},
-            "metrics": {},
-        }
-
-        load_count = {"a.json:s1": 0}
-
-        def mock_llm(prompt, json_schema):
-            if "fact-check judge" in prompt:
-                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
-            # content should appear exactly once (no duplicate --- block)
-            count = prompt.count("a.json:s1の内容")
-            assert count == 1, f"Section content duplicated {count} times"
-            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
-
-        def mock_load_section(knowledge_dir, ref):
-            load_count[ref] = load_count.get(ref, 0) + 1
-            return f"{ref}の内容"
-
-        evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
-                          section_loader=mock_load_section)
-        # The in-prompt assertion in mock_llm verifies deduplication
-
-    def test_search_sections_empty(self):
-        # Empty search_sections → behavior identical to current (no crash)
-        scenario = {
-            "id": "empty-01",
-            "then": {
-                "must": [{"fact": "fact1", "section": "a.json:s1"}],
-                "acceptable": [],
-            },
-        }
-        runner_output = {
-            "answer": "回答",
-            "workflow_details": {"step3": {"selected_pages": [], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}},
-            "metrics": {},
-        }
-
-        def mock_llm(prompt, json_schema):
-            if "fact-check judge" in prompt:
-                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
-            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
-
-        def mock_load_section(knowledge_dir, ref):
-            return f"{ref}の内容"
-
-        result = evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
-                                   section_loader=mock_load_section)
-        assert result["scores"]["hallucination"] == 1
-
-    def test_search_sections_unresolvable_ref_skipped(self):
-        # Unresolvable search_section ref → silently skipped, no crash
-        scenario = {
-            "id": "skip-01",
-            "then": {
-                "must": [{"fact": "fact1", "section": "a.json:s1"}],
-                "acceptable": [],
-            },
-        }
-        runner_output = {
-            "answer": "回答",
-            "workflow_details": {"step3": {"selected_pages": [{"path": "nonexistent.json", "reason": "test"}], "selected_sections": [], "excluded_pages": [], "excluded_sections": []}, "step4": {}, "step8": {}},
-            "metrics": {},
-        }
-
-        def mock_llm(prompt, json_schema):
-            if "fact-check judge" in prompt:
-                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
-            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
-
-        def mock_load_section(knowledge_dir, ref):
-            if ref == "nonexistent.json:s99":
-                raise FileNotFoundError(f"not found: {ref}")
-            return f"{ref}の内容"
-
-        result = evaluate_scenario(scenario, runner_output, "/dummy", mock_llm,
-                                   section_loader=mock_load_section)
-        assert result["scores"]["hallucination"] == 1
+        assert result["scenario_id"] == "test-01"
+        assert "answer_correctness" in result["scores"]
 
 
 class TestEvaluateAll:
     def test_skips_missing_scenario_dir(self):
         tmpdir = tempfile.mkdtemp()
-        # Create runner output for pre-01 only (not pre-02)
         scenario_dir = Path(tmpdir) / "pre-01"
         scenario_dir.mkdir()
         (scenario_dir / "answer.md").write_text("テスト回答", encoding="utf-8")
@@ -659,7 +285,6 @@ class TestEvaluateAll:
             json.dumps({"duration_ms": 1000, "total_tokens": 500, "tool_uses": 3}),
             encoding="utf-8",
         )
-        # Create minimal scenarios JSON
         scenarios_path = Path(tmpdir) / "scenarios.json"
         scenarios_path.write_text(json.dumps({
             "scenarios": [
@@ -678,15 +303,14 @@ class TestEvaluateAll:
             ]
         }), encoding="utf-8")
 
-        def mock_llm(prompt, schema, model="sonnet"):
-            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
-
-        with patch("tools.benchmark.scripts.evaluate.call_llm", mock_llm):
+        with patch("tools.benchmark.scripts.evaluate.compute_deepeval_metrics",
+                   return_value=DUMMY_DEEPEVAL_SCORES), \
+             patch("tools.benchmark.scripts.evaluate.build_deepeval_test_case",
+                   return_value=MagicMock()):
             results = evaluate_all(tmpdir, str(scenarios_path), "/dummy")
 
         assert len(results) == 1
         assert results[0]["scenario_id"] == "pre-01"
-        # Verify evaluation.json was written
         eval_path = scenario_dir / "evaluation.json"
         assert eval_path.exists()
 
@@ -712,10 +336,10 @@ class TestEvaluateAll:
             }]
         }), encoding="utf-8")
 
-        def mock_llm(prompt, schema, model="sonnet"):
-            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
-
-        with patch("tools.benchmark.scripts.evaluate.call_llm", mock_llm):
+        with patch("tools.benchmark.scripts.evaluate.compute_deepeval_metrics",
+                   return_value=DUMMY_DEEPEVAL_SCORES), \
+             patch("tools.benchmark.scripts.evaluate.build_deepeval_test_case",
+                   return_value=MagicMock()):
             evaluate_all(tmpdir, str(scenarios_path), "/dummy")
 
         eval_path = scenario_dir / "evaluation.json"
@@ -747,11 +371,9 @@ class TestCallLlm:
         with patch("tools.benchmark.scripts.evaluate.subprocess.run", mock_run):
             call_llm("test prompt", '{"type": "object"}')
 
-        # full_prompt must NOT appear in the command list
         assert not any("test prompt" in str(arg) for arg in captured["cmd"]), (
             "full_prompt must not be passed as a CLI argument (causes OSError on long prompts)"
         )
-        # full_prompt must be passed via stdin
         assert captured["input"] is not None, "prompt must be passed via stdin (input=)"
         assert "test prompt" in captured["input"]
 
@@ -877,7 +499,6 @@ class TestBuildDeepEvalTestCase:
             },
         }
         tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
-        # Only s1 from diagnostics, not s2 from workflow_details
         assert len(tc.retrieval_context) == 1
         assert "Batch runs as standalone app." in tc.retrieval_context[0]
 
@@ -895,7 +516,6 @@ class TestComputeDeepEvalMetrics:
         )
 
     def _patched_compute(self, tc, run_return_value):
-        """Helper: patch metric factories and _run_deepeval_metric, run compute_deepeval_metrics."""
         mock_metric = MagicMock()
 
         def mock_factory(*args, **kwargs):
@@ -908,7 +528,6 @@ class TestComputeDeepEvalMetrics:
             return compute_deepeval_metrics(tc, model=MagicMock())
 
     def _patched_compute_failing(self, tc):
-        """Helper: patch metric factories and _run_deepeval_metric to raise."""
         mock_metric = MagicMock()
 
         def mock_factory(*args, **kwargs):
@@ -942,7 +561,6 @@ class TestComputeDeepEvalMetrics:
 
     def test_sets_aws_ca_bundle_from_ssl_cert_file_when_unset(self):
         """AWS_CA_BUNDLE is auto-set from SSL_CERT_FILE when not already configured."""
-        import os
         tc = self._make_test_case()
         env_without_ca_bundle = {k: v for k, v in os.environ.items() if k != "AWS_CA_BUNDLE"}
         env_without_ca_bundle["SSL_CERT_FILE"] = "/some/ca.crt"
@@ -957,7 +575,6 @@ class TestComputeDeepEvalMetrics:
 
     def test_does_not_override_existing_aws_ca_bundle(self):
         """AWS_CA_BUNDLE is not changed when already set."""
-        import os
         tc = self._make_test_case()
         env_with_ca_bundle = dict(os.environ)
         env_with_ca_bundle["AWS_CA_BUNDLE"] = "/existing/ca.crt"
@@ -970,70 +587,3 @@ class TestComputeDeepEvalMetrics:
              patch("tools.benchmark.scripts.evaluate._run_deepeval_metric", return_value=0.5):
             compute_deepeval_metrics(tc, model=MagicMock())
             assert os.environ.get("AWS_CA_BUNDLE") == "/existing/ca.crt"
-
-
-class TestEvaluateScenarioWithDeepEval:
-    """Tests for evaluate_scenario with with_deepeval=True."""
-
-    def test_scores_include_deepeval_metrics(self):
-        scenario = {
-            "id": "deepeval-01",
-            "when": {"input": "質問"},
-            "then": {"must": [{"fact": "fact1", "section": "a.json:s1"}], "acceptable": []},
-        }
-        runner_output = {
-            "answer": "回答",
-            "diagnostics": {"search_sections": ["a.json:s1"]},
-            "metrics": {},
-        }
-
-        def mock_llm(prompt, json_schema):
-            if "fact-check judge" in prompt:
-                return _wrap_llm_response({"verdict": "PRESENT", "reason": "ok"})
-            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
-
-        def mock_load_section(knowledge_dir, ref):
-            return "セクション内容"
-
-        deepeval_scores = {
-            "answer_correctness": 0.9,
-            "answer_relevancy": 0.85,
-            "faithfulness": 0.8,
-        }
-
-        with patch("tools.benchmark.scripts.evaluate.compute_deepeval_metrics", return_value=deepeval_scores):
-            with patch("tools.benchmark.scripts.evaluate.build_deepeval_test_case") as mock_build:
-                mock_build.return_value = MagicMock()
-                result = evaluate_scenario(
-                    scenario, runner_output, "/dummy", mock_llm,
-                    section_loader=mock_load_section,
-                    with_deepeval=True,
-                )
-
-        assert result["scores"]["answer_correctness"] == 0.9
-        assert result["scores"]["answer_relevancy"] == 0.85
-        assert result["scores"]["faithfulness"] == 0.8
-
-    def test_scores_without_deepeval_have_no_deepeval_keys(self):
-        scenario = {
-            "id": "no-deepeval-01",
-            "when": {"input": "質問"},
-            "then": {"must": [], "acceptable": []},
-        }
-        runner_output = {"answer": "回答", "metrics": {}}
-
-        def mock_llm(prompt, json_schema):
-            return _wrap_llm_response({"verdict": "PASS", "claims": [], "reason": "ok"})
-
-        def mock_load_section(knowledge_dir, ref):
-            return "内容"
-
-        result = evaluate_scenario(
-            scenario, runner_output, "/dummy", mock_llm,
-            section_loader=mock_load_section,
-            with_deepeval=False,
-        )
-
-        assert "answer_correctness" not in result["scores"]
-        assert "answer_relevancy" not in result["scores"]
-        assert "faithfulness" not in result["scores"]
