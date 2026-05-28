@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 VALID_CLAIM_VERDICTS = {"PRESENT", "ABSENT", "UNCERTAIN"}
 VALID_HALLUCINATION_VERDICTS = {"PASS", "FAIL", "UNCERTAIN"}
@@ -251,6 +253,8 @@ def evaluate_scenario(
     llm_fn=None,
     section_loader=None,
     page_loader=None,
+    with_deepeval: bool = False,
+    deepeval_model=None,
 ) -> dict:
     """Evaluate a single scenario. Returns evaluation dict."""
     if llm_fn is None:
@@ -324,16 +328,23 @@ def evaluate_scenario(
 
     review_items = determine_human_review_items(claim_verdicts, hallucination)
 
+    scores = {
+        "accuracy": accuracy,
+        "hallucination": h_score,
+    }
+
+    if with_deepeval:
+        tc = build_deepeval_test_case(scenario, runner_output, knowledge_dir, section_loader)
+        deepeval_scores = compute_deepeval_metrics(tc, model=deepeval_model)
+        scores.update(deepeval_scores)
+
     return {
         "scenario_id": scenario_id,
         "description": scenario.get("given", {}).get("description", ""),
         "input": scenario.get("when", {}).get("input", ""),
         "claim_verdicts": claim_verdicts,
         "hallucination": hallucination,
-        "scores": {
-            "accuracy": accuracy,
-            "hallucination": h_score,
-        },
+        "scores": scores,
         "needs_human_review": len(review_items) > 0,
         "human_review_items": review_items,
         "diagnostics": {
@@ -371,6 +382,109 @@ def evaluate_all(
         out_path = Path(run_dir) / sid / "evaluation.json"
         out_path.write_text(json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8")
         results.append(evaluation)
+    return results
+
+
+def build_deepeval_test_case(
+    scenario: dict,
+    runner_output: dict,
+    knowledge_dir: str,
+    section_loader=None,
+):
+    """Build a DeepEval LLMTestCase from scenario and runner output.
+
+    Mapping:
+    - input: scenario["when"]["input"]
+    - actual_output: runner_output["answer"]
+    - expected_output: must.facts joined with newline
+    - retrieval_context: section content for each ref in diagnostics.search_sections
+    """
+    from deepeval.test_case import LLMTestCase
+
+    if section_loader is None:
+        section_loader = load_section_content
+
+    input_text = scenario.get("when", {}).get("input", "")
+    actual_output = runner_output.get("answer", "")
+
+    must_facts = scenario.get("then", {}).get("must", [])
+    expected_output = "\n".join(mf["fact"] for mf in must_facts if mf.get("fact"))
+
+    search_sections = (
+        runner_output.get("diagnostics", {}).get("search_sections", [])
+    )
+    retrieval_context = []
+    for ref in search_sections:
+        try:
+            content = section_loader(knowledge_dir, ref)
+            retrieval_context.append(content)
+        except (FileNotFoundError, ValueError):
+            pass
+
+    return LLMTestCase(
+        input=input_text,
+        actual_output=actual_output,
+        expected_output=expected_output,
+        retrieval_context=retrieval_context,
+    )
+
+
+def _run_deepeval_metric(metric, test_case) -> float:
+    """Run a single DeepEval metric synchronously and return its score."""
+    import asyncio
+    loop = asyncio.new_event_loop()
+    try:
+        loop.run_until_complete(metric.a_measure(test_case))
+    finally:
+        loop.close()
+    return metric.score
+
+
+def compute_deepeval_metrics(test_case, model=None) -> dict:
+    """Compute 3 DeepEval metrics: answer_correctness, answer_relevancy, faithfulness.
+
+    Returns dict with float scores (0-1), or None per metric on failure.
+    Uses AmazonBedrockModel with AWS_CA_BUNDLE for SSL if model is not provided.
+    """
+    from deepeval.metrics import AnswerRelevancyMetric, FaithfulnessMetric, GEval
+    from deepeval.test_case import LLMTestCaseParams
+
+    if model is None:
+        from deepeval.models import AmazonBedrockModel
+        model = AmazonBedrockModel(
+            model=os.environ.get("BEDROCK_MODEL_ID", "jp.anthropic.claude-sonnet-4-6"),
+            region=os.environ.get("AWS_REGION", "ap-northeast-1"),
+        )
+
+    metrics_config = [
+        (
+            "answer_correctness",
+            lambda: GEval(
+                name="AnswerCorrectness",
+                criteria="The actual output covers all expected facts listed in expected_output.",
+                evaluation_params=[LLMTestCaseParams.ACTUAL_OUTPUT, LLMTestCaseParams.EXPECTED_OUTPUT],
+                model=model,
+                async_mode=True,
+            ),
+        ),
+        (
+            "answer_relevancy",
+            lambda: AnswerRelevancyMetric(model=model, async_mode=True),
+        ),
+        (
+            "faithfulness",
+            lambda: FaithfulnessMetric(model=model, async_mode=True),
+        ),
+    ]
+
+    results = {}
+    for key, metric_factory in metrics_config:
+        try:
+            metric = metric_factory()
+            score = _run_deepeval_metric(metric, test_case)
+            results[key] = float(score)
+        except Exception:
+            results[key] = None
     return results
 
 

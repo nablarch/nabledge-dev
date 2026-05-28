@@ -859,36 +859,49 @@ class TestComputeDeepEvalMetrics:
             retrieval_context=["Batch runs as standalone app."],
         )
 
+    def _patched_compute(self, tc, run_return_value):
+        """Helper: patch metric factories and _run_deepeval_metric, run compute_deepeval_metrics."""
+        mock_metric = MagicMock()
+
+        def mock_factory(*args, **kwargs):
+            return mock_metric
+
+        with patch("deepeval.metrics.GEval", mock_factory), \
+             patch("deepeval.metrics.AnswerRelevancyMetric", mock_factory), \
+             patch("deepeval.metrics.FaithfulnessMetric", mock_factory), \
+             patch("tools.benchmark.scripts.evaluate._run_deepeval_metric", return_value=run_return_value):
+            return compute_deepeval_metrics(tc, model=MagicMock())
+
+    def _patched_compute_failing(self, tc):
+        """Helper: patch metric factories and _run_deepeval_metric to raise."""
+        mock_metric = MagicMock()
+
+        def mock_factory(*args, **kwargs):
+            return mock_metric
+
+        with patch("deepeval.metrics.GEval", mock_factory), \
+             patch("deepeval.metrics.AnswerRelevancyMetric", mock_factory), \
+             patch("deepeval.metrics.FaithfulnessMetric", mock_factory), \
+             patch("tools.benchmark.scripts.evaluate._run_deepeval_metric", side_effect=Exception("LLM error")):
+            return compute_deepeval_metrics(tc, model=MagicMock())
+
     def test_returns_three_metric_keys(self):
         tc = self._make_test_case()
-        mock_model = MagicMock()
-
-        result = compute_deepeval_metrics(tc, model=mock_model)
-
+        result = self._patched_compute(tc, 0.85)
         assert "answer_correctness" in result
         assert "answer_relevancy" in result
         assert "faithfulness" in result
 
     def test_scores_are_floats_between_0_and_1(self):
         tc = self._make_test_case()
-        mock_model = MagicMock()
-
-        with patch("tools.benchmark.scripts.evaluate._run_deepeval_metric") as mock_run:
-            mock_run.return_value = 0.85
-            result = compute_deepeval_metrics(tc, model=mock_model)
-
+        result = self._patched_compute(tc, 0.85)
         for key in ("answer_correctness", "answer_relevancy", "faithfulness"):
             assert isinstance(result[key], float), f"{key} must be float"
             assert 0.0 <= result[key] <= 1.0, f"{key} must be in [0, 1]"
 
     def test_metric_failure_returns_none_not_raises(self):
         tc = self._make_test_case()
-        mock_model = MagicMock()
-
-        with patch("tools.benchmark.scripts.evaluate._run_deepeval_metric") as mock_run:
-            mock_run.side_effect = Exception("LLM error")
-            result = compute_deepeval_metrics(tc, model=mock_model)
-
+        result = self._patched_compute_failing(tc)
         for key in ("answer_correctness", "answer_relevancy", "faithfulness"):
             assert result[key] is None, f"{key} must be None on failure"
 
