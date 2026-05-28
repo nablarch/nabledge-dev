@@ -5,89 +5,61 @@ import json
 import sys
 from pathlib import Path
 
+_DEEPEVAL_KEYS = ("answer_correctness", "answer_relevancy", "faithfulness")
+
+
+def _score_value(scores: dict, key: str) -> float | None:
+    """Extract float score from scores dict. Handles {score, reason} or None."""
+    entry = scores.get(key)
+    if entry is None:
+        return None
+    if isinstance(entry, dict):
+        return entry.get("score")
+    return float(entry)
+
+
+def _score_reason(scores: dict, key: str) -> str:
+    """Extract reason string from scores dict."""
+    entry = scores.get(key)
+    if isinstance(entry, dict):
+        return entry.get("reason") or ""
+    return ""
+
 
 def format_scenario_report(evaluation: dict) -> str:
     """Generate markdown report for a single scenario evaluation."""
     sid = evaluation["scenario_id"]
     desc = evaluation.get("description", "")
     input_text = evaluation.get("input", "")
-    claims = evaluation.get("claim_verdicts", [])
-    hallucination = evaluation.get("hallucination", {})
     scores = evaluation.get("scores", {})
     diagnostics = evaluation.get("diagnostics", {})
     metrics = evaluation.get("metrics", {})
-    needs_review = evaluation.get("needs_human_review", False)
 
-    accuracy = scores.get("accuracy")
-    h_score = scores.get("hallucination")
-
-    accuracy_display = f"{accuracy:.2f}" if accuracy is not None else "N/A"
-    h_display = str(h_score) if h_score is not None else "N/A"
-
-    present_count = sum(1 for c in claims if c["verdict"] == "PRESENT")
-    uncertain_count = sum(1 for c in claims if c["verdict"] == "UNCERTAIN")
-    absent_count = sum(1 for c in claims if c["verdict"] == "ABSENT")
-
-    accuracy_auto = []
-    if present_count:
-        accuracy_auto.append(f"{present_count} PRESENT")
-    if absent_count:
-        accuracy_auto.append(f"{absent_count} ABSENT")
-    if uncertain_count:
-        accuracy_auto.append(f"{uncertain_count} UNCERTAIN")
-    accuracy_auto_str = ", ".join(accuracy_auto) if accuracy_auto else "N/A"
-
-    accuracy_review = "要レビュー" if (uncertain_count or absent_count) else "-"
-    h_review = "要レビュー" if hallucination.get("verdict") in ("FAIL", "UNCERTAIN") else "-"
-
-    def _fmt_score(v):
+    def _fmt(v):
         return f"{v:.2f}" if v is not None else "N/A"
-
-    ac_display = _fmt_score(scores.get("answer_correctness"))
-    ar_display = _fmt_score(scores.get("answer_relevancy"))
-    fa_display = _fmt_score(scores.get("faithfulness"))
-    has_deepeval = any(k in scores for k in ("answer_correctness", "answer_relevancy", "faithfulness"))
 
     lines = [
         f"## {sid}: {desc}",
         "",
         f"**入力**: {input_text}",
         "",
-        "### 評価結果",
+        "### DeepEval スコア",
         "",
-        "| 軸 | 自動判定 | 人間判定 | スコア |",
-        "|---|---|---|---|",
-        f"| 回答精度 | {accuracy_auto_str} | {accuracy_review} | {accuracy_display} |",
-        f"| ハルシネーション | {hallucination.get('verdict', 'N/A')} | {h_review} | {h_display} |",
+        "| 指標 | スコア | 判定根拠 |",
+        "|---|---|---|",
     ]
 
-    if has_deepeval:
-        lines.extend([
-            f"| answer_correctness (DeepEval) | — | — | {ac_display} |",
-            f"| answer_relevancy (DeepEval) | — | — | {ar_display} |",
-            f"| faithfulness (DeepEval) | — | — | {fa_display} |",
-        ])
+    for key in _DEEPEVAL_KEYS:
+        score = _score_value(scores, key)
+        reason = _score_reason(scores, key)
+        lines.append(f"| {key} | {_fmt(score)} | {reason} |")
 
     lines.append("")
 
-    if claims:
-        lines.extend([
-            "### 回答精度詳細",
-            "",
-            "| # | fact | 判定 | 理由 |",
-            "|---|------|------|------|",
-        ])
-        for i, c in enumerate(claims):
-            verdict_str = c["verdict"]
-            if verdict_str in ("UNCERTAIN", "ABSENT"):
-                verdict_str = f"{verdict_str} **要レビュー**"
-            lines.append(f"| {i + 1} | {c['fact']} | {verdict_str} | {c.get('reason', '')} |")
-        lines.append("")
-
-    hearing = diagnostics.get("hearing", {})
     search_sections = diagnostics.get("search_sections", [])
-    hearing_str = hearing.get("status", "N/A")
-    if hearing.get("questions"):
+    hearing = diagnostics.get("hearing", {})
+    hearing_str = hearing.get("status", "N/A") if hearing else "N/A"
+    if hearing and hearing.get("questions"):
         hearing_str += " — " + ", ".join(hearing["questions"])
 
     lines.extend([
@@ -122,92 +94,46 @@ def format_summary_report(evaluations: list[dict]) -> str:
     if not evaluations:
         return _empty_summary()
 
-    accuracy_scores = []
-    accuracy_uncertain = 0
-    h_scores = []
-    h_uncertain = 0
+    total = len(evaluations)
 
-    for ev in evaluations:
-        scores = ev.get("scores", {})
-        a = scores.get("accuracy")
-        h = scores.get("hallucination")
+    avgs = {}
+    for key in _DEEPEVAL_KEYS:
+        vals = [
+            _score_value(ev.get("scores", {}), key)
+            for ev in evaluations
+        ]
+        vals = [v for v in vals if v is not None]
+        avgs[key] = sum(vals) / len(vals) if vals else None
 
-        if a is not None:
-            if ev.get("needs_human_review", False):
-                accuracy_uncertain += 1
-            else:
-                accuracy_scores.append(a)
-        # N/A accuracy scenarios are excluded entirely
+    def _fmt(v):
+        return f"{v:.2f}" if v is not None else "N/A"
 
-        if h is not None:
-            h_scores.append(h)
-        else:
-            h_uncertain += 1
-
-    total_with_accuracy = len([
-        ev for ev in evaluations if ev.get("scores", {}).get("accuracy") is not None
-    ])
-    total_h = len(evaluations)
-
-    acc_confirmed = len(accuracy_scores)
-    acc_avg = sum(accuracy_scores) / len(accuracy_scores) if accuracy_scores else 0
-    acc_min = min(accuracy_scores) if accuracy_scores else 0
-    acc_pass = sum(1 for s in accuracy_scores if s == 1.0)
-
-    h_confirmed = len(h_scores)
-    h_avg = sum(h_scores) / len(h_scores) if h_scores else 0
-    h_min = min(h_scores) if h_scores else 0
-    h_pass = sum(1 for s in h_scores if s == 1)
+    threshold_pass = {}
+    for key in _DEEPEVAL_KEYS:
+        vals = [
+            _score_value(ev.get("scores", {}), key)
+            for ev in evaluations
+        ]
+        vals = [v for v in vals if v is not None]
+        threshold_pass[key] = sum(1 for v in vals if v >= 0.5)
 
     lines = [
         "## サマリー",
         "",
-        "| 軸 | 対象件数 | 確定件数 | 未確定 | 平均スコア | 最低スコア | 全PASS率 |",
-        "|---|---|---|---|---|---|---|",
+        f"総シナリオ数: {total}",
+        "",
+        "### DeepEval メトリクスサマリー",
+        "",
+        "| 指標 | 平均スコア | 閾値通過（≥0.5） |",
+        "|---|---|---|",
     ]
 
-    if total_with_accuracy > 0:
-        lines.append(
-            f"| 回答精度 | {total_with_accuracy} | {acc_confirmed} | {accuracy_uncertain} "
-            f"| {acc_avg:.2f} | {acc_min:.2f} | {acc_pass}/{acc_confirmed} |"
-        )
-    else:
-        lines.append("| 回答精度 | 0 | 0 | 0 | N/A | N/A | N/A |")
+    for key in _DEEPEVAL_KEYS:
+        avg = avgs[key]
+        pass_count = threshold_pass[key]
+        lines.append(f"| {key} | {_fmt(avg)} | {pass_count}/{total} |")
 
-    lines.append(
-        f"| ハルシネーション | {total_h} | {h_confirmed} | {h_uncertain} "
-        f"| {h_avg:.2f} | {h_min} | {h_pass}/{h_confirmed} |"
-    )
-
-    lines.extend([
-        "",
-        "※ 未確定 = 人間レビュー未完了（UNCERTAIN含む）。平均・PASS率は確定分のみで計算。",
-        "",
-    ])
-
-    deepeval_keys = ("answer_correctness", "answer_relevancy", "faithfulness")
-    deepeval_avgs = {}
-    for key in deepeval_keys:
-        vals = [
-            ev["scores"][key]
-            for ev in evaluations
-            if ev.get("scores", {}).get(key) is not None
-        ]
-        deepeval_avgs[key] = sum(vals) / len(vals) if vals else None
-
-    if any(v is not None for v in deepeval_avgs.values()):
-        def _dfmt(v):
-            return f"{v:.2f}" if v is not None else "N/A"
-        lines.extend([
-            "## DeepEval メトリクスサマリー",
-            "",
-            "| 指標 | 平均スコア |",
-            "|---|---|",
-            f"| answer_correctness | {_dfmt(deepeval_avgs['answer_correctness'])} |",
-            f"| answer_relevancy | {_dfmt(deepeval_avgs['answer_relevancy'])} |",
-            f"| faithfulness | {_dfmt(deepeval_avgs['faithfulness'])} |",
-            "",
-        ])
+    lines.append("")
 
     all_metrics = [ev.get("metrics", {}) for ev in evaluations]
 
@@ -217,13 +143,13 @@ def format_summary_report(evaluations: list[dict]) -> str:
         s = sorted(vals)
         return sum(s) / len(s), s[len(s) // 2], s[int(len(s) * 0.95)], max(s), sum(s)
 
-    durations    = [m["duration_ms"] for m in all_metrics if m.get("duration_ms")]
+    durations     = [m["duration_ms"] for m in all_metrics if m.get("duration_ms")]
     api_durations = [m["duration_api_ms"] for m in all_metrics if m.get("duration_api_ms")]
     num_turns_list = [m["num_turns"] for m in all_metrics if m.get("num_turns")]
-    costs        = [m["total_cost_usd"] for m in all_metrics if m.get("total_cost_usd")]
-    in_tokens    = [m.get("usage", {}).get("input_tokens", 0) for m in all_metrics if m.get("usage", {}).get("input_tokens")]
-    out_tokens   = [m.get("usage", {}).get("output_tokens", 0) for m in all_metrics if m.get("usage", {}).get("output_tokens")]
-    cache_read   = [m.get("usage", {}).get("cache_read_input_tokens", 0) for m in all_metrics if m.get("usage", {}).get("cache_read_input_tokens")]
+    costs         = [m["total_cost_usd"] for m in all_metrics if m.get("total_cost_usd")]
+    in_tokens     = [m.get("usage", {}).get("input_tokens", 0) for m in all_metrics if m.get("usage", {}).get("input_tokens")]
+    out_tokens    = [m.get("usage", {}).get("output_tokens", 0) for m in all_metrics if m.get("usage", {}).get("output_tokens")]
+    cache_read    = [m.get("usage", {}).get("cache_read_input_tokens", 0) for m in all_metrics if m.get("usage", {}).get("cache_read_input_tokens")]
 
     if durations:
         d_avg, d_p50, d_p95, d_max, _ = _stats([v / 1000 for v in durations])
@@ -257,43 +183,25 @@ def format_summary_report(evaluations: list[dict]) -> str:
 
 
 def _empty_summary() -> str:
-    return "\n".join([
+    lines = [
         "## サマリー",
         "",
-        "| 軸 | 対象件数 | 確定件数 | 未確定 | 平均スコア | 最低スコア | 全PASS率 |",
-        "|---|---|---|---|---|---|---|",
-        "| 回答精度 | 0 | 0 | 0 | N/A | N/A | N/A |",
-        "| ハルシネーション | 0 | 0 | 0 | N/A | N/A | N/A |",
+        "総シナリオ数: 0",
         "",
-    ])
-
-
-def format_human_review_list(evaluations: list[dict]) -> str:
-    """Generate list of items needing human review."""
-    review_scenarios = [
-        ev for ev in evaluations if ev.get("needs_human_review", False)
+        "### DeepEval メトリクスサマリー",
+        "",
+        "| 指標 | 平均スコア | 閾値通過（≥0.5） |",
+        "|---|---|---|",
     ]
-    if not review_scenarios:
-        return "人間レビュー対象: なし\n"
-
-    lines = ["## 人間レビュー対象", ""]
-    for ev in review_scenarios:
-        sid = ev["scenario_id"]
-        items = ev.get("human_review_items", [])
-        lines.append(f"### {sid}")
-        for item in items:
-            lines.append(f"- {item}")
-        lines.append("")
-
+    for key in _DEEPEVAL_KEYS:
+        lines.append(f"| {key} | N/A | 0/0 |")
+    lines.append("")
     return "\n".join(lines)
 
 
 def generate_full_report(evaluations: list[dict]) -> str:
     """Generate complete benchmark report."""
     parts = [format_summary_report(evaluations), ""]
-
-    review_list = format_human_review_list(evaluations)
-    parts.extend([review_list, ""])
 
     for ev in evaluations:
         parts.append(format_scenario_report(ev))
@@ -310,37 +218,35 @@ def _load_evaluations(run_dir: Path) -> list[dict]:
 
 
 def format_comparison_report(label_a: str, label_b: str, evals_a: list[dict], evals_b: list[dict]) -> str:
-    """Generate comparison report between two run labels (design spec: 比較レポート)."""
+    """Generate comparison report between two run labels."""
 
-    def _avg_accuracy(evals: list[dict]) -> float | None:
-        scores = [ev["scores"]["accuracy"] for ev in evals if ev.get("scores", {}).get("accuracy") is not None]
-        return sum(scores) / len(scores) if scores else None
-
-    def _hallucination_pass(evals: list[dict]) -> tuple[int, int]:
-        scores = [ev["scores"]["hallucination"] for ev in evals if ev.get("scores", {}).get("hallucination") is not None]
-        return sum(1 for s in scores if s == 1), len(scores)
+    def _avg(evals: list[dict], key: str) -> float | None:
+        vals = [
+            _score_value(ev.get("scores", {}), key)
+            for ev in evals
+        ]
+        vals = [v for v in vals if v is not None]
+        return sum(vals) / len(vals) if vals else None
 
     def _avg_metric(evals: list[dict], key: str) -> float | None:
         vals = [ev.get("metrics", {}).get(key) for ev in evals if ev.get("metrics", {}).get(key) is not None]
         return sum(vals) / len(vals) if vals else None
 
-    def _avg_nested(evals: list[dict], outer: str, inner: str) -> float | None:
-        vals = [ev.get("metrics", {}).get(outer, {}).get(inner) for ev in evals]
-        vals = [v for v in vals if v is not None]
-        return sum(vals) / len(vals) if vals else None
-
     def _diff(a, b):
         if a is None or b is None:
             return "N/A"
-        d = b - a
-        return f"{d:+.2f}" if isinstance(d, float) else f"{d:+}"
+        return f"{b - a:+.2f}"
+
+    def _pct_change(a, b):
+        if a is None or b is None or a == 0:
+            return "N/A"
+        return f"{(b - a) / a * 100:+.0f}%"
 
     def _fmt(v, fmt=".2f"):
         return f"{v:{fmt}}" if v is not None else "N/A"
 
-    acc_a, acc_b = _avg_accuracy(evals_a), _avg_accuracy(evals_b)
-    hp_a, ht_a = _hallucination_pass(evals_a)
-    hp_b, ht_b = _hallucination_pass(evals_b)
+    avgs_a = {k: _avg(evals_a, k) for k in _DEEPEVAL_KEYS}
+    avgs_b = {k: _avg(evals_b, k) for k in _DEEPEVAL_KEYS}
 
     dur_a = _avg_metric(evals_a, "duration_ms")
     dur_b = _avg_metric(evals_b, "duration_ms")
@@ -349,39 +255,18 @@ def format_comparison_report(label_a: str, label_b: str, evals_a: list[dict], ev
     turns_a = _avg_metric(evals_a, "num_turns")
     turns_b = _avg_metric(evals_b, "num_turns")
 
-    def _pct_change(a, b):
-        if a is None or b is None or a == 0:
-            return "N/A"
-        return f"{(b - a) / a * 100:+.0f}%"
-
-    def _avg_deepeval(evals: list[dict], key: str) -> float | None:
-        vals = [
-            ev.get("scores", {}).get(key)
-            for ev in evals
-            if ev.get("scores", {}).get(key) is not None
-        ]
-        return sum(vals) / len(vals) if vals else None
-
-    deepeval_keys = ("answer_correctness", "answer_relevancy", "faithfulness")
-    deepeval_a = {k: _avg_deepeval(evals_a, k) for k in deepeval_keys}
-    deepeval_b = {k: _avg_deepeval(evals_b, k) for k in deepeval_keys}
-    has_deepeval = any(v is not None for v in {**deepeval_a, **deepeval_b}.values())
-
     lines = [
         f"# ベンチマーク比較: {label_a} vs {label_b}",
         "",
         "## 品質比較",
         "",
-        f"| 軸 | {label_a} | {label_b} | 差分 |",
+        f"| 指標 | {label_a} | {label_b} | 差分 |",
         "|---|---|---|---|",
-        f"| 回答精度（平均） | {_fmt(acc_a)} | {_fmt(acc_b)} | {_diff(acc_a, acc_b)} |",
-        f"| ハルシネーション（PASS率） | {hp_a}/{ht_a} | {hp_b}/{ht_b} | {hp_b - hp_a:+} |",
     ]
 
-    if has_deepeval:
-        for k in deepeval_keys:
-            da, db = deepeval_a[k], deepeval_b[k]
-            lines.append(f"| {k} (DeepEval) | {_fmt(da)} | {_fmt(db)} | {_diff(da, db)} |")
+    for key in _DEEPEVAL_KEYS:
+        a, b = avgs_a[key], avgs_b[key]
+        lines.append(f"| {key} | {_fmt(a)} | {_fmt(b)} | {_diff(a, b)} |")
 
     lines.extend([
         "",
@@ -395,30 +280,30 @@ def format_comparison_report(label_a: str, label_b: str, evals_a: list[dict], ev
         "",
     ])
 
-    # シナリオ別差分: accuracy scoreが変化したシナリオ
     map_a = {ev["scenario_id"]: ev for ev in evals_a}
     map_b = {ev["scenario_id"]: ev for ev in evals_b}
     common_ids = sorted(set(map_a) & set(map_b))
 
     changed = []
     for sid in common_ids:
-        sa = map_a[sid].get("scores", {}).get("accuracy")
-        sb = map_b[sid].get("scores", {}).get("accuracy")
-        if sa != sb:
-            changed.append((sid, sa, sb))
+        for key in _DEEPEVAL_KEYS:
+            sa = _score_value(map_a[sid].get("scores", {}), key)
+            sb = _score_value(map_b[sid].get("scores", {}), key)
+            if sa is not None and sb is not None and abs(sb - sa) > 0.01:
+                changed.append((sid, key, sa, sb))
 
     if changed:
         lines.extend([
-            "## シナリオ別差分（精度スコアが変化したシナリオ）",
+            "## シナリオ別差分（スコアが変化したシナリオ）",
             "",
-            f"| シナリオ | {label_a} | {label_b} | 差分 |",
-            "|---|---|---|---|",
+            f"| シナリオ | 指標 | {label_a} | {label_b} | 差分 |",
+            "|---|---|---|---|---|",
         ])
-        for sid, sa, sb in changed:
-            lines.append(f"| {sid} | {_fmt(sa)} | {_fmt(sb)} | {_diff(sa, sb)} |")
+        for sid, key, sa, sb in changed:
+            lines.append(f"| {sid} | {key} | {_fmt(sa)} | {_fmt(sb)} | {_diff(sa, sb)} |")
         lines.append("")
     else:
-        lines.extend(["## シナリオ別差分", "", "精度スコアの変化なし", ""])
+        lines.extend(["## シナリオ別差分", "", "スコアの変化なし", ""])
 
     return "\n".join(lines)
 
