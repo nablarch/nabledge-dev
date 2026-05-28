@@ -4,6 +4,9 @@
 **Issue**: #361
 **Updated**: 2026-05-28
 
+## ルール（今日の追加事項）
+- `.claude/settings.json` に `DEEPEVAL_TELEMETRY_OPT_OUT=true` を追加済み（Apache 2.0ライセンス、オプトアウト許可）
+
 ## ルール
 
 - 推測せず事実ベースで調査・作業・判断する。コードを読まずに影響範囲を推測しない。grepで確認してから書く。
@@ -24,10 +27,12 @@
 - 既存の `baseline-current/` は旧指標のものなので上書きしない。新ディレクトリに保存する
 
 **作業**:
-- 全30シナリオを3 run実行: `tools/benchmark/results/baseline-deepeval/run-1〜3/`
-- `report.py --compare` で3 run集計
-- `baseline-current/` の代替として `baseline-deepeval/` を新ベースラインとして記録
-- 結果を `.work/00361/notes.md` に追記
+- [x] run-1完了: `tools/benchmark/results/baseline-deepeval/run-1/` (30件全成功、qa-09/qa-11bは再実行で回収)
+- [ ] run-2実行: `python3 -m tools.benchmark.scripts.run_qa --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6` → `mv tools/benchmark/results/YYYYMMDD-HHMMSS tools/benchmark/results/baseline-deepeval/run-2`
+- [ ] run-3実行: 同上 → `run-3`
+- [ ] `report.py --compare` で3 run集計
+- [ ] `baseline-current/` の代替として `baseline-deepeval/` を新ベースラインとして記録
+- [ ] 結果を `.work/00361/notes.md` に追記
 
 **受入条件**: 3 run全て正常完了、DeepEval3指標のレポートが出力される
 
