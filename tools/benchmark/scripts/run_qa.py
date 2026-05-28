@@ -203,7 +203,6 @@ def run_qa_all(
     skill_dir: str | Path,
     output_dir: str | Path | None = None,
     scenario_ids: list[str] | None = None,
-    with_deepeval: bool = False,
 ) -> dict:
     """Run all scenarios end-to-end and save results.
 
@@ -237,7 +236,7 @@ def run_qa_all(
             result = run_qa_scenario(scenario, skill_dir)
             save_qa_results(str(out), sid, result)
 
-            evaluation = evaluate_scenario(scenario, result, knowledge_dir, with_deepeval=with_deepeval)
+            evaluation = evaluate_scenario(scenario, result, knowledge_dir)
             (out / sid / "evaluation.json").write_text(
                 json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8"
             )
@@ -289,7 +288,6 @@ def main():
     parser.add_argument("--scenarios", required=True, help="Path to scenarios JSON")
     parser.add_argument("--skill-dir", required=True, help="Path to skill directory")
     parser.add_argument("--scenario-ids", help="Comma-separated scenario IDs to run")
-    parser.add_argument("--with-deepeval", action="store_true", help="Compute DeepEval metrics (answer_correctness, answer_relevancy, faithfulness)")
     args = parser.parse_args()
 
     scenario_ids = args.scenario_ids.split(",") if args.scenario_ids else None
@@ -301,7 +299,6 @@ def main():
         args.skill_dir,
         output_dir=str(output_dir),
         scenario_ids=scenario_ids,
-        with_deepeval=args.with_deepeval,
     )
 
     print(f"\nCompleted: {summary['total_scenarios']} scenarios", file=sys.stderr)
