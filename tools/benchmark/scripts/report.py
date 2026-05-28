@@ -40,6 +40,14 @@ def format_scenario_report(evaluation: dict) -> str:
     accuracy_review = "要レビュー" if (uncertain_count or absent_count) else "-"
     h_review = "要レビュー" if hallucination.get("verdict") in ("FAIL", "UNCERTAIN") else "-"
 
+    def _fmt_score(v):
+        return f"{v:.2f}" if v is not None else "N/A"
+
+    ac_display = _fmt_score(scores.get("answer_correctness"))
+    ar_display = _fmt_score(scores.get("answer_relevancy"))
+    fa_display = _fmt_score(scores.get("faithfulness"))
+    has_deepeval = any(k in scores for k in ("answer_correctness", "answer_relevancy", "faithfulness"))
+
     lines = [
         f"## {sid}: {desc}",
         "",
@@ -51,8 +59,16 @@ def format_scenario_report(evaluation: dict) -> str:
         "|---|---|---|---|",
         f"| 回答精度 | {accuracy_auto_str} | {accuracy_review} | {accuracy_display} |",
         f"| ハルシネーション | {hallucination.get('verdict', 'N/A')} | {h_review} | {h_display} |",
-        "",
     ]
+
+    if has_deepeval:
+        lines.extend([
+            f"| answer_correctness (DeepEval) | — | — | {ac_display} |",
+            f"| answer_relevancy (DeepEval) | — | — | {ar_display} |",
+            f"| faithfulness (DeepEval) | — | — | {fa_display} |",
+        ])
+
+    lines.append("")
 
     if claims:
         lines.extend([
@@ -168,6 +184,30 @@ def format_summary_report(evaluations: list[dict]) -> str:
         "※ 未確定 = 人間レビュー未完了（UNCERTAIN含む）。平均・PASS率は確定分のみで計算。",
         "",
     ])
+
+    deepeval_keys = ("answer_correctness", "answer_relevancy", "faithfulness")
+    deepeval_avgs = {}
+    for key in deepeval_keys:
+        vals = [
+            ev["scores"][key]
+            for ev in evaluations
+            if ev.get("scores", {}).get(key) is not None
+        ]
+        deepeval_avgs[key] = sum(vals) / len(vals) if vals else None
+
+    if any(v is not None for v in deepeval_avgs.values()):
+        def _dfmt(v):
+            return f"{v:.2f}" if v is not None else "N/A"
+        lines.extend([
+            "## DeepEval メトリクスサマリー",
+            "",
+            "| 指標 | 平均スコア |",
+            "|---|---|",
+            f"| answer_correctness | {_dfmt(deepeval_avgs['answer_correctness'])} |",
+            f"| answer_relevancy | {_dfmt(deepeval_avgs['answer_relevancy'])} |",
+            f"| faithfulness | {_dfmt(deepeval_avgs['faithfulness'])} |",
+            "",
+        ])
 
     all_metrics = [ev.get("metrics", {}) for ev in evaluations]
 
@@ -314,6 +354,19 @@ def format_comparison_report(label_a: str, label_b: str, evals_a: list[dict], ev
             return "N/A"
         return f"{(b - a) / a * 100:+.0f}%"
 
+    def _avg_deepeval(evals: list[dict], key: str) -> float | None:
+        vals = [
+            ev.get("scores", {}).get(key)
+            for ev in evals
+            if ev.get("scores", {}).get(key) is not None
+        ]
+        return sum(vals) / len(vals) if vals else None
+
+    deepeval_keys = ("answer_correctness", "answer_relevancy", "faithfulness")
+    deepeval_a = {k: _avg_deepeval(evals_a, k) for k in deepeval_keys}
+    deepeval_b = {k: _avg_deepeval(evals_b, k) for k in deepeval_keys}
+    has_deepeval = any(v is not None for v in {**deepeval_a, **deepeval_b}.values())
+
     lines = [
         f"# ベンチマーク比較: {label_a} vs {label_b}",
         "",
@@ -323,6 +376,14 @@ def format_comparison_report(label_a: str, label_b: str, evals_a: list[dict], ev
         "|---|---|---|---|",
         f"| 回答精度（平均） | {_fmt(acc_a)} | {_fmt(acc_b)} | {_diff(acc_a, acc_b)} |",
         f"| ハルシネーション（PASS率） | {hp_a}/{ht_a} | {hp_b}/{ht_b} | {hp_b - hp_a:+} |",
+    ]
+
+    if has_deepeval:
+        for k in deepeval_keys:
+            da, db = deepeval_a[k], deepeval_b[k]
+            lines.append(f"| {k} (DeepEval) | {_fmt(da)} | {_fmt(db)} | {_diff(da, db)} |")
+
+    lines.extend([
         "",
         "## パフォーマンス比較",
         "",
@@ -332,7 +393,7 @@ def format_comparison_report(label_a: str, label_b: str, evals_a: list[dict], ev
         f"| コスト | ${_fmt(cost_a, '.3f')} | ${_fmt(cost_b, '.3f')} | {_pct_change(cost_a, cost_b)} |",
         f"| ターン数 | {_fmt(turns_a, '.1f')} | {_fmt(turns_b, '.1f')} | {_pct_change(turns_a, turns_b)} |",
         "",
-    ]
+    ])
 
     # シナリオ別差分: accuracy scoreが変化したシナリオ
     map_a = {ev["scenario_id"]: ev for ev in evals_a}

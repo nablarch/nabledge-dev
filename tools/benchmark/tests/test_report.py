@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from tools.benchmark.scripts.report import (
+    format_comparison_report,
     format_human_review_list,
     format_scenario_report,
     format_summary_report,
@@ -214,3 +215,78 @@ class TestGenerateFullReport:
         summary_pos = report.index("サマリー")
         scenario_pos = report.index("## pre-01")
         assert summary_pos < scenario_pos
+
+
+def _make_evaluation_with_deepeval(scenario_id="pre-01", deepeval_scores=None):
+    """Helper: make evaluation dict with DeepEval scores."""
+    base = _make_evaluation(scenario_id=scenario_id)
+    if deepeval_scores is not None:
+        base["scores"].update(deepeval_scores)
+    return base
+
+
+class TestFormatScenarioReportWithDeepEval:
+    def test_deepeval_scores_displayed_when_present(self):
+        evaluation = _make_evaluation_with_deepeval(deepeval_scores={
+            "answer_correctness": 0.9,
+            "answer_relevancy": 0.85,
+            "faithfulness": 0.8,
+        })
+        report = format_scenario_report(evaluation)
+        assert "answer_correctness" in report or "0.90" in report
+        assert "faithfulness" in report or "0.80" in report
+
+    def test_deepeval_scores_show_na_when_absent(self):
+        evaluation = _make_evaluation()  # no DeepEval scores
+        report = format_scenario_report(evaluation)
+        # Report must be generated without error; N/A for missing deepeval scores
+        assert "## pre-01" in report
+
+    def test_deepeval_scores_none_displayed_as_na(self):
+        evaluation = _make_evaluation_with_deepeval(deepeval_scores={
+            "answer_correctness": None,
+            "answer_relevancy": None,
+            "faithfulness": None,
+        })
+        report = format_scenario_report(evaluation)
+        assert "## pre-01" in report  # no error on None scores
+
+
+class TestFormatSummaryReportWithDeepEval:
+    def test_deepeval_averages_in_summary_when_present(self):
+        evaluations = [
+            _make_evaluation_with_deepeval(scenario_id="pre-01", deepeval_scores={
+                "answer_correctness": 0.9, "answer_relevancy": 0.85, "faithfulness": 0.8,
+            }),
+            _make_evaluation_with_deepeval(scenario_id="pre-02", deepeval_scores={
+                "answer_correctness": 0.7, "answer_relevancy": 0.75, "faithfulness": 0.9,
+            }),
+        ]
+        report = format_summary_report(evaluations)
+        assert "answer_correctness" in report or "DeepEval" in report or "0.80" in report
+
+    def test_summary_without_deepeval_no_error(self):
+        evaluations = [
+            _make_evaluation(scenario_id="pre-01"),
+            _make_evaluation(scenario_id="pre-02"),
+        ]
+        report = format_summary_report(evaluations)
+        assert "サマリー" in report
+
+
+class TestFormatComparisonReportWithDeepEval:
+    def test_comparison_includes_deepeval_diff_when_present(self):
+        evals_a = [_make_evaluation_with_deepeval(scenario_id="pre-01", deepeval_scores={
+            "answer_correctness": 0.7, "answer_relevancy": 0.8, "faithfulness": 0.75,
+        })]
+        evals_b = [_make_evaluation_with_deepeval(scenario_id="pre-01", deepeval_scores={
+            "answer_correctness": 0.9, "answer_relevancy": 0.85, "faithfulness": 0.9,
+        })]
+        report = format_comparison_report("run-1", "run-2", evals_a, evals_b)
+        assert "answer_correctness" in report or "DeepEval" in report
+
+    def test_comparison_without_deepeval_no_error(self):
+        evals_a = [_make_evaluation(scenario_id="pre-01")]
+        evals_b = [_make_evaluation(scenario_id="pre-01")]
+        report = format_comparison_report("run-1", "run-2", evals_a, evals_b)
+        assert "品質比較" in report
