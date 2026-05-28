@@ -1,6 +1,6 @@
 # Tasks: Add standard RAG metrics (DeepEval) to QA benchmark
 
-**PR**: TBD
+**PR**: #362
 **Issue**: #361
 **Updated**: 2026-05-28
 
@@ -154,27 +154,74 @@
 
 ---
 
-### T7: SC2検証 — baseline-currentへのDeepEval後計算と相関分析
+### T7: 動作確認（1件実行）
 
-**目的**: SC2対応。既存30シナリオのbaseline-current結果に対してDeepEval指標を後計算し、現行LLMジャッジとの相関・不一致ケースを文書化する。
-
-**影響ファイル**:
-- `.work/00361/deepeval-validation.md`（新規、作業記録）
-- `tools/benchmark/results/baseline-current/run-1/*/evaluation.json`（DeepEval指標を追記）
+**目的**: DeepEval統合が基本動作することを最小コストで確認する。
 
 **作業**:
-- `python3 -m tools.benchmark.scripts.evaluate --run-dir ... --with-deepeval` で baseline-current/run-1 に対してDeepEval指標を後計算
-- 相関分析: 既存の accuracy/hallucination スコアとDeepEval3指標の一致率を計算
-- 不一致ケース（既存PASS→DeepEvalFAIL、またはその逆）を列挙して原因を分析
-- 結果を `.work/00361/deepeval-validation.md` に記録
+- `python3 -m tools.benchmark.scripts.run_qa --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6 --scenario-ids pre-01 --with-deepeval` を実行
+- `evaluation.json` に `scores.answer_correctness`, `scores.answer_similarity`, `scores.faithfulness` が含まれることを確認
+- `report.md` に3指標が表示されることを確認
 
-**受入条件**: 30シナリオ全てのevaluation.jsonにDeepEval指標が追記される、不一致ケースが文書化される
+**受入条件**: pre-01 の evaluation.json にDeepEval 3指標が出力される、エラーなし
 
-**コミット**: `docs: add DeepEval validation results against baseline-current`
+**コミット**: なし（動作確認タスク）
 
 ---
 
-### T8: 変更差分チェック
+### T8: 動作確認（3件実行）
+
+**目的**: 複数シナリオで安定動作することを確認する。
+
+**作業**:
+- `pre-01`, `pre-02`, `qa-01` の3件を実行
+- 3件とも evaluation.json に DeepEval 3指標が含まれることを確認
+- レポートのサマリーテーブルに3指標の集計が出ることを確認
+
+**受入条件**: 3件全て正常完了、レポートに3指標集計あり
+
+**コミット**: なし（動作確認タスク）
+
+---
+
+### T9: 全件実行 + 相関分析（SC1・SC2）
+
+**目的**: 全30シナリオでDeepEval指標を取得し、既存LLMジャッジとの相関・不一致ケースを文書化する。
+
+**注意**: 既存の `tools/benchmark/results/baseline-current/` には一切触れない。新規の run ディレクトリに結果を保存する。
+
+**作業**:
+- 全シナリオを `--with-deepeval` で実行し、`tools/benchmark/results/deepeval-validation/run-1/` に保存
+- 相関分析: 各シナリオの `accuracy`（既存）と `answer_correctness`（DeepEval）、`hallucination`（既存）と `faithfulness`（DeepEval）の一致率を計算
+- 不一致ケース（既存PASS→DeepEvalFAIL、またはその逆）を列挙して原因を分析
+- 結果を `.work/00361/deepeval-validation.md` に記録
+
+**受入条件**: 30シナリオ全て完了、不一致ケースが文書化される
+
+**コミット**: `docs: add DeepEval validation results (SC2)`
+
+---
+
+### T10: HOW-TO-RUN.md 更新
+
+**目的**: DeepEval追加後も手順書通りにベンチマークが実行できることを保証する。
+
+**影響ファイル**:
+- `tools/benchmark/HOW-TO-RUN.md`
+
+**作業**:
+- 前提セクションに `deepeval` のインストール確認手順を追加
+- ステップ1〜2の実行コマンドに `--with-deepeval` フラグの説明を追加
+- 出力ファイル早見表に DeepEval 3指標列の説明を追記
+- T7/T8の動作確認手順通りに実際に実行して、手順書との齟齬がないことを確認
+
+**受入条件**: HOW-TO-RUN.md の手順通りに実行して `--with-deepeval` フラグ付きで正常完了する
+
+**コミット**: `docs: update HOW-TO-RUN.md for DeepEval integration`
+
+---
+
+### T11: 変更差分チェック
 
 **目的**: PRレビュー依頼前に変更差分が想定した変更のみかを確認する。
 
@@ -197,7 +244,7 @@
 | Success Criteria | 対応タスク |
 |---|---|
 | SC1: 3指標を各シナリオで計算しレポートに含める | T3, T4, T5 |
-| SC2: 現行LLMジャッジとの相関・不一致ケース文書化 | T7 |
+| SC2: 現行LLMジャッジとの相関・不一致ケース文書化 | T9 |
 | SC3: レポートに標準指標スコアを表示 | T5 |
 | SC4: 指標選定根拠とPASS/FAILしきい値をbenchmark-design.mdに記載 | T6 |
 | SC5: 既存ベンチマークテストが全てPASS | T3, T4, T5（各タスクで既存テストのPASS確認） |
