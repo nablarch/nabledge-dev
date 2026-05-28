@@ -6,7 +6,6 @@
 
 ## ルール
 
-
 - 推測せず事実ベースで調査・作業・判断する。コードを読まずに影響範囲を推測しない。grepで確認してから書く。
 - 1タスク = 1コミット（調査タスクはnotesへの記録で完結）
 - 実装前にテストを書く（TDD: RED → GREEN）
@@ -16,138 +15,32 @@
 
 ## In Progress
 
----
-
-## Not Started
-
-### T2: tools/benchmark/requirements.txt 新設 + setup.sh にインストールステップ追加
-
-**目的**: DeepEval を benchmark 専用の依存として管理し、setup.sh から自動インストールできるようにする。
-
-**影響ファイル**:
-- `tools/benchmark/requirements.txt`（新規作成）
-- `setup.sh`（L206-234 付近に benchmark 依存のインストールブロックを追加）
-
-**作業**:
-- `tools/benchmark/requirements.txt` を作成し `deepeval` を記載
-- `setup.sh` に以下を追加（tools/rbkc/requirements.txt インストールブロックの直後）:
-  ```bash
-  if [ -f "tools/benchmark/requirements.txt" ]; then
-      print_status info "Installing benchmark dependencies..."
-      if uv pip install --python "$VENV_DIR/bin/python" -r tools/benchmark/requirements.txt; then
-          print_status ok "Benchmark dependencies installed"
-      else
-          print_status error "Failed to install benchmark dependencies"
-          exit 1
-      fi
-  fi
-  ```
-- setup.sh の検証ブロック（L220-234付近）に `import deepeval` の確認を追加
-
-**受入条件**: `uv pip install -r tools/benchmark/requirements.txt` が exit 0
-
-**コミット**: `chore: add benchmark requirements.txt and setup.sh install step`
-
----
-
-### T3: テスト追加（RED） — DeepEval 3指標計算のunit test
-
-**目的**: TDD先行。実装前にテストを書いてREDを確認する。
-
-**影響ファイル**:
-- `tools/benchmark/tests/test_evaluate.py`
-
-**作業**:
-- T1で確認したLLMTestCaseマッピングをもとに以下のテストクラスを追加:
-  - `TestBuildDeepEvalTestCase`: シナリオ + runner_output → `LLMTestCase` のマッピング検証
-  - `TestComputeDeepEvalMetrics`: モックで3指標（answer_correctness, answer_similarity, faithfulness）の計算結果を検証
-  - `TestEvaluateScenarioWithDeepEval`: `evaluate_scenario` の戻り値に `scores.answer_correctness` 等が含まれることを検証
-
-**受入条件**: `pytest tools/benchmark/tests/test_evaluate.py` が新規テストのみ FAIL（既存テストは全てPASS）
-
-**コミット**: `test: add DeepEval metric computation tests (RED)`
-
----
-
-### T4: evaluate.py 実装（GREEN） — DeepEval 3指標計算関数追加
-
-**目的**: T3のテストをGREENにする。
-
-**影響ファイル**:
-- `tools/benchmark/scripts/evaluate.py`
-
-**作業**:
-- `build_deepeval_test_case(scenario, runner_output, knowledge_dir, page_loader)` 関数を追加
-  - `retrieval_context` は `workflow_details.step3.selected_pages` の各ページ内容リスト
-  - `expected_output` は `must.facts` を改行結合したテキスト
-- `compute_deepeval_metrics(test_case)` 関数を追加
-  - `AnswerCorrectnessMetric`, `AnswerSimilarityMetric` (or GEval), `FaithfulnessMetric` を計算
-  - 戻り値: `{"answer_correctness": float, "answer_similarity": float, "faithfulness": float}`
-- T1の認証方式確認結果に従ってモデル設定を実装
-- `evaluate_scenario` の `scores` フィールドに3指標を追加
-- `evaluate_all` で `compute_deepeval_metrics` を呼び出すかどうか（`--with-deepeval` フラグで制御）
-
-**受入条件**: `pytest tools/benchmark/tests/test_evaluate.py` が全てPASS
-
-**コミット**: `feat: add DeepEval metric computation to evaluate.py`
-
----
-
-### T5: report.py — レポートにDeepEval指標列を追加
-
-**目的**: SC3対応。レポートで標準指標スコアを既存LLMジャッジスコアと並べて表示する。
-
-**影響ファイル**:
-- `tools/benchmark/scripts/report.py`
-- `tools/benchmark/tests/test_report.py`
-
-**作業**:
-- `format_scenario_report`: 評価結果テーブルに `answer_correctness`, `answer_similarity`, `faithfulness` 列を追加
-  - `scores` に DeepEval指標がない場合は `N/A` 表示（後方互換）
-- `format_summary_report`: サマリーテーブルに3指標の平均を追加
-- `format_comparison_report`: 比較レポートに3指標の差分を追加
-- テスト: `test_report.py` に DeepEval指標あり/なしの両ケースを追加
-
-**受入条件**: `pytest tools/benchmark/tests/test_report.py` が全てPASS
-
-**コミット**: `feat: add DeepEval metric columns to benchmark report`
-
----
-
-### T6: docs/benchmark-design.md — DeepEval指標設計追記
-
-**目的**: SC4対応。指標選定根拠とPASS/FAILしきい値を文書化する。
-
-**影響ファイル**:
-- `docs/benchmark-design.md`
-
-**作業**:
-- 既存の評価ロジック説明セクションの後に「標準RAGメトリクス（DeepEval）」セクションを追加:
-  - 指標選定根拠（なぜこの3指標か、既存LLMジャッジとの関係）
-  - 各指標の定義と入力マッピング（シナリオデータ → LLMTestCase）
-  - PASS/FAILしきい値の設計根拠（T1/T4の結果を踏まえて設定）
-  - 既存LLMジャッジとの並走方針（置き換えか補完か）
-
-**受入条件**: ドキュメントに指標選定根拠・しきい値が明記されている
-
-**コミット**: `docs: add DeepEval metrics design to benchmark-design.md`
-
----
-
 ### T7: 動作確認（1件実行）
 
 **目的**: DeepEval統合が基本動作することを最小コストで確認する。
 
+**Status**: バグ修正中。`asyncio.run()`への変更後もrun_qa実行時にnullになる問題が残っている。
+
 **作業**:
-- `python3 -m tools.benchmark.scripts.run_qa --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6 --scenario-ids pre-01 --with-deepeval` を実行
-- `evaluation.json` に `scores.answer_correctness`, `scores.answer_similarity`, `scores.faithfulness` が含まれることを確認
-- `report.md` に3指標が表示されることを確認
+- [x] `asyncio.new_event_loop()`を`asyncio.run()`に修正 (evaluate.py)
+- [x] `build_deepeval_test_case`が`workflow_details.step3.selected_sections`をフォールバックとして参照するように修正 (evaluate.py)
+- [x] run_qa.pyに`--with-deepeval`フラグ追加
+- [x] テスト追加・全180件PASS確認
+- [ ] **run_qa実行時にDeepEval指標がnullになる問題の根本原因調査と修正**
+  - 現象: `python3 -m tools.benchmark.scripts.run_qa ... --with-deepeval` でevaluation.jsonのスコアがnull
+  - 個別テストでは`compute_deepeval_metrics`が正常動作（1.0などのスコアを返す）
+  - `evaluate_scenario`内での呼び出し時のみnullになる
+  - 調査ヒント: `evaluate_scenario`がcall_llm(claude CLI subprocess)を呼んだ後のasyncioコンテキストが問題か確認
+- [ ] `evaluation.json`に`scores.answer_correctness`, `scores.answer_relevancy`, `scores.faithfulness`が出力されることを確認
+- [ ] `report.md`に3指標が表示されることを確認
 
-**受入条件**: pre-01 の evaluation.json にDeepEval 3指標が出力される、エラーなし
+**受入条件**: pre-01のevaluation.jsonにDeepEval 3指標が出力される、エラーなし
 
-**コミット**: なし（動作確認タスク）
+**コミット**: なし（動作確認タスク）。ただし上記バグ修正はコミット必要。
 
 ---
+
+## Not Started
 
 ### T8: 動作確認（3件実行）
 
@@ -217,7 +110,12 @@
 
 ## Done
 
-- [x] T1: 調査 — DeepEvalのジャッジLLM接続方式確認とLLMTestCase入力マッピング — notes.md に記録済み
+- [x] T1: 調査 — DeepEvalのジャッジLLM接続方式確認とLLMTestCase入力マッピング — notes.md に記録済み — `5530ab20`
+- [x] T2: tools/benchmark/requirements.txt 新設 + setup.sh にインストールステップ追加 — `93669a7b`
+- [x] T3: テスト追加（RED） — DeepEval 3指標計算のunit test — `1efc394e`
+- [x] T4: evaluate.py 実装（GREEN） — DeepEval 3指標計算関数追加 — `1c7a6a0e`
+- [x] T5: report.py — レポートにDeepEval指標列を追加 — `d87da7de`
+- [x] T6: docs/benchmark-design.md — DeepEval指標設計追記 — `93101e85`
 
 ---
 

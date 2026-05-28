@@ -410,11 +410,31 @@ def build_deepeval_test_case(
     must_facts = scenario.get("then", {}).get("must", [])
     expected_output = "\n".join(mf["fact"] for mf in must_facts if mf.get("fact"))
 
-    search_sections = (
-        runner_output.get("diagnostics", {}).get("search_sections", [])
-    )
+    # Support two runner output formats:
+    # 1. evaluation.json (post-evaluate): diagnostics.search_sections as "path/to/file.json:sN"
+    # 2. run_qa output (pre-evaluate): workflow_details.step3.selected_sections as [{file, section_id}]
+    search_section_refs: list[str] = []
+    diag_sections = runner_output.get("diagnostics", {}).get("search_sections", [])
+    if diag_sections:
+        search_section_refs = diag_sections
+    else:
+        wf_sections = (
+            runner_output.get("workflow_details", {})
+            .get("step3", {})
+            .get("selected_sections", [])
+        )
+        for s in wf_sections:
+            file_path = s.get("file", "")
+            section_id = s.get("section_id", "")
+            if file_path and section_id:
+                search_section_refs.append(f"{file_path}:{section_id}")
+
+    seen_refs: set[str] = set()
     retrieval_context = []
-    for ref in search_sections:
+    for ref in search_section_refs:
+        if ref in seen_refs:
+            continue
+        seen_refs.add(ref)
         try:
             content = section_loader(knowledge_dir, ref)
             retrieval_context.append(content)
@@ -432,11 +452,7 @@ def build_deepeval_test_case(
 def _run_deepeval_metric(metric, test_case) -> float:
     """Run a single DeepEval metric synchronously and return its score."""
     import asyncio
-    loop = asyncio.new_event_loop()
-    try:
-        loop.run_until_complete(metric.a_measure(test_case))
-    finally:
-        loop.close()
+    asyncio.run(metric.a_measure(test_case))
     return metric.score
 
 

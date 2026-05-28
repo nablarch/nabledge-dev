@@ -846,6 +846,41 @@ class TestBuildDeepEvalTestCase:
         tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
         assert tc.retrieval_context == []
 
+    def test_workflow_details_selected_sections_as_fallback(self):
+        """run_qa output format: workflow_details.step3.selected_sections."""
+        runner_output = {
+            "answer": "回答",
+            "workflow_details": {
+                "step3": {
+                    "selected_sections": [
+                        {"file": "batch/batch-arch.json", "section_id": "s1"},
+                        {"file": "batch/batch-arch.json", "section_id": "s2"},
+                    ]
+                }
+            },
+        }
+        tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
+        assert len(tc.retrieval_context) == 2
+        assert "Batch runs as standalone app." in tc.retrieval_context[0]
+
+    def test_diagnostics_search_sections_takes_precedence_over_workflow_details(self):
+        """When both formats present, diagnostics.search_sections wins."""
+        runner_output = {
+            "answer": "回答",
+            "diagnostics": {"search_sections": ["batch/batch-arch.json:s1"]},
+            "workflow_details": {
+                "step3": {
+                    "selected_sections": [
+                        {"file": "batch/batch-arch.json", "section_id": "s2"},
+                    ]
+                }
+            },
+        }
+        tc = build_deepeval_test_case(self.scenario, runner_output, self.tmpdir)
+        # Only s1 from diagnostics, not s2 from workflow_details
+        assert len(tc.retrieval_context) == 1
+        assert "Batch runs as standalone app." in tc.retrieval_context[0]
+
 
 class TestComputeDeepEvalMetrics:
     """Tests for compute_deepeval_metrics: LLMTestCase → dict of 3 metric scores."""
