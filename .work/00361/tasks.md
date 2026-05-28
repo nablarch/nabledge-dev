@@ -155,7 +155,27 @@
 
 ---
 
-### T19: 変更差分チェック + diff-check.md 更新
+### T19: QAベンチマーク全件実行・新ベースライン取得（3 run）
+
+**目的**: 評価ロジックがDeepEvalに置き換わったため、旧ベースライン（accuracy/hallucination）は無効。新しいベースラインを取得する。
+
+**注意**:
+- キーワード検索ベンチマークはLLMジャッジ未使用のため取り直し不要
+- 既存の `baseline-current/` は旧指標のものなので上書きしない。新ディレクトリに保存する
+
+**作業**:
+- 全30シナリオを3 run実行: `tools/benchmark/results/baseline-deepeval/run-1〜3/`
+- `report.py --compare` で3 run集計
+- `baseline-current/` の代替として `baseline-deepeval/` を新ベースラインとして記録
+- 結果を `.work/00361/notes.md` に追記
+
+**受入条件**: 3 run全て正常完了、DeepEval3指標のレポートが出力される
+
+**コミット**: `chore: save baseline-deepeval QA benchmark results (3 runs)`
+
+---
+
+### T20: 変更差分チェック + diff-check.md 更新
 
 **コミット**: `docs: update diff check for LLM judge removal`
 
