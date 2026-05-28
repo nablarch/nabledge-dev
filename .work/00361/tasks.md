@@ -2,7 +2,7 @@
 
 **PR**: #362
 **Issue**: #361
-**Updated**: 2026-05-28
+**Updated**: 2026-05-28 (T7完了)
 
 ## ルール
 
@@ -15,28 +15,7 @@
 
 ## In Progress
 
-### T7: 動作確認（1件実行）
-
-**目的**: DeepEval統合が基本動作することを最小コストで確認する。
-
-**Status**: バグ修正中。`asyncio.run()`への変更後もrun_qa実行時にnullになる問題が残っている。
-
-**作業**:
-- [x] `asyncio.new_event_loop()`を`asyncio.run()`に修正 (evaluate.py)
-- [x] `build_deepeval_test_case`が`workflow_details.step3.selected_sections`をフォールバックとして参照するように修正 (evaluate.py)
-- [x] run_qa.pyに`--with-deepeval`フラグ追加
-- [x] テスト追加・全180件PASS確認
-- [ ] **run_qa実行時にDeepEval指標がnullになる問題の根本原因調査と修正**
-  - 現象: `python3 -m tools.benchmark.scripts.run_qa ... --with-deepeval` でevaluation.jsonのスコアがnull
-  - 個別テストでは`compute_deepeval_metrics`が正常動作（1.0などのスコアを返す）
-  - `evaluate_scenario`内での呼び出し時のみnullになる
-  - 調査ヒント: `evaluate_scenario`がcall_llm(claude CLI subprocess)を呼んだ後のasyncioコンテキストが問題か確認
-- [ ] `evaluation.json`に`scores.answer_correctness`, `scores.answer_relevancy`, `scores.faithfulness`が出力されることを確認
-- [ ] `report.md`に3指標が表示されることを確認
-
-**受入条件**: pre-01のevaluation.jsonにDeepEval 3指標が出力される、エラーなし
-
-**コミット**: なし（動作確認タスク）。ただし上記バグ修正はコミット必要。
+(なし)
 
 ---
 
@@ -116,6 +95,7 @@
 - [x] T4: evaluate.py 実装（GREEN） — DeepEval 3指標計算関数追加 — `1c7a6a0e`
 - [x] T5: report.py — レポートにDeepEval指標列を追加 — `d87da7de`
 - [x] T6: docs/benchmark-design.md — DeepEval指標設計追記 — `93101e85`
+- [x] T7: 動作確認（1件実行） — pre-01でDeepEval 3指標出力確認、SSL修正 — `77a43974`
 
 ---
 
