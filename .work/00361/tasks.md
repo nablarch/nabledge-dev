@@ -6,6 +6,7 @@
 
 ## ルール
 
+
 - 推測せず事実ベースで調査・作業・判断する。コードを読まずに影響範囲を推測しない。grepで確認してから書く。
 - 1タスク = 1コミット（調査タスクはnotesへの記録で完結）
 - 実装前にテストを書く（TDD: RED → GREEN）
@@ -18,29 +19,6 @@
 ---
 
 ## Not Started
-
-### T1: 調査 — DeepEvalのジャッジLLM接続方式確認とLLMTestCase入力マッピング
-
-**目的**: 実装前に2点を事実確認する。
-
-1. **ジャッジLLM接続方式**: DeepEvalの各指標はLLM-as-judgeで動く。DeepEval標準の`deepeval.anthropic.Anthropic`は`ANTHROPIC_API_KEY`（Anthropic直接接続）を要求するが、本環境はAWS Bedrock経由（`jp.anthropic.claude-sonnet-4-6`）で`ANTHROPIC_API_KEY`を持たない。以下3択のどれが現実的かを調べる:
-   - **案A**: DeepEvalのカスタムモデルAPIに`langchain-aws`のBedrock wrapperを渡す
-   - **案B**: DeepEvalのカスタムモデルAPIに既存の`claude CLI`サブプロセス方式をラップして渡す
-   - **案C**: DeepEvalのスコア計算ロジックだけ参考に自前実装（DeepEval不使用）
-2. **LLMTestCaseへのマッピング**: DeepEvalは`LLMTestCase(input, actual_output, expected_output, retrieval_context)`を要求する。既存データからのマッピングを確認する。
-   - `input` ← `scenario["when"]["input"]`
-   - `actual_output` ← `answer.md`
-   - `expected_output` ← `must.facts`を改行結合したテキスト（Answer Correctness/Similarity用）
-   - `retrieval_context` ← `workflow_details.step3.selected_pages`の各ページ内容リスト（Faithfulness用）
-
-**作業**:
-- `uv pip install deepeval` を `~/venv` に試行して成功を確認
-- DeepEvalのカスタムモデルAPI（`DeepEvalBaseLLM`）仕様を調べ、案A/B/Cの実現可否を確認
-- 採用する接続方式を1つ選んで根拠とともに `.work/00361/notes.md` に記録
-
-**コミット**: なし（調査タスク）
-
----
 
 ### T2: tools/benchmark/requirements.txt 新設 + setup.sh にインストールステップ追加
 
@@ -238,6 +216,8 @@
 ---
 
 ## Done
+
+- [x] T1: 調査 — DeepEvalのジャッジLLM接続方式確認とLLMTestCase入力マッピング — notes.md に記録済み
 
 ---
 
