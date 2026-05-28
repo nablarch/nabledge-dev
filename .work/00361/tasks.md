@@ -102,8 +102,13 @@
 - claim-judge / hallucination-judge の呼び出しをすべて削除
 - `section_loader` / `page_loader` は `build_deepeval_test_case` で使用するので残す
 - `with_deepeval` / `deepeval_model` パラメータを削除（常時計算）
-- `scores` から `accuracy`/`hallucination` を削除、DeepEval3指標のみにする
+- `scores` の構造を変更: `{"answer_correctness": {"score": 0.9, "reason": "..."}, ...}` 形式にする（調査のためreasonを保持）
 - `claim_verdicts` / `hallucination` / `needs_human_review` / `human_review_items` フィールドを返却から削除
+- `diagnostics` フィールドを返却から削除（`workflow_details.json` の step3 と完全重複）
+- `metrics` フィールドを返却から削除（`metrics.json` と完全重複）
+
+**`_run_deepeval_metric` の変更**:
+- `score` だけでなく `reason` も返すよう変更: `return {"score": metric.score, "reason": metric.reason}`
 
 **`evaluate_all` の変更**:
 - `llm_fn` パラメータを削除
@@ -118,12 +123,17 @@
 
 **目的**: accuracy/hallucination 列を削除し DeepEval3指標のみのレポートにする。
 
+**scoresの構造変更への対応**:
+- `scores.answer_correctness` が `float` → `{"score": float, "reason": str}` に変わるため読み取り箇所を更新
+- `metrics` を `evaluation.json` ではなく `metrics.json` から読むよう変更
+
 **変更内容**:
-- `format_scenario_report`: accuracy/hallucination 節を削除
+- `format_scenario_report`: accuracy/hallucination 節を削除、DeepEvalのreasonを表示
 - `format_summary`: accuracy/hallucination 集計行を削除、DeepEvalサマリーのみ残す
 - `_avg_accuracy` / `_hallucination_pass` 関数を削除
 - compare機能: accuracy/hallucination 比較列を削除、DeepEval指標の比較に置き換え
 - `format_human_review_list` 関数を削除
+- metricsの読み取りを `metrics.json` から行うよう変更
 
 **受入条件**: 全テスト PASS
 
