@@ -96,6 +96,7 @@
 - [x] T5: report.py — レポートにDeepEval指標列を追加 — `d87da7de`
 - [x] T6: docs/benchmark-design.md — DeepEval指標設計追記 — `93101e85`
 - [x] T7: 動作確認（1件実行） — pre-01でDeepEval 3指標出力確認、SSL修正 — `77a43974`
+- [x] T8: 動作確認（3件実行） — pre-01/pre-02/qa-01全てDeepEval 3指標出力確認 — (実行のみ、コミットなし)
 
 ---
 
