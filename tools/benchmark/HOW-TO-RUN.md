@@ -56,6 +56,56 @@ mv tools/benchmark/results/YYYYMMDD-HHMMSS tools/benchmark/results/{run-label}/r
 - 終了コード 0
 - `summary.json` の `total_scenarios` が期待値と一致
 
+### タイムアウトシナリオの再実行
+
+タイムアウト（360s）や一時的なエラーで失敗したシナリオは、単体再実行して結果を上書きする。
+
+```bash
+# エラー一覧を確認
+python3 -c "
+import json
+d = json.load(open('tools/benchmark/results/{run-label}/run-N/summary.json'))
+for s in d['scenarios']:
+    if s.get('status') == 'error':
+        print(s['id'], '-', s.get('error', '')[:60])
+"
+
+# 失敗シナリオを単体再実行（例: qa-11a, oos-qa-01）
+python3 -m tools.benchmark.scripts.run_qa \
+  --scenarios tools/benchmark/scenarios/qa.json \
+  --skill-dir .claude/skills/nabledge-6 \
+  --scenario-ids qa-11a,oos-qa-01
+```
+
+完了後、再実行結果をrun-Nディレクトリへ上書きコピー:
+```bash
+RUNDIR=tools/benchmark/results/{run-label}/run-N
+NEWDIR=tools/benchmark/results/YYYYMMDD-HHMMSS
+for sid in qa-11a oos-qa-01; do
+  rm -rf $RUNDIR/$sid
+  cp -r $NEWDIR/$sid $RUNDIR/$sid
+done
+rm -rf $NEWDIR
+```
+
+summary.jsonの`scenarios`エントリも更新する（エラーエントリを正常エントリで置き換え）:
+```bash
+python3 -c "
+import json, pathlib
+p = pathlib.Path('$RUNDIR/summary.json')
+d = json.loads(p.read_text())
+# remove error entries for retried scenarios
+retry_ids = {'qa-11a', 'oos-qa-01'}
+d['scenarios'] = [s for s in d['scenarios'] if s['id'] not in retry_ids]
+# append new entries from new summary
+new_d = json.loads(pathlib.Path('$NEWDIR/summary.json').read_text())
+d['scenarios'] += [s for s in new_d['scenarios'] if s['id'] in retry_ids]
+d['total_scenarios'] = len(d['scenarios'])
+p.write_text(json.dumps(d, ensure_ascii=False, indent=2))
+print('updated summary.json:', d['total_scenarios'], 'scenarios')
+"
+```
+
 ---
 
 ## 出力ファイル早見表

@@ -23,14 +23,25 @@
 **背景**: T21の修正後、クリーンな状態でベースラインを再取得する。
 
 **作業**:
-- [ ] run-1実行 → `baseline-deepeval/run-1/` に保存
-- [ ] run-2実行 → `baseline-deepeval/run-2/` に保存
+- [x] run-1実行 → `baseline-deepeval/run-1/run/` に保存（29/30、qa-11aタイムアウト）
+- [x] run-2実行 → `baseline-deepeval/run-2/run/` に保存（26/30、3タイムアウト + oos-qa-01エラー）
+- [ ] run-1/2のエラーシナリオを単体再実行して上書き（HOW-TO-RUN.md タイムアウト再実行手順）
+  - run-1: qa-11a（タイムアウト）
+  - run-2: review-07, qa-02, qa-06（タイムアウト）、oos-qa-01（Workflow Details欠落）
 - [ ] run-3実行 → `baseline-deepeval/run-3/` に保存
+  - **中断状態**: `tools/benchmark/results/20260529-150210/` に26シナリオ完了済み（summary.jsonなし）
+  - 残り4シナリオ: qa-14, qa-15, oos-impact-01, oos-qa-01
+  - [DECISION: 中断データを再利用するか、run-3を最初からやり直すか？]
 - [ ] 各run後に `report.py` でレポート生成・閾値割れ確認（HOW-TO-RUN.md ステップ3）
 - [ ] 3 run集計（ステップ4a）
 - [ ] 閾値割れシナリオの改善判断（ステップ5）
 
 **コミット**: `chore: save baseline-deepeval QA benchmark results (3 runs)`
+
+**中間データの場所**:
+- run-1: `tools/benchmark/results/baseline-deepeval/run-1/run/`（gitトラック済み？いいえ、untracked）
+- run-2: `tools/benchmark/results/baseline-deepeval/run-2/run/`（untracked）
+- run-3中断: `tools/benchmark/results/20260529-150210/`（untracked）
 
 ---
 
