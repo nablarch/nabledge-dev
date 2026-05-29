@@ -69,3 +69,36 @@ Neither affects class diagram — effectively 21 meaningful classes → 15 kept.
 
 The new Step 3 rule correctly guides LLM to select the 15 most business-logic-relevant classes
 and drop the 8 peripheral/logging classes. The priority order is clear and unambiguous.
+
+---
+
+## Actual workflow run (isolated environment)
+
+**Environment**: `/tmp/nabledge-verify/` — `.work/` not present, tasks.md expected values not visible to the agent
+
+**Command**: `claude -p "/n6 code-analysis nablarch-example-batch/src/main/java/.../ImportZipCodeFileDataFormatAction.java"`
+
+**Result**: 10 classes selected (≤ 15 ✅)
+
+```
+classDiagram
+    class ImportZipCodeFileDataFormatAction
+    class FileBatchAction <<Nablarch>>
+    class ZipCodeDataFormatForm
+    class ZipCodeData
+    class MyFileValidatorAction
+    class ValidatableFileDataReader <<Nablarch>>
+    class UniversalDao <<Nablarch>>
+    class BeanUtil <<Nablarch>>
+    class ValidatorUtil <<Nablarch>>
+    class DbConnectionContext <<Nablarch>>
+```
+
+**Dropped (not shown)**: Logger, LoggerManager, Message, MessageLevel, MessageUtil, Result, CommandLine, SqlPStatement, AppDbConnection, ExecutionContext, DataRecord, Validator, ConstraintViolation, Set, Published
+
+**Observation**: `MyFileValidatorAction` (inner class defined in the same file) was included — not in tasks.md expected value but is a legitimate business-logic class (file record order validation). The LLM correctly identified it as priority 2.
+
+**Acceptance criteria**:
+- Class count ≤ 15: **PASS** (10 classes)
+- Peripheral/logging classes dropped: **PASS** (Logger, Message, Result, CommandLine etc. all absent)
+- Rule guided LLM correctly without bias: **PASS** (run in isolated env without access to tasks.md)
