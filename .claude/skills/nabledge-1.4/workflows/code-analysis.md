@@ -377,12 +377,22 @@ classDiagram
     LoginAction ..> UniversalDao : uses
 ```
 
+**Step 3**: Limit to 15 classes:
+- If the diagram has more than 15 classes, reduce to exactly 15 by dropping lowest-priority classes
+- Priority order (judge from the source code already read in Step 1):
+  1. Target class itself (always keep)
+  2. Classes directly called in the main business logic path
+  3. Nablarch framework classes central to the feature
+  4. Other project classes (helpers, utilities, entities)
+  5. Peripheral imports not involved in main flow (logging, simple wrappers — drop first)
+
 **Key points**:
 - Start with skeleton (reduces generation time)
 - Use `classDiagram` syntax (NOT `graph TD`)
 - Show class names only (NO methods/fields)
 - Show inheritance with `--|>`, dependencies with `..>`
 - Mark framework classes with `<<Nablarch>>`
+- Maximum 15 classes (apply Step 3 if needed)
 
 **Component summary table**:
 ```markdown
