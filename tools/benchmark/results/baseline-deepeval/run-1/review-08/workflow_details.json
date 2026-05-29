@@ -1,0 +1,136 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッションストア機能の主要ページ。DBストアとHIDDENストアの使い分けをセクション単位で直接カバー"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "reason": "セッション変数保存ハンドラの設定詳細。セッションストアの設定背景として関連"
+      },
+      {
+        "path": "component/libraries/libraries-create-example.json",
+        "reason": "入力～確認～完了画面の登録機能実装例として言及されている"
+      },
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "reason": "ステートレス化とセッションストアの関係を説明するページとして関連"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "reason": "Redisストアの詳細は質問の範囲外（DBストアとHIDDENストアの使い分けが主題）"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリ機能概要であり、セッションストアの具体的使い分けは含まない"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "JSPタグ全般の説明であり今回の主題（ストア選択基準）とは間接的"
+      },
+      {
+        "path": "component/handlers/handlers-nablarch-tag-handler.json",
+        "reason": "Nablarchカスタムタグ制御ハンドラはhidden暗号化に関連するが今回の主題から外れる"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "入力～確認～完了画面間でDBストアとHIDDENストアをどう使い分けるかを直接説明している"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "各ストアの特長と選択基準テーブルを含み、使い分けの根拠を網羅的に提供している"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "HIDDENストア使用時の暗号化設定（冗長化構成での注意点）を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "SessionManagerの設定例としてDBストアとHIDDENストアの具体的な設定方法を示している"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "利用可能なストア種類の概要を示す補足情報"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s10",
+        "reason": "認証情報の保持に関するセクションで今回の質問範囲外"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s11",
+        "reason": "JSPからのセッション変数参照方法は今回の主題（ストア選択）から外れる"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s13",
+        "reason": "セッション変数が存在しない場合のエラーハンドリングは今回の主題外"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s15",
+        "reason": "カスタムストア追加の拡張例は今回の質問範囲外"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s17",
+        "reason": "有効期間の管理方法は今回の主題（使い分け）と間接的にしか関連しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-session-store.json:s9",
+          "reason": "DBストアとHIDDENストアの使い分け基準（複数タブ許容/不許容）とhiddenStoreタグの使用方法を回答に引用"
+        },
+        {
+          "ref": "libraries-session-store.json:s16",
+          "reason": "各ストアの特長（後勝ち動作、ヒープ影響、スレッド挙動）と選択基準テーブルを回答に引用"
+        },
+        {
+          "ref": "libraries-session-store.json:s12",
+          "reason": "冗長化APサーバでのHIDDENストア暗号化キー設定注意点を注意点セクションに引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-session-store.json:s2",
+          "reason": "ストア種類の概要のみで、s9・s16で既にカバーされた内容のため回答に不要"
+        },
+        {
+          "ref": "libraries-session-store.json:s8",
+          "reason": "SessionManager設定XMLの詳細は仕組み理解の目的に対して実装詳細すぎるため省略"
+        }
+      ]
+    }
+  }
+}

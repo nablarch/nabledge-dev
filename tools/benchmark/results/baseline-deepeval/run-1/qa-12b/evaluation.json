@@ -1,0 +1,62 @@
+{
+  "scenario_id": "qa-12b",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both key facts from the Expected Output. It explicitly explains that @Valid annotation enables validation and that errors become ApplicationException (covering the first fact about @Valid causing validation errors to become error responses). It also explicitly covers the second fact about creating an ErrorResponseBuilder subclass to set error messages in the response body, with detailed code examples showing the implementation. Both expected facts are clearly addressed."
+    },
+    "answer_relevancy": {
+      "score": 0.9375,
+      "reason": "The score is 0.94 because the response is largely relevant and helpful in explaining how to return error messages to users when input validation fails. However, it loses a small amount of points due to one incorrect statement that contradicts a subsequent statement and does not accurately describe the framework's behavior, making it irrelevant to the explanation being provided."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s7"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 89525,
+    "duration_api_ms": 84128,
+    "num_turns": 11,
+    "total_cost_usd": 0.7182285499999999,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 4835,
+      "cache_read_input_tokens": 745886,
+      "cache_creation_input_tokens": 111625
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3173,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003308,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 4835,
+        "cacheReadInputTokens": 745886,
+        "cacheCreationInputTokens": 111625,
+        "webSearchRequests": 0,
+        "costUSD": 0.71492055,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "scenario_id": "qa-03",
+  "description": "会員登録フォームで、メールアドレスと確認用メールアドレスの一致チェックが必要。Nablarchの入力チェックの仕組みでどうやるのかわからない。",
+  "input": "2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers the expected fact that Jakarta Bean Validation's @AssertTrue is used to perform correlation validation. It not only confirms this core claim but provides detailed implementation examples, code snippets, configuration details, and important notes about null handling - all building upon the expected fact."
+    },
+    "answer_relevancy": {
+      "score": 0.9444444444444444,
+      "reason": "The score is 0.94 because the response largely addresses the question about implementing correlation validation for email address confirmation fields. It is not higher because the response includes reference document sources/IDs, which is metadata that doesn't directly contribute to answering how to implement the validation. Overall, the response is highly relevant and helpful."
+    },
+    "faithfulness": {
+      "score": 0.8181818181818182,
+      "reason": "The score is 0.82 because the actual output contains a couple of contradictions: it incorrectly refers to '@InjectForm インターセプタ' and describes it as a combination requirement with BeanValidationStrategy, while the retrieval context treats them separately without explicitly stating they must be combined. Additionally, the actual output claims 'prefix' is an attribute of InjectForm, which is not supported by the retrieval context — only 'InjectForm#form' and 'InjectForm#name' are mentioned as attributes."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-InjectForm.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 86930,
+    "duration_api_ms": 82692,
+    "num_turns": 10,
+    "total_cost_usd": 0.64399875,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 4377,
+      "cache_read_input_tokens": 620250,
+      "cache_creation_input_tokens": 103709
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3207,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003327,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 4377,
+        "cacheReadInputTokens": 620250,
+        "cacheCreationInputTokens": 103709,
+        "webSearchRequests": 0,
+        "costUSD": 0.64067175,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

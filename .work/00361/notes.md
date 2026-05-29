@@ -33,6 +33,21 @@
 - `AnswerRelevancyMetric`（Relevancy: 入力に対する回答の関連性）
 - `FaithfulnessMetric`（Faithfulness: retrieval contextに対するハルシネーション検出）
 
+## 2026-05-29
+
+### T19: baseline-deepeval 3 run 結果
+
+全30シナリオ × 3 run 完了（一部シナリオは偶発的エラーで再実行して回収）。
+
+| run | answer_correctness | answer_relevancy | faithfulness | 閾値通過 |
+|-----|-------------------|-----------------|--------------|---------|
+| run-1 | 0.96 | 0.97 | 0.97 | 30/30 全指標 |
+| run-2 | 0.99 | 0.96 | 0.97 | 30/30 全指標 |
+| run-3 | 0.97 | 0.96 | 0.98 | 30/30 全指標 |
+
+全指標で閾値（≥0.5）通過率100%、スコアも安定（0.96〜0.99）。
+これを新ベースライン（`baseline-deepeval/`）として確定する。
+
 → 既存ベンチマークとの対応:
 - `accuracy`（既存）↔ `GEval`（Answer Correctness）
 - `hallucination`（既存）↔ `FaithfulnessMetric`

@@ -1,0 +1,64 @@
+{
+  "scenario_id": "qa-12a",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 0.8,
+      "reason": "The Expected Output contains a single key fact: displaying error messages stored in request scope using error display tags. The Actual Output covers this concept thoroughly—it explicitly explains how error messages are stored in request scope under the key 'errors' (ErrorMessages object), and demonstrates how to display them using JSP custom tags (<n:error>, <n:errors>) and Thymeleaf templates that access the request-scoped 'errors' object. The core fact from the Expected Output is fully addressed, though the Actual Output is far more detailed and comprehensive than the expected output suggests."
+    },
+    "answer_relevancy": {
+      "score": 0.8636363636363636,
+      "reason": "The score is 0.86 because the actual output mostly addresses how to return error messages to users during input validation, which is relevant to the input. However, the score is not higher due to a few irrelevant and potentially misleading statements, such as an absolute claim about @OnError always needing to be set, a contradictory statement about how validation errors are handled, and an overly absolute statement about Form class properties — none of which directly help explain the method of returning error messages to users."
+    },
+    "faithfulness": {
+      "score": 0.9523809523809523,
+      "reason": "The score is 0.95 because the actual output claims that not setting @OnError results in a '500 error', while the retrieval context only states that validation errors are treated as system errors without explicitly confirming a 500 HTTP status code as the outcome. This is a minor extrapolation beyond what the retrieval context directly supports."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/web-application/web-application-error-message.json:top",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/libraries/libraries-tag.json:s29"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 114783,
+    "duration_api_ms": 103931,
+    "num_turns": 13,
+    "total_cost_usd": 0.9822010000000001,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 6001,
+      "cache_read_input_tokens": 1043360,
+      "cache_creation_input_tokens": 153560
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3175,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0032949999999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 6001,
+        "cacheReadInputTokens": 1043360,
+        "cacheCreationInputTokens": 153560,
+        "webSearchRequests": 0,
+        "costUSD": 0.978906,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

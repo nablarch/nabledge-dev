@@ -1,0 +1,62 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers the key fact from the Expected Output: that Nablarch's custom tags enable fundamental XSS resolution through sanitization (HTML escaping). The Actual Output explicitly states this multiple times, including 'カスタムタグを使って実装している限りHTMLエスケープ漏れを防げます（IPAの5-(i) 根本的解決に対応）' and the conclusion statement. The expected fact is fully covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly relevant to the input question about XSS countermeasures in Nablarch and whether sanitizing is handled by custom tags. There are no irrelevant statements detected!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s5",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s50",
+      "component/libraries/libraries-tag.json:s27",
+      "component/handlers/handlers-secure-handler.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 151210,
+    "duration_api_ms": 141802,
+    "num_turns": 13,
+    "total_cost_usd": 1.02820915,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 8449,
+      "cache_read_input_tokens": 1089703,
+      "cache_creation_input_tokens": 152307
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3221,
+        "outputTokens": 31,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003376,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 8449,
+        "cacheReadInputTokens": 1089703,
+        "cacheCreationInputTokens": 152307,
+        "webSearchRequests": 0,
+        "costUSD": 1.0248331499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

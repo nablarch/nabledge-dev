@@ -1,0 +1,63 @@
+{
+  "scenario_id": "qa-07",
+  "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。",
+  "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly mentions `ObjectMapperFactory#create` to generate an `ObjectMapper` and uses it to read data, which directly covers the single expected fact. The code example shows `ObjectMapperFactory.create(PersonForm.class, new FileInputStream(file))` being used to instantiate the mapper for reading CSV data, fully satisfying the expected output's checklist item."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing how to read each row of a CSV file as a Java Beans object one by one. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9444444444444444,
+      "reason": "The score is 0.94 because the actual output incorrectly states that ObjectMapper 'must not be shared' across multiple threads, when in fact the retrieval context specifies that ObjectMapper is thread-unsafe but can still be shared as long as the caller performs proper synchronization."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "component/libraries/libraries-data-bind.json:s2",
+      "component/libraries/libraries-data-bind.json:s21"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 107900,
+    "duration_api_ms": 102840,
+    "num_turns": 7,
+    "total_cost_usd": 0.65795925,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6217,
+      "cache_read_input_tokens": 538180,
+      "cache_creation_input_tokens": 106639
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3175,
+        "outputTokens": 31,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00333,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 6217,
+        "cacheReadInputTokens": 538180,
+        "cacheCreationInputTokens": 106639,
+        "webSearchRequests": 0,
+        "costUSD": 0.65462925,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

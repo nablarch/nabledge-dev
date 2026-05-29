@@ -1,0 +1,64 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Expected Output contains one key fact: using SimpleDbTransactionManager to define an individual (separate) transaction. The Actual Output explicitly covers this fact in detail, explaining how to configure SimpleDbTransactionManager in the component settings file and how to use it for independent transactions. The Actual Output includes XML configuration examples and Java code demonstrating SimpleDbTransactionManager usage, directly aligning with the expected information."
+    },
+    "answer_relevancy": {
+      "score": 0.9230769230769231,
+      "reason": "The score is 0.92 because the response largely addresses the technical question about executing SQL in a separate transaction and retaining updates even after a rollback. However, it loses some points for including a process description about generating and verifying answers, as well as references to source file metadata, both of which are irrelevant to the core technical question asked."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/adapters/adapters-doma-adaptor.json:s8",
+      "component/libraries/libraries-transaction.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+      "component/handlers/handlers-transaction-management-handler.json:s7",
+      "component/adapters/adapters-doma-adaptor.json:s7"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 172708,
+    "duration_api_ms": 170661,
+    "num_turns": 7,
+    "total_cost_usd": 1.0021955,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6286,
+      "cache_read_input_tokens": 340984,
+      "cache_creation_input_tokens": 38081
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3193,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033380000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16,
+        "outputTokens": 11705,
+        "cacheReadInputTokens": 660790,
+        "cacheCreationInputTokens": 166666,
+        "webSearchRequests": 0,
+        "costUSD": 0.9988575000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

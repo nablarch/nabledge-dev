@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers both facts in the Expected Output checklist. It explicitly mentions using `DatabaseRecordReader` to read data from the database (Fact 1) and implementing an action class by extending `BatchAction` (Fact 2), with concrete code examples demonstrating both. Both expected facts are fully present and well-supported in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 0.9230769230769231,
+      "reason": "The score is 0.92 because the actual output mostly addresses the implementation question about building a batch process that reads from a DB, aggregates data, and writes to another table. However, it loses some points due to the inclusion of meta-process descriptions about answer generation/verification and a reference list, which are not relevant to answering the concrete implementation question asked."
+    },
+    "faithfulness": {
+      "score": 0.9545454545454546,
+      "reason": "The score is 0.95 because while most of the actual output aligns well with the retrieval context, there is a minor contradiction where batchInsert and batchUpdate are grouped together regarding 排他制御（楽観ロック）, whereas the retrieval context only explicitly mentions batchUpdate in the context of not performing 排他制御処理 in batch update operations. The inclusion of batchInsert in this context is not supported by the retrieval context."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s14",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 138467,
+    "duration_api_ms": 118925,
+    "num_turns": 9,
+    "total_cost_usd": 0.73007325,
+    "usage": {
+      "input_tokens": 4499,
+      "output_tokens": 7678,
+      "cache_read_input_tokens": 448915,
+      "cache_creation_input_tokens": 123573
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3193,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003333,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 4499,
+        "outputTokens": 7678,
+        "cacheReadInputTokens": 448915,
+        "cacheCreationInputTokens": 123573,
+        "webSearchRequests": 0,
+        "costUSD": 0.72674025,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

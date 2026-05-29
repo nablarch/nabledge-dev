@@ -1,0 +1,121 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s29「現在のトランザクションとは異なるトランザクションでSQLを実行する」が質問に直接対応"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s20「現在のトランザクションとは異なるトランザクションで実行する」がユニバーサルDAO版の実装方法を提供"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "s8「別トランザクションで実行する」がDomaアダプタ使用時の実装方法を提供"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "s7「アプリケーションで複数のトランザクションを使用する」がハンドラキュー構成による複数トランザクションの背景情報として関連"
+      },
+      {
+        "path": "component/handlers/handlers-database-connection-management-handler.json",
+        "reason": "複数のデータベース接続の設定として関連"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "トランザクション管理の基礎設定情報として関連"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチのデータベースアクセス概要として関連"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "バッチのトランザクションループ制御として関連"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/*",
+        "reason": "RESTfulウェブサービス処理方式のため除外"
+      },
+      {
+        "path": "processing-pattern/web-application/*",
+        "reason": "ウェブアプリケーション処理方式のため除外"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/*",
+        "reason": "Jakartaバッチ処理方式のため除外（質問はNablarchバッチ）"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "業務処理失敗時でも確定したいSQL実行の実装方法（SimpleDbTransactionManager + SimpleDbTransactionExecutor）を直接説明"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "ユニバーサルDAOを使った別トランザクション実行方法（UniversalDao.Transaction）を直接説明"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "Domaアダプタを使った別トランザクション実行方法（requiresNew）を直接説明"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "ハンドラキューによる複数トランザクション制御の設定方法を説明（背景情報として有用）"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s4",
+        "reason": "トランザクション制御対象の設定であり質問の核心ではない"
+      },
+      {
+        "file": "component/handlers/handlers-database-connection-management-handler.json",
+        "section_id": "s5",
+        "reason": "複数接続の設定はs29で十分カバーされており重複する"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s4",
+        "reason": "バッチのDB接続概要のみで別トランザクションの具体的な方法は含まない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/adapters/adapters-doma-adaptor.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManager/SimpleDbTransactionExecutorによる別トランザクションSQL実行の実装例を引用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s20",
+          "reason": "UniversalDao.Transactionによる別トランザクション実行の実装例を引用"
+        },
+        {
+          "ref": "adapters-doma-adaptor.json:s8",
+          "reason": "DomaアダプタのrequiresNewによる別トランザクション実行の実装例を引用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-HttpErrorHandler.json",
+        "reason": "ウェブアプリケーションのエラー制御の中心ハンドラで、例外種別ごとのログ出力とエラーページ遷移を定義している"
+      },
+      {
+        "path": "component/handlers/handlers-global-error-handler.json",
+        "reason": "未捕捉例外のログ出力を行うグローバルエラーハンドラで、エラーログの仕組みを理解するために必要"
+      },
+      {
+        "path": "component/handlers/handlers-on-error.json",
+        "reason": "個別アクションのエラー遷移先を指定するインターセプタで、エラー画面表示の実装方法を示す"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "reason": "ウェブアプリケーションのエラー時の遷移先指定方法を直接説明するページ"
+      },
+      {
+        "path": "component/libraries/libraries-failure-log.json",
+        "reason": "障害ログ出力の仕組みを説明するページでログ出力の詳細を補足できる"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/handlers/handlers-global-error-handler.json",
+        "reason": "グローバルエラーハンドラはウェブアプリより汎用的なため、HttpErrorHandlerの内容で十分カバーできる"
+      },
+      {
+        "path": "component/libraries/libraries-failure-log.json",
+        "reason": "障害ログは今回の質問の主旨（エラー画面表示の仕組み）からは外れるため除外"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "s16（エラー時の画面遷移）は関連するが、forward-error-pageページに詳細が記載されているため優先度を下げた"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "例外の種類に応じた処理内容とレスポンスの一覧が記載されており、質問に直接答える情報"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "Result.Errorのログ出力制御の仕組みを補足する"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "エラーページのデフォルト設定方法を説明しており、エラー画面表示に直結する"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "グローバルエラーハンドラの例外処理一覧で、HttpErrorHandlerと役割が異なる補足情報"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "アクションメソッドに@OnErrorを付与してエラー時の遷移先を指定する実装方法を示す"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "システム共通のエラーページ遷移をハンドラで制御する方法を具体的なコード例で説明している"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "1つの例外に対して複数の遷移先がある場合の実装方法を補足する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみで情報がない"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s2",
+        "reason": "Mavenモジュール定義のみ"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s3",
+        "reason": "ハンドラの配置制約の説明で、質問のエラー処理の仕組みの理解に直接必要ない"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s1",
+        "reason": "クラス名のみ"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s5",
+        "reason": "要件を満たせない場合の拡張方法で、質問の仕組み理解には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-on-error.json:s3",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s2"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "handlers-HttpErrorHandler.json:s4",
+          "reason": "例外の種類に応じたログとHTTPステータスの一覧を回答の根拠として使用"
+        },
+        {
+          "ref": "handlers-HttpErrorHandler.json:s5",
+          "reason": "Result.Errorのログ出力制御（writeFailureLogPattern）の説明に使用"
+        },
+        {
+          "ref": "handlers-HttpErrorHandler.json:s6",
+          "reason": "defaultPagesによるエラーページ設定の設定例を使用"
+        },
+        {
+          "ref": "handlers-on-error.json:s3",
+          "reason": "@OnErrorアノテーションによるエラー遷移先指定の実装例を使用"
+        },
+        {
+          "ref": "web-application-forward-error-page.json:s1",
+          "reason": "システム共通エラーハンドラのコード例を使用"
+        },
+        {
+          "ref": "web-application-forward-error-page.json:s2",
+          "reason": "複数遷移先への対応方法の補足として注意点で言及"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "handlers-global-error-handler.json:s4",
+          "reason": "グローバルエラーハンドラの詳細はウェブアプリケーション固有のHttpErrorHandlerで十分カバーできるため最終回答には含めなかった"
+        }
+      ]
+    }
+  }
+}

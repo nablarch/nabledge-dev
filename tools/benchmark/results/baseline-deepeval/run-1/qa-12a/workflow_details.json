@@ -1,0 +1,155 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-error-message.json",
+        "reason": "「バリデーションエラーのメッセージを画面表示する」というタイトルで、質問に直接対応するページ"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーションの入力チェックを行うInjectFormインターセプタの使用方法を説明するページ"
+      },
+      {
+        "path": "component/handlers/handlers-HttpErrorHandler.json",
+        "reason": "バリデーションエラー時にErrorMessagesをリクエストスコープに格納する仕組みを説明するハンドラ"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationによるバリデーションルール定義とエラーメッセージ設定の方法を説明するページ"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "JSPカスタムタグを用いたエラーメッセージ表示（n:errorタグ、n:errorsタグ）の実装例を含むページ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの入力値チェックの機能詳細を説明するページ（入力チェックの全体像把握のため）"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "処理方式がウェブアプリケーションに限定されているため、RESTfulウェブサービスは対象外"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTful用のバリデーションハンドラであり、ウェブアプリケーション対象外"
+      },
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "Nablarch Validationは旧世代のバリデーション機能であり、Bean Validationが推奨されるため優先度低"
+      },
+      {
+        "path": "component/handlers/handlers-on-error.json",
+        "reason": "OnErrorインターセプタの詳細だが、InjectFormのs4で言及されているため直接読む必要は低い"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-error-message.json",
+        "section_id": "top",
+        "relevance": "high",
+        "reason": "エラーメッセージの画面表示方法全体（Thymeleaf実装例含む）を直接説明するセクション"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "@InjectFormアノテーションの使用方法とバリデーション実行の実装例を含む中核セクション"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@OnErrorでバリデーションエラー時の遷移先を指定する必須設定を説明するセクション"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ErrorMessagesがリクエストスコープ（キー名'errors'）に格納される仕組みを説明するセクション"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラーメッセージのプロパティファイルへの定義方法を説明するセクション"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションでBean Validationを使うためのコンポーネント設定（BeanValidationStrategy）を説明"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "n:errorタグとn:errorsタグによるJSPエラーメッセージ表示の実装例を含む"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "reason": "バリデーションルール設定方法は今回の質問（エラーメッセージの返し方）には直接関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s18",
+        "reason": "バリデーションエラー時のリクエストスコープ取得は補足情報であり、中核情報ではない"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s6",
+        "reason": "デフォルトページ設定は今回の質問に直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/web-application/web-application-error-message.json:",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/libraries/libraries-tag.json:s29"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "processing-pattern/web-application/web-application-error-message.json:",
+          "reason": "Thymeleafでのエラー表示実装例（ErrorMessages#hasError、getMessage、allMessages）の根拠"
+        },
+        {
+          "ref": "component/handlers/handlers-InjectForm.json:s3",
+          "reason": "@InjectFormアノテーションの使用方法とJavaコード例の根拠"
+        },
+        {
+          "ref": "component/handlers/handlers-InjectForm.json:s4",
+          "reason": "@OnErrorが必須であることと、未設定時にシステムエラーになる旨の根拠"
+        },
+        {
+          "ref": "component/handlers/handlers-HttpErrorHandler.json:s4",
+          "reason": "ErrorMessagesがリクエストスコープキー'errors'に格納される仕組みの根拠"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s7",
+          "reason": "エラーメッセージのプロパティファイル定義方法の根拠"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s16",
+          "reason": "BeanValidationStrategyのコンポーネント設定が必要という注意点の根拠"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s29",
+          "reason": "n:errorタグとn:errorsタグによるJSPエラー表示実装例の根拠"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

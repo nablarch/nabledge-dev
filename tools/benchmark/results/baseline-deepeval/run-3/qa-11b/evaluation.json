@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-11b",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output contains both key facts from the Expected Output. It explicitly states that 'JaxRsResponseHandler' uses 'ErrorResponseBuilder' to generate error responses (covering the first fact about JaxRsResponseHandler generating error responses based on exceptions), and it explicitly states that 'JaxRsErrorLogWriter' handles log output (covering the second fact about JaxRsErrorLogWriter performing log output based on exceptions). Both expected facts are clearly present in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response perfectly addresses the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.8,
+      "reason": "The score is 0.80 because the actual output incorrectly attributes several error handling behaviors to the 'global error handler' when the retrieval context describes them as behaviors of 'JaxRsErrorLogWriter'. Specifically, the handling of ServiceError (calling ServiceError#writeLog and returning ServiceError), Result.Error (FATAL level logging and returning Result.Error), exceptions other than ServiceError and Result.Error (FATAL level logging and generating InternalError), ThreadDeath (INFO level logging and rethrowing), and StackOverflowError (FATAL level logging and returning InternalError) are all misattributed to the global error handler rather than to JaxRsErrorLogWriter as described in the retrieval context."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "component/libraries/libraries-jaxrs-access-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-log.json:s27",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-response-handler.json:s8",
+      "component/handlers/handlers-global-error-handler.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 281087,
+    "duration_api_ms": 275287,
+    "num_turns": 3,
+    "total_cost_usd": 1.1620864,
+    "usage": {
+      "input_tokens": 4,
+      "output_tokens": 8130,
+      "cache_read_input_tokens": 130981,
+      "cache_creation_input_tokens": 46693
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3185,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003325,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 22381,
+        "cacheReadInputTokens": 580973,
+        "cacheCreationInputTokens": 172990,
+        "webSearchRequests": 0,
+        "costUSD": 1.1587614,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

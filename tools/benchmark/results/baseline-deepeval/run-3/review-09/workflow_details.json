@@ -1,0 +1,168 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "セキュアハンドラはCSP対応の主要機能（ContentSecurityPolicyHeader、nonce生成）を提供するため"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "カスタムタグのCSP対応（nonce自動付与、cspNonceタグ）が記述されているため"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストにCSP関連の項目が含まれる可能性があるため"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの機能詳細にCSP対応（s21）が記載されているため"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "about/about-nablarch/*",
+        "reason": "CSP設定の実装情報を含まない概要・ポリシーページのため"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/*",
+        "reason": "ウェブアプリケーションではなくバッチ処理のページのため"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/*",
+        "reason": "Jakartaバッチ処理のページであり処理方式が異なるため"
+      },
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッション管理の機能でCSP設定に無関係のため"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "バリデーション機能でCSP設定に無関係のため"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSP対応の概要と利用方法の全体像を説明するため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "固定CSPヘッダの設定方法を具体的なXML例付きで説明するため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "nonceを使ったCSP設定方法を具体的なXML例付きで説明するため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "report-onlyモードの設定方法を説明するため"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s38",
+        "relevance": "high",
+        "reason": "カスタムタグのCSP対応（nonce自動付与など）の挙動変化を説明するため"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s39",
+        "relevance": "high",
+        "reason": "cspNonceタグを使った任意要素へのnonce埋め込み方法を説明するため"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s40",
+        "relevance": "partial",
+        "reason": "CSP対応時のJavaScript追加方法（suppressDefaultSubmit）を説明するため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "SecureHandlerの配置制約（HTTPレスポンスハンドラより後）を説明するため"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみでCSP設定に直接関係しないため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s2",
+        "reason": "モジュール一覧のみで設定方法に直接関係しないため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s4",
+        "reason": "デフォルトヘッダ変更方法でCSP設定の主旨とは異なるため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s5",
+        "reason": "カスタムレスポンスヘッダ追加方法でCSP固有の機能説明ではないため"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "component/libraries/libraries-tag.json:s38",
+      "component/libraries/libraries-tag.json:s39",
+      "component/libraries/libraries-tag.json:s40",
+      "component/handlers/handlers-secure-handler.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "handlers-secure-handler.json:s6",
+          "reason": "CSP対応の全体的な仕組みと利用方法の説明に使用"
+        },
+        {
+          "ref": "handlers-secure-handler.json:s7",
+          "reason": "固定CSPヘッダ設定のXML例に使用"
+        },
+        {
+          "ref": "handlers-secure-handler.json:s8",
+          "reason": "nonce生成・プレースホルダー設定のXML例と動作説明に使用"
+        },
+        {
+          "ref": "handlers-secure-handler.json:s9",
+          "reason": "report-onlyモードの設定例に使用"
+        },
+        {
+          "ref": "handlers-secure-handler.json:s3",
+          "reason": "SecureHandlerの配置制約（注意点）として使用"
+        },
+        {
+          "ref": "libraries-tag.json:s38",
+          "reason": "nonce生成有効時のカスタムタグ動作変化の説明に使用"
+        },
+        {
+          "ref": "libraries-tag.json:s39",
+          "reason": "cspNonceタグのJSP実装例に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-tag.json:s40",
+          "reason": "suppressDefaultSubmit属性の説明はCSP対応の基本設定からやや高度な応用であり、基本回答には含めなかった"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s9「検索結果を遅延ロードする」がメモリ不足問題に直接答えるUniversalDao.defer()を解説している"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "バッチのDataReader機構とDatabaseRecordReaderによる1件ずつ読み込みの仕組みを説明している"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "handleで自前ループするアンチパターンとcreateReaderによる解決法を直接記述している"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチのデータベースアクセスとDatabaseRecordReaderの参照を含む"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "DataReaderの具体的な実装例（1件ずつ読み込み）を示している"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/jakarta-batch/（全ページ）",
+        "reason": "処理方式がJakartaバッチであり、Nablarchバッチとは異なる"
+      },
+      {
+        "path": "processing-pattern/web/（全ページ）",
+        "reason": "処理方式がウェブアプリケーションであり対象外"
+      },
+      {
+        "path": "processing-pattern/rest/（全ページ）",
+        "reason": "処理方式がRESTfulウェブサービスであり対象外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "大量データでメモリが足りなくなる問題に直接言及し、UniversalDao.defer()による遅延ロードを解説している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "DataReaderがデータレコードを1件ずつ提供するフレームワークの処理フローを説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "DatabaseRecordReaderをはじめとする標準データリーダの一覧を提供している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "handle内で自前SELECTループするアンチパターン（トランザクションログ逼迫）を説明している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "createReaderでSQLを発行しフレームワークループで処理する解決法を示している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "フレームワークを正しく理解しないと件数増加で問題が発生するというバッチ設計の背景を説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "DatabaseRecordReaderがバッチのDB読み込み標準ツールであることを確認できる"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "DataReaderのread/hasNext/closeメソッドを実装する具体例を提供している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "データリードハンドラとトランザクションループ制御ハンドラがハンドラ構成の中でどう動くかを示している"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "UniversalDao.defer()を使うために必要なBasicDaoContextFactoryの設定を示している"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s4",
+        "reason": "N+1問題の説明は関連するが、今回の質問（メモリ不足・1件ずつ読み込み）には直接必要ではないため省略"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s7",
+        "reason": "バッチ実行制御の最大処理件数設定は今回の質問の主旨から外れるため省略"
+      },
+      {
+        "file": "component/handlers/handlers-data-read-handler.json",
+        "section_id": "s4",
+        "reason": "最大処理件数の設定は補助情報であり、今回の回答には含めなくてよいと判断"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s9",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s11",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "component/libraries/libraries-universal-dao.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s9",
+          "reason": "UniversalDao.defer()の使い方とコード例を引用した"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+          "reason": "DataReaderが1件ずつデータを提供するフレームワークの仕組みを説明するために引用した"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+          "reason": "DatabaseRecordReaderがDB読み込みの標準データリーダであることを示すために引用した"
+        },
+        {
+          "ref": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s9",
+          "reason": "handle内で自前ループするアンチパターンとトランザクションログ逼迫の問題を説明するために引用した"
+        },
+        {
+          "ref": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s11",
+          "reason": "createReaderでSQLを発行するという解決法を示すために引用した"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s6",
+          "reason": "BasicDaoContextFactoryのコンポーネント設定例を注意点として引用した"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s3",
+          "reason": "バッチ設計の背景説明は参考にしたが、回答に直接引用する内容はなかった"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+          "reason": "DatabaseRecordReaderの言及はあるがs7で十分カバーできたため未使用"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+          "reason": "DataReaderの実装パターンの理解に使ったが、回答ではcreateReaderの概念説明にとどめ具体的なファイル読み込み例は割愛した"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+          "reason": "ハンドラ構成の理解に使ったが、回答の主旨（1件ずつ読み込み方法）には不要と判断した"
+        }
+      ]
+    }
+  }
+}

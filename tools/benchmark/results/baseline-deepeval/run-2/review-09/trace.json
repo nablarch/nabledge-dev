@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 154582,
+  "duration_api_ms": 144419,
+  "ttft_ms": 8061,
+  "num_turns": 3,
+  "result": "Step 5〜7: 回答を生成し、verify します。\n\n**結論**: `SecureHandler` に `ContentSecurityPolicyHeader` を追加することでCSPヘッダを有効化できます。nonceを使う場合は `generateCspNonce=true` も設定し、JSPカスタムタグのCSP対応を組み合わせて利用します。\n\n---\n\n**根拠**:\n\n**パターン1: 固定CSPヘッダを設定する**\n\n`SecureHandler` の `secureResponseHeaderList` に `ContentSecurityPolicyHeader` を追加し、`policy` を設定します。\n\n```xml\n<component class=\"nablarch.fw.web.handler.SecureHandler\">\n  <property name=\"secureResponseHeaderList\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.secure.FrameOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.XssProtectionHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ContentTypeOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ReferrerPolicyHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.CacheControlHeader\" />\n\n      <!-- Content-Security-Policyを付与するコンポーネント -->\n      <component class=\"nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader\">\n        <!-- ポリシーを設定する -->\n        <property name=\"policy\" value=\"default-src 'self'\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n\nこれにより `Content-Security-Policy: default-src 'self'` ヘッダが付与されます。\n\n---\n\n**パターン2: nonceを使ってCSPを設定する（Nablarchカスタムタグを使っている場合）**\n\nNablarchのカスタムタグ（formタグ、submitタグなど）はJavaScriptを生成するため、nonce方式を使います。\n\n1. `generateCspNonce=true` でnonceを生成\n2. `policy` にプレースホルダー `$cspNonceSource$` を含める\n\n```xml\n<component class=\"nablarch.fw.web.handler.SecureHandler\">\n  <!-- nonceを生成するように設定する -->\n  <property name=\"generateCspNonce\" value=\"true\" />\n  <property name=\"secureResponseHeaderList\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.secure.FrameOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.XssProtectionHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ContentTypeOptionsHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.ReferrerPolicyHeader\" />\n      <component class=\"nablarch.fw.web.handler.secure.CacheControlHeader\" />\n\n      <!-- Content-Security-Policyを付与するコンポーネント -->\n      <component class=\"nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader\">\n        <!-- nonceを含んだポリシーを設定する -->\n        <property name=\"policy\" value=\"default-src 'self' '$cspNonceSource$'\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n`$cspNonceSource$` はリクエスト毎に生成されたnonceに置換され、例えば `Content-Security-Policy: default-src 'self' 'nonce-DhcnhD3khTMePgXwdayK9BsMqXjhguVV'` として出力されます。\n\n**nonce有効時のカスタムタグの変化:**\n- `formタグ` が生成するJavaScriptはscript要素にまとめられ、nonce属性が自動付与される\n- `scriptタグ` (`<n:script>`) が生成するscript要素のnonce属性も自動で設定される\n- `cspNonceタグ` (`<n:cspNonce />`) で任意の要素にnonceを埋め込めるようになる\n\n**style要素へのnonce設定例（JSP）:**\n\n```jsp\n<%-- cspNonceタグ使用してnonce属性を設定する --%>\n<style nonce=\"<n:cspNonce />\">\n  <!-- 省略 -->\n</style>\n```\n\n出力されるHTML:\n```html\n<!-- セキュアハンドラが生成したnonceが出力される -->\n<style nonce=\"DhcnhD3khTMePgXwdayK9BsMqXjhguVV\">\n  <!-- 省略 -->\n</style>\n```\n\n---\n\n**report-onlyモードで段階的に導入する場合:**\n\n```xml\n<component class=\"nablarch.fw.web.handler.secure.ContentSecurityPolicyHeader\">\n  <property name=\"policy\" value=\"default-src 'self'; report-uri http://example.com/report\" />\n  <!-- report-onlyモードで動作させる -->\n  <property name=\"reportOnly\" value=\"true\" />\n</component>\n```\n\n`Content-Security-Policy-Report-Only` ヘッダが出力され、違反をブロックせずレポートのみ行います。\n\n---\n\n**注意点**:\n- `SecureHandler` はハンドラキューにおいて **`HTTPレスポンスハンドラ` より後ろ** に設定する必要があります（SecureHandlerが設定したレスポンスヘッダをHTTPレスポンスハンドラがServletのレスポンスオブジェクトに設定するため）。\n- カスタムタグが生成する要素にJavaScriptで処理を追加したい場合、`onclick` 属性でインラインスクリプトを直接指定するとポリシーを緩める必要が生じます。代わりに `suppressDefaultSubmit=\"true\"` でカスタムタグのJavaScript生成を抑制し、外部ファイルまたはnonce付きscript要素でイベント登録する方法を使ってください。\n- nonceを使う場合、HTMLはリクエスト毎に異なるnonce値が埋め込まれるため、レスポンスのキャッシュに注意が必要です。\n\n参照: `handlers-secure-handler.json:s6`, `handlers-secure-handler.json:s7`, `handlers-secure-handler.json:s8`, `handlers-secure-handler.json:s9`, `libraries-tag.json:s38`, `libraries-tag.json:s39`, `libraries-tag.json:s40`, `libraries-tag-reference.json:s56`, `handlers-secure-handler.json:s3`\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/handlers/handlers-secure-handler.json\", \"reason\": \"CSP設定の中心となるSecureHandlerとContentSecurityPolicyHeaderが記載されているため\"},\n      {\"path\": \"component/libraries/libraries-tag.json\", \"reason\": \"nonceを使ったCSP対応時のカスタムタグの変化と実装方法が記載されているため\"},\n      {\"path\": \"component/libraries/libraries-tag-reference.json\", \"reason\": \"cspNonceタグのリファレンス（属性定義）が記載されているため\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"CSP対応のリンクのみで実装詳細がないため\"},\n      {\"path\": \"check/security-check/security-check-2.チェックリスト.json\", \"reason\": \"SecureHandlerへの言及のみでCSP固有の設定内容がないため\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/handlers/handlers-secure-handler.json\", \"section_id\": \"s6\", \"relevance\": \"high\", \"reason\": \"CSP対応の全体構成（SecureHandler+ContentSecurityPolicyHeader+カスタムタグ）を説明している\"},\n      {\"file\": \"component/handlers/handlers-secure-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"固定CSPヘッダを設定するXML設定例が記載されている\"},\n      {\"file\": \"component/handlers/handlers-secure-handler.json\", \"section_id\": \"s8\", \"relevance\": \"high\", \"reason\": \"nonceを生成してCSPヘッダに設定する手順とXML設定例が記載されている\"},\n      {\"file\": \"component/handlers/handlers-secure-handler.json\", \"section_id\": \"s9\", \"relevance\": \"high\", \"reason\": \"report-onlyモードの設定方法が記載されている\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s38\", \"relevance\": \"high\", \"reason\": \"nonce有効時のカスタムタグの動作変化（formタグ・scriptタグ・cspNonceタグ）が記載されている\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s39\", \"relevance\": \"high\", \"reason\": \"cspNonceタグを使ってstyle要素などにnonceを埋め込む方法が記載されている\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s40\", \"relevance\": \"high\", \"reason\": \"CSPポリシーを緩めずにカスタムタグ要素へJS処理を追加する方法が記載されている\"},\n      {\"file\": \"component/libraries/libraries-tag-reference.json\", \"section_id\": \"s56\", \"relevance\": \"high\", \"reason\": \"cspNonceタグのsourceFormat属性など詳細仕様が記載されている\"},\n      {\"file\": \"component/handlers/handlers-secure-handler.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"SecureHandlerの配置制約（HTTPレスポンスハンドラより後ろ）が記載されている\"},\n      {\"file\": \"component/handlers/handlers-secure-handler.json\", \"section_id\": \"s5\", \"relevance\": \"partial\", \"reason\": \"secureResponseHeaderListへのコンポーネント追加方法の背景説明として参照した\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/handlers/handlers-secure-handler.json\", \"section_id\": \"s4\", \"reason\": \"CSPではなくデフォルトヘッダの値変更に関する内容のため\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s6\", \"reason\": \"カスタムタグの基本設定（CustomTagConfig等）であり、CSP固有の内容ではないため\"},\n      {\"file\": \"component/libraries/libraries-tag-reference.json\", \"section_id\": \"s47\", \"reason\": \"scriptタグの一般的な属性リファレンスであり、CSP対応の回答には不要なため\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s21\", \"reason\": \"セキュアハンドラへのリンクのみで実装詳細がないため\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/handlers/handlers-secure-handler.json:s6\",\n      \"component/handlers/handlers-secure-handler.json:s7\",\n      \"component/handlers/handlers-secure-handler.json:s8\",\n      \"component/handlers/handlers-secure-handler.json:s9\",\n      \"component/libraries/libraries-tag.json:s38\",\n      \"component/libraries/libraries-tag.json:s39\",\n      \"component/libraries/libraries-tag.json:s40\",\n      \"component/libraries/libraries-tag-reference.json:s56\",\n      \"component/handlers/handlers-secure-handler.json:s3\",\n      \"component/handlers/handlers-secure-handler.json:s5\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"handlers-secure-handler.json:s6\", \"reason\": \"CSP対応の全体構成説明として使用\"},\n        {\"ref\": \"handlers-secure-handler.json:s7\", \"reason\": \"固定CSPヘッダの設定例として使用\"},\n        {\"ref\": \"handlers-secure-handler.json:s8\", \"reason\": \"nonce生成設定とプレースホルダーの説明として使用\"},\n        {\"ref\": \"handlers-secure-handler.json:s9\", \"reason\": \"report-onlyモードの設定例として使用\"},\n        {\"ref\": \"libraries-tag.json:s38\", \"reason\": \"nonce有効時のカスタムタグ動作変化の説明として使用\"},\n        {\"ref\": \"libraries-tag.json:s39\", \"reason\": \"style要素へのnonce埋め込み例として使用\"},\n        {\"ref\": \"libraries-tag.json:s40\", \"reason\": \"suppressDefaultSubmitを使ったJS処理追加の注意点として使用\"},\n        {\"ref\": \"libraries-tag-reference.json:s56\", \"reason\": \"cspNonceタグのsourceFormat属性説明として参照（meta要素への言及のみ）\"},\n        {\"ref\": \"handlers-secure-handler.json:s3\", \"reason\": \"SecureHandlerの配置制約（HTTPレスポンスハンドラより後ろ）として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"handlers-secure-handler.json:s5\", \"reason\": \"ContentSecurityPolicyHeaderの追加方法はs7/s8のXML例で十分にカバーされているため未使用\"}\n      ]\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "b199c0f8-6081-40c8-b479-ebfa3741f2ed",
+  "total_cost_usd": 1.1887270500000002,
+  "usage": {
+    "input_tokens": 4,
+    "cache_creation_input_tokens": 35557,
+    "cache_read_input_tokens": 105326,
+    "output_tokens": 5146,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 35557
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3179,
+      "outputTokens": 29,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003324,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 56710,
+      "outputTokens": 8980,
+      "cacheReadInputTokens": 303706,
+      "cacheCreationInputTokens": 210523,
+      "webSearchRequests": 0,
+      "costUSD": 1.1854030500000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "d553c923-15b5-4d7d-adbc-42ef9ca09103"
+}

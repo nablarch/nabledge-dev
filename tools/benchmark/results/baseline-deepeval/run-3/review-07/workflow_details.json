@@ -1,0 +1,147 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "reason": "CSRFトークン検証ハンドラを直接説明するページ — 質問の核心"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストのCSRF対策項目を含み、Nablarch推奨手順を示す"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーション処理方式の機能詳細にCSRF対策セクションがある"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "reason": "CSRFハンドラが依存するセッションストアハンドラの設定方法を含む"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "処理方式がRESTfulウェブサービスであり対象外"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "XSS・クリックジャッキング対策（レスポンスヘッダ設定）でありCSRFトークン検証ではない"
+      },
+      {
+        "path": "component/handlers/handlers-use-token.json",
+        "reason": "二重サブミット防止（UseToken）はCSRF対策推奨手段ではないとチェックリストが明示"
+      },
+      {
+        "path": "component/libraries/libraries-db-double-submit.json",
+        "reason": "DBを使用した二重サブミット防止はCSRF対策にならないとチェックリストが明示"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ハンドラキューへの設定XMLとデフォルト動作（トークン生成・検証ロジック・失敗時挙動）を網羅"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "SessionStoreHandlerおよびNablarchTagHandlerとの配置順序制約を説明"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "ログイン時のCSRFトークン再生成（CsrfTokenUtil.regenerateCsrfToken）の必要性と方法"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSRF対策機能がIPA推奨手順に対応すること、DB二重サブミット防止はCSRF対策に非対応であることを明示"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s19",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーション機能詳細でCSRF対策ページへの参照を確認"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "CSRFハンドラの前提となるSessionStoreHandlerの設定XMLを提供"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみ — 設定に不要なボイラープレート"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s2",
+        "reason": "Mavenモジュール一覧のみ — 設定方法の回答に不要"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s1",
+        "reason": "クラス名のみ"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s2",
+        "reason": "モジュール一覧のみ"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s3",
+        "reason": "配置制約はCSRFハンドラのs3で十分カバー済み"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+      "check/security-check/security-check-2.チェックリスト.json:s6",
+      "processing-pattern/web-application/web-application-feature-details.json:s19",
+      "component/handlers/handlers-SessionStoreHandler.json:s4"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s4",
+          "reason": "ハンドラキューの設定XML、デフォルト動作（トークン名・HTTPメソッド判定・ヘッダ/パラメータ名・失敗時挙動）、テスト時の無効化設定を回答に引用"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s3",
+          "reason": "SessionStoreHandlerおよびNablarchTagHandlerより後ろに配置する制約を注意点として引用"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s5",
+          "reason": "ログイン時のCsrfTokenUtil.regenerateCsrfToken呼び出しの必要性を引用"
+        },
+        {
+          "ref": "security-check-2.チェックリスト.json:s6",
+          "reason": "DB二重サブミット防止はCSRF対策にならない旨の注意点として引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "processing-pattern/web-application/web-application-feature-details.json:s19",
+          "reason": "CSRFハンドラへのリンクのみで内容がなく、回答に追加情報なし"
+        },
+        {
+          "ref": "handlers-SessionStoreHandler.json:s4",
+          "reason": "SessionStoreHandlerの設定XMLはCSRFハンドラの前提として言及したが詳細引用は不要"
+        }
+      ]
+    }
+  }
+}

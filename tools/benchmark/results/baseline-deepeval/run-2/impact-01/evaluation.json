@@ -1,0 +1,65 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Expected Output states a single key fact: using SimpleDbTransactionManager to define an individual (separate) transaction. The Actual Output clearly covers this fact in detail, explaining how to configure SimpleDbTransactionManager in the component settings file, how to use it with SimpleDbTransactionExecutor for JDBC wrapper execution, and how to use it with UniversalDao.Transaction. The core concept of defining an independent transaction using SimpleDbTransactionManager is thoroughly addressed and not contradicted."
+    },
+    "answer_relevancy": {
+      "score": 0.96875,
+      "reason": "The score is 0.97 because the response is highly relevant to the question about executing SQL in a separate transaction from the business transaction and retaining updates even after a rollback. It loses a small amount of points due to one statement that describes an internal process step which doesn't directly address the core question about separate transactions."
+    },
+    "faithfulness": {
+      "score": 0.9333333333333333,
+      "reason": "The score is 0.93 because the actual output incorrectly suggests creating a class that inherits/extends UniversalDao.Transaction, whereas the retrieval context specifies that UniversalDao.Transaction accepts either a component definition name or a SimpleDbTransactionManager object in its constructor — no inheritance is involved."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+      "component/libraries/libraries-transaction.json:s5",
+      "component/adapters/adapters-doma-adaptor.json:s8",
+      "component/handlers/handlers-transaction-management-handler.json:s7",
+      "component/handlers/handlers-loop-handler.json:s4",
+      "component/handlers/handlers-database-connection-management-handler.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 154244,
+    "duration_api_ms": 139671,
+    "num_turns": 3,
+    "total_cost_usd": 0.8034809,
+    "usage": {
+      "input_tokens": 4,
+      "output_tokens": 4679,
+      "cache_read_input_tokens": 106582,
+      "cache_creation_input_tokens": 36708
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3193,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033380000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 24038,
+        "outputTokens": 9695,
+        "cacheReadInputTokens": 203513,
+        "cacheCreationInputTokens": 139080,
+        "webSearchRequests": 0,
+        "costUSD": 0.8001429000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

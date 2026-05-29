@@ -1,0 +1,92 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "「相関バリデーションを行う」(s11)セクションがあり、メールアドレス一致チェックのコード例がそのまま含まれている"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーションでBean Validationを実行するインターセプタであり、実装に必要な背景情報をカバーしている"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "Nablarch Validationは旧APIでありBean Validationが推奨されるため除外"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "入力値チェックの概要のみで具体的な実装情報はBean ValidationとInjectFormに集約されているため除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "メールアドレスと確認用メールアドレスの一致チェックを@AssertTrueで実装する例が直接含まれている"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでBean Validationを使うためのBeanValidationStrategy設定が説明されている"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "業務アクションに@InjectFormを設定してバリデーションを実行する方法が説明されている"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで実装情報なし"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "reason": "DBとの相関バリデーションであり今回の質問（項目間比較）とは別のトピック"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s4",
+        "reason": "バリデーションエラー時の遷移先の説明で、相関バリデーション実装の回答に直接必要ではない"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s5",
+        "reason": "Beanグループ指定の説明であり今回の質問とは関係ない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "libraries-bean-validation.json:s11",
+      "libraries-bean-validation.json:s16",
+      "handlers-InjectForm.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-bean-validation.json:s11",
+          "reason": "@AssertTrueを使った相関バリデーションの実装例（メールアドレス一致チェック）を直接引用した"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s16",
+          "reason": "ウェブアプリでBeanValidationStrategyを設定する必要性を根拠に使用した"
+        },
+        {
+          "ref": "handlers-InjectForm.json:s3",
+          "reason": "@InjectFormを業務アクションに設定してバリデーションを実行する方法を根拠に使用した"
+        }
+      ],
+      "unused": []
+    }
+  }
+}
