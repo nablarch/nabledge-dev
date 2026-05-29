@@ -16,23 +16,7 @@
 
 ---
 
-## Not Started
-
-### T21: e2e-prompt.md / run_qa.py 修正（案A: Answerマーカー導入）
-
-**背景**: ベンチ実行時にagentのステップ移行ナレーションが answer.md に混入するベンチ側バグ。
-`e2e-prompt.md` の Step 8 指示を `### Answer` マーカーで囲む形に変更し、`run_qa.py` の抽出ロジックを更新する。
-
-**作業**:
-- [ ] テスト追加（RED）: `### Answer` マーカーによる抽出ロジックのunit test
-- [ ] `e2e-prompt.md` 修正: Step 8 指示を `### Answer` → `final_answer` → `### Workflow Details` の構造に変更
-- [ ] `run_qa.py` 修正: 抽出ロジックを `### Answer` 〜 `### Workflow Details` 間に変更（GREEN）
-- [ ] 動作確認: impact-03（失敗シナリオ）1件実行、ナレーション混入がないことを確認
-- [ ] 確認後、`baseline-deepeval/` を削除
-
-**コミット**: `fix: use ### Answer marker to isolate answer from workflow narration`
-
----
+## In Progress
 
 ### T22: ベンチマーク再取得（3 run）
 
@@ -58,7 +42,8 @@
 
 ## Done
 
-- [x] T19: QAベンチマーク全件実行・新ベースライン取得（3 run） — 30/30全件、全指標0.96〜0.99（T21修正前のため廃棄予定）
+- [x] T21: e2e-prompt.md / run_qa.py 修正（Answerマーカー導入） — committed `6c5213430`
+- [x] T19: QAベンチマーク全件実行・新ベースライン取得（3 run） — 30/30全件、全指標0.96〜0.99（T21修正前のため廃棄）
 
 - [x] T1: 調査 — DeepEvalのジャッジLLM接続方式確認とLLMTestCase入力マッピング — `5530ab20`
 - [x] T2: requirements.txt 新設 + setup.sh — `93669a7b`
