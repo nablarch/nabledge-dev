@@ -89,13 +89,13 @@ python3 -m tools.benchmark.scripts.report \
 出力: `tools/benchmark/results/{run-label}/run-N/report.md`
 
 レポートには以下が含まれる:
-- DeepEval 3指標のスコア一覧（閾値0.5未満を閾値割れとして表示）
+- DeepEval 3指標のスコア一覧（閾値未達を閾値割れとして表示: answer_correctness/faithfulness ≥0.99、answer_relevancy ≥0.95）
 - 各シナリオの判定根拠（reason）
 - パフォーマンスサマリー
 
 ### 3b. 閾値割れシナリオの確認
 
-閾値割れ（スコア < 0.5）が出たシナリオについて、`workflow_details.json` と `answer.md` を読み、原因を確認する:
+閾値割れ（answer_correctness/faithfulness < 0.99、answer_relevancy < 0.95）が出たシナリオについて、`workflow_details.json` と `answer.md` を読み、原因を確認する:
 
 - **answer_correctness が低い**: must.facts のどの事実が回答に含まれていないか → `evaluation.json["scores"]["answer_correctness"]["reason"]` を確認
 - **answer_relevancy が低い**: 回答が質問から外れていないか → 検索セクションの選択が適切かを確認
@@ -112,10 +112,10 @@ python3 -m tools.benchmark.scripts.report \
 ### 4a. 3 run集計
 
 ```bash
-python3 -m tools.benchmark.scripts.report \
-  --run-dir tools/benchmark/results/{run-label}/run-1 \
-  --run-dir tools/benchmark/results/{run-label}/run-2 \
-  --run-dir tools/benchmark/results/{run-label}/run-3
+for r in run-1 run-2 run-3; do
+  python3 -m tools.benchmark.scripts.report \
+    --run-dir tools/benchmark/results/{run-label}/$r
+done
 ```
 
 | 軸 | run-1 | run-2 | run-3 | 平均 |
@@ -124,7 +124,7 @@ python3 -m tools.benchmark.scripts.report \
 | answer_relevancy 平均 | N.NN | N.NN | N.NN | N.NN |
 | faithfulness 平均 | N.NN | N.NN | N.NN | N.NN |
 
-閾値割れシナリオ一覧（3 run中で1回以上 < 0.5 となったシナリオ）:
+閾値割れシナリオ一覧（3 run中で1回以上閾値未達となったシナリオ）:
 
 | シナリオID | 発生回数/3 | 低下した指標 |
 |---|---|---|

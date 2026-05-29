@@ -6,6 +6,11 @@ import sys
 from pathlib import Path
 
 _DEEPEVAL_KEYS = ("answer_correctness", "answer_relevancy", "faithfulness")
+_DEEPEVAL_THRESHOLDS = {
+    "answer_correctness": 0.99,
+    "answer_relevancy": 0.95,
+    "faithfulness": 0.99,
+}
 
 
 def _score_value(scores: dict, key: str) -> float | None:
@@ -115,7 +120,7 @@ def format_summary_report(evaluations: list[dict]) -> str:
             for ev in evaluations
         ]
         vals = [v for v in vals if v is not None]
-        threshold_pass[key] = sum(1 for v in vals if v >= 0.5)
+        threshold_pass[key] = sum(1 for v in vals if v >= _DEEPEVAL_THRESHOLDS[key])
 
     lines = [
         "## サマリー",
@@ -124,14 +129,15 @@ def format_summary_report(evaluations: list[dict]) -> str:
         "",
         "### DeepEval メトリクスサマリー",
         "",
-        "| 指標 | 平均スコア | 閾値通過（≥0.5） |",
+        "| 指標 | 平均スコア | 閾値通過 |",
         "|---|---|---|",
     ]
 
     for key in _DEEPEVAL_KEYS:
         avg = avgs[key]
         pass_count = threshold_pass[key]
-        lines.append(f"| {key} | {_fmt(avg)} | {pass_count}/{total} |")
+        thr = _DEEPEVAL_THRESHOLDS[key]
+        lines.append(f"| {key} | {_fmt(avg)} | {pass_count}/{total}（≥{thr}） |")
 
     lines.append("")
 
@@ -190,11 +196,12 @@ def _empty_summary() -> str:
         "",
         "### DeepEval メトリクスサマリー",
         "",
-        "| 指標 | 平均スコア | 閾値通過（≥0.5） |",
+        "| 指標 | 平均スコア | 閾値通過 |",
         "|---|---|---|",
     ]
     for key in _DEEPEVAL_KEYS:
-        lines.append(f"| {key} | N/A | 0/0 |")
+        thr = _DEEPEVAL_THRESHOLDS[key]
+        lines.append(f"| {key} | N/A | 0/0（≥{thr}） |")
     lines.append("")
     return "\n".join(lines)
 
