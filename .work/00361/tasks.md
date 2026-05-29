@@ -31,7 +31,9 @@
 - [ ] run-3実行 → `baseline-deepeval/run-3/` に保存
   - **中断状態**: `tools/benchmark/results/20260529-150210/` に26シナリオ完了済み（summary.jsonなし）
   - 残り4シナリオ: qa-14, qa-15, oos-impact-01, oos-qa-01
-  - [DECISION: 中断データを再利用するか、run-3を最初からやり直すか？]
+  - 中断データ（`tools/benchmark/results/20260529-150210/`）を再利用する（ユーザー確認済み）
+  - 残り4シナリオ `--scenario-ids qa-14,qa-15,oos-impact-01,oos-qa-01` を単体実行
+  - 完了後、結果を `20260529-150210/` にコピーして `baseline-deepeval/run-3/run/` として保存
 - [ ] 各run後に `report.py` でレポート生成・閾値割れ確認（HOW-TO-RUN.md ステップ3）
 - [ ] 3 run集計（ステップ4a）
 - [ ] 閾値割れシナリオの改善判断（ステップ5）
