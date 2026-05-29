@@ -11,7 +11,7 @@ Follow the workflow and additional instructions below, then answer the question.
 
 **Step 4**: Save the section IDs passed to read-sections.sh as `read_sections`.
 
-**Step 8**: After outputting final_answer, output the following.
+**Step 8**: Output `### Answer`, then output final_answer, then output the following.
 
 ### Workflow Details
 ```json

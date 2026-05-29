@@ -125,8 +125,10 @@ SAMPLE_WORKFLOW_DETAILS = {
 
 class TestParseE2eResponse:
     def _make_response(self, answer_text, workflow_details=None):
+        """Build a response using the ### Answer marker format."""
         details = workflow_details or SAMPLE_WORKFLOW_DETAILS
         return (
+            f"### Answer\n"
             f"{answer_text}\n\n"
             f"### Workflow Details\n"
             f"```json\n{json.dumps(details, ensure_ascii=False, indent=2)}\n```\n"
@@ -163,7 +165,7 @@ class TestParseE2eResponse:
             parse_qa_response(response)
 
     def test_raises_on_invalid_json_in_workflow_details(self):
-        response = "回答\n\n### Workflow Details\n```json\n{invalid json\n```\n"
+        response = "### Answer\n回答\n\n### Workflow Details\n```json\n{invalid json\n```\n"
         with pytest.raises(ValueError, match="JSON"):
             parse_qa_response(response)
 
@@ -172,6 +174,33 @@ class TestParseE2eResponse:
         result = parse_qa_response(response)
         assert "Workflow Details" not in result["answer"]
         assert "step3" not in result["answer"]
+
+    def test_answer_excludes_pre_marker_narration(self):
+        """Narration before ### Answer (step transition text) must not appear in answer."""
+        details = SAMPLE_WORKFLOW_DETAILS
+        narration = "Step 4完了。`read_sections = [...]`\n\nStep 5 - 回答生成:\n\n"
+        response = (
+            f"{narration}"
+            f"### Answer\n"
+            f"本文回答\n\n"
+            f"### Workflow Details\n"
+            f"```json\n{json.dumps(details, ensure_ascii=False, indent=2)}\n```\n"
+        )
+        result = parse_qa_response(response)
+        assert "Step 4完了" not in result["answer"]
+        assert "Step 5" not in result["answer"]
+        assert result["answer"] == "本文回答"
+
+    def test_answer_marker_absent_falls_back_to_full_text_before_workflow_details(self):
+        """Legacy format without ### Answer marker: text before ### Workflow Details is the answer."""
+        details = SAMPLE_WORKFLOW_DETAILS
+        response = (
+            "レガシー回答テキスト\n\n"
+            "### Workflow Details\n"
+            f"```json\n{json.dumps(details, ensure_ascii=False, indent=2)}\n```\n"
+        )
+        result = parse_qa_response(response)
+        assert result["answer"] == "レガシー回答テキスト"
 
 
 class TestSaveE2eResults:

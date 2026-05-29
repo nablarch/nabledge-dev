@@ -69,22 +69,39 @@ def build_qa_prompt(scenario: dict, workflow_content: str, prompt_template: str 
     return prompt_template.replace("{workflow}", workflow_content).replace("{question}", question)
 
 
+_QA_ANSWER_HEADING = "### Answer"
 _QA_WORKFLOW_DETAILS_HEADING = "### Workflow Details"
 
 
 def parse_qa_response(response_text: str) -> dict:
     """Parse e2e-prompt.md formatted response.
 
-    Splits on '### Workflow Details': text above is the answer, the JSON
-    block below is workflow_details.
+    Expected format:
+      ### Answer
+      <answer text>
 
-    Raises ValueError if the heading or JSON block is missing.
+      ### Workflow Details
+      ```json
+      {...}
+      ```
+
+    The answer is extracted from between '### Answer' and '### Workflow Details'.
+    If '### Answer' is absent (legacy format), all text before '### Workflow Details'
+    is used as the answer.
+
+    Raises ValueError if '### Workflow Details' or the JSON block is missing.
     """
     idx = response_text.find(_QA_WORKFLOW_DETAILS_HEADING)
     if idx == -1:
         raise ValueError("Workflow Details section not found in response")
 
-    answer = response_text[:idx].strip()
+    before_workflow = response_text[:idx]
+
+    answer_idx = before_workflow.find(_QA_ANSWER_HEADING)
+    if answer_idx != -1:
+        answer = before_workflow[answer_idx + len(_QA_ANSWER_HEADING):].strip()
+    else:
+        answer = before_workflow.strip()
 
     details_section = response_text[idx + len(_QA_WORKFLOW_DETAILS_HEADING):]
     # extract content from ```json ... ``` fence
