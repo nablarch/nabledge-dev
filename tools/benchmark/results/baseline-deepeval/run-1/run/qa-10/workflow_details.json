@@ -1,0 +1,98 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s21「可変条件を持つSQLを実行する」s22「in句の条件数が可変」が動的条件SQLの直接実装方法を記述している"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "reason": "Getting Startedの実装例はあるが、libraries-database.jsonのs21で十分なためスキップ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/*",
+        "reason": "処理方式がRESTfulウェブサービスのため、ウェブアプリケーション限定の本問と不一致"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/*",
+        "reason": "バッチ処理方式のためスキップ"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "ユニバーサルDAOは主にエンティティCRUDが対象で、可変条件SQL記述はJDBCラッパー側の機能"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "$if構文による可変条件の実装方法とコード例が完全に記述されている"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "partial",
+        "reason": "in句の可変条件も同様のユースケースで有用な補足情報"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "prepareParameterizedSqlStatementBySqlIdの基本的な使い方の背景"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "動的SQL構築機能の概要説明"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s23",
+        "reason": "ORDER BY動的切り替えは本問の検索条件変更とは異なる"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s19",
+        "reason": "LIKE検索のエスケープは本問のスコープ外"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-database.json:s16",
+      "component/libraries/libraries-database.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-database.json:s21",
+          "reason": "$if構文の記述ルール・除外条件・制約・コード例を直接引用"
+        },
+        {
+          "ref": "libraries-database.json:s22",
+          "reason": "in句可変条件の補足説明に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-database.json:s16",
+          "reason": "prepareParameterizedSqlStatementBySqlIdの説明はs21のコード例で包含されるため不要"
+        },
+        {
+          "ref": "libraries-database.json:s6",
+          "reason": "機能概要のみで実装詳細はs21に集約されるため未使用"
+        }
+      ]
+    }
+  }
+}

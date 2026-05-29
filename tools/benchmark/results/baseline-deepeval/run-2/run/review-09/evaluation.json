@@ -1,0 +1,66 @@
+{
+  "scenario_id": "review-09",
+  "description": "セキュリティ診断でContent Security Policyを有効にしろと指摘された。NablarchのWeb画面でCSPを設定したい。",
+  "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The expected output states that CSP is enabled by combining SecureHandler, ContentSecurityPolicyHeader, and custom tag CSP support. The actual output explicitly covers all three elements: it explains adding ContentSecurityPolicyHeader to SecureHandler, demonstrates the configuration with XML examples, and addresses custom tag (JSP) nonce-based CSP support in detail. All key facts from the expected output are covered comprehensively."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about enabling Content Security Policy (CSP) in Nablarch's Web UI. Every part of the response directly addresses the setup and configuration needed!"
+    },
+    "faithfulness": {
+      "score": 0.8461538461538461,
+      "reason": "The score is 0.85 because the actual output mostly aligns with the retrieval context, but contains minor contradictions regarding quote usage in CSP directives. Specifically, the actual output uses `default-src 'self'` with quotes around 'self', whereas the retrieval context shows `default-src self` without quotes. Similarly, the actual output adds quotes around nonce values (e.g., `'nonce-DhcnhD3khTMePgXwdayK9BsMqXjhguVV'`), while the retrieval context presents them without quotes."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "component/libraries/libraries-tag.json:s38",
+      "component/libraries/libraries-tag-reference.json:s56",
+      "processing-pattern/web-application/web-application-feature-details.json:s21",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 98925,
+    "duration_api_ms": 97535,
+    "num_turns": 5,
+    "total_cost_usd": 0.54186335,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 7110,
+      "cache_read_input_tokens": 286017,
+      "cache_creation_input_tokens": 92283
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3184,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033290000000000004,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 7110,
+        "cacheReadInputTokens": 286017,
+        "cacheCreationInputTokens": 92283,
+        "webSearchRequests": 0,
+        "costUSD": 0.53853435,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

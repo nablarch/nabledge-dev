@@ -1,0 +1,158 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "XSS対策チェックリストを含むセキュリティチェックリストで、Nablarchによる対応状況が一覧化されており、セキュリティ対応目的の質問に最適"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "カスタムタグのHTMLエスケープ機能（s2）を含む、XSS対策の中核となるJSPカスタムタグの説明ページ"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "X-XSS-Protectionなどセキュリティ関連レスポンスヘッダを設定するセキュアハンドラの詳細"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "概要のみで具体的な対策情報がなく、チェックリストページで網羅できる"
+      },
+      {
+        "path": "check/security-check/security-check-3.PCIDSS対応表.json",
+        "reason": "PCIDSS対応表はXSSの質問と直接関係なし"
+      },
+      {
+        "path": "component/libraries/libraries-tag-reference.json",
+        "reason": "タグリファレンスの属性詳細のみで、機能概要はlibraries-tag.jsonで十分"
+      },
+      {
+        "path": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "reason": "JSP静的解析ツールはXSS漏れ防止に有用だが、libraries-tag.json:s5のチェックリスト内で言及されており詳細は不要"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "XSS対策の全対策項目とNablarchでの対応状況（〇/×）が詳細に記載されており、質問に直接回答できる"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "カスタムタグがHTMLエスケープ漏れを防ぐ仕組みを説明しており、JavaScriptエスケープ非対応の注意事項も含む"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s27",
+        "relevance": "partial",
+        "reason": "rawWriteタグ・prettyPrintタグがXSS脆弱性の直接要因となる旨の重要な注意事項を含む"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s38",
+        "relevance": "partial",
+        "reason": "CSPへのカスタムタグ対応（nonce自動付与）の仕組みを説明"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "デフォルトで設定されるX-XSS-ProtectionなどXSS関連ヘッダの具体的な値を確認できる"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "CSP対応の概要とカスタムタグとの連携方法を説明"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s1",
+        "reason": "SQLインジェクション対策でXSS質問と無関係"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "reason": "CSRF対策でXSS質問と無関係"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s26",
+        "reason": "値の出力方法の説明だがs2のHTMLエスケープ説明で十分"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s7",
+        "reason": "固定CSPヘッダ設定の詳細でありs6の概要説明で十分"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s8",
+        "reason": "nonce生成の詳細設定でありs6と組み合わせて一部を根拠に使用したが独立したセクションとしては不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s5",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s26",
+      "component/libraries/libraries-tag.json:s27",
+      "component/libraries/libraries-tag.json:s38",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "check/security-check/security-check-2.チェックリスト.json:s5",
+          "reason": "XSS対策項目(5-(i)〜5-(x))のNablarch対応状況（〇/×）と解説が回答の骨格を構成"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s2",
+          "reason": "カスタムタグがHTMLエスケープを自動で行うこと、JavaScriptエスケープは非対応である旨を根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s27",
+          "reason": "rawWriteタグはXSS脆弱性の直接要因となる注意事項の根拠として使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s4",
+          "reason": "セキュアハンドラのデフォルトヘッダ一覧（X-XSS-Protection等）の根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-tag.json:s26",
+          "reason": "値の出力方法の基本説明で、s2のHTMLエスケープ説明と重複するため使用しなかった"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s38",
+          "reason": "CSPのカスタムタグ連携詳細はs6のセキュアハンドラ説明で言及済みのため個別引用は省略"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s6",
+          "reason": "CSP対応の概要説明はs7/s8の設定例で代替できたため直接引用はしなかった"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s7",
+          "reason": "固定CSPヘッダ設定の詳細で、nonce設定の方が実用的なためs8の内容を優先した"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s8",
+          "reason": "nonce設定の詳細XML例は回答に使用したが参照リストに含めるには詳細すぎるため省略"
+        }
+      ]
+    }
+  }
+}

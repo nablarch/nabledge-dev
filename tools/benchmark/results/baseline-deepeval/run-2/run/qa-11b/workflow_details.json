@@ -1,0 +1,159 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-jaxrs-response-handler.json",
+        "reason": "RESTfulウェブサービス専用のレスポンスハンドラで、エラー時のレスポンス生成とログ出力の主担当"
+      },
+      {
+        "path": "component/handlers/handlers-global-error-handler.json",
+        "reason": "未捕捉例外を捕捉してログ出力する共通ハンドラで、仕組みを理解するために必須"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細にエラー時レスポンスの参照先が明示されている"
+      },
+      {
+        "path": "component/libraries/libraries-failure-log.json",
+        "reason": "障害ログの出力方針・設定方法を定義しており、ログ出力の仕組みを理解するために必要"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/handlers/handlers-HttpErrorHandler.json",
+        "reason": "ウェブアプリケーション用のHTTPエラー制御ハンドラであり、RESTfulウェブサービスではなく別処理方式向け"
+      },
+      {
+        "path": "component/libraries/libraries-log.json",
+        "reason": "汎用ログ出力の設定で、RESTfulウェブサービス固有のエラー処理の仕組みとは直接関係が薄い"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "アーキテクチャ概要はハンドラ一覧を含むが、エラー処理の仕組み詳細には届かない"
+      },
+      {
+        "path": "component/handlers/handlers-rest.json",
+        "reason": "ハンドラ一覧のインデックスページのみで詳細な仕組み情報がない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ErrorResponseBuilderによるレスポンス生成の仕組みを直接説明している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "JaxRsErrorLogWriterによるログ出力の仕組みを直接説明している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "エラーレスポンスにメッセージを設定する具体的な実装例を示している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "特定エラーに個別レスポンスを返す実装例を示している"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "未捕捉例外・エラーの種類ごとのログレベルと処理内容を網羅的に示している"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "グローバルエラーハンドラの配置ルールを示しており、仕組みの理解に必要"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスにおけるエラーレスポンスの参照先を示している"
+      },
+      {
+        "file": "component/libraries/libraries-failure-log.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "障害ログの通知ログ/解析ログ2種類の方針と設定例を示している"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s9",
+        "reason": "ResponseFinisherによる共通処理追加はエラー処理の仕組みの主要な説明ではない"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s5",
+        "reason": "カスタマイズが必要な場合の説明で、仕組みの理解には直接不要"
+      },
+      {
+        "file": "component/libraries/libraries-failure-log.json",
+        "section_id": "s3",
+        "reason": "FailureLogUtilの使い方はアプリケーション実装向けで、フレームワークの仕組み説明には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-response-handler.json:s8",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11",
+      "component/libraries/libraries-failure-log.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "handlers-jaxrs-response-handler.json:s4",
+          "reason": "ErrorResponseBuilderによるレスポンス生成の仕組みと設定例を回答に使用"
+        },
+        {
+          "ref": "handlers-jaxrs-response-handler.json:s5",
+          "reason": "JaxRsErrorLogWriterによるログ出力の仕組みと設定例を回答に使用"
+        },
+        {
+          "ref": "handlers-jaxrs-response-handler.json:s7",
+          "reason": "ApplicationExceptionに対するJSON形式エラーレスポンスの実装例を回答に使用"
+        },
+        {
+          "ref": "handlers-jaxrs-response-handler.json:s8",
+          "reason": "NoDataExceptionに対して404を返す実装例を回答に使用"
+        },
+        {
+          "ref": "handlers-global-error-handler.json:s4",
+          "reason": "例外・エラー種類ごとの処理内容テーブルを回答に使用"
+        },
+        {
+          "ref": "handlers-global-error-handler.json:s3",
+          "reason": "ハンドラキュー先頭配置の制約を注意点として回答に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-failure-log.json:s1",
+          "reason": "障害通知ログ・障害解析ログの2種類の出力方針テーブルを回答に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11",
+          "reason": "JaxRsResponseHandlerへの参照リンクのみで具体的な説明がなく、回答に追加情報を提供しなかった"
+        }
+      ]
+    }
+  }
+}

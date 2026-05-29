@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 176164,
+  "duration_api_ms": 173805,
+  "ttft_ms": 7129,
+  "num_turns": 3,
+  "result": "Step 5〜7: 回答を生成し検証します。\n\n---\n\n### Answer\n\n**結論**: Nablarchの多言語化は、①メッセージのプロパティファイル多言語化、②コード名称テーブルの多言語化、③ユーザーの言語選択の実装、の3つを組み合わせて実現する。JSP表示には「メッセージタグ方式」と「リソースパス切り替え方式」の2通りがあるが、レイアウト崩れが許容できない場合はリソースパス切り替え方式を使うこと。\n\n---\n\n**根拠**:\n\n### 1. メッセージの多言語化\n\n言語ごとのプロパティファイルを作成し、`PropertiesStringResourceLoader` に設定する。\n\n**プロパティファイルの構成**:\n```none\nmain/resources/messages.properties       # デフォルトの言語に対応したファイル\n               messages_en.properties    # enに対応したファイル\n               messages_zh.properties    # zhに対応したファイル\n```\n\n**コンポーネント定義**:\n```xml\n<component class=\"nablarch.core.cache.BasicStaticDataCache\" name=\"messageCache\">\n  <property name=\"loader\">\n    <component class=\"nablarch.core.message.PropertiesStringResourceLoader\">\n      <!-- サポートする言語 -->\n      <property name=\"locales\">\n        <list>\n          <value>en</value>\n          <value>zh</value>\n        </list>\n      </property>\n      <!-- デフォルトの言語 -->\n      <property name=\"defaultLocale\" value=\"ja\" />\n    </component>\n  </property>\n</component>\n```\n\nメッセージ取得時の言語は `ThreadContext#getLanguage` の値で決まる。\n\n**JSPでの表示（メッセージタグ方式）**:\n```jsp\n<n:message messageId=\"page.not.found\" />\n\n<!-- 特定箇所だけ言語を指定したい場合 -->\n<n:message messageId=\"page.not.found\" language=\"ja\" />\n```\n\n---\n\n### 2. コード名称の多言語化\n\nコード名称テーブルに言語ごとのデータを追加する。\n\n| ID | VALUE | LANG | NAME | SHORT_NAME |\n|----|-------|------|------|------------|\n| GENDER | MALE | ja | 男性 | 男 |\n| GENDER | MALE | en | Male | M |\n\nJavaコードからは `CodeUtil` で言語を指定して取得できる:\n```java\nCodeUtil.getName(\"GENDER\", \"MALE\", Locale.JAPANESE);  // -> 男性\nCodeUtil.getName(\"GENDER\", \"MALE\", Locale.ENGLISH);   // -> Male\n```\n\n---\n\n### 3. ユーザーの言語選択\n\n`LanguageAttributeInHttpCookie`（またはSession版）とハンドラで実現する。\n\n**コンポーネント定義**:\n```xml\n<component name=\"languageAttribute\"\n           class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie\">\n  <property name=\"defaultLanguage\" value=\"ja\" />\n  <property name=\"supportedLanguages\" value=\"ja,en\" />\n</component>\n```\n\n**JSPの言語切り替えリンク**:\n```jsp\n<n:submitLink uri=\"/action/menu/index\" name=\"switchToEnglish\">\n  英語\n  <n:param paramName=\"user.language\" value=\"en\" />\n</n:submitLink>\n<n:submitLink uri=\"/action/menu/index\" name=\"switchToJapanese\">\n  日本語\n  <n:param paramName=\"user.language\" value=\"ja\" />\n</n:submitLink>\n```\n\n**ハンドラ実装**:\n```java\npublic class I18nHandler implements HttpRequestHandler {\n    public HttpResponse handle(HttpRequest request, ExecutionContext context) {\n        String language = ...; // user.language パラメータ取得\n        if (StringUtil.hasValue(language)) {\n            LanguageAttributeInHttpUtil.keepLanguage(request, context, language);\n        }\n        return context.handleNext(request);\n    }\n}\n```\n\n---\n\n### 4. JSPファイル自体を言語ごとに切り替える場合（リソースパス切り替え方式）\n\n`HttpResponseHandler` の `contentPathRule` に以下いずれかを設定する:\n\n| クラス | 方式 |\n|--------|------|\n| `DirectoryBasedResourcePathRule` | コンテキストルート直下に `ja/`・`en/` ディレクトリを作成 |\n| `FilenameBasedResourcePathRule` | ファイル名に `_ja`・`_en` サフィックスを付ける |\n\n```xml\n<component name=\"resourcePathRule\" class=\"nablarch.fw.web.i18n.DirectoryBasedResourcePathRule\" />\n<component class=\"nablarch.fw.web.handler.HttpResponseHandler\">\n  <property name=\"contentPathRule\" ref=\"resourcePathRule\" />\n</component>\n```\n\n---\n\n**注意点**:\n- `PropertiesStringResourceLoader.defaultLocale` は**必ず明示設定**すること。未設定の場合は `Locale.getDefault().getLanguage()` が使われ、実行環境のOSによって値が変わり障害の原因になる\n- JSPカスタムタグ（コード名称の表示用）では言語指定による値取得ができない。ThreadContextに設定された言語が使われる\n- メッセージタグ方式（`<n:message>`）は画面レイアウトが崩れる可能性があるため、崩れが許容できない場合はリソースパス切り替え方式を使うこと\n\n参照: `libraries-message.json:s8`, `libraries-message.json:s7`, `libraries-code.json:s8`, `handlers-thread-context-handler.json:s7`, `handlers-http-response-handler.json:s7`, `web-application-feature-details.json:s12`, `libraries-tag.json:s31`\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-message.json\", \"reason\": \"メッセージ多言語化の中心ライブラリで、プロパティファイルとローダー設定を提供する\"},\n      {\"path\": \"component/libraries/libraries-code.json\", \"reason\": \"コード名称の多言語化対応（テーブルへのデータ追加とCodeUtil利用）を説明する\"},\n      {\"path\": \"component/handlers/handlers-thread-context-handler.json\", \"reason\": \"ユーザーが言語を選択するためのCookie/Session連携とハンドラ実装を提供する\"},\n      {\"path\": \"component/handlers/handlers-http-response-handler.json\", \"reason\": \"言語ごとにJSPファイルを切り替えるリソースパスルール機能を提供する\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"ウェブアプリの国際化対応方式を概観し、2方式のトレードオフを説明する\"},\n      {\"path\": \"component/libraries/libraries-tag.json\", \"reason\": \"n:messageタグによるJSP上のメッセージ出力方法を提供する\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"reason\": \"国際化セクションがlibraries-message/libraries-codeへの参照のみで独自情報がない\"},\n      {\"path\": \"processing-pattern/http-messaging/http-messaging-feature-details.json\", \"reason\": \"RESTful版と同じ内容で独自実装情報がない\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s8\", \"relevance\": \"high\", \"reason\": \"PropertiesStringResourceLoaderによる多言語化設定とファイル命名規則を完全に説明する\"},\n      {\"file\": \"component/libraries/libraries-code.json\", \"section_id\": \"s8\", \"relevance\": \"high\", \"reason\": \"コード名称テーブルへの言語別データ追加とCodeUtil.getNameの使い方を示す\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"ユーザー言語選択UIの実装例（Cookie設定、JSPリンク、ハンドラ）を完全に示す\"},\n      {\"file\": \"component/handlers/handlers-http-response-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"DirectoryBased/FilenameBasedResourcePathRuleによるJSPパス切り替えの設定例を示す\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s12\", \"relevance\": \"high\", \"reason\": \"2方式のトレードオフ（レイアウト崩れリスク）を明示する重要なガイダンス\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s31\", \"relevance\": \"high\", \"reason\": \"n:messageタグの実装例とlanguage属性による言語上書きを示す\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s7\", \"relevance\": \"partial\", \"reason\": \"デフォルトのmessages.propertiesファイル形式の背景として必要\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s14\", \"relevance\": \"partial\", \"reason\": \"ファイル名・格納場所を変更したい場合の拡張ポイントとして参考情報\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s15\", \"relevance\": \"partial\", \"reason\": \"DBでメッセージ管理する代替手段として参考情報\"},\n      {\"file\": \"component/libraries/libraries-code.json\", \"section_id\": \"s6\", \"relevance\": \"partial\", \"reason\": \"コード管理機能の初期設定（テーブル構造・コンポーネント定義）が多言語化の前提として必要\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s1\", \"reason\": \"機能概要のみで実装情報なし\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s9\", \"reason\": \"例外スロー方式の説明で多言語化と無関係\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s30\", \"reason\": \"JSPカスタムタグが言語指定不可という制限はs8注意点に含まれており独立セクション不要\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s32\", \"reason\": \"リソースパス切り替えタグはhttp-response-handler s7で網羅されており重複\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-message.json:s8\",\n      \"component/libraries/libraries-code.json:s8\",\n      \"component/handlers/handlers-thread-context-handler.json:s7\",\n      \"component/handlers/handlers-http-response-handler.json:s7\",\n      \"processing-pattern/web-application/web-application-feature-details.json:s12\",\n      \"component/libraries/libraries-tag.json:s31\",\n      \"component/libraries/libraries-message.json:s7\",\n      \"component/libraries/libraries-message.json:s14\",\n      \"component/libraries/libraries-message.json:s15\",\n      \"component/libraries/libraries-code.json:s6\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"libraries-message.json:s8\", \"reason\": \"PropertiesStringResourceLoaderの多言語設定・ファイル命名・defaultLocale必須設定の根拠\"},\n        {\"ref\": \"libraries-message.json:s7\", \"reason\": \"デフォルトmessages.propertiesのファイル形式説明に使用\"},\n        {\"ref\": \"libraries-code.json:s8\", \"reason\": \"コード名称テーブルの言語別データとCodeUtil.getName使用例の根拠\"},\n        {\"ref\": \"handlers-thread-context-handler.json:s7\", \"reason\": \"LanguageAttributeInHttpCookie設定・JSPリンク・ハンドラ実装例の根拠\"},\n        {\"ref\": \"handlers-http-response-handler.json:s7\", \"reason\": \"DirectoryBasedResourcePathRuleの設定例と2方式の説明の根拠\"},\n        {\"ref\": \"web-application-feature-details.json:s12\", \"reason\": \"メッセージタグ方式がレイアウト崩れを起こす可能性という注意点の根拠\"},\n        {\"ref\": \"libraries-tag.json:s31\", \"reason\": \"n:messageタグの実装例とlanguage属性の根拠\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"libraries-message.json:s14\", \"reason\": \"デフォルトパス変更の拡張情報で、基本実装の回答に不要\"},\n        {\"ref\": \"libraries-message.json:s15\", \"reason\": \"DB管理の代替手段で今回の質問範囲外\"},\n        {\"ref\": \"libraries-code.json:s6\", \"reason\": \"コード管理の初期設定詳細は回答の主旨から外れるため省略\"}\n      ]\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "bd6c7f2f-c0b0-4e5d-b51b-2357b0fffd25",
+  "total_cost_usd": 0.9945432000000001,
+  "usage": {
+    "input_tokens": 4,
+    "cache_creation_input_tokens": 37989,
+    "cache_read_input_tokens": 124679,
+    "output_tokens": 5841,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 37989
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3142,
+      "outputTokens": 25,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003267,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 12,
+      "outputTokens": 10887,
+      "cacheReadInputTokens": 436559,
+      "cacheCreationInputTokens": 185858,
+      "webSearchRequests": 0,
+      "costUSD": 0.9912762,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "715c50be-7fa8-4f41-a47d-bfaeeefe78d3"
+}

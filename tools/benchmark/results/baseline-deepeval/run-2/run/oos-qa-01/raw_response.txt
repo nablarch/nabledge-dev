@@ -1,0 +1,95 @@
+Step 3〜4の結果をまとめます。
+
+**Step 3 — ページ選択結果:**
+- 選択ページ: ウェブアプリケーションアーキテクチャ、機能詳細、非同期処理パターン、Nablarch基本方針
+- WebSocket専用ページ: **存在しない**
+- 移行ガイドの仕様対応表に "Jakarta WebSocket" の名前のみ記載あり（実装方法なし）
+
+**Step 4 — 読み取ったセクション:**
+- `processing-pattern/web-application/web-application-architecture.json:s1,s2,s3`
+- `processing-pattern/web-application/web-application-feature-details.json:s1,s11,s17,s18`
+- `guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1`
+- `about/about-nablarch/about-nablarch-policy.json:s6`
+- `about/migration/migration-migration.json:s33`
+- `processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1`
+
+Step 5〜8を実行します。
+
+---
+
+### Answer
+
+**結論**: NablarchにはWebSocketを直接サポートする機能・ハンドラは提供されていません。
+
+Nablarchのウェブアプリケーションは Jakarta Servlet API（サーブレットフィルタ＋ハンドラキュー）を前提とした設計であり、WebSocket接続の確立・メッセージ送受信に関するフレームワーク機能は知識ファイルの対象範囲外です。
+
+**根拠**: Nablarch の基本方針として「OSSは使用しない」があり、独自実装を中心に構成されています。知識ファイルに含まれる Nablarch のウェブアプリケーション機能一覧（機能詳細）には、WebSocket に相当する機能は列挙されていません。移行ガイドの仕様対応表に "Jakarta WebSocket (javax.websocket → jakarta.websocket)" という名称が登場しますが、これは Java EE/Jakarta EE の仕様名の対応を示したものに過ぎず、Nablarch が WebSocket をサポートすることを意味するものではありません。
+
+**注意点**:
+- バッチの進捗をリアルタイムにブラウザへ通知する手段として、Nablarch が提供する代替アプローチは知識ファイルに記載がありません。
+- アプリケーションサーバー（Tomcat、WildFly 等）が Jakarta WebSocket 仕様を実装しているため、Jakarta EE 標準の `@ServerEndpoint` を使った WebSocket エンドポイントをアプリケーション内に自前実装することは技術的に可能ですが、それは Nablarch のフレームワーク外の実装になります。その具体的な方法は知識ファイルの対象範囲外です。
+
+参照: about/migration/migration-migration.json:s33
+
+---
+
+```json
+{
+  "step3": {
+    "selected_pages": [
+      {"path": "processing-pattern/web-application/web-application-architecture.json", "reason": "処理方式がウェブアプリケーションのためアーキテクチャを確認"},
+      {"path": "processing-pattern/web-application/web-application-feature-details.json", "reason": "ウェブアプリケーションが提供する機能一覧を確認するため"},
+      {"path": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json", "reason": "WebSocketに近い非同期通知の代替パターンが記載されている可能性があるため"},
+      {"path": "about/about-nablarch/about-nablarch-policy.json", "reason": "Nablarchの基本方針（OSSの扱い等）を確認するため"},
+      {"path": "about/migration/migration-migration.json", "reason": "Jakarta WebSocketへの言及がある唯一のページであるため"},
+      {"path": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json", "reason": "バッチ進捗情報の出力方法を確認するため"}
+    ],
+    "excluded_pages": [
+      {"path": "component/adapters/adapters-lettuce-adaptor.json", "reason": "WebSocketではなくRedis接続に関するページ"},
+      {"path": "component/handlers/handlers-web.json", "reason": "WebSocket専用ハンドラの記載はなく関連性低い"},
+      {"path": "component/libraries/libraries-stateless-web-app.json", "reason": "ステートレス化に関するページでWebSocketとは無関係"}
+    ],
+    "selected_sections": [
+      {"file": "about/migration/migration-migration.json", "section_id": "s33", "relevance": "partial", "reason": "Jakarta WebSocketの名称が登場する唯一のセクション"},
+      {"file": "processing-pattern/web-application/web-application-architecture.json", "section_id": "s1", "relevance": "partial", "reason": "Nablarchウェブアプリの基盤がServlet APIであることを確認するため"},
+      {"file": "processing-pattern/web-application/web-application-architecture.json", "section_id": "s3", "relevance": "partial", "reason": "提供されるハンドラ一覧でWebSocketハンドラがないことを確認するため"},
+      {"file": "about/about-nablarch/about-nablarch-policy.json", "section_id": "s6", "relevance": "partial", "reason": "OSSを使用しない方針でフレームワーク範囲を把握するため"}
+    ],
+    "excluded_sections": [
+      {"file": "processing-pattern/web-application/web-application-feature-details.json", "section_id": "s1", "relevance": "skipped", "reason": "Nablarch初期化に関する説明のみでWebSocketと無関係"},
+      {"file": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json", "section_id": "s1", "relevance": "skipped", "reason": "メール送信の非同期処理に特化しておりWebSocketと無関係"},
+      {"file": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json", "section_id": "s1", "relevance": "skipped", "reason": "ログファイルへの出力のみでブラウザへのリアルタイム通知とは無関係"}
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/web-application/web-application-feature-details.json:s1",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1",
+      "about/about-nablarch/about-nablarch-policy.json:s6",
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1",
+      "processing-pattern/web-application/web-application-architecture.json:s1",
+      "processing-pattern/web-application/web-application-architecture.json:s2",
+      "processing-pattern/web-application/web-application-architecture.json:s3",
+      "processing-pattern/web-application/web-application-feature-details.json:s11",
+      "processing-pattern/web-application/web-application-feature-details.json:s17",
+      "processing-pattern/web-application/web-application-feature-details.json:s18",
+      "about/migration/migration-migration.json:s33"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {"ref": "about/migration/migration-migration.json:s33", "reason": "Jakarta WebSocketの仕様名への言及を根拠として引用"},
+        {"ref": "about/about-nablarch/about-nablarch-policy.json:s6", "reason": "NablarchがOSSを使用しない方針であることを根拠として引用"},
+        {"ref": "processing-pattern/web-application/web-application-architecture.json:s3", "reason": "WebSocket対応ハンドラが一覧に存在しないことを根拠として使用"}
+      ],
+      "unused": [
+        {"ref": "processing-pattern/web-application/web-application-architecture.json:s1", "reason": "Servlet APIベースの記述はあるがWebSocket回答に直接使用する情報なし"},
+        {"ref": "processing-pattern/web-application/web-application-architecture.json:s2", "reason": "リクエスト処理フローの説明でWebSocket回答に直接使用する情報なし"},
+        {"ref": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1", "reason": "メール送信のみで今回の質問と無関係"},
+        {"ref": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1", "reason": "ログ出力のみでブラウザ通知に関係なし"}
+      ]
+    }
+  }
+}
+```
