@@ -29,14 +29,6 @@
 
 ## In Progress
 
-### T3: Expert review + diff check
-**Steps:**
-- [ ] Run expert review (Prompt Engineer) on changed workflow files
-- [ ] Address all Findings
-- [ ] Diff check: confirm only the expected sections changed across all 5 versions
-- [ ] Output diff check result to `.work/00176/diff-check.md`
-- [ ] Present results to user for confirmation
-
 ### T4: Create PR
 **Steps:**
 - [ ] `Skill(skill: "pr", args: "create")`
@@ -45,3 +37,4 @@
 
 - [x] T1: Update code-analysis.md Step 3.4 Dependency diagram — v6 — committed `dbe3cb101`
 - [x] T2: Apply same change to v5/v1.4/v1.3/v1.2 — committed `08890f13c`
+- [x] T3: Expert review (0 Findings) + diff check (PASS) — committed `6480f61d6`
