@@ -1,9 +1,12 @@
 # ベンチマーク集計レポート: baseline-deepeval
 
-**実行日**: 2026-06-01
-**スキル**: nabledge-6
-**シナリオ数**: 30（QA 15 + Impact 4 + Review 4 + OOS 2 + Pre 3 + OOS-Impact 2）
-**閾値**: answer_correctness ≥0.99 / answer_relevancy ≥0.95 / faithfulness ≥0.99
+| 項目 | 値 |
+|---|---|
+| 実行日 | 2026-06-01 |
+| スキル | nabledge-6 |
+| シナリオ数 | 30（QA 15 / Impact 4 / Review 4 / Pre 3 / OOS 2 / OOS-Impact 2） |
+| 閾値 | answer_correctness ≥0.99、answer_relevancy ≥0.95、faithfulness ≥0.99 |
+
 
 ---
 

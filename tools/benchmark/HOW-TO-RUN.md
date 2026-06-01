@@ -200,10 +200,12 @@ baseline.json には以下が含まれる:
 ```markdown
 # ベンチマーク集計レポート: {run-label}
 
-**実行日**: YYYY-MM-DD
-**スキル**: nabledge-6
-**シナリオ数**: N
-**閾値**: answer_correctness ≥0.99 / answer_relevancy ≥0.95 / faithfulness ≥0.99
+| 項目 | 値 |
+|---|---|
+| 実行日 | YYYY-MM-DD |
+| スキル | nabledge-6 |
+| シナリオ数 | N（QA x / Impact x / Review x / Pre x / OOS x / OOS-Impact x） |
+| 閾値 | answer_correctness ≥0.99、answer_relevancy ≥0.95、faithfulness ≥0.99 |
 
 ---
 
