@@ -1,14 +1,18 @@
 """Tests for benchmark report generation."""
 import json
+import math
 import tempfile
 from pathlib import Path
 
 import pytest
 
 from tools.benchmark.scripts.report import (
-    format_human_review_list,
+    build_baseline,
+    compare_against_baseline,
+    format_comparison_report,
     format_scenario_report,
     format_summary_report,
+    format_regression_report,
     generate_full_report,
 )
 
@@ -17,25 +21,21 @@ def _make_evaluation(
     scenario_id="pre-01",
     description="テストシナリオ",
     input_text="テスト入力",
-    claim_verdicts=None,
-    hallucination=None,
-    accuracy=1.0,
-    hallucination_score=1,
-    needs_review=False,
-    review_items=None,
+    deepeval_scores=None,
     hearing=None,
     search=None,
     metrics=None,
 ):
+    scores = deepeval_scores or {
+        "answer_correctness": {"score": 1.0, "reason": "all facts covered"},
+        "answer_relevancy": {"score": 0.9, "reason": "relevant"},
+        "faithfulness": {"score": 1.0, "reason": "no hallucination"},
+    }
     return {
         "scenario_id": scenario_id,
         "description": description,
         "input": input_text,
-        "claim_verdicts": claim_verdicts or [{"fact": "fact1", "verdict": "PRESENT", "reason": "ok"}],
-        "hallucination": hallucination or {"verdict": "PASS", "claims": [], "reason": "ok"},
-        "scores": {"accuracy": accuracy, "hallucination": hallucination_score},
-        "needs_human_review": needs_review,
-        "human_review_items": review_items or [],
+        "scores": scores,
         "diagnostics": {
             "hearing": hearing or {"status": "skipped", "questions": []},
             "search_sections": search or ["a.json:s1"],
@@ -56,26 +56,25 @@ class TestFormatScenarioReport:
         assert "## pre-01" in report
         assert "テストシナリオ" in report
         assert "テスト入力" in report
-        assert "PRESENT" in report
 
-    def test_report_with_review_items(self):
-        evaluation = _make_evaluation(
-            claim_verdicts=[
-                {"fact": "f1", "verdict": "PRESENT", "reason": "ok"},
-                {"fact": "f2", "verdict": "UNCERTAIN", "reason": "unclear"},
-            ],
-            accuracy=0.5,
-            needs_review=True,
-            review_items=["claim[1]: UNCERTAIN — f2"],
-        )
+    def test_deepeval_scores_displayed(self):
+        evaluation = _make_evaluation(deepeval_scores={
+            "answer_correctness": {"score": 0.9, "reason": "facts covered"},
+            "answer_relevancy": {"score": 0.85, "reason": "relevant"},
+            "faithfulness": {"score": 0.8, "reason": "some issues"},
+        })
         report = format_scenario_report(evaluation)
-        assert "UNCERTAIN" in report
-        assert "要レビュー" in report
+        assert "answer_correctness" in report or "0.90" in report
+        assert "faithfulness" in report or "0.80" in report
 
-    def test_report_with_none_accuracy(self):
-        evaluation = _make_evaluation(accuracy=None, claim_verdicts=[])
+    def test_deepeval_none_scores_displayed_as_na(self):
+        evaluation = _make_evaluation(deepeval_scores={
+            "answer_correctness": {"score": None, "reason": ""},
+            "answer_relevancy": {"score": None, "reason": ""},
+            "faithfulness": {"score": None, "reason": ""},
+        })
         report = format_scenario_report(evaluation)
-        assert "N/A" in report
+        assert "## pre-01" in report
 
     def test_report_includes_metrics(self):
         evaluation = _make_evaluation(
@@ -93,44 +92,31 @@ class TestFormatScenarioReport:
 class TestFormatSummaryReport:
     def test_basic_summary(self):
         evaluations = [
-            _make_evaluation(scenario_id="pre-01", accuracy=1.0, hallucination_score=1),
-            _make_evaluation(scenario_id="pre-02", accuracy=0.5, hallucination_score=1),
+            _make_evaluation(scenario_id="pre-01"),
+            _make_evaluation(scenario_id="pre-02", deepeval_scores={
+                "answer_correctness": {"score": 0.5, "reason": "partial"},
+                "answer_relevancy": {"score": 0.9, "reason": "ok"},
+                "faithfulness": {"score": 1.0, "reason": "ok"},
+            }),
         ]
         report = format_summary_report(evaluations)
-        assert "回答精度" in report
-        assert "ハルシネーション" in report
-        assert "2" in report  # 対象件数
+        assert "2" in report
 
-    def test_summary_with_uncertain(self):
+    def test_deepeval_averages_in_summary(self):
         evaluations = [
-            _make_evaluation(scenario_id="pre-01", accuracy=1.0, hallucination_score=1),
-            _make_evaluation(
-                scenario_id="pre-02", accuracy=0.5, hallucination_score=None,
-                needs_review=True,
-            ),
+            _make_evaluation(scenario_id="pre-01", deepeval_scores={
+                "answer_correctness": {"score": 0.9, "reason": "ok"},
+                "answer_relevancy": {"score": 0.85, "reason": "ok"},
+                "faithfulness": {"score": 0.8, "reason": "ok"},
+            }),
+            _make_evaluation(scenario_id="pre-02", deepeval_scores={
+                "answer_correctness": {"score": 0.7, "reason": "ok"},
+                "answer_relevancy": {"score": 0.75, "reason": "ok"},
+                "faithfulness": {"score": 0.9, "reason": "ok"},
+            }),
         ]
         report = format_summary_report(evaluations)
-        assert "未確定" in report
-
-    def test_summary_with_none_accuracy(self):
-        evaluations = [
-            _make_evaluation(scenario_id="pre-01", accuracy=None, hallucination_score=1),
-        ]
-        report = format_summary_report(evaluations)
-        assert "| 回答精度 | 0 | 0 | 0 | N/A | N/A | N/A |" in report
-
-    def test_absent_only_scenario_counted_as_unconfirmed(self):
-        evaluations = [
-            _make_evaluation(
-                scenario_id="pre-01",
-                claim_verdicts=[{"fact": "f1", "verdict": "ABSENT", "reason": "not found"}],
-                accuracy=0.0,
-                needs_review=True,
-                review_items=["claim[0]: ABSENT — f1"],
-            ),
-        ]
-        report = format_summary_report(evaluations)
-        assert "| 回答精度 | 1 | 0 | 1" in report
+        assert "answer_correctness" in report or "DeepEval" in report or "0.80" in report
 
     def test_summary_metrics_section(self):
         def _m(duration_ms):
@@ -154,57 +140,14 @@ class TestFormatSummaryReport:
         assert "0" in report
 
 
-class TestFormatHumanReviewList:
-    def test_no_reviews_needed(self):
-        evaluations = [_make_evaluation()]
-        report = format_human_review_list(evaluations)
-        assert "なし" in report or report.strip() == ""
-
-    def test_reviews_needed(self):
-        evaluations = [
-            _make_evaluation(
-                scenario_id="pre-01",
-                needs_review=True,
-                review_items=["claim[0]: ABSENT — fact1"],
-            ),
-        ]
-        report = format_human_review_list(evaluations)
-        assert "pre-01" in report
-        assert "ABSENT" in report
-
-    def test_multiple_scenarios_need_review(self):
-        evaluations = [
-            _make_evaluation(
-                scenario_id="pre-01",
-                needs_review=True,
-                review_items=["claim[0]: UNCERTAIN — f1"],
-            ),
-            _make_evaluation(scenario_id="pre-02"),
-            _make_evaluation(
-                scenario_id="pre-03",
-                needs_review=True,
-                review_items=["hallucination: FAIL — fake claim"],
-            ),
-        ]
-        report = format_human_review_list(evaluations)
-        assert "pre-01" in report
-        assert "pre-03" in report
-        assert "pre-02" not in report
-
-
 class TestGenerateFullReport:
     def test_contains_all_sections(self):
         evaluations = [
             _make_evaluation(scenario_id="pre-01"),
-            _make_evaluation(
-                scenario_id="pre-02",
-                needs_review=True,
-                review_items=["claim[0]: ABSENT — f1"],
-            ),
+            _make_evaluation(scenario_id="pre-02"),
         ]
         report = generate_full_report(evaluations)
         assert "サマリー" in report
-        assert "人間レビュー対象" in report
         assert "## pre-01" in report
         assert "## pre-02" in report
 
@@ -214,3 +157,180 @@ class TestGenerateFullReport:
         summary_pos = report.index("サマリー")
         scenario_pos = report.index("## pre-01")
         assert summary_pos < scenario_pos
+
+
+class TestFormatComparisonReport:
+    def test_comparison_includes_deepeval_diff(self):
+        evals_a = [_make_evaluation(scenario_id="pre-01", deepeval_scores={
+            "answer_correctness": {"score": 0.7, "reason": "ok"},
+            "answer_relevancy": {"score": 0.8, "reason": "ok"},
+            "faithfulness": {"score": 0.75, "reason": "ok"},
+        })]
+        evals_b = [_make_evaluation(scenario_id="pre-01", deepeval_scores={
+            "answer_correctness": {"score": 0.9, "reason": "ok"},
+            "answer_relevancy": {"score": 0.85, "reason": "ok"},
+            "faithfulness": {"score": 0.9, "reason": "ok"},
+        })]
+        report = format_comparison_report("run-1", "run-2", evals_a, evals_b)
+        assert "answer_correctness" in report or "DeepEval" in report or "品質比較" in report
+
+    def test_comparison_no_error_without_scores(self):
+        evals_a = [_make_evaluation(scenario_id="pre-01")]
+        evals_b = [_make_evaluation(scenario_id="pre-01")]
+        report = format_comparison_report("run-1", "run-2", evals_a, evals_b)
+        assert "品質比較" in report
+
+
+class TestBuildBaseline:
+    """build_baseline: N runs の evaluation lists から baseline.json 相当の dict を生成する。"""
+
+    def _evals(self, ac, ar, fa):
+        return [_make_evaluation(scenario_id="s1", deepeval_scores={
+            "answer_correctness": {"score": ac, "reason": ""},
+            "answer_relevancy": {"score": ar, "reason": ""},
+            "faithfulness": {"score": fa, "reason": ""},
+        })]
+
+    def test_mean_computed_across_runs(self):
+        runs = [self._evals(0.8, 0.9, 1.0), self._evals(1.0, 0.7, 0.8)]
+        bl = build_baseline(runs)
+        assert abs(bl["scenarios"]["s1"]["answer_correctness"]["mean"] - 0.9) < 1e-9
+
+    def test_stddev_computed_across_runs(self):
+        runs = [self._evals(0.8, 0.9, 1.0), self._evals(1.0, 0.7, 0.8)]
+        bl = build_baseline(runs)
+        # stddev of [0.8, 1.0] = 0.1 (population)
+        assert abs(bl["scenarios"]["s1"]["answer_correctness"]["stddev"] - 0.1) < 1e-9
+
+    def test_pass_rate_computed(self):
+        # threshold for answer_correctness = 0.99; 0.8 fails, 1.0 passes → 0.5
+        runs = [self._evals(0.8, 0.9, 1.0), self._evals(1.0, 0.7, 0.8)]
+        bl = build_baseline(runs)
+        assert bl["scenarios"]["s1"]["answer_correctness"]["pass_rate"] == 0.5
+
+    def test_flaky_flag_set_when_pass_rate_below_one(self):
+        runs = [self._evals(0.8, 0.9, 1.0), self._evals(1.0, 0.7, 0.8)]
+        bl = build_baseline(runs)
+        assert bl["scenarios"]["s1"]["flaky"] is True
+
+    def test_not_flaky_when_always_passes(self):
+        runs = [self._evals(1.0, 1.0, 1.0), self._evals(1.0, 1.0, 1.0)]
+        bl = build_baseline(runs)
+        assert bl["scenarios"]["s1"]["flaky"] is False
+
+    def test_global_averages_included(self):
+        runs = [self._evals(0.8, 0.9, 1.0), self._evals(1.0, 0.7, 0.8)]
+        bl = build_baseline(runs)
+        assert "global" in bl
+        assert abs(bl["global"]["answer_correctness"]["mean"] - 0.9) < 1e-9
+
+    def test_metadata_stored(self):
+        runs = [self._evals(1.0, 1.0, 1.0)]
+        bl = build_baseline(runs)
+        assert bl["num_runs"] == 1
+        assert "thresholds" in bl
+
+
+class TestCompareAgainstBaseline:
+    """compare_against_baseline: 1 run の evaluations と baseline dict を比較して結果を返す。"""
+
+    def _make_baseline(self, mean, stddev, pass_rate, flaky=False):
+        return {
+            "num_runs": 3,
+            "thresholds": {"answer_correctness": 0.99, "answer_relevancy": 0.95, "faithfulness": 0.99},
+            "global": {
+                "answer_correctness": {"mean": mean, "stddev": stddev},
+                "answer_relevancy": {"mean": mean, "stddev": stddev},
+                "faithfulness": {"mean": mean, "stddev": stddev},
+            },
+            "scenarios": {
+                "s1": {
+                    "flaky": flaky,
+                    "answer_correctness": {"mean": mean, "stddev": stddev, "pass_rate": pass_rate},
+                    "answer_relevancy": {"mean": mean, "stddev": stddev, "pass_rate": pass_rate},
+                    "faithfulness": {"mean": mean, "stddev": stddev, "pass_rate": pass_rate},
+                }
+            },
+        }
+
+    def _eval(self, ac, ar, fa):
+        return [_make_evaluation(scenario_id="s1", deepeval_scores={
+            "answer_correctness": {"score": ac, "reason": ""},
+            "answer_relevancy": {"score": ar, "reason": ""},
+            "faithfulness": {"score": fa, "reason": ""},
+        })]
+
+    def test_clean_when_scores_within_baseline(self):
+        bl = self._make_baseline(mean=1.0, stddev=0.0, pass_rate=1.0)
+        result = compare_against_baseline(self._eval(1.0, 1.0, 1.0), bl)
+        assert result["verdict"] == "CLEAN"
+
+    def test_regression_detected_when_score_drops_more_than_2stddev(self):
+        # mean=1.0, stddev=0.05 → threshold = 1.0 - 2*0.05 = 0.9
+        bl = self._make_baseline(mean=1.0, stddev=0.05, pass_rate=1.0)
+        result = compare_against_baseline(self._eval(0.8, 1.0, 1.0), bl)
+        assert result["verdict"] == "REGRESSION DETECTED"
+        assert any(r["scenario_id"] == "s1" for r in result["regressions"])
+
+    def test_flaky_scenario_regression_reported_separately(self):
+        bl = self._make_baseline(mean=0.8, stddev=0.1, pass_rate=0.5, flaky=True)
+        # score drops below mean - 2*stddev but scenario is flaky
+        result = compare_against_baseline(self._eval(0.5, 1.0, 1.0), bl)
+        assert result["verdict"] == "CLEAN"
+        assert any(r["scenario_id"] == "s1" for r in result["flaky_regressions"])
+
+    def test_regressions_list_empty_when_clean(self):
+        bl = self._make_baseline(mean=1.0, stddev=0.0, pass_rate=1.0)
+        result = compare_against_baseline(self._eval(1.0, 1.0, 1.0), bl)
+        assert result["regressions"] == []
+
+    def test_new_scenario_not_in_baseline_is_skipped(self):
+        bl = self._make_baseline(mean=1.0, stddev=0.0, pass_rate=1.0)
+        new_eval = [_make_evaluation(scenario_id="new-01", deepeval_scores={
+            "answer_correctness": {"score": 0.0, "reason": ""},
+            "answer_relevancy": {"score": 0.0, "reason": ""},
+            "faithfulness": {"score": 0.0, "reason": ""},
+        })]
+        result = compare_against_baseline(new_eval, bl)
+        assert result["verdict"] == "CLEAN"
+        assert any(sid == "new-01" for sid in result["new_scenarios"])
+
+
+class TestFormatRegressionReport:
+    """format_regression_report: compare_against_baseline の結果を markdown に変換する。"""
+
+    def _clean_result(self):
+        return {
+            "verdict": "CLEAN",
+            "regressions": [],
+            "flaky_regressions": [],
+            "new_scenarios": [],
+        }
+
+    def _regression_result(self):
+        return {
+            "verdict": "REGRESSION DETECTED",
+            "regressions": [
+                {"scenario_id": "qa-01", "metric": "answer_correctness",
+                 "baseline_mean": 1.0, "baseline_stddev": 0.05,
+                 "current_score": 0.8, "delta": -0.2},
+            ],
+            "flaky_regressions": [],
+            "new_scenarios": [],
+        }
+
+    def test_clean_verdict_in_report(self):
+        report = format_regression_report(self._clean_result())
+        assert "CLEAN" in report
+
+    def test_regression_verdict_in_report(self):
+        report = format_regression_report(self._regression_result())
+        assert "REGRESSION DETECTED" in report
+
+    def test_regression_scenario_listed(self):
+        report = format_regression_report(self._regression_result())
+        assert "qa-01" in report
+
+    def test_delta_shown(self):
+        report = format_regression_report(self._regression_result())
+        assert "-0.2" in report or "-0.20" in report

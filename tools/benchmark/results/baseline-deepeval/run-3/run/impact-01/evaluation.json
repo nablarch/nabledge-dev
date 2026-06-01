@@ -1,0 +1,67 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers the Expected Output's key fact: using SimpleDbTransactionManager to define individual transactions. In fact, the Actual Output goes well beyond the Expected Output by providing detailed implementation examples (SimpleDbTransactionExecutor, UniversalDao.Transaction, Doma adapter), XML configuration, and code samples. The core expected fact about SimpleDbTransactionManager for separate transactions is explicitly and prominently addressed."
+    },
+    "answer_relevancy": {
+      "score": 0.9473684210526315,
+      "reason": "The score is 0.95 because the response largely addressed the question about executing SQL in a separate transaction from the business transaction and retaining updates even after a rollback. The minor deduction is due to the inclusion of reference citations/metadata that do not directly contribute to answering the question."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/adapters/adapters-doma-adaptor.json:s8",
+      "component/libraries/libraries-database.json:s10",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s7",
+      "component/libraries/libraries-transaction.json:s5",
+      "component/adapters/adapters-doma-adaptor.json:s7",
+      "component/adapters/adapters-doma-adaptor.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 156693,
+    "duration_api_ms": 154226,
+    "num_turns": 3,
+    "total_cost_usd": 0.8893130499999999,
+    "usage": {
+      "input_tokens": 4,
+      "output_tokens": 5310,
+      "cache_read_input_tokens": 125173,
+      "cache_creation_input_tokens": 37113
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3198,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003343,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 10446,
+        "cacheReadInputTokens": 325311,
+        "cacheCreationInputTokens": 168441,
+        "webSearchRequests": 0,
+        "costUSD": 0.88597005,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

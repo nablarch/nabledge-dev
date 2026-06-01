@@ -1,0 +1,88 @@
+**結論**: `SimpleDbTransactionManager` を使用して業務トランザクションとは独立した個別トランザクションを定義し、そのトランザクションでSQLを実行することができます。業務トランザクションがロールバックされても、個別トランザクションでコミットされた更新は残ります。
+
+**根拠**:
+
+**JDBCラッパーを使う場合（`SimpleDbTransactionExecutor`）**
+
+コンポーネント設定ファイルに `SimpleDbTransactionManager` を定義します：
+
+```xml
+<component name="update-login-failed-count-transaction"
+    class="nablarch.core.db.transaction.SimpleDbTransactionManager">
+  <!-- connectionFactoryプロパティにConnectionFactory実装クラスを設定する -->
+  <property name="connectionFactory" ref="connectionFactory" />
+  <!-- transactionFactoryプロパティにTransactionFactory実装クラスを設定する -->
+  <property name="transactionFactory" ref="transactionFactory" />
+  <!-- トランザクションを識別するための名前を設定する -->
+  <property name="dbTransactionName" value="update-login-failed-count-transaction" />
+</component>
+```
+
+実装例（バッチアクション内など）：
+
+```java
+// システムリポジトリからSimpleDbTransactionManagerを取得する
+SimpleDbTransactionManager dbTransactionManager =
+    SystemRepository.get("update-login-failed-count-transaction");
+
+// SimpleDbTransactionManagerをコンストラクタに指定して実行する
+SqlResultSet resultSet = new SimpleDbTransactionExecutor<SqlResultSet>(dbTransactionManager) {
+  @Override
+  public SqlResultSet execute(AppDbConnection connection) {
+    SqlPStatement statement = connection.prepareStatementBySqlId(
+        "jp.co.tis.sample.action.SampleAction#findUser");
+    statement.setLong(1, userId);
+    return statement.retrieve();
+  }
+}.doTransaction();
+```
+
+**ユニバーサルDAOを使う場合（`UniversalDao.Transaction`）**
+
+同じコンポーネント設定ファイルの定義のもと、`UniversalDao.Transaction` を継承したクラスを作成します：
+
+```java
+private static final class FindPersonsTransaction extends UniversalDao.Transaction {
+
+    private EntityList<Person> persons;
+
+    FindPersonsTransaction() {
+        // コンポーネント定義で指定した名前を指定する
+        super("find-persons-transaction");
+    }
+
+    // このメソッドが自動的に別のトランザクションで実行される。
+    // 正常終了でコミット、例外・エラーでロールバック
+    @Override
+    protected void execute() {
+        persons = UniversalDao.findAllBySqlFile(Person.class, "FIND_PERSONS");
+    }
+
+    public EntityList<Person> getPersons() {
+        return persons;
+    }
+}
+```
+
+呼び出し：
+
+```java
+// 生成すると別のトランザクションで実行される
+FindPersonsTransaction findPersonsTransaction = new FindPersonsTransaction();
+EntityList<Person> persons = findPersonsTransaction.getPersons();
+```
+
+**Domaアダプタを使う場合**
+
+```java
+DomaConfig.singleton()
+        .getTransactionManager()
+        .requiresNew(() ->
+                DomaDaoRepository.get(ProjectDao.class).insert(project));
+```
+
+**注意点**: `SimpleDbTransactionManager` / `UniversalDao.Transaction` のいずれも、`execute()` メソッド内で例外・エラーが送出された場合はその個別トランザクションがロールバックされます。ロールバックされずに確定したい更新は、例外を発生させないよう制御してください。
+
+参照: libraries-database.json:s29, libraries-universal-dao.json:s20, adapters-doma-adaptor.json:s8
+
+---

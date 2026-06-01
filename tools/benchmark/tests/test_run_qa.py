@@ -125,8 +125,10 @@ SAMPLE_WORKFLOW_DETAILS = {
 
 class TestParseE2eResponse:
     def _make_response(self, answer_text, workflow_details=None):
+        """Build a response using the ### Answer marker format."""
         details = workflow_details or SAMPLE_WORKFLOW_DETAILS
         return (
+            f"### Answer\n"
             f"{answer_text}\n\n"
             f"### Workflow Details\n"
             f"```json\n{json.dumps(details, ensure_ascii=False, indent=2)}\n```\n"
@@ -163,7 +165,7 @@ class TestParseE2eResponse:
             parse_qa_response(response)
 
     def test_raises_on_invalid_json_in_workflow_details(self):
-        response = "回答\n\n### Workflow Details\n```json\n{invalid json\n```\n"
+        response = "### Answer\n回答\n\n### Workflow Details\n```json\n{invalid json\n```\n"
         with pytest.raises(ValueError, match="JSON"):
             parse_qa_response(response)
 
@@ -172,6 +174,33 @@ class TestParseE2eResponse:
         result = parse_qa_response(response)
         assert "Workflow Details" not in result["answer"]
         assert "step3" not in result["answer"]
+
+    def test_answer_excludes_pre_marker_narration(self):
+        """Narration before ### Answer (step transition text) must not appear in answer."""
+        details = SAMPLE_WORKFLOW_DETAILS
+        narration = "Step 4完了。`read_sections = [...]`\n\nStep 5 - 回答生成:\n\n"
+        response = (
+            f"{narration}"
+            f"### Answer\n"
+            f"本文回答\n\n"
+            f"### Workflow Details\n"
+            f"```json\n{json.dumps(details, ensure_ascii=False, indent=2)}\n```\n"
+        )
+        result = parse_qa_response(response)
+        assert "Step 4完了" not in result["answer"]
+        assert "Step 5" not in result["answer"]
+        assert result["answer"] == "本文回答"
+
+    def test_answer_marker_absent_falls_back_to_full_text_before_workflow_details(self):
+        """Legacy format without ### Answer marker: text before ### Workflow Details is the answer."""
+        details = SAMPLE_WORKFLOW_DETAILS
+        response = (
+            "レガシー回答テキスト\n\n"
+            "### Workflow Details\n"
+            f"```json\n{json.dumps(details, ensure_ascii=False, indent=2)}\n```\n"
+        )
+        result = parse_qa_response(response)
+        assert result["answer"] == "レガシー回答テキスト"
 
 
 class TestSaveE2eResults:
@@ -448,7 +477,7 @@ class TestRunE2eAll:
         scenarios_path.write_text(json.dumps({"scenarios": scenarios}), encoding="utf-8")
         return scenarios_path
 
-    FAKE_EVAL = {"scenario_id": "pre-01", "scores": {"accuracy": 1.0, "hallucination": 1}}
+    FAKE_EVAL = {"scenario_id": "pre-01", "scores": {"answer_correctness": {"score": 1.0, "reason": "ok"}, "answer_relevancy": {"score": 1.0, "reason": "ok"}, "faithfulness": {"score": 1.0, "reason": "ok"}}}
 
     def _run_all(self, tmpdir, scenarios=None, scenario_ids=None):
         skill_dir = self._setup_skill_dir(tmpdir)
@@ -551,7 +580,7 @@ class TestRunE2eAllErrorHandling:
         })
         return type("P", (), {"returncode": 0, "stdout": claude_out, "stderr": ""})()
 
-    FAKE_EVAL = {"scenario_id": "s1", "scores": {"accuracy": 1.0}}
+    FAKE_EVAL = {"scenario_id": "s1", "scores": {"answer_correctness": {"score": 1.0, "reason": "ok"}, "answer_relevancy": {"score": 1.0, "reason": "ok"}, "faithfulness": {"score": 1.0, "reason": "ok"}}}
 
     def test_continues_after_timeout(self):
         """TimeoutExpired on scenario 1 must not prevent scenario 2 from running."""
@@ -797,7 +826,7 @@ class TestMain:
         path.write_text(json.dumps({"scenarios": scenarios}), encoding="utf-8")
         return path
 
-    FAKE_EVAL = {"must": [], "acceptable": [], "hallucination": []}
+    FAKE_EVAL = {"scenario_id": "s1", "scores": {"answer_correctness": {"score": 1.0, "reason": "ok"}, "answer_relevancy": {"score": 1.0, "reason": "ok"}, "faithfulness": {"score": 1.0, "reason": "ok"}}}
 
     def test_main_does_not_crash_when_scenario_has_error(self):
         """main() must not raise KeyError when summary contains error scenarios."""

@@ -1,0 +1,63 @@
+{
+  "scenario_id": "qa-12b",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers both key facts from the Expected Output: (1) that @Valid annotation automatically triggers validation and results in an error response (covered in detail with code examples showing JaxRsBeanValidationHandler and ApplicationException), and (2) that an ErrorResponseBuilder subclass is used to set error messages in the response body (covered with a concrete implementation example and XML configuration). Both checklist items are fully addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, directly addressing how to return error messages to users when input validation errors occur. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11",
+      "component/handlers/handlers-jaxrs-response-handler.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 96675,
+    "duration_api_ms": 94813,
+    "num_turns": 9,
+    "total_cost_usd": 0.7217216500000001,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 5617,
+      "cache_read_input_tokens": 717693,
+      "cache_creation_input_tokens": 111685
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3178,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003313,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 5617,
+        "cacheReadInputTokens": 717693,
+        "cacheCreationInputTokens": 111685,
+        "webSearchRequests": 0,
+        "costUSD": 0.7184086500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

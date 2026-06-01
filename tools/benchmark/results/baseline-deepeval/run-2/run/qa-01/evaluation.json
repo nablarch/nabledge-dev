@@ -1,0 +1,62 @@
+{
+  "scenario_id": "qa-01",
+  "description": "バッチで10万件のデータを読み込んで加工する処理を書いている。findAllBySqlFileで全件取得したらOutOfMemoryErrorが出た。",
+  "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts clearly. It mentions using `UniversalDao.defer()` for deferred loading (遅延ロード), directly corresponding to the first expected fact. It also explicitly states that `DeferredEntityList#close` must be called (and demonstrates this with try-with-resources), directly corresponding to the second expected fact. Both expected facts are present and accurately represented without contradiction."
+    },
+    "answer_relevancy": {
+      "score": 0.8461538461538461,
+      "reason": "The score is 0.85 because the response mostly addresses the question about handling large data searches and loading records one by one to avoid memory issues. However, it loses some points for including irrelevant content about anti-patterns of custom loops within the handle method and transaction log issues related to custom loops, which are not directly relevant to the core question about memory shortage and record-by-record loading."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s9",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s11",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 97916,
+    "duration_api_ms": 95854,
+    "num_turns": 8,
+    "total_cost_usd": 0.6833925999999999,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 6134,
+      "cache_read_input_tokens": 498662,
+      "cache_creation_input_tokens": 116924
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3168,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0032979999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 6134,
+        "cacheReadInputTokens": 498662,
+        "cacheCreationInputTokens": 116924,
+        "webSearchRequests": 0,
+        "costUSD": 0.6800945999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

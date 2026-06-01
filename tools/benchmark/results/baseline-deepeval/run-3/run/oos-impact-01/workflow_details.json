@@ -1,0 +1,164 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "guide/biz-samples/biz-samples-12.json",
+        "reason": "OIDCのIDトークンを用いた認証サンプルであり、今回の質問に直接対応するページ"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "NablarchのIPA脆弱性チェックリスト。認証機能の提供状況が明記されている"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの機能詳細インデックス。認証に関するフレームワークの方針が記載されている"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "guide/biz-samples/biz-samples-01.json",
+        "reason": "パスワード認証サンプルであり、OAuth2/OIDCとは無関係"
+      },
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "reason": "CSRF対策ハンドラの詳細であり、今回の主質問（OAuth2/OIDC組み込み有無）の直接回答ではない"
+      },
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッション管理の詳細であり、今回の主質問の直接回答ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "OIDCサンプルの概要。想定構成・対応サービス（Cognito/ADB2C）が記載"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "サンプルが扱う範囲（バックエンドのJWT検証のみ）を明記"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "IdTokenVerifier/SignatureAlgorithmProviderインタフェースの定義"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "Cognitoに対応した実装クラス一覧"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "java-jwt/jwks-rsaライブラリの依存関係設定"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "コンポーネント定義XML（CognitoIdTokenVerifier等のwiring設定）"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "IDトークン検証の実装コード（CognitoIdTokenVerifier, CognitoRSAKeyProvider等）"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "ログインアクション実装例（SessionUtil.changeId, CsrfTokenUtil.regenerateCsrfToken等）"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "「Nablarchは認証チェック機能を提供していない」という公式の明示"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションの認証はフレームワークとして提供しない旨の記述"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s1",
+        "reason": "提供パッケージ名のみでありOAuth2/OIDC有無の回答に不要"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s12",
+        "reason": "環境依存値の設定（Cognitoリージョン等）の詳細であり、主回答に必須ではない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "biz-samples-12.json:s2",
+      "biz-samples-12.json:s3",
+      "biz-samples-12.json:s7",
+      "biz-samples-12.json:s8",
+      "biz-samples-12.json:s11",
+      "biz-samples-12.json:s13",
+      "biz-samples-12.json:s14",
+      "biz-samples-12.json:s16",
+      "security-check-2.チェックリスト.json:s11",
+      "web-application-feature-details.json:s13"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "biz-samples-12.json:s2",
+          "reason": "OIDCサンプルの想定構成と対応サービス（Cognito/ADB2C）を説明するために使用"
+        },
+        {
+          "ref": "biz-samples-12.json:s3",
+          "reason": "サンプルがバックエンドJWT検証のみを対象とすることを注意点として使用"
+        },
+        {
+          "ref": "biz-samples-12.json:s11",
+          "reason": "必要なMavenライブラリ依存関係のコード例として使用"
+        },
+        {
+          "ref": "biz-samples-12.json:s13",
+          "reason": "コンポーネント定義XMLの設定例として使用"
+        },
+        {
+          "ref": "biz-samples-12.json:s16",
+          "reason": "ログインアクション実装例（SessionUtil.changeId, CsrfTokenUtil.regenerateCsrfToken）として使用"
+        },
+        {
+          "ref": "security-check-2.チェックリスト.json:s11",
+          "reason": "「Nablarchは認証チェック機能を提供していない」という明示的な記述を結論に使用"
+        },
+        {
+          "ref": "web-application-feature-details.json:s13",
+          "reason": "認証はフレームワークとして提供しないという方針の記述を結論に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "biz-samples-12.json:s7",
+          "reason": "インタフェース名一覧のみであり、本文で触れるには詳細すぎたため割愛"
+        },
+        {
+          "ref": "biz-samples-12.json:s8",
+          "reason": "クラス名一覧はs13・s16のコード例で代替できたため割愛"
+        }
+      ]
+    }
+  }
+}

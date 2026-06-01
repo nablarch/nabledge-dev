@@ -1,0 +1,63 @@
+{
+  "scenario_id": "qa-07",
+  "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。",
+  "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers the key fact from the Expected Output: using ObjectMapperFactory#create to generate an ObjectMapper for reading data. This is explicitly demonstrated in both the DataReader implementation (initialize() method) and the direct usage example, showing `ObjectMapperFactory.create(SampleForm.class, ...)` being called to create an ObjectMapper for reading CSV data."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing how to read each row of a CSV file as a Java Beans object one by one. No irrelevant statements were identified!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "component/libraries/libraries-data-bind.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 136449,
+    "duration_api_ms": 134422,
+    "num_turns": 9,
+    "total_cost_usd": 0.8789748,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 8295,
+      "cache_read_input_tokens": 811966,
+      "cache_creation_input_tokens": 135356
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3180,
+        "outputTokens": 33,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003345,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 8295,
+        "cacheReadInputTokens": 811966,
+        "cacheCreationInputTokens": 135356,
+        "webSearchRequests": 0,
+        "costUSD": 0.8756298,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

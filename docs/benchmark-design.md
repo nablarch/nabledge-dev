@@ -6,7 +6,7 @@
 
 ## 概要
 
-QAワークフロー（`workflows/qa.md`）を E2E で実行し、回答精度とハルシネーションを自動評価する。キーワード検索スクリプトの単体評価も独立して実行できる。
+QAワークフロー（`workflows/qa.md`）を E2E で実行し、回答精度・関連性・ハルシネーションを自動評価する。キーワード検索スクリプトの単体評価も独立して実行できる。
 
 ---
 
@@ -23,9 +23,7 @@ tools/benchmark/
 │   ├── evaluate.py             — 評価ロジック
 │   └── report.py               — レポート生成
 ├── prompts/
-│   ├── e2e-prompt.md           — E2Eプロンプトテンプレート
-│   ├── c-claim-judge.md        — C-claimジャッジプロンプト
-│   └── hallucination-judge.md  — ハルシネーションジャッジプロンプト
+│   └── e2e-prompt.md           — E2Eプロンプトテンプレート
 ├── tests/                       — ユニットテスト
 ├── results/                     — 実行結果（gitトラッキング対象、コミット任意）
 └── HOW-TO-RUN.md               — 実行手順
@@ -83,10 +81,10 @@ tools/benchmark/
 | `when.input` | ユーザーの質問テキスト |
 | `when.expected_hearing` | ヒアリングが発生するか（`should_skip`: スキップ予想、`should_ask`: 発生予想） |
 | `when.hearing_answer` | ランナーがStep 1/2をスキップしてStep 3から開始するための事前設定値 |
-| `then.must` | 回答に必ず含まれるべき事実のリスト（`section` はC-claimジャッジが参照するナレッジセクション） |
+| `then.must` | 回答に必ず含まれるべき事実のリスト（`section` はDeepEvalが `retrieval_context` を構築する際に参照するナレッジセクション） |
 | `then.acceptable` | あってもよいセクションのリスト（評価には不使用） |
 
-`must.section` が `null` または未設定のケース: アウトオブスコープシナリオ（ナレッジに情報がない質問）で使用。C-claimジャッジにはセクションなしで空文字を渡す。
+`must.section` が `null` または未設定のケース: アウトオブスコープシナリオ（ナレッジに情報がない質問）で使用。`retrieval_context` はセクションなしで空リストを渡す。
 
 ### キーワード検索シナリオ（`scenarios/keyword-search.json`）
 
@@ -125,7 +123,7 @@ tools/benchmark/
 
 1つ目は**ヒアリングのスキップ**。`qa.md` は Step 2 でユーザーに処理方式・目的を確認するが、ベンチマークは非対話型のため実行できない。そこでシナリオの `hearing_answer` を質問テキストに付記（`（処理方式: X）（目的: Y）`）してから渡すことで、`qa.md` が Step 1 で両軸を確定済みと判断し Step 3 へ直接進む。
 
-2つ目は**AI判断の可視化**。通常の `qa.md` に加え `e2e-prompt.md` の追加指示を重ねることで、Step 3 のページ/セクション選定理由、Step 4 の実際に読んだセクション、Step 8 の使用/未使用セクションをすべて `Workflow Details` として出力させる。これによりAIがどのページを選び、なぜその回答になったかを追跡でき、FAILの根本原因調査が可能になる。ただし追加の出力指示により、実行時間・トークン量は通常使用時より増大する。
+2つ目は**AI判断の可視化**。通常の `qa.md` に加え `e2e-prompt.md` の追加指示を重ねることで、Step 3 のページ/セクション選定理由、Step 4 の実際に読んだセクション、Step 8 の使用/未使用セクションをすべて `Workflow Details` として出力させる。これによりAIがどのページを選び、なぜその回答になったかを追跡でき、閾値割れの根本原因調査が可能になる。ただし追加の出力指示により、実行時間・トークン量は通常使用時より増大する。
 
 ### 処理フロー
 
@@ -194,46 +192,53 @@ must セクションがないシナリオのリコール率は 1.0。
 
 ## 評価ロジック（`scripts/evaluate.py`）
 
-**設計意図**: 評価を2軸に分ける。「回答精度」は期待する事実が回答に含まれているかを測り、「ハルシネーション」はナレッジに根拠のないNablarch固有クレームが混入していないかを測る。
+**設計意図**: 評価を3軸（回答精度・関連性・ハルシネーション）で行い、すべてDeepEvalの標準RAGメトリクスで自動判定する。スコアは0.0〜1.0の数値で返り、閾値を下回ったシナリオを改善対象として特定する。
 
-LLM判定は全シナリオに対して実施するが、結果はAIによる詳細レポートと合わせてユーザーが確認し、FAILは人間が最終判断する。LLMジャッジは判定を求められると厳しく指摘する傾向があり、正しい回答をFAILと判定するケースがある。そのためLLM判定の結果をそのまま確定させるのではなく、ユーザーが承認したFAILのみを確定FAILとして扱う。
+### 評価の3軸
 
-### 評価の2軸
+| 軸 | DeepEvalクラス | 定義 | スコア値域 |
+|---|---|---|---|
+| 回答精度（answer_correctness） | `GEval` | `actual_output` が `must.facts` に列挙された事実を網羅しているか | 0.0〜1.0 |
+| 関連性（answer_relevancy） | `AnswerRelevancyMetric` | `actual_output` が `input`（質問）に対して関連した内容を回答しているか | 0.0〜1.0 |
+| ハルシネーション（faithfulness） | `FaithfulnessMetric` | `actual_output` の主張が `retrieval_context`（検索セクション内容）で裏付けられているか | 0.0〜1.0 |
 
-| 軸 | 評価方法 | 判定値 |
-|---|---|---|
-| 回答精度（C-claim） | 各 `must.fact` がanswer.mdに含まれているかをLLMで判定 | `PRESENT` / `ABSENT` / `UNCERTAIN` |
-| ハルシネーション | answer.mdのNablarch固有クレームがナレッジセクションで裏付けられるかをLLMで判定 | `PASS` / `FAIL` / `UNCERTAIN` |
+### LLMTestCase へのデータマッピング
 
-### C-claimジャッジ
+| `LLMTestCase` フィールド | 取得元 |
+|---|---|
+| `input` | `scenario["when"]["input"]` |
+| `actual_output` | `answer.md` の内容 |
+| `expected_output` | `must.facts` を改行結合したテキスト（answer_correctness 用） |
+| `retrieval_context` | `diagnostics.search_sections`（`path/to/file.json:sN` 形式）の各セクション内容リスト |
 
-各 `must.fact` について `c-claim-judge.md` プロンプトに `{fact}`, `{answer}`, `{section_content}` を挿入してLLMで判定する。`must.section` が空の場合はセクション内容に空文字を渡す。
-
-### ハルシネーションジャッジ
-
-判定の根拠テキスト（`sections_text`）は2種類のコンテンツを合わせて構築する:
-1. `must` と `acceptable` の全セクション内容
-2. ランナーが選択した `step3.selected_pages` の全ページの全セクション — LLMが意味検索のStep 2でページ全体を読んでいるため、ページ全体を根拠として含める
-
-`hallucination-judge.md` に `{answer}`, `{sections}` を挿入してLLMで判定する。
+**注意**: `retrieval_context` の未解決参照は無視（スキップ）する。
 
 ### スコア計算
 
-**精度スコア**: `UNCERTAIN` が1件でも含まれると `None`（未確定）。それ以外は `PRESENT` 件数 / 総件数。  
-**ハルシネーションスコア**: `PASS` → `1` / `FAIL` → `0` / `UNCERTAIN` → `None`。
+各指標はDeepEvalライブラリが非同期で計算し、`float`（0.0〜1.0）として返す。計算失敗時は `None`。
+
+`evaluation.json["scores"]` の構造:
+
+```json
+{
+  "answer_correctness": {"score": 0.9, "reason": "..."},
+  "answer_relevancy":   {"score": 0.8, "reason": "..."},
+  "faithfulness":       {"score": 1.0, "reason": "..."}
+}
+```
+
+`reason` はDeepEvalが生成する判定根拠テキスト（調査・デバッグ用）。
 
 ---
 
 ## 評価フロー
 
-**設計意図**: LLM判定は全シナリオに対して自動実施するが、FAILの確定は人間が行う。LLMジャッジは判定を求められると厳しく指摘する傾向があり、正しい回答をFAILと判定するケースがある。そのためベンチマーク実行後にAIが詳細レポートを作成して判定根拠を示し、ユーザーが各FAILを確認・承認する。承認されたFAILのみが確定FAILとなる。
-
 ```
 ベンチマーク実行（全シナリオ）
   ↓
-AIがFAIL/UNCERTAINの原因を分析しレポートを作成
+DeepEval 3指標を自動計算（スコア + reason を evaluation.json に保存）
   ↓
-ユーザーが各FAILを確認・承認 → 確定FAIL確定
+report.py でレポート生成（閾値割れシナリオを一覧）
   ↓
 3 run完了後、集計・比較・根本原因調査
 ```
@@ -244,30 +249,27 @@ AIがFAIL/UNCERTAINの原因を分析しレポートを作成
 
 ## レポート生成（`scripts/report.py`）
 
-**設計意図**: 3種類のレポートを用途に応じて出力する。シナリオ別レポートはFAILの原因調査用、サマリーレポートは全体品質の把握用、比較レポートは改善前後の変化確認用。
+**設計意図**: 3種類のレポートを用途に応じて出力する。シナリオ別レポートは閾値割れの原因調査用、サマリーレポートは全体品質の把握用、比較レポートは改善前後の変化確認用。
 
 ### シナリオ別レポート
 
 各シナリオの評価結果を表形式で出力:
-- 評価結果表（回答精度・ハルシネーションの自動判定・人間判定・スコア）
-- 回答精度詳細（各factの判定と理由）
+- DeepEval 3指標のスコアと判定根拠（reason）
 - 診断情報（ヒアリング状態・検索セクション）
 - メトリクス（実行時間・トークン量・ツール呼び出し数）
 
 ### サマリーレポート
 
 全シナリオを集計:
-- 精度・ハルシネーション × 対象件数・確定件数・未確定・平均スコア・最低スコア・全PASS率
+- DeepEval 3指標 × 対象件数・平均スコア・最低スコア・閾値通過率
 - パフォーマンスサマリー（実行時間・API時間・ターン数・トークン量・コスト の 平均/P50/P95/最大/合計）
-
-`UNCERTAIN` を含むシナリオは「未確定」としてカウントし、平均・PASS率の計算から除外する。
 
 ### 比較レポート
 
 2つの実行ラベルを比較:
-- 品質比較（精度平均・ハルシネーションPASS率・差分）
+- 品質比較（各指標の平均スコア・差分）
 - パフォーマンス比較（実行時間・コスト・ターン数・変化率）
-- シナリオ別差分（精度スコアが変化したシナリオのみ）
+- シナリオ別差分（スコアが変化したシナリオのみ）
 
 ### レポート出力先
 
@@ -275,6 +277,50 @@ AIがFAIL/UNCERTAINの原因を分析しレポートを作成
 |---|---|
 | フルレポート（1実行） | `{run-dir}/report.md` |
 | 比較レポート | `{run-dir}/comparison-{label_b}.md` |
+
+---
+
+## DeepEval RAGメトリクス
+
+### 指標選定根拠
+
+既存の評価軸（C-claimジャッジ・ハルシネーションジャッジ）はLLM-as-judgeによる独自指標であった。DeepEvalの3指標との相関分析（SC2）を実施した結果、`answer_correctness` ↔ `accuracy` が96.4%一致、`faithfulness` ↔ `hallucination` が88.5%一致することを確認した。この結果を受け、独自LLMジャッジをDeepEval標準指標に完全置き換えとした。
+
+DeepEval採用の利点:
+- **再現性**: 数値スコアで閾値による自動判定が可能（`UNCERTAIN` による人間確認ループが不要）
+- **標準性**: RAG研究コミュニティの標準指標との比較が可能
+- **補完**: `answer_relevancy` は旧指標では捉えられなかった「的外れな回答」を検出できる
+
+### ジャッジLLM接続方式
+
+- **方式**: DeepEval組み込みの `AmazonBedrockModel` を使用
+- **モデル**: `jp.anthropic.claude-sonnet-4-6`（環境変数 `BEDROCK_MODEL_ID` で上書き可能）
+- **リージョン**: `ap-northeast-1`（環境変数 `AWS_REGION` で上書き可能）
+- **SSL**: `AWS_CA_BUNDLE` 環境変数で社内CA証明書を指定（`/usr/local/share/ca-certificates/ca.crt`）
+- **認証**: `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_REGION` 環境変数（既存Bedrock接続と共通）
+
+### PASS/FAILしきい値
+
+各指標の閾値はNabledgeの品質基準（ミッションクリティカルな金融系システム向け）から設定する:
+
+| 指標 | 閾値 | 根拠 |
+|------|------|------|
+| answer_correctness | 0.99 | 実装に必要な事実の欠落は誤実装に直結する |
+| answer_relevancy | 0.95 | 多少の冗長・脱線は許容するが大きな逸脱は不可 |
+| faithfulness | 0.99 | ハルシネーション（根拠なし記述）は誤実装に直結する |
+
+閾値を下回ったシナリオをレポートで一覧し、改善対象として扱う。
+
+### 依存関係
+
+`tools/benchmark/requirements.txt` に記載:
+
+```
+deepeval
+aiobotocore
+```
+
+`setup.sh` の `tools/rbkc/requirements.txt` インストールブロックの直後に自動インストールされる。
 
 ---
 

@@ -2,8 +2,34 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
+
+_DEEPEVAL_KEYS = ("answer_correctness", "answer_relevancy", "faithfulness")
+_DEEPEVAL_THRESHOLDS = {
+    "answer_correctness": 0.99,
+    "answer_relevancy": 0.95,
+    "faithfulness": 0.99,
+}
+
+
+def _score_value(scores: dict, key: str) -> float | None:
+    """Extract float score from scores dict. Handles {score, reason} or None."""
+    entry = scores.get(key)
+    if entry is None:
+        return None
+    if isinstance(entry, dict):
+        return entry.get("score")
+    return float(entry)
+
+
+def _score_reason(scores: dict, key: str) -> str:
+    """Extract reason string from scores dict."""
+    entry = scores.get(key)
+    if isinstance(entry, dict):
+        return entry.get("reason") or ""
+    return ""
 
 
 def format_scenario_report(evaluation: dict) -> str:
@@ -11,67 +37,35 @@ def format_scenario_report(evaluation: dict) -> str:
     sid = evaluation["scenario_id"]
     desc = evaluation.get("description", "")
     input_text = evaluation.get("input", "")
-    claims = evaluation.get("claim_verdicts", [])
-    hallucination = evaluation.get("hallucination", {})
     scores = evaluation.get("scores", {})
     diagnostics = evaluation.get("diagnostics", {})
     metrics = evaluation.get("metrics", {})
-    needs_review = evaluation.get("needs_human_review", False)
 
-    accuracy = scores.get("accuracy")
-    h_score = scores.get("hallucination")
-
-    accuracy_display = f"{accuracy:.2f}" if accuracy is not None else "N/A"
-    h_display = str(h_score) if h_score is not None else "N/A"
-
-    present_count = sum(1 for c in claims if c["verdict"] == "PRESENT")
-    uncertain_count = sum(1 for c in claims if c["verdict"] == "UNCERTAIN")
-    absent_count = sum(1 for c in claims if c["verdict"] == "ABSENT")
-
-    accuracy_auto = []
-    if present_count:
-        accuracy_auto.append(f"{present_count} PRESENT")
-    if absent_count:
-        accuracy_auto.append(f"{absent_count} ABSENT")
-    if uncertain_count:
-        accuracy_auto.append(f"{uncertain_count} UNCERTAIN")
-    accuracy_auto_str = ", ".join(accuracy_auto) if accuracy_auto else "N/A"
-
-    accuracy_review = "要レビュー" if (uncertain_count or absent_count) else "-"
-    h_review = "要レビュー" if hallucination.get("verdict") in ("FAIL", "UNCERTAIN") else "-"
+    def _fmt(v):
+        return f"{v:.2f}" if v is not None else "N/A"
 
     lines = [
         f"## {sid}: {desc}",
         "",
         f"**入力**: {input_text}",
         "",
-        "### 評価結果",
+        "### DeepEval スコア",
         "",
-        "| 軸 | 自動判定 | 人間判定 | スコア |",
-        "|---|---|---|---|",
-        f"| 回答精度 | {accuracy_auto_str} | {accuracy_review} | {accuracy_display} |",
-        f"| ハルシネーション | {hallucination.get('verdict', 'N/A')} | {h_review} | {h_display} |",
-        "",
+        "| 指標 | スコア | 判定根拠 |",
+        "|---|---|---|",
     ]
 
-    if claims:
-        lines.extend([
-            "### 回答精度詳細",
-            "",
-            "| # | fact | 判定 | 理由 |",
-            "|---|------|------|------|",
-        ])
-        for i, c in enumerate(claims):
-            verdict_str = c["verdict"]
-            if verdict_str in ("UNCERTAIN", "ABSENT"):
-                verdict_str = f"{verdict_str} **要レビュー**"
-            lines.append(f"| {i + 1} | {c['fact']} | {verdict_str} | {c.get('reason', '')} |")
-        lines.append("")
+    for key in _DEEPEVAL_KEYS:
+        score = _score_value(scores, key)
+        reason = _score_reason(scores, key)
+        lines.append(f"| {key} | {_fmt(score)} | {reason} |")
 
-    hearing = diagnostics.get("hearing", {})
+    lines.append("")
+
     search_sections = diagnostics.get("search_sections", [])
-    hearing_str = hearing.get("status", "N/A")
-    if hearing.get("questions"):
+    hearing = diagnostics.get("hearing", {})
+    hearing_str = hearing.get("status", "N/A") if hearing else "N/A"
+    if hearing and hearing.get("questions"):
         hearing_str += " — " + ", ".join(hearing["questions"])
 
     lines.extend([
@@ -106,68 +100,47 @@ def format_summary_report(evaluations: list[dict]) -> str:
     if not evaluations:
         return _empty_summary()
 
-    accuracy_scores = []
-    accuracy_uncertain = 0
-    h_scores = []
-    h_uncertain = 0
+    total = len(evaluations)
 
-    for ev in evaluations:
-        scores = ev.get("scores", {})
-        a = scores.get("accuracy")
-        h = scores.get("hallucination")
+    avgs = {}
+    for key in _DEEPEVAL_KEYS:
+        vals = [
+            _score_value(ev.get("scores", {}), key)
+            for ev in evaluations
+        ]
+        vals = [v for v in vals if v is not None]
+        avgs[key] = sum(vals) / len(vals) if vals else None
 
-        if a is not None:
-            if ev.get("needs_human_review", False):
-                accuracy_uncertain += 1
-            else:
-                accuracy_scores.append(a)
-        # N/A accuracy scenarios are excluded entirely
+    def _fmt(v):
+        return f"{v:.2f}" if v is not None else "N/A"
 
-        if h is not None:
-            h_scores.append(h)
-        else:
-            h_uncertain += 1
-
-    total_with_accuracy = len([
-        ev for ev in evaluations if ev.get("scores", {}).get("accuracy") is not None
-    ])
-    total_h = len(evaluations)
-
-    acc_confirmed = len(accuracy_scores)
-    acc_avg = sum(accuracy_scores) / len(accuracy_scores) if accuracy_scores else 0
-    acc_min = min(accuracy_scores) if accuracy_scores else 0
-    acc_pass = sum(1 for s in accuracy_scores if s == 1.0)
-
-    h_confirmed = len(h_scores)
-    h_avg = sum(h_scores) / len(h_scores) if h_scores else 0
-    h_min = min(h_scores) if h_scores else 0
-    h_pass = sum(1 for s in h_scores if s == 1)
+    threshold_pass = {}
+    for key in _DEEPEVAL_KEYS:
+        vals = [
+            _score_value(ev.get("scores", {}), key)
+            for ev in evaluations
+        ]
+        vals = [v for v in vals if v is not None]
+        threshold_pass[key] = sum(1 for v in vals if v >= _DEEPEVAL_THRESHOLDS[key])
 
     lines = [
         "## サマリー",
         "",
-        "| 軸 | 対象件数 | 確定件数 | 未確定 | 平均スコア | 最低スコア | 全PASS率 |",
-        "|---|---|---|---|---|---|---|",
+        f"総シナリオ数: {total}",
+        "",
+        "### DeepEval メトリクスサマリー",
+        "",
+        "| 指標 | 平均スコア | 閾値通過 |",
+        "|---|---|---|",
     ]
 
-    if total_with_accuracy > 0:
-        lines.append(
-            f"| 回答精度 | {total_with_accuracy} | {acc_confirmed} | {accuracy_uncertain} "
-            f"| {acc_avg:.2f} | {acc_min:.2f} | {acc_pass}/{acc_confirmed} |"
-        )
-    else:
-        lines.append("| 回答精度 | 0 | 0 | 0 | N/A | N/A | N/A |")
+    for key in _DEEPEVAL_KEYS:
+        avg = avgs[key]
+        pass_count = threshold_pass[key]
+        thr = _DEEPEVAL_THRESHOLDS[key]
+        lines.append(f"| {key} | {_fmt(avg)} | {pass_count}/{total}（≥{thr}） |")
 
-    lines.append(
-        f"| ハルシネーション | {total_h} | {h_confirmed} | {h_uncertain} "
-        f"| {h_avg:.2f} | {h_min} | {h_pass}/{h_confirmed} |"
-    )
-
-    lines.extend([
-        "",
-        "※ 未確定 = 人間レビュー未完了（UNCERTAIN含む）。平均・PASS率は確定分のみで計算。",
-        "",
-    ])
+    lines.append("")
 
     all_metrics = [ev.get("metrics", {}) for ev in evaluations]
 
@@ -177,13 +150,13 @@ def format_summary_report(evaluations: list[dict]) -> str:
         s = sorted(vals)
         return sum(s) / len(s), s[len(s) // 2], s[int(len(s) * 0.95)], max(s), sum(s)
 
-    durations    = [m["duration_ms"] for m in all_metrics if m.get("duration_ms")]
+    durations     = [m["duration_ms"] for m in all_metrics if m.get("duration_ms")]
     api_durations = [m["duration_api_ms"] for m in all_metrics if m.get("duration_api_ms")]
     num_turns_list = [m["num_turns"] for m in all_metrics if m.get("num_turns")]
-    costs        = [m["total_cost_usd"] for m in all_metrics if m.get("total_cost_usd")]
-    in_tokens    = [m.get("usage", {}).get("input_tokens", 0) for m in all_metrics if m.get("usage", {}).get("input_tokens")]
-    out_tokens   = [m.get("usage", {}).get("output_tokens", 0) for m in all_metrics if m.get("usage", {}).get("output_tokens")]
-    cache_read   = [m.get("usage", {}).get("cache_read_input_tokens", 0) for m in all_metrics if m.get("usage", {}).get("cache_read_input_tokens")]
+    costs         = [m["total_cost_usd"] for m in all_metrics if m.get("total_cost_usd")]
+    in_tokens     = [m.get("usage", {}).get("input_tokens", 0) for m in all_metrics if m.get("usage", {}).get("input_tokens")]
+    out_tokens    = [m.get("usage", {}).get("output_tokens", 0) for m in all_metrics if m.get("usage", {}).get("output_tokens")]
+    cache_read    = [m.get("usage", {}).get("cache_read_input_tokens", 0) for m in all_metrics if m.get("usage", {}).get("cache_read_input_tokens")]
 
     if durations:
         d_avg, d_p50, d_p95, d_max, _ = _stats([v / 1000 for v in durations])
@@ -217,43 +190,26 @@ def format_summary_report(evaluations: list[dict]) -> str:
 
 
 def _empty_summary() -> str:
-    return "\n".join([
+    lines = [
         "## サマリー",
         "",
-        "| 軸 | 対象件数 | 確定件数 | 未確定 | 平均スコア | 最低スコア | 全PASS率 |",
-        "|---|---|---|---|---|---|---|",
-        "| 回答精度 | 0 | 0 | 0 | N/A | N/A | N/A |",
-        "| ハルシネーション | 0 | 0 | 0 | N/A | N/A | N/A |",
+        "総シナリオ数: 0",
         "",
-    ])
-
-
-def format_human_review_list(evaluations: list[dict]) -> str:
-    """Generate list of items needing human review."""
-    review_scenarios = [
-        ev for ev in evaluations if ev.get("needs_human_review", False)
+        "### DeepEval メトリクスサマリー",
+        "",
+        "| 指標 | 平均スコア | 閾値通過 |",
+        "|---|---|---|",
     ]
-    if not review_scenarios:
-        return "人間レビュー対象: なし\n"
-
-    lines = ["## 人間レビュー対象", ""]
-    for ev in review_scenarios:
-        sid = ev["scenario_id"]
-        items = ev.get("human_review_items", [])
-        lines.append(f"### {sid}")
-        for item in items:
-            lines.append(f"- {item}")
-        lines.append("")
-
+    for key in _DEEPEVAL_KEYS:
+        thr = _DEEPEVAL_THRESHOLDS[key]
+        lines.append(f"| {key} | N/A | 0/0（≥{thr}） |")
+    lines.append("")
     return "\n".join(lines)
 
 
 def generate_full_report(evaluations: list[dict]) -> str:
     """Generate complete benchmark report."""
     parts = [format_summary_report(evaluations), ""]
-
-    review_list = format_human_review_list(evaluations)
-    parts.extend([review_list, ""])
 
     for ev in evaluations:
         parts.append(format_scenario_report(ev))
@@ -270,37 +226,35 @@ def _load_evaluations(run_dir: Path) -> list[dict]:
 
 
 def format_comparison_report(label_a: str, label_b: str, evals_a: list[dict], evals_b: list[dict]) -> str:
-    """Generate comparison report between two run labels (design spec: 比較レポート)."""
+    """Generate comparison report between two run labels."""
 
-    def _avg_accuracy(evals: list[dict]) -> float | None:
-        scores = [ev["scores"]["accuracy"] for ev in evals if ev.get("scores", {}).get("accuracy") is not None]
-        return sum(scores) / len(scores) if scores else None
-
-    def _hallucination_pass(evals: list[dict]) -> tuple[int, int]:
-        scores = [ev["scores"]["hallucination"] for ev in evals if ev.get("scores", {}).get("hallucination") is not None]
-        return sum(1 for s in scores if s == 1), len(scores)
+    def _avg(evals: list[dict], key: str) -> float | None:
+        vals = [
+            _score_value(ev.get("scores", {}), key)
+            for ev in evals
+        ]
+        vals = [v for v in vals if v is not None]
+        return sum(vals) / len(vals) if vals else None
 
     def _avg_metric(evals: list[dict], key: str) -> float | None:
         vals = [ev.get("metrics", {}).get(key) for ev in evals if ev.get("metrics", {}).get(key) is not None]
         return sum(vals) / len(vals) if vals else None
 
-    def _avg_nested(evals: list[dict], outer: str, inner: str) -> float | None:
-        vals = [ev.get("metrics", {}).get(outer, {}).get(inner) for ev in evals]
-        vals = [v for v in vals if v is not None]
-        return sum(vals) / len(vals) if vals else None
-
     def _diff(a, b):
         if a is None or b is None:
             return "N/A"
-        d = b - a
-        return f"{d:+.2f}" if isinstance(d, float) else f"{d:+}"
+        return f"{b - a:+.2f}"
+
+    def _pct_change(a, b):
+        if a is None or b is None or a == 0:
+            return "N/A"
+        return f"{(b - a) / a * 100:+.0f}%"
 
     def _fmt(v, fmt=".2f"):
         return f"{v:{fmt}}" if v is not None else "N/A"
 
-    acc_a, acc_b = _avg_accuracy(evals_a), _avg_accuracy(evals_b)
-    hp_a, ht_a = _hallucination_pass(evals_a)
-    hp_b, ht_b = _hallucination_pass(evals_b)
+    avgs_a = {k: _avg(evals_a, k) for k in _DEEPEVAL_KEYS}
+    avgs_b = {k: _avg(evals_b, k) for k in _DEEPEVAL_KEYS}
 
     dur_a = _avg_metric(evals_a, "duration_ms")
     dur_b = _avg_metric(evals_b, "duration_ms")
@@ -309,20 +263,20 @@ def format_comparison_report(label_a: str, label_b: str, evals_a: list[dict], ev
     turns_a = _avg_metric(evals_a, "num_turns")
     turns_b = _avg_metric(evals_b, "num_turns")
 
-    def _pct_change(a, b):
-        if a is None or b is None or a == 0:
-            return "N/A"
-        return f"{(b - a) / a * 100:+.0f}%"
-
     lines = [
         f"# ベンチマーク比較: {label_a} vs {label_b}",
         "",
         "## 品質比較",
         "",
-        f"| 軸 | {label_a} | {label_b} | 差分 |",
+        f"| 指標 | {label_a} | {label_b} | 差分 |",
         "|---|---|---|---|",
-        f"| 回答精度（平均） | {_fmt(acc_a)} | {_fmt(acc_b)} | {_diff(acc_a, acc_b)} |",
-        f"| ハルシネーション（PASS率） | {hp_a}/{ht_a} | {hp_b}/{ht_b} | {hp_b - hp_a:+} |",
+    ]
+
+    for key in _DEEPEVAL_KEYS:
+        a, b = avgs_a[key], avgs_b[key]
+        lines.append(f"| {key} | {_fmt(a)} | {_fmt(b)} | {_diff(a, b)} |")
+
+    lines.extend([
         "",
         "## パフォーマンス比較",
         "",
@@ -332,32 +286,205 @@ def format_comparison_report(label_a: str, label_b: str, evals_a: list[dict], ev
         f"| コスト | ${_fmt(cost_a, '.3f')} | ${_fmt(cost_b, '.3f')} | {_pct_change(cost_a, cost_b)} |",
         f"| ターン数 | {_fmt(turns_a, '.1f')} | {_fmt(turns_b, '.1f')} | {_pct_change(turns_a, turns_b)} |",
         "",
-    ]
+    ])
 
-    # シナリオ別差分: accuracy scoreが変化したシナリオ
     map_a = {ev["scenario_id"]: ev for ev in evals_a}
     map_b = {ev["scenario_id"]: ev for ev in evals_b}
     common_ids = sorted(set(map_a) & set(map_b))
 
     changed = []
     for sid in common_ids:
-        sa = map_a[sid].get("scores", {}).get("accuracy")
-        sb = map_b[sid].get("scores", {}).get("accuracy")
-        if sa != sb:
-            changed.append((sid, sa, sb))
+        for key in _DEEPEVAL_KEYS:
+            sa = _score_value(map_a[sid].get("scores", {}), key)
+            sb = _score_value(map_b[sid].get("scores", {}), key)
+            if sa is not None and sb is not None and abs(sb - sa) > 0.01:
+                changed.append((sid, key, sa, sb))
 
     if changed:
         lines.extend([
-            "## シナリオ別差分（精度スコアが変化したシナリオ）",
+            "## シナリオ別差分（スコアが変化したシナリオ）",
             "",
-            f"| シナリオ | {label_a} | {label_b} | 差分 |",
-            "|---|---|---|---|",
+            f"| シナリオ | 指標 | {label_a} | {label_b} | 差分 |",
+            "|---|---|---|---|---|",
         ])
-        for sid, sa, sb in changed:
-            lines.append(f"| {sid} | {_fmt(sa)} | {_fmt(sb)} | {_diff(sa, sb)} |")
+        for sid, key, sa, sb in changed:
+            lines.append(f"| {sid} | {key} | {_fmt(sa)} | {_fmt(sb)} | {_diff(sa, sb)} |")
         lines.append("")
     else:
-        lines.extend(["## シナリオ別差分", "", "精度スコアの変化なし", ""])
+        lines.extend(["## シナリオ別差分", "", "スコアの変化なし", ""])
+
+    return "\n".join(lines)
+
+
+def build_baseline(runs: list[list[dict]]) -> dict:
+    """Build a baseline dict from N run evaluation lists.
+
+    Returns a dict with per-scenario and global stats (mean, stddev, pass_rate)
+    and a flaky flag per scenario (flaky=True when any metric pass_rate < 1.0).
+    """
+    scenario_ids: set[str] = set()
+    for evals in runs:
+        for ev in evals:
+            scenario_ids.add(ev["scenario_id"])
+
+    scenarios: dict[str, dict] = {}
+    for sid in scenario_ids:
+        entry: dict = {}
+        any_flaky = False
+        for key in _DEEPEVAL_KEYS:
+            scores_per_run = []
+            for evals in runs:
+                ev = next((e for e in evals if e["scenario_id"] == sid), None)
+                if ev is None:
+                    continue
+                v = _score_value(ev.get("scores", {}), key)
+                if v is not None:
+                    scores_per_run.append(v)
+            n = len(scores_per_run)
+            if n == 0:
+                entry[key] = {"mean": None, "stddev": None, "pass_rate": None}
+                continue
+            mean = sum(scores_per_run) / n
+            variance = sum((x - mean) ** 2 for x in scores_per_run) / n
+            stddev = math.sqrt(variance)
+            pass_rate = sum(1 for v in scores_per_run if v >= _DEEPEVAL_THRESHOLDS[key]) / n
+            entry[key] = {"mean": mean, "stddev": stddev, "pass_rate": pass_rate}
+            if pass_rate < 1.0:
+                any_flaky = True
+        entry["flaky"] = any_flaky
+        scenarios[sid] = entry
+
+    # global averages across all scenarios and all runs
+    global_stats: dict[str, dict] = {}
+    for key in _DEEPEVAL_KEYS:
+        all_scores = []
+        for evals in runs:
+            for ev in evals:
+                v = _score_value(ev.get("scores", {}), key)
+                if v is not None:
+                    all_scores.append(v)
+        n = len(all_scores)
+        if n == 0:
+            global_stats[key] = {"mean": None, "stddev": None}
+        else:
+            mean = sum(all_scores) / n
+            variance = sum((x - mean) ** 2 for x in all_scores) / n
+            global_stats[key] = {"mean": mean, "stddev": math.sqrt(variance)}
+
+    return {
+        "num_runs": len(runs),
+        "thresholds": dict(_DEEPEVAL_THRESHOLDS),
+        "global": global_stats,
+        "scenarios": scenarios,
+    }
+
+
+def compare_against_baseline(evaluations: list[dict], baseline: dict) -> dict:
+    """Compare a single run's evaluations against a baseline dict.
+
+    Returns a result dict with:
+      verdict: "CLEAN" or "REGRESSION DETECTED"
+      regressions: list of regression dicts (non-flaky scenarios only)
+      flaky_regressions: regressions on flaky scenarios (informational)
+      new_scenarios: scenario IDs present in run but absent from baseline
+    """
+    k_factor = 2.0  # flag when score < mean - k*stddev
+    regressions = []
+    flaky_regressions = []
+    new_scenarios = []
+    bl_scenarios = baseline.get("scenarios", {})
+
+    for ev in evaluations:
+        sid = ev["scenario_id"]
+        if sid not in bl_scenarios:
+            new_scenarios.append(sid)
+            continue
+        bl_sc = bl_scenarios[sid]
+        is_flaky = bl_sc.get("flaky", False)
+        for key in _DEEPEVAL_KEYS:
+            bl_metric = bl_sc.get(key, {})
+            bl_mean = bl_metric.get("mean")
+            bl_std = bl_metric.get("stddev")
+            if bl_mean is None:
+                continue
+            current = _score_value(ev.get("scores", {}), key)
+            if current is None:
+                continue
+            threshold = bl_mean - k_factor * (bl_std or 0.0)
+            if current < threshold:
+                rec = {
+                    "scenario_id": sid,
+                    "metric": key,
+                    "baseline_mean": bl_mean,
+                    "baseline_stddev": bl_std,
+                    "current_score": current,
+                    "delta": current - bl_mean,
+                }
+                if is_flaky:
+                    flaky_regressions.append(rec)
+                else:
+                    regressions.append(rec)
+
+    verdict = "REGRESSION DETECTED" if regressions else "CLEAN"
+    return {
+        "verdict": verdict,
+        "regressions": regressions,
+        "flaky_regressions": flaky_regressions,
+        "new_scenarios": new_scenarios,
+    }
+
+
+def format_regression_report(result: dict) -> str:
+    """Render compare_against_baseline result as markdown."""
+    verdict = result["verdict"]
+    regressions = result.get("regressions", [])
+    flaky_regressions = result.get("flaky_regressions", [])
+    new_scenarios = result.get("new_scenarios", [])
+
+    lines = [
+        f"## 退行チェック結果: **{verdict}**",
+        "",
+    ]
+
+    if regressions:
+        lines.extend([
+            "### 退行シナリオ（ベースライン平均 − 2σ を下回る）",
+            "",
+            "| シナリオ | 指標 | ベースライン平均 | 現在スコア | 差分 |",
+            "|---|---|---|---|---|",
+        ])
+        for r in regressions:
+            lines.append(
+                f"| {r['scenario_id']} | {r['metric']} "
+                f"| {r['baseline_mean']:.3f}±{r['baseline_stddev']:.3f} "
+                f"| {r['current_score']:.3f} | {r['delta']:+.3f} |"
+            )
+        lines.append("")
+    else:
+        lines.extend(["退行なし（全シナリオがベースライン範囲内）", ""])
+
+    if flaky_regressions:
+        lines.extend([
+            "### フラグ対象（Flaky シナリオ — 参考情報）",
+            "",
+            "| シナリオ | 指標 | ベースライン平均 | 現在スコア | 差分 |",
+            "|---|---|---|---|---|",
+        ])
+        for r in flaky_regressions:
+            lines.append(
+                f"| {r['scenario_id']} | {r['metric']} "
+                f"| {r['baseline_mean']:.3f}±{r['baseline_stddev']:.3f} "
+                f"| {r['current_score']:.3f} | {r['delta']:+.3f} |"
+            )
+        lines.append("")
+
+    if new_scenarios:
+        lines.extend([
+            "### 新規シナリオ（ベースライン未登録）",
+            "",
+            ", ".join(new_scenarios),
+            "",
+        ])
 
     return "\n".join(lines)
 
@@ -366,29 +493,66 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Generate benchmark report")
-    parser.add_argument("--run-dir", required=True, help="Path to benchmark run directory")
+    parser.add_argument("--run-dir", help="Path to benchmark run directory")
     parser.add_argument("--compare", help="Second run directory for comparison report")
     parser.add_argument("--label-a", help="Label for --run-dir (used in comparison)")
     parser.add_argument("--label-b", help="Label for --compare (used in comparison)")
+    parser.add_argument(
+        "--baseline-runs", nargs="+", metavar="RUN_DIR",
+        help="Two or more run directories to build baseline.json from",
+    )
+    parser.add_argument(
+        "--save-baseline", metavar="FILE",
+        help="Path to save baseline.json (used with --baseline-runs)",
+    )
+    parser.add_argument(
+        "--compare-baseline", metavar="FILE",
+        help="Path to baseline.json for regression check (used with --run-dir)",
+    )
     args = parser.parse_args()
+
+    if args.baseline_runs:
+        # Build baseline.json from multiple run dirs
+        runs = [_load_evaluations(Path(d)) for d in args.baseline_runs]
+        baseline = build_baseline(runs)
+        save_path = Path(args.save_baseline) if args.save_baseline else Path(args.baseline_runs[0]).parent / "baseline.json"
+        save_path.write_text(json.dumps(baseline, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"Baseline saved to {save_path}", file=sys.stderr)
+        return
+
+    if not args.run_dir:
+        parser.error("--run-dir is required unless --baseline-runs is specified")
 
     run_dir = Path(args.run_dir)
     evaluations = _load_evaluations(run_dir)
 
-    if args.compare:
+    if args.compare_baseline:
+        # Regression check against saved baseline
+        baseline = json.loads(Path(args.compare_baseline).read_text(encoding="utf-8"))
+        result = compare_against_baseline(evaluations, baseline)
+        report = format_regression_report(result)
+        report_path = run_dir / "regression-check.md"
+        report_path.write_text(report, encoding="utf-8")
+        print(f"Regression report written to {report_path}", file=sys.stderr)
+        print(report)
+        if result["verdict"] == "REGRESSION DETECTED":
+            sys.exit(1)
+    elif args.compare:
         compare_dir = Path(args.compare)
         evals_b = _load_evaluations(compare_dir)
         label_a = args.label_a or run_dir.name
         label_b = args.label_b or compare_dir.name
         report = format_comparison_report(label_a, label_b, evaluations, evals_b)
         report_path = run_dir / f"comparison-{label_b}.md"
+        report_path.write_text(report, encoding="utf-8")
+        print(f"Report written to {report_path}", file=sys.stderr)
+        print(report)
     else:
         report = generate_full_report(evaluations)
         report_path = run_dir / "report.md"
-
-    report_path.write_text(report, encoding="utf-8")
-    print(f"Report written to {report_path}", file=sys.stderr)
-    print(report)
+        report_path.write_text(report, encoding="utf-8")
+        print(f"Report written to {report_path}", file=sys.stderr)
+        print(report)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,61 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly covers the expected fact: it describes creating language-specific property files (messages.properties and messages_en.properties) and configuring the supported languages via the 'locales' property in PropertiesStringResourceLoader. Both elements of the expected fact — language-specific property files and the 'locales' setting — are clearly addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about how to implement multilingual support for switching messages and labels between Japanese and English. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9285714285714286,
+      "reason": "The score is 0.93 because the actual output incorrectly implies that defaultLocale is a required field, when the retrieval context states that if defaultLocale is not set, Locale.getDefault().getLanguage() is used as the default, making it optional."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/handlers/handlers-http-response-handler.json:s7",
+      "component/libraries/libraries-tag.json:s32"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 108169,
+    "duration_api_ms": 105981,
+    "num_turns": 13,
+    "total_cost_usd": 0.80912005,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 6396,
+      "cache_read_input_tokens": 987071,
+      "cache_creation_input_tokens": 110333
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3142,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003277,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 6396,
+        "cacheReadInputTokens": 987071,
+        "cacheCreationInputTokens": 110333,
+        "webSearchRequests": 0,
+        "costUSD": 0.80584305,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

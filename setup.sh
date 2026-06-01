@@ -214,6 +214,17 @@ if [ -f "tools/rbkc/requirements.txt" ]; then
     fi
 fi
 
+# Install benchmark dependencies
+if [ -f "tools/benchmark/requirements.txt" ]; then
+    print_status info "Installing benchmark dependencies..."
+    if uv pip install --python "$VENV_DIR/bin/python" -r tools/benchmark/requirements.txt; then
+        print_status ok "Benchmark dependencies installed"
+    else
+        print_status error "Failed to install benchmark dependencies"
+        exit 1
+    fi
+fi
+
 # Verify document tools installation
 print_header "6. Verifying Document Tools"
 
@@ -229,6 +240,15 @@ if [ -f "tools/rbkc/requirements.txt" ]; then
         print_status ok "RBKC dependencies verified"
     else
         print_status error "RBKC dependency verification failed"
+        exit 1
+    fi
+fi
+
+if [ -f "tools/benchmark/requirements.txt" ]; then
+    if "$VENV_DIR/bin/python" -c "import deepeval; print('OK')" 2>/dev/null; then
+        print_status ok "Benchmark dependencies verified"
+    else
+        print_status error "Benchmark dependency verification failed"
         exit 1
     fi
 fi

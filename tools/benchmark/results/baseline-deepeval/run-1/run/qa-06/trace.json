@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 166822,
+  "duration_api_ms": 164584,
+  "ttft_ms": 4553,
+  "num_turns": 3,
+  "result": "Step 5: 回答を生成します。\n\n### Answer\n\n**結論**: `confirmationPage`タグを使用すると、確認画面のJSPに入力画面JSPへのパスを指定するだけで共通化でき、入力画面向けJSPに差分（ボタン等）のみ追加するだけで確認画面を実現できます。\n\n**根拠**:\n\nNablarchのカスタムタグには入力・確認画面のJSP共通化機能が含まれており、以下の4つのタグを組み合わせて使います。\n\n| タグ | 役割 |\n|---|---|\n| `n:confirmationPage` | 確認画面JSPで入力画面JSPへのパスを指定（共通化の起点） |\n| `n:forInputPage` | 入力画面のみに表示したい部分を囲む |\n| `n:forConfirmationPage` | 確認画面のみに表示したい部分を囲む |\n| `n:ignoreConfirmation` | 確認画面で確認画面向けの表示を無効化したい部分に指定 |\n\n**入力画面のJSP（例）**:\n\n```jsp\n<n:form>\n  <!-- 入力欄は入力・確認画面で同じJSP記述を使用 -->\n  <div>\n    <label>名前</label>\n    <n:text name=\"form.name\" />\n  </div>\n  <div>\n    <label>メール</label>\n    <n:checkbox name=\"form.useMail\" label=\"使用する\" offLabel=\"使用しない\" />\n  </div>\n  <div>\n    <label>プラン</label>\n    <n:select name=\"form.plan\"\n              listName=\"plans\"\n              elementLabelProperty=\"planName\"\n              elementValueProperty=\"planId\" />\n  </div>\n  <!-- ボタンは画面によって異なるので forInputPage/forConfirmationPage で切り替え -->\n  <div style=\"padding: 8px 0;\">\n    <n:forInputPage>\n      <n:submit type=\"submit\" uri=\"/action/sample/confirm\" value=\"確認\" />\n    </n:forInputPage>\n    <n:forConfirmationPage>\n      <n:submit type=\"submit\" uri=\"/action/sample/showNew\" value=\"戻る\" />\n      <n:submit type=\"submit\" uri=\"/action/sample/register\" value=\"登録\" />\n    </n:forConfirmationPage>\n  </div>\n</n:form>\n```\n\n**確認画面のJSP（これだけでOK）**:\n\n```jsp\n<!-- 入力画面のJSPへのパスを指定する -->\n<n:confirmationPage path=\"./input.jsp\" />\n```\n\n確認画面のJSPは上記1行のみ。入力系のカスタムタグが自動的に確認画面向けの表示（読み取り専用）に切り替わります。\n\n**注意点**:\n- カスタムタグを使用するには `Nablarchカスタムタグ制御ハンドラ` の設定が必須です（ハンドラキューに設定）。また `CustomTagConfig` をコンポーネント定義に `customTagConfig` という名前で追加することでタグのデフォルト値を設定できます。\n- `plainHidden`タグと`hiddenStore`タグは例外で、入力・確認画面ともに出力されます。\n- 入力～確認～完了画面間でデータを保持する場合は、セッションストアを併用します（複数タブ非許容→DBストア、複数タブ許容→HIDDENストア＋`hiddenStore`タグ）。セッションストアにはFormではなくEntityを格納することが推奨されています。\n\n参照: `libraries-tag.json:s3`, `libraries-tag.json:s23`, `libraries-tag.json:s6`, `libraries-tag-reference.json:s64`, `libraries-tag-reference.json:s66`, `libraries-tag-reference.json:s67`, `libraries-tag-reference.json:s65`, `libraries-session-store.json:s9`\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-tag.json\", \"reason\": \"s3のタイトルが「入力画面と確認画面のJSPを共通化して実装を減らす」と質問に完全一致し、s23に具体的な実装例がある\"},\n      {\"path\": \"component/libraries/libraries-tag-reference.json\", \"reason\": \"confirmationPage/forInputPage/forConfirmationPage/ignoreConfirmationタグの属性定義を含む\"},\n      {\"path\": \"component/libraries/libraries-session-store.json\", \"reason\": \"入力〜確認〜完了画面間のデータ保持方法（JSP共通化と組み合わせて使う）を説明\"},\n      {\"path\": \"component/libraries/libraries-create-example.json\", \"reason\": \"登録機能での入力→確認→完了フローの具体的な実装例を含む\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"ウェブアプリケーションの画面作成・入力データ保持の全体像を示す背景情報\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-update-example.json\", \"reason\": \"登録例と同じパターンであり、libraries-create-example.jsonで十分カバーされる\"},\n      {\"path\": \"processing-pattern/web-application/web-application-client-create2.json\", \"reason\": \"sectionsが空でコンテンツなし\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"JSP共通化機能の概要を直接説明するセクション\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s23\", \"relevance\": \"high\", \"reason\": \"4つのカスタムタグの役割とコード例を含む実装ガイド\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s6\", \"relevance\": \"partial\", \"reason\": \"カスタムタグを使用するための必須設定（ハンドラ・CustomTagConfig）の説明\"},\n      {\"file\": \"component/libraries/libraries-tag-reference.json\", \"section_id\": \"s64\", \"relevance\": \"partial\", \"reason\": \"confirmationPageタグのpath属性定義\"},\n      {\"file\": \"component/libraries/libraries-tag-reference.json\", \"section_id\": \"s65\", \"relevance\": \"partial\", \"reason\": \"ignoreConfirmationタグの定義\"},\n      {\"file\": \"component/libraries/libraries-tag-reference.json\", \"section_id\": \"s66\", \"relevance\": \"partial\", \"reason\": \"forInputPageタグの定義\"},\n      {\"file\": \"component/libraries/libraries-tag-reference.json\", \"section_id\": \"s67\", \"relevance\": \"partial\", \"reason\": \"forConfirmationPageタグの定義\"},\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s9\", \"relevance\": \"partial\", \"reason\": \"入力〜確認〜完了画面間のデータ保持方法とhiddenStoreタグの使い方\"},\n      {\"file\": \"component/libraries/libraries-create-example.json\", \"section_id\": \"s1\", \"relevance\": \"partial\", \"reason\": \"入力画面初期表示時のセッション削除パターン\"},\n      {\"file\": \"component/libraries/libraries-create-example.json\", \"section_id\": \"s2\", \"relevance\": \"partial\", \"reason\": \"確認画面遷移時のセッションストア保存パターン\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s1\", \"reason\": \"機能概要全般の説明でJSP共通化に特化しない\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s2\", \"reason\": \"HTMLエスケープ機能の説明で今回の質問と無関係\"},\n      {\"file\": \"component/libraries/libraries-create-example.json\", \"section_id\": \"s3\", \"reason\": \"戻るボタンのセッション復元パターンは今回の主題から外れる\"},\n      {\"file\": \"component/libraries/libraries-create-example.json\", \"section_id\": \"s4\", \"reason\": \"登録処理完了ステップは今回の主題から外れる\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-tag.json:s3\",\n      \"component/libraries/libraries-tag.json:s23\",\n      \"component/libraries/libraries-tag.json:s6\",\n      \"component/libraries/libraries-tag-reference.json:s64\",\n      \"component/libraries/libraries-tag-reference.json:s65\",\n      \"component/libraries/libraries-tag-reference.json:s66\",\n      \"component/libraries/libraries-tag-reference.json:s67\",\n      \"component/libraries/libraries-session-store.json:s9\",\n      \"component/libraries/libraries-create-example.json:s1\",\n      \"component/libraries/libraries-create-example.json:s2\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"libraries-tag.json:s3\", \"reason\": \"JSP共通化機能の概要説明に使用\"},\n        {\"ref\": \"libraries-tag.json:s23\", \"reason\": \"4タグの役割説明とコード例の引用に使用\"},\n        {\"ref\": \"libraries-tag.json:s6\", \"reason\": \"NablarchカスタムタグハンドラとCustomTagConfigの設定要件の説明に使用\"},\n        {\"ref\": \"libraries-tag-reference.json:s64\", \"reason\": \"confirmationPageタグのpath属性説明に使用\"},\n        {\"ref\": \"libraries-tag-reference.json:s65\", \"reason\": \"ignoreConfirmationタグのタグ一覧説明に使用\"},\n        {\"ref\": \"libraries-tag-reference.json:s66\", \"reason\": \"forInputPageタグのタグ一覧説明に使用\"},\n        {\"ref\": \"libraries-tag-reference.json:s67\", \"reason\": \"forConfirmationPageタグのタグ一覧説明に使用\"},\n        {\"ref\": \"libraries-session-store.json:s9\", \"reason\": \"セッションストアを使ったデータ保持の注意点説明に使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"libraries-create-example.json:s1\", \"reason\": \"セッション削除のコードは回答の主題から外れるため省略\"},\n        {\"ref\": \"libraries-create-example.json:s2\", \"reason\": \"セッション保存のコードは回答の主題から外れるため省略\"}\n      ]\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "7ba04d13-e7bc-4cff-8ec4-9d7ed5ddb320",
+  "total_cost_usd": 1.2138273,
+  "usage": {
+    "input_tokens": 4,
+    "cache_creation_input_tokens": 35395,
+    "cache_read_input_tokens": 124941,
+    "output_tokens": 4531,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 35395
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3164,
+      "outputTokens": 29,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0033090000000000003,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 14,
+      "outputTokens": 10965,
+      "cacheReadInputTokens": 839571,
+      "cacheCreationInputTokens": 211768,
+      "webSearchRequests": 0,
+      "costUSD": 1.2105183,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "96acff17-8912-4965-a6d7-6ae282560f6c"
+}

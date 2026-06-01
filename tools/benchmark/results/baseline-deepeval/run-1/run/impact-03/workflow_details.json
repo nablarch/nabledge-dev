@@ -1,0 +1,147 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "s12がDBとの相関バリデーションを直接扱っており、質問に正面から答えるセクションを含む"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの入力値チェック機能詳細のエントリーポイントを含む"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTfulウェブサービスでBean Validationを実行する具体的な実装例（@Valid）を含む"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "質問はバリデーション設計の判断に関するものであり、DB APIの使い方ではないため不要"
+      },
+      {
+        "path": "processing-pattern/web/...",
+        "reason": "処理方式がRESTfulウェブサービスであるため、ウェブアプリケーション系ページは除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "DBとの相関バリデーションはBean Validationで行うべきでなく業務アクション側で実装すべきと明示している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスでの入力値チェック方法（@Validアノテーション）を説明している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@ValidアノテーションをRESTリソースメソッドに設定する具体的なコード例を提供している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "相関バリデーションの基本パターン（@AssertTrue）の背景知識として選択"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "partial",
+        "reason": "業務アクション側でDBチェックを行った際に特定フィールドへエラーメッセージを返す実装例を含む"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s24",
+        "relevance": "partial",
+        "reason": "カスタムバリデータの追加方法に関する背景情報を提供している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ハンドラの配置制約（リクエストボディ変換ハンドラより後ろに設定）を含む"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスの入力値チェックへの参照リンクを含む"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "reason": "ウェブアプリケーション（非REST）向けの説明であるため除外"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s22",
+        "reason": "グループ機能は重複チェックの質問と無関係"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s3",
+        "reason": "一般的なDBアクセス参照リンクのみで、バリデーション内DB検索の判断には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s24",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-bean-validation.json:s12",
+          "reason": "DBとの相関バリデーションをBeanValidationでやるべきでない理由（SQLインジェクションリスク）と業務アクション側で実装すべきという結論を提供"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s13",
+          "reason": "業務アクション側でDBチェックをした際にValidationUtil#createMessageForPropertyでフィールドエラーを返す実装例を提供"
+        },
+        {
+          "ref": "handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "RESTfulウェブサービスで@ValidアノテーションによりBean Validationを実行する具体的なコード例を提供"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s17",
+          "reason": "RESTfulウェブサービスでの入力値チェックは@Validで行うという全体方針を提供"
+        },
+        {
+          "ref": "handlers-jaxrs-bean-validation-handler.json:s3",
+          "reason": "ハンドラ配置の制約（注意点として言及）"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-bean-validation.json:s11",
+          "reason": "相関バリデーションの基本パターンは今回の回答の主眼（DB検索の設計判断）には直接必要なかった"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s24",
+          "reason": "カスタムアノテーションの追加方法は、今回推奨されない実装のため回答に含めなかった"
+        },
+        {
+          "ref": "restful-web-service-feature-details.json:s2",
+          "reason": "参照リンクのみでコンテンツがなく、回答に引用する情報がなかった"
+        }
+      ]
+    }
+  }
+}

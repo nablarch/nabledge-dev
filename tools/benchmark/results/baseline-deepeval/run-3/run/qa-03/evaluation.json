@@ -1,0 +1,63 @@
+{
+  "scenario_id": "qa-03",
+  "description": "会員登録フォームで、メールアドレスと確認用メールアドレスの一致チェックが必要。Nablarchの入力チェックの仕組みでどうやるのかわからない。",
+  "input": "2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Expected Output states that the solution involves using Jakarta Bean Validation's @AssertTrue annotation for correlation validation. The Actual Output explicitly covers this fact, describing in detail how to use @AssertTrue annotation in a Form class for email address correlation validation. The key fact is clearly 'covered' in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 0.9333333333333333,
+      "reason": "The score is 0.93 because the actual output is highly relevant, providing a clear explanation of how to implement correlated validation between an email address and a confirmation email address. The small deduction is due to an irrelevant mention of SQL injection risks, which has no direct connection to the question about matching two input fields."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/libraries/libraries-nablarch-validation.json:s14",
+      "component/libraries/libraries-bean-validation.json:s12"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 78091,
+    "duration_api_ms": 76120,
+    "num_turns": 5,
+    "total_cost_usd": 0.5083647499999999,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 5414,
+      "cache_read_input_tokens": 283145,
+      "cache_creation_input_tokens": 90363
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3212,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003332,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 5414,
+        "cacheReadInputTokens": 283145,
+        "cacheCreationInputTokens": 90363,
+        "webSearchRequests": 0,
+        "costUSD": 0.50503275,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
