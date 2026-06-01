@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-01 (session 2)
+**Updated**: 2026-06-01 (session 3)
 
 ## Rules (applied to every task)
 
@@ -89,15 +89,17 @@ docs/javadoc/javadoc-nablarch-common-dao-UniversalDao.md
 
 ## In Progress
 
----
-
-## Not Started
-
 ### Task 2: 実装
-**前提**: Task 1（設計書承認）後  
+**前提**: Task 1（設計書承認）後
+
+**決定事項 (session 3)**:
+- `nablarch.*` FQCNのみ対象。`java.*`/`jakarta.*`/`javax.*`（84クラス）は scope 外（WARNING + display text）
+- BOM `nablarch-bom:6u3` から67 artifact IDを特定済み（Nexus経由で取得可能）
+- 設計書 `rbkc-converter-design.md` §5-1 / §5-2 を上記方針で更新済み
+
 **Steps:**
-- [ ] `tools/rbkc/lib/` に jar を配置する
-- [ ] `linkfmt.py` に `emit_javadoc_link` / `JAVADOC_LINK_RE` を追加する
+- [x] `tools/rbkc/lib/` に jar を配置する
+- [x] `linkfmt.py` に `emit_javadoc_link` / `JAVADOC_LINK_RE` を追加する（テスト GREEN）
 - [ ] `run.py` に `javadoc_generate()` を追加し、`create()` の先頭で呼び出す
 - [ ] Javadoc MD → JSON コンバーターを実装する（jar出力MDをパース、セクション分割）
 - [ ] `rst_ast_visitor.py` の `:java:extdoc:` 処理を内部リンク化する（javadoc_map参照）
@@ -143,3 +145,4 @@ docs/javadoc/javadoc-nablarch-common-dao-UniversalDao.md
 - [x] PR #365 作成
 - [x] jarツール動作確認・設計方針合意
 - [x] Task 1: 設計書更新 → ユーザー承認 — committed `12053d029` (設計書), `f771ecbfa` (未使用roleホワイトリスト削除ポリシー追加)
+- [x] Task 2 部分: jar配置 + linkfmt.py 追加 + 設計書 scope 更新 — (未コミット、session 3末)
