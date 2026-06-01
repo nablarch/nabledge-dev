@@ -613,3 +613,87 @@ class TestParagraphAnchorSyntheticSection:
         assert "2) Formクラスの精査処理実装" in titles, (
             f"Expected synthetic section '2) Formクラスの精査処理実装' in sections, got: {titles}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Issue #363: :java:extdoc: and :javadoc_url: role rendering
+# ---------------------------------------------------------------------------
+
+class TestJavaExtdocRole:
+    """Tests for :java:extdoc: internal link resolution via javadoc_map."""
+
+    def _render_role(self, role: str, raw: str, javadoc_map: dict | None = None) -> str:
+        """Simulate inline_inline() for a given role."""
+        from docutils import nodes
+        from scripts.common.rst_ast_visitor import _MDVisitor
+        v = _MDVisitor(javadoc_map=javadoc_map or {})
+        node = nodes.inline("", raw, classes=[f"role-{role}"])
+        return v.inline_inline(node)
+
+    def _parse_rst_with_javadoc_map(self, rst_src: str, javadoc_map: dict) -> str:
+        """Parse RST and return the full rendered content."""
+        from scripts.common.rst_ast import parse
+        from scripts.common.rst_ast_visitor import extract_document
+        doctree, _ = parse(rst_src)
+        parts = extract_document(doctree, javadoc_map=javadoc_map)
+        # Combine top content and section content for assertion
+        chunks = [parts.top_content or ""]
+        for s in parts.sections:
+            chunks.append(s.content or "")
+        return "\n".join(chunks)
+
+    def test_extdoc_with_javadoc_map_emits_link(self):
+        javadoc_map = {"nablarch.common.dao.UniversalDao": "javadoc-nablarch-common-dao-UniversalDao"}
+        result = self._render_role(
+            "java:extdoc",
+            "UniversalDao <nablarch.common.dao.UniversalDao>",
+            javadoc_map,
+        )
+        assert result == "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)"
+
+    def test_extdoc_without_javadoc_map_emits_display_text(self):
+        result = self._render_role(
+            "java:extdoc",
+            "UniversalDao <nablarch.common.dao.UniversalDao>",
+            {},
+        )
+        # nablarch.* but not in map → WARN + display text
+        assert result == "UniversalDao"
+
+    def test_extdoc_non_nablarch_emits_display_text(self):
+        result = self._render_role(
+            "java:extdoc",
+            "String <java.lang.String>",
+            {},
+        )
+        assert result == "String"
+
+    def test_extdoc_jakarta_emits_display_text(self):
+        result = self._render_role(
+            "java:extdoc",
+            "Entity <jakarta.persistence.Entity>",
+            {},
+        )
+        assert result == "Entity"
+
+    def test_extdoc_method_suffix_resolved_to_class(self):
+        javadoc_map = {"nablarch.common.dao.UniversalDao": "javadoc-nablarch-common-dao-UniversalDao"}
+        result = self._render_role(
+            "java:extdoc",
+            "UniversalDao#insert <nablarch.common.dao.UniversalDao.insert(java.lang.Object)>",
+            javadoc_map,
+        )
+        # Method FQCN stripped to class, link emitted
+        assert result == "[UniversalDao#insert](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)"
+
+    def test_javadoc_url_emits_external_link(self):
+        result = self._render_role(
+            "javadoc_url",
+            "UniversalDao <https://example.com/api/UniversalDao.html>",
+            {},
+        )
+        assert result == "[UniversalDao](https://example.com/api/UniversalDao.html)"
+
+    def test_javadoc_url_no_angle_bracket_returns_raw(self):
+        result = self._render_role("javadoc_url", "somethingplain", {})
+        assert result == "somethingplain"

@@ -34,6 +34,7 @@ from scripts.common.sources import FileInfo, classify_sources, scan_sources
 from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.create.docs import generate_docs
 from scripts.create.index import generate_index_md
+from scripts.create.javadoc import javadoc_generate
 from scripts.create.resolver import collect_asset_refs, copy_assets
 from scripts.common.labels import build_label_doc_map, build_label_map  # noqa: F401
 from scripts.verify.verify import (
@@ -78,6 +79,7 @@ def _convert_and_write(
     label_map: dict | None = None,
     doc_map: dict | None = None,
     sheet_subtype_map: dict | None = None,
+    javadoc_map: dict | None = None,
 ) -> None:
     """Convert one source file and write its knowledge JSON to *output_dir*.
 
@@ -89,6 +91,7 @@ def _convert_and_write(
         doc_map: rst_relpath→LabelTarget map for :doc: resolution.
         sheet_subtype_map: (file_basename, sheet_name) → "P2-1"|"P2-3" from
             xlsx-sheet-mapping.md.  None disables subtype handling.
+        javadoc_map: FQCN → file_id map for :java:extdoc: link resolution.
     """
     convert = _converter_for(fi.format, fi.source_path.name)
 
@@ -99,6 +102,7 @@ def _convert_and_write(
             source_path=fi.source_path,
             label_map=label_map,
             doc_map=doc_map,
+            javadoc_map=javadoc_map,
         )
     elif fi.format == "md":
         result = convert(
@@ -240,6 +244,10 @@ def create(
     if docs_dir.exists():
         shutil.rmtree(docs_dir)
 
+    # Issue #363: generate Javadoc knowledge files before RST conversion so
+    # :java:extdoc: roles can resolve to internal links via javadoc_map.
+    javadoc_map = javadoc_generate(version, repo_root, output_dir, docs_dir)
+
     sources = scan_sources(version, repo_root, files)
     file_infos = classify_sources(sources, version, repo_root)
 
@@ -251,7 +259,7 @@ def create(
 
     all_asset_refs = []
     for fi in file_infos:
-        _convert_and_write(fi, output_dir, label_map, doc_map, sheet_subtype_map)
+        _convert_and_write(fi, output_dir, label_map, doc_map, sheet_subtype_map, javadoc_map)
         if fi.format == "rst":
             all_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
 
