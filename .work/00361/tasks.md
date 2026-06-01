@@ -2,7 +2,7 @@
 
 **PR**: #362
 **Issue**: #361
-**Updated**: 2026-06-01
+**Updated**: 2026-06-01 (session end)
 
 ## ルール（今日の追加事項）
 - `.claude/settings.json` に `DEEPEVAL_TELEMETRY_OPT_OUT=true` を追加済み（Apache 2.0ライセンス、オプトアウト許可）
@@ -16,15 +16,30 @@
 
 ---
 
-## Not Started
+## In Progress
 
 ### T23: PR作成・ユーザーレビュー
 
 **Steps:**
-- [ ] `/pr create` でPR作成
+- [x] `/pr create` でPR作成 — PR #362 作成済み
+- [x] エキスパートレビュー実施 — 0 Findings — committed `daee6d042`
+- [x] PR body更新（正しいアプローチ・レビューリンク・成功基準） — committed after expert review
+- [x] 3 run集計レポート生成 — `baseline-deepeval/report.md` — committed `0eb5d4b28`
+- [x] `report.py` に baseline.json 生成 + 退行検出機能追加（TDD） — committed `af90f097e`
+- [x] `baseline.json` 生成 — committed `d3d9efce4`
+- [x] HOW-TO-RUN.md にレポートテンプレート（Q1〜Q4）追加 — committed
+- [x] 集計レポートをテンプレート通りに書き直し — committed
+- [x] 全26件の閾値割れシナリオ裏付け調査（回答 vs ナレッジ突き合わせ）実施 — committed `a028c952c`
+- [ ] 付録を表形式に書き直し（セクション形式 → テーブル）— **途中: HOW-TO-RUN.md テンプレート修正済み、report.md の付録置き換えが未完**
+- [ ] Q3の詳細を削除（付録への参照のみ残す）— **途中: report.md は `詳細は付録を参照。` に変更済みだが付録がまだセクション形式**
 - [ ] ユーザーレビュー依頼
-- [ ] レビューフィードバックに対応（フィードバックがあれば修正・再依頼）
+- [ ] レビューフィードバックに対応
 - [ ] レビューOK → マージ
+
+**現在の状態**:
+- `HOW-TO-RUN.md`: テンプレートの付録セクションを表形式に修正済み（未コミット）
+- `report.md`: 付録がまだ旧セクション形式（未コミット）
+- 次のステップ: report.md の付録を表形式に書き換えてコミット
 
 ---
 
