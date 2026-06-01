@@ -1,0 +1,70 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers both expected facts: it mentions `DatabaseRecordReader` for reading data from the database (explicitly stated in the 'データリードハンドラ' section and code example), and it describes implementing an action class inheriting from `BatchAction` (shown in the code example with `AggregationAction extends BatchAction<InputData>`). Both facts from the Expected Output checklist are present and accurately represented without contradictions."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is fully relevant and directly addresses the question about implementing a scheduled batch process that reads data from a DB, aggregates it, and writes the results to another table. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9,
+      "reason": "The score is 0.90 because the actual output contains two minor contradictions: it does not accurately reflect that the minimum handler configuration for an on-demand batch with DB connection consists of exactly 9 handlers as stated in the retrieval context, and it incorrectly attributes the commitInterval property to a component called 'LoopHandler', whereas the retrieval context refers to this handler as トランザクションループ制御ハンドラ (transaction loop control handler)."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s9",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s11",
+      "component/handlers/handlers-loop-handler.json:s5",
+      "component/libraries/libraries-universal-dao.json:s14",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 123241,
+    "duration_api_ms": 123256,
+    "num_turns": 7,
+    "total_cost_usd": 0.6895954,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 9118,
+      "cache_read_input_tokens": 506678,
+      "cache_creation_input_tokens": 105992
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3198,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003328,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 9118,
+        "cacheReadInputTokens": 506678,
+        "cacheCreationInputTokens": 105992,
+        "webSearchRequests": 0,
+        "costUSD": 0.6862674,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

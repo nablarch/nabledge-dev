@@ -1,0 +1,136 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "reason": "CSRFトークン検証ハンドラの専用ドキュメントであり、「NablarchにCSRF対策の仕組みはある？どう設定する？」に直接回答する"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストのCSRFエントリ（s6）がNablarchのCSRF対策機能の推奨と二重サブミット防止との違いを説明している"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの機能詳細ページにCSRF対策セクション（s19）があり、処理方式と機能の対応を確認できる"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "質問の処理方式がウェブアプリケーションであり、RESTfulウェブサービスは対象外"
+      },
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "チェックリストの概要ページであり、CSRF設定の具体的な実装情報がない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "CSRFトークンの生成と検証の設定例（XML）、デフォルト動作の詳細、カスタマイズ方法、テスト時の無効化方法が含まれる"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "ログイン時のCSRFトークン再生成（CsrfTokenUtil.regenerateCsrfToken）の説明が含まれ、完全な設定手順の一部"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSRF対策機能の推奨理由、二重サブミット防止機能との違い、DB二重サブミット防止はCSRF非対応という重要な注意点が含まれる"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s19",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションのCSRF対策セクションとしてCSRFトークン検証ハンドラへのポインタが確認できる"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ハンドラの配置順序の制約（SessionStoreHandler・NablarchTagHandlerより後ろ）が含まれる"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "ハンドラの完全修飾クラス名が含まれる"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "必要なMavenモジュール（nablarch-fw-web）が含まれる"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s1",
+        "reason": "SQLインジェクションに関するセクションでありCSRFと無関係"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s2",
+        "reason": "OSコマンドインジェクションに関するセクションであり無関係"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s1",
+        "reason": "Nablarch初期化に関するセクションであり今回の質問には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+      "check/security-check/security-check-2.チェックリスト.json:s6",
+      "processing-pattern/web-application/web-application-feature-details.json:s19",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s1",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s2"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s1",
+          "reason": "ハンドラクラス名 nablarch.fw.web.handler.CsrfTokenVerificationHandler の出典"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s2",
+          "reason": "Mavenモジュール nablarch-fw-web の出典"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s3",
+          "reason": "SessionStoreHandler・NablarchTagHandlerより後ろに配置する制約の出典"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s4",
+          "reason": "XML設定例、デフォルト動作（UUIDv4、検証除外メソッド、トークン名、400エラー）、テスト時NopHandler差し替えの出典"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s5",
+          "reason": "CsrfTokenUtil.regenerateCsrfTokenによるログイン時トークン再生成の出典"
+        },
+        {
+          "ref": "security-check-2.チェックリスト.json:s6",
+          "reason": "DB二重サブミット防止はCSRF非対応という注意点の出典"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "web-application-feature-details.json:s19",
+          "reason": "ハンドラドキュメントへのポインタのみで、s4等で既にカバーされている情報と重複するため回答には直接引用せず"
+        }
+      ]
+    }
+  }
+}

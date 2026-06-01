@@ -1,26 +1,26 @@
 ## サマリー
 
-総シナリオ数: 29
+総シナリオ数: 30
 
 ### DeepEval メトリクスサマリー
 
 | 指標 | 平均スコア | 閾値通過 |
 |---|---|---|
-| answer_correctness | 0.99 | 28/29（≥0.99） |
-| answer_relevancy | 0.97 | 23/29（≥0.95） |
-| faithfulness | 0.98 | 20/29（≥0.99） |
+| answer_correctness | 0.99 | 29/30（≥0.99） |
+| answer_relevancy | 0.98 | 24/30（≥0.95） |
+| faithfulness | 0.98 | 21/30（≥0.99） |
 
 ## パフォーマンスサマリー
 
 | メトリクス | 平均 | P50 | P95 | 最大 | 合計 |
 |---|---|---|---|---|---|
-| 実行時間（総合） | 146s | 129s | 308s | 328s | — |
+| 実行時間（総合） | 146s | 130s | 308s | 328s | — |
 | 実行時間（API） | 144s | 128s | 306s | 325s | — |
-| ターン数 | 7 | 6 | 17 | 21 | — |
+| ターン数 | 8 | 6 | 17 | 21 | — |
 | 入力トークン | 8 | 7 | 17 | 22 | — |
-| 出力トークン | 7,514 | 7,275 | 12,024 | 14,705 | — |
-| キャッシュ読取 | 468,834 | 362,750 | 1,390,411 | 2,091,791 | — |
-| コスト | $0.809 | $0.709 | $1.214 | $1.298 | $23.469 |
+| 出力トークン | 7,554 | 7,545 | 12,024 | 14,705 | — |
+| キャッシュ読取 | 475,034 | 391,700 | 1,390,411 | 2,091,791 | — |
+| コスト | $0.808 | $0.737 | $1.214 | $1.298 | $24.235 |
 
 
 ## impact-01: バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。
@@ -459,6 +459,29 @@
 | 実行時間 | トークン量 | ツール呼び出し |
 |---|---|---|
 | 90s | N/A | N/A |
+
+## qa-11a: Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。
+
+**入力**: エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？
+
+### DeepEval スコア
+
+| 指標 | スコア | 判定根拠 |
+|---|---|---|
+| answer_correctness | 1.00 | The Actual Output covers both key facts from the Expected Output: (1) HttpErrorHandler returns responses with status codes based on exception type — clearly shown in the table with NoMoreHandlerException→404, Result.Error→getStatusCode(), etc.; and (2) ApplicationException error messages are set in the request scope — explicitly stated as 'ErrorMessages に変換してリクエストスコープ（デフォルトキー: errors）に設定する'. Both expected facts are fully and accurately represented. |
+| answer_relevancy | 1.00 | The score is 1.00 because the response is perfectly relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were identified! |
+| faithfulness | 1.00 | The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found! |
+
+### 診断情報
+
+- ヒアリング: N/A
+- 検索セクション: component/handlers/handlers-HttpErrorHandler.json:s4, component/handlers/handlers-HttpErrorHandler.json:s5, component/handlers/handlers-HttpErrorHandler.json:s6, component/handlers/handlers-global-error-handler.json:s4, component/handlers/handlers-on-error.json:s3, processing-pattern/web-application/web-application-forward-error-page.json:s1, component/libraries/libraries-failure-log.json:s1, processing-pattern/web-application/web-application-feature-details.json:s16
+
+### メトリクス
+
+| 実行時間 | トークン量 | ツール呼び出し |
+|---|---|---|
+| 131s | N/A | N/A |
 
 ## qa-11b: REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。
 

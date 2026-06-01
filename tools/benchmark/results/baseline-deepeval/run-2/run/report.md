@@ -1,26 +1,26 @@
 ## サマリー
 
-総シナリオ数: 26
+総シナリオ数: 30
 
 ### DeepEval メトリクスサマリー
 
 | 指標 | 平均スコア | 閾値通過 |
 |---|---|---|
-| answer_correctness | 0.98 | 24/26（≥0.99） |
-| answer_relevancy | 0.98 | 22/26（≥0.95） |
-| faithfulness | 0.98 | 18/26（≥0.99） |
+| answer_correctness | 0.98 | 28/30（≥0.99） |
+| answer_relevancy | 0.97 | 24/30（≥0.95） |
+| faithfulness | 0.98 | 21/30（≥0.99） |
 
 ## パフォーマンスサマリー
 
 | メトリクス | 平均 | P50 | P95 | 最大 | 合計 |
 |---|---|---|---|---|---|
-| 実行時間（総合） | 144s | 123s | 311s | 317s | — |
-| 実行時間（API） | 142s | 121s | 308s | 315s | — |
+| 実行時間（総合） | 141s | 123s | 311s | 317s | — |
+| 実行時間（API） | 139s | 121s | 308s | 315s | — |
 | ターン数 | 7 | 6 | 10 | 13 | — |
-| 入力トークン | 7 | 7 | 11 | 11 | — |
-| 出力トークン | 6,748 | 6,540 | 9,077 | 10,023 | — |
-| キャッシュ読取 | 396,054 | 345,292 | 811,966 | 987,071 | — |
-| コスト | $0.761 | $0.712 | $1.143 | $1.418 | $19.778 |
+| 入力トークン | 156 | 7 | 11 | 4,490 | — |
+| 出力トークン | 6,946 | 6,760 | 10,023 | 11,133 | — |
+| キャッシュ読取 | 392,010 | 345,292 | 811,966 | 987,071 | — |
+| コスト | $0.753 | $0.706 | $1.143 | $1.418 | $22.575 |
 
 
 ## impact-01: バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。
@@ -138,6 +138,29 @@
 |---|---|---|
 | 104s | N/A | N/A |
 
+## oos-qa-01: バッチ処理の進捗をリアルタイムにクライアントへ通知する機能を実装したい。WebSocketを使いたいが、NablarchでWebSocketが使えるか確認したい。
+
+**入力**: バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？
+
+### DeepEval スコア
+
+| 指標 | スコア | 判定根拠 |
+|---|---|---|
+| answer_correctness | 1.00 | The Actual Output clearly and explicitly states that Nablarch does not provide direct WebSocket support ('NablarchにはWebSocketを直接サポートする機能は提供されていません'), which is the single fact in the Expected Output checklist. This key fact is fully covered, with additional supporting details about why WebSocket is not supported in the framework. |
+| answer_relevancy | 0.94 | The score is 0.94 because the response largely addresses the question about using WebSockets in Nablarch for real-time batch progress notifications to a browser. However, it loses slight marks for including an irrelevant technical detail about the progress log category name, which does not directly contribute to answering the WebSocket implementation question. |
+| faithfulness | 1.00 | The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found! |
+
+### 診断情報
+
+- ヒアリング: N/A
+- 検索セクション: processing-pattern/web-application/web-application-architecture.json:s1, about/about-nablarch/about-nablarch-policy.json:s6, processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1, processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s2, processing-pattern/web-application/web-application-architecture.json:s2, guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1
+
+### メトリクス
+
+| 実行時間 | トークン量 | ツール呼び出し |
+|---|---|---|
+| 107s | N/A | N/A |
+
 ## pre-01: NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい
 
 **入力**: Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください
@@ -230,6 +253,29 @@
 |---|---|---|
 | 98s | N/A | N/A |
 
+## qa-02: 検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。
+
+**入力**: DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？
+
+### DeepEval スコア
+
+| 指標 | スコア | 判定根拠 |
+|---|---|---|
+| answer_correctness | 1.00 | The Actual Output clearly covers both expected facts: it mentions `DatabaseRecordReader` for reading data from the database (explicitly stated in the 'データリードハンドラ' section and code example), and it describes implementing an action class inheriting from `BatchAction` (shown in the code example with `AggregationAction extends BatchAction<InputData>`). Both facts from the Expected Output checklist are present and accurately represented without contradictions. |
+| answer_relevancy | 1.00 | The score is 1.00 because the response is fully relevant and directly addresses the question about implementing a scheduled batch process that reads data from a DB, aggregates it, and writes the results to another table. No irrelevant statements were found! |
+| faithfulness | 0.90 | The score is 0.90 because the actual output contains two minor contradictions: it does not accurately reflect that the minimum handler configuration for an on-demand batch with DB connection consists of exactly 9 handlers as stated in the retrieval context, and it incorrectly attributes the commitInterval property to a component called 'LoopHandler', whereas the retrieval context refers to this handler as トランザクションループ制御ハンドラ (transaction loop control handler). |
+
+### 診断情報
+
+- ヒアリング: N/A
+- 検索セクション: processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3, processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5, processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7, processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8, guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4, guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s4, guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s9, guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s11, component/handlers/handlers-loop-handler.json:s5, component/libraries/libraries-universal-dao.json:s14, component/libraries/libraries-universal-dao.json:s9, processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3, processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s4
+
+### メトリクス
+
+| 実行時間 | トークン量 | ツール呼び出し |
+|---|---|---|
+| 123s | N/A | N/A |
+
 ## qa-03: 会員登録フォームで、メールアドレスと確認用メールアドレスの一致チェックが必要。Nablarchの入力チェックの仕組みでどうやるのかわからない。
 
 **入力**: 2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい
@@ -298,6 +344,29 @@
 | 実行時間 | トークン量 | ツール呼び出し |
 |---|---|---|
 | 94s | N/A | N/A |
+
+## qa-06: Web画面で入力画面と確認画面をそれぞれ別のJSPで作っている。同じフォーム項目を2回書くのが面倒。共通化する方法があると聞いた。
+
+**入力**: 入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？
+
+### DeepEval スコア
+
+| 指標 | スコア | 判定根拠 |
+|---|---|---|
+| answer_correctness | 1.00 | The Actual Output fully covers the key fact in the Expected Output: using the `confirmationPage` tag in the confirmation page's JSP to specify the path to the input page's JSP for sharing/common JSP between input and confirmation screens. The Actual Output explicitly shows `<n:confirmationPage path="./input.jsp" />` and explains this mechanism, directly matching the expected fact. The Actual Output provides additional context and detail beyond what was expected, but the core fact is clearly addressed. |
+| answer_relevancy | 0.80 | The score is 0.80 because the actual output contains some irrelevant statements about DB store selection based on tab usage policy and best practices for session store usage, which do not address the core question of how to share JSP between input and confirmation screens to reduce implementation effort. These off-topic points prevent the score from being higher, but the score remains at 0.80 as the output still largely addresses the main question about JSP sharing between input and confirmation screens. |
+| faithfulness | 1.00 | The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found! |
+
+### 診断情報
+
+- ヒアリング: N/A
+- 検索セクション: component/libraries/libraries-tag.json:s3, component/libraries/libraries-tag.json:s23, component/libraries/libraries-tag-reference.json:s64, component/libraries/libraries-tag-reference.json:s65, component/libraries/libraries-tag-reference.json:s66, component/libraries/libraries-tag-reference.json:s67, component/libraries/libraries-create-example.json:s2, component/libraries/libraries-create-example.json:s3, component/libraries/libraries-session-store.json:s9
+
+### メトリクス
+
+| 実行時間 | トークン量 | ツール呼び出し |
+|---|---|---|
+| 72s | N/A | N/A |
 
 ## qa-07: バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。
 
@@ -574,6 +643,29 @@
 | 実行時間 | トークン量 | ツール呼び出し |
 |---|---|---|
 | 86s | N/A | N/A |
+
+## review-07: Web画面で外部サイトからの不正なPOSTリクエストを防ぐ必要がある。CSRF対策をNablarchの仕組みで実装したい。
+
+**入力**: 外部サイトから不正にPOSTされるのを防ぎたい。NablarchにCSRF対策の仕組みはある？どう設定する？
+
+### DeepEval スコア
+
+| 指標 | スコア | 判定根拠 |
+|---|---|---|
+| answer_correctness | 1.00 | The Actual Output fully covers the Expected Output's key fact: that adding the CSRF token verification handler (CsrfTokenVerificationHandler) to the handler configuration enables automatic CSRF token generation and verification. The Actual Output explicitly states this in both the conclusion and the detailed handler configuration section, providing even more comprehensive information than the Expected Output requires. |
+| answer_relevancy | 1.00 | The score is 1.00 because the response is fully relevant to the question about preventing unauthorized POST requests from external sites and configuring CSRF protection in Nablarch. No irrelevant statements were found! |
+| faithfulness | 1.00 | The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found! |
+
+### 診断情報
+
+- ヒアリング: N/A
+- 検索セクション: component/handlers/handlers-csrf-token-verification-handler.json:s4, component/handlers/handlers-csrf-token-verification-handler.json:s5, check/security-check/security-check-2.チェックリスト.json:s6, component/handlers/handlers-csrf-token-verification-handler.json:s3, processing-pattern/web-application/web-application-feature-details.json:s19
+
+### メトリクス
+
+| 実行時間 | トークン量 | ツール呼び出し |
+|---|---|---|
+| 178s | N/A | N/A |
 
 ## review-08: Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。
 
