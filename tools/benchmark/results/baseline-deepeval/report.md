@@ -54,16 +54,6 @@
 
 ---
 
-## 各 run のレポート
-
-- [run-1/run/report.md](run-1/run/report.md)
-- [run-2/run/report.md](run-2/run/report.md)
-- [run-3/run/report.md](run-3/run/report.md)
-
-機械可読ベースライン: [baseline.json](baseline.json)
-
----
-
 ## 証拠: 閾値割れシナリオ判定結果
 
 3 run中1回以上閾値割れが発生した全26件。回答全文とナレッジを照合し「ユーザーが誤った判断・実装をするか」を判定した。
@@ -96,3 +86,7 @@
 | review-07 | NablarchのCSRF対策の設定方法 | 忠実性 | 2/3 | **なし** | run-2が1.0であり評価器の揺らぎが主因。回答はナレッジの設定例を正確に反映 | JSPカスタムタグの自動出力の裏付けが不十分として0.867〜0.933に減点 |
 | review-08 | DBストアとHIDDENストアの使い分け | 回答関連性 | 1/3 | **なし** | Entity格納推奨はナレッジがDBストア/HIDDENストアの使い分けと同一セクション内で提示する内容。run-1/run-2は1.0 | Entity格納推奨が設問に余分として0.909に減点（run-3のみ） |
 | review-09 | Nablarch Web画面でのCSP設定方法 | 忠実性 | 2/3 | **なし** | ナレッジ自体がシングルクォートあり（CSP仕様上の正しい表記）で記述しており、スキルの記述はナレッジに忠実 | `'self'`のクォートありがナレッジと異なるとして0.846に減点 |
+
+---
+
+各 run の詳細レポート: [run-1](run-1/run/report.md) / [run-2](run-2/run/report.md) / [run-3](run-3/run/report.md) — 機械可読ベースライン: [baseline.json](baseline.json)
