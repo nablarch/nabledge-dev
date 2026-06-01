@@ -128,19 +128,26 @@ def _get_bom_pom(version: str, repo_root: Path) -> Path | None:
 def _mvn_get(artifact_spec: str, classifier: str = "") -> bool:
     """Run mvn dependency:get to fetch an artifact to local .m2 cache.
 
+    For sources jars, artifact_spec must include the classifier suffix:
+    ``groupId:artifactId:version:jar:sources``
+
     Returns True on success.
     """
+    if classifier:
+        # Maven dependency:get requires the full coordinate with packaging+classifier:
+        # groupId:artifactId:version → groupId:artifactId:version:jar:sources
+        full_spec = f"{artifact_spec}:jar:{classifier}"
+    else:
+        full_spec = artifact_spec
     cmd = [
         "mvn", "dependency:get",
-        f"-Dartifact={artifact_spec}",
+        f"-Dartifact={full_spec}",
         "-q",
     ]
-    if classifier:
-        cmd.append(f"-Dclassifier={classifier}")
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         print(
-            f"WARN javadoc: mvn dependency:get failed for {artifact_spec}: "
+            f"WARN javadoc: mvn dependency:get failed for {full_spec}: "
             f"{result.stderr.strip()[:200]}",
             file=sys.stderr,
         )
@@ -421,7 +428,7 @@ def javadoc_generate(
     if version not in ("5", "6"):
         return {}
 
-    jar_path = Path(__file__).parents[3] / "lib" / "source-to-document-converter-0.0.1.jar"
+    jar_path = Path(__file__).parents[2] / "lib" / "source-to-document-converter-0.0.1.jar"
     if not jar_path.exists():
         print(f"WARN javadoc: converter jar not found: {jar_path}", file=sys.stderr)
         return {}
