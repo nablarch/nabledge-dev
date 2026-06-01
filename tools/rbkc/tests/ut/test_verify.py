@@ -2862,6 +2862,110 @@ class TestCheckSourceLinks_JsonSide:
         )
 
 
+class TestCheckSourceLinks_JsonSide_Extdoc:
+    """QL1 :java:extdoc: — verify.py §3-2 extdoc quadrant check.
+
+    Spec §3-2 (Issue #363 extdoc table):
+      Q1: javadoc_map has FQCN + JSON has MD link → PASS
+      Q2: javadoc_map has FQCN + JSON has display text only → FAIL (QL1)
+      Q5: FQCN absent from JSON content entirely → FAIL (QL1)
+      java.*/jakarta.* → always PASS (external JDK, not in javadoc_map)
+      method suffix in FQCN: normalise to class FQCN before lookup
+    """
+
+    def _check(self, source_text, data, knowledge_dir=None):
+        from scripts.verify.verify import check_source_links
+        return check_source_links(
+            source_text, "rst", data,
+            label_map={},
+            knowledge_dir=knowledge_dir,
+        )
+
+    def _data(self, content="", sections=None):
+        return {
+            "id": "f", "title": "T", "content": content,
+            "sections": sections or []
+        }
+
+    def _write_javadoc_json(self, tmp_path, file_id):
+        javadoc_dir = tmp_path / "javadoc"
+        javadoc_dir.mkdir(parents=True, exist_ok=True)
+        import json
+        (javadoc_dir / f"{file_id}.json").write_text(
+            json.dumps({"id": file_id, "title": "Title"}), encoding="utf-8"
+        )
+
+    def test_pass_q1_link_present(self, tmp_path):
+        """Q1: javadoc JSON exists + MD link in JSON content → PASS."""
+        file_id = "javadoc-nablarch-common-dao-UniversalDao"
+        self._write_javadoc_json(tmp_path, file_id)
+        src = ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
+        md_link = f"[UniversalDao](../javadoc/{file_id}.md)"
+        data = self._data(content=f"詳細は {md_link} を参照。")
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert issues == [], issues
+
+    def test_fail_q2_display_text_only(self, tmp_path):
+        """Q2: javadoc JSON exists but JSON has display text only (no MD link) → FAIL (QL1)."""
+        file_id = "javadoc-nablarch-common-dao-UniversalDao"
+        self._write_javadoc_json(tmp_path, file_id)
+        src = ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
+        data = self._data(content="UniversalDao")  # display text only, no MD link
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert any("QL1" in i and "extdoc" in i.lower() for i in issues), issues
+
+    def test_fail_q2_javadoc_json_missing(self, tmp_path):
+        """Q2 variant: javadoc JSON does not exist → FAIL (QL1).
+
+        javadoc_generate() should always create the file; if missing it is an RBKC bug.
+        """
+        src = ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
+        data = self._data(content="UniversalDao")
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert any("QL1" in i and "extdoc" in i.lower() for i in issues), issues
+
+    def test_pass_java_std_lib_skipped(self, tmp_path):
+        """java.* FQCN → external JDK, never in javadoc_map → PASS."""
+        src = ":java:extdoc:`String <java.lang.String>`\n"
+        data = self._data(content="String")
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert issues == [], issues
+
+    def test_pass_jakarta_skipped(self, tmp_path):
+        """jakarta.* FQCN → external, skip → PASS."""
+        src = ":java:extdoc:`HttpServletRequest <jakarta.servlet.http.HttpServletRequest>`\n"
+        data = self._data(content="HttpServletRequest")
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert issues == [], issues
+
+    def test_pass_method_suffix_normalised_to_class(self, tmp_path):
+        """FQCN with method suffix — normalise to class FQCN for javadoc_map lookup."""
+        file_id = "javadoc-nablarch-common-dao-UniversalDao"
+        self._write_javadoc_json(tmp_path, file_id)
+        # FQCN includes method suffix: nablarch.common.dao.UniversalDao#findById
+        src = ":java:extdoc:`UniversalDao#findById <nablarch.common.dao.UniversalDao#findById>`\n"
+        md_link = f"[UniversalDao#findById](../javadoc/{file_id}.md)"
+        data = self._data(content=f"詳細は {md_link} を参照。")
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert issues == [], issues
+
+    def test_fail_method_suffix_display_text_only(self, tmp_path):
+        """Method suffix FQCN normalised to class — display text only → FAIL."""
+        file_id = "javadoc-nablarch-common-dao-UniversalDao"
+        self._write_javadoc_json(tmp_path, file_id)
+        src = ":java:extdoc:`UniversalDao#findById <nablarch.common.dao.UniversalDao#findById>`\n"
+        data = self._data(content="UniversalDao#findById")
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert any("QL1" in i and "extdoc" in i.lower() for i in issues), issues
+
+    def test_pass_no_knowledge_dir_skips_extdoc_check(self):
+        """When knowledge_dir is None, extdoc check is skipped."""
+        src = ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
+        data = self._data(content="UniversalDao")
+        issues = self._check(src, data, knowledge_dir=None)
+        assert issues == [], issues
+
+
 class TestCheckSourceLinks_DocsMdSide:
     """QL1 cross-doc: docs MD side — target MD existence + anchor slug match.
 

@@ -2462,6 +2462,56 @@ def check_source_links(
                     f"[QL1] image alt/filename missing from JSON: {check_text!r}"
                 )
 
+        # :java:extdoc: role — QL1 extdoc check (spec §3-2 Issue #363)
+        # verify builds javadoc_map independently from knowledge/javadoc/ JSON
+        # (§2-2 verify independence principle — never import from create side).
+        if knowledge_dir is not None:
+            from scripts.common.linkfmt import JAVADOC_LINK_RE
+            _javadoc_dir = Path(knowledge_dir) / "javadoc"
+            # Build javadoc_map: FQCN (class, no method suffix) → file_id
+            _javadoc_map: dict[str, str] = {}
+            if _javadoc_dir.is_dir():
+                for _jf in _javadoc_dir.glob("*.json"):
+                    _fid = _jf.stem  # e.g. "javadoc-nablarch-common-dao-UniversalDao"
+                    if _fid.startswith("javadoc-"):
+                        _fqcn = _fid[len("javadoc-"):].replace("-", ".")
+                        _javadoc_map[_fqcn] = _fid
+
+            def _class_fqcn(fqcn: str) -> str:
+                """Strip method suffix (after #) to get class FQCN."""
+                return fqcn.split("#")[0]
+
+            for _node in doctree.findall(nodes.inline):
+                _cls = _node.get("classes") or []
+                if "role-java:extdoc" not in _cls:
+                    continue
+                _raw = _node.astext().strip()
+                # Format: "DisplayText <FQCN>" or just "FQCN"
+                if "<" in _raw and _raw.rstrip().endswith(">"):
+                    _display, _, _fqcn_raw = _raw.rpartition("<")
+                    _fqcn_raw = _fqcn_raw.rstrip(">").strip()
+                else:
+                    _fqcn_raw = _raw
+                _fqcn_class = _class_fqcn(_fqcn_raw)
+                # java.* / jakarta.* / javax.* — external JDK, skip
+                if _fqcn_class.startswith(("java.", "jakarta.", "javax.")):
+                    continue
+                _file_id = _javadoc_map.get(_fqcn_class)
+                if _file_id is None:
+                    # javadoc JSON missing → RBKC bug (Q2 equivalent)
+                    issues.append(
+                        f"[QL1] :java:extdoc: `{_fqcn_raw}` javadoc JSON missing"
+                        f" (expected knowledge/javadoc/javadoc-{_fqcn_class.replace('.', '-')}.json)"
+                    )
+                    continue
+                # javadoc JSON exists — check MD link is present in JSON content
+                _expected_link = f"](../javadoc/{_file_id}.md)"
+                if _expected_link not in json_full:
+                    issues.append(
+                        f"[QL1] :java:extdoc: `{_fqcn_raw}` MD link missing from JSON"
+                        f" (expected link to {_file_id}.md)"
+                    )
+
         # NOTE: literal_block content is covered by QC1/QC2 (sequential-delete
         # across the full JSON content), so we don't re-check it here.
 
