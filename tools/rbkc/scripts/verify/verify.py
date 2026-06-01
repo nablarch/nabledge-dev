@@ -463,6 +463,11 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
         # Skip literalinclude source copies under assets/ — not content JSON.
         if "assets" in rel_path.parts:
             continue
+        # Issue #363: Javadoc JSON files are reached via :java:extdoc: links only;
+        # they are intentionally excluded from index.md (semantic search would
+        # break with 750+ extra entries).  Skip QO4 for javadoc/ subdirectory.
+        if "javadoc" in rel_path.parts:
+            continue
         rel = str(rel_path).replace("\\", "/")
         try:
             d = json.loads(jf.read_text(encoding="utf-8"))
@@ -2461,6 +2466,73 @@ def check_source_links(
 
         # NOTE: literal_block content is covered by QC1/QC2 (sequential-delete
         # across the full JSON content), so we don't re-check it here.
+
+        # Issue #363: :java:extdoc: QL1 check.
+        # Per rbkc-verify-quality-design.md §3-2-3:
+        #   - nablarch.* FQCN with javadoc JSON present → JSON must contain
+        #     [DisplayText](../javadoc/{file_id}.md).  Display text only → FAIL (QL1).
+        #   - nablarch.* FQCN without javadoc JSON → FAIL (pipeline bug).
+        #   - java.*/jakarta.*/javax.* → scope outside, no QL1 check.
+        # verify builds its own javadoc_map from knowledge/javadoc/ — it does NOT
+        # depend on the create-side javadoc_map (§2-2 verify independence).
+        if knowledge_dir is not None:
+            _kdir = Path(knowledge_dir)
+            javadoc_dir = _kdir / "javadoc"
+            # Build javadoc_map from on-disk JSON (FQCN derived from file_id prefix)
+            _verify_javadoc_file_ids: set[str] = set()
+            if javadoc_dir.is_dir():
+                for _jf in javadoc_dir.glob("*.json"):
+                    _verify_javadoc_file_ids.add(_jf.stem)
+
+            from scripts.common.linkfmt import JAVADOC_LINK_RE as _JAVADOC_LINK_RE
+
+            seen_extdoc: set[str] = set()
+            for _n in doctree.findall(nodes.inline):
+                _cls = _n.get("classes") or []
+                if not any(_c.startswith("role-") for _c in _cls):
+                    continue
+                _role = next((_c[5:] for _c in _cls if _c.startswith("role-")), "")
+                if _role != "java:extdoc":
+                    continue
+                _raw = _n.astext().strip()
+                if "<" in _raw and _raw.rstrip().endswith(">"):
+                    _display, _, _fqcn_part = _raw.rpartition("<")
+                    _display = _display.strip()
+                    _fqcn = _fqcn_part.rstrip(">").strip()
+                else:
+                    _display = _raw
+                    _fqcn = _raw
+
+                # Strip method/field suffix to class FQCN
+                _class_fqcn_str = _fqcn.split("(")[0].strip()
+                _parts = _class_fqcn_str.split(".")
+                for _i, _p in enumerate(_parts):
+                    if _p and _p[0].isupper():
+                        _class_fqcn_str = ".".join(_parts[: _i + 1])
+                        break
+
+                if not _class_fqcn_str.startswith("nablarch."):
+                    continue  # java.* / jakarta.* / javax.* → scope outside
+
+                if _class_fqcn_str in seen_extdoc:
+                    continue
+                seen_extdoc.add(_class_fqcn_str)
+
+                _file_id = "javadoc-" + _class_fqcn_str.replace(".", "-")
+                if _file_id not in _verify_javadoc_file_ids:
+                    issues.append(
+                        f"[QL1] :java:extdoc: FQCN Javadoc JSON missing: "
+                        f"{_class_fqcn_str} (expected {_file_id}.json in knowledge/javadoc/)"
+                    )
+                    continue
+                # Javadoc JSON exists — verify that JSON content contains the link
+                _expected_link = f"](../javadoc/{_file_id}.md)"
+                if _expected_link not in json_full:
+                    issues.append(
+                        f"[QL1] :java:extdoc:`{_display or _class_fqcn_str}` "
+                        f"Javadoc link missing from JSON: "
+                        f"expected link to ../javadoc/{_file_id}.md"
+                    )
 
     elif fmt == "md":
         from scripts.common import md_ast, md_ast_visitor
