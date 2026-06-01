@@ -205,7 +205,6 @@ baseline.json には以下が含まれる:
 | 実行日 | YYYY-MM-DD |
 | スキル | nabledge-6 |
 | シナリオ数 | N |
-| 閾値 | answer_correctness ≥0.99、answer_relevancy ≥0.95、faithfulness ≥0.99 |
 
 シナリオの内訳:
 
@@ -232,13 +231,13 @@ YES / NO（+ 1〜2文で根拠）
 
 ### 3 run スコアサマリー
 
-| 指標 | 意味（非技術者向け） | run-1 | run-2 | run-3 | 平均 | 判定 |
-|---|---|---|---|---|---|---|
-| answer_correctness | 「聞かれた事実を正しく答えられたか」 | N.NN | N.NN | N.NN | N.NN | ○/△/× |
-| answer_relevancy   | 「質問に対して的外れな回答をしていないか」 | N.NN | N.NN | N.NN | N.NN | ○/△/× |
-| faithfulness       | 「ナレッジにない情報を作り話していないか」 | N.NN | N.NN | N.NN | N.NN | ○/△/× |
+| 指標 | 意味（非技術者向け） | 閾値 | run-1 | run-2 | run-3 | 平均 | 判定 |
+|---|---|---|---|---|---|---|---|
+| answer_correctness | 「聞かれた事実を正しく答えられたか」 | ≥0.99 | N.NN | N.NN | N.NN | N.NN | ○/△/× |
+| answer_relevancy   | 「質問に対して的外れな回答をしていないか」 | ≥0.95 | N.NN | N.NN | N.NN | N.NN | ○/△/× |
+| faithfulness       | 「ナレッジにない情報を作り話していないか」 | ≥0.99 | N.NN | N.NN | N.NN | N.NN | ○/△/× |
 
-判定基準: 平均 ≥ 0.99 → ○、≥ 0.95 → △、< 0.95 → ×
+判定基準: 平均 ≥ 閾値 → ○、閾値 −0.05 以内 → △、閾値 −0.05 未満 → ×
 
 ### 全体評価（1〜2文）
 
