@@ -204,7 +204,7 @@ baseline.json には以下が含まれる:
 |---|---|
 | 実行日 | YYYY-MM-DD |
 | スキル | nabledge-6 |
-| シナリオ数 | N（質問回答 x / 影響調査 x / コードレビュー x / 事前確認 x / スコープ外 x） |
+| シナリオ数 | N（質問回答 x / 影響調査 x / コードレビュー x / 入門 x / 対応範囲外 x） |
 | 閾値 | answer_correctness ≥0.99、answer_relevancy ≥0.95、faithfulness ≥0.99 |
 
 ---
