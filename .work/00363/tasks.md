@@ -119,15 +119,9 @@ verify に依存しない純粋な単体テスト対象。
   - UniversalDao.java を 1 件手動変換し、JSON が正しく生成されることを確認する
 - [ ] コミット: `feat: add javadoc.py — Javadoc knowledge file generator (#363)`
 
-### Task 2-F: run.py — javadoc_generate() を create() 冒頭で呼び出す
-
-**Steps:**
-- [ ] `run.py` の `create()` に `javadoc_generate()` 呼び出しを追加し、返した `javadoc_map` を `_convert_and_write()` に渡す
-  - テストは既存の run テストで `javadoc_map` が渡されることを確認（または新規テスト追加）
-  - `pytest tests/ut/ -q` → 全 PASS
-- [ ] コミット: `feat: run.py — call javadoc_generate() at start of create() (#363)`
-
 ### Task 2-G: rst_ast_visitor.py — :java:extdoc: 内部リンク化
+
+visitor に `javadoc_map` パラメータを追加する。run.py の wiring より先に行う（run.py が visitor にマップを渡せるよう、受け口を先に作る）。
 
 **Steps:**
 - [ ] `test_rst_ast_visitor.py` に `:java:extdoc:` 内部リンクのテストを追加する（RED）
@@ -150,6 +144,16 @@ verify に依存しない純粋な単体テスト対象。
 - [ ] `rst_ast_visitor.py` を実装する（GREEN）
   - `pytest tests/ut/ -q` → 全 PASS
 - [ ] コミット: `feat: rst_ast_visitor — resolve :javadoc_url: as external link (#363)`
+
+### Task 2-F: run.py — javadoc_generate() を create() 冒頭で呼び出す
+
+visitor（2-G/2-H）が `javadoc_map` パラメータを受け取れる状態になってから行う。
+
+**Steps:**
+- [ ] `run.py` の `create()` に `javadoc_generate()` 呼び出しを追加し、返した `javadoc_map` を `_convert_and_write()` に渡す
+  - テストは既存の run テストで `javadoc_map` が渡されることを確認（または新規テスト追加）
+  - `pytest tests/ut/ -q` → 全 PASS
+- [ ] コミット: `feat: run.py — call javadoc_generate() at start of create() (#363)`
 
 ### Task 2-I: index.py — javadoc/ 除外
 
