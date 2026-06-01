@@ -1,14 +1,18 @@
 """Tests for benchmark report generation."""
 import json
+import math
 import tempfile
 from pathlib import Path
 
 import pytest
 
 from tools.benchmark.scripts.report import (
+    build_baseline,
+    compare_against_baseline,
     format_comparison_report,
     format_scenario_report,
     format_summary_report,
+    format_regression_report,
     generate_full_report,
 )
 
@@ -175,3 +179,158 @@ class TestFormatComparisonReport:
         evals_b = [_make_evaluation(scenario_id="pre-01")]
         report = format_comparison_report("run-1", "run-2", evals_a, evals_b)
         assert "品質比較" in report
+
+
+class TestBuildBaseline:
+    """build_baseline: N runs の evaluation lists から baseline.json 相当の dict を生成する。"""
+
+    def _evals(self, ac, ar, fa):
+        return [_make_evaluation(scenario_id="s1", deepeval_scores={
+            "answer_correctness": {"score": ac, "reason": ""},
+            "answer_relevancy": {"score": ar, "reason": ""},
+            "faithfulness": {"score": fa, "reason": ""},
+        })]
+
+    def test_mean_computed_across_runs(self):
+        runs = [self._evals(0.8, 0.9, 1.0), self._evals(1.0, 0.7, 0.8)]
+        bl = build_baseline(runs)
+        assert abs(bl["scenarios"]["s1"]["answer_correctness"]["mean"] - 0.9) < 1e-9
+
+    def test_stddev_computed_across_runs(self):
+        runs = [self._evals(0.8, 0.9, 1.0), self._evals(1.0, 0.7, 0.8)]
+        bl = build_baseline(runs)
+        # stddev of [0.8, 1.0] = 0.1 (population)
+        assert abs(bl["scenarios"]["s1"]["answer_correctness"]["stddev"] - 0.1) < 1e-9
+
+    def test_pass_rate_computed(self):
+        # threshold for answer_correctness = 0.99; 0.8 fails, 1.0 passes → 0.5
+        runs = [self._evals(0.8, 0.9, 1.0), self._evals(1.0, 0.7, 0.8)]
+        bl = build_baseline(runs)
+        assert bl["scenarios"]["s1"]["answer_correctness"]["pass_rate"] == 0.5
+
+    def test_flaky_flag_set_when_pass_rate_below_one(self):
+        runs = [self._evals(0.8, 0.9, 1.0), self._evals(1.0, 0.7, 0.8)]
+        bl = build_baseline(runs)
+        assert bl["scenarios"]["s1"]["flaky"] is True
+
+    def test_not_flaky_when_always_passes(self):
+        runs = [self._evals(1.0, 1.0, 1.0), self._evals(1.0, 1.0, 1.0)]
+        bl = build_baseline(runs)
+        assert bl["scenarios"]["s1"]["flaky"] is False
+
+    def test_global_averages_included(self):
+        runs = [self._evals(0.8, 0.9, 1.0), self._evals(1.0, 0.7, 0.8)]
+        bl = build_baseline(runs)
+        assert "global" in bl
+        assert abs(bl["global"]["answer_correctness"]["mean"] - 0.9) < 1e-9
+
+    def test_metadata_stored(self):
+        runs = [self._evals(1.0, 1.0, 1.0)]
+        bl = build_baseline(runs)
+        assert bl["num_runs"] == 1
+        assert "thresholds" in bl
+
+
+class TestCompareAgainstBaseline:
+    """compare_against_baseline: 1 run の evaluations と baseline dict を比較して結果を返す。"""
+
+    def _make_baseline(self, mean, stddev, pass_rate, flaky=False):
+        return {
+            "num_runs": 3,
+            "thresholds": {"answer_correctness": 0.99, "answer_relevancy": 0.95, "faithfulness": 0.99},
+            "global": {
+                "answer_correctness": {"mean": mean, "stddev": stddev},
+                "answer_relevancy": {"mean": mean, "stddev": stddev},
+                "faithfulness": {"mean": mean, "stddev": stddev},
+            },
+            "scenarios": {
+                "s1": {
+                    "flaky": flaky,
+                    "answer_correctness": {"mean": mean, "stddev": stddev, "pass_rate": pass_rate},
+                    "answer_relevancy": {"mean": mean, "stddev": stddev, "pass_rate": pass_rate},
+                    "faithfulness": {"mean": mean, "stddev": stddev, "pass_rate": pass_rate},
+                }
+            },
+        }
+
+    def _eval(self, ac, ar, fa):
+        return [_make_evaluation(scenario_id="s1", deepeval_scores={
+            "answer_correctness": {"score": ac, "reason": ""},
+            "answer_relevancy": {"score": ar, "reason": ""},
+            "faithfulness": {"score": fa, "reason": ""},
+        })]
+
+    def test_clean_when_scores_within_baseline(self):
+        bl = self._make_baseline(mean=1.0, stddev=0.0, pass_rate=1.0)
+        result = compare_against_baseline(self._eval(1.0, 1.0, 1.0), bl)
+        assert result["verdict"] == "CLEAN"
+
+    def test_regression_detected_when_score_drops_more_than_2stddev(self):
+        # mean=1.0, stddev=0.05 → threshold = 1.0 - 2*0.05 = 0.9
+        bl = self._make_baseline(mean=1.0, stddev=0.05, pass_rate=1.0)
+        result = compare_against_baseline(self._eval(0.8, 1.0, 1.0), bl)
+        assert result["verdict"] == "REGRESSION DETECTED"
+        assert any(r["scenario_id"] == "s1" for r in result["regressions"])
+
+    def test_flaky_scenario_regression_reported_separately(self):
+        bl = self._make_baseline(mean=0.8, stddev=0.1, pass_rate=0.5, flaky=True)
+        # score drops below mean - 2*stddev but scenario is flaky
+        result = compare_against_baseline(self._eval(0.5, 1.0, 1.0), bl)
+        assert result["verdict"] == "CLEAN"
+        assert any(r["scenario_id"] == "s1" for r in result["flaky_regressions"])
+
+    def test_regressions_list_empty_when_clean(self):
+        bl = self._make_baseline(mean=1.0, stddev=0.0, pass_rate=1.0)
+        result = compare_against_baseline(self._eval(1.0, 1.0, 1.0), bl)
+        assert result["regressions"] == []
+
+    def test_new_scenario_not_in_baseline_is_skipped(self):
+        bl = self._make_baseline(mean=1.0, stddev=0.0, pass_rate=1.0)
+        new_eval = [_make_evaluation(scenario_id="new-01", deepeval_scores={
+            "answer_correctness": {"score": 0.0, "reason": ""},
+            "answer_relevancy": {"score": 0.0, "reason": ""},
+            "faithfulness": {"score": 0.0, "reason": ""},
+        })]
+        result = compare_against_baseline(new_eval, bl)
+        assert result["verdict"] == "CLEAN"
+        assert any(sid == "new-01" for sid in result["new_scenarios"])
+
+
+class TestFormatRegressionReport:
+    """format_regression_report: compare_against_baseline の結果を markdown に変換する。"""
+
+    def _clean_result(self):
+        return {
+            "verdict": "CLEAN",
+            "regressions": [],
+            "flaky_regressions": [],
+            "new_scenarios": [],
+        }
+
+    def _regression_result(self):
+        return {
+            "verdict": "REGRESSION DETECTED",
+            "regressions": [
+                {"scenario_id": "qa-01", "metric": "answer_correctness",
+                 "baseline_mean": 1.0, "baseline_stddev": 0.05,
+                 "current_score": 0.8, "delta": -0.2},
+            ],
+            "flaky_regressions": [],
+            "new_scenarios": [],
+        }
+
+    def test_clean_verdict_in_report(self):
+        report = format_regression_report(self._clean_result())
+        assert "CLEAN" in report
+
+    def test_regression_verdict_in_report(self):
+        report = format_regression_report(self._regression_result())
+        assert "REGRESSION DETECTED" in report
+
+    def test_regression_scenario_listed(self):
+        report = format_regression_report(self._regression_result())
+        assert "qa-01" in report
+
+    def test_delta_shown(self):
+        report = format_regression_report(self._regression_result())
+        assert "-0.2" in report or "-0.20" in report

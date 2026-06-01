@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -315,33 +316,243 @@ def format_comparison_report(label_a: str, label_b: str, evals_a: list[dict], ev
     return "\n".join(lines)
 
 
+def build_baseline(runs: list[list[dict]]) -> dict:
+    """Build a baseline dict from N run evaluation lists.
+
+    Returns a dict with per-scenario and global stats (mean, stddev, pass_rate)
+    and a flaky flag per scenario (flaky=True when any metric pass_rate < 1.0).
+    """
+    scenario_ids: set[str] = set()
+    for evals in runs:
+        for ev in evals:
+            scenario_ids.add(ev["scenario_id"])
+
+    scenarios: dict[str, dict] = {}
+    for sid in scenario_ids:
+        entry: dict = {}
+        any_flaky = False
+        for key in _DEEPEVAL_KEYS:
+            scores_per_run = []
+            for evals in runs:
+                ev = next((e for e in evals if e["scenario_id"] == sid), None)
+                if ev is None:
+                    continue
+                v = _score_value(ev.get("scores", {}), key)
+                if v is not None:
+                    scores_per_run.append(v)
+            n = len(scores_per_run)
+            if n == 0:
+                entry[key] = {"mean": None, "stddev": None, "pass_rate": None}
+                continue
+            mean = sum(scores_per_run) / n
+            variance = sum((x - mean) ** 2 for x in scores_per_run) / n
+            stddev = math.sqrt(variance)
+            pass_rate = sum(1 for v in scores_per_run if v >= _DEEPEVAL_THRESHOLDS[key]) / n
+            entry[key] = {"mean": mean, "stddev": stddev, "pass_rate": pass_rate}
+            if pass_rate < 1.0:
+                any_flaky = True
+        entry["flaky"] = any_flaky
+        scenarios[sid] = entry
+
+    # global averages across all scenarios and all runs
+    global_stats: dict[str, dict] = {}
+    for key in _DEEPEVAL_KEYS:
+        all_scores = []
+        for evals in runs:
+            for ev in evals:
+                v = _score_value(ev.get("scores", {}), key)
+                if v is not None:
+                    all_scores.append(v)
+        n = len(all_scores)
+        if n == 0:
+            global_stats[key] = {"mean": None, "stddev": None}
+        else:
+            mean = sum(all_scores) / n
+            variance = sum((x - mean) ** 2 for x in all_scores) / n
+            global_stats[key] = {"mean": mean, "stddev": math.sqrt(variance)}
+
+    return {
+        "num_runs": len(runs),
+        "thresholds": dict(_DEEPEVAL_THRESHOLDS),
+        "global": global_stats,
+        "scenarios": scenarios,
+    }
+
+
+def compare_against_baseline(evaluations: list[dict], baseline: dict) -> dict:
+    """Compare a single run's evaluations against a baseline dict.
+
+    Returns a result dict with:
+      verdict: "CLEAN" or "REGRESSION DETECTED"
+      regressions: list of regression dicts (non-flaky scenarios only)
+      flaky_regressions: regressions on flaky scenarios (informational)
+      new_scenarios: scenario IDs present in run but absent from baseline
+    """
+    k_factor = 2.0  # flag when score < mean - k*stddev
+    regressions = []
+    flaky_regressions = []
+    new_scenarios = []
+    bl_scenarios = baseline.get("scenarios", {})
+
+    for ev in evaluations:
+        sid = ev["scenario_id"]
+        if sid not in bl_scenarios:
+            new_scenarios.append(sid)
+            continue
+        bl_sc = bl_scenarios[sid]
+        is_flaky = bl_sc.get("flaky", False)
+        for key in _DEEPEVAL_KEYS:
+            bl_metric = bl_sc.get(key, {})
+            bl_mean = bl_metric.get("mean")
+            bl_std = bl_metric.get("stddev")
+            if bl_mean is None:
+                continue
+            current = _score_value(ev.get("scores", {}), key)
+            if current is None:
+                continue
+            threshold = bl_mean - k_factor * (bl_std or 0.0)
+            if current < threshold:
+                rec = {
+                    "scenario_id": sid,
+                    "metric": key,
+                    "baseline_mean": bl_mean,
+                    "baseline_stddev": bl_std,
+                    "current_score": current,
+                    "delta": current - bl_mean,
+                }
+                if is_flaky:
+                    flaky_regressions.append(rec)
+                else:
+                    regressions.append(rec)
+
+    verdict = "REGRESSION DETECTED" if regressions else "CLEAN"
+    return {
+        "verdict": verdict,
+        "regressions": regressions,
+        "flaky_regressions": flaky_regressions,
+        "new_scenarios": new_scenarios,
+    }
+
+
+def format_regression_report(result: dict) -> str:
+    """Render compare_against_baseline result as markdown."""
+    verdict = result["verdict"]
+    regressions = result.get("regressions", [])
+    flaky_regressions = result.get("flaky_regressions", [])
+    new_scenarios = result.get("new_scenarios", [])
+
+    lines = [
+        f"## 退行チェック結果: **{verdict}**",
+        "",
+    ]
+
+    if regressions:
+        lines.extend([
+            "### 退行シナリオ（ベースライン平均 − 2σ を下回る）",
+            "",
+            "| シナリオ | 指標 | ベースライン平均 | 現在スコア | 差分 |",
+            "|---|---|---|---|---|",
+        ])
+        for r in regressions:
+            lines.append(
+                f"| {r['scenario_id']} | {r['metric']} "
+                f"| {r['baseline_mean']:.3f}±{r['baseline_stddev']:.3f} "
+                f"| {r['current_score']:.3f} | {r['delta']:+.3f} |"
+            )
+        lines.append("")
+    else:
+        lines.extend(["退行なし（全シナリオがベースライン範囲内）", ""])
+
+    if flaky_regressions:
+        lines.extend([
+            "### フラグ対象（Flaky シナリオ — 参考情報）",
+            "",
+            "| シナリオ | 指標 | ベースライン平均 | 現在スコア | 差分 |",
+            "|---|---|---|---|---|",
+        ])
+        for r in flaky_regressions:
+            lines.append(
+                f"| {r['scenario_id']} | {r['metric']} "
+                f"| {r['baseline_mean']:.3f}±{r['baseline_stddev']:.3f} "
+                f"| {r['current_score']:.3f} | {r['delta']:+.3f} |"
+            )
+        lines.append("")
+
+    if new_scenarios:
+        lines.extend([
+            "### 新規シナリオ（ベースライン未登録）",
+            "",
+            ", ".join(new_scenarios),
+            "",
+        ])
+
+    return "\n".join(lines)
+
+
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Generate benchmark report")
-    parser.add_argument("--run-dir", required=True, help="Path to benchmark run directory")
+    parser.add_argument("--run-dir", help="Path to benchmark run directory")
     parser.add_argument("--compare", help="Second run directory for comparison report")
     parser.add_argument("--label-a", help="Label for --run-dir (used in comparison)")
     parser.add_argument("--label-b", help="Label for --compare (used in comparison)")
+    parser.add_argument(
+        "--baseline-runs", nargs="+", metavar="RUN_DIR",
+        help="Two or more run directories to build baseline.json from",
+    )
+    parser.add_argument(
+        "--save-baseline", metavar="FILE",
+        help="Path to save baseline.json (used with --baseline-runs)",
+    )
+    parser.add_argument(
+        "--compare-baseline", metavar="FILE",
+        help="Path to baseline.json for regression check (used with --run-dir)",
+    )
     args = parser.parse_args()
+
+    if args.baseline_runs:
+        # Build baseline.json from multiple run dirs
+        runs = [_load_evaluations(Path(d)) for d in args.baseline_runs]
+        baseline = build_baseline(runs)
+        save_path = Path(args.save_baseline) if args.save_baseline else Path(args.baseline_runs[0]).parent / "baseline.json"
+        save_path.write_text(json.dumps(baseline, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"Baseline saved to {save_path}", file=sys.stderr)
+        return
+
+    if not args.run_dir:
+        parser.error("--run-dir is required unless --baseline-runs is specified")
 
     run_dir = Path(args.run_dir)
     evaluations = _load_evaluations(run_dir)
 
-    if args.compare:
+    if args.compare_baseline:
+        # Regression check against saved baseline
+        baseline = json.loads(Path(args.compare_baseline).read_text(encoding="utf-8"))
+        result = compare_against_baseline(evaluations, baseline)
+        report = format_regression_report(result)
+        report_path = run_dir / "regression-check.md"
+        report_path.write_text(report, encoding="utf-8")
+        print(f"Regression report written to {report_path}", file=sys.stderr)
+        print(report)
+        if result["verdict"] == "REGRESSION DETECTED":
+            sys.exit(1)
+    elif args.compare:
         compare_dir = Path(args.compare)
         evals_b = _load_evaluations(compare_dir)
         label_a = args.label_a or run_dir.name
         label_b = args.label_b or compare_dir.name
         report = format_comparison_report(label_a, label_b, evaluations, evals_b)
         report_path = run_dir / f"comparison-{label_b}.md"
+        report_path.write_text(report, encoding="utf-8")
+        print(f"Report written to {report_path}", file=sys.stderr)
+        print(report)
     else:
         report = generate_full_report(evaluations)
         report_path = run_dir / "report.md"
-
-    report_path.write_text(report, encoding="utf-8")
-    print(f"Report written to {report_path}", file=sys.stderr)
-    print(report)
+        report_path.write_text(report, encoding="utf-8")
+        print(f"Report written to {report_path}", file=sys.stderr)
+        print(report)
 
 
 if __name__ == "__main__":
