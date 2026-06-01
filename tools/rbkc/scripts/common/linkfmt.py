@@ -13,8 +13,10 @@ which F4 of review-22-b-16b-step3-4-16c.md called out under
 Public API:
     emit_crossdoc_link(display, type_, category, file_id, anchor="") -> str
     emit_asset_link(display, file_id, basename) -> str
+    emit_javadoc_link(display, file_id) -> str
     CROSSDOC_LINK_RE — pinned regex matching ``emit_crossdoc_link`` output
     ASSET_LINK_RE    — pinned regex matching ``emit_asset_link`` output
+    JAVADOC_LINK_RE  — pinned regex matching ``emit_javadoc_link`` output
 """
 from __future__ import annotations
 
@@ -53,9 +55,29 @@ ASSET_LINK_RE = re.compile(
 )
 
 
+def emit_javadoc_link(display: str, file_id: str) -> str:
+    """Return the canonical Javadoc MD link per spec §5-2.
+
+    Emits ``[display](../javadoc/{file_id}.md)``.  The ``../javadoc/``
+    prefix assumes the calling docs-MD lives one category-level deep
+    (``docs/{type}/{category}/``), so ``../javadoc/`` resolves to
+    ``docs/{type}/javadoc/``.
+    """
+    return f"[{display}](../javadoc/{file_id}.md)"
+
+
+#: Matches output of :func:`emit_javadoc_link` — round-trip tested in
+#: tests/ut/test_linkfmt.py.
+JAVADOC_LINK_RE = re.compile(
+    r"\]\(\.\.\/javadoc\/(?P<file_id>[^)\s]+)\.md\)"
+)
+
+
 __all__ = [
     "emit_crossdoc_link",
     "emit_asset_link",
+    "emit_javadoc_link",
     "CROSSDOC_LINK_RE",
     "ASSET_LINK_RE",
+    "JAVADOC_LINK_RE",
 ]

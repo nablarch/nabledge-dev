@@ -70,3 +70,29 @@ class TestAssetRoundTrip:
         assert m is not None, link
         assert m.group("file_id") == file_id
         assert m.group("basename") == basename
+
+
+class TestJavadocRoundTrip:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            ("UniversalDao", "javadoc-nablarch-common-dao-UniversalDao"),
+            ("BasicDataReader", "javadoc-nablarch-fw-batch-BasicDataReader"),
+            ("日本語テキスト", "javadoc-com-example-Foo"),
+        ],
+    )
+    def test_emit_then_parse(self, case):
+        from scripts.common.linkfmt import emit_javadoc_link, JAVADOC_LINK_RE
+
+        display, file_id = case
+        link = emit_javadoc_link(display, file_id)
+
+        m = JAVADOC_LINK_RE.search(link)
+        assert m is not None, link
+        assert m.group("file_id") == file_id
+
+    def test_link_format(self):
+        from scripts.common.linkfmt import emit_javadoc_link
+
+        link = emit_javadoc_link("UniversalDao", "javadoc-nablarch-common-dao-UniversalDao")
+        assert link == "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)"
