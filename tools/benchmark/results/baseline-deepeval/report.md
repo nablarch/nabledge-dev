@@ -16,8 +16,6 @@
 | 入門 | 3 | 基本的な使い方を確認する入門向けシナリオ |
 | 対応範囲外 | 4 | Nablarchが非対応の機能への質問（スキルが正しく「対応範囲外」と断れるかを確認） |
 
-| 閾値 | answer_correctness ≥0.99、answer_relevancy ≥0.95、faithfulness ≥0.99 |
-
 
 ---
 
