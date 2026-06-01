@@ -185,3 +185,10 @@ class TestParseJavadocMd:
         assert data["title"] == "class SimpleClass"
         assert "シンプルなクラス" in data["content"]
         assert data["sections"] == []
+
+    def test_sections_have_sequential_ids(self):
+        """All sections must have 'id' field (required by index.py)."""
+        data = _parse_javadoc_md(self._sample_md())
+        for i, section in enumerate(data["sections"], start=1):
+            assert "id" in section, f"Section {i} missing 'id' field"
+            assert section["id"] == f"s{i}", f"Expected s{i}, got {section['id']}"

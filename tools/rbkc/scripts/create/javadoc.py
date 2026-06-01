@@ -280,11 +280,13 @@ def _parse_javadoc_md(md_text: str) -> dict:
         ### methodName              → Section(level=3)
             ```java ...```          → content
             description text       → content (appended)
+
+    Each section dict includes "id" (s1, s2, ...) as required by index.py.
     """
     lines = md_text.splitlines()
     title = ""
     top_content_lines: list[str] = []
-    sections: list[dict] = []
+    raw_sections: list[dict] = []  # no id yet
 
     state = "before_title"  # before_title | top_content | in_section
     current_section: dict | None = None
@@ -294,7 +296,7 @@ def _parse_javadoc_md(md_text: str) -> dict:
         nonlocal current_section, current_content_lines
         if current_section is not None:
             current_section["content"] = "\n".join(current_content_lines).strip()
-            sections.append(current_section)
+            raw_sections.append(current_section)
             current_section = None
             current_content_lines = []
 
@@ -330,6 +332,12 @@ def _parse_javadoc_md(md_text: str) -> dict:
     _flush_section()
 
     top_content = "\n".join(top_content_lines).strip()
+
+    # Assign sequential ids as required by index.py
+    sections = []
+    for idx, sec in enumerate(raw_sections, start=1):
+        sec["id"] = f"s{idx}"
+        sections.append(sec)
 
     return {
         "title": title,
@@ -482,12 +490,17 @@ def javadoc_generate(
         _write_docs_md(data, file_id, docs_dir)
         javadoc_map[cls_fqcn] = file_id
 
-    # Map all original FQCNs (including method-suffixed) to their class file_id
+    # Map all original FQCNs (including method-suffixed) to their class file_id.
+    # Also include class FQCNs directly so that inline_inline() can look them up
+    # by both the full method FQCN and by the class FQCN after stripping method suffix.
     result: dict[str, str] = {}
     for fqcn in fqcns:
         cls = _class_fqcn(fqcn)
         if cls in javadoc_map:
             result[fqcn] = javadoc_map[cls]
+    # Add class FQCNs directly (for inline_inline() class_fqcn lookup)
+    for cls_fqcn, file_id in javadoc_map.items():
+        result.setdefault(cls_fqcn, file_id)
 
     print(
         f"javadoc_generate: complete — {len(javadoc_map)} knowledge files written",
