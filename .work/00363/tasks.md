@@ -95,7 +95,7 @@ docs/javadoc/javadoc-nablarch-common-dao-UniversalDao.md
 - [x] `rbkc-verify-quality-design.md` を更新する（QL1象限分類へのJavadoc適用 / QO4対象外化）
 - [x] Javadoc MDパース仕様を設計書に追記する（jar出力MD → JSON変換ルール）
 - [x] コミット・プッシュしてユーザーに確認を依頼する — committed `12053d029`
-- [ ] [DECISION: 設計書の内容を承認するか？] ユーザー承認後に Task 2 へ進む
+- [x] [DECISION: 設計書の内容を承認するか？] ユーザー承認後に Task 2 へ進む
 
 ---
 
@@ -110,6 +110,7 @@ docs/javadoc/javadoc-nablarch-common-dao-UniversalDao.md
 - [ ] Javadoc MD → JSON コンバーターを実装する（jar出力MDをパース、セクション分割）
 - [ ] `rst_ast_visitor.py` の `:java:extdoc:` 処理を内部リンク化する（javadoc_map参照）
 - [ ] `rst_ast_visitor.py` の `:javadoc_url:` 処理を外部URL化する
+- [ ] `rst_ast_visitor.py` の `_KNOWN_ROLES` から実使用0件のrole（`file`/`guilabel`/`menuselection`/`kbd`/`command`/`samp`/`envvar`/`abbr`/`term`/`java:ref`/`java:type`/`java:method`/`java:field`/`c:func`）を削除し、出現時にFAILになるようにする
 - [ ] verify を更新する（QL1象限分類 / QO4対象外）
 - [ ] `rbkc.sh create v6 && rbkc.sh verify v6` を実行し FAIL増加なしを確認（全5バージョン）
 
