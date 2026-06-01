@@ -51,6 +51,44 @@ class TestCrossDocRoundTrip:
         assert bare + "#a" not in anchored  # different closing paren placement
 
 
+class TestJavadocRoundTrip:
+    def test_emit_javadoc_link_basic(self):
+        from scripts.common.linkfmt import emit_javadoc_link
+
+        result = emit_javadoc_link(
+            "UniversalDao", "javadoc-nablarch-common-dao-UniversalDao"
+        )
+        assert result == "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)"
+
+    def test_emit_javadoc_link_various(self):
+        from scripts.common.linkfmt import emit_javadoc_link
+
+        assert emit_javadoc_link("Foo", "javadoc-x-Foo") == "[Foo](../javadoc/javadoc-x-Foo.md)"
+        assert emit_javadoc_link("日本語", "javadoc-y-Bar") == "[日本語](../javadoc/javadoc-y-Bar.md)"
+
+    def test_javadoc_link_re_detects_emit_output(self):
+        from scripts.common.linkfmt import emit_javadoc_link, JAVADOC_LINK_RE
+
+        file_id = "javadoc-nablarch-common-dao-UniversalDao"
+        link = emit_javadoc_link("UniversalDao", file_id)
+        m = JAVADOC_LINK_RE.search(link)
+        assert m is not None, f"JAVADOC_LINK_RE did not match: {link}"
+        assert m.group("file_id") == file_id
+
+    def test_javadoc_link_re_round_trip(self):
+        from scripts.common.linkfmt import emit_javadoc_link, JAVADOC_LINK_RE
+
+        cases = [
+            ("ClassA", "javadoc-com-example-ClassA"),
+            ("SomeClass", "javadoc-nablarch-core-SomeClass"),
+        ]
+        for display, file_id in cases:
+            link = emit_javadoc_link(display, file_id)
+            m = JAVADOC_LINK_RE.search(link)
+            assert m is not None, link
+            assert m.group("file_id") == file_id
+
+
 class TestAssetRoundTrip:
     @pytest.mark.parametrize(
         "case",

@@ -53,9 +53,22 @@ ASSET_LINK_RE = re.compile(
 )
 
 
+def emit_javadoc_link(display: str, file_id: str) -> str:
+    """Return the canonical Javadoc MD link: ``[display](../javadoc/{file_id}.md)``."""
+    return f"[{display}](../javadoc/{file_id}.md)"
+
+
+#: Matches output of :func:`emit_javadoc_link`.
+JAVADOC_LINK_RE = re.compile(
+    r"\]\(\.\./javadoc/(?P<file_id>[^)\s]+)\.md\)"
+)
+
+
 __all__ = [
     "emit_crossdoc_link",
     "emit_asset_link",
+    "emit_javadoc_link",
     "CROSSDOC_LINK_RE",
     "ASSET_LINK_RE",
+    "JAVADOC_LINK_RE",
 ]
