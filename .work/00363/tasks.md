@@ -91,11 +91,11 @@ docs/javadoc/javadoc-nablarch-common-dao-UniversalDao.md
 
 ### Task 1: 設計書更新 → ユーザー承認
 **Steps:**
-- [ ] `rbkc-converter-design.md` を更新する（`:java:extdoc:` リンク化 / `:javadoc_url:` 外部URL化）
-- [ ] `rbkc-verify-quality-design.md` を更新する（QL1象限分類へのJavadoc適用 / QO4対象外化）
-- [ ] Javadoc MDパース仕様を設計書に追記する（jar出力MD → JSON変換ルール）
-- [ ] コミット・プッシュしてユーザーに確認を依頼する
-- [ ] ユーザー承認後に Task 2 へ進む
+- [x] `rbkc-converter-design.md` を更新する（`:java:extdoc:` リンク化 / `:javadoc_url:` 外部URL化）
+- [x] `rbkc-verify-quality-design.md` を更新する（QL1象限分類へのJavadoc適用 / QO4対象外化）
+- [x] Javadoc MDパース仕様を設計書に追記する（jar出力MD → JSON変換ルール）
+- [x] コミット・プッシュしてユーザーに確認を依頼する — committed `12053d029`
+- [ ] [DECISION: 設計書の内容を承認するか？] ユーザー承認後に Task 2 へ進む
 
 ---
 
