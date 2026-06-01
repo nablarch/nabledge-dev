@@ -155,45 +155,73 @@ python3 -m tools.benchmark.scripts.report \
 
 ---
 
-## ステップ 4: 比較集計（3 run完了後）
+## ステップ 4: ベースライン確立（新ラベル初回 or 意図的なリセット時）
 
-**目的**: 3 runの数値を集計し、前回ラベルと比較する。
+**目的**: 3 run の結果から機械可読な baseline.json を生成し、次回退行検出の基準を確立する。
 
-### 4a. 3 run集計
+### 4a. 各 run のレポート生成
 
 ```bash
 for r in run-1 run-2 run-3; do
   python3 -m tools.benchmark.scripts.report \
-    --run-dir tools/benchmark/results/{run-label}/$r
+    --run-dir tools/benchmark/results/{run-label}/$r/run
 done
 ```
 
-| 軸 | run-1 | run-2 | run-3 | 平均 |
-|---|---|---|---|---|
-| answer_correctness 平均 | N.NN | N.NN | N.NN | N.NN |
-| answer_relevancy 平均 | N.NN | N.NN | N.NN | N.NN |
-| faithfulness 平均 | N.NN | N.NN | N.NN | N.NN |
-
-閾値割れシナリオ一覧（3 run中で1回以上閾値未達となったシナリオ）:
-
-| シナリオID | 発生回数/3 | 低下した指標 |
-|---|---|---|
-
-### 4b. 前回ラベルとの比較
+### 4b. baseline.json 生成
 
 ```bash
 python3 -m tools.benchmark.scripts.report \
-  --run-dir tools/benchmark/results/{run-label}/run-1 \
-  --compare tools/benchmark/results/{prev-label}/run-1
+  --baseline-runs \
+    tools/benchmark/results/{run-label}/run-1/run \
+    tools/benchmark/results/{run-label}/run-2/run \
+    tools/benchmark/results/{run-label}/run-3/run \
+  --save-baseline tools/benchmark/results/{run-label}/baseline.json
 ```
 
-| 軸 | 前回 平均 | 今回 平均 | 差分 |
-|---|---|---|---|
-| answer_correctness | N.NN | N.NN | ±N.NN |
-| answer_relevancy | N.NN | N.NN | ±N.NN |
-| faithfulness | N.NN | N.NN | ±N.NN |
+出力: `tools/benchmark/results/{run-label}/baseline.json`
+
+baseline.json には以下が含まれる:
+- シナリオ×指標ごとの `mean`, `stddev`, `pass_rate`
+- `pass_rate < 1.0` のシナリオに `flaky: true` フラグ
+- グローバル平均・stddev
+- 閾値設定
+
+### 4c. 集計レポート作成
+
+3 run の数値を集計し、ベンチの評価（計測精度・スキル評価・次のアクション）を記述する。
 
 保存先: `tools/benchmark/results/{run-label}/report.md`
+
+記載すべき内容:
+1. **ベンチは正確に計測できたか** — stddev が大きいシナリオの原因と改善案
+2. **ベンチ結果から何が見えるか** — 3 run集計、閾値割れ分類、スキル実力評価
+3. **次のアクション** — must.facts 修正、閾値見直し、スキル改善候補
+
+参考: `tools/benchmark/results/baseline-deepeval/report.md`
+
+---
+
+## ステップ 4b（退行チェック）: スキル改修後の比較
+
+**目的**: スキルを変更した後、既存ベースラインと比較して退行を自動検出する。
+
+### 退行チェック実行
+
+```bash
+python3 -m tools.benchmark.scripts.report \
+  --run-dir tools/benchmark/results/{new-label}/run-N/run \
+  --compare-baseline tools/benchmark/results/{baseline-label}/baseline.json
+```
+
+出力: `tools/benchmark/results/{new-label}/run-N/run/regression-check.md`
+
+判定ルール:
+- シナリオのスコアが `baseline_mean - 2σ` を下回った場合 → `REGRESSION DETECTED`（exit code 1）
+- `flaky: true` のシナリオで退行が出た場合 → `CLEAN` 扱い（flaky_regressions に記録）
+- ベースラインにない新規シナリオ → スキップ（new_scenarios に記録）
+
+3 run分を比較して全て CLEAN であれば退行なしと判断する。REGRESSION DETECTED が出た場合はシナリオ・指標・delta を確認して原因を調査する。
 
 ---
 
