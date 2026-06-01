@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-01
+**Updated**: 2026-06-01 (session 2)
 
 ## Rules (applied to every task)
 
@@ -89,14 +89,6 @@ docs/javadoc/javadoc-nablarch-common-dao-UniversalDao.md
 
 ## In Progress
 
-### Task 1: 設計書更新 → ユーザー承認
-**Steps:**
-- [x] `rbkc-converter-design.md` を更新する（`:java:extdoc:` リンク化 / `:javadoc_url:` 外部URL化）
-- [x] `rbkc-verify-quality-design.md` を更新する（QL1象限分類へのJavadoc適用 / QO4対象外化）
-- [x] Javadoc MDパース仕様を設計書に追記する（jar出力MD → JSON変換ルール）
-- [x] コミット・プッシュしてユーザーに確認を依頼する — committed `12053d029`
-- [x] [DECISION: 設計書の内容を承認するか？] ユーザー承認後に Task 2 へ進む
-
 ---
 
 ## Not Started
@@ -149,4 +141,5 @@ docs/javadoc/javadoc-nablarch-common-dao-UniversalDao.md
 
 - [x] `.work/00363/tasks.md` と `notes.md` 作成 — committed `521ac200d`
 - [x] PR #365 作成
-- [x] jarツール動作確認・設計方針合意（今セッション）
+- [x] jarツール動作確認・設計方針合意
+- [x] Task 1: 設計書更新 → ユーザー承認 — committed `12053d029` (設計書), `f771ecbfa` (未使用roleホワイトリスト削除ポリシー追加)
