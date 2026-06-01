@@ -18,10 +18,6 @@
 
 ## In Progress
 
-### T20: 変更差分チェック + diff-check.md 更新
-
-**コミット**: `docs: update diff check for LLM judge removal`
-
 ---
 
 ## Not Started
@@ -68,6 +64,7 @@
 ## Done
 
 - [x] T22: ベンチマーク再取得（3 run）— committed `42f7e5edd`
+- [x] T20: 変更差分チェック + diff-check.md 更新 — committed (次のコミット)
 
 - [x] T21: e2e-prompt.md / run_qa.py 修正（Answerマーカー導入） — committed `6c5213430`
 - [x] T19: QAベンチマーク全件実行・新ベースライン取得（3 run） — 30/30全件、全指標0.96〜0.99（T21修正前のため廃棄）
