@@ -4,7 +4,7 @@
 |---|---|
 | 実行日 | 2026-06-01 |
 | スキル | nabledge-6 |
-| シナリオ数 | 30（QA 15 / Impact 4 / Review 4 / Pre 3 / OOS 2 / OOS-Impact 2） |
+| シナリオ数 | 30（質問回答 15 / 影響調査 4 / コードレビュー 4 / 事前確認 3 / スコープ外 4） |
 | 閾値 | answer_correctness ≥0.99、answer_relevancy ≥0.95、faithfulness ≥0.99 |
 
 
