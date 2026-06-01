@@ -82,6 +82,11 @@ def generate_index_md(knowledge_dir: Path, output_path: Path) -> None:
         # Skip literalinclude source copies under assets/ — not content JSON.
         if "assets" in parts:
             continue
+        # Issue #363: Javadoc knowledge files are reached via :java:extdoc: links
+        # only; they are intentionally excluded from index.md (semantic search
+        # would break with 750+ extra entries per rbkc-converter-design.md §5-2).
+        if "javadoc" in parts:
+            continue
         if len(parts) < 2:
             continue
         category = "/".join(parts[:2])

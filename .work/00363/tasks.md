@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-01 (session 3)
+**Updated**: 2026-06-01 (session 4)
 
 ## Rules (applied to every task)
 
@@ -106,7 +106,17 @@ docs/javadoc/javadoc-nablarch-common-dao-UniversalDao.md
 - [x] `rst_ast_visitor.py` の `:javadoc_url:` 処理を外部URL化する — committed `6cc030257`
 - [ ] `rst_ast_visitor.py` の `_KNOWN_ROLES` から実使用0件のrole（`file`/`guilabel`/`menuselection`/`kbd`/`command`/`samp`/`envvar`/`abbr`/`term`/`java:ref`/`java:type`/`java:method`/`java:field`/`c:func`）を削除し、出現時にFAILになるようにする
 - [x] verify を更新する（QL1象限分類 / QO4対象外） — committed `d26781dac`
-- [ ] `rbkc.sh create v6 && rbkc.sh verify v6` を実行し FAIL増加なしを確認（全5バージョン）
+- [BLOCKED: QC1大量FAIL調査中] `rbkc.sh create v6 && rbkc.sh verify v6` を実行し FAIL増加なしを確認（全5バージョン）
+
+**BLOCKED詳細 (session 4)**:
+- `index.py` に javadoc 除外を追加（未コミット）→ QO4 582件は解消見込み
+- QC1 が 42,078件に増加（元934件）。原因調査中断。
+  - `[QC1] RST source content not captured` 形式
+  - `[LoggingMeterRegistry(外部サイト、英語)](https://javadoc.i...)` 形式のリンクが QC1 FAIL
+  - `:javadoc_url:` が外部リンクを生成するようになったことが原因の可能性
+  - create 前後で .claude/skills/nabledge-6/docs/ + knowledge/ が大量変更されている
+  - 次セッションでQC1増加の根本原因を特定してから修正すること
+- 未コミット変更: `tools/rbkc/scripts/create/index.py` (javadoc除外)
 
 ### Task 3: 検索フロー検証・改善
 **前提**: Task 2 完了後  
@@ -145,4 +155,6 @@ docs/javadoc/javadoc-nablarch-common-dao-UniversalDao.md
 - [x] PR #365 作成
 - [x] jarツール動作確認・設計方針合意
 - [x] Task 1: 設計書更新 → ユーザー承認 — committed `12053d029` (設計書), `f771ecbfa` (未使用roleホワイトリスト削除ポリシー追加)
-- [x] Task 2 部分: jar配置 + linkfmt.py 追加 + 設計書 scope 更新 — (未コミット、session 3末)
+- [x] Task 2 部分: jar配置 + linkfmt.py 追加 + 設計書 scope 更新 — committed session 3
+- [x] Task 2 部分 (session 4): javadoc.py, run.py, rst.py, rst_ast_visitor.py, verify.py 実装 — committed `8b11949b0`〜`26fdcfdca`
+- [x] index.py に javadoc 除外を追加 (session 4, 未コミット) — `tools/rbkc/scripts/create/index.py` 変更中
