@@ -26,7 +26,7 @@
 コンポーネント設定ファイルに設定する
 
 [WebFrontController](../javadoc/javadoc-nablarch-fw-web-servlet-WebFrontController.md) をコンポーネント設定ファイルに設定し、
-handlerQueue プロパティに
+[handlerQueue](../javadoc/javadoc-nablarch-fw-HandlerQueueManager.md) プロパティに
 アプリケーションで使用するハンドラを順番に追加していく。
 
 コンポーネント設定ファイルの設定例を以下に示す。

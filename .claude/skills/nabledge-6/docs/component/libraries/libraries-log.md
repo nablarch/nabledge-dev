@@ -208,7 +208,7 @@ if (LOGGER.isDebugEnabled()) {
 クラスパス直下の **log.properties** を使用する。
 場所を変更したい場合は、システムプロパティで **nablarch.log.filePath** をキーにファイルパスを指定する。
 ファイルパスの指定方法は
-FileUtil#getResource を参照。
+[FileUtil#getResource](../javadoc/javadoc-nablarch-core-util-FileUtil.md) を参照。
 
 ```bash
 >java -Dnablarch.log.filePath=classpath:nablarch/example/log.properties ...
@@ -299,7 +299,7 @@ loggers.<名前>.nameRegex
 
 ロガー名とのマッチングに使用する正規表現を指定する。
 正規表現は、ロガー設定の対象となるロガーを絞り込むために使用する。
-ロガーの取得時に指定されたロガー名(つまり LoggerManager#get
+ロガーの取得時に指定されたロガー名(つまり [LoggerManager#get](../javadoc/javadoc-nablarch-core-log-LoggerManager.md)
 の引数に指定されたロガー名)に対してマッチングを行う。
 
 loggers.<名前>.level
@@ -526,7 +526,7 @@ writer.appLog.formatter.label.trace=T
 クラスパス直下の **app-log.properties** を使用する。
 場所を変更したい場合は、システムプロパティで **nablarch.appLog.filePath** をキーにファイルパスを指定する。
 ファイルパスの指定方法は
-FileUtil#getResource を参照。
+[FileUtil#getResource](../javadoc/javadoc-nablarch-core-util-FileUtil.md) を参照。
 
 ```bash
 >java -Dnablarch.appLog.filePath=file:/var/log/app/app-log.properties ...
@@ -693,7 +693,7 @@ public class CustomLogFormatter extends BasicLogFormatter {
   ```
 3. ログ機能初期化後の初期化メッセージを出力しないよう変更する。
 
-needsToWrite をオーバライドし、
+[needsToWrite](../javadoc/javadoc-nablarch-core-log-basic-LogWriterSupport.md) をオーバライドし、
 初回に呼び出される初期化メッセージの出力を行わないよう変更する。
 
 ```java
@@ -1196,7 +1196,7 @@ LogPublisher.addListener(listener);
 
 以上で、 `LogPublisher` に対して出力されたログ情報が `CustomLogListener` に連携されるようになる。
 
-登録した `LogListener` は、 removeListener(LogListener) または removeAllListeners() で削除できる。
+登録した `LogListener` は、 [removeListener(LogListener)](../javadoc/javadoc-nablarch-core-log-basic-LogPublisher.md) または [removeAllListeners()](../javadoc/javadoc-nablarch-core-log-basic-LogPublisher.md) で削除できる。
 
 ## ログレベルの定義
 

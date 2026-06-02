@@ -31,7 +31,7 @@
     {
       "id": "s5",
       "title": "セッションストアIDについて",
-      "content": "セッションストアIDを出力に含めた場合、 [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) が発行するセッションを識別するIDが出力される。\n\nこの値は [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) の往路で記録されたものが使用される。\nしたがってセッションストアIDをログに出力する場合、 [HTTPアクセスログハンドラ](../../component/handlers/handlers-http-access-log-handler.md#httpアクセスログハンドラ) は [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) より後に配置しなければならない。\n\nセッションストアIDはリクエスト処理開始時の状態で固定されるため、以下のような仕様になる。\n\n* セッションストアIDが発行されていないリクエストでは、途中でIDが発行されたとしても、同一リクエスト内で出力されるセッションストアIDは全て空になる\n* 途中で セッションを破棄 したり IDを変更 しても、ログに出力される値はリクエスト処理開始時のものから変化しない",
+      "content": "セッションストアIDを出力に含めた場合、 [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) が発行するセッションを識別するIDが出力される。\n\nこの値は [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) の往路で記録されたものが使用される。\nしたがってセッションストアIDをログに出力する場合、 [HTTPアクセスログハンドラ](../../component/handlers/handlers-http-access-log-handler.md#httpアクセスログハンドラ) は [セッション変数保存ハンドラ](../../component/handlers/handlers-SessionStoreHandler.md#セッション変数保存ハンドラ) より後に配置しなければならない。\n\nセッションストアIDはリクエスト処理開始時の状態で固定されるため、以下のような仕様になる。\n\n* セッションストアIDが発行されていないリクエストでは、途中でIDが発行されたとしても、同一リクエスト内で出力されるセッションストアIDは全て空になる\n* 途中で [セッションを破棄](../javadoc/javadoc-nablarch-common-web-session-SessionUtil.md) したり [IDを変更](../javadoc/javadoc-nablarch-common-web-session-SessionUtil.md) しても、ログに出力される値はリクエスト処理開始時のものから変化しない",
       "level": 3
     }
   ]

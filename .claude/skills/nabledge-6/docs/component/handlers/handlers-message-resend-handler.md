@@ -69,13 +69,13 @@
 |---|---|---|
 | リクエストID | 主キー   文字列型 | 要求電文のリクエストID |
 | メッセージID | 主キー   文字列型 | 要求電文のメッセージID  再送電文の場合には、メッセージIDではなく相関メッセージIDを使用する。  詳細は、 [同一電文(再送電文)の判定方法](../../component/handlers/handlers-message-resend-handler.md#同一電文再送電文の判定方法) を参照 |
-| 宛先キューの論理名 | 文字列型 | 応答電文を送信するための宛先キューの論理名   (InterSystemMessage#getDestination()) |
-| 処理結果コード | 文字列型 | 応答電文の処理結果コード   (ResponseMessage#getStatusCode()) |
-| 応答電文 | バイナリ型 | 応答電文の内容   (ResponseMessage#getBodyBytes()) |
+| 宛先キューの論理名 | 文字列型 | 応答電文を送信するための宛先キューの論理名   ([InterSystemMessage#getDestination()](../javadoc/javadoc-nablarch-fw-messaging-InterSystemMessage.md)) |
+| 処理結果コード | 文字列型 | 応答電文の処理結果コード   ([ResponseMessage#getStatusCode()](../javadoc/javadoc-nablarch-fw-messaging-ResponseMessage.md)) |
+| 応答電文 | バイナリ型 | 応答電文の内容   ([ResponseMessage#getBodyBytes()](../javadoc/javadoc-nablarch-fw-messaging-ResponseMessage.md)) |
 
 デフォルトのテーブル名やカラム名を変更したい場合には、設定により変更できる。
 詳細は、 [SentMessageTableSchema](../javadoc/javadoc-nablarch-fw-messaging-tableschema-SentMessageTableSchema.md) 及び
-sentMessageTableSchemaプロパティ を参照。
+[sentMessageTableSchemaプロパティ](../javadoc/javadoc-nablarch-fw-messaging-handler-MessageResendHandler.md) を参照。
 
 ## 同一電文(再送電文)の判定方法
 

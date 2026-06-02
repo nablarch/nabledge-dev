@@ -10,7 +10,7 @@
 本ハンドラはデータベースアクセス時のデッドロックのように、単純リトライによってリカバリ可能なエラーについて、自動的なリトライを制御する。
 
 本ハンドラでは、 [Retryable](../javadoc/javadoc-nablarch-fw-handler-retry-Retryable.md) を実装した実行時例外をリトライ可能なエラーとみなし、後続ハンドラを再実行する。
-なお、リトライ上限の判定に関する処理は、 RetryContext の実装クラスとして外部化されている。デフォルトでは以下の実装が提供されている。
+なお、リトライ上限の判定に関する処理は、 [RetryContext](../javadoc/javadoc-nablarch-fw-handler-RetryHandler.md) の実装クラスとして外部化されている。デフォルトでは以下の実装が提供されている。
 
 * [リトライ回数による上限設定](../javadoc/javadoc-nablarch-fw-handler-retry-CountingRetryContext.md)
 * [経過時間による上限設定](../javadoc/javadoc-nablarch-fw-handler-retry-TimeRetryContext.md)

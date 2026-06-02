@@ -209,7 +209,7 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 ```
 
 > **Important:**
-> バージョン番号のチェック( HttpExclusiveControlUtil.checkVersions )を行わなければ、
+> バージョン番号のチェック( [HttpExclusiveControlUtil.checkVersions](../javadoc/javadoc-nablarch-common-web-exclusivecontrol-HttpExclusiveControlUtil.md) )を行わなければ、
 > 画面間でバージョン番号が引き継がれない。
 
 確認画面の更新ボタン（確認→完了）
@@ -250,7 +250,7 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
 複合主キーでない場合
 
 ユーザの一括削除を行う画面を例に、複合主キーでない場合の実装例を示す。
-バージョン番号の取得部分は、 HttpExclusiveControlUtil#prepareVersions を呼び出すだけなので、
+バージョン番号の取得部分は、 [HttpExclusiveControlUtil#prepareVersions](../javadoc/javadoc-nablarch-common-web-exclusivecontrol-HttpExclusiveControlUtil.md) を呼び出すだけなので、
 実装例を省略する。
 
 ```html
@@ -287,7 +287,7 @@ HttpExclusiveControlUtil.updateVersionsWithCheck(request, "user.deactivate");
 複合主キーの場合
 
 ユーザの一括削除を行う画面を例に、複合主キーの場合の実装例を示す。
-バージョン番号の取得部分は、 HttpExclusiveControlUtil#prepareVersions を呼び出すだけなので、
+バージョン番号の取得部分は、 [HttpExclusiveControlUtil#prepareVersions](../javadoc/javadoc-nablarch-common-web-exclusivecontrol-HttpExclusiveControlUtil.md) を呼び出すだけなので、
 実装例を省略する。
 
 ```sql
@@ -389,7 +389,7 @@ for(User deletedUser : deletedUsers) {
 更新処理のトランザクションがコミット又はロールバックされるまで、排他制御用テーブルの対象行がロックされる。
 このため、他のトランザクションの更新処理はロックが解除されるまで待たされる。
 
-悲観的ロックには、 ExclusiveControlUtil#updateVersion を使用する。
+悲観的ロックには、 [ExclusiveControlUtil#updateVersion](../javadoc/javadoc-nablarch-common-exclusivecontrol-ExclusiveControlUtil.md) を使用する。
 
 ```java
 ExclusiveControlUtil.updateVersion(new UsersExclusiveControl("U00001"));

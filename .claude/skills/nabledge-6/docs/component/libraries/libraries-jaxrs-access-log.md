@@ -434,4 +434,4 @@ httpAccessLogFormatter.endLabel=HTTP ACCESS END
 セッションストアIDはリクエスト処理開始時の状態で固定されるため、以下のような仕様になる。
 
 * セッションストアIDが発行されていないリクエストでは、途中でIDが発行されたとしても、同一リクエスト内で出力されるセッションストアIDは全て空になる
-* 途中で セッションを破棄 したり IDを変更 しても、ログに出力される値はリクエスト処理開始時のものから変化しない
+* 途中で [セッションを破棄](../javadoc/javadoc-nablarch-common-web-session-SessionUtil.md) したり [IDを変更](../javadoc/javadoc-nablarch-common-web-session-SessionUtil.md) しても、ログに出力される値はリクエスト処理開始時のものから変化しない

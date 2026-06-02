@@ -174,7 +174,7 @@ USER_SESSION テーブル
 Oracleで正常に動作しないケースがあるため、 SESSION_ID はCHARではなくVARCHARで定義すること。
 
 テーブル名およびカラム名は変更可能である。
-変更する場合は、 DbStore.userSessionSchema に
+変更する場合は、 [DbStore.userSessionSchema](../javadoc/javadoc-nablarch-common-web-session-store-DbStore.md) に
 [UserSessionSchema](../javadoc/javadoc-nablarch-common-web-session-store-UserSessionSchema.md) のコンポーネントを定義する。
 
 ```xml
@@ -373,7 +373,7 @@ public HttpResponse backToNew(HttpRequest request, ExecutionContext context) {
 セッション変数の保存先を追加するには以下の手順が必要となる。
 
 1. [SessionStore](../javadoc/javadoc-nablarch-common-web-session-SessionStore.md) を継承し、追加したい保存先に対応したクラスを作成する。
-2. SessionManager.availableStores に、作成したクラスのコンポーネント定義を追加する。
+2. [SessionManager.availableStores](../javadoc/javadoc-nablarch-common-web-session-SessionManager.md) に、作成したクラスのコンポーネント定義を追加する。
 
 ## セッションストアの特長と選択基準
 

@@ -126,7 +126,7 @@ public interface ProjectDao {
 
 * 業務アクションメソッドをトランザクション管理対象とするため、
   [Transactional](../javadoc/javadoc-nablarch-integration-doma-Transactional.md) インターセプタを設定する
-* DomaDaoRepository#get を使用してDaoの実装クラスをルックアップする
+* [DomaDaoRepository#get](../javadoc/javadoc-nablarch-integration-doma-DomaDaoRepository.md) を使用してDaoの実装クラスをルックアップする
 
 > **Tip:**
 > Domaでは注釈処理によってコンパイル時に自動的にDaoの実装クラスが生成されるため、コーディング時にはまだ実装クラスが存在しない。
@@ -152,7 +152,7 @@ public HttpResponse create(final HttpRequest request, final ExecutionContext con
 [Transactional](../javadoc/javadoc-nablarch-integration-doma-Transactional.md) インターセプタによって開始されたトランザクションではなく、
 別のトランザクションを使用してデータベースアクセスを行いたい場合がある。
 
-その場合は、 DomaConfig#getTransactionManager で取得した
+その場合は、 [DomaConfig#getTransactionManager](../javadoc/javadoc-nablarch-integration-doma-DomaConfig.md) で取得した
 TransactionManager を使用して別トランザクションで制御する。
 
 実装例を以下に示す。
@@ -208,10 +208,10 @@ Jakarta Batchに準拠したバッチアプリケーションでもDomaを使用
 
 Jakarta Batchに準拠したバッチアプリケーションで大量データの読み込みを行う際に、遅延ロードを使用したい場合がある。
 
-その場合は、Daoの実装クラスをルックアップする際に DomaDaoRepository#get(java.lang.Class,java.lang.Class) を使用し、第2引数に [DomaTransactionNotSupportedConfig](../javadoc/javadoc-nablarch-integration-doma-DomaTransactionNotSupportedConfig.md) のClassクラスを指定する。
+その場合は、Daoの実装クラスをルックアップする際に [DomaDaoRepository#get(java.lang.Class,java.lang.Class)](../javadoc/javadoc-nablarch-integration-doma-DomaDaoRepository.md) を使用し、第2引数に [DomaTransactionNotSupportedConfig](../javadoc/javadoc-nablarch-integration-doma-DomaTransactionNotSupportedConfig.md) のClassクラスを指定する。
 
 > **Important:**
-> 引数が1つの DomaDaoRepository#get(java.lang.Class) を使用した場合は [DomaConfig](../javadoc/javadoc-nablarch-integration-doma-DomaConfig.md) が使用されるため、 [DomaTransactionItemWriteListener](../javadoc/javadoc-nablarch-integration-doma-batch-ee-listener-DomaTransactionItemWriteListener.md) によるトランザクションのコミットでストリームがクローズされるため、後続のレコードが読み込めなくなってしまう。
+> 引数が1つの [DomaDaoRepository#get(java.lang.Class)](../javadoc/javadoc-nablarch-integration-doma-DomaDaoRepository.md) を使用した場合は [DomaConfig](../javadoc/javadoc-nablarch-integration-doma-DomaConfig.md) が使用されるため、 [DomaTransactionItemWriteListener](../javadoc/javadoc-nablarch-integration-doma-batch-ee-listener-DomaTransactionItemWriteListener.md) によるトランザクションのコミットでストリームがクローズされるため、後続のレコードが読み込めなくなってしまう。
 
 実装例を以下に示す。
 
@@ -234,7 +234,7 @@ ItemReaderクラス
 
 ポイント
 
-* Daoの実装クラスを取得する際に DomaDaoRepository#get(java.lang.Class,java.lang.Class) を使用し、第2引数に [DomaTransactionNotSupportedConfig](../javadoc/javadoc-nablarch-integration-doma-DomaTransactionNotSupportedConfig.md) を指定する。
+* Daoの実装クラスを取得する際に [DomaDaoRepository#get(java.lang.Class,java.lang.Class)](../javadoc/javadoc-nablarch-integration-doma-DomaDaoRepository.md) を使用し、第2引数に [DomaTransactionNotSupportedConfig](../javadoc/javadoc-nablarch-integration-doma-DomaTransactionNotSupportedConfig.md) を指定する。
 * openメソッドで検索結果のストリームを取得する。
 * リソースの解放漏れを防ぐため、closeメソッドで必ずストリームを閉じる。
 
@@ -325,7 +325,7 @@ public interface ProjectDao {
 
 ポイント
 
-* Daoの実装クラスを取得する際に、 DomaDaoRepository#get(java.lang.Class,java.lang.Class) を使用し、第2引数に作成したConfigクラスを指定する。
+* Daoの実装クラスを取得する際に、 [DomaDaoRepository#get(java.lang.Class,java.lang.Class)](../javadoc/javadoc-nablarch-integration-doma-DomaDaoRepository.md) を使用し、第2引数に作成したConfigクラスを指定する。
 
 ```java
 public HttpResponse create(final HttpRequest request, final ExecutionContext context) {
@@ -482,7 +482,7 @@ public HttpResponse create(final HttpRequest request, final ExecutionContext con
 }
 ```
 
-Daoアノテーションのconfig属性を指定しないDaoを使用して DomaDaoRepository#get を使ってDaoの実装クラスを取得した場合、 [DomaConfig](../javadoc/javadoc-nablarch-integration-doma-DomaConfig.md) を使用してDaoの実装クラスが構築される。
+Daoアノテーションのconfig属性を指定しないDaoを使用して [DomaDaoRepository#get](../javadoc/javadoc-nablarch-integration-doma-DomaDaoRepository.md) を使ってDaoの実装クラスを取得した場合、 [DomaConfig](../javadoc/javadoc-nablarch-integration-doma-DomaConfig.md) を使用してDaoの実装クラスが構築される。
 
 ### DomaTransactionNotSupportedConfigを使用して遅延ロードに対応している場合
 
@@ -550,7 +550,7 @@ public class ProjectReader extends AbstractItemReader {
 }
 ```
 
-Daoアノテーションにconfig属性を指定しないDaoを使用して DomaDaoRepository#get(java.lang.Class,java.lang.Class) を呼び出した場合、第2引数に指定したConfigを使用してDaoの実装クラスが構築される。
+Daoアノテーションにconfig属性を指定しないDaoを使用して [DomaDaoRepository#get(java.lang.Class,java.lang.Class)](../javadoc/javadoc-nablarch-integration-doma-DomaDaoRepository.md) を呼び出した場合、第2引数に指定したConfigを使用してDaoの実装クラスが構築される。
 
 ### 独自にConfigクラスを作成している場合
 
@@ -622,4 +622,4 @@ public HttpResponse create(final HttpRequest request, final ExecutionContext con
 }
 ```
 
-Daoアノテーションにconfig属性を指定しないDaoを使用して DomaDaoRepository#get(java.lang.Class,java.lang.Class) を呼び出した場合、第2引数に指定したConfigを使用してDaoの実装クラスが構築される。
+Daoアノテーションにconfig属性を指定しないDaoを使用して [DomaDaoRepository#get(java.lang.Class,java.lang.Class)](../javadoc/javadoc-nablarch-integration-doma-DomaDaoRepository.md) を呼び出した場合、第2引数に指定したConfigを使用してDaoの実装クラスが構築される。

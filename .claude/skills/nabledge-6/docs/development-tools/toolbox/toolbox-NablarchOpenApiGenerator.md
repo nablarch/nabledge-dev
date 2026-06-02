@@ -276,7 +276,7 @@ java -jar openapi-generator-cli-7.10.0.jar help generate
 | `Valid` | リクエストボディがあり、 `useBeanValidation`  が `true` の場合に注釈する。 |
 
 > **Tip:**
-> `type: string` かつ `format: binary` はファイルダウンロードを意味しており、この場合のコンテンツタイプは HttpResponse#setContentType を使用して設定する。
+> `type: string` かつ `format: binary` はファイルダウンロードを意味しており、この場合のコンテンツタイプは [HttpResponse#setContentType](../javadoc/javadoc-nablarch-fw-web-HttpResponse.md) を使用して設定する。
 
 **メソッド名の生成仕様**
 

@@ -143,7 +143,7 @@ Nablarchでは、MOMメッセージングを構築するために必要なハン
 | 7 | [リクエストスレッド内ループ制御ハンドラ](../../component/handlers/handlers-request-thread-loop-handler.md#リクエストスレッド内ループ制御ハンドラ) | サブ | 後続のハンドラを繰り返し実行する。 | ハンドラキューの内容を復旧しループを継続する。 | プロセス停止要求か致命的なエラーが発生した場合のみループを停止する。 |
 | 8 | [スレッドコンテキスト変数削除ハンドラ](../../component/handlers/handlers-thread-context-clear-handler.md#スレッドコンテキスト変数削除ハンドラ) | サブ |  | [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) でスレッドローカル上に設定した値を全て削除する。 |  |
 | 9 | [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) | サブ | コマンドライン引数からリクエストID、ユーザID等のスレッドコンテキスト変数を初期化する。 |  |  |
-| 10 | [プロセス停止制御ハンドラ](../../component/handlers/handlers-process-stop-handler.md#プロセス停止制御ハンドラ) | サブ | リクエストテーブル上の処理停止フラグがオンであった場合は、後続ハンドラの処理は行なわずにプロセス停止例外( ProcessStop )を送出する。 |  |  |
+| 10 | [プロセス停止制御ハンドラ](../../component/handlers/handlers-process-stop-handler.md#プロセス停止制御ハンドラ) | サブ | リクエストテーブル上の処理停止フラグがオンであった場合は、後続ハンドラの処理は行なわずにプロセス停止例外( [ProcessStop](../javadoc/javadoc-nablarch-fw-handler-ProcessStopHandler.md) )を送出する。 |  |  |
 | 11 | [電文応答制御ハンドラ](../../component/handlers/handlers-message-reply-handler.md#電文応答制御ハンドラ) | サブ |  | 後続ハンドラから返される応答電文の内容をもとに電文を作成してMQに送信する。 | エラーの内容をもとに電文を作成してMQに送信する。 |
 | 12 | [データリードハンドラ](../../component/handlers/handlers-data-read-handler.md#データリードハンドラ) | サブ | データリーダを使用して要求電文を1件読み込み、後続ハンドラの引数として渡す。 また [実行時ID](../../component/libraries/libraries-log.md#ログのフォーマットを指定する) を採番する。 |  | 読み込んだ電文をログ出力した後、元例外を再送出する。 |
 | 13 | [リクエストディスパッチハンドラ](../../component/handlers/handlers-request-path-java-package-mapping.md#リクエストディスパッチハンドラ) | サブ | 要求電文に含まれるリクエストIDをもとに呼び出すアクションを決定する。 |  |  |
@@ -181,7 +181,7 @@ Nablarchでは、MOMメッセージングを構築するために必要なハン
 | 7 | [リクエストスレッド内ループ制御ハンドラ](../../component/handlers/handlers-request-thread-loop-handler.md#リクエストスレッド内ループ制御ハンドラ) | サブ | 後続のハンドラを繰り返し実行する。 | ハンドラキューの内容を復旧しループを継続する。 | プロセス停止要求か致命的なエラーが発生した場合のみループを停止する。 |
 | 8 | [スレッドコンテキスト変数削除ハンドラ](../../component/handlers/handlers-thread-context-clear-handler.md#スレッドコンテキスト変数削除ハンドラ) | サブ |  | [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) でスレッドローカル上に設定した値を全て削除する。 |  |
 | 9 | [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) | サブ | コマンドライン引数からリクエストID、ユーザID等のスレッドコンテキスト変数を初期化する。 |  |  |
-| 10 | [プロセス停止制御ハンドラ](../../component/handlers/handlers-process-stop-handler.md#プロセス停止制御ハンドラ) | サブ | リクエストテーブル上の処理停止フラグがオンであった場合は、後続ハンドラの処理は行なわずにプロセス停止例外( ProcessStop )を送出する。 |  |  |
+| 10 | [プロセス停止制御ハンドラ](../../component/handlers/handlers-process-stop-handler.md#プロセス停止制御ハンドラ) | サブ | リクエストテーブル上の処理停止フラグがオンであった場合は、後続ハンドラの処理は行なわずにプロセス停止例外( [ProcessStop](../javadoc/javadoc-nablarch-fw-handler-ProcessStopHandler.md) )を送出する。 |  |  |
 | 11 | [トランザクション制御ハンドラ](../../component/handlers/handlers-transaction-management-handler.md#トランザクション制御ハンドラ) | サブ | トランザクションを開始する。 | トランザクションをコミットする。 | トランザクションをロールバックする。 |
 | 12 | [データリードハンドラ](../../component/handlers/handlers-data-read-handler.md#データリードハンドラ) | サブ | データリーダを使用して要求電文を1件読み込み、後続ハンドラの引数として渡す。 また [実行時ID](../../component/libraries/libraries-log.md#ログのフォーマットを指定する) を採番する。 |  | 読み込んだ電文をログ出力した後、元例外を再送出する。 |
 | 13 | [リクエストディスパッチハンドラ](../../component/handlers/handlers-request-path-java-package-mapping.md#リクエストディスパッチハンドラ) | サブ | 要求電文に含まれるリクエストIDをもとに呼び出すアクションを決定する。 |  |  |

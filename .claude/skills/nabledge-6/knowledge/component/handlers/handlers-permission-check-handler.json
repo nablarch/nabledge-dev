@@ -25,7 +25,7 @@
     {
       "id": "s4",
       "title": "リクエストに対する認可チェック",
-      "content": "ログイン中のユーザが、現在のリクエスト(リクエストID)に対して権限を持っているかをチェックする。\nチェックの詳細は、 [ハンドラによる認可チェック](../../component/libraries/libraries-authorization-permission-check.md#ハンドラによる認可チェック) を参照。\n\n権限がある場合\n\n[業務ロジック](../../component/libraries/libraries-authorization-permission-check.md#サーバサイドで認可チェックを行う) や\n[画面表示の制御](../../component/libraries/libraries-authorization-permission-check.md#権限に応じて画面表示を制御する) で参照できるように、\n認可チェックに使用した [Permission](../javadoc/javadoc-nablarch-common-permission-Permission.md) をスレッドローカルに設定する。\nそして、後続ハンドラを呼び出す。\n\n権限がない場合\n\n[Forbidden(403)](../javadoc/javadoc-nablarch-fw-results-Forbidden.md) を送出する。\n\nチェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、\nPermissionCheckHandler.setUsesInternalRequestId\nでtrueを指定する。デフォルトはfalseである。",
+      "content": "ログイン中のユーザが、現在のリクエスト(リクエストID)に対して権限を持っているかをチェックする。\nチェックの詳細は、 [ハンドラによる認可チェック](../../component/libraries/libraries-authorization-permission-check.md#ハンドラによる認可チェック) を参照。\n\n権限がある場合\n\n[業務ロジック](../../component/libraries/libraries-authorization-permission-check.md#サーバサイドで認可チェックを行う) や\n[画面表示の制御](../../component/libraries/libraries-authorization-permission-check.md#権限に応じて画面表示を制御する) で参照できるように、\n認可チェックに使用した [Permission](../javadoc/javadoc-nablarch-common-permission-Permission.md) をスレッドローカルに設定する。\nそして、後続ハンドラを呼び出す。\n\n権限がない場合\n\n[Forbidden(403)](../javadoc/javadoc-nablarch-fw-results-Forbidden.md) を送出する。\n\nチェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、\n[PermissionCheckHandler.setUsesInternalRequestId](../javadoc/javadoc-nablarch-common-permission-PermissionCheckHandler.md)\nでtrueを指定する。デフォルトはfalseである。",
       "level": 2
     },
     {
@@ -37,7 +37,7 @@
     {
       "id": "s6",
       "title": "特定のリクエストを認可チェックから除外する",
-      "content": "ログイン前のリクエストなど、認可チェックを除外したいリクエストがある場合は、\nPermissionCheckHandler.setIgnoreRequestIds\nで指定する。\n\n```xml\n<component name=\"permissionCheckHandler\"\n           class=\"nablarch.common.permission.PermissionCheckHandler\">\n  <property name=\"permissionFactory\" ref=\"permissionFactory\"/>\n  <!-- 認可チェックを除外するリクエストIDをカンマ区切りで指定する -->\n  <property name=\"ignoreRequestIds\" value=\"/action/login,/action/logout\" />\n</component>\n```",
+      "content": "ログイン前のリクエストなど、認可チェックを除外したいリクエストがある場合は、\n[PermissionCheckHandler.setIgnoreRequestIds](../javadoc/javadoc-nablarch-common-permission-PermissionCheckHandler.md)\nで指定する。\n\n```xml\n<component name=\"permissionCheckHandler\"\n           class=\"nablarch.common.permission.PermissionCheckHandler\">\n  <property name=\"permissionFactory\" ref=\"permissionFactory\"/>\n  <!-- 認可チェックを除外するリクエストIDをカンマ区切りで指定する -->\n  <property name=\"ignoreRequestIds\" value=\"/action/login,/action/logout\" />\n</component>\n```",
       "level": 2
     }
   ]

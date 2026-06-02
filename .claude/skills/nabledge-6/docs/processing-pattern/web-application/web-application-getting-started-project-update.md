@@ -129,7 +129,7 @@ public HttpResponse edit(HttpRequest request, ExecutionContext context) {
 この実装のポイント
 
 * 編集フォームに初期表示する値を取得するために、
-  UniversalDao#findBySqlFile
+  [UniversalDao#findBySqlFile](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)
   を使用して一意キー検索を行う。
   [テーブルをJOINした結果を取得する](../../component/libraries/libraries-universal-dao.md#テーブルをjoinした検索結果を取得する) ために、検索結果はBeanで受け付ける。
   一意キー検索では、対象データが存在しない場合 [NoDataException](../javadoc/javadoc-nablarch-common-dao-NoDataException.md) を送出する。
@@ -190,7 +190,7 @@ public HttpResponse confirmOfUpdate(HttpRequest request, ExecutionContext contex
 この実装のポイント
 
 * データベース検索が必要なバリデーションは業務アクションメソッドに記述する。
-  データの存在確認をする場合、 UniversalDao#exists
+  データの存在確認をする場合、 [UniversalDao#exists](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)
   を使用する。詳細は、 [データベース検索が必要なバリデーション](../../component/libraries/libraries-bean-validation.md#データベースとの相関バリデーションを行う) を参照。
 * 責務配置上 [フォームを直接セッションストアに格納すべきではない](../../component/libraries/libraries-session-store.md#入力確認完了画面間で入力情報を保持する) ため、Beanへ詰め替える。
 
@@ -278,7 +278,7 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
 
 この実装のポイント
 
-* エンティティに更新したい値を設定し、 UniversalDao#update を使用してデータベースを更新する。
+* エンティティに更新したい値を設定し、 [UniversalDao#update](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md) を使用してデータベースを更新する。
   更新処理では楽観的ロックが実行される。
 * 二重サブミットを防止するために、 [@OnDoubleSubmission](../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md) を付与する。
 * ブラウザ更新での再実行を防ぐために、レスポンスをリダイレクトする。

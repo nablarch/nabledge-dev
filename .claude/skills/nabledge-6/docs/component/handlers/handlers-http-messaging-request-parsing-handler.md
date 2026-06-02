@@ -86,9 +86,9 @@ HTTPリクエスト(
 ポイント
 
 * キー情報は、
-  StructuredFwHeaderDefinition#fwHeaderKeys
+  [StructuredFwHeaderDefinition#fwHeaderKeys](../javadoc/javadoc-nablarch-fw-messaging-reader-StructuredFwHeaderDefinition.md)
   プロパティに指定する。
-* StructuredFwHeaderDefinition#fwHeaderKeys
+* [StructuredFwHeaderDefinition#fwHeaderKeys](../javadoc/javadoc-nablarch-fw-messaging-reader-StructuredFwHeaderDefinition.md)
   プロパティには、キーにフィールド名、値に電文上の位置を指定する。
   電文上の位置は構造化データをMapに変換した後のキー情報を記述する。
   構造化データからMapに変換される際のキー情報については、 [JSONやXMLの階層構造のデータを読み書きする](../../component/libraries/libraries-data-format.md#jsonやxmlの階層構造のデータを読み書きする) を参照。

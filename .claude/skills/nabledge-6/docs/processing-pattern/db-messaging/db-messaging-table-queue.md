@@ -165,7 +165,7 @@ where
 
 ポイント
 
-* createReader を実装し、
+* [createReader](../javadoc/javadoc-nablarch-fw-action-BatchAction.md) を実装し、
   [DatabaseTableQueueReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseTableQueueReader.md) を生成する。
 * [DatabaseTableQueueReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseTableQueueReader.md) には以下を指定する。
 
@@ -215,10 +215,10 @@ public Result handle(final SqlRow inputData, final ExecutionContext context) {
 
 ポイント
 
-* handle メソッドに業務処理を実装する。
+* [handle](../javadoc/javadoc-nablarch-fw-action-BatchAction.md) メソッドに業務処理を実装する。
   (処理内容の詳細な説明は、Example依存のため省略する。)
-* 正常に処理したことを示す Result.Success を返却する。
-  処理が失敗した場合、例外を送出するため、常に Result.Success を返却すれば良い。
+* 正常に処理したことを示す [Result.Success](../javadoc/javadoc-nablarch-fw-Result.md) を返却する。
+  処理が失敗した場合、例外を送出するため、常に [Result.Success](../javadoc/javadoc-nablarch-fw-Result.md) を返却すれば良い。
 
 ## 処理済みデータのステータスを更新する
 
@@ -276,9 +276,9 @@ where
 
 ポイント
 
-* 正常に処理できたレコードの更新処理は、 transactionSuccess に実装する。
+* 正常に処理できたレコードの更新処理は、 [transactionSuccess](../javadoc/javadoc-nablarch-fw-action-BatchActionBase.md) に実装する。
   (正常に処理できた場合(例外が送出されなかった場合)、このメソッドがNablarchによりコールバックされる。)
-* 正常に処理できなかったレコードの更新処理は、 transactionFailure に実装する。
+* 正常に処理できなかったレコードの更新処理は、 [transactionFailure](../javadoc/javadoc-nablarch-fw-action-BatchActionBase.md) に実装する。
   (処理中に例外やエラーが送出されたレコードの場合、このメソッドがNablarchによりコールバックされる)
 * SQLでは、指定のレコードのステータスを更新する。
 * SQLファイルへのSQLの記述ルールは、 [SQLをファイルで管理する](../../component/libraries/libraries-database.md#sqlをファイルで管理する) を参照。

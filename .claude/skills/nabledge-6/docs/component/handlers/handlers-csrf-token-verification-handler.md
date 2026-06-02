@@ -180,7 +180,7 @@ HTTPリクエストが検証対象か否かを判定する
 これを防ぐためにはログイン時にCSRFトークンを再生成しなくてはならない。
 
 CSRFトークンの再生成は、アクション等のリクエスト処理の中で
-CsrfTokenUtil.regenerateCsrfToken
+[CsrfTokenUtil.regenerateCsrfToken](../javadoc/javadoc-nablarch-common-web-csrf-CsrfTokenUtil.md)
 メソッドを呼び出すと、本ハンドラの戻りの処理でCSRFトークンの再生成が行われる。
 
 ログイン時にセッションストアを破棄して再生成する実装であればこのメソッドを使用する必要はない。

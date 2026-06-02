@@ -195,7 +195,7 @@ public class ProjectSaveAction extends MessagingAction {
 この実装のポイント
 
 * [MessagingAction](../javadoc/javadoc-nablarch-fw-messaging-action-MessagingAction.md) を継承し、業務メソッドを作成する。
-* MessagingAction#onReceive
+* [MessagingAction#onReceive](../javadoc/javadoc-nablarch-fw-messaging-action-MessagingAction.md)
   に、リクエスト受信時に実行する処理を実装する。
 * リクエストボディの値は、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット) を使用して解析された状態で引数の [RequestMessage](../javadoc/javadoc-nablarch-fw-messaging-RequestMessage.md) オブジェクト
   が保持している。 getParamMap メソッドを使用してリクエストボディの値を取得する。

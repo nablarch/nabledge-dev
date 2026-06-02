@@ -91,7 +91,7 @@
 一定時間待機後に、再度後続ハンドラに処理を委譲する。
 待機時間の設定方法は、 [サービス閉塞中の待機時間を設定する](../../component/handlers/handlers-request-thread-loop-handler.md#サービス閉塞中の待機時間を設定する) を参照。
 
-プロセス停止要求を示す例外(ProcessStop)
+プロセス停止要求を示す例外([ProcessStop](../javadoc/javadoc-nablarch-fw-handler-ProcessStopHandler.md))
 
 プロセス停止要求を示す例外であるため、本ハンドラの処理を終了する。
 
@@ -103,7 +103,7 @@
 
 補足した例外クラスにログ出力処理を委譲し、 [リトライ可能例外(Retryable)](../javadoc/javadoc-nablarch-fw-handler-retry-Retryable.md) を送出する。
 
-ハンドラの処理が異常終了したことを示す例外(Result.Error)
+ハンドラの処理が異常終了したことを示す例外([Result.Error](../javadoc/javadoc-nablarch-fw-Result.md))
 
 `FATAL` レベルのログを出力し、 [リトライ可能例外(Retryable)](../javadoc/javadoc-nablarch-fw-handler-retry-Retryable.md) を送出する。
 

@@ -253,7 +253,7 @@ public class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {
 この実装のポイント
 
 * handle メソッドに、データリーダから渡された一行分のデータに対する処理を実装する。
-* UniversalDao#insert を使用して住所エンティティをデータベースに登録する。
+* [UniversalDao#insert](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md) を使用して住所エンティティをデータベースに登録する。
 * createReader メソッドでは使用するデータリーダクラスのインスタンスを返却する。
 
 > **Tip:**

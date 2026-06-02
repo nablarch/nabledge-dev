@@ -57,9 +57,9 @@
 業務アクションの例
 
 この例では、画面から送信された `form` から始まるリクエストパラメータに対してバリデーションが実行される。
-バリデーションでエラーが発生しなかった場合は、リクエストスコープに InjectForm#form で指定したクラスのオブジェクトが格納される。
+バリデーションでエラーが発生しなかった場合は、リクエストスコープに [InjectForm#form](../javadoc/javadoc-nablarch-common-web-interceptor-InjectForm.md) で指定したクラスのオブジェクトが格納される。
 
-リクエストスコープにバリデーション済みのフォームを格納する際に使用する変数名は、 InjectForm#name に指定する。
+リクエストスコープにバリデーション済みのフォームを格納する際に使用する変数名は、 [InjectForm#name](../javadoc/javadoc-nablarch-common-web-interceptor-InjectForm.md) に指定する。
 指定しなかった場合は、 `form` という変数名でフォームが格納される。
 
 業務アクションが実行された場合には、必ずリクエストスコープからオブジェクトが取得できる。
@@ -91,7 +91,7 @@ public HttpResponse handle(HttpRequest req, ExecutionContext ctx) {
 
 ## Bean Validationのグループを指定する
 
-バリデーションに [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を使用する場合は、 InjectForm#validationGroup にグループを指定することができる。
+バリデーションに [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を使用する場合は、 [InjectForm#validationGroup](../javadoc/javadoc-nablarch-common-web-interceptor-InjectForm.md) にグループを指定することができる。
 
 以下に実装例を示す。
 

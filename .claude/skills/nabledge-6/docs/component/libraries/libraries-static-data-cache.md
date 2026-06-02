@@ -71,7 +71,7 @@ StaticDataLoaderインタフェースを実装しローダーを作成する
 
 BasicStaticDataCacheクラスにローダーを設定する
 
-[StaticDataLoader](../javadoc/javadoc-nablarch-core-cache-StaticDataLoader.md) を実装したローダーを、 BasicStaticDataCache.loader に設定する。
+[StaticDataLoader](../javadoc/javadoc-nablarch-core-cache-StaticDataLoader.md) を実装したローダーを、 [BasicStaticDataCache.loader](../javadoc/javadoc-nablarch-core-cache-BasicStaticDataCache.md) に設定する。
 
 設定例は、 [静的データキャッシュの設定ファイル例](../../component/libraries/libraries-static-data-cache.md#任意のデータをキャッシュする) を参照。
 
@@ -147,7 +147,7 @@ public class SampleService {
 > 原則起動時に一括ロードで問題ないが、静的データが大量で一部しか使用しない場合には、オンデマンドロードを選択すると良い。
 > 例えば、バッチアプリケーションのように一部のデータにしかアクセスしない場合には、オンデマンドロードを選択すると良い。
 
-ロードタイミングの変更は、ローダを設定した BasicStaticDataCache.loadOnStartup で行う。
+ロードタイミングの変更は、ローダを設定した [BasicStaticDataCache.loadOnStartup](../javadoc/javadoc-nablarch-core-cache-BasicStaticDataCache.md) で行う。
 このプロパティに true が設定されていると、起動時に一括でロードされる。
 
 以下の例では、 true を設定しているため起動時に一括でデータがキャッシュされる。

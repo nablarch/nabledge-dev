@@ -472,7 +472,7 @@ UPDATED_USER_ID=batch_user
 [LogItem](../javadoc/javadoc-nablarch-core-log-LogItem.md) を実装したクラスを作る
 
 処理対象データ($data$)に対する出力内容を提供するクラスを作る。
-今回はフレームワークが提供する DataItem を継承して作成し、
+今回はフレームワークが提供する [DataItem](../javadoc/javadoc-nablarch-core-log-app-FailureLogFormatter.md) を継承して作成し、
 処理対象データがMap型の場合のみマスク処理を行うように実装している。
 
 ```java
@@ -519,7 +519,7 @@ private static final class CustomDataItem extends DataItem {
 
 [FailureLogFormatter](../javadoc/javadoc-nablarch-core-log-app-FailureLogFormatter.md) を継承したクラスを作り、プレースホルダを追加する
 
-FailureLogFormatter#getLogItems
+[FailureLogFormatter#getLogItems](../javadoc/javadoc-nablarch-core-log-app-FailureLogFormatter.md)
 をオーバライドし、プレースホルダ `$data$` に対して上記のCustomDataItemを設定する。
 
 ```java

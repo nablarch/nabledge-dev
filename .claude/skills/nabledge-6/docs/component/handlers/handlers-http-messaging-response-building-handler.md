@@ -45,10 +45,10 @@
 
 応答電文オブジェクトのステータスコードを設定する。
 
-応答電文オブジェクトの持つフォーマッタ(InterSystemMessage.getFormatter())から以下の値を取得し設定する。
+応答電文オブジェクトの持つフォーマッタ([InterSystemMessage.getFormatter()](../javadoc/javadoc-nablarch-fw-messaging-InterSystemMessage.md))から以下の値を取得し設定する。
 
-* MIME(DataRecordFormatterSupport#getMimeType()
-* cherset(DataRecordFormatterSupport#getDefaultEncoding()
+* MIME([DataRecordFormatterSupport#getMimeType()](../javadoc/javadoc-nablarch-core-dataformat-DataRecordFormatterSupport.md)
+* cherset([DataRecordFormatterSupport#getDefaultEncoding()](../javadoc/javadoc-nablarch-core-dataformat-DataRecordFormatterSupport.md)
 
 MIMEが `application/json` でcharsetが `utf-8` の場合、Content-Typeは以下の値となる。
 

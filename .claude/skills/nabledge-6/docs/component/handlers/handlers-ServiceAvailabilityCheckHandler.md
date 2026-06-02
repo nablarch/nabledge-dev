@@ -61,5 +61,5 @@ NG(サービス提供不可)の場合
 [ServiceUnavailable](../javadoc/javadoc-nablarch-fw-results-ServiceUnavailable.md) (503) を送出する。
 
 チェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、
-ServiceAvailabilityCheckHandler.setUsesInternalRequestId
+[ServiceAvailabilityCheckHandler.setUsesInternalRequestId](../javadoc/javadoc-nablarch-common-availability-ServiceAvailabilityCheckHandler.md)
 でtrueを指定する。デフォルトはfalseである。

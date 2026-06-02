@@ -305,7 +305,7 @@ public class TestAction {
 これは、本機能（`Path` アノテーションによるルーティング定義）がJakarta RESTful Web Servicesの仕様に準拠しているためである。
 
 パスの一部を `{パラメータ名}` と記述することで、その部分をパラメータとして定義できる。
-ここで定義したパラメータ名を JaxRsHttpRequest#getPathParam(String) に渡すことで、パスパラメータの値を取得できる。
+ここで定義したパラメータ名を [JaxRsHttpRequest#getPathParam(String)](../javadoc/javadoc-nablarch-fw-jaxrs-JaxRsHttpRequest.md) に渡すことで、パスパラメータの値を取得できる。
 
 さらに、 `{パラメータ名 : 正規表現}` と記述することで、そのパスパラメータの書式を正規表現で定義できる。
 上記実装例では `\\d+` と正規表現を指定しているので、パスの値が数値のときのみメソッドがディスパッチされるようになる。
