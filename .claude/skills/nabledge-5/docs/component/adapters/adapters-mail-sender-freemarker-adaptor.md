@@ -25,10 +25,10 @@
 
 ## E-mail FreeMarkerアダプタを使用するための設定を行う
 
-本アダプタを使用するためには、コンポーネント設定ファイルで FreeMarkerMailProcessor を MailRequester へ設定する。
+本アダプタを使用するためには、コンポーネント設定ファイルで [FreeMarkerMailProcessor](../javadoc/javadoc-nablarch-integration-mail-freemarker-FreeMarkerMailProcessor.md) を [MailRequester](../javadoc/javadoc-nablarch-common-mail-MailRequester.md) へ設定する。
 
 `FreeMarkerMailProcessor` にはFreeMarkerが提供する `Configuration` を設定する必要がある。
-`Configuration` は以下の理由により ComponentFactory の実装クラスを作成してコンポーネントを設定することを推奨する。
+`Configuration` は以下の理由により [ComponentFactory](../javadoc/javadoc-nablarch-core-repository-di-ComponentFactory.md) の実装クラスを作成してコンポーネントを設定することを推奨する。
 
 * `Configuration` はデフォルトコンストラクタが非推奨である
 * `Configuration` への設定はコンポーネント設定ファイルよりもJavaコードで行う方がやりやすい

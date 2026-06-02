@@ -25,7 +25,7 @@
 
 ## E-mail Thymeleafアダプタを使用するための設定を行う
 
-本アダプタを使用するためには、コンポーネント設定ファイルで ThymeleafMailProcessor を MailRequester へ設定する。
+本アダプタを使用するためには、コンポーネント設定ファイルで [ThymeleafMailProcessor](../javadoc/javadoc-nablarch-integration-mail-thymeleaf-ThymeleafMailProcessor.md) を [MailRequester](../javadoc/javadoc-nablarch-common-mail-MailRequester.md) へ設定する。
 
 `ThymeleafMailProcessor` にはThymeleafが提供する `TemplateEngine` を設定する必要がある。
 

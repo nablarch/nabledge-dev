@@ -24,7 +24,7 @@
 
 ## ハンドラクラス名
 
-* nablarch.fw.handler.DataReadHandler
+* [nablarch.fw.handler.DataReadHandler](../javadoc/javadoc-nablarch-fw-handler-DataReadHandler.md)
 
 ## モジュール一覧
 
@@ -37,8 +37,8 @@
 
 ## 制約
 
-本ハンドラより手前のハンドラにて、 ExecutionContext に DataReader を設定する必要がある。
-本ハンドラが呼び出されたタイミングで DataReader が設定されていない場合、処理対象データ無しとして本ハンドラは処理を終了( NoMoreRecord を返却)する。
+本ハンドラより手前のハンドラにて、 [ExecutionContext](../javadoc/javadoc-nablarch-fw-ExecutionContext.md) に [DataReader](../javadoc/javadoc-nablarch-fw-DataReader.md) を設定する必要がある。
+本ハンドラが呼び出されたタイミングで [DataReader](../javadoc/javadoc-nablarch-fw-DataReader.md) が設定されていない場合、処理対象データ無しとして本ハンドラは処理を終了( NoMoreRecord を返却)する。
 
 ## 最大処理件数の設定
 

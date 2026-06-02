@@ -100,7 +100,7 @@
 
 設定
 
-BasicExclusiveControlManager の設定をコンポーネント定義に追加する。
+[BasicExclusiveControlManager](../javadoc/javadoc-nablarch-common-exclusivecontrol-BasicExclusiveControlManager.md) の設定をコンポーネント定義に追加する。
 
 ```xml
 <!-- コンポーネント名は"exclusiveControlManager"で設定する。 -->
@@ -113,7 +113,7 @@ BasicExclusiveControlManager の設定をコンポーネント定義に追加す
 
 排他制御に必要な情報を保持するクラスの作成
 
-ExclusiveControlContext を継承して作成する。
+[ExclusiveControlContext](../javadoc/javadoc-nablarch-common-exclusivecontrol-ExclusiveControlContext.md) を継承して作成する。
 このクラスは、排他制御用テーブルごとに作成し、排他制御を行うAPI呼び出しで使用する。
 
 ```sql
@@ -158,7 +158,7 @@ public class UsersExclusiveControl extends ExclusiveControlContext {
 楽観的ロックは、更新対象データを取得する時点で、排他制御用テーブルのバージョン番号を取得しておき、
 更新する時点で、事前に取得した排他制御用テーブルのバージョン番号が更新されていないかをチェックすることで実現する。
 
-楽観的ロックには、 HttpExclusiveControlUtil を使用する。
+楽観的ロックには、 [HttpExclusiveControlUtil](../javadoc/javadoc-nablarch-common-web-exclusivecontrol-HttpExclusiveControlUtil.md) を使用する。
 
 入力→確認→完了がある更新機能を例に、楽観的ロックの実装例を示す。
 
@@ -350,7 +350,7 @@ public class UsersExclusiveControl extends ExclusiveControlContext {
 
 > **Tip:**
 > 複合主キーに対応したカスタムタグと
-> CompositeKey を使うと、
+> [CompositeKey](../javadoc/javadoc-nablarch-common-web-compositekey-CompositeKey.md) を使うと、
 > 複合主キーをもっと簡単に扱える。詳細は、 [複合キーのラジオボタンやチェックボックスを作る](../../component/libraries/libraries-tag.md#複合キーのラジオボタンやチェックボックスを作る) を参照。
 
 ```java

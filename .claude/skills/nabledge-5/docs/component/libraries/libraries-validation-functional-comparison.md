@@ -38,6 +38,6 @@ Nablarchでは外部からデータを受け付けたタイミングで必ずバ
 Bean Validationでは、EL式を使用してパラメータを埋め込むこともできる。
 
 Bean Validationでは、プロパティの型は全てStringとして定義する([Stringで定義する理由](../../component/libraries/libraries-bean-validation.md#バリデーションルールの設定方法))ため型変換は行わない。
-型変換が必要な場合には、バリデーション実施後に BeanUtil を使って型変換する。
+型変換が必要な場合には、バリデーション実施後に [BeanUtil](../javadoc/javadoc-nablarch-core-beans-BeanUtil.md) を使って型変換する。
 
 正規化は、Bean Validationの機能ではなくハンドラとして提供している。正規化が必要な場合には、 [ノーマライズハンドラ](../../component/handlers/handlers-normalize-handler.md#ノーマライズハンドラ) を使用して行う。

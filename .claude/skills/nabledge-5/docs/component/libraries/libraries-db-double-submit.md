@@ -50,7 +50,7 @@ DOUBLE_SUBMISSION テーブル
 
 テーブル名およびカラム名は変更可能である。
 変更する場合は、 DbTokenManager.dbTokenSchema に
-DbTokenSchema のコンポーネントを定義する。
+[DbTokenSchema](../javadoc/javadoc-nablarch-common-web-token-DbTokenSchema.md) のコンポーネントを定義する。
 
 2種類のコンポーネント定義を追加する。
 
@@ -95,7 +95,7 @@ DbTokenSchema のコンポーネントを定義する。
 
 > **Important:**
 > [テスティングフレームワークのトークン発行](../../development-tools/testing-framework/testing-framework-02-RequestUnitTest.md#トークン発行) はトークンのDB保存に対応していない。
-> そのため、自動テスト実行時には HttpSessionTokenManager に差し替えてテストする必要がある。
+> そのため、自動テスト実行時には [HttpSessionTokenManager](../javadoc/javadoc-nablarch-common-web-token-HttpSessionTokenManager.md) に差し替えてテストする必要がある。
 
 > ```xml
 > <!-- トークンをHTTPセッションに保存する -->

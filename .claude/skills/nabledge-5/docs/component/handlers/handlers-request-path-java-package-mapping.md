@@ -44,7 +44,7 @@
 
 ## ハンドラクラス名
 
-* nablarch.fw.handler.RequestPathJavaPackageMapping
+* [nablarch.fw.handler.RequestPathJavaPackageMapping](../javadoc/javadoc-nablarch-fw-handler-RequestPathJavaPackageMapping.md)
 
 ## モジュール一覧
 
@@ -114,7 +114,7 @@
 | /BaseApp | nablarch.sample.base.BaseApp |
 
 このようなディスパッチを行う場合、以下のように `optionalPackageMappingEntries` プロパティに
-JavaPackageMappingEntry クラスを使用して設定する。
+[JavaPackageMappingEntry](../javadoc/javadoc-nablarch-fw-handler-JavaPackageMappingEntry.md) クラスを使用して設定する。
 
 ```xml
 <component class="nablarch.fw.handler.RequestPathJavaPackageMapping">

@@ -22,7 +22,7 @@
 
 ## ハンドラクラス名
 
-* nablarch.fw.handler.LoopHandler
+* [nablarch.fw.handler.LoopHandler](../javadoc/javadoc-nablarch-fw-handler-LoopHandler.md)
 
 ## モジュール一覧
 
@@ -53,7 +53,7 @@
 ## トランザクション制御対象を設定する
 
 このハンドラは、 transactionFactory
-プロパティに設定されたファクトリクラス( TransactionFactory の実装クラス)を使用してトランザクションの制御対象を取得しスレッド上で管理する。
+プロパティに設定されたファクトリクラス( [TransactionFactory](../javadoc/javadoc-nablarch-core-transaction-TransactionFactory.md) の実装クラス)を使用してトランザクションの制御対象を取得しスレッド上で管理する。
 
 スレッド上で管理する際には、トランザクションを識別するための名前を設定する。
 デフォルトでは、 `transaction` が使用されるが、任意の名前を使用する場合は、 transactionName プロパティに設定すること。
@@ -100,8 +100,8 @@
 
 このハンドラでは、後続のハンドラの処理実行後にコールバック処理を行う。
 
-コールバックされる処理は、このハンドラより後続に設定されたハンドラの中で、 TransactionEventCallback を実装しているものとなる。
-もし、複数のハンドラが  TransactionEventCallback を実装している場合は、より手前に設定されているハンドラから順次コールバック処理を実行する。
+コールバックされる処理は、このハンドラより後続に設定されたハンドラの中で、 [TransactionEventCallback](../javadoc/javadoc-nablarch-fw-TransactionEventCallback.md) を実装しているものとなる。
+もし、複数のハンドラが  [TransactionEventCallback](../javadoc/javadoc-nablarch-fw-TransactionEventCallback.md) を実装している場合は、より手前に設定されているハンドラから順次コールバック処理を実行する。
 
 後続ハンドラが正常に処理を終えた場合のコールバック処理は、後続ハンドラと同一のトランザクションで実行される。
 コールバック処理で行った処理は、次回のコミットタイミングで一括コミットされる。
@@ -117,7 +117,7 @@
 
 コールバック処理を行うハンドラの作成
 
-以下実装例のように、  TransactionEventCallback を実装したハンドラを作成する。
+以下実装例のように、  [TransactionEventCallback](../javadoc/javadoc-nablarch-fw-TransactionEventCallback.md) を実装したハンドラを作成する。
 
 transactionNormalEnd にトランザクションコミット時のコールバック処理を実装し、
 transactionAbnormalEnd にトランザクションロールバック時のコールバック処理を実装する。

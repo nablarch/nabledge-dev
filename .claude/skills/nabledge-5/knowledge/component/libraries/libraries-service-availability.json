@@ -31,13 +31,13 @@
     {
       "id": "s5",
       "title": "サービス提供可否チェックを使うための設定",
-      "content": "この機能では、データベースを使用してサービス提供可否の状態を管理する。\nテーブルのレイアウトは以下となる。\n\n| リクエストID(PK) | リクエストを識別するための値。文字列型 |\n|---|---|\n| サービス提供可否状態 | 可の場合は\"1\"。文字列型。設定で値を変更できる。 |\n\nサービス提供可否チェックを使うためには、\nBasicServiceAvailability の定義をコンポーネント設定ファイルに追加する。\nコンポーネント名には **serviceAvailability** と指定する。\n\n```xml\n<component name=\"serviceAvailability\" class=\"nablarch.common.availability.BasicServiceAvailability\">\n  <!-- テーブル名 -->\n  <property name=\"tableName\" value=\"REQUEST\"/>\n  <!-- リクエストIDのカラム名 -->\n  <property name=\"requestTableRequestIdColumnName\" value=\"REQUEST_ID\"/>\n  <!-- サービス提供可否状態のカラム名 -->\n  <property name=\"requestTableServiceAvailableColumnName\" value=\"SERVICE_AVAILABLE\"/>\n  <!-- サービス提供可を示す値 -->\n  <property name=\"requestTableServiceAvailableOkStatus\" value=\"1\"/>\n  <!-- データベースアクセスに使用するトランザクションマネージャ -->\n  <property name=\"dbManager\" ref=\"serviceAvailabilityDbManager\"/>\n</component>\n```",
+      "content": "この機能では、データベースを使用してサービス提供可否の状態を管理する。\nテーブルのレイアウトは以下となる。\n\n| リクエストID(PK) | リクエストを識別するための値。文字列型 |\n|---|---|\n| サービス提供可否状態 | 可の場合は\"1\"。文字列型。設定で値を変更できる。 |\n\nサービス提供可否チェックを使うためには、\n[BasicServiceAvailability](../javadoc/javadoc-nablarch-common-availability-BasicServiceAvailability.md) の定義をコンポーネント設定ファイルに追加する。\nコンポーネント名には **serviceAvailability** と指定する。\n\n```xml\n<component name=\"serviceAvailability\" class=\"nablarch.common.availability.BasicServiceAvailability\">\n  <!-- テーブル名 -->\n  <property name=\"tableName\" value=\"REQUEST\"/>\n  <!-- リクエストIDのカラム名 -->\n  <property name=\"requestTableRequestIdColumnName\" value=\"REQUEST_ID\"/>\n  <!-- サービス提供可否状態のカラム名 -->\n  <property name=\"requestTableServiceAvailableColumnName\" value=\"SERVICE_AVAILABLE\"/>\n  <!-- サービス提供可を示す値 -->\n  <property name=\"requestTableServiceAvailableOkStatus\" value=\"1\"/>\n  <!-- データベースアクセスに使用するトランザクションマネージャ -->\n  <property name=\"dbManager\" ref=\"serviceAvailabilityDbManager\"/>\n</component>\n```",
       "level": 3
     },
     {
       "id": "s6",
       "title": "サービス提供可否をチェックする",
-      "content": "サービス提供可否チェックは、 ServiceAvailabilityUtil を使用する。",
+      "content": "サービス提供可否チェックは、 [ServiceAvailabilityUtil](../javadoc/javadoc-nablarch-common-availability-ServiceAvailabilityUtil.md) を使用する。",
       "level": 3
     },
     {

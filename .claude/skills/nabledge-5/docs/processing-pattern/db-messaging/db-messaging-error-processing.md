@@ -21,7 +21,7 @@ protected void transactionFailure(SqlRow inputData, ExecutionContext context) {
 
 ## プロセスを異常終了させる
 
-プロセスを異常終了させたい場合は、 ProcessAbnormalEnd を送出する。
+プロセスを異常終了させたい場合は、 [ProcessAbnormalEnd](../javadoc/javadoc-nablarch-fw-launcher-ProcessAbnormalEnd.md) を送出する。
 
 > **Important:**
 > プロセスを異常終了させると、テーブルキューの監視処理が終了するため、テーブルに未処理のデータが滞留することになり、データの取り込み遅延などが発生する。

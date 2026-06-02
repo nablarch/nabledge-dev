@@ -199,7 +199,7 @@ XORゲートウェイを管理するテーブル
 WorkflowManager#startInstance を使用してワークフロー(ステートマシン)を開始する。
 
 > **Tip:**
-> 本APIから戻される、 WorkflowInstance からインスタンスIDを取得しアプリケーション側のテーブルなどで保持すること。
+> 本APIから戻される、 [WorkflowInstance](../javadoc/javadoc-nablarch-integration-workflow-WorkflowInstance.md) からインスタンスIDを取得しアプリケーション側のテーブルなどで保持すること。
 > インスタンスIDは、ワークフロー(ステートマシン)の状態を遷移させるために必要となるため、必ずアプリケーション側で保持する必要がある。
 
 実装例
@@ -282,7 +282,7 @@ instance.assignGroups("task1", Arrays.asList("group1", "group2"));
 WorkflowInstance#completeUserTask や
 WorkflowInstance#completeGroupTask
 を使用してタスクを完了し、次のタスクに状態を遷移させることができる。
-対象の WorkflowInstance は、
+対象の [WorkflowInstance](../javadoc/javadoc-nablarch-integration-workflow-WorkflowInstance.md) は、
 [ワークフロー開始時](../../extension/workflow/workflow-doc.md#ワークフローステートマシンを開始する) にアプリケーション側で保持したインスタンスIDを使用して事前に取得する必要がある。
 
 タスク完了後のワークフローの状態の取得方法は、 [ワークフロー（ステートマシン）の現在の状態を取得する](../../extension/workflow/workflow-doc.md#ワークフローステートマシンの現在の状態を取得する) を参照。
@@ -431,7 +431,7 @@ instance.triggerEvent("cancel");
 ステートマシンの状態を遷移させる場合は、
 WorkflowInstance#triggerEvent
 を使用して状態を遷移させることができる。
-対象の WorkflowInstance は、
+対象の [WorkflowInstance](../javadoc/javadoc-nablarch-integration-workflow-WorkflowInstance.md) は、
 ワークフロー開始時 にアプリケーション側で保持したインスタンスIDを使用して事前に取得する必要がある。
 
 なお、 WorkflowInstance#triggerEvent
@@ -536,7 +536,7 @@ if (instance.isCompleted()) {
 XORゲートウェイの進行先ノードは、シーケンスフローテーブルのフロー進行条件により判定する。
 フロー進行条件には、条件を判定するクラスの完全修飾名を格納する。
 
-条件を判定するクラスは、 FlowProceedCondition を実装し作成する。
+条件を判定するクラスは、 [FlowProceedCondition](../javadoc/javadoc-nablarch-integration-workflow-condition-FlowProceedCondition.md) を実装し作成する。
 本機能で提供するクラスは、 nablarch.integration.workflow.condition パッケージ配下に格納されている。
 
 FlowProceedCondition実装クラスの例
@@ -567,7 +567,7 @@ public class SampleFlowProceedCondition implements FlowProceedCondition {
 マルチインスタンの完了は、タスクテーブルの完了条件により判定する。
 完了条件には、条件を判定するクラスの完全修飾名を格納する。
 
-条件を判定するクラスは、 CompletionCondition を実装し作成する。
+条件を判定するクラスは、 [CompletionCondition](../javadoc/javadoc-nablarch-integration-workflow-condition-CompletionCondition.md) を実装し作成する。
 本機能で提供するクラスは、 nablarch.integration.workflow.condition パッケージ配下に格納されている。
 
 CompletionConditionの実装例

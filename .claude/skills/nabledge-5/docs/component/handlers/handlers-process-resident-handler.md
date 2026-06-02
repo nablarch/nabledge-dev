@@ -24,7 +24,7 @@
 
 ## ハンドラクラス名
 
-* nablarch.fw.handler.ProcessResidentHandler
+* [nablarch.fw.handler.ProcessResidentHandler](../javadoc/javadoc-nablarch-fw-handler-ProcessResidentHandler.md)
 
 ## モジュール一覧
 
@@ -39,7 +39,7 @@
 
 本ハンドラは、リトライハンドラよりも後ろに設定すること
 
-本ハンドラで実行時例外を捕捉した場合、リトライ可能例外( RetryableException )でラップしてから再送出し、
+本ハンドラで実行時例外を捕捉した場合、リトライ可能例外( [RetryableException](../javadoc/javadoc-nablarch-fw-handler-retry-RetryableException.md) )でラップしてから再送出し、
 プロセスの継続制御を [リトライハンドラ](../../component/handlers/handlers-retry-handler.md#リトライハンドラ) に委譲する。
 このため、このハンドラはリトライハンドラより後に設定する必要がある。
 
@@ -94,7 +94,7 @@
 
 以下に例外毎の処理内容を示す。
 
-サービス閉塞中例外( ServiceUnavailable )
+サービス閉塞中例外( [ServiceUnavailable](../javadoc/javadoc-nablarch-fw-results-ServiceUnavailable.md) )
 
 サービス閉塞中例外の場合には、データ監視間隔に設定された時間分待機後に、再度後続ハンドラを実行する。
 
@@ -109,7 +109,7 @@
 
 プロセスを異常終了させる例外は、 abnormalEndExceptions
 プロパティに設定する。
-デフォルトでは、 ProcessAbnormalEnd (サブクラス含む)が、異常終了対象クラスとなる。
+デフォルトでは、 [ProcessAbnormalEnd](../javadoc/javadoc-nablarch-fw-launcher-ProcessAbnormalEnd.md) (サブクラス含む)が、異常終了対象クラスとなる。
 
 プロセスを正常終了させる例外
 
@@ -119,4 +119,4 @@
 
 上記以外の例外
 
-例外情報をログに記録し、リトライ可能例外 ( RetryableException )でラップし再送出する。
+例外情報をログに記録し、リトライ可能例外 ( [RetryableException](../javadoc/javadoc-nablarch-fw-handler-retry-RetryableException.md) )でラップし再送出する。

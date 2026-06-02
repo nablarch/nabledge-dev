@@ -132,10 +132,10 @@ public HttpResponse edit(HttpRequest request, ExecutionContext context) {
   UniversalDao#findBySqlFile
   を使用して一意キー検索を行う。
   [テーブルをJOINした結果を取得する](../../component/libraries/libraries-universal-dao.md#テーブルをjoinした検索結果を取得する) ために、検索結果はBeanで受け付ける。
-  一意キー検索では、対象データが存在しない場合 NoDataException を送出する。
+  一意キー検索では、対象データが存在しない場合 [NoDataException](../javadoc/javadoc-nablarch-common-dao-NoDataException.md) を送出する。
 
   > **Tip:**
-> Exampleアプリケーションでは、独自のエラー制御ハンドラを追加しているため、 NoDataException が発生した場合は404エラー画面へ遷移する。
+> Exampleアプリケーションでは、独自のエラー制御ハンドラを追加しているため、 [NoDataException](../javadoc/javadoc-nablarch-common-dao-NoDataException.md) が発生した場合は404エラー画面へ遷移する。
   > ハンドラによるエラー制御の作成方法は、 [ハンドラで例外クラスに対応したエラーページに遷移させる](../../processing-pattern/web-application/web-application-forward-error-page.md#ハンドラで共通の振る舞いを定義する) を参照。
 * 編集中に他ユーザによる更新が行われる可能性を考慮し、編集開始時点のバージョン番号を用いて [楽観的ロック](../../component/libraries/libraries-universal-dao.md#entityに使用できるjpaアノテーション) (後述)を行うため、
   編集開始時点のエンティティを [セッションストア](../../component/libraries/libraries-session-store.md#セッションストア) に登録する。
@@ -280,10 +280,10 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
 
 * エンティティに更新したい値を設定し、 UniversalDao#update を使用してデータベースを更新する。
   更新処理では楽観的ロックが実行される。
-* 二重サブミットを防止するために、 @OnDoubleSubmission を付与する。
+* 二重サブミットを防止するために、 [@OnDoubleSubmission](../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md) を付与する。
 * ブラウザ更新での再実行を防ぐために、レスポンスをリダイレクトする。
 
-  * リソースパスの書式については ResourceLocator を参照。
+  * リソースパスの書式については [ResourceLocator](../javadoc/javadoc-nablarch-fw-web-ResourceLocator.md) を参照。
   * リダイレクトに指定するステータスコードについては、 [ステータスコード](../../processing-pattern/web-application/web-application-feature-details.md#ステータスコード) を参照。
 
 楽観的ロックの対象となるエンティティの作成

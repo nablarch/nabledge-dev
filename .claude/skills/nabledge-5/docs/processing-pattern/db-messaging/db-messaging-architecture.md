@@ -97,10 +97,10 @@ Nablarchでは、データベースをキューとして扱うメッセージン
 ## 使用するデータリーダ
 
 データベースをキューとして扱う場合には、以下のデータリーダを使用する。
-バッチ用のDatabaseRecordReader を使用した場合、
+[バッチ用のDatabaseRecordReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.md) を使用した場合、
 繰り返しテーブルを監視できないので注意すること。
 
-* DatabaseTableQueueReader
+* [DatabaseTableQueueReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseTableQueueReader.md)
 
 > **Important:**
 > 上記のリーダで要件を満たすことができず、プロジェクトでリーダを作成する場合は以下の点に注意して実装すること。
@@ -108,7 +108,7 @@ Nablarchでは、データベースをキューとして扱うメッセージン
 > * >   対象データがなくなった場合でも、継続して対象データを監視できるようにすること
 > * >   マルチススレッド環境下で使われる場合に、同一データを複数のスレッドで処理することがないようにすること
 
-> なお、 DatabaseTableQueueReader は、上記を満たすために以下の実装となっている
+> なお、 [DatabaseTableQueueReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseTableQueueReader.md) は、上記を満たすために以下の実装となっている
 
 > * >   テーブルに未処理のデータが無くなった場合、再度検索用SQLを実行し未処理データを抽出する
 > * >   複数スレッドで同一データを処理することがないように、現在処理中のデータの識別子(主キーの値)を保持し、処理されていないデータを読み込んでいる
@@ -117,4 +117,4 @@ Nablarchでは、データベースをキューとして扱うメッセージン
 
 データベースをキューとして扱う場合は、以下のテンプレートクラスを使用する。
 
-* BatchAction (汎用的なバッチアクション)
+* [BatchAction (汎用的なバッチアクション)](../javadoc/javadoc-nablarch-fw-action-BatchAction.md)

@@ -27,7 +27,7 @@
 
 ## ハンドラクラス名
 
-* nablarch.common.handler.DbConnectionManagementHandler
+* [nablarch.common.handler.DbConnectionManagementHandler](../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md)
 
 ## モジュール一覧
 
@@ -49,7 +49,7 @@
 ## データベースの接続先を設定する
 
 このハンドラは、 connectionFactory
-プロパティに設定されたファクトリクラス( ConnectionFactory 実装クラス )を使用してデータベース接続を取得する。
+プロパティに設定されたファクトリクラス( [ConnectionFactory](../javadoc/javadoc-nablarch-core-db-connection-ConnectionFactory.md) 実装クラス )を使用してデータベース接続を取得する。
 
 以下の設定ファイル例を参考にし、  connectionFactory
 プロパティにファクトリクラスを設定すること。

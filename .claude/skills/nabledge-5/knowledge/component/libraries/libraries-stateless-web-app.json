@@ -37,7 +37,7 @@
     {
       "id": "s6",
       "title": "スレッドコンテキスト変数管理ハンドラ",
-      "content": "[スレッドコンテキストの初期化](../../component/handlers/handlers-thread-context-handler.md#リクエスト毎にスレッドコンテキストの初期化を行う) に以下の部品を使用しない。\n\n* LanguageAttributeInHttpSession\n* TimeZoneAttributeInHttpSession\n* UserIdAttribute\n\nそれぞれ、HTTPセッションを使用しない実装として以下の部品で代替できる。\n\n* LanguageAttributeInHttpCookie\n* TimeZoneAttributeInHttpCookie\n* UserIdAttributeInSessionStore",
+      "content": "[スレッドコンテキストの初期化](../../component/handlers/handlers-thread-context-handler.md#リクエスト毎にスレッドコンテキストの初期化を行う) に以下の部品を使用しない。\n\n* [LanguageAttributeInHttpSession](../javadoc/javadoc-nablarch-common-web-handler-threadcontext-LanguageAttributeInHttpSession.md)\n* [TimeZoneAttributeInHttpSession](../javadoc/javadoc-nablarch-common-web-handler-threadcontext-TimeZoneAttributeInHttpSession.md)\n* [UserIdAttribute](../javadoc/javadoc-nablarch-common-handler-threadcontext-UserIdAttribute.md)\n\nそれぞれ、HTTPセッションを使用しない実装として以下の部品で代替できる。\n\n* [LanguageAttributeInHttpCookie](../javadoc/javadoc-nablarch-common-web-handler-threadcontext-LanguageAttributeInHttpCookie.md)\n* [TimeZoneAttributeInHttpCookie](../javadoc/javadoc-nablarch-common-web-handler-threadcontext-TimeZoneAttributeInHttpCookie.md)\n* [UserIdAttributeInSessionStore](../javadoc/javadoc-nablarch-common-web-handler-threadcontext-UserIdAttributeInSessionStore.md)",
       "level": 3
     },
     {
@@ -61,7 +61,7 @@
     {
       "id": "s10",
       "title": "HTTPセッションの誤生成を検知する",
-      "content": "設定漏れや実装ミスによって誤ってHTTPセッションを生成してしまうことを防ぐために、HTTPセッションの生成を検知する機能を提供している。\nこの機能を有効にすると、HTTPセッションを生成しようとしたときに例外が送出されるようになる。\n\nこの機能は、 WebFrontController の `preventSessionCreation` プロパティに `true` を設定することで有効にできる（デフォルトは `false` で無効になっている）。\n\n具体的には、 WebFrontController のコンポーネントを定義した設定ファイルで、次のように記述することで検知機能を有効にできる。\n\n```xml\n<!-- ハンドラキュー構成 -->\n<component name=\"webFrontController\"\n           class=\"nablarch.fw.web.servlet.WebFrontController\">\n\n  <!-- HTTPセッションの誤生成を検知する -->\n  <property name=\"preventSessionCreation\" value=\"true\" />\n```",
+      "content": "設定漏れや実装ミスによって誤ってHTTPセッションを生成してしまうことを防ぐために、HTTPセッションの生成を検知する機能を提供している。\nこの機能を有効にすると、HTTPセッションを生成しようとしたときに例外が送出されるようになる。\n\nこの機能は、 [WebFrontController](../javadoc/javadoc-nablarch-fw-web-servlet-WebFrontController.md) の `preventSessionCreation` プロパティに `true` を設定することで有効にできる（デフォルトは `false` で無効になっている）。\n\n具体的には、 [WebFrontController](../javadoc/javadoc-nablarch-fw-web-servlet-WebFrontController.md) のコンポーネントを定義した設定ファイルで、次のように記述することで検知機能を有効にできる。\n\n```xml\n<!-- ハンドラキュー構成 -->\n<component name=\"webFrontController\"\n           class=\"nablarch.fw.web.servlet.WebFrontController\">\n\n  <!-- HTTPセッションの誤生成を検知する -->\n  <property name=\"preventSessionCreation\" value=\"true\" />\n```",
       "level": 2
     }
   ]

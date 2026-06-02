@@ -22,7 +22,7 @@
 
 ## ハンドラクラス名
 
-* nablarch.fw.web.handler.HttpCharacterEncodingHandler
+* [nablarch.fw.web.handler.HttpCharacterEncodingHandler](../javadoc/javadoc-nablarch-fw-web-handler-HttpCharacterEncodingHandler.md)
 
 ## モジュール一覧
 

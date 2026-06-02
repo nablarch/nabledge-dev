@@ -77,7 +77,7 @@ public class InnerProjectForm implements Serializable {
 この実装のポイント
 
 * 入れ子となったフォームに対しても  [Bean Validation](../../component/libraries/libraries-bean-validation.md#bean-validation) を実行するため、
-  @Required や @Domain
+  [@Required](../javadoc/javadoc-nablarch-core-validation-ee-Required.md) や [@Domain](../javadoc/javadoc-nablarch-core-validation-ee-Domain.md)
   などのバリデーション用のアノテーションを付与する。
 
 プロジェクト１つ分のフォームのリストをプロパティとして持つ親フォーム
@@ -331,7 +331,7 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
   > **Tip:**
 > Exampleアプリケーションでは独自のエラー制御ハンドラを追加しているため、排他制御エラーにより OptimisticLockException が発生した場合、
   > 排他制御エラー画面へ遷移する。ハンドラによるエラー制御の作成方法は、 [ハンドラで例外クラスに対応したエラーページに遷移させる](../../processing-pattern/web-application/web-application-forward-error-page.md#ハンドラで共通の振る舞いを定義する) を参照。
-* UniversalDao には、エンティティのリストを引数に取る
+* [UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md) には、エンティティのリストを引数に取る
   UniversalDao#batchUpdate メソッドも用意されているが、
   このメソッドは [バッチ実行](../../component/libraries/libraries-universal-dao.md#バッチ実行一括登録更新削除を行う) での使用を想定したものであり、排他制御を行わない。
   排他制御が必要である場合は、 UniversalDao#update

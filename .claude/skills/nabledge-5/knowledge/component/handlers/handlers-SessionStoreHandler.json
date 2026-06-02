@@ -7,7 +7,7 @@
     {
       "id": "s1",
       "title": "ハンドラクラス名",
-      "content": "* nablarch.common.web.session.SessionStoreHandler",
+      "content": "* [nablarch.common.web.session.SessionStoreHandler](../javadoc/javadoc-nablarch-common-web-session-SessionStoreHandler.md)",
       "level": 2
     },
     {
@@ -25,7 +25,7 @@
     {
       "id": "s4",
       "title": "セッションストアを使用するための設定",
-      "content": "セッションストアを使用するには、以下のとおり設定した SessionManager\nを本ハンドラの sessionManager プロパティに設定する必要がある。\n\n* アプリケーションで使用するセッションストア（複数指定可）\n* デフォルトで使用するセッションストア名\n\n以下の設定例を参考に、本ハンドラを設定すること。\n\n```xml\n<component class=\"nablarch.common.web.session.SessionStoreHandler\">\n  <property name=\"sessionManager\" ref=\"sessionManager\"/>\n</component>\n\n<!-- \"sessionManager\"というコンポーネント名で設定する -->\n<component name=\"sessionManager\" class=\"nablarch.common.web.session.SessionManager\">\n  <!-- プロパティの設定は省略 -->\n</component>\n```\n\nSessionManager に設定するプロパティの詳細は [セッションストアを使用するための設定](../../component/libraries/libraries-session-store.md#セッションストアを使用するための設定) を参照。",
+      "content": "セッションストアを使用するには、以下のとおり設定した [SessionManager](../javadoc/javadoc-nablarch-common-web-session-SessionManager.md)\nを本ハンドラの sessionManager プロパティに設定する必要がある。\n\n* アプリケーションで使用するセッションストア（複数指定可）\n* デフォルトで使用するセッションストア名\n\n以下の設定例を参考に、本ハンドラを設定すること。\n\n```xml\n<component class=\"nablarch.common.web.session.SessionStoreHandler\">\n  <property name=\"sessionManager\" ref=\"sessionManager\"/>\n</component>\n\n<!-- \"sessionManager\"というコンポーネント名で設定する -->\n<component name=\"sessionManager\" class=\"nablarch.common.web.session.SessionManager\">\n  <!-- プロパティの設定は省略 -->\n</component>\n```\n\n[SessionManager](../javadoc/javadoc-nablarch-common-web-session-SessionManager.md) に設定するプロパティの詳細は [セッションストアを使用するための設定](../../component/libraries/libraries-session-store.md#セッションストアを使用するための設定) を参照。",
       "level": 2
     },
     {
@@ -37,7 +37,7 @@
     {
       "id": "s6",
       "title": "セッションストアの改竄をチェックする",
-      "content": "セッションストアからセッション変数を読み込む際、セッションストアが改竄されていないかをチェックする。\n\nHIDDENストアの改竄を検知した場合\n\nステータスコード400の HttpErrorResponse を送出する。\n\nそれ以外のストアの改竄を検知した場合\n\nセッションストアの復号処理時に発生した例外をそのまま送出する。",
+      "content": "セッションストアからセッション変数を読み込む際、セッションストアが改竄されていないかをチェックする。\n\nHIDDENストアの改竄を検知した場合\n\nステータスコード400の [HttpErrorResponse](../javadoc/javadoc-nablarch-fw-web-HttpErrorResponse.md) を送出する。\n\nそれ以外のストアの改竄を検知した場合\n\nセッションストアの復号処理時に発生した例外をそのまま送出する。",
       "level": 2
     },
     {
@@ -55,13 +55,13 @@
     {
       "id": "s9",
       "title": "有効期間をデータベースに保存する",
-      "content": "セッションの有効期間保存先を変更できる。\n\nデフォルトでは HttpSessionManagedExpiration\nが使用されるためセッションの有効期間はHTTPセッションに保存される。\n\n本ハンドラの expiration\nプロパティを DbManagedExpiration に差し替えることでデータベースに保存できる。",
+      "content": "セッションの有効期間保存先を変更できる。\n\nデフォルトでは [HttpSessionManagedExpiration](../javadoc/javadoc-nablarch-common-web-session-HttpSessionManagedExpiration.md)\nが使用されるためセッションの有効期間はHTTPセッションに保存される。\n\n本ハンドラの expiration\nプロパティを [DbManagedExpiration](../javadoc/javadoc-nablarch-common-web-session-DbManagedExpiration.md) に差し替えることでデータベースに保存できる。",
       "level": 2
     },
     {
       "id": "s10",
       "title": "使用方法",
-      "content": "データベース上に有効期間を保存するためのテーブルは、[DBストア](../../component/libraries/libraries-session-store.md#セッションストアを使用するための設定) に記載のDBストア使用時のテーブルを使用するものとする。\n\n> **Important:**\n> 有効期間をデータベースに保存する場合は、SESSION_OBJECT カラムを必須属性にしてはならない。\n> ログアウト時などに、セッションオブジェクトがNullのレコードが登録され得るため、必ずNull許容で定義すること。\n> 5u15以前のアーキタイプから作成したプロジェクトでは、デフォルトで必須属性として定義されている。\n> 必要に応じてALTER文の発行または、テーブルの再作成を実施する必要がある。\n\nテーブル名およびカラム名を変更する場合は、 DbManagedExpiration.userSessionSchema に\nUserSessionSchema のコンポーネントを定義する。\nDBストアのテーブル・カラムも同じものに変更すること。\n\nまた有効期間は [初期化](../../component/libraries/libraries-repository.md#オブジェクトの初期化処理を行う) が必要になる。\n\n設定例を以下に示す。\n\n```xml\n<component name=\"sessionStoreHandler\" class=\"nablarch.common.web.session.SessionStoreHandler\">\n  <!-- その他のプロパティは省略 -->\n  <property name=\"expiration\" ref=\"expiration\" />\n</component>\n\n<component name=\"expiration\" class=\"nablarch.common.web.session.DbManagedExpiration\">\n  <!-- データベースへのトランザクション制御を行うクラス -->\n  <property name=\"dbManager\">\n    <component class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">\n      <property name=\"dbTransactionName\" value=\"expirationTransaction\"/>\n    </component>\n  </property>\n  <!-- 上記のテーブル定義からテーブル名、カラム名を変更する場合のみ以下設定が必要 -->\n  <property name=\"userSessionSchema\" ref=\"userSessionSchema\" />\n</component>\n\n<!-- テーブル定義を変更する場合はあわせてDBストアの定義も変更する -->\n<component name=\"dbStore\" class=\"nablarch.common.web.session.store.DbStore\">\n  <!-- その他のプロパティは省略 -->\n  <property name=\"userSessionSchema\" ref=\"userSessionSchema\" />\n</component>\n\n<!-- 上記のテーブル定義からテーブル名、カラム名を変更する場合のみ以下設定が必要 -->\n<component name=\"userSessionSchema\" class=\"nablarch.common.web.session.store.UserSessionSchema\">\n  <property name=\"tableName\" value=\"USER_SESSION_DB\" />\n  <property name=\"sessionIdName\" value=\"SESSION_ID_COL\" />\n  <property name=\"sessionObjectName\" value=\"SESSION_OBJECT_COL\" />\n  <property name=\"expirationDatetimeName\" value=\"EXPIRATION_DATETIME_COL\" />\n</component>\n\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <!-- 有効期間はinitializeが必要。 -->\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"expiration\"/>\n    </list>\n  </property>\n</component>\n```",
+      "content": "データベース上に有効期間を保存するためのテーブルは、[DBストア](../../component/libraries/libraries-session-store.md#セッションストアを使用するための設定) に記載のDBストア使用時のテーブルを使用するものとする。\n\n> **Important:**\n> 有効期間をデータベースに保存する場合は、SESSION_OBJECT カラムを必須属性にしてはならない。\n> ログアウト時などに、セッションオブジェクトがNullのレコードが登録され得るため、必ずNull許容で定義すること。\n> 5u15以前のアーキタイプから作成したプロジェクトでは、デフォルトで必須属性として定義されている。\n> 必要に応じてALTER文の発行または、テーブルの再作成を実施する必要がある。\n\nテーブル名およびカラム名を変更する場合は、 DbManagedExpiration.userSessionSchema に\n[UserSessionSchema](../javadoc/javadoc-nablarch-common-web-session-store-UserSessionSchema.md) のコンポーネントを定義する。\nDBストアのテーブル・カラムも同じものに変更すること。\n\nまた有効期間は [初期化](../../component/libraries/libraries-repository.md#オブジェクトの初期化処理を行う) が必要になる。\n\n設定例を以下に示す。\n\n```xml\n<component name=\"sessionStoreHandler\" class=\"nablarch.common.web.session.SessionStoreHandler\">\n  <!-- その他のプロパティは省略 -->\n  <property name=\"expiration\" ref=\"expiration\" />\n</component>\n\n<component name=\"expiration\" class=\"nablarch.common.web.session.DbManagedExpiration\">\n  <!-- データベースへのトランザクション制御を行うクラス -->\n  <property name=\"dbManager\">\n    <component class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">\n      <property name=\"dbTransactionName\" value=\"expirationTransaction\"/>\n    </component>\n  </property>\n  <!-- 上記のテーブル定義からテーブル名、カラム名を変更する場合のみ以下設定が必要 -->\n  <property name=\"userSessionSchema\" ref=\"userSessionSchema\" />\n</component>\n\n<!-- テーブル定義を変更する場合はあわせてDBストアの定義も変更する -->\n<component name=\"dbStore\" class=\"nablarch.common.web.session.store.DbStore\">\n  <!-- その他のプロパティは省略 -->\n  <property name=\"userSessionSchema\" ref=\"userSessionSchema\" />\n</component>\n\n<!-- 上記のテーブル定義からテーブル名、カラム名を変更する場合のみ以下設定が必要 -->\n<component name=\"userSessionSchema\" class=\"nablarch.common.web.session.store.UserSessionSchema\">\n  <property name=\"tableName\" value=\"USER_SESSION_DB\" />\n  <property name=\"sessionIdName\" value=\"SESSION_ID_COL\" />\n  <property name=\"sessionObjectName\" value=\"SESSION_OBJECT_COL\" />\n  <property name=\"expirationDatetimeName\" value=\"EXPIRATION_DATETIME_COL\" />\n</component>\n\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <!-- 有効期間はinitializeが必要。 -->\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"expiration\"/>\n    </list>\n  </property>\n</component>\n```",
       "level": 3
     }
   ]

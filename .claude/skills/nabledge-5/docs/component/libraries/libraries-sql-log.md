@@ -105,7 +105,7 @@ SQLログの設定は、 [各種ログの設定](../../component/libraries/libra
 
 sqlLogFormatter.className
 
-SqlLogFormatter を実装したクラス。
+[SqlLogFormatter](../javadoc/javadoc-nablarch-core-db-statement-SqlLogFormatter.md) を実装したクラス。
 差し替える場合に指定する。
 
 sqlLogFormatter.startRetrieveFormat
@@ -345,21 +345,21 @@ sqlLogFormatter.endExecuteBatchFormat=$methodName$\n\texe:$executeTime$ms count:
 ### JSON形式の構造化ログとして出力する
 
 [JSON形式の構造化ログとして出力する](../../component/libraries/libraries-log.md#json形式の構造化ログとして出力する) 設定によりログをJSON形式で出力できるが、
-SqlLogFormatter では
+[SqlLogFormatter](../javadoc/javadoc-nablarch-core-db-statement-SqlLogFormatter.md) では
 SQLログの各項目はmessageの値に文字列として出力される。
 SQLログの各項目もJSONの値として出力するには、
-SqlJsonLogFormatter を使用する。
+[SqlJsonLogFormatter](../javadoc/javadoc-nablarch-core-db-statement-SqlJsonLogFormatter.md) を使用する。
 設定は、 [各種ログの設定](../../component/libraries/libraries-log.md#各種ログの設定) で説明したプロパティファイルに行う。
 
 記述ルール
 
-SqlJsonLogFormatter を用いる際に
+[SqlJsonLogFormatter](../javadoc/javadoc-nablarch-core-db-statement-SqlJsonLogFormatter.md) を用いる際に
 指定するプロパティは以下の通り。
 
 sqlLogFormatter.className `必須`
 
 JSON形式でログを出力する場合、
-SqlJsonLogFormatter を指定する。
+[SqlJsonLogFormatter](../javadoc/javadoc-nablarch-core-db-statement-SqlJsonLogFormatter.md) を指定する。
 
 sqlLogFormatter.startRetrieveTargets
 
@@ -520,9 +520,9 @@ batchCount
 sqlLogFormatter.structuredMessagePrefix
 
 フォーマット後のメッセージ文字列が JSON 形式に整形されていることを識別できるようにするために、メッセージの先頭に付与するマーカー文字列。
-メッセージの先頭にあるマーカー文字列が JsonLogFormatter に設定しているマーカー文字列と一致する場合、 JsonLogFormatter はメッセージを JSON データとして処理する。
+メッセージの先頭にあるマーカー文字列が [JsonLogFormatter](../javadoc/javadoc-nablarch-core-log-basic-JsonLogFormatter.md) に設定しているマーカー文字列と一致する場合、 [JsonLogFormatter](../javadoc/javadoc-nablarch-core-log-basic-JsonLogFormatter.md) はメッセージを JSON データとして処理する。
 デフォルトは `"$JSON$"` となる。
-変更する場合は、LogWriterの `structuredMessagePrefix` プロパティを使用して JsonLogFormatter にも同じ値を設定すること（LogWriterのプロパティについては [ログ出力の設定](../../component/libraries/libraries-log.md#ログ出力の設定) を参照）。
+変更する場合は、LogWriterの `structuredMessagePrefix` プロパティを使用して [JsonLogFormatter](../javadoc/javadoc-nablarch-core-log-basic-JsonLogFormatter.md) にも同じ値を設定すること（LogWriterのプロパティについては [ログ出力の設定](../../component/libraries/libraries-log.md#ログ出力の設定) を参照）。
 
 記述例
 
