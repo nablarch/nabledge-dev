@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-02 (session 9)
+**Updated**: 2026-06-02 (session 10)
 
 ## Rules（全タスク共通）
 
@@ -24,6 +24,29 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 ---
 
 ## In Progress
+
+### Task 2-J-follow: QL1 254件の原因特定と対処
+
+**Status**: 調査完了。254件の根本原因が判明。バグ修正方針のユーザー決定待ち。
+
+**調査結果**:
+- 254件は全て verify-baseline.md (813件) の部分集合。新規発生ゼロ
+- 内訳: method-level (RST ドット記法) 232件 / inner class 11件 / package-level 11件
+- 根本原因: verify の `_class_fqcn` (verify.py:2498) が `Cls.method(args)` 形式を剥がせていない
+  - `#method` と `.<init>` の2形式のみ処理。RST ドット記法の `.method(args)` は未対応
+  - create 側は `UniversalDao.json` を生成済みだが、verify が `UniversalDao.batchInsert(java.util.List)` キーで検索するため map ミス → FAIL
+- method 232件: verify `_class_fqcn` に RST ドット記法正規化を追加すれば解決可能
+- inner class 11件: `Result.Error` → JSON は `Result` として生成されているか確認要
+- package-level 11件: クラスなし → JSON 非生成が正しい可能性あり（別対処）
+
+**Steps:**
+- [x] 254件が baseline の部分集合であることを確認 (全254件 = baseline 内、新規ゼロ)
+- [x] 254件の分類: method 232件 / inner class 11件 / package 11件
+- [x] verify `_class_fqcn` がメソッドサフィックスを剥がさないことを実物で確認
+- [DECISION: 以下の3カテゴリそれぞれの対処方針を決定すること]
+  - method-level 232件: verify `_class_fqcn` に RST ドット記法正規化追加 OR javadoc.py create 側を方法別 JSON 生成に変更
+  - inner class 11件: 実際の JSON 生成状況確認 → 生成されていなければ create 側の対応追加
+  - package-level 11件: package は JSON 対象外として QL1 除外 OR package レベルの JSON 生成追加
 
 ---
 
