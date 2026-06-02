@@ -686,6 +686,7 @@ def _normalize_rst_source(
     doc_map: dict | None = None,
     source_path=None,
     file_id: str = "",
+    javadoc_map: dict | None = None,
 ) -> str:
     """Normalize RST markup to plain text for comparison with JSON content.
 
@@ -703,6 +704,7 @@ def _normalize_rst_source(
         strict_unknown=True,
         warnings_out=warnings,
         file_id=file_id,
+        javadoc_map=javadoc_map,
     )
     # Phase 22-B-16b step 2b F1: emit dangling-link WARNINGs to stderr.
     # Spec §3-2-2 "WARNING ログ + display text fallback" is silent-skip
@@ -766,6 +768,7 @@ def check_content_completeness(
     doc_map: dict | None = None,
     source_path=None,
     file_id: str = "",
+    javadoc_map: dict | None = None,
 ) -> list[str]:
     """QC1/QC2/QC3/QC4: sequential-delete algorithm."""
     if _no_knowledge(data):
@@ -782,7 +785,8 @@ def check_content_completeness(
 
     if fmt == "rst":
         return _check_rst_content_completeness(
-            source_text, data, issues, label_map, doc_map, source_path, file_id
+            source_text, data, issues, label_map, doc_map, source_path, file_id,
+            javadoc_map=javadoc_map,
         )
     elif fmt == "md":
         return _check_md_content_completeness(
@@ -841,6 +845,7 @@ def _check_rst_content_completeness(
     doc_map: dict | None = None,
     source_path=None,
     file_id: str = "",
+    javadoc_map: dict | None = None,
 ) -> list[str]:
     """QC1-QC4 for RST sources using normalized comparison.
 
@@ -857,7 +862,7 @@ def _check_rst_content_completeness(
     try:
         norm_source_raw = _normalize_rst_source(
             source_text, label_map, doc_map=doc_map, source_path=source_path,
-            file_id=file_id,
+            file_id=file_id, javadoc_map=javadoc_map,
         )
     except UnknownSyntaxError as exc:
         issues.append(f"[QC1] RST parse/visitor error: {exc}")
@@ -1862,9 +1867,10 @@ def verify_file(
     if fmt in ("rst", "md"):
         source_text = Path(source_path).read_text(encoding="utf-8", errors="replace")
         issues: list[str] = []
+        javadoc_map = _build_javadoc_map(knowledge_dir) if fmt == "rst" else None
         issues.extend(check_content_completeness(
             source_text, data, fmt, label_map, doc_map=doc_map, source_path=source_path,
-            file_id=file_id,
+            file_id=file_id, javadoc_map=javadoc_map,
         ))
         issues.extend(_check_format_purity(data, fmt))
         issues.extend(check_external_urls(source_text, data, fmt))
@@ -2163,6 +2169,26 @@ def _resolve_title_inline(title_node, label_map: dict) -> str:
         parts.append(child.astext())
     return "".join(parts)
 
+
+
+def _build_javadoc_map(knowledge_dir) -> dict[str, str]:
+    """Build FQCN (class, no method suffix) → file_id dict from knowledge/javadoc/ JSON files.
+
+    Shared by check_source_links (QL1 extdoc) and verify_file (QC1/QC2 symmetrisation).
+    Returns empty dict when knowledge_dir is None or javadoc/ directory does not exist.
+    """
+    if knowledge_dir is None:
+        return {}
+    javadoc_dir = Path(knowledge_dir) / "javadoc"
+    if not javadoc_dir.is_dir():
+        return {}
+    result: dict[str, str] = {}
+    for jf in javadoc_dir.glob("*.json"):
+        fid = jf.stem  # e.g. "javadoc-nablarch-common-dao-UniversalDao"
+        if fid.startswith("javadoc-"):
+            fqcn = fid[len("javadoc-"):].replace("-", ".")
+            result[fqcn] = fid
+    return result
 
 
 def check_source_links(
@@ -2467,15 +2493,7 @@ def check_source_links(
         # (§2-2 verify independence principle — never import from create side).
         if knowledge_dir is not None:
             from scripts.common.linkfmt import JAVADOC_LINK_RE
-            _javadoc_dir = Path(knowledge_dir) / "javadoc"
-            # Build javadoc_map: FQCN (class, no method suffix) → file_id
-            _javadoc_map: dict[str, str] = {}
-            if _javadoc_dir.is_dir():
-                for _jf in _javadoc_dir.glob("*.json"):
-                    _fid = _jf.stem  # e.g. "javadoc-nablarch-common-dao-UniversalDao"
-                    if _fid.startswith("javadoc-"):
-                        _fqcn = _fid[len("javadoc-"):].replace("-", ".")
-                        _javadoc_map[_fqcn] = _fid
+            _javadoc_map = _build_javadoc_map(knowledge_dir)
 
             def _class_fqcn(fqcn: str) -> str:
                 """Strip method/constructor suffix to get class FQCN.

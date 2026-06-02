@@ -5471,3 +5471,161 @@ class TestVerifyFileExcelP1Merged:
         }
         issues = self._check_qp(str(path), data, sheet_name="S")
         assert issues == [], issues
+
+
+# ---------------------------------------------------------------------------
+# Task 2-J-pre: _build_javadoc_map helper
+# ---------------------------------------------------------------------------
+
+class TestBuildJavadocMap:
+    """_build_javadoc_map(knowledge_dir) — builds FQCN → file_id dict from knowledge/javadoc/."""
+
+    def _build(self, knowledge_dir):
+        from scripts.verify.verify import _build_javadoc_map
+        return _build_javadoc_map(knowledge_dir)
+
+    def test_returns_empty_dict_when_javadoc_dir_missing(self, tmp_path):
+        """knowledge_dir without javadoc/ subdirectory → empty dict."""
+        result = self._build(str(tmp_path))
+        assert result == {}
+
+    def test_returns_empty_dict_when_knowledge_dir_none(self):
+        """knowledge_dir=None → empty dict."""
+        result = self._build(None)
+        assert result == {}
+
+    def test_maps_fqcn_to_file_id(self, tmp_path):
+        """javadoc-nablarch-common-dao-UniversalDao.json → {"nablarch.common.dao.UniversalDao": "javadoc-nablarch-common-dao-UniversalDao"}."""
+        import json
+        jdir = tmp_path / "javadoc"
+        jdir.mkdir()
+        file_id = "javadoc-nablarch-common-dao-UniversalDao"
+        (jdir / f"{file_id}.json").write_text(
+            json.dumps({"id": file_id, "title": "UniversalDao"}), encoding="utf-8"
+        )
+        result = self._build(str(tmp_path))
+        assert result == {"nablarch.common.dao.UniversalDao": file_id}
+
+    def test_maps_multiple_files(self, tmp_path):
+        """Multiple javadoc JSON files all appear in the map."""
+        import json
+        jdir = tmp_path / "javadoc"
+        jdir.mkdir()
+        ids = [
+            "javadoc-nablarch-common-dao-UniversalDao",
+            "javadoc-nablarch-fw-messaging-MessageSenderSettings",
+        ]
+        for fid in ids:
+            (jdir / f"{fid}.json").write_text(
+                json.dumps({"id": fid, "title": "T"}), encoding="utf-8"
+            )
+        result = self._build(str(tmp_path))
+        assert "nablarch.common.dao.UniversalDao" in result
+        assert "nablarch.fw.messaging.MessageSenderSettings" in result
+
+    def test_skips_non_javadoc_prefixed_files(self, tmp_path):
+        """Files not starting with 'javadoc-' are ignored."""
+        import json
+        jdir = tmp_path / "javadoc"
+        jdir.mkdir()
+        (jdir / "other-file.json").write_text(json.dumps({"id": "x"}), encoding="utf-8")
+        result = self._build(str(tmp_path))
+        assert result == {}
+
+
+# ---------------------------------------------------------------------------
+# Task 2-J-pre: verify_file QC1/QC2 false-positive elimination
+# (symmetrisation with create side via javadoc_map)
+# ---------------------------------------------------------------------------
+
+class TestVerifyFile_ExtdocQC_Symmetrised:
+    """verify_file must not emit QC1/QC2 FAIL for :java:extdoc: links when
+    the JSON contains the correct javadoc MD link (create-side output).
+
+    Root cause: without javadoc_map, normalise_rst renders :java:extdoc: as
+    display text, while create renders it as [DisplayText](../javadoc/xxx.md).
+    This asymmetry produces false-positive QC1/QC2 for every extdoc reference.
+    Fix: verify_file passes javadoc_map to the normalise_rst path via
+    _normalize_rst_source so both sides emit the same MD link.
+    """
+
+    def _write_javadoc_json(self, jdir, file_id):
+        import json
+        (jdir / f"{file_id}.json").write_text(
+            json.dumps({"id": file_id, "title": "T"}), encoding="utf-8"
+        )
+
+    def _verify(self, source_text, json_data, tmp_path):
+        import json as _json
+        from scripts.verify.verify import verify_file
+        src_path = tmp_path / "source.rst"
+        src_path.write_text(source_text, encoding="utf-8")
+        json_path = tmp_path / "out.json"
+        json_path.write_text(_json.dumps(json_data, ensure_ascii=False), encoding="utf-8")
+        return verify_file(
+            str(src_path), str(json_path), "rst",
+            knowledge_dir=str(tmp_path),
+        )
+
+    def test_no_false_positive_qc1_qc2_when_md_link_in_json(self, tmp_path):
+        """RST :java:extdoc: + JSON with MD link → PASS (no QC1/QC2 false-positive).
+
+        The RST source contains a title and an extdoc reference. After normalisation
+        with javadoc_map, the extdoc becomes an MD link. The JSON must contain the
+        same MD link as create-side would produce — this is the symmetry test.
+        """
+        file_id = "javadoc-nablarch-common-dao-UniversalDao"
+        jdir = tmp_path / "javadoc"
+        jdir.mkdir()
+        self._write_javadoc_json(jdir, file_id)
+
+        # RST source: title + extdoc reference body
+        source_text = (
+            "UniversalDao\n"
+            "============\n"
+            "\n"
+            ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
+        )
+        md_link = f"[UniversalDao](../javadoc/{file_id}.md)"
+        # JSON title matches RST title; content is the MD link that extdoc normalises to
+        json_data = {
+            "id": "f", "title": "UniversalDao",
+            "content": md_link,
+            "sections": [],
+        }
+        issues = self._verify(source_text, json_data, tmp_path)
+        qc_issues = [i for i in issues if i.startswith("[QC1]") or i.startswith("[QC2]")]
+        assert qc_issues == [], f"Unexpected QC1/QC2 issues: {qc_issues}"
+
+    def test_no_false_positive_multiple_extdoc_refs(self, tmp_path):
+        """Multiple :java:extdoc: refs in one RST file → no false-positive QC1/QC2."""
+        ids = [
+            "javadoc-nablarch-common-dao-UniversalDao",
+            "javadoc-nablarch-fw-messaging-MessageSenderSettings",
+        ]
+        jdir = tmp_path / "javadoc"
+        jdir.mkdir()
+        for fid in ids:
+            self._write_javadoc_json(jdir, fid)
+
+        fqcns = [fid[len("javadoc-"):].replace("-", ".") for fid in ids]
+        names = [fqcn.split(".")[-1] for fqcn in fqcns]
+
+        # RST source: title + two extdoc references
+        source_text = (
+            "Overview\n"
+            "========\n"
+            "\n"
+            + "\n".join(
+                f":java:extdoc:`{names[i]} <{fqcns[i]}>`" for i in range(len(ids))
+            )
+            + "\n"
+        )
+        # JSON content: the two MD links that extdoc normalises to (create-side output)
+        content = " ".join(
+            f"[{names[i]}](../javadoc/{ids[i]}.md)" for i in range(len(ids))
+        )
+        json_data = {"id": "f", "title": "Overview", "content": content, "sections": []}
+        issues = self._verify(source_text, json_data, tmp_path)
+        qc_issues = [i for i in issues if i.startswith("[QC1]") or i.startswith("[QC2]")]
+        assert qc_issues == [], f"Unexpected QC1/QC2 issues: {qc_issues}"
