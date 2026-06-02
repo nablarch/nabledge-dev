@@ -34,6 +34,7 @@ from scripts.common.sources import FileInfo, classify_sources, scan_sources
 from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.create.docs import generate_docs
 from scripts.create.index import generate_index_md
+from scripts.create.javadoc import javadoc_generate
 from scripts.create.resolver import collect_asset_refs, copy_assets
 from scripts.common.labels import build_label_doc_map, build_label_map  # noqa: F401
 from scripts.verify.verify import (
@@ -78,6 +79,7 @@ def _convert_and_write(
     label_map: dict | None = None,
     doc_map: dict | None = None,
     sheet_subtype_map: dict | None = None,
+    javadoc_map: dict | None = None,
 ) -> None:
     """Convert one source file and write its knowledge JSON to *output_dir*.
 
@@ -99,6 +101,7 @@ def _convert_and_write(
             source_path=fi.source_path,
             label_map=label_map,
             doc_map=doc_map,
+            javadoc_map=javadoc_map,
         )
     elif fi.format == "md":
         result = convert(
@@ -249,9 +252,11 @@ def create(
 
     sheet_subtype_map = _load_sheet_subtype_map()
 
+    javadoc_map = javadoc_generate(version, repo_root, output_dir, docs_dir)
+
     all_asset_refs = []
     for fi in file_infos:
-        _convert_and_write(fi, output_dir, label_map, doc_map, sheet_subtype_map)
+        _convert_and_write(fi, output_dir, label_map, doc_map, sheet_subtype_map, javadoc_map)
         if fi.format == "rst":
             all_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
 
@@ -294,12 +299,14 @@ def update(
 
     sheet_subtype_map = _load_sheet_subtype_map()
 
+    javadoc_map = javadoc_generate(version, repo_root, output_dir, output_dir.parent / "docs")
+
     changed_asset_refs = []
     count = 0
     for fi in file_infos:
         rel = str(fi.source_path.relative_to(repo_root)).replace("\\", "/")
         if rel in changed_keys:
-            _convert_and_write(fi, output_dir, label_map, doc_map, sheet_subtype_map)
+            _convert_and_write(fi, output_dir, label_map, doc_map, sheet_subtype_map, javadoc_map)
             if fi.format == "rst":
                 changed_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
             count += 1

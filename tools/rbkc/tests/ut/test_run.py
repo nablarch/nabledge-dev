@@ -214,3 +214,91 @@ class TestIndexToonNotGenerated:
             delete(version="6", repo_root=_REPO_ROOT, output_dir=output_dir,
                    state_dir=tmp_path, files=None)
         assert not (output_dir / "index.toon").exists()
+
+
+# ---------------------------------------------------------------------------
+# Task 2-F: javadoc_generate wired into create() and update()
+# ---------------------------------------------------------------------------
+
+class TestJavadocGenerateWiring:
+    """create() and update() must call javadoc_generate() and pass javadoc_map to RST converter."""
+
+    def _patches_for_create(self, tmp_path):
+        output_dir = tmp_path / "knowledge"
+        output_dir.mkdir()
+        from unittest.mock import patch
+        return output_dir, [
+            patch("scripts.run.scan_sources", return_value=[]),
+            patch("scripts.run.classify_sources", return_value=[]),
+            patch("scripts.run.build_label_doc_map", return_value=({}, {})),
+            patch("scripts.run._load_sheet_subtype_map", return_value={}),
+            patch("scripts.run.generate_index_md"),
+            patch("scripts.run.generate_docs"),
+            patch("scripts.run.copy_assets"),
+            patch("scripts.create.scan._source_roots", return_value=[]),
+        ]
+
+    def test_create_calls_javadoc_generate(self, tmp_path):
+        """create() calls javadoc_generate() before RST conversion."""
+        from scripts.run import create
+        from unittest.mock import patch
+        output_dir, base_patches = self._patches_for_create(tmp_path)
+        with (
+            base_patches[0], base_patches[1], base_patches[2],
+            base_patches[3], base_patches[4], base_patches[5],
+            base_patches[6], base_patches[7],
+            patch("scripts.run.javadoc_generate", return_value={"nablarch.A": "javadoc-A"}) as mock_jdoc,
+            patch("scripts.run.make_snapshot", return_value={"files": {}}),
+            patch("scripts.run.save_snapshot"),
+        ):
+            create(version="6", repo_root=_REPO_ROOT, output_dir=output_dir,
+                   state_dir=tmp_path, files=None)
+        mock_jdoc.assert_called_once()
+
+    def test_update_calls_javadoc_generate(self, tmp_path):
+        """update() calls javadoc_generate() before RST conversion."""
+        from scripts.run import update
+        from unittest.mock import patch
+        output_dir, base_patches = self._patches_for_create(tmp_path)
+        output_dir.mkdir(exist_ok=True)
+        with (
+            base_patches[0], base_patches[1], base_patches[2],
+            base_patches[3], base_patches[4], base_patches[5],
+            base_patches[6], base_patches[7],
+            patch("scripts.run.javadoc_generate", return_value={}) as mock_jdoc,
+            patch("scripts.run.diff_snapshot", return_value=([], [], [])),
+            patch("scripts.run.load_snapshot", return_value={"files": {}}),
+            patch("scripts.run.make_snapshot", return_value={"files": {}}),
+            patch("scripts.run.save_snapshot"),
+        ):
+            update(version="6", repo_root=_REPO_ROOT, output_dir=output_dir,
+                   state_dir=tmp_path, files=None)
+        mock_jdoc.assert_called_once()
+
+    def test_convert_and_write_passes_javadoc_map_to_rst_convert(self, tmp_path):
+        """_convert_and_write passes javadoc_map to RST convert function."""
+        from scripts.run import _convert_and_write
+        from unittest.mock import patch, MagicMock
+
+        fi = _make_file_info(fmt="rst")
+        fi.output_path = "test.json"
+
+        javadoc_map = {"nablarch.A": "javadoc-A"}
+        mock_result = MagicMock()
+        mock_result.title = "T"
+        mock_result.content = ""
+        mock_result.no_knowledge_content = False
+        mock_result.sections = []
+        mock_result.warnings = []
+        mock_result.meta = None
+
+        output_dir = tmp_path / "knowledge"
+        output_dir.mkdir()
+
+        mock_convert_fn = MagicMock(return_value=mock_result)
+        with patch("scripts.run._converter_for", return_value=mock_convert_fn):
+            _convert_and_write(fi, output_dir, javadoc_map=javadoc_map)
+            call_kwargs = mock_convert_fn.call_args[1] if mock_convert_fn.call_args else {}
+            assert call_kwargs.get("javadoc_map") == javadoc_map, (
+                f"Expected javadoc_map={javadoc_map!r} passed to RST convert, got: {call_kwargs}"
+            )
