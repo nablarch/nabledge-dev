@@ -25,40 +25,6 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 
 ## In Progress
 
-### Task 2-J-pre: verify QC1/QC2 対称化（_build_javadoc_map 共通ヘルパー + 経路配線）
-- **背景**: create が javadoc_map を渡して extdoc を内部リンク展開するが、verify の QC1/QC2 は javadoc_map なしで normalise_rst を呼ぶため出力が非対称 → 39,587件の false-positive QC1/QC2 FAIL が発生（session 8 で確認）
-- **方針**: verify 経路でも同じ javadoc_map を visitor に渡して create と対称化。_norm 後正規化禁止原則(§3-1)を維持したまま normalise_rst 経路に javadoc_map を通す
-- **設計決定（session 8 ユーザー指示）**: `knowledge/javadoc/` 逐引きで javadoc_map を再構築。`_build_javadoc_map(knowledge_dir)` 共通ヘルパーを verify.py に切り出し、`check_source_links` と `verify_file` の両方から呼ぶ
-- **完了条件**: (1) `create 6 && verify 6` で QC1/QC2 false-positive 0件 (2) 照合B（ベースライン外 FAIL 0件） (3) `_norm` 後正規化なし
-
-**変更箇所（全 TDD）:**
-1. `_build_javadoc_map(knowledge_dir)` ヘルパーを verify.py に追加（共通ロジック切り出し）
-2. `check_source_links` 内のインライン javadoc_map 構築を `_build_javadoc_map` 呼び出しに置換
-3. `_normalize_rst_source` / `normalise_rst` / `extract_document` に `javadoc_map=None` 追加
-4. `verify_file` → `_check_rst_content_completeness` 経路で `javadoc_map` を通す
-5. `verify_file` 内で `_build_javadoc_map(knowledge_dir)` を呼んで経路に注入
-
-- [x] テスト追加（RED）: `_build_javadoc_map` の単体テスト + QC1/QC2 false-positive が解消されることのテスト
-- [x] 実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS (639 passed)
-- [x] コミット: `fix: verify — symmetrise QC1/QC2 with javadoc_map via _build_javadoc_map helper (#363)` — `4ee4e4571`
-
-### Task 2-J: 統合 verify 確認（ベースライン照合）
-- **前提**: Task 2-J-pre 完了
-- **完了条件**: v6 を create→verify し QC1/QC2 FAIL = 0、ベースライン外の新規 FAIL 0 件。他バージョンも FAIL 増加なし。生成知識をコミット
-- **検知ゲート**: 照合A（QC1/QC2 FAIL = 0）+ 照合B（ベースライン外0件）。照合B で FAIL が出たら原因タスクを特定し 2-x に戻る
-- **結果（session 9）**:
-  - QC1/QC2 FAIL = 0 ✅（完了条件 (1) クリア）
-  - 照合B: ベースライン外 FAIL = 0 ✅
-  - QL1 extdoc 残存 FAIL = 254件（method-level FQCN、ベースライン内の既知 FAIL）
-  - QO3: README.md カウント不一致 1件（既存の既知 FAIL）
-
-- [x] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` を実行し FAIL 集合を取得
-- [x] 照合A: QC1/QC2 FAIL = 0 確認
-- [x] 照合B: ベースライン外 FAIL 0 件を確認。差分を `.work/00363/verify-2j-diff.md` に記録
-- [ ] v5 / v1.4 / v1.3 / v1.2 も `create && verify` し FAIL 増加なしを確認
-- [ ] 生成知識を `.claude/skills/nabledge-6/` にコミット
-- [ ] コミット: `feat: regenerate v6 knowledge with javadoc files (#363)`
-
 ---
 
 ## Not Started
@@ -111,3 +77,5 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 - [x] Task 2-H: rst_ast_visitor javadoc_url 外部リンク化 — `da4ce9b21`
 - [x] Task 2-F: run.py javadoc_generate 配線 — `0886687ba`
 - [x] Task 2-I: docs.py + index.py javadoc/ 除外 — `5742f62e2`
+- [x] Task 2-J-pre: verify QC1/QC2 対称化（_build_javadoc_map） — `4ee4e4571`
+- [x] Task 2-J: 統合 verify 確認（QC1/QC2=0、照合B OK） — `1eeb96e89` / `1fb952523` / `cb56a0602`
