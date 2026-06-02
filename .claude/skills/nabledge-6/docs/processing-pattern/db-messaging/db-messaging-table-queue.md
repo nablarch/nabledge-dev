@@ -87,7 +87,7 @@ select * from project
 
 ## アクションクラスを作成する
 
-BatchAction を継承したアクションクラスを作成する。
+[BatchAction](../javadoc/javadoc-nablarch-fw-action-BatchAction.md) を継承したアクションクラスを作成する。
 
 実装例
 
@@ -100,14 +100,14 @@ public class ProjectCreationServiceAction extends BatchAction<SqlRow> {
 ポイント
 
 * テーブルをキューとして扱うため、入力データはテーブルの検索結果となる。
-  このため、 BatchAction の型パラメータには SqlRow を指定する。
+  このため、 [BatchAction](../javadoc/javadoc-nablarch-fw-action-BatchAction.md) の型パラメータには [SqlRow](../javadoc/javadoc-nablarch-core-db-statement-SqlRow.md) を指定する。
 
 ## テーブルを監視するためのリーダを生成する
 
 [アクションクラスを作成する](../../processing-pattern/db-messaging/db-messaging-table-queue.md#アクションクラスを作成する) で作成したアクションクラスに、テーブルを監視するリーダを生成するメソッドを作成する。
 
 [データベースキューで使用するリーダ](../../processing-pattern/db-messaging/db-messaging-architecture.md#使用するデータリーダ) に記載がある通り、
-DatabaseTableQueueReader をリーダとして生成する。
+[DatabaseTableQueueReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseTableQueueReader.md) をリーダとして生成する。
 
 実装例
 
@@ -166,17 +166,17 @@ where
 ポイント
 
 * createReader を実装し、
-  DatabaseTableQueueReader を生成する。
-* DatabaseTableQueueReader には以下を指定する。
+  [DatabaseTableQueueReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseTableQueueReader.md) を生成する。
+* [DatabaseTableQueueReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseTableQueueReader.md) には以下を指定する。
 
-  * データベースから検索するためのリーダ(DatabaseRecordReader)
+  * データベースから検索するためのリーダ([DatabaseRecordReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.md))
   * 未処理データが存在しない場合の待機時間(この例では1秒)
   * 主キーのカラム名のリスト
-* DatabaseRecordReader には以下を指定する。
+* [DatabaseRecordReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.md) には以下を指定する。
 
-  * 未処理データを検索するための SqlPStatement
+  * 未処理データを検索するための [SqlPStatement](../javadoc/javadoc-nablarch-core-db-statement-SqlPStatement.md)
   * 未処理データの悲観ロックを行う
-    DatabaseRecordListener の実装クラス。
+    [DatabaseRecordListener](../javadoc/javadoc-nablarch-fw-reader-DatabaseRecordListener.md) の実装クラス。
     詳細は、[マルチプロセス化](../../processing-pattern/db-messaging/db-messaging-multiple-process.md#マルチプロセス化) を参照。
 * SQLファイルでは、以下のSQLを定義する。
 

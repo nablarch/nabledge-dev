@@ -19,7 +19,7 @@
     {
       "id": "s3",
       "title": "MOMメッセージングの処理の流れ",
-      "content": "MOMメッセージングが要求電文を受信し、応答電文を返却するまでの処理の流れを以下に示す。\n応答不要メッセージングでは、応答電文を返却しない点のみ異なる。\n\n![mom_messaging-flow.png](assets/mom-messaging-architecture/mom_messaging-flow.png)\n\n1. [共通起動ランチャ(Main)](../../component/handlers/handlers-main.md#共通起動ランチャ) がハンドラキュー(handler queue)を実行する。\n2. データリーダ(\n  FwHeaderReader\n  /\n  MessageReader\n  )がメッセージキューを監視し、受信した電文を読み込み、要求電文を1件ずつ提供する。\n3. ハンドラキューに設定された\n  [Nablarchバッチアプリケーションの構成](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#nablarchバッチアプリケーションの構成) が、\n  要求電文の特定フィールドに含まれるリクエストIDを元に処理すべきアクションクラス(action class)を特定し、\n  ハンドラキューの末尾に追加する。\n4. アクションクラス(action class)は、フォームクラス(form class)やエンティティクラス(entity class)を使用して、\n  要求電文1件ごとの業務ロジック(business logic) を実行する。\n5. アクションクラス(action class)は、応答電文を表す\n  ResponseMessage を返却する。\n6. プロセス停止要求があるまで2～5を繰り返す。\n7. ハンドラキューに設定された\n  ステータスコード→プロセス終了コード変換ハンドラ(StatusCodeConvertHandler) が、\n  処理結果のステータスコードをプロセス終了コードに変換し、\n  MOMメッセージングの処理結果としてプロセス終了コードが返される。",
+      "content": "MOMメッセージングが要求電文を受信し、応答電文を返却するまでの処理の流れを以下に示す。\n応答不要メッセージングでは、応答電文を返却しない点のみ異なる。\n\n![mom_messaging-flow.png](assets/mom-messaging-architecture/mom_messaging-flow.png)\n\n1. [共通起動ランチャ(Main)](../../component/handlers/handlers-main.md#共通起動ランチャ) がハンドラキュー(handler queue)を実行する。\n2. データリーダ(\n  [FwHeaderReader](../javadoc/javadoc-nablarch-fw-messaging-reader-FwHeaderReader.md)\n  /\n  [MessageReader](../javadoc/javadoc-nablarch-fw-messaging-reader-MessageReader.md)\n  )がメッセージキューを監視し、受信した電文を読み込み、要求電文を1件ずつ提供する。\n3. ハンドラキューに設定された\n  [Nablarchバッチアプリケーションの構成](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#nablarchバッチアプリケーションの構成) が、\n  要求電文の特定フィールドに含まれるリクエストIDを元に処理すべきアクションクラス(action class)を特定し、\n  ハンドラキューの末尾に追加する。\n4. アクションクラス(action class)は、フォームクラス(form class)やエンティティクラス(entity class)を使用して、\n  要求電文1件ごとの業務ロジック(business logic) を実行する。\n5. アクションクラス(action class)は、応答電文を表す\n  [ResponseMessage](../javadoc/javadoc-nablarch-fw-messaging-ResponseMessage.md) を返却する。\n6. プロセス停止要求があるまで2～5を繰り返す。\n7. ハンドラキューに設定された\n  [ステータスコード→プロセス終了コード変換ハンドラ(StatusCodeConvertHandler)](../javadoc/javadoc-nablarch-fw-handler-StatusCodeConvertHandler.md) が、\n  処理結果のステータスコードをプロセス終了コードに変換し、\n  MOMメッセージングの処理結果としてプロセス終了コードが返される。",
       "level": 2
     },
     {
@@ -43,13 +43,13 @@
     {
       "id": "s7",
       "title": "MOMメッセージングで使用するデータリーダ",
-      "content": "Nablarchでは、MOMメッセージングを構築するために必要なデータリーダを標準で幾つか提供している。\n各データリーダの詳細は、リンク先を参照すること。\n\n* FwHeaderReader (電文からフレームワーク制御ヘッダの読み込み)\n* MessageReader (MQから電文の読み込み)\n\n> **Tip:**\n> 上記のデータリーダでプロジェクトの要件を満たせない場合は、\n> DataReader インタフェースを実装したクラスを\n> プロジェクトで作成して対応する。",
+      "content": "Nablarchでは、MOMメッセージングを構築するために必要なデータリーダを標準で幾つか提供している。\n各データリーダの詳細は、リンク先を参照すること。\n\n* [FwHeaderReader (電文からフレームワーク制御ヘッダの読み込み)](../javadoc/javadoc-nablarch-fw-messaging-reader-FwHeaderReader.md)\n* [MessageReader (MQから電文の読み込み)](../javadoc/javadoc-nablarch-fw-messaging-reader-MessageReader.md)\n\n> **Tip:**\n> 上記のデータリーダでプロジェクトの要件を満たせない場合は、\n> [DataReader](../javadoc/javadoc-nablarch-fw-DataReader.md) インタフェースを実装したクラスを\n> プロジェクトで作成して対応する。",
       "level": 2
     },
     {
       "id": "s8",
       "title": "MOMメッセージングで使用するアクション",
-      "content": "Nablarchでは、MOMメッセージングを構築するために必要なアクションクラスを標準で幾つか提供している。\n各アクションクラスの詳細は、リンク先を参照すること。\n\n* MessagingAction (同期応答メッセージング用アクションのテンプレートクラス)\n* AsyncMessageReceiveAction (応答不要メッセージングのアクションクラス)",
+      "content": "Nablarchでは、MOMメッセージングを構築するために必要なアクションクラスを標準で幾つか提供している。\n各アクションクラスの詳細は、リンク先を参照すること。\n\n* [MessagingAction (同期応答メッセージング用アクションのテンプレートクラス)](../javadoc/javadoc-nablarch-fw-messaging-action-MessagingAction.md)\n* [AsyncMessageReceiveAction (応答不要メッセージングのアクションクラス)](../javadoc/javadoc-nablarch-fw-messaging-action-AsyncMessageReceiveAction.md)",
       "level": 2
     }
   ]

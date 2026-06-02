@@ -37,13 +37,13 @@
     {
       "id": "s6",
       "title": "使用するデータリーダ",
-      "content": "データベースをキューとして扱う場合には、以下のデータリーダを使用する。\nバッチ用のDatabaseRecordReader を使用した場合、\n繰り返しテーブルを監視できないので注意すること。\n\n* DatabaseTableQueueReader\n\n> **Important:**\n> 上記のリーダで要件を満たすことができず、プロジェクトでリーダを作成する場合は以下の点に注意して実装すること。\n\n> * >   対象データがなくなった場合でも、継続して対象データを監視できるようにすること\n> * >   マルチススレッド環境下で使われる場合に、同一データを複数のスレッドで処理することがないようにすること\n\n> なお、 DatabaseTableQueueReader は、上記を満たすために以下の実装となっている\n\n> * >   テーブルに未処理のデータが無くなった場合、再度検索用SQLを実行し未処理データを抽出する\n> * >   複数スレッドで同一データを処理することがないように、現在処理中のデータの識別子(主キーの値)を保持し、処理されていないデータを読み込んでいる",
+      "content": "データベースをキューとして扱う場合には、以下のデータリーダを使用する。\n[バッチ用のDatabaseRecordReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.md) を使用した場合、\n繰り返しテーブルを監視できないので注意すること。\n\n* [DatabaseTableQueueReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseTableQueueReader.md)\n\n> **Important:**\n> 上記のリーダで要件を満たすことができず、プロジェクトでリーダを作成する場合は以下の点に注意して実装すること。\n\n> * >   対象データがなくなった場合でも、継続して対象データを監視できるようにすること\n> * >   マルチススレッド環境下で使われる場合に、同一データを複数のスレッドで処理することがないようにすること\n\n> なお、 [DatabaseTableQueueReader](../javadoc/javadoc-nablarch-fw-reader-DatabaseTableQueueReader.md) は、上記を満たすために以下の実装となっている\n\n> * >   テーブルに未処理のデータが無くなった場合、再度検索用SQLを実行し未処理データを抽出する\n> * >   複数スレッドで同一データを処理することがないように、現在処理中のデータの識別子(主キーの値)を保持し、処理されていないデータを読み込んでいる",
       "level": 2
     },
     {
       "id": "s7",
       "title": "使用するアクションのテンプレートクラス",
-      "content": "データベースをキューとして扱う場合は、以下のテンプレートクラスを使用する。\n\n* BatchAction (汎用的なバッチアクション)",
+      "content": "データベースをキューとして扱う場合は、以下のテンプレートクラスを使用する。\n\n* [BatchAction (汎用的なバッチアクション)](../javadoc/javadoc-nablarch-fw-action-BatchAction.md)",
       "level": 2
     }
   ]

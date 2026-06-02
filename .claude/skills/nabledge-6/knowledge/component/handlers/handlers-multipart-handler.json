@@ -7,7 +7,7 @@
     {
       "id": "s1",
       "title": "ハンドラクラス名",
-      "content": "* nablarch.fw.web.upload.MultipartHandler",
+      "content": "* [nablarch.fw.web.upload.MultipartHandler](../javadoc/javadoc-nablarch-fw-web-upload-MultipartHandler.md)",
       "level": 2
     },
     {
@@ -61,7 +61,7 @@
     {
       "id": "s10",
       "title": "アップロードしたファイルを読み込む",
-      "content": "アップロードされたファイル(一時保存されたファイル)は、 HttpRequest から取得する。\n\n以下に実装例を示す。\n\nポイント\n\n* HttpRequest#getPart を呼び出してアップロードされたファイルを取得する。\n* HttpRequest#getPart の引数には、パラメータ名を指定する。\n\n```java\npublic HttpResponse upload(HttpRequest request, ExecutionContext context) throws IOException {\n  // アップロードファイルの取得\n  List<PartInfo> partInfoList = request.getPart(\"uploadFile\");\n\n  if (partInfoList.isEmpty()) {\n    // アップロードファイルが指定されていなかった場合は業務エラー\n  }\n\n  // アップロードされたファイルを処理する\n  InputStream file = partInfoList.get(0).getInputStream()\n\n  // 以下アップロードファイルを読み込み処理を行う。\n}\n```\n\nアップロードファイルを処理する詳細な実装方法は、以下のドキュメントを参照。\nなお、 [様々なフォーマットのデータへのアクセス](../../component/libraries/libraries-data-converter.md#様々なフォーマットのデータへのアクセス) に記載がある通り、 [データバインド](../../component/libraries/libraries-data-bind.md#データバインド) が推奨となる。\n([データバインド](../../component/libraries/libraries-data-bind.md#データバインド) で扱うことのできない形式の場合は、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット) を使用すること。)\n\n* [データバインドを使ってアップロードファイルを処理する](../../component/libraries/libraries-data-bind.md#アップロードファイルのデータを読み込む)\n* [汎用データフォーマットを使ってアップロードファイルを処理する](../../component/libraries/libraries-data-format.md#アップロードしたファイルを読み込む)\n\n> **Tip:**\n> アップロードされたファイルが画像ファイル等のバイナリファイルの場合は、読み込んだバイナリデータを使用して処理を行うこと。\n\n> 以下の様に実装することでアップロードファイルのバイトデータを読み込むことができる。\n\n> ```java\n> File savedFile = partInfo.getSavedFile();\n> try {\n>     byte[] bytes = Files.readAllBytes(savedFile.toPath());\n> } catch (IOException e) {\n>     throw new RuntimeException(e);\n> }\n> ```",
+      "content": "アップロードされたファイル(一時保存されたファイル)は、 [HttpRequest](../javadoc/javadoc-nablarch-fw-web-HttpRequest.md) から取得する。\n\n以下に実装例を示す。\n\nポイント\n\n* HttpRequest#getPart を呼び出してアップロードされたファイルを取得する。\n* HttpRequest#getPart の引数には、パラメータ名を指定する。\n\n```java\npublic HttpResponse upload(HttpRequest request, ExecutionContext context) throws IOException {\n  // アップロードファイルの取得\n  List<PartInfo> partInfoList = request.getPart(\"uploadFile\");\n\n  if (partInfoList.isEmpty()) {\n    // アップロードファイルが指定されていなかった場合は業務エラー\n  }\n\n  // アップロードされたファイルを処理する\n  InputStream file = partInfoList.get(0).getInputStream()\n\n  // 以下アップロードファイルを読み込み処理を行う。\n}\n```\n\nアップロードファイルを処理する詳細な実装方法は、以下のドキュメントを参照。\nなお、 [様々なフォーマットのデータへのアクセス](../../component/libraries/libraries-data-converter.md#様々なフォーマットのデータへのアクセス) に記載がある通り、 [データバインド](../../component/libraries/libraries-data-bind.md#データバインド) が推奨となる。\n([データバインド](../../component/libraries/libraries-data-bind.md#データバインド) で扱うことのできない形式の場合は、 [汎用データフォーマット](../../component/libraries/libraries-data-format.md#汎用データフォーマット) を使用すること。)\n\n* [データバインドを使ってアップロードファイルを処理する](../../component/libraries/libraries-data-bind.md#アップロードファイルのデータを読み込む)\n* [汎用データフォーマットを使ってアップロードファイルを処理する](../../component/libraries/libraries-data-format.md#アップロードしたファイルを読み込む)\n\n> **Tip:**\n> アップロードされたファイルが画像ファイル等のバイナリファイルの場合は、読み込んだバイナリデータを使用して処理を行うこと。\n\n> 以下の様に実装することでアップロードファイルのバイトデータを読み込むことができる。\n\n> ```java\n> File savedFile = partInfo.getSavedFile();\n> try {\n>     byte[] bytes = Files.readAllBytes(savedFile.toPath());\n> } catch (IOException e) {\n>     throw new RuntimeException(e);\n> }\n> ```",
       "level": 2
     }
   ]

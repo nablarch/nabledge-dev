@@ -130,7 +130,7 @@ ItemReader
 
 ポイント
 
-* コンストラクタインジェクションを使用して、進捗ログを出力するインタフェース( ProgressManager )をインジェクションする。
+* コンストラクタインジェクションを使用して、進捗ログを出力するインタフェース( [ProgressManager](../javadoc/javadoc-nablarch-fw-batch-ee-progress-ProgressManager.md) )をインジェクションする。
 * openメソッドにて、処理対象件数(データベースへのcount結果やファイルのレコード数等)を取得し、 inputCount に設定する。
 
   > **Important:**

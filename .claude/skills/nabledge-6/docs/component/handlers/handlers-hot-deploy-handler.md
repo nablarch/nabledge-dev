@@ -28,7 +28,7 @@
 
 ## ハンドラクラス名
 
-* nablarch.fw.hotdeploy.HotDeployHandler
+* [nablarch.fw.hotdeploy.HotDeployHandler](../javadoc/javadoc-nablarch-fw-hotdeploy-HotDeployHandler.md)
 
 ## モジュール一覧
 
