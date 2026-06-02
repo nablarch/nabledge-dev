@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-02
+**Updated**: 2026-06-02 (session 7)
 
 ## Rules（全タスク共通）
 
@@ -25,79 +25,19 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 
 ## In Progress
 
-### Task 2-A: linkfmt.py — emit_javadoc_link() 追加
-- **前提**: なし
-- **完了条件**: `emit_javadoc_link` / `JAVADOC_LINK_RE` 実装、単体テスト GREEN、既存無退行
+### Task 2-G: rst_ast_visitor.py — :java:extdoc: 内部リンク化
+- **前提**: Task 2-A（run.py 配線 2-F より前に visitor の受け口を作る）
+- **完了条件**: visitor が `javadoc_map` を受け取り象限別に内部リンク / WARN+display を返す。単体テスト GREEN
 - **検知ゲート**: `pytest tests/ut/ -q` 全 PASS
 
-- [ ] `tests/ut/test_linkfmt.py` にテスト追加（RED）
-  - `emit_javadoc_link("UniversalDao", "javadoc-nablarch-common-dao-UniversalDao")` → `[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)`
-  - `JAVADOC_LINK_RE` で生成リンクが検出できること
-  - `pytest tests/ut/test_linkfmt.py -q` → FAIL
-- [ ] `scripts/common/linkfmt.py` に実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS
-- [ ] コミット: `feat: add emit_javadoc_link / JAVADOC_LINK_RE to linkfmt.py (#363)`
-
-### Task 2-B: verify.py — QO4: javadoc/ 除外
-- **前提**: なし
-- **完了条件**: `knowledge/javadoc/` 配下 JSON が QO4 網羅性チェック対象外、単体テスト GREEN
-- **検知ゲート**: `pytest tests/ut/ -q` 全 PASS
-
-- [ ] `tests/ut/test_verify.py`（`TestCheckIndexCoverage`）に QO4 javadoc 除外テスト追加（RED）
-  - `pytest tests/ut/test_verify.py -k IndexCoverage -q` → FAIL
-- [ ] `scripts/verify/verify.py` に除外を実装（既存 `assets` 除外と同型で `javadoc` を追加）（GREEN）→ `pytest tests/ut/ -q` 全 PASS
-- [ ] コミット: `feat: verify QO4 — exclude knowledge/javadoc/ from index.md coverage check (#363)`
-
-### Task 2-C: verify.py — QL1: :java:extdoc: 検証（単体テストのみ）
-- **前提**: Task 2-A
-- **完了条件**: QL1 extdoc 検証ロジック実装、単体テスト RED→GREEN 固定
-- **検知ゲート**: `pytest tests/ut/ -q` 全 PASS。**統合 verify の実行・ベースライン記録は本タスクで行わない**（2-C2 で行う）
-
-- [ ] `tests/ut/test_verify.py`（`TestCheckSourceLinks_JsonSide`）に QL1 extdoc テスト追加（RED）
-  - 象限1（javadoc MD リンクあり）→ PASS / 象限2（display text のみ）→ FAIL (QL1) / 象限2（javadoc JSON 不在）→ FAIL (QL1)
-  - java.* / jakarta.* → 対象外（PASS）
-  - method suffix 付き FQCN はクラスに正規化して判定
-  - `pytest tests/ut/test_verify.py -k extdoc -q` → FAIL
-- [ ] `scripts/verify/verify.py` に QL1 extdoc チェック実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS
-- [ ] コミット: `feat: verify QL1 — check :java:extdoc: resolves to javadoc MD link (#363)`
-
-### Task 2-C2: QL1 ベースライン全件記録
-- **前提**: Task 2-C
-- **完了条件**: QL1 起因 extdoc FAIL を FQCN 全件、`.work/00363/verify-baseline.md` に固定
-- **検知ゲート**: この時点の FAIL がすべて QL1 extdoc 起因（QC/QO/QP の混入0件）。混入があれば 2-A/2-B/2-C にバグ → 止める
-
-- [ ] `bash rbkc.sh verify 6` を実行（create は走らせず現行 knowledge/ に対し verify のみ）
-- [ ] FAIL を全件抽出し `.work/00363/verify-baseline.md` に記録
-  - QL1 extdoc FAIL の対象 FQCN を1件残らず列挙（サマリ件数ではなく全件）
-  - QL1 以外のカテゴリ FAIL が0件であることを明記
-- [ ] コミット: `docs: record QL1 extdoc verify baseline before pipeline (#363)`
-
-### Task 2-D: jar 復元（環境非依存）
-- **前提**: なし
-- **完了条件**: `tools/rbkc/lib/source-to-document-converter-0.0.1.jar` が追跡され `java -jar` で動作
-- **検知ゲート**: `git ls-files tools/rbkc/lib/` に jar が出る。`java -jar ... {サンプル.java}` が stdout に MD を出す
-- **指示**: ローカル絶対パスからの cp は禁止。過去コミットから復元する
-
-- [ ] `git checkout ff6108c9 -- tools/rbkc/lib/source-to-document-converter-0.0.1.jar`
-- [ ] `git ls-files tools/rbkc/lib/` で追跡確認
-- [ ] `java -jar tools/rbkc/lib/source-to-document-converter-0.0.1.jar {サンプル.java}` で stdout に MD 出力を確認
-- [ ] コミット: `chore: restore source-to-document-converter-0.0.1.jar to tools/rbkc/lib/ (#363)`
-
-### Task 2-E: javadoc.py — javadoc_generate() 実装（JSON + docs MD 両方）
-- **前提**: Task 2-A、Task 2-D
-- **完了条件**: `javadoc_generate()` と補助関数の単体テスト GREEN。UniversalDao 1件を手動変換し JSON（knowledge/javadoc/）と docs MD（docs/javadoc/）の両方が生成される
-- **検知ゲート**: `pytest tests/ut/ -q` 全 PASS。手動変換1件で JSON が `id/title/content/sections` を満たし、同 file_id の docs MD が生成される
-- **指示**: docs MD 生成は `javadoc_generate` の責務（手順6）。汎用 `generate_docs()` には生成させない（2-I で除外）
-
-- [ ] `tests/ut/test_javadoc.py` を新規作成（RED）
-  - `_extract_fqcns(rst_text)`: nablarch.* 抽出 / method suffix 除去 / java.* 除外
-  - `fqcn_to_file_id(fqcn)`: FQCN → file_id
-  - `_class_fqcn(fqcn)`: method suffix 除去でクラス FQCN
-  - `_parse_javadoc_md(md_text)`: jar 出力 MD → JSON dict（title/content/sections/id）
-  - `pytest tests/ut/test_javadoc.py -q` → FAIL
-- [ ] `scripts/create/javadoc.py` を実装（GREEN）。手順5（JSON 書き込み）と手順6（docs MD 書き込み）を両方含む
-  - `pytest tests/ut/ -q` 全 PASS
-  - UniversalDao.java を1件手動変換し JSON と docs MD の両方が生成されることを確認
-- [ ] コミット: `feat: add javadoc.py — Javadoc knowledge file generator (#363)`
+- [ ] `tests/ut/test_rst_ast_visitor.py` に extdoc テスト追加（RED）
+  - javadoc_map あり + nablarch.* → `[DisplayText](../javadoc/{file_id}.md)`
+  - javadoc_map になし + nablarch.* → WARN + display text
+  - java.* / jakarta.* → WARN + display text
+  - method suffix 付き FQCN はクラスで解決
+  - `pytest tests/ut/test_rst_ast_visitor.py -k extdoc -q` → FAIL
+- [ ] `scripts/common/rst_ast_visitor.py` に `javadoc_map` パラメータを追加して実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS
+- [ ] コミット: `feat: rst_ast_visitor — resolve :java:extdoc: as internal javadoc link (#363)`
 
 ### Task 2-G: rst_ast_visitor.py — :java:extdoc: 内部リンク化
 - **前提**: Task 2-A（run.py 配線 2-F より前に visitor の受け口を作る）
@@ -206,3 +146,9 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 - [x] jar ツール動作確認・設計方針合意
 - [x] Task 1: 設計書更新 → ユーザー承認 — `12053d029` / `f771ecbfa` / `fb631766c`
 - [x] 実装コミット（session 3-5）を revert — `f2dd8fc2a`
+- [x] Task 2-A: emit_javadoc_link / JAVADOC_LINK_RE — `d019f2f4d`
+- [x] Task 2-B: QO4 javadoc 除外 — `ae830a3b1`
+- [x] Task 2-C: QL1 extdoc チェック — `c053dab00` / `6fe6646dc`
+- [x] Task 2-C2: QL1 ベースライン記録 (813 FQCNs) — `5eeb73d89`
+- [x] Task 2-D: jar 復元 — `c9d6a66a0`
+- [x] Task 2-E: javadoc.py 実装 — `7f37cdb36`
