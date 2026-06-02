@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-02 (session 11)
+**Updated**: 2026-06-02 (session 12)
 
 ## Rules（全タスク共通）
 
@@ -34,8 +34,16 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 ### Task 3: 検索フロー検証・改善
 - **前提**: Task 2-J 完了
 - **完了条件**: Javadoc 参照質問で javadoc リンクが検索フローで使われることを確認。使われなければワークフローに手順追加
-- [ ] 「UniversalDao#exists の使い方」等で Javadoc リンクが使われるか確認
-- [ ] 使われない場合は qa.md / semantic-search.md に明示手順を追加
+- [x] 「UniversalDao#exists の使い方」等で Javadoc リンクが使われるか確認 → **使われない**（設計上 index.md に Javadoc 未登録）
+- [DECISION: semantic-search.md の改修方針] 使われない場合は qa.md / semantic-search.md に明示手順を追加
+
+**Session 12 調査結果**:
+- `knowledge/javadoc/*.json`（582件）は index.md に未登録 → semantic-search で選ばれない（設計通り）
+- `knowledge/` JSONコンテンツ内のリンクは `../javadoc/xxx.md`（docs側）を指す → ユーザーがクリックする用途
+- `docs/javadoc/*.md` と `knowledge/javadoc/*.json` は同名で対応（stem 共通）
+- PE エキスパート推奨: semantic-search に Step 3b を追加し、選択済みセクションの Javadoc リンクを検出 → 対応する `.json` を読み込む
+- ユーザー指摘: リンクが `.md` を指しているのに `.json` を読むのは不整合では？ → **「knowledge/javadoc/*.json は不要か？」の疑問が未解決**
+- [DECISION: 次セッション開始前に確認] knowledge/javadoc/*.json の役割（read-sections.sh 経由で読む前提）vs docs/javadoc/*.md（ユーザーブラウザ用）の設計意図を再確認してから実装方針を決める
 
 ### Task 4: ベンチマークシナリオ追加
 - **前提**: Task 2-J 完了
