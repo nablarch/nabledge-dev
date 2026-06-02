@@ -25,19 +25,17 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 
 ## In Progress
 
-### Task 2-G: rst_ast_visitor.py — :java:extdoc: 内部リンク化
-- **前提**: Task 2-A（run.py 配線 2-F より前に visitor の受け口を作る）
-- **完了条件**: visitor が `javadoc_map` を受け取り象限別に内部リンク / WARN+display を返す。単体テスト GREEN
-- **検知ゲート**: `pytest tests/ut/ -q` 全 PASS
+### Task 2-J: 統合 verify 確認（ベースライン照合）
+- **前提**: Task 2-I + Task 2-C2 のベースライン
+- **完了条件**: v6 を create→verify し QL1 extdoc FAIL 0 件、ベースライン外の新規 FAIL 0 件。他バージョンも FAIL 増加なし。生成知識をコミット
+- **検知ゲート**: 照合A（ベースラインの extdoc 全件解決）+ 照合B（ベースライン外0件）。照合B で FAIL が出たら原因タスクを特定し 2-x に戻る
 
-- [ ] `tests/ut/test_rst_ast_visitor.py` に extdoc テスト追加（RED）
-  - javadoc_map あり + nablarch.* → `[DisplayText](../javadoc/{file_id}.md)`
-  - javadoc_map になし + nablarch.* → WARN + display text
-  - java.* / jakarta.* → WARN + display text
-  - method suffix 付き FQCN はクラスで解決
-  - `pytest tests/ut/test_rst_ast_visitor.py -k extdoc -q` → FAIL
-- [ ] `scripts/common/rst_ast_visitor.py` に `javadoc_map` パラメータを追加して実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS
-- [ ] コミット: `feat: rst_ast_visitor — resolve :java:extdoc: as internal javadoc link (#363)`
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` を実行し FAIL 集合を取得
+- [ ] 照合A: ベースラインの extdoc FQCN 全件解決を確認（QL1 extdoc FAIL = 0）
+- [ ] 照合B: ベースライン外 FAIL 0 件を確認。差分を `.work/00363/verify-2j-diff.md` に記録
+- [ ] v5 / v1.4 / v1.3 / v1.2 も `create && verify` し FAIL 増加なしを確認
+- [ ] 生成知識を `.claude/skills/nabledge-6/` にコミット
+- [ ] コミット: `feat: regenerate v6 knowledge with javadoc files (#363)`
 
 ### Task 2-G: rst_ast_visitor.py — :java:extdoc: 内部リンク化
 - **前提**: Task 2-A（run.py 配線 2-F より前に visitor の受け口を作る）
@@ -152,3 +150,7 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 - [x] Task 2-C2: QL1 ベースライン記録 (813 FQCNs) — `5eeb73d89`
 - [x] Task 2-D: jar 復元 — `c9d6a66a0`
 - [x] Task 2-E: javadoc.py 実装 — `7f37cdb36`
+- [x] Task 2-G: rst_ast_visitor extdoc 内部リンク化 — `426046d34`
+- [x] Task 2-H: rst_ast_visitor javadoc_url 外部リンク化 — `da4ce9b21`
+- [x] Task 2-F: run.py javadoc_generate 配線 — `0886687ba`
+- [x] Task 2-I: docs.py + index.py javadoc/ 除外 — `5742f62e2`
