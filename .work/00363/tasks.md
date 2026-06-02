@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-02 (session 7)
+**Updated**: 2026-06-02 (session 8)
 
 ## Rules（全タスク共通）
 
@@ -25,73 +25,25 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 
 ## In Progress
 
-### Task 2-J: 統合 verify 確認（ベースライン照合）
-- **前提**: Task 2-I + Task 2-C2 のベースライン
-- **完了条件**: v6 を create→verify し QL1 extdoc FAIL 0 件、ベースライン外の新規 FAIL 0 件。他バージョンも FAIL 増加なし。生成知識をコミット
-- **検知ゲート**: 照合A（ベースラインの extdoc 全件解決）+ 照合B（ベースライン外0件）。照合B で FAIL が出たら原因タスクを特定し 2-x に戻る
+### Task 2-J-pre: verify QC1/QC2 対称化（_build_javadoc_map 共通ヘルパー + 経路配線）
+- **背景**: create が javadoc_map を渡して extdoc を内部リンク展開するが、verify の QC1/QC2 は javadoc_map なしで normalise_rst を呼ぶため出力が非対称 → 39,587件の false-positive QC1/QC2 FAIL が発生（session 8 で確認）
+- **方針**: verify 経路でも同じ javadoc_map を visitor に渡して create と対称化。_norm 後正規化禁止原則(§3-1)を維持したまま normalise_rst 経路に javadoc_map を通す
+- **設計決定（session 8 ユーザー指示）**: `knowledge/javadoc/` 逐引きで javadoc_map を再構築。`_build_javadoc_map(knowledge_dir)` 共通ヘルパーを verify.py に切り出し、`check_source_links` と `verify_file` の両方から呼ぶ
+- **完了条件**: (1) `create 6 && verify 6` で QC1/QC2 false-positive 0件 (2) 照合B（ベースライン外 FAIL 0件） (3) `_norm` 後正規化なし
 
-- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` を実行し FAIL 集合を取得
-- [ ] 照合A: ベースラインの extdoc FQCN 全件解決を確認（QL1 extdoc FAIL = 0）
-- [ ] 照合B: ベースライン外 FAIL 0 件を確認。差分を `.work/00363/verify-2j-diff.md` に記録
-- [ ] v5 / v1.4 / v1.3 / v1.2 も `create && verify` し FAIL 増加なしを確認
-- [ ] 生成知識を `.claude/skills/nabledge-6/` にコミット
-- [ ] コミット: `feat: regenerate v6 knowledge with javadoc files (#363)`
+**変更箇所（全 TDD）:**
+1. `_build_javadoc_map(knowledge_dir)` ヘルパーを verify.py に追加（共通ロジック切り出し）
+2. `check_source_links` 内のインライン javadoc_map 構築を `_build_javadoc_map` 呼び出しに置換
+3. `_normalize_rst_source` / `normalise_rst` / `extract_document` に `javadoc_map=None` 追加
+4. `verify_file` → `_check_rst_content_completeness` 経路で `javadoc_map` を通す
+5. `verify_file` 内で `_build_javadoc_map(knowledge_dir)` を呼んで経路に注入
 
-### Task 2-G: rst_ast_visitor.py — :java:extdoc: 内部リンク化
-- **前提**: Task 2-A（run.py 配線 2-F より前に visitor の受け口を作る）
-- **完了条件**: visitor が `javadoc_map` を受け取り象限別に内部リンク / WARN+display を返す。単体テスト GREEN
-- **検知ゲート**: `pytest tests/ut/ -q` 全 PASS
-
-- [ ] `tests/ut/test_rst_ast_visitor.py` に extdoc テスト追加（RED）
-  - javadoc_map あり + nablarch.* → `[DisplayText](../javadoc/{file_id}.md)`
-  - javadoc_map になし + nablarch.* → WARN + display text
-  - java.* / jakarta.* → WARN + display text
-  - method suffix 付き FQCN はクラスで解決
-  - `pytest tests/ut/test_rst_ast_visitor.py -k extdoc -q` → FAIL
-- [ ] `scripts/common/rst_ast_visitor.py` に `javadoc_map` パラメータを追加して実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS
-- [ ] コミット: `feat: rst_ast_visitor — resolve :java:extdoc: as internal javadoc link (#363)`
-
-### Task 2-H: rst_ast_visitor.py — :javadoc_url: 外部URL化
-- **前提**: Task 2-G
-- **完了条件**: `:javadoc_url:` が外部リンクに変換され単体テスト GREEN
-- **検知ゲート**: `pytest tests/ut/ -q` 全 PASS
-
-- [ ] `tests/ut/test_rst_ast_visitor.py` に javadoc_url テスト追加（RED）
-  - `:javadoc_url:\`DisplayText <path>\`` → `[DisplayText](path)`
-  - `pytest tests/ut/test_rst_ast_visitor.py -k javadoc_url -q` → FAIL
-- [ ] `scripts/common/rst_ast_visitor.py` を実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS
-- [ ] コミット: `feat: rst_ast_visitor — resolve :javadoc_url: as external link (#363)`
-
-### Task 2-F: run.py — javadoc_generate() 配線（create + update 両方）
-- **前提**: Task 2-E、Task 2-G/2-H
-- **完了条件**: `create()` と `update()` の冒頭で `javadoc_generate()` を呼び、`javadoc_map` を `_convert_and_write` 経由で RST コンバータに渡す。単体テスト GREEN
-- **検知ゲート**: `pytest tests/ut/ -q` 全 PASS
-
-**必須変更（この通りに。該当箇所は grep で再確認すること）:**
-1. `_convert_and_write` のシグネチャに `javadoc_map=None` を追加
-   - After: `def _convert_and_write(fi, output_dir, label_map=None, doc_map=None, sheet_subtype_map=None, javadoc_map=None) -> None:`
-2. RST 分岐の `convert(...)` 呼び出しに `javadoc_map=javadoc_map` を追加。**MD・xlsx 分岐は変更しない**
-3. `create()` 内の `_convert_and_write(...)` 呼び出しに `javadoc_map` を追加
-4. `update()` 内の `_convert_and_write(...)` 呼び出しにも `javadoc_map` を追加（**両方必須**）
-5. `create()` と `update()` の冒頭（scan より前）で `javadoc_map = javadoc_generate(version)` を呼ぶ
-
-- [ ] 上記1〜5を実装。`tests/ut/test_run.py` で `javadoc_map` が RST convert に渡ること、create/update 双方で `javadoc_generate` が呼ばれることを確認
-  - `pytest tests/ut/ -q` 全 PASS
-- [ ] コミット: `feat: run.py — wire javadoc_generate() into create() and update() (#363)`
-
-### Task 2-I: docs.py + index.py — javadoc/ 二重生成・登録除外
-- **前提**: Task 2-F
-- **完了条件**: `knowledge/javadoc/` 配下 JSON が (a) index.md に含まれない（index.py）、(b) generate_docs の走査対象から除外される（docs.py）。両方の単体テスト GREEN
-- **検知ゲート**: `pytest tests/ut/ -q` 全 PASS
-
-- [ ] `tests/ut/test_index.py` に javadoc 除外テスト追加（RED）— index.md に含まれないこと
-- [ ] `tests/ut/test_docs.py` に javadoc 除外テスト追加（RED）— generate_docs が docs MD 化しないこと（既存 `assets` 除外と同型の判定）
-  - `pytest tests/ut/ -k "index or docs" -q` → FAIL
-- [ ] `scripts/create/index.py` と `scripts/create/docs.py` に除外を実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS
-- [ ] コミット: `fix: exclude knowledge/javadoc/ from index.md and generate_docs (#363)`
+- [ ] テスト追加（RED）: `_build_javadoc_map` の単体テスト + QC1/QC2 false-positive が解消されることのテスト
+- [ ] 実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS
+- [ ] コミット: `fix: verify — symmetrise QC1/QC2 with javadoc_map via _build_javadoc_map helper (#363)`
 
 ### Task 2-J: 統合 verify 確認（ベースライン照合）
-- **前提**: Task 2-I + Task 2-C2 のベースライン
+- **前提**: Task 2-J-pre 完了
 - **完了条件**: v6 を create→verify し QL1 extdoc FAIL 0 件、ベースライン外の新規 FAIL 0 件。他バージョンも FAIL 増加なし。生成知識をコミット
 - **検知ゲート**: 照合A（ベースラインの extdoc 全件解決）+ 照合B（ベースライン外0件）。照合B で FAIL が出たら原因タスクを特定し 2-x に戻る
 

@@ -381,7 +381,7 @@ def javadoc_generate(
     if version not in ("5", "6"):
         return {}
 
-    jar_path = Path(__file__).parents[3] / "lib" / "source-to-document-converter-0.0.1.jar"
+    jar_path = Path(__file__).parents[2] / "lib" / "source-to-document-converter-0.0.1.jar"
     if not jar_path.exists():
         print(f"WARN javadoc: converter jar not found: {jar_path}", file=sys.stderr)
         return {}
