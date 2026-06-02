@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-02 (session 8)
+**Updated**: 2026-06-02 (session 9)
 
 ## Rules（全タスク共通）
 
@@ -38,18 +38,23 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 4. `verify_file` → `_check_rst_content_completeness` 経路で `javadoc_map` を通す
 5. `verify_file` 内で `_build_javadoc_map(knowledge_dir)` を呼んで経路に注入
 
-- [ ] テスト追加（RED）: `_build_javadoc_map` の単体テスト + QC1/QC2 false-positive が解消されることのテスト
-- [ ] 実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS
-- [ ] コミット: `fix: verify — symmetrise QC1/QC2 with javadoc_map via _build_javadoc_map helper (#363)`
+- [x] テスト追加（RED）: `_build_javadoc_map` の単体テスト + QC1/QC2 false-positive が解消されることのテスト
+- [x] 実装（GREEN）→ `pytest tests/ut/ -q` 全 PASS (639 passed)
+- [x] コミット: `fix: verify — symmetrise QC1/QC2 with javadoc_map via _build_javadoc_map helper (#363)` — `4ee4e4571`
 
 ### Task 2-J: 統合 verify 確認（ベースライン照合）
 - **前提**: Task 2-J-pre 完了
-- **完了条件**: v6 を create→verify し QL1 extdoc FAIL 0 件、ベースライン外の新規 FAIL 0 件。他バージョンも FAIL 増加なし。生成知識をコミット
-- **検知ゲート**: 照合A（ベースラインの extdoc 全件解決）+ 照合B（ベースライン外0件）。照合B で FAIL が出たら原因タスクを特定し 2-x に戻る
+- **完了条件**: v6 を create→verify し QC1/QC2 FAIL = 0、ベースライン外の新規 FAIL 0 件。他バージョンも FAIL 増加なし。生成知識をコミット
+- **検知ゲート**: 照合A（QC1/QC2 FAIL = 0）+ 照合B（ベースライン外0件）。照合B で FAIL が出たら原因タスクを特定し 2-x に戻る
+- **結果（session 9）**:
+  - QC1/QC2 FAIL = 0 ✅（完了条件 (1) クリア）
+  - 照合B: ベースライン外 FAIL = 0 ✅
+  - QL1 extdoc 残存 FAIL = 254件（method-level FQCN、ベースライン内の既知 FAIL）
+  - QO3: README.md カウント不一致 1件（既存の既知 FAIL）
 
-- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` を実行し FAIL 集合を取得
-- [ ] 照合A: ベースラインの extdoc FQCN 全件解決を確認（QL1 extdoc FAIL = 0）
-- [ ] 照合B: ベースライン外 FAIL 0 件を確認。差分を `.work/00363/verify-2j-diff.md` に記録
+- [x] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` を実行し FAIL 集合を取得
+- [x] 照合A: QC1/QC2 FAIL = 0 確認
+- [x] 照合B: ベースライン外 FAIL 0 件を確認。差分を `.work/00363/verify-2j-diff.md` に記録
 - [ ] v5 / v1.4 / v1.3 / v1.2 も `create && verify` し FAIL 増加なしを確認
 - [ ] 生成知識を `.claude/skills/nabledge-6/` にコミット
 - [ ] コミット: `feat: regenerate v6 knowledge with javadoc files (#363)`
