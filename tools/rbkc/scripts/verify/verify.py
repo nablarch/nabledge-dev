@@ -2478,17 +2478,30 @@ def check_source_links(
                         _javadoc_map[_fqcn] = _fid
 
             def _class_fqcn(fqcn: str) -> str:
-                """Strip method suffix (after #) to get class FQCN."""
-                return fqcn.split("#")[0]
+                """Strip method/constructor suffix to get class FQCN.
+
+                Handles:
+                  - ``Cls#methodName`` (Javadoc anchor form)
+                  - ``Cls.<init>(args)`` (docutils constructor form)
+                """
+                # Strip #method suffix
+                fqcn = fqcn.split("#")[0]
+                # Strip .<init>(...) constructor suffix
+                idx = fqcn.find(".<init>")
+                if idx != -1:
+                    fqcn = fqcn[:idx]
+                return fqcn
 
             for _node in doctree.findall(nodes.inline):
                 _cls = _node.get("classes") or []
                 if "role-java:extdoc" not in _cls:
                     continue
                 _raw = _node.astext().strip()
-                # Format: "DisplayText <FQCN>" or just "FQCN"
+                # Format: "DisplayText <FQCN>" or just "FQCN".
+                # Use partition (first <) not rpartition (last <) because FQCN
+                # itself may contain < (e.g. Cls.<init>(args) constructor refs).
                 if "<" in _raw and _raw.rstrip().endswith(">"):
-                    _display, _, _fqcn_raw = _raw.rpartition("<")
+                    _display, _, _fqcn_raw = _raw.partition("<")
                     _fqcn_raw = _fqcn_raw.rstrip(">").strip()
                 else:
                     _fqcn_raw = _raw

@@ -2965,6 +2965,26 @@ class TestCheckSourceLinks_JsonSide_Extdoc:
         issues = self._check(src, data, knowledge_dir=None)
         assert issues == [], issues
 
+    def test_pass_constructor_ref_normalised_to_class(self, tmp_path):
+        """Constructor FQCN (e.g. Cls.<init>(args)) is normalised to class FQCN for lookup."""
+        file_id = "javadoc-nablarch-fw-messaging-MessageSenderSettings"
+        self._write_javadoc_json(tmp_path, file_id)
+        # display text contains no <, FQCN has <init>
+        src = ":java:extdoc:`MessageSenderSettings<nablarch.fw.messaging.MessageSenderSettings.<init>(java.lang.String)>`\n"
+        md_link = f"[MessageSenderSettings](../javadoc/{file_id}.md)"
+        data = self._data(content=f"詳細は {md_link} を参照。")
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert issues == [], issues
+
+    def test_fail_constructor_ref_display_text_only(self, tmp_path):
+        """Constructor FQCN normalised to class — display text only → FAIL."""
+        file_id = "javadoc-nablarch-fw-messaging-MessageSenderSettings"
+        self._write_javadoc_json(tmp_path, file_id)
+        src = ":java:extdoc:`MessageSenderSettings<nablarch.fw.messaging.MessageSenderSettings.<init>(java.lang.String)>`\n"
+        data = self._data(content="MessageSenderSettings")
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert any("QL1" in i and "extdoc" in i.lower() for i in issues), issues
+
 
 class TestCheckSourceLinks_DocsMdSide:
     """QL1 cross-doc: docs MD side — target MD existence + anchor slug match.
