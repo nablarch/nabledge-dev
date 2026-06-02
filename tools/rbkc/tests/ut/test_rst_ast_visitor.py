@@ -685,3 +685,38 @@ class TestExtdocRoleResolution:
         content = parts.top_content + "\n".join(s.content for s in parts.sections)
         assert "UniversalDao" in content
         assert "](../javadoc/" not in content
+
+
+# ---------------------------------------------------------------------------
+# Task 2-H: :javadoc_url: external link resolution
+# ---------------------------------------------------------------------------
+
+class TestJavadocUrlRoleResolution:
+    """:javadoc_url:`LinkText <URL>` resolves to external MD link."""
+
+    def _extract(self, rst_source: str) -> "DocumentParts":
+        from scripts.common.rst_ast import parse
+        from scripts.common.rst_ast_visitor import extract_document
+        from pathlib import Path
+        doctree, _ = parse(rst_source, source_path=Path("/repo/test.rst"))
+        return extract_document(doctree, label_map={}, source_path=Path("/repo/test.rst"))
+
+    def test_external_link_emitted(self):
+        """:javadoc_url:`LinkText <URL>` → [LinkText](URL)."""
+        src = (
+            "Title\n=====\n\n"
+            ":javadoc_url:`Nablarch API <https://nablarch.github.io/docs/>`\n"
+        )
+        parts = self._extract(src)
+        content = parts.top_content + "\n".join(s.content for s in parts.sections)
+        assert "[Nablarch API](https://nablarch.github.io/docs/)" in content
+
+    def test_no_angle_brackets_emits_raw(self):
+        """:javadoc_url:`URL` (no angle brackets) → raw text fallback."""
+        src = (
+            "Title\n=====\n\n"
+            ":javadoc_url:`https://example.com/`\n"
+        )
+        parts = self._extract(src)
+        content = parts.top_content + "\n".join(s.content for s in parts.sections)
+        assert "https://example.com/" in content
