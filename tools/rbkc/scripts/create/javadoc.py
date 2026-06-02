@@ -25,25 +25,7 @@ import sys
 import zipfile
 from pathlib import Path
 
-
-# ---------------------------------------------------------------------------
-# FQCN helpers
-# ---------------------------------------------------------------------------
-
-def _class_fqcn(fqcn: str) -> str:
-    """Strip method/constructor suffix from a FQCN to get the class FQCN.
-
-    Handles:
-      - ``Cls#methodName`` (Javadoc anchor form: nablarch.common.Cls#method)
-      - ``Cls.<init>(args)`` (docutils constructor form)
-    """
-    # Strip #method suffix
-    fqcn = fqcn.split("#")[0]
-    # Strip .<init>(...) constructor suffix
-    idx = fqcn.find(".<init>")
-    if idx != -1:
-        fqcn = fqcn[:idx]
-    return fqcn
+from scripts.common.javadoc_fqcn import class_fqcn as _class_fqcn
 
 
 def fqcn_to_file_id(fqcn: str) -> str:
@@ -84,7 +66,7 @@ def _extract_fqcns(rst_text: str) -> set[str]:
         else:
             fqcn_part = raw
         cls = _class_fqcn(fqcn_part)
-        if cls.startswith("nablarch."):
+        if cls is not None and cls.startswith("nablarch."):
             fqcns.add(cls)
     return fqcns
 

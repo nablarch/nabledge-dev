@@ -2492,23 +2492,9 @@ def check_source_links(
         # verify builds javadoc_map independently from knowledge/javadoc/ JSON
         # (§2-2 verify independence principle — never import from create side).
         if knowledge_dir is not None:
+            from scripts.common.javadoc_fqcn import class_fqcn as _class_fqcn
             from scripts.common.linkfmt import JAVADOC_LINK_RE
             _javadoc_map = _build_javadoc_map(knowledge_dir)
-
-            def _class_fqcn(fqcn: str) -> str:
-                """Strip method/constructor suffix to get class FQCN.
-
-                Handles:
-                  - ``Cls#methodName`` (Javadoc anchor form)
-                  - ``Cls.<init>(args)`` (docutils constructor form)
-                """
-                # Strip #method suffix
-                fqcn = fqcn.split("#")[0]
-                # Strip .<init>(...) constructor suffix
-                idx = fqcn.find(".<init>")
-                if idx != -1:
-                    fqcn = fqcn[:idx]
-                return fqcn
 
             for _node in doctree.findall(nodes.inline):
                 _cls = _node.get("classes") or []
@@ -2524,12 +2510,15 @@ def check_source_links(
                 else:
                     _fqcn_raw = _raw
                 _fqcn_class = _class_fqcn(_fqcn_raw)
-                # java.* / jakarta.* / javax.* — external JDK, skip
-                if _fqcn_class.startswith(("java.", "jakarta.", "javax.")):
+                # quadrant 3(a): java.* / jakarta.* / javax.* — external JDK, scope-out
+                if _fqcn_class is not None and _fqcn_class.startswith(("java.", "jakarta.", "javax.")):
+                    continue
+                # quadrant 3(b): package-level FQCN (class_fqcn returns None) — scope-out
+                if _fqcn_class is None:
                     continue
                 _file_id = _javadoc_map.get(_fqcn_class)
                 if _file_id is None:
-                    # javadoc JSON missing → RBKC bug (Q2 equivalent)
+                    # javadoc JSON missing → RBKC bug (quadrant 2)
                     issues.append(
                         f"[QL1] :java:extdoc: `{_fqcn_raw}` javadoc JSON missing"
                         f" (expected knowledge/javadoc/javadoc-{_fqcn_class.replace('.', '-')}.json)"
