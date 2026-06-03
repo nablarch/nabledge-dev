@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-03 (session 18, end)
+**Updated**: 2026-06-03 (session 19)
 
 ## Rules（全タスク共通）
 
@@ -20,22 +20,6 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 2. 2-J で FAIL 集合を取得し、照合A（ベースラインの extdoc 全件消滅）+ 照合B（ベースライン外0件）で判定
 
 設計書: `tools/rbkc/docs/rbkc-converter-design.md` §5-1 / §5-2、`rbkc-verify-quality-design.md` §3-2-3 / §3-3
-
----
-
-## In Progress
-
-### Task 4: ベンチマークシナリオ追加
-- **前提**: Task 2-J 完了
-- **完了条件**: Javadoc 参照を要する新規シナリオ追加 + expectations 設定。既存シナリオが javadoc 非参照と確認済み
-- [x] 既存シナリオで Javadoc 知識ファイルが参照されないことを確認 — qa.json 30件全件調査、javadoc 参照 0件
-- [DECISION: シナリオ設計案（qa-16）を提示済み。ユーザー承認待ち] Javadoc 参照質問のシナリオを新規追加
-- [ ] 期待値（expectations）を設定
-
-**設計案 qa-16**:
-- input: 「UniversalDao.existsメソッドの使い方を教えてください。SQLファイルを指定してデータ存在チェックをしたい」
-- must: `javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18`（exists(Class, String, Object)）
-- acceptable: `s17`（バインド変数なし版）、`component/libraries/libraries-universal-dao.json:s5`
 
 ---
 
@@ -87,3 +71,4 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 - [x] Task 3-E: QO2 正規化テスト RED+GREEN、QO1 section title 修正 — `1249cc588` / `5dffd297d` / `4e43c66c7`
 - [x] Task 3-E（続き）: v6 docs 再生成 + 新規 knowledge コミット、全バージョン verify 新規FAIL=0 確認 — `0b2508a2e` / `140b6459f`
 - [x] Task 3: semantic-search に Step 3b 追加（v6/v5）— `6bd3dea23`
+- [x] Task 4: ベンチマークシナリオ追加（qa-16/17/18）— `e9f4adbff`
