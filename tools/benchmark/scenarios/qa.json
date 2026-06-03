@@ -927,6 +927,107 @@
       }
     },
     {
+      "id": "qa-16",
+      "given": {
+        "usecase": "qa",
+        "category": "db-access",
+        "description": "UniversalDaoでSQLファイルを使ったデータ存在チェックを実装したい。exists メソッドの使い方を知りたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "UniversalDao.exists で SQL_ID を指定してデータ存在チェックをする方法を教えてください",
+        "expected_hearing": "nice_to_ask",
+        "hearing_answer": {
+          "processing_type": null,
+          "purpose": "実装したい"
+        }
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "SQL_IDを指定してバインド変数なしでデータ存在チェックを行うexists(Class, String)メソッドがある",
+            "section": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17"
+          },
+          {
+            "fact": "SQL_IDとバインド変数を指定してデータ存在チェックを行うexists(Class, String, Object)メソッドがある",
+            "section": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-universal-dao.json:s5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-17",
+      "given": {
+        "usecase": "qa",
+        "category": "di-container",
+        "description": "アプリケーションコードからSystemRepositoryを使ってコンポーネントを取得したい。名前指定と型指定の取得方法を知りたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "SystemRepository から登録済みコンポーネントを取得する方法を教えてください",
+        "expected_hearing": "nice_to_ask",
+        "hearing_answer": {
+          "processing_type": null,
+          "purpose": "実装したい"
+        }
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "getObject(String name)でコンポーネント名を指定してリポジトリからObject型でコンポーネントを取得する",
+            "section": "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s8"
+          },
+          {
+            "fact": "get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する",
+            "section": "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s11"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/libraries/libraries-repository.json:s25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qa-18",
+      "given": {
+        "usecase": "qa",
+        "category": "bean-util",
+        "description": "BeanUtilを使ってJava BeansオブジェクトのプロパティをAPIで取得したい。getPropertyメソッドの使い方を知りたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "BeanUtil の getProperty で Bean のプロパティ値を取得する方法を教えてください",
+        "expected_hearing": "nice_to_ask",
+        "hearing_answer": {
+          "processing_type": null,
+          "purpose": "実装したい"
+        }
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "getProperty(Object bean, String propertyName)でJavaBeansオブジェクトまたはレコードから指定したプロパティの値を取得する",
+            "section": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s14"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s15"
+          },
+          {
+            "section": "component/libraries/libraries-bean-util.json:s2"
+          }
+        ]
+      }
+    },
+    {
       "id": "oos-impact-01",
       "given": {
         "usecase": "impact",
