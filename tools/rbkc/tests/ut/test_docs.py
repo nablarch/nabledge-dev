@@ -662,3 +662,23 @@ class TestJsonToMdLinkExtRewrite:
         md = (docs / "component" / "libraries" / "lib.md").read_text(encoding="utf-8")
         assert "../../component/libraries/libraries-foo.md" in md
         assert "../../component/libraries/libraries-foo.json" not in md
+
+    def test_section_title_json_link_rewritten(self, tmp_path):
+        """Rewrite applies to section title, not only content (e.g. RST ref-in-heading)."""
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        _write_json(kn / "component/libraries/lib.json", {
+            "id": "lib", "title": "Lib",
+            "no_knowledge_content": False,
+            "content": "",
+            "sections": [{
+                "id": "s1",
+                "title": "[MOMメッセージング](../../component/libraries/libraries-mom.json#momセクション) と同じ",
+                "level": 2,
+                "content": "本文",
+            }],
+        })
+        generate_docs(kn, docs, "6")
+        md = (docs / "component" / "libraries" / "lib.md").read_text(encoding="utf-8")
+        assert "../../component/libraries/libraries-mom.md#momセクション" in md
+        assert "../../component/libraries/libraries-mom.json" not in md

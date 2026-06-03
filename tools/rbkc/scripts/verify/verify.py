@@ -177,7 +177,10 @@ def check_json_docs_md_consistency(
         docs_h2_only_titles = [t for lvl, t in docs_headings if lvl == 2]
         # The "missing" check still accepts any heading level ≥ 2.
         docs_all_titles = [t for _, t in docs_headings]
-        json_sec_titles = [s.get("title", "") for s in sections if s.get("title")]
+        json_sec_titles = [
+            _apply_internal_link_ext_rewrite(s.get("title", ""))
+            for s in sections if s.get("title")
+        ]
 
         p2_headings = data.get("p2_headings")
         if p2_headings is not None:

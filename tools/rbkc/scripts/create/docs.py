@@ -138,7 +138,7 @@ def _render_full(data: dict, docs_md_path: Path, knowledge_dir: Path) -> str:
         # build always writes level.
         level = section.get("level", 2)
         hashes = "#" * max(1, int(level))
-        lines.append(f"{hashes} {title}")
+        lines.append(f"{hashes} {_rewrite_internal_link_ext(title)}")
         lines.append("")
         if content:
             content = _rewrite_asset_links(content, docs_md_path, knowledge_dir)

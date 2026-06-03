@@ -226,6 +226,36 @@ class TestCheckJsonDocsMdConsistency_QO1:
         )
         assert self._check(data, docs) == []
 
+    # --- QO1 Task 3-E: .json→.md link extension in section titles --------
+
+    def test_pass_section_title_with_json_link_normalised(self):
+        """QO1 PASS: JSON section title has .json link; docs MD heading has .md link.
+
+        docs.py rewrites .json→.md in section titles (Task 3-D fix).
+        verify QO1 must apply the same normalisation when comparing
+        section titles, otherwise a cross-doc link in a section title
+        causes a false-positive QO1 FAIL.
+        """
+        json_title = "[MOMメッセージング](../../component/libraries/libraries-mom.json#momセクション) と同じ"
+        docs_title = "[MOMメッセージング](../../component/libraries/libraries-mom.md#momセクション) と同じ"
+        data = {
+            "id": "f", "title": "T", "content": "",
+            "sections": [{"id": "s1", "title": json_title, "level": 2, "content": "body"}],
+        }
+        docs = f"# T\n\n## {docs_title}\n\nbody\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_section_title_with_javadoc_json_link_normalised(self):
+        """QO1 PASS: JSON section title has javadoc .json link; docs MD has .md link."""
+        json_title = "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.json) の使い方"
+        docs_title = "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md) の使い方"
+        data = {
+            "id": "f", "title": "T", "content": "",
+            "sections": [{"id": "s1", "title": json_title, "level": 2, "content": "body"}],
+        }
+        docs = f"# T\n\n## {docs_title}\n\nbody\n"
+        assert self._check(data, docs) == []
+
 
 # ---------------------------------------------------------------------------
 # QO2: docs MD 本文整合性
