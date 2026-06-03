@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-03 (session 16)
+**Updated**: 2026-06-03 (session 17)
 
 ## Rules（全タスク共通）
 
@@ -24,15 +24,6 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 ---
 
 ## In Progress
-
-### Task 3-E（続き）: 全バージョン knowledge 再生成 → verify 確認
-- **前提**: Task 3-D / QO1 section title 修正 完了 — `4e43c66c7`
-- **完了条件**: 全バージョン verify 新規FAIL=0 確認 + knowledge ファイルコミット
-- [ ] `bash rbkc.sh create 6 5 1.4 1.3 1.2` ← 既に実行済み（knowledge ファイルが未コミット）
-- [ ] `bash rbkc.sh verify 6 5 1.4 1.3 1.2` で新規FAIL=0 確認 ← 再確認必要（QO1 修正後）
-- [ ] 全バージョン knowledge/docs ファイルをコミット
-
-**Status**: knowledge 再生成済み（2367ファイル変更）・未コミット。verify は section title 修正前の実行で QO1=3 が出た。section title 修正後の verify 未実行。
 
 ---
 
@@ -96,3 +87,4 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 - [x] Task 3-C: test_docs.py に .json→.md 変換テスト追加（RED） — `bbc34b7d0`
 - [x] Task 3-D: docs.py に .json→.md 変換追加（GREEN） — `2bcab2f1d`
 - [x] Task 3-E: QO2 正規化テスト RED+GREEN、QO1 section title 修正 — `1249cc588` / `5dffd297d` / `4e43c66c7`
+- [x] Task 3-E（続き）: v6 docs 再生成 + 新規 knowledge コミット、全バージョン verify 新規FAIL=0 確認 — `0b2508a2e` / `140b6459f`
