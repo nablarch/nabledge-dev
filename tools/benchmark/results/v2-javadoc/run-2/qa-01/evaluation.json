@@ -1,0 +1,147 @@
+{
+  "scenario_id": "qa-01",
+  "description": "バッチで10万件のデータを読み込んで加工する処理を書いている。findAllBySqlFileで全件取得したらOutOfMemoryErrorが出た。",
+  "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that `UniversalDao.defer()` メソッドを使用すれば遅延ロードが有効になる (using UniversalDao.defer() method enables deferred/lazy loading), which directly matches the fact about using UniversalDao.defer method for lazy loading.",
+      "fact": "UniversalDao.deferメソッドで遅延ロードを使用する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states '`DeferredEntityList` を必ず `close()` する必要があります' (DeferredEntityList must be closed with close()), which directly conveys the same information as the fact that the close method of DeferredEntityList needs to be called.",
+      "fact": "DeferredEntityListのcloseメソッドを呼び出す必要がある"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "UniversalDao.defer()メソッドを使用すればサーバサイドカーソルにより検索結果を1件ずつ読み込める",
+        "supported": true
+      },
+      {
+        "claim": "全件をメモリに展開しないため大量データ処理でもメモリ不足を回避できる",
+        "supported": true
+      },
+      {
+        "claim": "DeferredEntityListをclose()する必要がありtry-with-resourcesが推奨",
+        "supported": true
+      },
+      {
+        "claim": "メモリ使用量はJDBCのフェッチサイズによって変わる",
+        "supported": true
+      },
+      {
+        "claim": "カーソルオープン中にトランザクション制御（コミット等）が行われるとカーソルがクローズされる",
+        "supported": true
+      },
+      {
+        "claim": "handleメソッド内で自前のSELECT＋ループをするのは誤った実装",
+        "supported": true
+      },
+      {
+        "claim": "フレームワーク制御外のループではコミットが行われずトランザクションログが逼迫する",
+        "supported": true
+      },
+      {
+        "claim": "データリーダ（createReader）でデータ取得しフレームワークのループ制御に任せるのが正しい設計",
+        "supported": true
+      },
+      {
+        "claim": "「クローズ済みのカーソルを参照した」エラーが発生する可能性がある",
+        "supported": true
+      },
+      {
+        "claim": "ページングなどで回避できる（注意点としての言及）",
+        "supported": true
+      }
+    ],
+    "reason": "回答内の主要なNablarch固有の主張はすべてknowledgeセクションに裏付けられている。ただし、注意点の箇所で「データリーダ（createReader）でデータ取得し、フレームワークのループ制御に任せるのが正しい設計」という記述は、knowledgeセクションのアンチパターン説明（handleメソッド内で自前ループする誤り）から導かれる正しい内容ではあるが、回答では「アンチパターンに注意」節の中で「フレームワーク制御外のループではコミットが行われず」という根拠とともに正しく説明されており、fabricationとは言えない。一方、注意点の「アンチパターンに注意」節は遅延ロードの文脈とは直接関係のないバッチのアンチパターン情報を混入させており、質問スコープ外の情報を付加しているが、その内容自体はknowledgeセクションに存在する。しかし、この注意点を遅延ロードの文脈に関連付けて提示している点が若干misleadingであるものの、fabricated factとまでは言えない。全体としてほぼ正確だが、「アンチパターンに注意」節の`handleメソッド`に関する記述は遅延ロードのユースケースではなくNablarchバッチのアンチパターンセクションの内容であり、これを遅延ロードの注意点として提示しているのはknowledgeセクションの文脈から外れた情報の混入と判断できる。また厳密に言えば「コミットが行われない」というのはknowledgeセクションに記載のある事実だが、それを遅延ロードの注意点として直接紐付けているのはknowledgeセクションに根拠がなく、ハルシネーション的な文脈の混同が見られるためFAILとする。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 回答内の主要なNablarch固有の主張はすべてknowledgeセクションに裏付けられている。ただし、注意点の箇所で「データリーダ（createReader）でデータ取得し、フレームワークのループ制御に任せるのが正しい設計」という記述は、knowledgeセクションのアンチパターン説明（handleメソッド内で自前ループする誤り）から導かれる正しい内容ではあるが、回答では「アンチパターンに注意」節の中で「フレームワーク制御外のループではコミットが行われず」という根拠とともに正しく説明されており、fabricationとは言えない。一方、注意点の「アンチパターンに注意」節は遅延ロードの文脈とは直接関係のないバッチのアンチパターン情報を混入させており、質問スコープ外の情報を付加しているが、その内容自体はknowledgeセクションに存在する。しかし、この注意点を遅延ロードの文脈に関連付けて提示している点が若干misleadingであるものの、fabricated factとまでは言えない。全体としてほぼ正確だが、「アンチパターンに注意」節の`handleメソッド`に関する記述は遅延ロードのユースケースではなくNablarchバッチのアンチパターンセクションの内容であり、これを遅延ロードの注意点として提示しているのはknowledgeセクションの文脈から外れた情報の混入と判断できる。また厳密に言えば「コミットが行われない」というのはknowledgeセクションに記載のある事実だが、それを遅延ロードの注意点として直接紐付けているのはknowledgeセクションに根拠がなく、ハルシネーション的な文脈の混同が見られるためFAILとする。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s9「検索結果を遅延ロードする」がメモリ節約のための1件ずつ読み込み方法を直接説明している"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "Nablarchバッチのアンチパターン（自前ループ）が大量データ処理の誤った実装を示し、正しいアプローチの理解に有用"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチのデータリーダ一覧（DatabaseRecordReaderなど）を確認するため候補"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "大量検索時のメモリ不足解決策としてUniversalDao.defer()の使い方とコード例を直接説明している"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s27",
+        "relevance": "high",
+        "reason": "defer()メソッドのAPIドキュメントとコード例を提供し、実装の具体的な根拠となる"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-DeferredEntityList.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "s9から参照されるDeferredEntityListクラスの説明で、サーバサイドカーソルの仕組みを補足する"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "自前ループはアンチパターンであることを示し、フレームワーク制御のループを使うべき理由を補強する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 93173,
+    "duration_api_ms": 92396,
+    "num_turns": 10,
+    "total_cost_usd": 0.7871937,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 5282,
+      "cache_read_input_tokens": 745179,
+      "cache_creation_input_tokens": 128296
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3163,
+        "outputTokens": 22,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003273,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 5282,
+        "cacheReadInputTokens": 745179,
+        "cacheCreationInputTokens": 128296,
+        "webSearchRequests": 0,
+        "costUSD": 0.7839207,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

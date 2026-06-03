@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 107574,
+  "duration_api_ms": 107280,
+  "ttft_ms": 3084,
+  "num_turns": 11,
+  "result": "Step 5: 回答を生成します。\n\n**結論**: RESTfulウェブサービスでは、`JaxRsResponseHandler`（Jakarta RESTful Web Servicesレスポンスハンドラ）がエラー処理の中心を担い、`ErrorResponseBuilder`でHTTPレスポンスを生成し、`JaxRsErrorLogWriter`でログを出力します。また、`GlobalErrorHandler`（グローバルエラーハンドラ）がハンドラキューの先頭で未捕捉例外を一括捕捉し、FATALレベルのログを出力します。\n\n**根拠**:\n\n### JaxRsResponseHandler の仕組み\n\n後続ハンドラ（リソースクラスなど）で例外が発生した場合、`JaxRsResponseHandler` が2つのコンポーネントを使って処理します。\n\n**レスポンス生成（ErrorResponseBuilder）**\n\nデフォルト実装の挙動:\n| 例外クラス | ステータスコード |\n|---|---|\n| `ApplicationException` | 400 |\n| 上記以外 | 500 |\n\n`HttpErrorResponse` が発生した場合は、`HttpErrorResponse#getResponse()` が返す `HttpResponse` をそのままクライアントに返します。\n\n**ログ出力（JaxRsErrorLogWriter）**\n\n- `ApplicationException`（バリデーションエラー等）: デフォルトでは**ログ出力しない**（`writeApplicationExceptionLog` が何もしない）\n- それ以外の例外: `FailureLogUtil` を使って障害ログを出力する\n\n設定例:\n```xml\n<component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n  <property name=\"errorResponseBuilder\">\n    <component class=\"sample.SampleErrorResponseBuilder\" />\n  </property>\n  <property name=\"errorLogWriter\">\n    <component class=\"sample.SampleJaxRsErrorLogWriter\" />\n  </property>\n</component>\n```\n\n### GlobalErrorHandler の役割\n\nハンドラキューの先頭付近に配置され、未捕捉の例外やエラーを一括処理します:\n\n| 例外/エラークラス | 処理内容 |\n|---|---|\n| `ServiceError`（サブクラス含む） | `ServiceError#writeLog` でログ出力（ログレベルは実装クラスによる） |\n| `Result.Error`（サブクラス含む） | FATALレベルのログ出力 |\n| 上記以外の例外 | FATALレベルのログ出力、`InternalError` を返却 |\n| `OutOfMemoryError` | 標準エラー出力に出力後、FATALレベルのログ出力 |\n\n### カスタマイズ例\n\nエラーレスポンスのボディにJSONメッセージを含めたい場合:\n```java\npublic class SampleErrorResponseBuilder extends ErrorResponseBuilder {\n    @Override\n    public HttpResponse build(HttpRequest request, ExecutionContext context, Throwable throwable) {\n        if (throwable instanceof ApplicationException) {\n            return createResponseBody((ApplicationException) throwable);\n        } else {\n            return super.build(request, context, throwable);\n        }\n    }\n    // ...\n}\n```\n\n特定例外に対して個別のステータスコードを返したい場合:\n```java\npublic class SampleErrorResponseBuilder extends ErrorResponseBuilder {\n    @Override\n    public HttpResponse build(HttpRequest request, ExecutionContext context, Throwable throwable) {\n        if (throwable instanceof NoDataException) {\n            return new HttpResponse(404);\n        } else {\n            return super.build(request, context, throwable);\n        }\n    }\n}\n```\n\n**注意点**: `ErrorResponseBuilder` をカスタマイズする際、その処理中に例外が発生するとレスポンスを返せなくなります。フレームワークはその場合WARNレベルでログ出力を行い、ステータスコード500のレスポンスを生成しますが、カスタム実装内で例外が発生しないよう注意が必要です。\n\n参照: `handlers-jaxrs-response-handler.json:s4`, `handlers-jaxrs-response-handler.json:s5`, `handlers-jaxrs-response-handler.json:s7`, `handlers-jaxrs-response-handler.json:s8`, `handlers-global-error-handler.json:s4`, `javadoc/javadoc-nablarch-fw-jaxrs-JaxRsErrorLogWriter.json:s5`, `javadoc/javadoc-nablarch-fw-jaxrs-ErrorResponseBuilder.json:s2`\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"reason\": \"RESTfulウェブサービス専用のエラーハンドラで、例外に応じたレスポンス生成とログ出力の仕組みを直接説明している\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"reason\": \"RESTfulウェブサービスの機能詳細で「エラー時に返却するレスポンス」セクションがある\"},\n      {\"path\": \"component/handlers/handlers-global-error-handler.json\", \"reason\": \"未捕捉例外をキャッチしてログ出力を行うグローバルエラーハンドラの仕組みを説明している\"},\n      {\"path\": \"javadoc/javadoc-nablarch-fw-jaxrs-JaxRsResponseHandler.json\", \"reason\": \"JaxRsResponseHandlerのJavadocで、ErrorResponseBuilderとJaxRsErrorLogWriterのプロパティ詳細を参照\"},\n      {\"path\": \"javadoc/javadoc-nablarch-fw-jaxrs-JaxRsErrorLogWriter.json\", \"reason\": \"JaxRsErrorLogWriterのJavadocで、ApplicationException時のログ出力動作（デフォルトでは何もしない）を確認\"},\n      {\"path\": \"javadoc/javadoc-nablarch-fw-jaxrs-ErrorResponseBuilder.json\", \"reason\": \"ErrorResponseBuilderのJavadocで、例外種別とステータスコードのマッピングを確認\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/handlers/handlers-HttpErrorHandler.json\", \"reason\": \"ウェブアプリケーション用のHTTPエラー制御ハンドラであり、RESTfulウェブサービスとは別の処理方式\"},\n      {\"path\": \"component/libraries/libraries-failure-log.json\", \"reason\": \"障害ログの一般的な設定であり、RESTful固有のエラー処理の仕組みの説明として主ではない\"},\n      {\"path\": \"about/about-nablarch/about-nablarch-architecture.json\", \"reason\": \"アーキテクチャ概要はハンドラキューの説明は含むが、RESTful固有のエラー処理詳細は含まない\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-architecture.json\", \"reason\": \"アーキテクチャ概要であり、エラー処理の詳細説明は機能詳細ページに委ねられている\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"ErrorResponseBuilderによるレスポンス生成の仕組みを詳述しており、質問の「エラー画面（レスポンス）を表示する仕組み」に直接答える\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s5\", \"relevance\": \"high\", \"reason\": \"JaxRsErrorLogWriterによるログ出力の仕組みを説明しており、質問の「ログを出力する仕組み」に直接答える\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"ErrorResponseBuilderのカスタマイズ実装例を示しており、仕組みの理解に不可欠\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s8\", \"relevance\": \"high\", \"reason\": \"特定例外に対するレスポンスカスタマイズの実装例を示しており、仕組みの理解に有用\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"グローバルエラーハンドラの例外別ログ出力処理を表で示しており、未捕捉例外のログ出力の仕組みを説明\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"グローバルエラーハンドラの配置ルール（ハンドラキューの先頭）を説明しており、仕組み理解の背景として有用\"},\n      {\"file\": \"javadoc/javadoc-nablarch-fw-jaxrs-JaxRsErrorLogWriter.json\", \"section_id\": \"s5\", \"relevance\": \"high\", \"reason\": \"ApplicationException時にデフォルトでログを出力しないという重要な動作を明記している\"},\n      {\"file\": \"javadoc/javadoc-nablarch-fw-jaxrs-ErrorResponseBuilder.json\", \"section_id\": \"s2\", \"relevance\": \"high\", \"reason\": \"ApplicationException→400、それ以外→500というステータスコードマッピングを明記している\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"section_id\": \"s11\", \"reason\": \"handlers-jaxrs-response-handler.jsonへの参照リンクのみで実質的な情報を含まない\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s9\", \"reason\": \"ResponseFinisherによる共通処理追加の説明であり、エラー処理の仕組みの主旨からは外れる\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/handlers/handlers-jaxrs-response-handler.json:s4\",\n      \"component/handlers/handlers-jaxrs-response-handler.json:s5\",\n      \"component/handlers/handlers-jaxrs-response-handler.json:s7\",\n      \"component/handlers/handlers-jaxrs-response-handler.json:s8\",\n      \"component/handlers/handlers-global-error-handler.json:s4\",\n      \"component/handlers/handlers-global-error-handler.json:s3\",\n      \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\",\n      \"javadoc/javadoc-nablarch-fw-jaxrs-JaxRsErrorLogWriter.json:s4\",\n      \"javadoc/javadoc-nablarch-fw-jaxrs-JaxRsErrorLogWriter.json:s5\",\n      \"javadoc/javadoc-nablarch-fw-jaxrs-ErrorResponseBuilder.json:s2\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"handlers-jaxrs-response-handler.json:s4\", \"reason\": \"ErrorResponseBuilderによるレスポンス生成の仕組みとステータスコードの説明に使用\"},\n        {\"ref\": \"handlers-jaxrs-response-handler.json:s5\", \"reason\": \"JaxRsErrorLogWriterによるログ出力の仕組みと設定例の説明に使用\"},\n        {\"ref\": \"handlers-jaxrs-response-handler.json:s7\", \"reason\": \"ApplicationExceptionに対するJSONレスポンス返却のカスタマイズ実装例に使用\"},\n        {\"ref\": \"handlers-jaxrs-response-handler.json:s8\", \"reason\": \"特定例外（NoDataException）に対するステータスコード404返却の実装例に使用\"},\n        {\"ref\": \"handlers-global-error-handler.json:s4\", \"reason\": \"グローバルエラーハンドラの例外別ログ出力処理テーブルの説明に使用\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-fw-jaxrs-JaxRsErrorLogWriter.json:s5\", \"reason\": \"ApplicationException時にデフォルトでログを出力しないという動作の根拠として使用\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-fw-jaxrs-ErrorResponseBuilder.json:s2\", \"reason\": \"ApplicationException→400、その他→500というステータスコードマッピングの根拠として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"handlers-global-error-handler.json:s3\", \"reason\": \"配置制約は補足情報として有用だが、回答のメインテーマ（仕組み）には含めなかった\"},\n        {\"ref\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\", \"reason\": \"リンク参照のみで実質的な情報がなく、直接引用できる内容がなかった\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-fw-jaxrs-JaxRsErrorLogWriter.json:s4\", \"reason\": \"writeメソッドのシグネチャのみで、動作詳細はs5で説明されているため重複を避けた\"}\n      ]\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "8b5aca39-9355-4925-834d-4e6fb546ba0b",
+  "total_cost_usd": 0.6857487,
+  "usage": {
+    "input_tokens": 8,
+    "cache_creation_input_tokens": 104388,
+    "cache_read_input_tokens": 584649,
+    "output_tokens": 7704,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 104388
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3185,
+      "outputTokens": 26,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003315,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 8,
+      "outputTokens": 7704,
+      "cacheReadInputTokens": 584649,
+      "cacheCreationInputTokens": 104388,
+      "webSearchRequests": 0,
+      "costUSD": 0.6824337,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "92b7f1ff-dbe3-4e73-a261-88d22820e0ac"
+}

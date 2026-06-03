@@ -1,0 +1,126 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes using SimpleDbTransactionManager to define individual transactions, including XML component configuration and Java implementation examples showing how to use SimpleDbTransactionManager with SimpleDbTransactionExecutor for independent transaction execution.",
+      "fact": "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "SimpleDbTransactionManagerをコンポーネント設定ファイルに定義する",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionExecutorを使用してJDBCラッパーで別トランザクションのSQLを実行する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.Transactionを継承したクラスを使ってUniversalDAOで別トランザクションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "SimpleDbTransactionExecutorのdoTransaction()メソッドで実行する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.TransactionのコンストラクタにSimpleDbTransactionManagerのコンポーネント名を指定する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.Transactionのexecute()メソッドが自動的に別トランザクションで実行される",
+        "supported": true
+      },
+      {
+        "claim": "正常終了でコミット、例外/エラー発生でロールバック",
+        "supported": true
+      },
+      {
+        "claim": "FindPersonsTransactionのインスタンス生成時に別トランザクションが実行される（生成すると別のトランザクションで実行される）",
+        "supported": true
+      },
+      {
+        "claim": "呼び出し側でfindPersonsTransaction.getPersons()で結果を取得する",
+        "supported": true
+      },
+      {
+        "claim": "トランザクション名（dbTransactionName）は一意にすること",
+        "supported": false
+      }
+    ],
+    "reason": "ほとんどの記述はナレッジセクションと一致しているが、「注意点」として記載された「トランザクション名（dbTransactionName）は一意にすること」はナレッジセクションに記載がなく、Nablarch固有の仕様として根拠のない追加情報であるため、ハルシネーションと判断する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — ほとんどの記述はナレッジセクションと一致しているが、「注意点」として記載された「トランザクション名（dbTransactionName）は一意にすること」はナレッジセクションに記載がなく、Nablarch固有の仕様として根拠のない追加情報であるため、ハルシネーションと判断する。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s29に「現在のトランザクションとは異なるトランザクションでSQLを実行する」という質問に直接対応するセクションがある"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s20に「現在のトランザクションとは異なるトランザクションで実行する」というUniversalDAO版の同機能説明がある"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "業務トランザクションとは独立したSimpleDbTransactionManagerとSimpleDbTransactionExecutorを使った別トランザクションSQL実行の具体的な手順・コード例が含まれている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "UniversalDAO.Transactionを使ったUniversalDAO版の別トランザクション実行の具体的な手順・コード例が含まれている"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 95899,
+    "duration_api_ms": 94864,
+    "num_turns": 12,
+    "total_cost_usd": 0.8706914,
+    "usage": {
+      "input_tokens": 13,
+      "output_tokens": 5730,
+      "cache_read_input_tokens": 1030823,
+      "cache_creation_input_tokens": 125898
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3193,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033380000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13,
+        "outputTokens": 5730,
+        "cacheReadInputTokens": 1030823,
+        "cacheCreationInputTokens": 125898,
+        "webSearchRequests": 0,
+        "costUSD": 0.8673533999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

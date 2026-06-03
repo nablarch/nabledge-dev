@@ -1,0 +1,211 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states in the DBストアの特徴 section: 'データベース上のテーブルに保存' and 'ローリングメンテナンス等でAPサーバが停止した場合でもセッション変数の復元が可能', which directly matches the fact that DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能.",
+      "fact": "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states in the table that HIDDENストアの保存先は「クライアントサイド（hiddenタグ）」であり、これはfactの「クライアントサイドにhiddenタグで引き回して実現する」という内容と一致している。",
+      "fact": "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "DBストアはデータベース上のテーブルに保存される",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはローリングメンテナンス等でAPサーバが停止した場合でもセッション変数の復元が可能",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは期限切れのセッション情報を定期的に削除するバッチが必要",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはクライアントサイド（hiddenタグ）に保存される",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数タブでの画面操作を許容できる",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはAPサーバのヒープ領域に保存される",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはAPサーバ毎に情報を保持するためスケールアウト時に工夫が必要",
+        "supported": true
+      },
+      {
+        "claim": "Redisストア(Lettuce)はDBストアと同じ特徴を持ち保存先が異なるだけ",
+        "supported": true
+      },
+      {
+        "claim": "Redisストアはセッション情報保存用テーブルを事前に準備する必要がない",
+        "supported": true
+      },
+      {
+        "claim": "Redisストアは有効期限が切れたセッション情報が自動的に削除されるため削除バッチが不要",
+        "supported": true
+      },
+      {
+        "claim": "Redisストアはsentinel(Master-Replica構成)やCluster構成にも対応可能",
+        "supported": true
+      },
+      {
+        "claim": "APサーバ冗長化時にHIDDENストアはデフォルトでAPサーバごとに異なる暗号化キーが自動生成されるため復号に失敗するケースがある",
+        "supported": true
+      },
+      {
+        "claim": "冗長化環境ではHIDDENストアのキーを明示的に設定する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアの暗号化設定XMLでAesEncryptorとBase64Keyを使用し、keyとivの値が示されている",
+        "supported": true
+      },
+      {
+        "claim": "スケールアウト対処としてスティッキーセッション、セッションレプリケーション、NoSQL保存の3方法が挙げられている",
+        "supported": true
+      },
+      {
+        "claim": "セッションレプリケーションは廃棄容易性の点で劣ると言及している",
+        "supported": true
+      },
+      {
+        "claim": "入力～確認～完了画面間でのデータ保持(複数タブ不要)はDBストアが推奨",
+        "supported": true
+      },
+      {
+        "claim": "入力～確認～完了画面間でのデータ保持(複数タブ許容)はHIDDENストアが推奨",
+        "supported": true
+      },
+      {
+        "claim": "認証情報の保持にはDBストアまたはHTTPセッションストアが推奨",
+        "supported": true
+      },
+      {
+        "claim": "デフォルトではセッションの有効期間はHTTPセッションに保存されており、設定変更でデータベースに変更可能",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有のすべての主張（ストアの種類と特徴、スケールアウト時の注意点、HIDDENストアの暗号化設定XML、Redisストアの特徴、選択基準テーブル）はknowledgeセクションの内容と一致しており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッション変数の保存先（ストア）の種類・特徴・選択基準を直接扱うページ"
+      },
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "reason": "APサーバのスケールアウトとHTTPセッションの問題を扱うページ"
+      },
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "reason": "Redisをセッションストアとして使う場合の設定と特徴を扱うページ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションのスケールアウト設計セクションへの参照を持つページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "各ストアの特長と選択基準を一覧で示す、質問に最も直接的に答えるセクション"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "標準提供の3種類のストアとRedisストアの存在を示すセクション"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "HTTPセッションの問題とスケールアウトに必要な対処を説明するセクション"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "HIDDENストアの冗長化時の問題（暗号化キーの明示設定）を説明するセクション"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "本番環境でのRedisのSentinel/Cluster構成について触れるセクション"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "Redisの構成（単一/Master-Replica/Cluster）ごとのクライアントクラスを説明するセクション"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s18",
+        "relevance": "partial",
+        "reason": "ウェブアプリのスケールアウト設計へのリンクを提供するセクション"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 99099,
+    "duration_api_ms": 97519,
+    "num_turns": 8,
+    "total_cost_usd": 0.69698805,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6140,
+      "cache_read_input_tokens": 600836,
+      "cache_creation_input_tokens": 112339
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3217,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003342,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 6140,
+        "cacheReadInputTokens": 600836,
+        "cacheCreationInputTokens": 112339,
+        "webSearchRequests": 0,
+        "costUSD": 0.69364605,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

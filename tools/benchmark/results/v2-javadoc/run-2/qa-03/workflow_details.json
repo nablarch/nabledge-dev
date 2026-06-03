@@ -1,0 +1,103 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "相関バリデーション機能を含むBean Validationの主要な説明ページ"
+      },
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "Nablarch独自バリデーションにおける相関バリデーションの実装方法を含むページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "入力値チェックの概要のみで、メールアドレス相関バリデーションの具体的な実装情報を含まない"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "InjectFormインターセプタの設定情報のみで、相関バリデーションの実装詳細は別ページに集中している"
+      },
+      {
+        "path": "component/libraries/libraries-validation.json",
+        "reason": "バリデーション機能の概要ページで、個別実装情報を持たない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "メールアドレスと確認用メールアドレスの一致チェックそのものを例にした相関バリデーション実装例を含む"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "Nablarch ValidationにおけるmailAddressとconfirmMailAddressの相関バリデーション実装例を含む"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでBean Validationを使用するための設定方法を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "Nablarch ValidationでValidateForメソッドを実行する基本構造を説明する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで実装情報がない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "reason": "単項目バリデーションルール設定で相関バリデーションに直接関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s9",
+        "reason": "ドメインバリデーション設定で今回の質問の核心ではない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-nablarch-validation.json:s14",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/libraries/libraries-nablarch-validation.json:s11"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-bean-validation.json:s11",
+          "reason": "メールアドレス一致チェックの@AssertTrueによる実装例（任意項目への対処含む）を回答の主要根拠として使用"
+        },
+        {
+          "ref": "libraries-nablarch-validation.json:s14",
+          "reason": "Nablarch Validationでの@ValidateForによる相関バリデーション実装例を回答の根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-bean-validation.json:s16",
+          "reason": "InjectFormの設定は注意点レベルの補足情報のため、回答本体には含めず省略"
+        },
+        {
+          "ref": "libraries-nablarch-validation.json:s11",
+          "reason": "ValidateForの基本構造はs14でカバーされているため直接引用せず"
+        }
+      ]
+    }
+  }
+}

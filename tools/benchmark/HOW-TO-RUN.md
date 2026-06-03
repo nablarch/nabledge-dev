@@ -153,6 +153,13 @@ python3 -m tools.benchmark.scripts.report \
 閾値割れが出たシナリオについて、DeepEval の判定根拠（reason）だけで原因を分類せず、
 **必ず回答とナレッジを突き合わせて事実を確認する**。
 
+**確認対象（必須）**:
+- `evaluation.json` の `diagnostics.selected_pages` に列挙されたページの JSON ファイルを**全セクション**読む（`selected_sections` に挙がったセクションだけでなく、そのページの全内容を確認する）
+- Javadoc ファイルが `selected_sections` に含まれている場合は、その Javadoc JSON を**全セクション**読む
+- クレームに関連するクラス名や機能が `.claude/skills/nabledge-6/knowledge/javadoc/` に存在する場合は、そのファイルも確認する
+
+**注意**: ページの `content`（導入文）はセクション番号がなく、`s1` 以降の named section とは別に存在する。自動評価器はセクション単位でナレッジを渡すため、ページ全体の `content` フィールドを見落としやすい。手動確認では必ずページの `content` も確認すること。
+
 各シナリオについて以下を確認する:
 
 1. `evaluation.json` の `reason` を読む（DeepEval が何を問題と判定したか）

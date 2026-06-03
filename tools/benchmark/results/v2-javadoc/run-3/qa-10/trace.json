@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 77126,
+  "duration_api_ms": 76512,
+  "ttft_ms": 3642,
+  "num_turns": 5,
+  "result": "Step 4で読み込んだセクションを基に回答を生成します。\n\n**結論**: SQLファイルに `$if(プロパティ名) {条件}` 構文を使用することで、対応するBeanプロパティが未入力（null/空文字）の場合に条件を自動的にWHERE句から除外できます。\n\n**根拠**:\n\nSQLファイルで可変条件を記述し、`prepareParameterizedSqlStatementBySqlId` の第2引数に条件BeanをわたすとSQL構築時に動的に組み立てられます。\n\n```sql\n-- SQLファイル例\nSELECT_USERS =\nselect\n  user_id,\n  user_name,\n  user_kbn\nfrom\n  user\nwhere\n  $if (userName) {user_name like :userName%}\n  and $if (userKbn) {user_kbn = :userKbn}\n  and birthday = :birthday\n```\n\nこの例では `userName` と `userKbn` が可変条件で、Beanプロパティが null または空文字列の場合、その条件はWHERE句から除外されます。\n\n```java\nUserEntity entity = new UserEntity();\nentity.setUserName(\"なまえ\"); // userKbn は設定しない (null のまま)\n\nAppDbConnection connection = DbConnectionContext.getConnection();\n\n// 第2引数にBeanを渡す → SQLの可変条件が組み立てられる\nParameterizedSqlPStatement statement = connection.prepareParameterizedSqlStatementBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#selectUsers\", entity);\n\nSqlResultSet result = statement.retrieve(entity);\n// → user_kbn の条件は除外され、user_name like 'なまえ%' and birthday = ? のみが実行される\n```\n\nIN句の条件数を動的にしたい場合は、`$if` と `[]` 記法を組み合わせます。\n\n```sql\n$if (userKbnList) {user_kbn in (:userKbnList[])}\n```\n\n**注意点**:\n- `$if` 構文はWHERE句内のみ使用可能\n- `$if` のネストは不可\n- in句のプロパティは配列か `java.util.Collection` 型で宣言すること。null またはサイズ0の場合は `$if` で可変条件にしないと `in (null)` となり意図しない結果になる\n- この機能はウェブ検索画面のようにユーザー入力で条件が変わる場合向け。条件だけ異なる複数のSQLを共通化する目的では使用しないこと\n\n参照: libraries-database.json:s21, libraries-database.json:s22\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-database.json\", \"reason\": \"s6に「実行時のBeanオブジェクトの状態を元にSQL文を動的に構築できる」、s21に「可変条件を持つSQLを実行する」が明示されており、質問に直接対応する\"},\n      {\"path\": \"component/libraries/libraries-universal-dao.json\", \"reason\": \"s7に「任意のSQL(SQLファイル)で検索する」があり、動的SQL実行との関連を確認\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"ウェブアプリケーションのデータベースアクセスの概要として関連\"},\n      {\"path\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"reason\": \"ウェブアプリの検索機能サンプルとして関連\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/nablarch-batch/*\", \"reason\": \"バッチ処理方式のためウェブアプリケーションの質問には不該当\"},\n      {\"path\": \"processing-pattern/jakarta-batch/*\", \"reason\": \"Jakartaバッチ方式のため不該当\"},\n      {\"path\": \"processing-pattern/mom-messaging/*\", \"reason\": \"MOMメッセージング方式のため不該当\"},\n      {\"path\": \"processing-pattern/restful-web-service/*\", \"reason\": \"RESTfulウェブサービス方式のため不該当\"},\n      {\"path\": \"component/handlers/*\", \"reason\": \"ハンドラ設定に関する内容であり、動的SQL実装方法には直接関係しない\"},\n      {\"path\": \"about/*\", \"reason\": \"概要・移行ガイド等であり実装方法に直接関係しない\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s21\", \"relevance\": \"high\", \"reason\": \"「可変条件を持つSQLを実行する」として$if構文の詳細な説明とコード例が含まれており、質問の核心に直接回答する\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s22\", \"relevance\": \"high\", \"reason\": \"in句の条件数が可変となるSQL実行方法を説明しており、動的条件の重要なパターン\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s6\", \"relevance\": \"partial\", \"reason\": \"動的SQL構築機能の概要説明として補足的に有用\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s1-s5\", \"reason\": \"機能概要・設定方法でありSQLの動的条件の実装方法には直接関係しない\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s7-s20\", \"reason\": \"like検索・型変換・接続設定等であり動的条件構築とは別トピック\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s23-s36\", \"reason\": \"order byの動的切り替え、BLOB/CLOB、キャッシュ等であり質問の主旨と異なる\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s3\", \"reason\": \"データベースアクセスの概要のみで具体的な動的SQL実装方法を含まない\"},\n      {\"file\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"section_id\": \"s1\", \"reason\": \"Getting Startedサンプルであり、$if構文の詳細はlibraries-database.jsonのs21が包含している\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-database.json:s21\",\n      \"component/libraries/libraries-database.json:s22\",\n      \"component/libraries/libraries-database.json:s6\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"libraries-database.json:s21\", \"reason\": \"$if構文の記法・除外条件・制約・SQLコード例・Javaコード例を回答の根拠として使用\"},\n        {\"ref\": \"libraries-database.json:s22\", \"reason\": \"in句可変条件の$if+[]記法とnull時の注意点を補足として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"libraries-database.json:s6\", \"reason\": \"機能の概要説明のみでs21/s22が具体的内容を包含しているため不使用\"}\n      ]\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "e7426066-aa1f-4740-9c6b-971330bb9912",
+  "total_cost_usd": 0.6092307499999999,
+  "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 115821,
+    "cache_read_input_tokens": 363530,
+    "output_tokens": 4167,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 115821
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3195,
+      "outputTokens": 25,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00332,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 6,
+      "outputTokens": 4167,
+      "cacheReadInputTokens": 363530,
+      "cacheCreationInputTokens": 115821,
+      "webSearchRequests": 0,
+      "costUSD": 0.6059107499999999,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "35b7f052-36f2-4660-873f-d173ff68ed91"
+}

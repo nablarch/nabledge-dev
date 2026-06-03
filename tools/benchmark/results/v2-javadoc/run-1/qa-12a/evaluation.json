@@ -1,0 +1,186 @@
+{
+  "scenario_id": "qa-12a",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer describes using JSP custom tags (`<n:error>`) and Thymeleaf templates to display error messages from the request scope (`errors` key), which conveys the same information as the fact that 'エラー表示タグでリクエストスコープのエラーメッセージを表示する' (error display tags are used to display request-scope error messages).",
+      "fact": "エラー表示タグでリクエストスコープのエラーメッセージを表示する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@InjectFormでバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorでエラー時の遷移先を指定する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorが設定されていない場合はバリデーションエラーがシステムエラー扱いになる",
+        "supported": true
+      },
+      {
+        "claim": "HTTPエラー制御ハンドラがApplicationExceptionのメッセージをErrorMessagesに変換してリクエストスコープのerrorsキーに格納する",
+        "supported": true
+      },
+      {
+        "claim": "errorsキー名はWebConfig#errorMessageRequestAttributeNameで変更可能",
+        "supported": true
+      },
+      {
+        "claim": "Thymeleafでerrors.hasError('form.userName')やerrors.getMessage('form.userName')を使ってエラーを表示する",
+        "supported": false
+      },
+      {
+        "claim": "errors.allMessagesでメッセージを一覧表示できる",
+        "supported": false
+      },
+      {
+        "claim": "BeanValidationStrategyをvalidationStrategyという名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "JSPのカスタムタグ<n:error>でエラー表示できる",
+        "supported": true
+      }
+    ],
+    "reason": "Thymeleafを使ったエラー表示（errors.hasError()、errors.getMessage()、errors.allMessages）はKnowledgeセクションに記載がない。Nablarchのエラー表示はJSPカスタムタグ（<n:error>、<n:errors>）を使用するものとして文書化されており、ErrorMessagesオブジェクトにhasError()やgetMessage()などのメソッドが存在するという記述はどこにもない。これらのThymeleaf向けAPIは架空のものと判断される。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — Thymeleafを使ったエラー表示（errors.hasError()、errors.getMessage()、errors.allMessages）はKnowledgeセクションに記載がない。Nablarchのエラー表示はJSPカスタムタグ（<n:error>、<n:errors>）を使用するものとして文書化されており、ErrorMessagesオブジェクトにhasError()やgetMessage()などのメソッドが存在するという記述はどこにもない。これらのThymeleaf向けAPIは架空のものと判断される。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-error-message.json",
+        "reason": "バリデーションエラーのメッセージを画面表示する方法を直接説明するページ"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーションの入力値チェックに使用するInjectFormインターセプタの説明"
+      },
+      {
+        "path": "component/handlers/handlers-on-error.json",
+        "reason": "バリデーションエラー時の遷移先を指定するOnErrorインターセプタの説明"
+      },
+      {
+        "path": "component/handlers/handlers-HttpErrorHandler.json",
+        "reason": "ApplicationExceptionのメッセージをErrorMessagesに変換してリクエストスコープに設定するハンドラの説明"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationのエラーメッセージ定義とウェブアプリケーションでの使用方法の説明"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "JSPカスタムタグのn:errorタグによるエラー表示の実装例"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-error-message.json",
+        "section_id": "root",
+        "relevance": "high",
+        "reason": "エラーメッセージを画面表示する方法全体（Thymeleaf実装例含む）を説明"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "InjectFormの使用方法と業務アクションの実装例"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "バリデーションエラー時の遷移先指定（@OnError必須）"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "@OnErrorアノテーションの基本的な使用方法"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "エラー遷移先でデータ取得が必要な場合の内部フォワード実装例"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ApplicationExceptionのメッセージがErrorMessagesとしてリクエストスコープerrorsに格納される仕組み"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "バリデーションエラーメッセージのプロパティファイルでの定義方法"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "BeanValidationStrategyのコンポーネント設定"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s18",
+        "relevance": "partial",
+        "reason": "バリデーションエラー時にもリクエストスコープからフォームを取得するcopyBeanToRequestScopeOnError設定"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "JSPのn:errorタグを使ったエラー表示の実装例"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 173784,
+    "duration_api_ms": 173188,
+    "num_turns": 14,
+    "total_cost_usd": 0.95886855,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 11265,
+      "cache_read_input_tokens": 875296,
+      "cache_creation_input_tokens": 139725
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3175,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 11265,
+        "cacheReadInputTokens": 875296,
+        "cacheCreationInputTokens": 139725,
+        "webSearchRequests": 0,
+        "costUSD": 0.95556855,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

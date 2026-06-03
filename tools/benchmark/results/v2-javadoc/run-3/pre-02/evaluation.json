@@ -1,0 +1,160 @@
+{
+  "scenario_id": "pre-02",
+  "description": "入力バリデーションの実装方法を知りたいが、バッチかWebかRESTかが不明",
+  "input": "入力チェック（バリデーション）の実装方法を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that web application input validation is implemented using the `@InjectForm` interceptor combined with Bean Validation annotations on Form classes. The answer includes code examples showing `@InjectForm` usage on action methods, which directly confirms the fact that WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う。",
+      "fact": "WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "BeanValidationStrategyをvalidationStrategyという名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "FormクラスのプロパティはString型で定義する",
+        "supported": true
+      },
+      {
+        "claim": "アノテーションをFieldかProperty(getter)に設定する",
+        "supported": true
+      },
+      {
+        "claim": "ドメインバリデーション(@Domain)の使用を推奨する",
+        "supported": true
+      },
+      {
+        "claim": "@Required はForm側で設定する",
+        "supported": true
+      },
+      {
+        "claim": "@InjectFormアノテーションをアクションメソッドに設定する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorを設定しない場合、バリデーションエラーがシステムエラー扱いになる",
+        "supported": true
+      },
+      {
+        "claim": "バリデーション成功後、リクエストスコープに'form'というキーでバリデーション済みオブジェクトが格納される",
+        "supported": true
+      },
+      {
+        "claim": "@InjectFormのvalidateパラメータはバリデーションメソッド名（グループ名）を指定する",
+        "supported": false
+      },
+      {
+        "claim": "データベースとの相関バリデーションはSQLインジェクション等のリスクを避けるため業務アクション側で行う",
+        "supported": true
+      }
+    ],
+    "reason": "@InjectFormのvalidateパラメータについて、回答では「バリデーションメソッド名（グループ名）」と説明しているが、ナレッジセクションにはvalidateパラメータの説明が記載されていない。実際のNablarchドキュメントではvalidateはバリデーショングループを指定するものであり、「バリデーションメソッド名」という説明は不正確・誤解を招く表現である。ナレッジには@InjectForm#validationGroupにグループを指定する別の例が示されており、validateパラメータとvalidationGroupパラメータが混同されている可能性がある。この点がナレッジに裏付けられていない疑わしいクレームである。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — @InjectFormのvalidateパラメータについて、回答では「バリデーションメソッド名（グループ名）」と説明しているが、ナレッジセクションにはvalidateパラメータの説明が記載されていない。実際のNablarchドキュメントではvalidateはバリデーショングループを指定するものであり、「バリデーションメソッド名」という説明は不正確・誤解を招く表現である。ナレッジには@InjectForm#validationGroupにグループを指定する別の例が示されており、validateパラメータとvalidationGroupパラメータが混同されている可能性がある。この点がナレッジに裏付けられていない疑わしいクレームである。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationの主要な実装方法・設定・アノテーションを網羅したページ"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーションでバリデーションを実行する中心機能 @InjectForm インターセプタの説明"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの入力値チェック機能の概要とリンク先を示すページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "バリデーションルールのアノテーション設定方法と String 型の必須要件を説明"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションで入力値チェックを行う際の具体的な方法（InjectForm + BeanValidationStrategy）"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "@InjectForm の使用方法・実装コード例を提供"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@OnError でバリデーションエラー時の遷移先を指定する必要性を説明"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "BeanValidationStrategy のコンポーネント設定方法を提供"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "ドメインバリデーション（推奨実装）の設定・実装例"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションの入力値チェック機能への参照を提供"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 88214,
+    "duration_api_ms": 88207,
+    "num_turns": 6,
+    "total_cost_usd": 0.5795229500000001,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 5397,
+      "cache_read_input_tokens": 222594,
+      "cache_creation_input_tokens": 114269
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3141,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0032660000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5,
+        "outputTokens": 5397,
+        "cacheReadInputTokens": 222594,
+        "cacheCreationInputTokens": 114269,
+        "webSearchRequests": 0,
+        "costUSD": 0.5762569500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

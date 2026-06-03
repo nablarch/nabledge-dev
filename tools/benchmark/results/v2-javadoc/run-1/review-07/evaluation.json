@@ -1,0 +1,158 @@
+{
+  "scenario_id": "review-07",
+  "description": "Web画面で外部サイトからの不正なPOSTリクエストを防ぐ必要がある。CSRF対策をNablarchの仕組みで実装したい。",
+  "input": "外部サイトから不正にPOSTされるのを防ぎたい。NablarchにCSRF対策の仕組みはある？どう設定する？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答中に「CSRFトークン検証ハンドラ（CsrfTokenVerificationHandler）をハンドラ構成に追加するだけで」CSRFトークンの生成と検証が行われることが明記されており、ハンドラの処理内容としてセッションストアからのトークン取得・新規生成・検証の手順が詳述されています。これはファクトの内容と一致しています。",
+      "fact": "CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "CsrfTokenVerificationHandlerをハンドラ構成に追加するだけでCSRF対策が適用される",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアからCSRFトークンを取得し、なければ新規生成してセッションストアに保存する",
+        "supported": true
+      },
+      {
+        "claim": "GET/HEAD/TRACE/OPTIONSは検証対象外、POST/PUT等は検証対象",
+        "supported": true
+      },
+      {
+        "claim": "リクエストのCSRFトークンはヘッダ X-CSRF-TOKEN またはパラメータ csrf-token から取得",
+        "supported": true
+      },
+      {
+        "claim": "不一致の場合はBadRequest(400)を返す",
+        "supported": true
+      },
+      {
+        "claim": "JSPカスタムタグを使用している場合、CSRFトークンは画面に自動で出力される",
+        "supported": true
+      },
+      {
+        "claim": "XML設定例（sessionStoreHandler → nablarchTagHandler → csrfTokenVerificationHandlerの順）",
+        "supported": true
+      },
+      {
+        "claim": "sessionStoreHandlerの後ろに配置すること",
+        "supported": true
+      },
+      {
+        "claim": "JSP使用時はnablarchTagHandlerの後ろに配置すること",
+        "supported": true
+      },
+      {
+        "claim": "ログイン時にセッションストアを破棄・再生成する実装であればCSRFトークン再生成は自動で行われる",
+        "supported": true
+      },
+      {
+        "claim": "セッションIDの再生成にとどめる実装の場合はCsrfTokenUtil.regenerateCsrfToken()を呼び出す",
+        "supported": true
+      },
+      {
+        "claim": "リクエスト単体テスト時はNopHandlerに差し替えて無効化する",
+        "supported": true
+      },
+      {
+        "claim": "データベースを使用した二重サブミット防止機能はCSRF対策に対応していない",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有のクラス名、設定方法、動作仕様はすべてknowledgeセクションの内容と一致しており、fabricatedな情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "CSRFを含むセキュリティチェックリストで、NablarchのCSRF対策機能への対応状況が記載されている"
+      },
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "reason": "CSRFトークン検証ハンドラの詳細な設定方法・使用方法が記載されている"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションのCSRF対策セクションがあり、処理方式がウェブアプリケーションに合致する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSRFの根本的解決策としてNablarchのCSRF対策機能が推奨されており、二重サブミット防止機能との使い分けについても記載されている"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "CSRFトークン検証ハンドラの具体的な設定例（XML設定）と動作の詳細が記載されており、回答に必須"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "ハンドラの配置順序に関する制約が記載されており、正しく設定するために必要"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "ログイン時のCSRFトークン再生成について記載されており、セキュリティ上重要な注意点を提供する"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s19",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションのCSRF対策セクションだが、ハンドラへのリンクのみで内容はs4と重複"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 87143,
+    "duration_api_ms": 86249,
+    "num_turns": 10,
+    "total_cost_usd": 0.7287248499999999,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 5207,
+      "cache_read_input_tokens": 603482,
+      "cache_creation_input_tokens": 124323
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3199,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003334,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 5207,
+        "cacheReadInputTokens": 603482,
+        "cacheCreationInputTokens": 124323,
+        "webSearchRequests": 0,
+        "costUSD": 0.7253908499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

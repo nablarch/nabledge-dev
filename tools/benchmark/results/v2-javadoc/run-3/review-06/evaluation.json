@@ -1,0 +1,157 @@
+{
+  "scenario_id": "review-06",
+  "description": "REST APIのリソースクラスでJaxRsHttpRequestからクエリーパラメータを取得する処理を書いている。URLパスの一部をパスパラメータとして使う箇所もある。",
+  "input": "REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "Answerはルーティング設定（XMLベースおよび@Pathアノテーション）でパスパラメータの名前を定義し（例：`:id`や`{id}`）、リソースクラスで`JaxRsHttpRequest#getPathParam()`を使用してそのパラメータを受け取る実装を明示しており、Factの内容を含んでいる。",
+      "fact": "パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「クエリーパラメータの取得：`JaxRsHttpRequest#getParamMap()` でパラメータMapを取得し、`BeanUtil.createAndCopy()` でFormクラスにマッピングする」と明記されており、クエリーパラメータをJaxRsHttpRequestから取得するという事実が含まれています。",
+      "fact": "クエリーパラメータはJaxRsHttpRequestから取得する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "JaxRsHttpRequest#getPathParam()でパスパラメータを取得する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsHttpRequest#getParamMap()でクエリーパラメータを取得する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy()でFormクラスにマッピングする",
+        "supported": true
+      },
+      {
+        "claim": "XMLルーティング（routes.xml）でパスパラメータは:パラメータ名形式で定義する",
+        "supported": true
+      },
+      {
+        "claim": "XMLルーティングでクエリーパラメータはクエリー文字列を除いたパスのみ定義する",
+        "supported": true
+      },
+      {
+        "claim": "PathOptionsProviderRoutesMapping使用時に@Pathアノテーションでルーティング定義できる",
+        "supported": true
+      },
+      {
+        "claim": "@Pathアノテーションでのパスパラメータは{パラメータ名}形式で記述する",
+        "supported": true
+      },
+      {
+        "claim": "@Pathアノテーションで正規表現も指定可能（例: {id : \\d+}）",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta RESTful Web Servicesの@PathParam/@QueryParamは使用できない",
+        "supported": true
+      },
+      {
+        "claim": "JBoss/WildFlyなどvfsファイルシステムを使用するサーバでは@Pathアノテーションによるルーティングは使用不可",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張はナレッジセクションの内容で直接裏付けられており、fabricated informationは検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "reason": "パスパラメータ・クエリーパラメータの具体的な実装方法（メソッドシグネチャ、コード例）を扱う専用ページ"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "reason": "ルーティング設定（XMLベースおよびPathアノテーションベース）を詳細に説明するページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細でURIマッピングやパスパラメータへの参照先を示すページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "パスパラメータのルーティング設定とgetPathParam()による取得方法のコード例が含まれる"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "クエリーパラメータのルーティング設定とBeanUtilを使ったForm変換のコード例が含まれる"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "RoutesMapping（ディスパッチハンドラ）の設定方法でルーティングの前提知識"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "routes.xmlファイルの作成方法の説明"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "@Pathアノテーションによるルーティングマッピング実装例"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "@Pathアノテーションでのパスパラメータ定義と正規表現指定の実装例"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 119325,
+    "duration_api_ms": 118587,
+    "num_turns": 7,
+    "total_cost_usd": 0.6150408999999999,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 7929,
+      "cache_read_input_tokens": 350083,
+      "cache_creation_input_tokens": 103388
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3213,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033580000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 7929,
+        "cacheReadInputTokens": 350083,
+        "cacheCreationInputTokens": 103388,
+        "webSearchRequests": 0,
+        "costUSD": 0.6116828999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

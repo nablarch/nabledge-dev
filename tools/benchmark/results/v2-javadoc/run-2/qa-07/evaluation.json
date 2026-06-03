@@ -1,0 +1,166 @@
+{
+  "scenario_id": "qa-07",
+  "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。",
+  "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の②DataReader実装クラスのコード例に`ObjectMapperFactory.create(MyRecordForm.class, new FileInputStream(file))`を使用してデータを読み込む実装が示されており、ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込むという事実が含まれている。",
+      "fact": "ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "データバインド機能（nablarch-common-databind）を使用してCSVをJava Beansとして読み込む",
+        "supported": true
+      },
+      {
+        "claim": "@Csv アノテーションに properties と type = CsvType.CUSTOM を指定できる",
+        "supported": true
+      },
+      {
+        "claim": "@CsvFormat アノテーションに charset, fieldSeparator, ignoreEmptyLine, lineSeparator, quote, quoteMode, requiredHeader, emptyToNull を指定できる",
+        "supported": true
+      },
+      {
+        "claim": "@LineNumber アノテーションをgetterに付与することで論理行番号が自動設定される",
+        "supported": true
+      },
+      {
+        "claim": "外部ファイルを受け付ける場合はプロパティは原則 String 型で定義する",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapperIterator を使って DataReader を実装できる",
+        "supported": true
+      },
+      {
+        "claim": "DataReader インターフェースは read, hasNext, close メソッドを持つ",
+        "supported": true
+      },
+      {
+        "claim": "FilePathSetting.getInstance().getFileWithoutCreate() でファイルパスを取得できる",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapperFactory.create(Class, InputStream) で ObjectMapper を生成できる",
+        "supported": true
+      },
+      {
+        "claim": "BatchAction を継承して handle と createReader メソッドを実装する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy を使って Form から Entity に変換できる",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert でエンティティをDBに登録できる",
+        "supported": true
+      },
+      {
+        "claim": "ObjectMapper はスレッドアンセーフであり複数スレッドで共有しない",
+        "supported": true
+      },
+      {
+        "claim": "CsvType.DEFAULT の場合は @CsvFormat を省略できる",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-common-databind モジュールの依存定義が正しい",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張（アノテーション名・属性・クラス名・インターフェース・API）はナレッジセクションに記載の実装例およびドキュメントで裏付けられており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-data-bind.json",
+        "reason": "データバインド機能はCSVをJava Beansオブジェクトとして読み込む中心的な機能であり、質問に直接対応する"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "ファイルをDBに登録するバッチのGetting Startedで、CSVファイル読み込み+バッチ実装の完全なサンプルを提供している"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチのファイル入出力機能詳細と標準DataReaderの一覧を提供している"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ObjectMapperFactoryを使ったJava Beansへの1件ずつ読み込みの実装例を直接提供している"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s15",
+        "relevance": "high",
+        "reason": "@Csv/@CsvFormatアノテーションによるCSVフォーマット指定方法を示しており、Beansクラスの定義に必須"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "DataReader実装クラスとFormクラスのCSVバインド定義の完全なサンプルを提供している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "BatchAction継承クラスでhandle/createReaderを実装する業務アクションのサンプルを提供している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "ファイル入出力で使用できる標準DataReaderの一覧を提供し、選択肢の把握に役立つ"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 121230,
+    "duration_api_ms": 120907,
+    "num_turns": 7,
+    "total_cost_usd": 0.6482691,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 8304,
+      "cache_read_input_tokens": 355262,
+      "cache_creation_input_tokens": 110342
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3175,
+        "outputTokens": 31,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00333,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 8304,
+        "cacheReadInputTokens": 355262,
+        "cacheCreationInputTokens": 110342,
+        "webSearchRequests": 0,
+        "costUSD": 0.6449391000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

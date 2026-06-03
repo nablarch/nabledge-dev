@@ -1,0 +1,113 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s29に「現在のトランザクションとは異なるトランザクションでSQLを実行する」セクションが存在し、質問に直接答える内容を含む"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s20に「現在のトランザクションとは異なるトランザクションで実行する」セクションがあり、ユニバーサルDAO版の実装方法を提供する"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "s8「別トランザクションで実行する」セクションがあり、Domaアダプタを使った別トランザクション実行方法を提供する"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "トランザクション制御ハンドラの設定方法とトランザクション名の仕組みが別トランザクション理解の背景として関連する"
+      },
+      {
+        "path": "component/handlers/handlers-database-connection-management-handler.json",
+        "reason": "データベース接続管理ハンドラとトランザクション管理の仕組みがバッチの別トランザクション実装の背景として関連する"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチの機能詳細だがトランザクション制御の具体実装は別ライブラリページに記載されているため"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "トランザクション管理の基本設定ページだが、別トランザクション実行の具体APIはlibraries-database.jsonにあるため副次的"
+      },
+      {
+        "path": "about/about-nablarch/*",
+        "reason": "Nablarch概要ページは質問の実装方法に直接関連しない"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/*",
+        "reason": "Jakarta Batchの処理パターンは質問がNablarchバッチのため対象外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "業務トランザクションとは別のトランザクションでSQLを実行するための具体的手順とコード例が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "ユニバーサルDAOで別トランザクションを使う方法（UniversalDao.Transaction）が具体的なコードで説明されている"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "DomaアダプタでのrequiresNew()を使った別トランザクション実行方法が記載されているが、DomaはNablarch標準APIではなくアダプタのため補助的"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s4",
+        "reason": "トランザクション制御ハンドラの設定方法だが、業務トランザクション外での個別実行方法はlibraries-database.json:s29に集約されている"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s7",
+        "reason": "複数トランザクションをハンドラキューで設定する方法だが、質問の「別トランザクションでSQLを実行する」はSimpleDbTransactionManagerを使う方法で回答できる"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s10",
+        "reason": "データベース接続設定の基本情報でありSimpleDbTransactionManagerの背景情報だが、回答に必要な具体APIはs29に含まれる"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s7",
+        "reason": "Domaの基本的なデータベースアクセス実装方法でありs8の前提だが、別トランザクション実行の主旨から外れる"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/adapters/adapters-doma-adaptor.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManagerとSimpleDbTransactionExecutorを使った別トランザクション実行のコンポーネント設定と実装例をそのまま引用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s20",
+          "reason": "UniversalDao.Transactionを継承した別トランザクション実行方法のコンポーネント設定と実装例をそのまま引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "adapters-doma-adaptor.json:s8",
+          "reason": "Domaアダプタ固有のrequiresNew()アプローチは補足情報であり、質問のNablarchバッチ標準実装（SimpleDbTransactionManager）で十分回答できるため省略した"
+        }
+      ]
+    }
+  }
+}

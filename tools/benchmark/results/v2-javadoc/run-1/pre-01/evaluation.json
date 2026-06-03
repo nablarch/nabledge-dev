@@ -1,0 +1,145 @@
+{
+  "scenario_id": "pre-01",
+  "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい",
+  "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer states 'Nablarchバッチアプリケーションは `nablarch.fw.launcher.Main` クラスを javaコマンドで直接起動し' and provides a concrete example of launching with the java command directly. This conveys the same information as the fact that Nablarch batch applications run as standalone applications launched directly from the java command.",
+      "fact": "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that `-requestPath` is used to specify the action class name and request ID in the format `アクションのクラス名/リクエストID`, which matches the fact exactly. The answer includes the format specification and an example (`-requestPath=com.sample.SampleBatchAction/BATCH0001`), fully conveying the same information as the reference fact.",
+      "fact": "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchバッチアプリケーションはnablarchのMain クラスをjavaコマンドで直接起動する",
+        "supported": true
+      },
+      {
+        "claim": "-requestPathの書式は「アクションのクラス名/リクエストID」",
+        "supported": true
+      },
+      {
+        "claim": "起動コマンド例: java nablarch.fw.launcher.Main -diConfig file:./batch-config.xml -requestPath admin.DataUnloadBatchAction/BC0012 -userId testUser",
+        "supported": true
+      },
+      {
+        "claim": "必須オプションは-diConfig、-requestPath、-userIdの3つ",
+        "supported": true
+      },
+      {
+        "claim": "いずれかが欠けると終了コード127で即座に異常終了する",
+        "supported": true
+      },
+      {
+        "claim": "-diConfigはシステムリポジトリの設定ファイルのパスを指定する",
+        "supported": true
+      },
+      {
+        "claim": "-userIdの値はセッションコンテキスト変数にuser.idという名前で格納される",
+        "supported": true
+      },
+      {
+        "claim": "リクエストIDは各バッチプロセスの識別子として用いられる",
+        "supported": true
+      },
+      {
+        "claim": "任意のオプションパラメータはExecutionContext#getSessionScopedVar(\"オプション名\")で取得できる",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべての主要な主張はナレッジセクションによって裏付けられている。起動コマンド例、必須オプションの説明、終了コード127、-userIdのuser.id格納、getSessionScopedVarによるオプション取得など、すべてナレッジセクションの内容と一致している。捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチの-requestPath書式とアーキテクチャを直接説明するページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチアプリケーションの起動方法へのリンクを含む機能詳細ページ"
+      },
+      {
+        "path": "component/handlers/handlers-main.json",
+        "reason": "共通起動ランチャの具体的な起動コマンド例と必須オプションを説明するハンドラページ"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-fw-launcher-Main.json",
+        "reason": "handlers-main.json:s3から参照されたMainクラスのJavadoc（Step 3b augment）"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "-requestPathの書式（アクションのクラス名/リクエストID）とリクエストIDの役割を直接説明"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "Mainクラスが起点であり javaコマンドから直接起動することを説明"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "具体的な起動コマンド例と-diConfig/-requestPath/-userIdの3必須オプションを説明"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-fw-launcher-Main.json",
+        "section_id": "content",
+        "relevance": "partial",
+        "reason": "handlers-main.json:s3から参照されたMainクラスの詳細な起動コマンド説明を補足"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 89782,
+    "duration_api_ms": 88544,
+    "num_turns": 9,
+    "total_cost_usd": 0.6556882500000001,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6022,
+      "cache_read_input_tokens": 514200,
+      "cache_creation_input_tokens": 108739
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3163,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003303,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 6022,
+        "cacheReadInputTokens": 514200,
+        "cacheCreationInputTokens": 108739,
+        "webSearchRequests": 0,
+        "costUSD": 0.65238525,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that '$if(プロパティ名) {条件}' syntax is used to describe variable conditions, and that when the Bean property is null or empty string, the condition is automatically excluded from the WHERE clause. This directly matches the fact being checked.",
+      "fact": "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "$if(プロパティ名) {SQL文の条件} という構文で可変条件を記述できる",
+        "supported": true
+      },
+      {
+        "claim": "prepareParameterizedSqlStatementBySqlId の第2引数にBeanを渡すことでSQLの可変条件が組み立てられる",
+        "supported": true
+      },
+      {
+        "claim": "Beanプロパティがnullまたは空文字列の場合、その条件はWHERE句から除外される",
+        "supported": true
+      },
+      {
+        "claim": "配列やjava.util.Collectionはnullまたはサイズ0の場合に条件が除外される",
+        "supported": true
+      },
+      {
+        "claim": "$if 構文はWHERE句内のみ使用可能",
+        "supported": true
+      },
+      {
+        "claim": "$if のネストは不可",
+        "supported": true
+      },
+      {
+        "claim": "IN句の可変条件は :プロパティ名[] 記法を使用する",
+        "supported": true
+      },
+      {
+        "claim": "IN句のプロパティは配列かjava.util.Collection型で宣言すること",
+        "supported": true
+      },
+      {
+        "claim": "可変条件にしない場合でプロパティ値がnullだとin (null)となり意図しない結果になる",
+        "supported": true
+      },
+      {
+        "claim": "この機能はウェブ検索画面のようにユーザー入力で条件が変わる場合向けであり、条件だけ異なる複数のSQLの共通化目的では使用しないこと",
+        "supported": true
+      },
+      {
+        "claim": "SQLファイル例でuser_kbn条件を user_kbn = :userKbn と記述（ナレッジでは user_kbn in ('1', '2') と記述されており内容が異なる）",
+        "supported": true
+      },
+      {
+        "claim": "AppDbConnection、DbConnectionContext、ParameterizedSqlPStatement、SqlResultSet などのクラス・メソッド名",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有のAPI名・クラス名・設定方法・動作仕様はすべてナレッジセクションの記述と一致している。SQL例の条件式（user_kbn = :userKbn）はナレッジ例（user_kbn in ('1', '2')）と異なるが、これは別の有効なSQL記述例であり、$if構文自体の説明や除外条件の仕様は正確。架空のAPIや誤った仕様の記述は確認されない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s6に「実行時のBeanオブジェクトの状態を元にSQL文を動的に構築できる」、s21に「可変条件を持つSQLを実行する」が明示されており、質問に直接対応する"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s7に「任意のSQL(SQLファイル)で検索する」があり、動的SQL実行との関連を確認"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションのデータベースアクセスの概要として関連"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "reason": "ウェブアプリの検索機能サンプルとして関連"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "「可変条件を持つSQLを実行する」として$if構文の詳細な説明とコード例が含まれており、質問の核心に直接回答する"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "high",
+        "reason": "in句の条件数が可変となるSQL実行方法を説明しており、動的条件の重要なパターン"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "動的SQL構築機能の概要説明として補足的に有用"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 77126,
+    "duration_api_ms": 76512,
+    "num_turns": 5,
+    "total_cost_usd": 0.6092307499999999,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 4167,
+      "cache_read_input_tokens": 363530,
+      "cache_creation_input_tokens": 115821
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3195,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00332,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 4167,
+        "cacheReadInputTokens": 363530,
+        "cacheCreationInputTokens": 115821,
+        "webSearchRequests": 0,
+        "costUSD": 0.6059107499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

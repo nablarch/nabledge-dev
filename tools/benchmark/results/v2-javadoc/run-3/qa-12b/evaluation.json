@@ -1,0 +1,155 @@
+{
+  "scenario_id": "qa-12b",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "UNCERTAIN",
+      "reason": "回答は@Validアノテーションでバリデーションが実行されることについては述べているが、「バリデーションエラーが自動的にエラーレスポンスになる」という部分については明確に述べていない。むしろ回答では、デフォルトのErrorResponseBuilderはステータス400を返すだけでエラーメッセージをボディに含めないため、カスタムクラスを作成する必要があると説明しており、「自動的にエラーレスポンスになる」という事実とは若干異なるニュアンスを示している。@Validによりバリデーションが実行されること自体は述べられているが、それが「自動的にエラーレスポンスになる」という点は明示的に述べられておらず、判断が難しい。",
+      "fact": "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「② ErrorResponseBuilder を継承してエラーメッセージを返す」セクションで、ErrorResponseBuilderの継承クラス(SampleErrorResponseBuilder)を作成し、ApplicationExceptionの場合にHTTPレスポンスのボディにエラーメッセージを設定する実装例が明示されている。これはファクトの内容と一致する。",
+      "fact": "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "リソースメソッドに@Validアノテーションを設定するとバリデーションが実行される",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderを継承してエラーレスポンスにメッセージを設定する",
+        "supported": true
+      },
+      {
+        "claim": "ApplicationExceptionの場合にステータス400でJSONを返す",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsResponseHandlerのerrorResponseBuilderプロパティにカスタムクラスを設定する",
+        "supported": true
+      },
+      {
+        "claim": "デフォルトのErrorResponseBuilderはステータス400のレスポンスを返すだけでエラーメッセージをボディに含めない",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderの処理中に例外が発生するとクライアントにレスポンスを返せない状態になる",
+        "supported": true
+      },
+      {
+        "claim": "ApplicationException以外の例外はsuper.build()に委譲するとデフォルト動作（ステータス500）が維持される",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のすべてのNablarch固有の主張（@Validアノテーションの使用方法、ErrorResponseBuilderの継承パターン、JaxRsResponseHandlerの設定方法、ApplicationException時の400レスポンス、例外処理の注意点）はいずれもknowledge sectionsの内容と一致しており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": null,
+    "hallucination": 1
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: UNCERTAIN — @Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの入力値チェック(s2)とエラー時レスポンス(s11)が直接関連する"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "JAX-RS用Bean Validationハンドラでバリデーション実行方法を説明している"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-response-handler.json",
+        "reason": "バリデーションエラー時のレスポンスにメッセージを設定する拡張例(s7)がある"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "s17でRESTfulウェブサービスのユーザ入力値チェック方法を説明している"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "@ValidアノテーションとFormクラスを使った登録機能の実装例がある"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@Validアノテーションによるバリデーション実行方法を直接説明するコード例がある"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラー時にエラーメッセージをJSONで返す実装例がある"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ErrorResponseBuilderの設定方法とJaxRsResponseHandlerへの組み込み方を説明している"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "@ValidアノテーションとFormクラスを組み合わせた登録機能の完全な実装例がある"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスでのバリデーション方法の概要を記載しているが、詳細はhandlerへの参照のみ"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "エラー時レスポンスの機能詳細リンクを提供している"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 123001,
+    "duration_api_ms": 122721,
+    "num_turns": 11,
+    "total_cost_usd": 0.7651114,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 7370,
+      "cache_read_input_tokens": 1010358,
+      "cache_creation_input_tokens": 92828
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3173,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003313,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 7370,
+        "cacheReadInputTokens": 1010358,
+        "cacheCreationInputTokens": 92828,
+        "webSearchRequests": 0,
+        "costUSD": 0.7617983999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

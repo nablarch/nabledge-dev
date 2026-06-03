@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-03 (session 22)
+**Updated**: 2026-06-04 (session 23)
 
 ## Rules（全タスク共通）
 
@@ -39,12 +39,14 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
   - qa-05: 精度 66.7%（Jackson2BodyConverter ABSENT → baseline でも未検出の既存課題）
 - [x] run-1 FAIL/ERROR の妥当性評価 → report.md に記録 → ユーザー確認（qa-15修正 `fc6a43675`、全参照検証OK）
 - [x] run-2 実行（33件全件）— `tools/benchmark/results/v2-javadoc/run-2/`（33件）
-- [x] HOW-TO-RUN.md 手順に従い run-1 / run-2 を正しい状態にする
-  - run-1/report.md 作成済み（30件集計、確定FAIL候補5件）
-  - run-2/report.md 作成済み（33件集計、確定FAIL候補5件）
-  - ユーザー承認済み: qa-05 / impact-08 / qa-11a / qa-11b / qa-12a を確定FAIL
-- [ ] run-3 実行（33件全件: `--scenario-ids` 省略）
-- [ ] HOW-TO-RUN.md ステップ3 に従い run-3 の妥当性評価 → `run-3/report.md` 作成 → ユーザー確認
+- [x] HOW-TO-RUN.md 手順に従い run-1〜run-3 を正しい状態にする
+  - run-1/report.md 作成済み
+  - run-2/report.md 作成済み
+  - run-3/report.md 作成済み
+  - HOW-TO-RUN.md ステップ3b に「選定ページ全体・Javadoc全体・contentフィールド確認」を追記済み
+  - ナレッジ全体再調査により確定FAIL修正: qa-11b/qa-12a/qa-13 は虚偽FAIL → 除外
+  - 確定FAIL: qa-05（再現性3/3）/ impact-08（fixedDate日付誤り、再現性2/3）/ qa-11a（再現性2/3）
+- [x] run-3 実行（33件全件）— `tools/benchmark/results/v2-javadoc/run-3/`（33件）
 - [ ] ステップ4: 3 run 集計 + baseline-current 比較を `v2-javadoc/report.md` に記録
 - [ ] 問題あれば Task 2 に戻って修正
 

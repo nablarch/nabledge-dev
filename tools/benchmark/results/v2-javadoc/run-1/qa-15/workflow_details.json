@@ -1,0 +1,161 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "XSSを含むセキュリティチェックリストで、Nablarchの対応状況が一覧化されている"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "カスタムタグのHTMLエスケープ機能に関する詳細説明を含む"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "セキュリティ関連レスポンスヘッダ（XSS対策ヘッダ、CSP等）の設定を説明するハンドラ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/handlers/handlers-nablarch-tag-handler.json",
+        "reason": "改竄チェックに関するハンドラであり、XSSサニタイジングとは直接関連しない"
+      },
+      {
+        "path": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "reason": "JSP静的解析ツールの詳細設定であり、XSSの主要な仕組みはカスタムタグ・セキュリティチェックで説明可能"
+      },
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "概要のみで具体的な対応状況の情報がない"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "CSRF対策・CSPへのリンクを含むがXSSの詳細はcheck/security-checkおよびlibraries-tagに集約されている"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "XSSに対するNablarchの対応状況（対応済み/未対応）が項目ごとに記載されている中核セクション"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "カスタムタグがHTMLエスケープを行う仕組みとJavaScriptエスケープ非対応の注意が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s50",
+        "relevance": "high",
+        "reason": "HTMLエスケープの変換内容とEL式使用禁止のルールが記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s27",
+        "relevance": "high",
+        "reason": "rawWriteタグ・prettyPrintタグの危険性とXSS脆弱性への注意が記載されている"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "セキュアハンドラのデフォルトヘッダ（XssProtectionHeader等）の設定例が記載されている"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "CSPによるXSS対策の概要とnonceの仕組みへの参照が記載されている"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "ContentSecurityPolicyHeaderの固定ポリシー設定例"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "nonce生成によるCSP設定とgenerateCspNonceプロパティの使い方"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s26",
+        "relevance": "partial",
+        "reason": "n:writeタグの基本的な使い方の実装例"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s1",
+        "reason": "機能概要の目次のみで実装詳細がない"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s1",
+        "reason": "SQLインジェクションに関する説明でXSSと無関係"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s5",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s26",
+      "component/libraries/libraries-tag.json:s27",
+      "component/libraries/libraries-tag.json:s50",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "check/security-check/security-check-2.チェックリスト.json:s5",
+          "reason": "IPA項目ごとのNablarch対応状況の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s2",
+          "reason": "カスタムタグのHTMLエスケープとJavaScriptエスケープ非対応の説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s50",
+          "reason": "HTMLエスケープの変換内容テーブルとEL式禁止ルールに使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s27",
+          "reason": "rawWriteタグの危険性の注意点に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s4",
+          "reason": "セキュアハンドラのXssProtectionHeaderのコード例に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s6",
+          "reason": "CSP対応の概要説明に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s8",
+          "reason": "generateCspNonceと$cspNonceSource$のコード例に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-tag.json:s26",
+          "reason": "n:writeタグの使用例はs2の説明で十分であり、追加の根拠として不要だった"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s7",
+          "reason": "s8のnonce設定例で代表させたため、固定ポリシー設定例は最終回答に含めなかった"
+        }
+      ]
+    }
+  }
+}
