@@ -81,6 +81,23 @@ def _strip_fenced_code(md_text: str) -> str:
 _MD_LINK_RE = re.compile(r'(!?\[[^\]]*\])\(([^)]+)\)')
 
 
+def _apply_internal_link_ext_rewrite(text: str) -> str:
+    """Mirror docs.py's .json→.md link rewrite so QO2 compares like-for-like.
+
+    docs.py rewrites CROSSDOC_LINK_RE / JAVADOC_LINK_RE .json links to .md
+    when emitting docs MD (spec §5-2 §3 Task 3-D). QO2 must apply the same
+    transformation to the JSON side before comparing.
+    """
+    from scripts.common.linkfmt import CROSSDOC_LINK_RE, JAVADOC_LINK_RE
+
+    def _sub(m: re.Match) -> str:
+        return m.group(0).replace(".json", ".md", 1)
+
+    text = CROSSDOC_LINK_RE.sub(_sub, text)
+    text = JAVADOC_LINK_RE.sub(_sub, text)
+    return text
+
+
 def _apply_asset_link_rewrite(text: str, docs_md_path, knowledge_dir) -> str:
     """Mirror docs.py's asset-link rewrite so QO2 compares like-for-like.
 
@@ -287,6 +304,7 @@ def check_json_docs_md_consistency(
     # offset is accurate against the original text.
     if top_content:
         expected = _apply_asset_link_rewrite(top_content, docs_md_path, knowledge_dir)
+        expected = _apply_internal_link_ext_rewrite(expected)
         # Replace fence block bytes with spaces (preserve length + newlines).
         def _mask(m: re.Match) -> str:
             block = m.group(0)
@@ -355,6 +373,7 @@ def check_json_docs_md_consistency(
         content = s.get("content", "")
         title = s.get("title", "")
         expected = _apply_asset_link_rewrite(content, docs_md_path, knowledge_dir)
+        expected = _apply_internal_link_ext_rewrite(expected)
         if expected not in docs_md_text:
             issues.append(f"[QO2] {file_id}: section '{title}' content not found verbatim in docs MD")
 
