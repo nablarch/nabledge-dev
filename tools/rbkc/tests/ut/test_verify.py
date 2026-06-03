@@ -2900,7 +2900,7 @@ class TestCheckSourceLinks_JsonSide_Extdoc:
         file_id = "javadoc-nablarch-common-dao-UniversalDao"
         self._write_javadoc_json(tmp_path, file_id)
         src = ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
-        md_link = f"[UniversalDao](../javadoc/{file_id}.md)"
+        md_link = f"[UniversalDao](../javadoc/{file_id}.json)"
         data = self._data(content=f"詳細は {md_link} を参照。")
         issues = self._check(src, data, knowledge_dir=str(tmp_path))
         assert issues == [], issues
@@ -2944,7 +2944,7 @@ class TestCheckSourceLinks_JsonSide_Extdoc:
         self._write_javadoc_json(tmp_path, file_id)
         # FQCN includes method suffix: nablarch.common.dao.UniversalDao#findById
         src = ":java:extdoc:`UniversalDao#findById <nablarch.common.dao.UniversalDao#findById>`\n"
-        md_link = f"[UniversalDao#findById](../javadoc/{file_id}.md)"
+        md_link = f"[UniversalDao#findById](../javadoc/{file_id}.json)"
         data = self._data(content=f"詳細は {md_link} を参照。")
         issues = self._check(src, data, knowledge_dir=str(tmp_path))
         assert issues == [], issues
@@ -2971,7 +2971,7 @@ class TestCheckSourceLinks_JsonSide_Extdoc:
         self._write_javadoc_json(tmp_path, file_id)
         # display text contains no <, FQCN has <init>
         src = ":java:extdoc:`MessageSenderSettings<nablarch.fw.messaging.MessageSenderSettings.<init>(java.lang.String)>`\n"
-        md_link = f"[MessageSenderSettings](../javadoc/{file_id}.md)"
+        md_link = f"[MessageSenderSettings](../javadoc/{file_id}.json)"
         data = self._data(content=f"詳細は {md_link} を参照。")
         issues = self._check(src, data, knowledge_dir=str(tmp_path))
         assert issues == [], issues
@@ -4561,7 +4561,7 @@ class TestCheckQL1LinkTargets:
         kn, _docs = self._setup(tmp_path)
 
         data = {
-            "content": "See [Foo](../../component/libraries/libraries-foo.md#foo) for details.",
+            "content": "See [Foo](../../component/libraries/libraries-foo.json#foo) for details.",
             "sections": [],
         }
         issues = check_ql1_link_targets(data, kn)
@@ -4572,7 +4572,7 @@ class TestCheckQL1LinkTargets:
         kn, _docs = self._setup(tmp_path)
 
         data = {
-            "content": "See [Bar](../../component/libraries/libraries-missing.md) for details.",
+            "content": "See [Bar](../../component/libraries/libraries-missing.json) for details.",
             "sections": [],
         }
         issues = check_ql1_link_targets(data, kn)
@@ -4585,12 +4585,12 @@ class TestCheckQL1LinkTargets:
         kn, docs = self._setup(tmp_path)
 
         data = {
-            "content": "See [Foo](../../component/libraries/libraries-foo.md) for details.",
+            "content": "See [Foo](../../component/libraries/libraries-foo.json) for details.",
             "sections": [],
         }
         docs_md = (
             "# Test\n\n"
-            "See [Orphan](../../component/libraries/libraries-orphan.md) for details.\n"
+            "See [Orphan](../../component/libraries/libraries-orphan.json) for details.\n"
         )
         issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
         assert any("docs MD link target missing" in i for i in issues)
@@ -4634,7 +4634,7 @@ class TestCheckQL1LinkTargets:
         data = {
             "content": (
                 "```\n"
-                "Example: [X](../../component/libraries/libraries-nosuch.md)\n"
+                "Example: [X](../../component/libraries/libraries-nosuch.json)\n"
                 "```\n"
             ),
             "sections": [],
@@ -4649,8 +4649,8 @@ class TestCheckQL1LinkTargets:
 
         data = {
             "content": (
-                "See [Bar](../../component/libraries/libraries-missing.md). "
-                "Again: [Bar](../../component/libraries/libraries-missing.md)."
+                "See [Bar](../../component/libraries/libraries-missing.json). "
+                "Again: [Bar](../../component/libraries/libraries-missing.json)."
             ),
             "sections": [],
         }
@@ -4675,7 +4675,7 @@ class TestCheckQL1LinkTargets:
         )
 
         data = {
-            "content": "See [Foo](../../component/libraries/libraries-foo.md#foo-section).",
+            "content": "See [Foo](../../component/libraries/libraries-foo.json#foo-section).",
             "sections": [],
         }
         # Pass docs_md_text so the docs-side check runs; docs_root is
@@ -4698,7 +4698,7 @@ class TestCheckQL1LinkTargets:
         )
 
         data = {
-            "content": "See [Foo](../../component/libraries/libraries-foo.md#nonexistent-anchor).",
+            "content": "See [Foo](../../component/libraries/libraries-foo.json#nonexistent-anchor).",
             "sections": [],
         }
         # docs_md_text here is the target file's headings (no cross-doc links);
@@ -4716,7 +4716,7 @@ class TestCheckQL1LinkTargets:
         docs_md = (docs / "component" / "libraries" / "libraries-foo.md").read_text()
 
         data = {
-            "content": "See [Foo](../../component/libraries/libraries-foo.md).",
+            "content": "See [Foo](../../component/libraries/libraries-foo.json).",
             "sections": [],
         }
         issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
@@ -4733,8 +4733,8 @@ class TestCheckQL1LinkTargets:
 
         data = {
             "content": (
-                "[Foo](../../component/libraries/libraries-foo.md#good-section) "
-                "and [Foo](../../component/libraries/libraries-foo.md#bad-anchor)."
+                "[Foo](../../component/libraries/libraries-foo.json#good-section) "
+                "and [Foo](../../component/libraries/libraries-foo.json#bad-anchor)."
             ),
             "sections": [],
         }
@@ -4758,7 +4758,7 @@ class TestCheckQL1LinkTargets:
         # docs_md_text itself contains the cross-doc link with bad anchor
         docs_md_text = (
             "# Some Page\n\n"
-            "See [Foo](../../component/libraries/libraries-foo.md#nonexistent).\n"
+            "See [Foo](../../component/libraries/libraries-foo.json#nonexistent).\n"
         )
         data = {"content": "", "sections": []}
         issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md_text)
@@ -4776,7 +4776,7 @@ class TestCheckQL1LinkTargets:
         # docs_md_text contains cross-doc link with matching anchor
         docs_md_text = (
             "# Some Page\n\n"
-            "See [Foo](../../component/libraries/libraries-foo.md#foo-section).\n"
+            "See [Foo](../../component/libraries/libraries-foo.json#foo-section).\n"
         )
         data = {"content": "", "sections": []}
         issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md_text)
@@ -4790,7 +4790,7 @@ class TestCheckQL1LinkTargets:
             "# Foo\n\n## Foo Section\n\nContent.\n", encoding="utf-8"
         )
         data = {
-            "content": "See [Foo](../../component/libraries/libraries-foo.md#nonexistent-anchor).",
+            "content": "See [Foo](../../component/libraries/libraries-foo.json#nonexistent-anchor).",
             "sections": [],
         }
         # No docs_md_text — JSON-side must still detect the bad anchor.
@@ -4813,7 +4813,7 @@ class TestCheckQL1LinkTargets:
                     "id": "s1",
                     "title": "Detail",
                     "level": 2,
-                    "content": "See [Foo](../../component/libraries/libraries-foo.md#bad-anchor).",
+                    "content": "See [Foo](../../component/libraries/libraries-foo.json#bad-anchor).",
                 }
             ],
         }
@@ -5586,7 +5586,7 @@ class TestVerifyFile_ExtdocQC_Symmetrised:
             "\n"
             ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
         )
-        md_link = f"[UniversalDao](../javadoc/{file_id}.md)"
+        md_link = f"[UniversalDao](../javadoc/{file_id}.json)"
         # JSON title matches RST title; content is the MD link that extdoc normalises to
         json_data = {
             "id": "f", "title": "UniversalDao",
@@ -5623,7 +5623,7 @@ class TestVerifyFile_ExtdocQC_Symmetrised:
         )
         # JSON content: the two MD links that extdoc normalises to (create-side output)
         content = " ".join(
-            f"[{names[i]}](../javadoc/{ids[i]}.md)" for i in range(len(ids))
+            f"[{names[i]}](../javadoc/{ids[i]}.json)" for i in range(len(ids))
         )
         json_data = {"id": "f", "title": "Overview", "content": content, "sections": []}
         issues = self._verify(source_text, json_data, tmp_path)

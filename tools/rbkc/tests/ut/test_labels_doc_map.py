@@ -349,7 +349,7 @@ class TestMDRelativeLinkInsideNestedBlock:
         parts = v.walk(parse(text))
         # Rewritten link must appear in top-level content (the sub-visitor
         # renders the list item content back into the parent).
-        assert "../../component/libraries/libraries-bar.md" in parts.content, parts.content
+        assert "../../component/libraries/libraries-bar.json" in parts.content, parts.content
 
 
 class TestWarningsPropagation:

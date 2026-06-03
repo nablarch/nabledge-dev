@@ -2524,8 +2524,8 @@ def check_source_links(
                         f" (expected knowledge/javadoc/javadoc-{_fqcn_class.replace('.', '-')}.json)"
                     )
                     continue
-                # javadoc JSON exists — check MD link is present in JSON content
-                _expected_link = f"](../javadoc/{_file_id}.md)"
+                # javadoc JSON exists — check JSON link is present in JSON content
+                _expected_link = f"](../javadoc/{_file_id}.json)"
                 if _expected_link not in json_full:
                     issues.append(
                         f"[QL1] :java:extdoc: `{_fqcn_raw}` MD link missing from JSON"

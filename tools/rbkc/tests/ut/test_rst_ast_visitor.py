@@ -313,7 +313,7 @@ class TestVisitContainerToctree:
         }
         doctree, _ = parse(source, source_path=source_path)
         parts = extract_document(doctree, doc_map=doc_map, source_path=source_path)
-        assert "[ハンドラ一覧](../../component/handlers/handlers-handlers.md)" in parts.top_content
+        assert "[ハンドラ一覧](../../component/handlers/handlers-handlers.json)" in parts.top_content
         assert parts.top_content.startswith("*")
 
     def test_toctree_unresolved_entries_become_code_spans(self):
@@ -640,7 +640,7 @@ class TestExtdocRoleResolution:
         src = "Title\n=====\n\n:java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
         parts = self._extract(src, javadoc_map=javadoc_map)
         content = parts.top_content + "\n".join(s.content for s in parts.sections)
-        assert "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)" in content
+        assert "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)" in content
 
     def test_pass_nablarch_fqcn_not_in_map_emits_display_text(self):
         """javadoc_map exists but FQCN not in map → display text fallback."""
@@ -676,7 +676,7 @@ class TestExtdocRoleResolution:
         src = "Title\n=====\n\n:java:extdoc:`findById <nablarch.common.dao.UniversalDao#findById>`\n"
         parts = self._extract(src, javadoc_map=javadoc_map)
         content = parts.top_content + "\n".join(s.content for s in parts.sections)
-        assert "[findById](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)" in content
+        assert "[findById](../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)" in content
 
     def test_pass_no_javadoc_map_falls_back_to_display_text(self):
         """javadoc_map=None (not provided) → display text fallback (backward compat)."""
