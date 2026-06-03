@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-02 (session 14)
+**Updated**: 2026-06-03 (session 15)
 
 ## Rules（全タスク共通）
 
@@ -24,25 +24,6 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 ---
 
 ## In Progress
-
-### Task 3-B: linkfmt.py を .json 出力に変更（GREEN）
-- **前提**: Task 3-A 完了（RED） — `061507687`
-- **完了条件**: Task 3-A テストが GREEN、全 pytest GREEN
-- [x] `emit_crossdoc_link` の `.md` を `.json` に変更
-- [x] `emit_javadoc_link` の `.md` を `.json` に変更
-- [x] `CROSSDOC_LINK_RE` の `\.md` を `\.json` に変更
-- [x] `JAVADOC_LINK_RE` の `\.md` を `\.json` に変更
-- [ ] pytest GREEN 確認 → コミット
-
-**Status**: linkfmt.py 変更済・未コミット。pytest 14件 FAIL（linkfmt `.md→.json` 変更の波及）。
-波及修正が必要なテスト:
-- test_labels_doc_map.py::TestMDRelativeLinkInsideNestedBlock::test_rewrite_inside_list_item
-- test_rst_ast_visitor.py::TestVisitContainerToctree::test_toctree_resolved_entries_become_md_links
-- test_rst_ast_visitor.py::TestExtdocRoleResolution::test_pass_nablarch_fqcn_in_map_emits_link
-- test_rst_ast_visitor.py::TestExtdocRoleResolution::test_pass_method_suffix_resolved_via_class
-- test_verify.py::TestCheckQL1LinkTargets (8件)
-- test_verify.py::TestVerifyFile_ExtdocQC_Symmetrised (2件)
-これらのテストが `.md` 期待値を持っているため更新が必要。
 
 ---
 
@@ -146,3 +127,5 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 - [x] Task 2-J: 統合 verify 確認（QC1/QC2=0、照合B OK） — `1eeb96e89` / `1fb952523` / `cb56a0602`
 - [x] Task 2-J-follow: QL1 254件対処 — 設計書追記 `b0c4f3b11` / 共通モジュール実装 `d1fa3c75d` / v6 knowledge 再生成 `a9fd984bf`
 - [x] リンク拡張子規約是正 設計書更新 — verify/converter 設計書改訂（承認済）`77761ce5b`
+- [x] Task 3-A: test_linkfmt.py に .json 出力テスト追加（RED） — `061507687`
+- [x] Task 3-B: linkfmt.py を .json 出力に変更（GREEN）+ 波及テスト修正 — `524f90a22` / `a4cf9383d`
