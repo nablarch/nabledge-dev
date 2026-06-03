@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-03 (session 18)
+**Updated**: 2026-06-03 (session 18, end)
 
 ## Rules（全タスク共通）
 
@@ -25,17 +25,21 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 
 ## In Progress
 
----
-
-## Not Started
-
-
 ### Task 4: ベンチマークシナリオ追加
 - **前提**: Task 2-J 完了
 - **完了条件**: Javadoc 参照を要する新規シナリオ追加 + expectations 設定。既存シナリオが javadoc 非参照と確認済み
-- [ ] 既存シナリオで Javadoc 知識ファイルが参照されないことを確認
-- [ ] Javadoc 参照質問のシナリオを新規追加
+- [x] 既存シナリオで Javadoc 知識ファイルが参照されないことを確認 — qa.json 30件全件調査、javadoc 参照 0件
+- [DECISION: シナリオ設計案（qa-16）を提示済み。ユーザー承認待ち] Javadoc 参照質問のシナリオを新規追加
 - [ ] 期待値（expectations）を設定
+
+**設計案 qa-16**:
+- input: 「UniversalDao.existsメソッドの使い方を教えてください。SQLファイルを指定してデータ存在チェックをしたい」
+- must: `javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18`（exists(Class, String, Object)）
+- acceptable: `s17`（バインド変数なし版）、`component/libraries/libraries-universal-dao.json:s5`
+
+---
+
+## Not Started
 
 ### Task 5: v6 検証（新シナリオ1件 → 既存スコア確認）
 - **前提**: Task 3 / 4 完了
