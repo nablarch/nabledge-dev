@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-03 (session 15)
+**Updated**: 2026-06-03 (session 16)
 
 ## Rules（全タスク共通）
 
@@ -25,61 +25,25 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 
 ## In Progress
 
+### Task 3-E（続き）: 全バージョン knowledge 再生成 → verify 確認
+- **前提**: Task 3-D / QO1 section title 修正 完了 — `4e43c66c7`
+- **完了条件**: 全バージョン verify 新規FAIL=0 確認 + knowledge ファイルコミット
+- [ ] `bash rbkc.sh create 6 5 1.4 1.3 1.2` ← 既に実行済み（knowledge ファイルが未コミット）
+- [ ] `bash rbkc.sh verify 6 5 1.4 1.3 1.2` で新規FAIL=0 確認 ← 再確認必要（QO1 修正後）
+- [ ] 全バージョン knowledge/docs ファイルをコミット
+
+**Status**: knowledge 再生成済み（2367ファイル変更）・未コミット。verify は section title 修正前の実行で QO1=3 が出た。section title 修正後の verify 未実行。
+
 ---
 
 ## Not Started
 
 ### Task 3: 検索フロー検証・改善（リンク拡張子規約是正が前提）
-- **前提**: Task 2-J 完了 + リンク拡張子規約是正（設計書更新済 `77761ce5b`）が実装完了すること
+- **前提**: Task 3-E 完了
 - **完了条件**: Javadoc 参照質問で javadoc リンクが検索フローで使われることを確認。使われなければワークフローに手順追加
 - [x] 「UniversalDao#exists の使い方」等で Javadoc リンクが使われるか確認 → **使われない**（設計上 index.md に Javadoc 未登録）
 - [x] Session 12 調査・ユーザー指摘の設計問題を解決 → リンク拡張子規約是正（設計書改訂）が実施された（Session 13）
 - [ ] リンク拡張子規約是正の実装（Task 3-A〜E）完了後、semantic-search に Step 3b を追加（Javadoc リンク検出 → .json 読み込み）
-
-**Session 12-13 経緯**:
-- リンクが `.md` を指しているのに `.json` を読むのは不整合 → 「JSON は .json リンク・docs MD は .md リンク」に規約変更
-- 設計書改訂承認済（ユーザー確認 Session 13）、設計書更新コミット `77761ce5b`
-- 規約是正の実装（Task 3-A〜E、下記）が完了してから semantic-search 改修を行う
-
-### Task 3-A: test_linkfmt.py に .json 出力テスト追加（RED）
-- **前提**: 設計書更新済 `77761ce5b`
-- **完了条件**: テスト追加コミット済、pytest RED 確認
-- [ ] `emit_crossdoc_link` / `emit_javadoc_link` の出力が `.json` であることを期待するテストを追加
-- [ ] `CROSSDOC_LINK_RE` / `JAVADOC_LINK_RE` が `.json` パスにマッチすることのテストを追加
-- [ ] pytest RED 確認（現行は `.md` 出力なのでテストが落ちること）
-
-### Task 3-B: linkfmt.py を .json 出力に変更（GREEN）
-- **前提**: Task 3-A 完了（RED）
-- **完了条件**: Task 3-A テストが GREEN、全 pytest GREEN
-- [ ] `emit_crossdoc_link` の `.md` を `.json` に変更
-- [ ] `emit_javadoc_link` の `.md` を `.json` に変更
-- [ ] `CROSSDOC_LINK_RE` の `\.md` を `\.json` に変更
-- [ ] `JAVADOC_LINK_RE` の `\.md` を `\.json` に変更
-- [ ] pytest GREEN 確認
-
-### Task 3-C: test_docs.py に .json→.md 変換テスト追加（RED）
-- **前提**: Task 3-B 完了
-- **完了条件**: テスト追加コミット済、pytest RED 確認
-- [ ] docs.py が内部相対リンク `.json` → `.md` に変換することのテストを追加
-- [ ] `../`-prefix のリンクのみ変換し、`http(s)://` 外部 URL は変換しないテストを追加
-- [ ] anchor (`#...`) が保持されることのテストを追加
-- [ ] pytest RED 確認
-
-### Task 3-D: docs.py に .json→.md 変換追加（GREEN）
-- **前提**: Task 3-C 完了（RED）
-- **完了条件**: Task 3-C テストが GREEN、全 pytest GREEN
-- [ ] `_rewrite_internal_link_ext(text: str) -> str` 関数を追加（`CROSSDOC_LINK_RE` / `JAVADOC_LINK_RE` で `.json` → `.md` 変換、anchor 保持）
-- [ ] `_render_full` の `_rewrite_asset_links` 呼び出し後に適用
-- [ ] pytest GREEN 確認
-
-### Task 3-E: verify.py の QO2・QL1 を .json/.md 基準に更新（TDD）
-- **前提**: Task 3-D 完了
-- **完了条件**: テスト RED → GREEN、全バージョン verify FAIL 差分が想定どおり（新規 FAIL 0）
-- [ ] test_verify.py に QO2 リンク拡張子正規化テストを追加（RED）
-- [ ] verify.py の QO2 比較に正規化を追加（GREEN）
-- [ ] QL1 の内部リンク照合を `.json` 基準に更新
-- [ ] 全バージョン knowledge 再生成（`bash rbkc.sh create v6` 等）
-- [ ] 全バージョン verify 実行・新規 FAIL 0 確認
 
 ### Task 4: ベンチマークシナリオ追加
 - **前提**: Task 2-J 完了
@@ -129,3 +93,6 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 - [x] リンク拡張子規約是正 設計書更新 — verify/converter 設計書改訂（承認済）`77761ce5b`
 - [x] Task 3-A: test_linkfmt.py に .json 出力テスト追加（RED） — `061507687`
 - [x] Task 3-B: linkfmt.py を .json 出力に変更（GREEN）+ 波及テスト修正 — `524f90a22` / `a4cf9383d`
+- [x] Task 3-C: test_docs.py に .json→.md 変換テスト追加（RED） — `bbc34b7d0`
+- [x] Task 3-D: docs.py に .json→.md 変換追加（GREEN） — `2bcab2f1d`
+- [x] Task 3-E: QO2 正規化テスト RED+GREEN、QO1 section title 修正 — `1249cc588` / `5dffd297d` / `4e43c66c7`
