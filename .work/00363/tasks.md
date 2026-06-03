@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-03 (session 17)
+**Updated**: 2026-06-03 (session 18)
 
 ## Rules（全タスク共通）
 
@@ -29,12 +29,6 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 
 ## Not Started
 
-### Task 3: 検索フロー検証・改善（リンク拡張子規約是正が前提）
-- **前提**: Task 3-E 完了
-- **完了条件**: Javadoc 参照質問で javadoc リンクが検索フローで使われることを確認。使われなければワークフローに手順追加
-- [x] 「UniversalDao#exists の使い方」等で Javadoc リンクが使われるか確認 → **使われない**（設計上 index.md に Javadoc 未登録）
-- [x] Session 12 調査・ユーザー指摘の設計問題を解決 → リンク拡張子規約是正（設計書改訂）が実施された（Session 13）
-- [ ] リンク拡張子規約是正の実装（Task 3-A〜E）完了後、semantic-search に Step 3b を追加（Javadoc リンク検出 → .json 読み込み）
 
 ### Task 4: ベンチマークシナリオ追加
 - **前提**: Task 2-J 完了
@@ -88,3 +82,4 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 - [x] Task 3-D: docs.py に .json→.md 変換追加（GREEN） — `2bcab2f1d`
 - [x] Task 3-E: QO2 正規化テスト RED+GREEN、QO1 section title 修正 — `1249cc588` / `5dffd297d` / `4e43c66c7`
 - [x] Task 3-E（続き）: v6 docs 再生成 + 新規 knowledge コミット、全バージョン verify 新規FAIL=0 確認 — `0b2508a2e` / `140b6459f`
+- [x] Task 3: semantic-search に Step 3b 追加（v6/v5）— `6bd3dea23`
