@@ -425,6 +425,53 @@ class TestCheckJsonDocsMdConsistency_QO2:
         issues = self._check(data, docs)
         assert any("QO2" in i and "B" in i for i in issues)
 
+    # --- QO2 Task 3-E: .json→.md link extension normalization ------------
+
+    def test_pass_top_content_json_link_normalised(self):
+        """QO2 PASS: JSON content has .json link; docs MD has .md link.
+
+        docs.py rewrites .json→.md on write (Task 3-D). verify QO2 must
+        apply the same normalisation before comparing, otherwise every
+        crossdoc link causes a false-positive QO2 FAIL.
+        """
+        data = {
+            "id": "f", "title": "T",
+            "content": "参照: [ハンドラ一覧](../../component/handlers/handlers-handlers.json)",
+            "sections": [],
+        }
+        docs = "# T\n\n参照: [ハンドラ一覧](../../component/handlers/handlers-handlers.md)\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_section_content_json_link_normalised(self):
+        """QO2 PASS: JSON section content has .json link; docs MD has .md link."""
+        data = {
+            "id": "f", "title": "T", "content": "",
+            "sections": [{"id": "s1", "title": "概要", "level": 2,
+                          "content": "[Foo](../../component/libraries/libraries-foo.json)"}],
+        }
+        docs = "# T\n\n## 概要\n\n[Foo](../../component/libraries/libraries-foo.md)\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_javadoc_json_link_normalised(self):
+        """QO2 PASS: JSON content has javadoc .json link; docs MD has .md link."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)",
+            "sections": [],
+        }
+        docs = "# T\n\n[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_json_link_with_anchor_normalised(self):
+        """QO2 PASS: .json link with anchor normalised to .md#anchor."""
+        data = {
+            "id": "f", "title": "T",
+            "content": "[Foo](../../component/libraries/libraries-foo.json#some-section)",
+            "sections": [],
+        }
+        docs = "# T\n\n[Foo](../../component/libraries/libraries-foo.md#some-section)\n"
+        assert self._check(data, docs) == []
+
 
 # ---------------------------------------------------------------------------
 # QO4: index.toon 網羅性
