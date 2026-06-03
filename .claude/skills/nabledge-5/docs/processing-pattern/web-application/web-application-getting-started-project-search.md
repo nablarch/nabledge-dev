@@ -223,10 +223,10 @@ private List<Project> searchProject(ProjectSearchDto searchCondition,
 
 この実装のポイント
 
-* 前述のSQL文を実行するには、UniversalDao#findAllBySqlFile の第二引数として、
+* 前述のSQL文を実行するには、[UniversalDao#findAllBySqlFile](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md) の第二引数として、
   [SQLID](../../component/libraries/libraries-database.md#sqlidを指定してsqlを実行する) (前述のSQLの場合は"SEARCH_PROJECT")を指定する。
-* ページング用の検索は、 UniversalDao#per メソッド、
-  及び UniversalDao#page を用いて行うことができる。
+* ページング用の検索は、 [UniversalDao#per](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md) メソッド、
+  及び [UniversalDao#page](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md) を用いて行うことができる。
   詳細は [ページングのために検索範囲を絞る](../../component/libraries/libraries-universal-dao.md#ページングを行う) を参照。
 
 検索結果表示部分の作成

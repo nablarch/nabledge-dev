@@ -118,16 +118,16 @@ success.update.project=プロジェクトの更新が完了しました。
 
 ### 多言語化対応
 
-メッセージの多言語化を行う場合には、言語ごとのプロパティファイルを用意し、サポートする言語を PropertiesStringResourceLoader.locales に設定する。
+メッセージの多言語化を行う場合には、言語ごとのプロパティファイルを用意し、サポートする言語を [PropertiesStringResourceLoader.locales](../javadoc/javadoc-nablarch-core-message-PropertiesStringResourceLoader.md) に設定する。
 なお、デフォルトのロケールに対応する言語については、サポートする言語に追加しなくても良い。
 
 > **Important:**
-> デフォルトのロケールは、PropertiesStringResourceLoader.defaultLocale (デフォルトの言語)で設定する。設定しなかった場合、デフォルトのロケールは Locale.getDefault().getLanguage() の値が採用される。
+> デフォルトのロケールは、[PropertiesStringResourceLoader.defaultLocale](../javadoc/javadoc-nablarch-core-message-PropertiesStringResourceLoader.md) (デフォルトの言語)で設定する。設定しなかった場合、デフォルトのロケールは Locale.getDefault().getLanguage() の値が採用される。
 
 > Locale.getDefault().getLanguage() の値はOSの設定によって変化するため、この値をデフォルトのロケールとして使用すると実行する環境に応じて値が変わり障害の原因になる可能性がある。必ずデフォルトの言語を設定すること。
 
-メッセージ取得時にどの言語が使用されるかは、 ThreadContext#getLanguage が返すロケールによって決定される。
-もし、 ThreadContext#getLanguage からロケールが取得できない場合は Locale.getDefault() が使用される。
+メッセージ取得時にどの言語が使用されるかは、 [ThreadContext#getLanguage](../javadoc/javadoc-nablarch-core-ThreadContext.md) が返すロケールによって決定される。
+もし、 [ThreadContext#getLanguage](../javadoc/javadoc-nablarch-core-ThreadContext.md) からロケールが取得できない場合は Locale.getDefault() が使用される。
 
 PropertiesStringResourceLoaderへの言語設定
 
@@ -370,7 +370,7 @@ error=エラー
 
 action class
 
-errors タグで出力するメッセージは、 WebUtil.notifyMessages を使ってリクエストスコープに格納する。
+errors タグで出力するメッセージは、 [WebUtil.notifyMessages](../javadoc/javadoc-nablarch-common-web-WebUtil.md) を使ってリクエストスコープに格納する。
 
 ```java
 WebUtil.notifyMessages(context, MessageUtil.createMessage(MessageLevel.INFO, "info"));

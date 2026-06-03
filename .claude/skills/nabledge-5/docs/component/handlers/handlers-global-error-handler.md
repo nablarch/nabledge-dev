@@ -45,8 +45,8 @@
 
 | 例外クラス | 処理内容 |
 |---|---|
-| [ServiceError](../javadoc/javadoc-nablarch-fw-results-ServiceError.md)  (サブクラス含む) | ServiceError#writeLog を呼び出し、ログを出力する。  ログレベルは、 [ServiceError](../javadoc/javadoc-nablarch-fw-results-ServiceError.md) の実装クラスにより異なる。  ログ出力後、ハンドラの処理結果として、 [ServiceError](../javadoc/javadoc-nablarch-fw-results-ServiceError.md) を返却する。 |
-| Result.Error  (サブクラス含む) | FATALレベルのログを出力する。  ログ出力後、ハンドラの処理結果として、 Result.Error を返却する。 |
+| [ServiceError](../javadoc/javadoc-nablarch-fw-results-ServiceError.md)  (サブクラス含む) | [ServiceError#writeLog](../javadoc/javadoc-nablarch-fw-results-ServiceError.md) を呼び出し、ログを出力する。  ログレベルは、 [ServiceError](../javadoc/javadoc-nablarch-fw-results-ServiceError.md) の実装クラスにより異なる。  ログ出力後、ハンドラの処理結果として、 [ServiceError](../javadoc/javadoc-nablarch-fw-results-ServiceError.md) を返却する。 |
+| [Result.Error](../javadoc/javadoc-nablarch-fw-Result.md)  (サブクラス含む) | FATALレベルのログを出力する。  ログ出力後、ハンドラの処理結果として、 [Result.Error](../javadoc/javadoc-nablarch-fw-Result.md) を返却する。 |
 | 上記以外の例外クラス | FATALレベルのログを出力する。  ログ出力後、捕捉した例外を原因に持つ [InternalError](../javadoc/javadoc-nablarch-fw-results-InternalError.md) を生成し、ハンドラの処理結果として返却する。 |
 
 エラーに応じた処理内容

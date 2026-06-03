@@ -39,7 +39,7 @@ MOMメッセージングの詳細は、 [システム間メッセージング](.
 
 ## MQの接続先を設定する
 
-このハンドラは、 messagingProvider
+このハンドラは、 [messagingProvider](../javadoc/javadoc-nablarch-fw-messaging-handler-MessagingContextHandler.md)
 プロパティに設定されたプロバイダクラス( [MessagingProvider](../javadoc/javadoc-nablarch-fw-messaging-MessagingProvider.md) 実装クラス)を使用してMQ接続を取得する。
 
 以下に設定例を示す。

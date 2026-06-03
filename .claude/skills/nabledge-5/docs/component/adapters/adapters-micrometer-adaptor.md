@@ -307,7 +307,7 @@ OS環境変数で上書きするときの名前のルールについては、 [O
 
 ### 設定のプレフィックスを変更する
 
-設定のプレフィックス (`nablarch.micrometer.<subPrefix>`) は、各レジストリファクトリごとに prefix プロパティを指定することで変更できる。
+設定のプレフィックス (`nablarch.micrometer.<subPrefix>`) は、各レジストリファクトリごとに [prefix](../javadoc/javadoc-nablarch-integration-micrometer-MeterRegistryFactory.md) プロパティを指定することで変更できる。
 
 以下に、プレフィックスを変更する例を記載する。
 
@@ -331,7 +331,7 @@ sample.prefix.step=10s
 
 設定ファイル（`micrometer.properties`）の場所は、以下の方法で変更できる。
 
-まず、レジストリファクトリの xmlConfigPath プロパティに、設定ファイルを読み込むXMLファイルのパスを指定する。
+まず、レジストリファクトリの [xmlConfigPath](../javadoc/javadoc-nablarch-integration-micrometer-MeterRegistryFactory.md) プロパティに、設定ファイルを読み込むXMLファイルのパスを指定する。
 
 ```xml
 <component name="meterRegistry" class="nablarch.integration.micrometer.logging.LoggingMeterRegistryFactory">
@@ -415,7 +415,7 @@ sample.prefix.step=10s
 
 ## 共通のタグを設定する
 
-レジストリファクトリの tags プロパティで、すべてのメトリクスに共通するタグを設定できる。
+レジストリファクトリの [tags](../javadoc/javadoc-nablarch-integration-micrometer-MeterRegistryFactory.md) プロパティで、すべてのメトリクスに共通するタグを設定できる。
 
 この機能は、アプリケーションが稼働しているホスト、インスタンス、リージョンなどを識別できる情報を設定するといった用途として使用できる。
 
@@ -597,7 +597,7 @@ public class CustomCloudWatchAsyncClientProvider implements CloudWatchAsyncClien
 </component>
 ```
 
-作成したカスタムプロバイダは、 `CloudWatchMeterRegistryFactory` の cloudWatchAsyncClientProvider プロパティに設定する。
+作成したカスタムプロバイダは、 `CloudWatchMeterRegistryFactory` の [cloudWatchAsyncClientProvider](../javadoc/javadoc-nablarch-integration-micrometer-cloudwatch-CloudWatchMeterRegistryFactory.md) プロパティに設定する。
 
 これにより、カスタムプロバイダが生成した `CloudWatchAsyncClient` がメトリクスの連携で使用されるようになる。
 
@@ -1170,7 +1170,7 @@ http_server_requests_seconds_bucket{class="com.nablarch.example.app.web.action.M
 これにより、トランザクション単位の平均処理時間や最大処理時間をモニタできるようになる。
 
 `BatchTransactionTimeMetricsLogger` は [Timer(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-core/1.13.0/io/micrometer/core/instrument/Timer.html) を使って `batch.transaction.time` という名前でメトリクスを収集する。
-この名前は、 setMetricsName(String) で変更できる。
+この名前は、 [setMetricsName(String)](../javadoc/javadoc-nablarch-integration-micrometer-instrument-batch-BatchTransactionTimeMetricsLogger.md) で変更できる。
 
 また、メトリクスには以下のタグが付与される。
 
@@ -1230,7 +1230,7 @@ Nablarchバッチは、 [トランザクションループ制御ハンドラ](..
 これにより、バッチの進捗状況や処理速度の変化をモニタできるようになる。
 
 `BatchProcessedRecordCountMetricsLogger` は [Counter(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-core/1.13.0/io/micrometer/core/instrument/Counter.html) を使って `batch.processed.record.count` という名前でメトリクスを収集する。
-この名前は、 setMetricsName(String) で変更できる。
+この名前は、 [setMetricsName(String)](../javadoc/javadoc-nablarch-integration-micrometer-instrument-batch-BatchProcessedRecordCountMetricsLogger.md) で変更できる。
 
 また、メトリクスには以下のタグが付与される。
 
@@ -1282,7 +1282,7 @@ Nablarchバッチは、 [トランザクションループ制御ハンドラ](..
 これにより、特定レベルのログ出力頻度をモニタしたり、エラーログの監視などができるようになる。
 
 `LogCountMetrics` は [Counter(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-core/1.13.0/io/micrometer/core/instrument/Counter.html) を使って `log.count` という名前でメトリクスを収集する。
-この名前は、 [MetricsMetaData](../javadoc/javadoc-nablarch-integration-micrometer-instrument-binder-MetricsMetaData.md) を受け取る コンストラクタ で変更できる。
+この名前は、 [MetricsMetaData](../javadoc/javadoc-nablarch-integration-micrometer-instrument-binder-MetricsMetaData.md) を受け取る [コンストラクタ](../javadoc/javadoc-nablarch-integration-micrometer-instrument-binder-logging-LogCountMetrics.md) で変更できる。
 
 また、メトリクスには以下のタグが付与される。
 
@@ -1372,7 +1372,7 @@ public class CustomMeterBinderListProvider extends DefaultMeterBinderListProvide
 これにより、SQLごとの平均処理時間や最大処理時間をモニタできるようになる。
 
 `SqlTimeMetricsDaoContext` は [Timer(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-core/1.13.0/io/micrometer/core/instrument/Timer.html) を使って `sql.process.time` という名前でメトリクスを収集する。
-この名前は、 `SqlTimeMetricsDaoContext` のファクトリクラスである [SqlTimeMetricsDaoContextFactory](../javadoc/javadoc-nablarch-integration-micrometer-instrument-dao-SqlTimeMetricsDaoContextFactory.md) の setMetricsName(String) で変更できる。
+この名前は、 `SqlTimeMetricsDaoContext` のファクトリクラスである [SqlTimeMetricsDaoContextFactory](../javadoc/javadoc-nablarch-integration-micrometer-instrument-dao-SqlTimeMetricsDaoContextFactory.md) の [setMetricsName(String)](../javadoc/javadoc-nablarch-integration-micrometer-instrument-dao-SqlTimeMetricsDaoContextFactory.md) で変更できる。
 
 また、メトリクスには以下のタグが付与される。
 

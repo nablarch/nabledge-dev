@@ -138,7 +138,7 @@ VALUEに対応した略称を設定する。
 ポイント
 
 * [BasicCodeManager](../javadoc/javadoc-nablarch-common-code-BasicCodeManager.md) のコンポーネント名は、 **codeManager** とすること。
-* [BasicStaticDataCache](../javadoc/javadoc-nablarch-core-cache-BasicStaticDataCache.md) の loadOnStartup に対する設定値は、 [データのキャッシュタイミングを制御する](../../component/libraries/libraries-static-data-cache.md#データのキャッシュタイミングを制御する) を参照すること。
+* [BasicStaticDataCache](../javadoc/javadoc-nablarch-core-cache-BasicStaticDataCache.md) の [loadOnStartup](../javadoc/javadoc-nablarch-core-cache-BasicStaticDataCache.md) に対する設定値は、 [データのキャッシュタイミングを制御する](../../component/libraries/libraries-static-data-cache.md#データのキャッシュタイミングを制御する) を参照すること。
 * [BasicStaticDataCache](../javadoc/javadoc-nablarch-core-cache-BasicStaticDataCache.md) は、初期化が必要なので初期化対象のリストに設定すること。
 
 ```xml
@@ -192,7 +192,7 @@ VALUEに対応した略称を設定する。
 
 コードパターンテーブルに表示パターンを持つパターン列を定義する。
 
-パターン列は、 CodePatternSchema.patternColumnNames に設定することで使用可能となる。
+パターン列は、 [CodePatternSchema.patternColumnNames](../javadoc/javadoc-nablarch-common-code-schema-CodePatternSchema.md) に設定することで使用可能となる。
 設定ファイルへの設定方法は、 [コード管理機能を使用する為の初期設定](../../component/libraries/libraries-code.md#コード管理機能を使用する為の初期設定) を参照。
 
 この例では、 `PATTERN1` と `PATTERN2` の2つのパターンを定義し、
@@ -325,7 +325,7 @@ CodeUtil.getShortName("GENDER", "MALE", Locale.ENGLISH) // -> M
 
 コード名称テーブルに、オプションの名称を持つカラムを定義する。
 
-パターン列は、 CodePatternSchema.patternColumnNames に設定することで使用可能となる。
+パターン列は、 [CodePatternSchema.patternColumnNames](../javadoc/javadoc-nablarch-common-code-schema-CodePatternSchema.md) に設定することで使用可能となる。
 設定ファイルへの設定方法は、 [コード管理機能を使用する為の初期設定](../../component/libraries/libraries-code.md#コード管理機能を使用する為の初期設定) を参照。
 
 この例では、オプション名称のカラムとして、 `FORM_NAME` と `KANA_NAME` の2つを定義している。

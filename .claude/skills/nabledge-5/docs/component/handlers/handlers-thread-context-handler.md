@@ -135,7 +135,7 @@
 [UserIdAttributeInSessionStore](../javadoc/javadoc-nablarch-common-web-handler-threadcontext-UserIdAttributeInSessionStore.md) は、デフォルトではセッションストアからユーザIDを取得する。
 セッションストアへの設定はフレームワークでは実施しないため、ログイン時などにアプリケーションで設定する必要がある。
 セッションストアに設定する際のキーはデフォルトでは"user.id"が使用される。
-上書きする場合は、 UserIdAttribute#sessionKey に値を設定する。
+上書きする場合は、 [UserIdAttribute#sessionKey](../javadoc/javadoc-nablarch-common-handler-threadcontext-UserIdAttribute.md) に値を設定する。
 "login_id"に上書きする例を以下に示す。
 
 ```xml
@@ -160,7 +160,7 @@ SessionUtil.put(context, "user.id", userId);
 ```
 
 また、セッションストアに直接ユーザIDを格納するのではなく、ログイン情報をまとめて格納したいといった要件が考えられる。
-その場合は以下のように UserIdAttribute#getUserIdSession
+その場合は以下のように [UserIdAttribute#getUserIdSession](../javadoc/javadoc-nablarch-common-handler-threadcontext-UserIdAttribute.md)
 をオーバーライドすることで任意の取得元からユーザIDを取得することが可能となる。
 "userContext"というキーでセッションストアに設定したオブジェクトからユーザIDを取得する場合の実装例を以下に示す。
 下記の場合も、アプリケーションでセッションストアへオブジェクトを設定する必要がある。

@@ -141,13 +141,13 @@ public HttpResponse download(HttpRequest request, ExecutionContext context) {
   [ObjectMapper](../javadoc/javadoc-nablarch-common-databind-ObjectMapper.md) を使用する。
 * ファイルに出力されたデータをダウンロードさせるには、 [FileResponse](../javadoc/javadoc-nablarch-common-web-download-FileResponse.md) を使用する。
   詳細は、 [データバインドをダウンロードで使用する](../../component/libraries/libraries-data-bind.md#ファイルダウンロードで使用する) を参照。
-* 大量のデータを読み込む場合は、メモリの逼迫を防ぐために UniversalDao#defer を使用して、
+* 大量のデータを読み込む場合は、メモリの逼迫を防ぐために [UniversalDao#defer](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md) を使用して、
   検索結果を [遅延ロード](../../component/libraries/libraries-universal-dao.md#検索結果を遅延ロードする) する。
 * レスポンスのコンテンツタイプは
-  HttpResponse#setContentType を使用して設定する。
+  [HttpResponse#setContentType](../javadoc/javadoc-nablarch-fw-web-HttpResponse.md) を使用して設定する。
   詳細は [汎用データフォーマットをダウンロードで使用する](../../component/libraries/libraries-data-format.md#ファイルダウンロードで使用する) を参照。
 * ダウンロードファイルのファイル名は
-  HttpResponse#setContentDisposition を使用して設定する。
+  [HttpResponse#setContentDisposition](../javadoc/javadoc-nablarch-fw-web-HttpResponse.md) を使用して設定する。
   詳細は [汎用データフォーマットをダウンロードで使用する](../../component/libraries/libraries-data-format.md#ファイルダウンロードで使用する) を参照。
 
 ファイルダウンロード機能の解説は以上。

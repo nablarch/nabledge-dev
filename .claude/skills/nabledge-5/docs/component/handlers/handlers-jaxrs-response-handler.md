@@ -48,10 +48,10 @@
 
 ## 例外及びエラーに応じたレスポンスの生成
 
-例外及びエラーに応じたレスポンス情報の生成は、 errorResponseBuilder プロパティに設定された
+例外及びエラーに応じたレスポンス情報の生成は、 [errorResponseBuilder](../javadoc/javadoc-nablarch-fw-jaxrs-JaxRsResponseHandler.md) プロパティに設定された
 [ErrorResponseBuilder](../javadoc/javadoc-nablarch-fw-jaxrs-ErrorResponseBuilder.md) により行われる。
 ただし、発生した例外クラスが [HttpErrorResponse](../javadoc/javadoc-nablarch-fw-web-HttpErrorResponse.md) の場合は、
-HttpErrorResponse#getResponse() から戻される
+[HttpErrorResponse#getResponse()](../javadoc/javadoc-nablarch-fw-web-HttpErrorResponse.md) から戻される
 [HttpResponse](../javadoc/javadoc-nablarch-fw-web-HttpResponse.md) がクライアントに戻される。
 
 設定を省略した場合は、デフォルト実装の [ErrorResponseBuilder](../javadoc/javadoc-nablarch-fw-jaxrs-ErrorResponseBuilder.md) が使用される。
@@ -75,7 +75,7 @@ HttpErrorResponse#getResponse() から戻される
 
 ## 例外及びエラーに応じたログ出力
 
-例外及びエラーに応じたログ出力は errorLogWriter プロパティに設定された
+例外及びエラーに応じたログ出力は [errorLogWriter](../javadoc/javadoc-nablarch-fw-jaxrs-JaxRsResponseHandler.md) プロパティに設定された
 [JaxRsErrorLogWriter](../javadoc/javadoc-nablarch-fw-jaxrs-JaxRsErrorLogWriter.md) により行われる。
 
 設定を省略した場合は、デフォルト実装の [JaxRsErrorLogWriter](../javadoc/javadoc-nablarch-fw-jaxrs-JaxRsErrorLogWriter.md) が使用される。

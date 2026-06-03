@@ -71,7 +71,7 @@
 [Forbidden(403)](../javadoc/javadoc-nablarch-fw-results-Forbidden.md) を送出する。
 
 チェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、
-PermissionCheckHandler.setUsesInternalRequestId
+[PermissionCheckHandler.setUsesInternalRequestId](../javadoc/javadoc-nablarch-common-permission-PermissionCheckHandler.md)
 でtrueを指定する。デフォルトはfalseである。
 
 ## 権限がない場合に表示するエラーページを指定する
@@ -82,7 +82,7 @@ PermissionCheckHandler.setUsesInternalRequestId
 ## 特定のリクエストを認可チェックから除外する
 
 ログイン前のリクエストなど、認可チェックを除外したいリクエストがある場合は、
-PermissionCheckHandler.setIgnoreRequestIds
+[PermissionCheckHandler.setIgnoreRequestIds](../javadoc/javadoc-nablarch-common-permission-PermissionCheckHandler.md)
 で指定する。
 
 ```xml

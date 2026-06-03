@@ -73,12 +73,12 @@ performanceLogFormatter.format=\n\tpoint = [$point$] result = [$result$]\
 
 パフォーマンスログは、 [PerformanceLogUtil](../javadoc/javadoc-nablarch-core-log-app-PerformanceLogUtil.md) を使用して出力する。
 [PerformanceLogUtil](../javadoc/javadoc-nablarch-core-log-app-PerformanceLogUtil.md) は、
-処理の開始時に呼び出す PerformanceLogUtil#start と
-終了時に呼び出す PerformanceLogUtil#end
+処理の開始時に呼び出す [PerformanceLogUtil#start](../javadoc/javadoc-nablarch-core-log-app-PerformanceLogUtil.md) と
+終了時に呼び出す [PerformanceLogUtil#end](../javadoc/javadoc-nablarch-core-log-app-PerformanceLogUtil.md)
 を提供する。
 [PerformanceLogUtil](../javadoc/javadoc-nablarch-core-log-app-PerformanceLogUtil.md) は、
-PerformanceLogUtil#end
-が呼ばれた時点で、 PerformanceLogUtil#start
+[PerformanceLogUtil#end](../javadoc/javadoc-nablarch-core-log-app-PerformanceLogUtil.md)
+が呼ばれた時点で、 [PerformanceLogUtil#start](../javadoc/javadoc-nablarch-core-log-app-PerformanceLogUtil.md)
 で取得した日時とメモリ使用量を合わせて出力する。
 
 [PerformanceLogUtil](../javadoc/javadoc-nablarch-core-log-app-PerformanceLogUtil.md) の使用例を下記に示す。

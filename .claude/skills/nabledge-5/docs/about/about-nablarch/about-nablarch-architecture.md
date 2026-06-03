@@ -80,7 +80,7 @@ Nablarchは受け取ったリクエストに対し、ハンドラキュー上に
 > 4. >   [nablarch.fw.web.interceptor.OnError](../javadoc/javadoc-nablarch-fw-web-interceptor-OnError.md)
 > 5. >   [nablarch.common.web.interceptor.InjectForm](../javadoc/javadoc-nablarch-common-web-interceptor-InjectForm.md)
 
-> インターセプタの実行順設定に関する詳細は、 nablarch.fw.Interceptor.Factory を参照。
+> インターセプタの実行順設定に関する詳細は、 [nablarch.fw.Interceptor.Factory](../javadoc/javadoc-nablarch-fw-Interceptor.md) を参照。
 
 ## ライブラリ(library)
 

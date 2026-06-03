@@ -2,7 +2,7 @@
 
 ## エラーとなったデータを除外し処理を継続する
 
-エラーデータの除外は、例外発生時のコールバックメソッド(transactionFailure)で行う。
+エラーデータの除外は、例外発生時のコールバックメソッド([transactionFailure](../javadoc/javadoc-nablarch-fw-action-BatchActionBase.md))で行う。
 
 > **Important:**
 > エラーデータを除外しなかった場合、エラーとなったデータが再び処理対象として抽出され、再度例外が発生する。

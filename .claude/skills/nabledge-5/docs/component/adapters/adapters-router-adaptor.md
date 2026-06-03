@@ -93,9 +93,9 @@
   * URLと業務アクションのマッピング処理が行われている
   * ルート定義ファイルが変更されている
 
-ルート定義ファイルの再読み込みを有効にするには、 RoutesMapping#setCheckInterval(long) に0以上の値を指定する。
+ルート定義ファイルの再読み込みを有効にするには、 [RoutesMapping#setCheckInterval(long)](../javadoc/javadoc-nablarch-integration-router-RoutesMapping.md) に0以上の値を指定する。
 
-RoutesMapping#setCheckInterval(long) の指定単位は秒数となる。パフォーマンスを重視する環境では-1を指定し、ルート定義ファイルの変更確認を行わないよう設定することを推奨する。
+[RoutesMapping#setCheckInterval(long)](../javadoc/javadoc-nablarch-integration-router-RoutesMapping.md) の指定単位は秒数となる。パフォーマンスを重視する環境では-1を指定し、ルート定義ファイルの変更確認を行わないよう設定することを推奨する。
 
 ## 業務アクションとURLを自動的にマッピングする
 
@@ -317,7 +317,7 @@ public class TestAction {
 これは、本機能（`Path` アノテーションによるルーティング定義）がJAX-RSの仕様に準拠しているためである。
 
 パスの一部を `{パラメータ名}` と記述することで、その部分をパラメータとして定義できる。
-ここで定義したパラメータ名を JaxRsHttpRequest#getPathParam(String) に渡すことで、パスパラメータの値を取得できる。
+ここで定義したパラメータ名を [JaxRsHttpRequest#getPathParam(String)](../javadoc/javadoc-nablarch-fw-jaxrs-JaxRsHttpRequest.md) に渡すことで、パスパラメータの値を取得できる。
 
 さらに、 `{パラメータ名 : 正規表現}` と記述することで、そのパスパラメータの書式を正規表現で定義できる。
 上記実装例では `\\d+` と正規表現を指定しているので、パスの値が数値のときのみメソッドがディスパッチされるようになる。

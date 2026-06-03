@@ -232,7 +232,7 @@ yyyyMMdd形式で、指定しない場合は”99991231”
 認可チェックは、 [Permission](../javadoc/javadoc-nablarch-common-permission-Permission.md) を使用する。
 [認可チェックハンドラ](../../component/handlers/handlers-permission-check-handler.md#認可チェックハンドラ) により、スレッドコンテキストに
 [Permission](../javadoc/javadoc-nablarch-common-permission-Permission.md) が設定されているので、
-PermissionUtil.getPermission
+[PermissionUtil.getPermission](../javadoc/javadoc-nablarch-common-permission-PermissionUtil.md)
 を使って取得する。
 
 ```java

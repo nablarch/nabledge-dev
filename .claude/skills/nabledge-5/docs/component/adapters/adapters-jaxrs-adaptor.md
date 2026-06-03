@@ -55,7 +55,7 @@
 
 以下にJersey用アダプタの適用方法を示す。
 
-JaxRsMethodBinderFactory#handlerList
+[JaxRsMethodBinderFactory#handlerList](../javadoc/javadoc-nablarch-fw-jaxrs-JaxRsMethodBinderFactory.md)
 に対して、Jersey用のハンドラを構築するファクトリクラス([JerseyJaxRsHandlerListFactory](../javadoc/javadoc-nablarch-integration-jaxrs-jersey-JerseyJaxRsHandlerListFactory.md))
 をファクトリインジェクションする。これにより、Jersey用の以下のハンドラ構成が自動的に設定される。
 
@@ -92,7 +92,7 @@ JaxRsMethodBinderFactory#handlerList
 
 以下にRESTEasy用アダプタの適用方法を示す。
 
-JaxRsMethodBinderFactory#handlerList
+[JaxRsMethodBinderFactory#handlerList](../javadoc/javadoc-nablarch-fw-jaxrs-JaxRsMethodBinderFactory.md)
 に対して、RESTEasy用のハンドラを構築するファクトリクラス([ResteasyJaxRsHandlerListFactory](../javadoc/javadoc-nablarch-integration-jaxrs-resteasy-ResteasyJaxRsHandlerListFactory.md))
 をファクトリインジェクションする。これにより、RESTEasy用の以下のハンドラ構成が自動的に設定される。
 

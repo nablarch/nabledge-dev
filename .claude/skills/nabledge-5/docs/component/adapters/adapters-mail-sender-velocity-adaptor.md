@@ -95,7 +95,7 @@ $titleは、申請番号$requestIdで申請されました。
 $approverは速やかに$titleを承認してください。$option
 ```
 
-より詳しい件名と本文の分割ルールは TemplateEngineProcessedResult#valueOf を参照。
+より詳しい件名と本文の分割ルールは [TemplateEngineProcessedResult#valueOf](../javadoc/javadoc-nablarch-common-mail-TemplateEngineProcessedResult.md) を参照。
 
 テンプレートファイルを配置する場所は `VelocityEngine` の設定によって異なる。
 例えば、前節で示した設定例だとテンプレートファイルはクラスパスからロードされるので、クラスパス上のディレクトリにテンプレートファイルを配置することになる。

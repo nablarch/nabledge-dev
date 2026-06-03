@@ -69,14 +69,14 @@ ServletResponse の getOutputStream メソッドを使用して直接
 | 上記以外の場合 | HttpResponse#getBodyStream()の結果を応答する。 |
 
 ここで言う「スキーム」とは、後続ハンドラが返した
-HttpResponse#getContentPath()
+[HttpResponse#getContentPath()](../javadoc/javadoc-nablarch-fw-web-HttpResponse.md)
 で取得した  [ResourceLocator](../javadoc/javadoc-nablarch-fw-web-ResourceLocator.md) の
-getScheme() メソッド の戻り値のことを指す。
+[getScheme() メソッド](../javadoc/javadoc-nablarch-fw-web-ResourceLocator.md) の戻り値のことを指す。
 明示的にスキームを指定しない場合のデフォルトスキームは `servlet` である。
 
 ここで言う「ステータスコード」とは、後続ハンドラが返す
 [HttpResponse](../javadoc/javadoc-nablarch-fw-web-HttpResponse.md) クラスの
-getStatusCode() メソッドの戻り値のことを示す。
+[getStatusCode()](../javadoc/javadoc-nablarch-fw-web-HttpResponse.md) メソッドの戻り値のことを示す。
 
 ## カスタムレスポンスライター
 

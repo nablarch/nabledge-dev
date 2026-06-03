@@ -88,7 +88,7 @@ public interface ProjectDao {
 
 * 業務アクションメソッドをトランザクション管理対象とするため、
   [Transactional](../javadoc/javadoc-nablarch-integration-doma-Transactional.md) インターセプタを設定する
-* DomaDaoRepository#get を使用してDaoの実装クラスをルックアップする
+* [DomaDaoRepository#get](../javadoc/javadoc-nablarch-integration-doma-DomaDaoRepository.md) を使用してDaoの実装クラスをルックアップする
 
 > **Tip:**
 > Domaでは注釈処理によってコンパイル時に自動的にDaoの実装クラスが生成されるため、コーディング時にはまだ実装クラスが存在しない。
@@ -110,7 +110,7 @@ public HttpResponse create(final HttpRequest request, final ExecutionContext con
 [Transactional](../javadoc/javadoc-nablarch-integration-doma-Transactional.md) インターセプタによって開始されたトランザクションではなく、
 別のトランザクションを使用してデータベースアクセスを行いたい場合がある。
 
-その場合は、 DomaConfig#getTransactionManager で取得した
+その場合は、 [DomaConfig#getTransactionManager](../javadoc/javadoc-nablarch-integration-doma-DomaConfig.md) で取得した
 TransactionManager を使用して別トランザクションで制御する。
 
 実装例を以下に示す。

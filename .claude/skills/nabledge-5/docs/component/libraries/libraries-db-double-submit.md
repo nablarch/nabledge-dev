@@ -49,7 +49,7 @@ DOUBLE_SUBMISSION テーブル
 | CREATED_AT | java.sql.Timestamp |
 
 テーブル名およびカラム名は変更可能である。
-変更する場合は、 DbTokenManager.dbTokenSchema に
+変更する場合は、 [DbTokenManager.dbTokenSchema](../javadoc/javadoc-nablarch-common-web-token-DbTokenManager.md) に
 [DbTokenSchema](../javadoc/javadoc-nablarch-common-web-token-DbTokenSchema.md) のコンポーネントを定義する。
 
 2種類のコンポーネント定義を追加する。
