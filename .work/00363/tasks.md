@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-03 (session 21)
+**Updated**: 2026-06-03 (session 22)
 
 ## Rules（全タスク共通）
 
@@ -39,18 +39,10 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
   - qa-05: 精度 66.7%（Jackson2BodyConverter ABSENT → baseline でも未検出の既存課題）
 - [x] run-1 FAIL/ERROR の妥当性評価 → report.md に記録 → ユーザー確認（qa-15修正 `fc6a43675`、全参照検証OK）
 - [x] run-2 実行（33件全件）— `tools/benchmark/results/v2-javadoc/run-2/`（33件）
-- [ ] HOW-TO-RUN.md 手順に従い run-1 / run-2 を正しい状態にする
-  - ステップ3a: run-1 の数値サマリーをテーブル形式で `run-1/report.md` に保存
-    - ERRORシナリオ（qa-04, qa-15）: 出力が存在しないため再実行不要（qa-15はシナリオ修正後 run-2 で回収済み、qa-04は run-2 でPASS確認済み）
-    - FAILシナリオ（qa-05）: evaluation.json を読み must/acceptable 充足確認 → 品質問題か判定
-    - UNCERTAINシナリオ（qa-12b）: evaluation.json を読み must/acceptable 充足確認 → 品質問題か判定
-  - ステップ3b: 上記の妥当性評価を実施し `run-1/report.md` に記録
-  - ステップ3c: ユーザーに確認 → 確定FAIL を決定
-  - ステップ3a: run-2 の数値サマリーをテーブル形式で `run-2/report.md` に保存
-    - ERRORシナリオ（review-09）: `raw_response.txt` が存在 → 出力あり → must/acceptable 充足確認 → 品質問題か判定
-    - FAILシナリオ（qa-05, qa-12a, qa-12b）: evaluation.json を読み must/acceptable 充足確認 → 品質問題か判定
-  - ステップ3b: 上記の妥当性評価を実施し `run-2/report.md` に記録
-  - ステップ3c: ユーザーに確認 → 確定FAIL を決定
+- [x] HOW-TO-RUN.md 手順に従い run-1 / run-2 を正しい状態にする
+  - run-1/report.md 作成済み（30件集計、確定FAIL候補5件）
+  - run-2/report.md 作成済み（33件集計、確定FAIL候補5件）
+  - ユーザー承認済み: qa-05 / impact-08 / qa-11a / qa-11b / qa-12a を確定FAIL
 - [ ] run-3 実行（33件全件: `--scenario-ids` 省略）
 - [ ] HOW-TO-RUN.md ステップ3 に従い run-3 の妥当性評価 → `run-3/report.md` 作成 → ユーザー確認
 - [ ] ステップ4: 3 run 集計 + baseline-current 比較を `v2-javadoc/report.md` に記録
