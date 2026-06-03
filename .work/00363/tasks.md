@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-03 (session 20)
+**Updated**: 2026-06-03 (session 20, end)
 
 ## Rules（全タスク共通）
 
@@ -33,20 +33,22 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
   - qa-16: 精度PASS / 幻覚PASS
   - qa-17: シナリオ修正（s8→acceptable）後 精度PASS / 幻覚PASS — `35ef90d35`
   - qa-18: 精度PASS / 幻覚一次FAIL→ユーザー却下（正しく有用な補足）
-- [x] 既存30件 run-1 実行済み — `tools/benchmark/results/20260603-132534/`（30件）
-  - qa-04: ERROR（claude コマンドエラー、単体再実行で回収要）
-  - qa-15: ERROR（Section s21 not found、セクションID変化の可能性）
-  - qa-05: 精度 66.7%（Jackson2BodyConverter ABSENT）
-  - 上記3件は再実行・調査が必要
+- [x] 既存30件 run-1 実行済み — `tools/benchmark/results/v2-javadoc/run-1/`（30件）
+  - qa-04: ERROR（claudeタイムアウト360s、baseline最大160s → Javadoc知識増加の影響か。run-2で再確認）
+  - qa-15: ERROR（s21未発見 → PR #347でs21→s5統合済み。修正済み `fc6a43675`）
+  - qa-05: 精度 66.7%（Jackson2BodyConverter ABSENT → baseline でも未検出の既存課題）
 - [x] run-1 FAIL/ERROR の妥当性評価 → report.md に記録 → ユーザー確認（qa-15修正 `fc6a43675`、全参照検証OK）
-- [ ] run-2 実行（33件全件: `--scenario-ids` 省略）
+- [ ] run-2 実行（33件全件: `--scenario-ids` 省略）[RUNNING: PID 453363、結果は tools/benchmark/results/20260603-152836/、7/33完了]
 - [ ] run-2 FAIL の妥当性評価 → report.md 更新 → ユーザー確認
 - [ ] run-3 実行
 - [ ] run-3 FAIL の妥当性評価 → report.md 更新 → ユーザー確認
 - [ ] 3 run 集計 + baseline-current 比較を report.md に記録
 - [ ] 問題あれば Task 2 に戻って修正
 
-**注**: run-1 の30件は新旧シナリオ混在しておらず、qa-16/17/18 は別途実行済み。run-2/3 は33件全件で実行すること。
+**注**:
+- run-1 は旧シナリオ30件（qa-16/17/18なし）。run-2/3 は33件全件で実行
+- run-2 完了後: `mkdir -p tools/benchmark/results/v2-javadoc && mv tools/benchmark/results/20260603-152836 tools/benchmark/results/v2-javadoc/run-2`
+- tools/benchmark/results/20260603-140441/ は不完全な別実行（30件、qa-15修正前）。不要なので削除してよい
 
 ### Task 6: 差分チェック + PR レビュー依頼
 - **前提**: Task 5 完了
