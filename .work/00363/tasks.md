@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-03 (session 20, end)
+**Updated**: 2026-06-03 (session 21)
 
 ## Rules（全タスク共通）
 
@@ -38,17 +38,27 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
   - qa-15: ERROR（s21未発見 → PR #347でs21→s5統合済み。修正済み `fc6a43675`）
   - qa-05: 精度 66.7%（Jackson2BodyConverter ABSENT → baseline でも未検出の既存課題）
 - [x] run-1 FAIL/ERROR の妥当性評価 → report.md に記録 → ユーザー確認（qa-15修正 `fc6a43675`、全参照検証OK）
-- [ ] run-2 実行（33件全件: `--scenario-ids` 省略）[RUNNING: PID 453363、結果は tools/benchmark/results/20260603-152836/、7/33完了]
-- [ ] run-2 FAIL の妥当性評価 → report.md 更新 → ユーザー確認
-- [ ] run-3 実行
-- [ ] run-3 FAIL の妥当性評価 → report.md 更新 → ユーザー確認
-- [ ] 3 run 集計 + baseline-current 比較を report.md に記録
+- [x] run-2 実行（33件全件）— `tools/benchmark/results/v2-javadoc/run-2/`（33件）
+- [ ] HOW-TO-RUN.md 手順に従い run-1 / run-2 を正しい状態にする
+  - ステップ3a: run-1 の数値サマリーをテーブル形式で `run-1/report.md` に保存
+    - ERRORシナリオ（qa-04, qa-15）: 出力が存在しないため再実行不要（qa-15はシナリオ修正後 run-2 で回収済み、qa-04は run-2 でPASS確認済み）
+    - FAILシナリオ（qa-05）: evaluation.json を読み must/acceptable 充足確認 → 品質問題か判定
+    - UNCERTAINシナリオ（qa-12b）: evaluation.json を読み must/acceptable 充足確認 → 品質問題か判定
+  - ステップ3b: 上記の妥当性評価を実施し `run-1/report.md` に記録
+  - ステップ3c: ユーザーに確認 → 確定FAIL を決定
+  - ステップ3a: run-2 の数値サマリーをテーブル形式で `run-2/report.md` に保存
+    - ERRORシナリオ（review-09）: `raw_response.txt` が存在 → 出力あり → must/acceptable 充足確認 → 品質問題か判定
+    - FAILシナリオ（qa-05, qa-12a, qa-12b）: evaluation.json を読み must/acceptable 充足確認 → 品質問題か判定
+  - ステップ3b: 上記の妥当性評価を実施し `run-2/report.md` に記録
+  - ステップ3c: ユーザーに確認 → 確定FAIL を決定
+- [ ] run-3 実行（33件全件: `--scenario-ids` 省略）
+- [ ] HOW-TO-RUN.md ステップ3 に従い run-3 の妥当性評価 → `run-3/report.md` 作成 → ユーザー確認
+- [ ] ステップ4: 3 run 集計 + baseline-current 比較を `v2-javadoc/report.md` に記録
 - [ ] 問題あれば Task 2 に戻って修正
 
 **注**:
 - run-1 は旧シナリオ30件（qa-16/17/18なし）。run-2/3 は33件全件で実行
-- run-2 完了後: `mkdir -p tools/benchmark/results/v2-javadoc && mv tools/benchmark/results/20260603-152836 tools/benchmark/results/v2-javadoc/run-2`
-- tools/benchmark/results/20260603-140441/ は不完全な別実行（30件、qa-15修正前）。不要なので削除してよい
+- 各 run の report は `run-N/report.md` に保存する（ラベル全体のサマリーは `v2-javadoc/report.md`）
 
 ### Task 6: 差分チェック + PR レビュー依頼
 - **前提**: Task 5 完了

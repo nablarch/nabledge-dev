@@ -121,7 +121,12 @@ print('updated summary.json:', d['total_scenarios'], 'scenarios')
 | `metrics.json` | 正常完了時 | 実行時間・ターン数・コスト |
 | `trace.json` | 正常完了時 | claudeの生JSON出力（`result`フィールドにLLM出力全文） |
 
-**エラー時の調査**: `error.json` の `exception_type` でエラー種別確認。TimeoutExpiredの場合は単体再実行で回収する。
+**エラー時の調査**:
+
+`error.json` の `exception_type` でエラー種別を確認し、以下で対応を分ける:
+
+- **出力が存在する場合**（`raw_response.txt` または `answer.md` あり）: スキルは回答を生成している。ステップ3bと同じ要領で `raw_response.txt` を読み、must のfact が満たされているかを確認して品質問題か否かを判定する
+- **出力が存在しない場合**（スキルが回答を生成できなかった）: 単体再実行で回収する
 
 ---
 
