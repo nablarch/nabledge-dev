@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-03 (session 19, end)
+**Updated**: 2026-06-03 (session 20)
 
 ## Rules（全タスク共通）
 
@@ -38,7 +38,7 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
   - qa-15: ERROR（Section s21 not found、セクションID変化の可能性）
   - qa-05: 精度 66.7%（Jackson2BodyConverter ABSENT）
   - 上記3件は再実行・調査が必要
-- [ ] run-1 FAIL/ERROR の妥当性評価 → report.md に記録 → ユーザー確認
+- [x] run-1 FAIL/ERROR の妥当性評価 → report.md に記録 → ユーザー確認（qa-15修正 `fc6a43675`、全参照検証OK）
 - [ ] run-2 実行（33件全件: `--scenario-ids` 省略）
 - [ ] run-2 FAIL の妥当性評価 → report.md 更新 → ユーザー確認
 - [ ] run-3 実行
