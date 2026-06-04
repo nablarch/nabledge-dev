@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-04 (session 24)
+**Updated**: 2026-06-04 (session 24 saved)
 
 ## Rules（全タスク共通）
 
@@ -24,38 +24,6 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 ---
 
 ## In Progress
-
-### Task 5: v6 ベンチマーク（新シナリオ3件 + 既存スコア低下なし確認）
-- **前提**: Task 3 / 4 完了
-- **完了条件**: HOW-TO-RUN.md 手順通り 3 run 完了 + report.md 作成 + ユーザー承認
-- **ラベル**: `v2-javadoc`（前回 baseline-current との比較）
-- [x] 新シナリオ3件（qa-16/17/18）を v6 で実行し正答を確認（全件PASS確認済み）
-  - qa-16: 精度PASS / 幻覚PASS
-  - qa-17: シナリオ修正（s8→acceptable）後 精度PASS / 幻覚PASS — `35ef90d35`
-  - qa-18: 精度PASS / 幻覚一次FAIL→ユーザー却下（正しく有用な補足）
-- [x] 既存30件 run-1 実行済み — `tools/benchmark/results/v2-javadoc/run-1/`（30件）
-  - qa-04: ERROR（claudeタイムアウト360s、baseline最大160s → Javadoc知識増加の影響か。run-2で再確認）
-  - qa-15: ERROR（s21未発見 → PR #347でs21→s5統合済み。修正済み `fc6a43675`）
-  - qa-05: 精度 66.7%（Jackson2BodyConverter ABSENT → baseline でも未検出の既存課題）
-- [x] run-1 FAIL/ERROR の妥当性評価 → report.md に記録 → ユーザー確認（qa-15修正 `fc6a43675`、全参照検証OK）
-- [x] run-2 実行（33件全件）— `tools/benchmark/results/v2-javadoc/run-2/`（33件）
-- [x] HOW-TO-RUN.md 手順に従い run-1〜run-3 を正しい状態にする
-  - run-1/report.md 作成済み
-  - run-2/report.md 作成済み
-  - run-3/report.md 作成済み
-  - HOW-TO-RUN.md ステップ3b に「選定ページ全体・Javadoc全体・contentフィールド確認」を追記済み
-  - ナレッジ全体再調査により確定FAIL修正: qa-11b/qa-12a/qa-13 は虚偽FAIL → 除外
-  - 確定FAIL: qa-05（再現性3/3）/ impact-08（fixedDate日付誤り、再現性2/3）/ qa-11a（再現性2/3）
-- [x] run-3 実行（33件全件）— `tools/benchmark/results/v2-javadoc/run-3/`（33件）
-- [x] ステップ4: 3 run 集計 + baseline-current 比較を `v2-javadoc/report.md` に記録
-  - run-1/2/3の 3c 最終判定を修正（impact-08/qa-11a → 却下、qa-05 → 確定FAIL維持）
-  - 3 run 集計レポート `v2-javadoc/report.md` 作成
-  - Issue #368（qa-05）作成
-- [x] 問題あれば Task 2 に戻って修正（qa-05: 別Issue #368 で対応。本PRの範囲外）
-
-**注**:
-- run-1 は旧シナリオ30件（qa-16/17/18なし）。run-2/3 は33件全件で実行
-- 各 run の report は `run-N/report.md` に保存する（ラベル全体のサマリーは `v2-javadoc/report.md`）
 
 ### Task 6: 差分チェック + PR レビュー依頼
 - **前提**: Task 5 完了
@@ -97,3 +65,4 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 - [x] Task 3-E（続き）: v6 docs 再生成 + 新規 knowledge コミット、全バージョン verify 新規FAIL=0 確認 — `0b2508a2e` / `140b6459f`
 - [x] Task 3: semantic-search に Step 3b 追加（v6/v5）— `6bd3dea23`
 - [x] Task 4: ベンチマークシナリオ追加（qa-16/17/18）— `e9f4adbff`
+- [x] Task 5: v6 ベンチマーク 3 run + report.md 作成 — `e527ee219` / Issue #368 作成
