@@ -5,7 +5,7 @@
 
 ## Summary
 
-全 4718 ファイル変更（想定外: 0件）。1件の verify FAIL 発見 → 要対処。
+全 4719 ファイル変更（想定外: 0件）。全バージョン verify FAIL=0（Task 6-A で QO3 false positive 修正済み）。
 
 ---
 
@@ -34,21 +34,20 @@
 
 ---
 
-## verify 実行結果
+## verify 実行結果（最終）
 
 | バージョン | FAIL 件数 | 内容 |
 |-----------|-----------|------|
-| v6 | 1 | QO3: README.md count mismatch (declares 353, found 935) |
-| v5 | 1 | QO3: README.md count mismatch (declares 533, found 1128) |
+| v6 | 0 | All OK（Task 6-A で QO3 false positive 修正済み） |
+| v5 | 0 | All OK（Task 6-A で QO3 false positive 修正済み） |
 | v1.4 | 0 | All OK |
 | v1.3 | 0 | All OK |
 | v1.2 | 0 | All OK |
 
-**QO3 FAIL の原因（設計ギャップ）**:
-- `generate_readme()` は javadoc JSON を意図的にスキップするため、README.md のページ数宣言は javadoc MD を含まない（v6: 353, v5: 533）
-- verify の QO3 カウントは `docs/` 配下の全 .md（javadoc 含む）を数えるため乖離が生じる
-- RBKC 生成ファイルの手動編集は禁止（.claude/rules/rbkc.md）のため README.md を手動更新できない
-- **対処方針**: verify の QO3 カウントから `docs/javadoc/` を除外（false positive fix）— **ユーザー承認待ち**
+**QO3 対処（Task 6-A 完了）**:
+- `docs/javadoc/` を QO3 のページ数カウントから除外する false positive fix を実装
+- verify は `docs/javadoc/` 配下をカウント対象外とするよう修正（`85cc4aa00`）
+- 全バージョン FAIL=0 確認済み（2026-06-04）
 
 ---
 
