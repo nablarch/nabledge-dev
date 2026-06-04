@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-04 (session 23)
+**Updated**: 2026-06-04 (session 23, saved)
 
 ## Rules（全タスク共通）
 
@@ -48,6 +48,7 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
   - 確定FAIL: qa-05（再現性3/3）/ impact-08（fixedDate日付誤り、再現性2/3）/ qa-11a（再現性2/3）
 - [x] run-3 実行（33件全件）— `tools/benchmark/results/v2-javadoc/run-3/`（33件）
 - [ ] ステップ4: 3 run 集計 + baseline-current 比較を `v2-javadoc/report.md` に記録
+  - [DECISION: 再開後にFBあり — ステップ4実施前にFBを受ける]
 - [ ] 問題あれば Task 2 に戻って修正
 
 **注**:
