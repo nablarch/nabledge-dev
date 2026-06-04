@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-04
+**Updated**: 2026-06-04 (final)
 
 ## Rules（全タスク共通）
 
@@ -39,9 +39,9 @@ Task 6-B がスコープ外のため、javadoc knowledge が存在しない v1.x
 
 ### Task 6-D: 差分チェック + PR レビュー依頼
 - **前提**: Task 6-A〜C 完了
-- [ ] `git diff main...HEAD --stat` で変更ファイルを全件確認、diff-check.md 更新
-- [ ] Expert review（Software Engineer + QA Engineer）
-- [ ] PR を更新
+- [x] `git diff main...HEAD --stat` で変更ファイルを全件確認、diff-check.md 更新
+- [x] Expert review（Software Engineer + QA Engineer）— 4 Findings 全修正済み `cbde07d3f`
+- [x] PR を更新
 
 ---
 
@@ -76,3 +76,4 @@ Task 6-B がスコープ外のため、javadoc knowledge が存在しない v1.x
 - [x] Task 4: ベンチマークシナリオ追加（qa-16/17/18）— `e9f4adbff`
 - [x] Task 5: v6 ベンチマーク 3 run + report.md 作成 — `e527ee219` / Issue #368 作成
 - [x] Task 6-A: QO3 verify FAIL 修正（v5/v6）— 設計書 `ed9c4acd9` / test `35263e945` / fix `85cc4aa00`
+- [x] Task 6-D: diff-check.md 更新 + Expert review + 修正 — `5c32f02b1` / `cbde07d3f`
