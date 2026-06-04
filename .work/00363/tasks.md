@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-04 (session 23, saved)
+**Updated**: 2026-06-04 (session 24)
 
 ## Rules（全タスク共通）
 
@@ -47,9 +47,11 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
   - ナレッジ全体再調査により確定FAIL修正: qa-11b/qa-12a/qa-13 は虚偽FAIL → 除外
   - 確定FAIL: qa-05（再現性3/3）/ impact-08（fixedDate日付誤り、再現性2/3）/ qa-11a（再現性2/3）
 - [x] run-3 実行（33件全件）— `tools/benchmark/results/v2-javadoc/run-3/`（33件）
-- [ ] ステップ4: 3 run 集計 + baseline-current 比較を `v2-javadoc/report.md` に記録
-  - [DECISION: 再開後にFBあり — ステップ4実施前にFBを受ける]
-- [ ] 問題あれば Task 2 に戻って修正
+- [x] ステップ4: 3 run 集計 + baseline-current 比較を `v2-javadoc/report.md` に記録
+  - run-1/2/3の 3c 最終判定を修正（impact-08/qa-11a → 却下、qa-05 → 確定FAIL維持）
+  - 3 run 集計レポート `v2-javadoc/report.md` 作成
+  - Issue #368（qa-05）作成
+- [x] 問題あれば Task 2 に戻って修正（qa-05: 別Issue #368 で対応。本PRの範囲外）
 
 **注**:
 - run-1 は旧シナリオ30件（qa-16/17/18なし）。run-2/3 は33件全件で実行
