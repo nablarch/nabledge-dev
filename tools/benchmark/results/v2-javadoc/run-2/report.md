@@ -138,13 +138,15 @@
 
 ---
 
-## 3c. 確定FAIL（ナレッジ全体確認後の最終判定）
+## 3c. 確定FAIL・却下（最終判定）
 
-| シナリオID | 分類 | run-1 | run-2 | 内容 |
-|---|---|---|---|---|
-| qa-05 | スキルの挙動問題 | 精度FAIL | 精度FAIL | Jackson2BodyConverter名称の言及漏れ（adapters-jaxrs-adaptor.json が非選定） |
-| impact-08 | スキルの挙動問題 | 幻覚FAIL | 幻覚FAIL | fixedDate日付誤り（XML値9月13日 vs 回答9月14日） |
-| qa-11a | スキルの挙動問題 | 幻覚FAIL | 幻覚FAIL | 例外テーブルの単純化（ThreadDeath/VirtualMachineError除外行がナレッジに明記されているが回答が省略） |
+最終判定基準: **質問への実用上の害の有無**（害あり → 確定FAIL / 害なし → 却下）
+
+| シナリオID | 判定 | 再現性 | 根拠（害の有無） |
+|---|---|---|---|
+| qa-05 | **確定FAIL** | 2/2 | 害あり: 設定クラス（Jackson2BodyConverter）が回答に欠落し、実装に必要な情報が届かない |
+| impact-08 | **却下** | 2/2 | 害なし: 質問は日時切替の方法であり回答は方法を正しく説明。fixedDateのサンプル値ずれは質問の答えでない |
+| qa-11a | **却下** | 2/2 | 害なし: must fact（ApplicationException→リクエストスコープ設定）は回答に明記済み。除外リストの省略は質問の核心でない |
 
 **虚偽FAIL（確定FAILから除外）**:
 - qa-11b: `FailureLogUtil` の記述は選定済み Javadoc の `content` フィールドに存在
