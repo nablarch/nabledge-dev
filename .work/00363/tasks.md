@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-04 (final)
+**Updated**: 2026-06-04
 
 ## Rules（全タスク共通）
 
@@ -37,11 +37,16 @@ Javadoc へのリンク構造がドキュメント自体に存在しない。
 ### ~~Task 6-C: semantic-search Step 3b を v1.4/v1.3/v1.2 に適用~~ — スコープ外
 Task 6-B がスコープ外のため、javadoc knowledge が存在しない v1.x への Step 3b 追加も不要。
 
-### Task 6-D: 差分チェック + PR レビュー依頼
+### Task 6-D: 差分チェック + PR レビュー依頼 — レビュー対応中
 - **前提**: Task 6-A〜C 完了
 - [x] `git diff main...HEAD --stat` で変更ファイルを全件確認、diff-check.md 更新
 - [x] Expert review（Software Engineer + QA Engineer）— 4 Findings 全修正済み `cbde07d3f`
 - [x] PR を更新
+- [x] RBKC create/verify 全5バージョン実行（All files verified OK）— `ab83baba9`
+- [x] Step 3b → Step 4 に修正（v5/v6）— `f27c7808a`
+- [x] diff-check.md に根拠・スポットチェック結果追記 — `d02a4658e` / `79a34722d`
+- [x] レビューコメント5件にリプライ済み
+- [ ] ユーザーレビュー承認待ち → Approve 後にマージ
 
 ---
 
@@ -77,3 +82,4 @@ Task 6-B がスコープ外のため、javadoc knowledge が存在しない v1.x
 - [x] Task 5: v6 ベンチマーク 3 run + report.md 作成 — `e527ee219` / Issue #368 作成
 - [x] Task 6-A: QO3 verify FAIL 修正（v5/v6）— 設計書 `ed9c4acd9` / test `35263e945` / fix `85cc4aa00`
 - [x] Task 6-D: diff-check.md 更新 + Expert review + 修正 — `5c32f02b1` / `cbde07d3f`
+- [x] PR レビュー FB 対応（Step 4 改名、diff-check 根拠追記、スポットチェック）— `ab83baba9` / `f27c7808a` / `d02a4658e` / `79a34722d`
