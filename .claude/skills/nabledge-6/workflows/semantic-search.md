@@ -80,7 +80,7 @@ Return:
 
 ---
 
-## Step 3b: Augment with referenced Javadoc
+## Step 4: Augment with referenced Javadoc
 
 After Step 3, scan the `content` of every section already in `selected_sections`
 for internal Javadoc links of the form `[text](../javadoc/javadoc-*.json)`.
