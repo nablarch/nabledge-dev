@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-04 (session 25)
+**Updated**: 2026-06-04 (session 25 saved)
 
 ## Rules（全タスク共通）
 
@@ -27,7 +27,7 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 
 ### Task 6-A: QO3 verify FAIL 修正（v5/v6）
 - **完了条件**: verify v5/v6 で QO3 FAIL が 0 件、全バージョン新規 FAIL なし
-- [ ] verify 設計書 (`rbkc-verify-quality-design.md`) の QO3 README 下位チェック記述を更新（javadoc 除外を明記）
+- [x] verify 設計書 (`rbkc-verify-quality-design.md`) の QO3 README 下位チェック記述を更新（javadoc 除外を明記）— 承認済み、未コミット
 - [ ] `test_verify.py` に QO3 javadoc 除外テスト追加（RED）
 - [ ] `verify.py` の QO3 count から `docs/javadoc/` を除外（GREEN）
 - [ ] `python -m pytest tests/ut/ -q` 全 GREEN 確認
