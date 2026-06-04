@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-04 (session 24 saved)
+**Updated**: 2026-06-04 (session 25)
 
 ## Rules（全タスク共通）
 
@@ -25,12 +25,38 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 
 ## In Progress
 
-### Task 6: 差分チェック + PR レビュー依頼
-- **前提**: Task 5 完了
-- **完了条件**: 全変更差分が想定どおりと記録、Expert review 通過、PR 更新
-- [ ] `git diff main...HEAD --stat` で変更ファイルを全件確認
-- [ ] 想定外変更がないかをチェックし `.work/00363/diff-check.md` に記録
-- [ ] ユーザーに確認依頼
+### Task 6-A: QO3 verify FAIL 修正（v5/v6）
+- **完了条件**: verify v5/v6 で QO3 FAIL が 0 件、全バージョン新規 FAIL なし
+- [ ] verify 設計書 (`rbkc-verify-quality-design.md`) の QO3 README 下位チェック記述を更新（javadoc 除外を明記）
+- [ ] `test_verify.py` に QO3 javadoc 除外テスト追加（RED）
+- [ ] `verify.py` の QO3 count から `docs/javadoc/` を除外（GREEN）
+- [ ] `python -m pytest tests/ut/ -q` 全 GREEN 確認
+- [ ] `bash rbkc.sh verify 6` / `5` / `1.4` / `1.3` / `1.2` — 新規 FAIL 0 件確認
+- [ ] コミット（設計書 / テスト / 実装 を各 1 コミット）
+
+---
+
+## Not Started
+
+### Task 6-B: v1.x javadoc 生成対応
+- **前提**: Task 6-A 完了、ユーザーが `.lw/nab-official/` 配下に v1.x ソースを配置済み
+- [ ] v1.x ソース構成を確認（`.lw/nab-official/v1.4` 等の構成が v5/v6 と何が異なるか）
+- [ ] converter 設計書 + verify 設計書を v1.x 対応に更新 → ユーザー承認
+- [ ] `javadoc_generate()` の `version not in ("5", "6")` ガード解除 + v1.x BOM/sources.jar 取得対応（TDD）
+- [ ] `bash rbkc.sh create 1.4` / `1.3` / `1.2` で knowledge 再生成
+- [ ] 全バージョン verify 新規 FAIL 0 件確認
+- [ ] README / セットアップスクリプト更新（スコープ: ユーザー確認待ち）
+- [ ] コミット
+
+### Task 6-C: semantic-search Step 3b を v1.4/v1.3/v1.2 に適用
+- **前提**: Task 6-B 完了（javadoc knowledge が存在すること）
+- [ ] v1.4/v1.3/v1.2 の `workflows/semantic-search.md` に Step 3b を追加（v5/v6 と同内容）
+- [ ] 各バージョンで javadoc シナリオの動作確認
+- [ ] コミット
+
+### Task 6-D: 差分チェック + PR レビュー依頼
+- **前提**: Task 6-A〜C 完了
+- [ ] `git diff main...HEAD --stat` で変更ファイルを全件確認、diff-check.md 更新
 - [ ] Expert review（Software Engineer + QA Engineer）
 - [ ] PR を更新
 
