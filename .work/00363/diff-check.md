@@ -19,7 +19,7 @@
 | docs MD javadoc 新規（v6） | 582 | `ls docs/javadoc/*.md \| wc -l` = 582（JSON と 1:1 対応、missing 0件確認済み） |
 | docs MD javadoc 新規（v5） | 595 | `ls docs/javadoc/*.md \| wc -l` = 595（JSON と 1:1 対応、missing 0件確認済み） |
 | index.toon 削除（v1.2/v1.3/v1.4） | 3 | git log で delete mode 確認済み（v6 は main 時点から不在） |
-| workflows/semantic-search.md（v6/v5） | 2 | Step 3b Javadoc 拡張追加 |
+| workflows/semantic-search.md（v6/v5） | 2 | Step 4 Javadoc 拡張追加 |
 | tools/rbkc/scripts/（実装） | 12 | javadoc.py/linkfmt.py/verify.py 等 |
 | tools/rbkc/tests/ut/（テスト） | 9 | test_javadoc.py/test_verify.py 等 |
 | tools/rbkc/lib/（jar） | 1 | source-to-document-converter-0.0.1.jar |
@@ -73,6 +73,22 @@ docs MD に対応する Javadoc MD の存在:
 
 docs MD からの実遷移は Claude Code が `docs/javadoc/` を MCP でブラウズする形になるため、
 ファイルの存在確認が遷移可能性の保証となる。
+
+---
+
+## 生成内容スポットチェック（現物確認）
+
+Java ソース（`.tmp/javadoc-sources/`）と生成ファイル（knowledge JSON / docs MD）を突き合わせ。
+
+| # | クラス | バージョン | 確認結果 |
+|---|--------|-----------|---------|
+| 1 | `FailureLogUtil` | v6 | フィールド名・メソッドシグネチャ・説明文すべてソースと一致 |
+| 2 | `MessagingAction` | v6 | クラス説明・コンストラクタ・テンプレートメソッド一致 |
+| 3 | `DateTimeConfiguration` | v6 | interface として正しく生成、説明文一致 |
+| 4 | `PropertiesStringResourceLoader` | v6 | フィールド・`locales`・`setLocales` など全メソッド一致 |
+| 5 | `MessagingProvider` | v5 | メソッドシグネチャ・説明文・戻り値記述一致 |
+| 6 | `FailureLogUtil` docs MD | v6 | パッケージ名・クラス説明・作成者すべてソースと一致 |
+| 7 | `MessagingProvider` docs MD | v5 | パッケージ名・インタフェース説明・作成者すべてソースと一致 |
 
 ---
 
