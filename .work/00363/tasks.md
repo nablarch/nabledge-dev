@@ -29,21 +29,13 @@ QL1（2-C）有効化後、パイプライン（2-E〜2-I）完成まで `rbkc.s
 
 ## Not Started
 
-### Task 6-B: v1.x javadoc 生成対応
-- **前提**: Task 6-A 完了、ユーザーが `.lw/nab-official/` 配下に v1.x ソースを配置済み
-- [ ] v1.x ソース構成を確認（`.lw/nab-official/v1.4` 等の構成が v5/v6 と何が異なるか）
-- [ ] converter 設計書 + verify 設計書を v1.x 対応に更新 → ユーザー承認
-- [ ] `javadoc_generate()` の `version not in ("5", "6")` ガード解除 + v1.x BOM/sources.jar 取得対応（TDD）
-- [ ] `bash rbkc.sh create 1.4` / `1.3` / `1.2` で knowledge 再生成
-- [ ] 全バージョン verify 新規 FAIL 0 件確認
-- [ ] README / セットアップスクリプト更新（スコープ: ユーザー確認待ち）
-- [ ] コミット
+### ~~Task 6-B: v1.x javadoc 生成対応~~ — スコープ外
+v1.x のRSTは `:java:extdoc:` ロールを使用せず FQCN をプレーンテキストで記載しており、
+Javadoc へのリンク構造がドキュメント自体に存在しない。
+対応不要と判断（2026-06-04 ユーザー承認）。
 
-### Task 6-C: semantic-search Step 3b を v1.4/v1.3/v1.2 に適用
-- **前提**: Task 6-B 完了（javadoc knowledge が存在すること）
-- [ ] v1.4/v1.3/v1.2 の `workflows/semantic-search.md` に Step 3b を追加（v5/v6 と同内容）
-- [ ] 各バージョンで javadoc シナリオの動作確認
-- [ ] コミット
+### ~~Task 6-C: semantic-search Step 3b を v1.4/v1.3/v1.2 に適用~~ — スコープ外
+Task 6-B がスコープ外のため、javadoc knowledge が存在しない v1.x への Step 3b 追加も不要。
 
 ### Task 6-D: 差分チェック + PR レビュー依頼
 - **前提**: Task 6-A〜C 完了
