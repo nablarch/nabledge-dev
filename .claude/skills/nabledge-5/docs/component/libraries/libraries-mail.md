@@ -164,10 +164,10 @@
 次のクラスの設定をコンポーネント定義に追加する。
 設定項目の詳細はリンク先のJavadocを参照。
 
-* [MailRequestTable](../javadoc/javadoc-nablarch-common-mail-MailRequestTable.md) (メール送信要求テーブル)
-* [MailRecipientTable](../javadoc/javadoc-nablarch-common-mail-MailRecipientTable.md) (メール送信先テーブル)
-* [MailAttachedFileTable](../javadoc/javadoc-nablarch-common-mail-MailAttachedFileTable.md) (添付ファイルテーブル)
-* [MailTemplateTable](../javadoc/javadoc-nablarch-common-mail-MailTemplateTable.md) (メールテンプレートテーブル)
+* MailRequestTable (メール送信要求テーブル)
+* MailRecipientTable (メール送信先テーブル)
+* MailAttachedFileTable (添付ファイルテーブル)
+* MailTemplateTable (メールテンプレートテーブル)
 
 設定例を以下に示す。
 
@@ -215,8 +215,8 @@
 コード値とメッセージ
 
 メール送信に使用するコード値、メッセージID、障害コードを設定する。
-[MailConfig](../javadoc/javadoc-nablarch-common-mail-MailConfig.md) の設定をコンポーネント定義に追加する。
-設定項目の詳細は、 [MailConfigのJavadoc](../javadoc/javadoc-nablarch-common-mail-MailConfig.md) を参照。
+MailConfig の設定をコンポーネント定義に追加する。
+設定項目の詳細は、 MailConfigのJavadoc を参照。
 
 設定例を以下に示す。
 
@@ -256,10 +256,10 @@
 以下のクラスをコンポーネント定義に追加する。
 設定項目の詳細はリンク先のJavadocを参照。
 
-* [MailRequester](../javadoc/javadoc-nablarch-common-mail-MailRequester.md) (メール送信要求をデータベースに登録するコンポーネント)
-* [MailRequestConfig](../javadoc/javadoc-nablarch-common-mail-MailRequestConfig.md) (メール送信要求時の設定値を保持するクラス)
+* MailRequester (メール送信要求をデータベースに登録するコンポーネント)
+* MailRequestConfig (メール送信要求時の設定値を保持するクラス)
 
-[MailRequester](../javadoc/javadoc-nablarch-common-mail-MailRequester.md) は、
+MailRequester は、
 メール送信要求をデータベースに登録する際、
 [採番](../../component/libraries/libraries-generator.md#サロゲートキーの採番) を使ってメール送信要求IDを生成する。
 そのため、 [採番](../../component/libraries/libraries-generator.md#サロゲートキーの採番) の設定も別途必要となる。
@@ -268,7 +268,7 @@
 
 ポイント
 
-* [MailRequester](../javadoc/javadoc-nablarch-common-mail-MailRequester.md) は名前でルックアップされるため、
+* MailRequester は名前でルックアップされるため、
   コンポーネント名に `mailRequester` と指定する。
 
 ```xml
@@ -320,7 +320,7 @@
 メール送信バッチの設定
 
 メール送信バッチが使用するSMTPサーバへの接続情報を設定する。
-[MailSessionConfig](../javadoc/javadoc-nablarch-common-mail-MailSessionConfig.md) をコンポーネント定義に追加する。
+MailSessionConfig をコンポーネント定義に追加する。
 設定項目の詳細は、リンク先のJavadocを参照。
 
 設定例を以下に示す。
@@ -339,11 +339,11 @@
 
 メール送信要求の登録には、以下のクラスを使用する。
 
-* [MailRequester](../javadoc/javadoc-nablarch-common-mail-MailRequester.md) (メール送信要求をデータベースに登録する)
-* [MailUtil](../javadoc/javadoc-nablarch-common-mail-MailUtil.md) ( [MailRequester](../javadoc/javadoc-nablarch-common-mail-MailRequester.md) を取得する)
-* [FreeTextMailContext](../javadoc/javadoc-nablarch-common-mail-FreeTextMailContext.md) (非定型メールの送信要求)
-* [TemplateMailContext](../javadoc/javadoc-nablarch-common-mail-TemplateMailContext.md) (定型メールの送信要求)
-* [AttachedFile](../javadoc/javadoc-nablarch-common-mail-AttachedFile.md) (添付ファイル)
+* MailRequester (メール送信要求をデータベースに登録する)
+* MailUtil ( MailRequester を取得する)
+* FreeTextMailContext (非定型メールの送信要求)
+* TemplateMailContext (定型メールの送信要求)
+* AttachedFile (添付ファイル)
 
 この機能では、フリーフォーマットの非定型メールと、
 予め登録しておいたテンプレートを使用する定型メールに対応しており、
@@ -389,8 +389,8 @@ String mailRequestId = requester.requestToSend(mailRequest);
 
 ### メールを送信する(メール送信バッチを実行する)
 
-メール送信バッチには、 [MailSender](../javadoc/javadoc-nablarch-common-mail-MailSender.md) を使用する。
-[MailSender](../javadoc/javadoc-nablarch-common-mail-MailSender.md) は、 [常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#アーキテクチャ概要)
+メール送信バッチには、 MailSender を使用する。
+MailSender は、 [常駐バッチ](../../processing-pattern/nablarch-batch/nablarch-batch-architecture.md#アーキテクチャ概要)
 を使用して動作させるバッチアクションとして作成している。
 
 メール送信処理では、障害発生時に同一のメールが複数送信されないように、以下のような処理の流れとなっている。
@@ -416,7 +416,7 @@ String mailRequestId = requester.requestToSend(mailRequest);
 
 ポイント
 
-* requestPathオプションで [MailSender](../javadoc/javadoc-nablarch-common-mail-MailSender.md) を指定する。
+* requestPathオプションで MailSender を指定する。
 
 ```bash
 java nablarch.fw.launcher.Main \
@@ -427,7 +427,7 @@ java nablarch.fw.launcher.Main \
 
 未送信のデータを抽出する際の条件
 
-[MailSender](../javadoc/javadoc-nablarch-common-mail-MailSender.md) は、
+MailSender は、
 メール送信要求テーブルから未送信のデータを抽出し、メールを送信する。
 未送信のデータを抽出する際の条件は、次の2つから選択可能となっている。
 
@@ -458,7 +458,7 @@ java nablarch.fw.launcher.Main \
 
 ### メール送信時のエラー処理
 
-[MailSender](../javadoc/javadoc-nablarch-common-mail-MailSender.md) は、外部からの入力データ(アドレスやヘッダ)に起因する例外やメール送信失敗の例外が発生した場合、
+MailSender は、外部からの入力データ(アドレスやヘッダ)に起因する例外やメール送信失敗の例外が発生した場合、
 対象のメール送信要求のステータスを送信失敗にして次のメール送信処理を行う。
 また、上記以外の例外が発生した場合は、メール送信要求のステータスを送信失敗にしてリトライする。
 
@@ -469,7 +469,7 @@ java nablarch.fw.launcher.Main \
 | 例外 | 処理 |
 |---|---|
 | 送信要求のメールアドレス変換時の [JavaMailのAddressException](https://javaee.github.io/javamail/docs/api/javax/mail/internet/AddressException.html) | 変換に失敗したアドレスをログ出力(ログレベル: ERROR)する。 |
-| [メールヘッダインジェクション攻撃への対策](../../component/libraries/libraries-mail.md#メールヘッダインジェクション攻撃への対策) での [InvalidCharacterException](../javadoc/javadoc-nablarch-common-mail-InvalidCharacterException.md) | ヘッダ文字列をログ出力(ログレベル: ERROR)する。 |
+| [メールヘッダインジェクション攻撃への対策](../../component/libraries/libraries-mail.md#メールヘッダインジェクション攻撃への対策) での InvalidCharacterException | ヘッダ文字列をログ出力(ログレベル: ERROR)する。 |
 | メール送信失敗時の [JavaMailのSendFailureException](https://javaee.github.io/javamail/docs/api/javax/mail/SendFailedException.html) | 送信されたアドレス、送信されなかったアドレス、不正なアドレスをログ出力(ログレベル: ERROR)する。 |
 | 上記以外のメール送信時の Exception | 例外をラップしてリトライ例外を送出する。 |
 
@@ -487,7 +487,7 @@ java nablarch.fw.launcher.Main \
 この機能を使用するには、 次の設定が必要となる。
 
 1. メール送信要求テーブルにメール送信バッチのプロセスIDのカラムを定義する
-2. [MailRequestTable](../javadoc/javadoc-nablarch-common-mail-MailRequestTable.md) のsendProcessIdColumnNameのプロパティの値にメール送信バッチのプロセスIDのカラム名を設定し、コンポーネント定義に追加する
+2. MailRequestTable のsendProcessIdColumnNameのプロパティの値にメール送信バッチのプロセスIDのカラム名を設定し、コンポーネント定義に追加する
 3. メール送信バッチのプロセスID更新用のトランザクションを `mailMultiProcessTransaction` の名前でコンポーネント定義に追加する(トランザクションの設定方法は [現在のトランザクションとは異なるトランザクションでSQLを実行する](../../component/libraries/libraries-database.md#現在のトランザクションとは異なるトランザクションでsqlを実行する) を参照)
 
 > **Important:**
@@ -520,7 +520,7 @@ java nablarch.fw.launcher.Main \
 しかし、 <a href="https://javamail.java.net/nonav/docs/api/" target="_blank">JavaMail API(外部サイト、英語)</a> を使用しても、一部のメールヘッダの項目に改行コードが含まれていてもメール送信可能な項目がある。
 そのため、保険的対策として、これらの項目に対して改行コードが含まれている場合にはメール送信を実施しないチェック機能を設けている。
 改行コードが含まれていた場合には、
-[InvalidCharacterException](../javadoc/javadoc-nablarch-common-mail-InvalidCharacterException.md)
+InvalidCharacterException
 の送出およびログ出力(ログレベル: ERROR)を行い、該当のメールは送信処理を失敗として扱うこととする。
 
 この保険的対策は、脆弱性となる可能性のある以下の項目を対象としている。
@@ -532,25 +532,25 @@ java nablarch.fw.launcher.Main \
 
 ### 電子署名を付加したりメール本文を暗号化するなどメール送信処理を変更する
 
-[MailSender](../javadoc/javadoc-nablarch-common-mail-MailSender.md) は、
+MailSender は、
 メール送信要求やテンプレートで指定された内容をそのまま送信する。
 アプリケーション要件によっては、電子署名を付加したりメール本文を暗号化する必要が出てくる。
 
-そのような場合は、 [MailSender](../javadoc/javadoc-nablarch-common-mail-MailSender.md)
+そのような場合は、 MailSender
 を継承したクラスをプロジェクトで作成して対応する。
-詳細は、 [MailSenderのJavadoc](../javadoc/javadoc-nablarch-common-mail-MailSender.md) を参照。
+詳細は、 MailSenderのJavadoc を参照。
 
 ### メール送信に失敗した際の処理を変更する
 
 メール送信に失敗した際のエラー処理(詳細は [メール送信時のエラー処理](../../component/libraries/libraries-mail.md#メール送信時のエラー処理) を参照)を、例えば、ログレベルを変更したり、
 リトライ対象の例外を変更するなど、アプリケーションの要件によって変更したい場合がある。
 
-そのような場合は、上の例と同様、[MailSender](../javadoc/javadoc-nablarch-common-mail-MailSender.md) を継承したクラスを作成して対応する。
+そのような場合は、上の例と同様、MailSender を継承したクラスを作成して対応する。
 
 ### メール送信要求時に使用するトランザクションを指定する
 
 業務アプリケーションが失敗してもメール送信要求を確実に行いたい場合など、
-メール送信要求 [MailRequester](../javadoc/javadoc-nablarch-common-mail-MailRequester.md) とメール送信要求IDの [採番](../../component/libraries/libraries-generator.md#サロゲートキーの採番)
+メール送信要求 MailRequester とメール送信要求IDの [採番](../../component/libraries/libraries-generator.md#サロゲートキーの採番)
 で実行されるトランザクションを、業務アプリケーションのトランザクションとは独立して指定したい場合がある。
 
 その場合の設定例を以下に示す。

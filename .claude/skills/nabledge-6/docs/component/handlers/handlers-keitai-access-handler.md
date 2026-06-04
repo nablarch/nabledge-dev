@@ -20,7 +20,7 @@
 
 ## ハンドラクラス名
 
-* [nablarch.fw.web.handler.KeitaiAccessHandler](../javadoc/javadoc-nablarch-fw-web-handler-KeitaiAccessHandler.md)
+* nablarch.fw.web.handler.KeitaiAccessHandler
 
 ## モジュール一覧
 

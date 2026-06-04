@@ -53,7 +53,7 @@
 ### システム日時の管理機能を使うための設定
 
 システム日時の管理機能を使うためには、
-[BasicSystemTimeProvider](../javadoc/javadoc-nablarch-core-date-BasicSystemTimeProvider.md) の設定をコンポーネント定義に追加する。
+BasicSystemTimeProvider の設定をコンポーネント定義に追加する。
 コンポーネント名には **systemTimeProvider** と指定する。
 
 ```xml
@@ -62,7 +62,7 @@
 
 ### システム日時を取得する
 
-システム日時の取得は、 [SystemTimeUtil](../javadoc/javadoc-nablarch-core-date-SystemTimeUtil.md) を使用する。
+システム日時の取得は、 SystemTimeUtil を使用する。
 
 ### 業務日付管理機能を使うための設定
 
@@ -74,7 +74,7 @@
 | 日付 | 業務日付。文字列型で値はyyyyMMdd形式 |
 
 業務日付管理機能を使うためには、
-[BasicBusinessDateProvider](../javadoc/javadoc-nablarch-core-date-BasicBusinessDateProvider.md) の設定をコンポーネント定義に追加する。
+BasicBusinessDateProvider の設定をコンポーネント定義に追加する。
 コンポーネント名には **businessDateProvider** と指定する。
 
 ```xml
@@ -94,7 +94,7 @@
 
 ### 業務日付を取得する
 
-業務日付の取得は、 [BusinessDateUtil](../javadoc/javadoc-nablarch-core-date-BusinessDateUtil.md) を使用する。
+業務日付の取得は、 BusinessDateUtil を使用する。
 
 ### 業務日付を任意の日付に上書く
 
@@ -122,7 +122,7 @@ BasicBusinessDateProvider.<区分>=日付
 
 ### 業務日付を更新する
 
-業務日付の更新は、 [BasicBusinessDateProvider](../javadoc/javadoc-nablarch-core-date-BasicBusinessDateProvider.md) を使用して行う。
+業務日付の更新は、 BasicBusinessDateProvider を使用して行う。
 
 ```java
 // システムリポジトリからBasicBusinessDateProviderを取得する
@@ -138,12 +138,12 @@ provider.setDate(segment, date);
 
 ユニットテストの実行時など、システム日時を切り替えたい場合は、以下の手順で行う。
 
-1. [SystemTimeProvider](../javadoc/javadoc-nablarch-core-date-SystemTimeProvider.md) を実装したクラスを作成する。
+1. SystemTimeProvider を実装したクラスを作成する。
 2. [システム日時の管理機能を使うための設定](../../component/libraries/libraries-date.md#システム日時の管理機能を使うための設定) に従い設定する。
 
 ### 業務日付を切り替える
 
 ユニットテストの実行時など、業務日付を切り替えたい場合は、以下の手順で行う。
 
-1. [BusinessDateProvider](../javadoc/javadoc-nablarch-core-date-BusinessDateProvider.md) を実装したクラスを作成する。
+1. BusinessDateProvider を実装したクラスを作成する。
 2. [業務日付管理機能を使うための設定](../../component/libraries/libraries-date.md#業務日付管理機能を使うための設定) に従い設定する。

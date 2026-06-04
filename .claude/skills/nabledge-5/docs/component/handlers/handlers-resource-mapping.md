@@ -37,7 +37,7 @@
 
 ## ハンドラクラス名
 
-* [nablarch.fw.web.handler.ResourceMapping](../javadoc/javadoc-nablarch-fw-web-handler-ResourceMapping.md)
+* nablarch.fw.web.handler.ResourceMapping
 
 ## モジュール一覧
 

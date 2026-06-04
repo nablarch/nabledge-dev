@@ -67,7 +67,7 @@
 | サービス提供可否状態 | 可の場合は"1"。文字列型。設定で値を変更できる。 |
 
 サービス提供可否チェックを使うためには、
-[BasicServiceAvailability](../javadoc/javadoc-nablarch-common-availability-BasicServiceAvailability.md) の定義をコンポーネント設定ファイルに追加する。
+BasicServiceAvailability の定義をコンポーネント設定ファイルに追加する。
 コンポーネント名には **serviceAvailability** と指定する。
 
 ```xml
@@ -87,7 +87,7 @@
 
 ### サービス提供可否をチェックする
 
-サービス提供可否チェックは、 [ServiceAvailabilityUtil](../javadoc/javadoc-nablarch-common-availability-ServiceAvailabilityUtil.md) を使用する。
+サービス提供可否チェックは、 ServiceAvailabilityUtil を使用する。
 
 ### サービス提供可否に応じて画面表示を制御する
 

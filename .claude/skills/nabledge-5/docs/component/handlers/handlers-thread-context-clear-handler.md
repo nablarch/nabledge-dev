@@ -19,7 +19,7 @@
 
 ## ハンドラクラス名
 
-* [nablarch.common.handler.threadcontext.ThreadContextClearHandler](../javadoc/javadoc-nablarch-common-handler-threadcontext-ThreadContextClearHandler.md)
+* nablarch.common.handler.threadcontext.ThreadContextClearHandler
 
 ## モジュール一覧
 

@@ -13,7 +13,7 @@
 
 認可チェックは、ライブラリの [ハンドラによる認可チェック](../../component/libraries/libraries-authorization-permission-check.md#ハンドラによる認可チェック) を使用して行う。
 そのため、本ハンドラを使用するには、
-[PermissionFactory](../javadoc/javadoc-nablarch-common-permission-PermissionFactory.md) を実装したクラスを本ハンドラに設定する必要がある。
+PermissionFactory を実装したクラスを本ハンドラに設定する必要がある。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -25,7 +25,7 @@
 
 ## ハンドラクラス名
 
-* [nablarch.common.permission.PermissionCheckHandler](../javadoc/javadoc-nablarch-common-permission-PermissionCheckHandler.md)
+* nablarch.common.permission.PermissionCheckHandler
 
 ## モジュール一覧
 
@@ -47,7 +47,7 @@
 
 内部フォーワードが行われた際に、フォーワード先のリクエストID（ [内部リクエストID](../../component/handlers/handlers-forwarding-handler.md#内部リクエストidについて) ）をもとに
 認可チェックを行いたい場合は、 [内部フォーワードハンドラ](../../component/handlers/handlers-forwarding-handler.md#内部フォーワードハンドラ) より後ろに本ハンドラを配置する必要がある。
-合わせて、 [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) の `attributes` に [InternalRequestIdAttribute](../javadoc/javadoc-nablarch-common-handler-threadcontext-InternalRequestIdAttribute.md) を追加すること。
+合わせて、 [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) の `attributes` に InternalRequestIdAttribute を追加すること。
 
 [HTTPエラー制御ハンドラ](../../component/handlers/handlers-HttpErrorHandler.md#httpエラー制御ハンドラ) より後ろに配置すること
 
@@ -63,15 +63,15 @@
 
 [業務ロジック](../../component/libraries/libraries-authorization-permission-check.md#サーバサイドで認可チェックを行う) や
 [画面表示の制御](../../component/libraries/libraries-authorization-permission-check.md#権限に応じて画面表示を制御する) で参照できるように、
-認可チェックに使用した [Permission](../javadoc/javadoc-nablarch-common-permission-Permission.md) をスレッドローカルに設定する。
+認可チェックに使用した Permission をスレッドローカルに設定する。
 そして、後続ハンドラを呼び出す。
 
 権限がない場合
 
-[Forbidden(403)](../javadoc/javadoc-nablarch-fw-results-Forbidden.md) を送出する。
+Forbidden(403) を送出する。
 
 チェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、
-[PermissionCheckHandler.setUsesInternalRequestId](../javadoc/javadoc-nablarch-common-permission-PermissionCheckHandler.md)
+PermissionCheckHandler.setUsesInternalRequestId
 でtrueを指定する。デフォルトはfalseである。
 
 ## 権限がない場合に表示するエラーページを指定する
@@ -82,7 +82,7 @@
 ## 特定のリクエストを認可チェックから除外する
 
 ログイン前のリクエストなど、認可チェックを除外したいリクエストがある場合は、
-[PermissionCheckHandler.setIgnoreRequestIds](../javadoc/javadoc-nablarch-common-permission-PermissionCheckHandler.md)
+PermissionCheckHandler.setIgnoreRequestIds
 で指定する。
 
 ```xml
