@@ -107,6 +107,15 @@ class TestClassFqcn:
             "nablarch.fw.web.upload.util.BulkValidator.ErrorHandlingBulkValidator.validateWith(java.lang.Class,java.lang.String)"
         ) == "nablarch.fw.web.upload.util.BulkValidator"
 
+    def test_inner_class_constructor_dot_args(self):
+        # Inner class constructor without .<init>:
+        # nablarch.fw.Result.Error(java.lang.String)
+        # Step 3: 'Error' is uppercase → else branch: fqcn = prefix (keep as-is)
+        # Step 4: Result + Error both uppercase → strip last → nablarch.fw.Result
+        assert self._fn(
+            "nablarch.fw.Result.Error(java.lang.String)"
+        ) == "nablarch.fw.Result"
+
     # --- Step 5: package-level (last segment lowercase, no parens) -> None ---
 
     def test_package_level_returns_none(self):

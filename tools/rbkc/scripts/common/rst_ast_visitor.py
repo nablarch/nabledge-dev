@@ -798,7 +798,7 @@ class _MDVisitor:
                 self._javadoc_map is not None
                 and not fqcn_raw.startswith(("java.", "jakarta.", "javax."))
             ):
-                from scripts.create.javadoc import _class_fqcn, fqcn_to_file_id
+                from scripts.common.javadoc_fqcn import class_fqcn as _class_fqcn
                 cls_fqcn = _class_fqcn(fqcn_raw)
                 file_id = self._javadoc_map.get(cls_fqcn)
                 if file_id is not None:

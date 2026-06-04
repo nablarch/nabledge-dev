@@ -3091,6 +3091,22 @@ class TestCheckSourceLinks_JsonSide_Extdoc:
         issues = self._check(src, data, knowledge_dir=str(tmp_path))
         assert any("QL1" in i and "extdoc" in i.lower() for i in issues), issues
 
+    def test_fail_q5_fqcn_absent_entirely(self, tmp_path):
+        """Q5: javadoc JSON exists but FQCN absent from JSON content entirely → FAIL (QL1)."""
+        file_id = "javadoc-nablarch-common-dao-UniversalDao"
+        self._write_javadoc_json(tmp_path, file_id)
+        src = ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
+        data = self._data(content="")  # empty — neither display text nor MD link
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert any("QL1" in i and "extdoc" in i.lower() for i in issues), issues
+
+    def test_pass_javax_skipped(self, tmp_path):
+        """javax.* FQCN → external JDK, skip → PASS."""
+        src = ":java:extdoc:`Servlet <javax.servlet.Servlet>`\n"
+        data = self._data(content="Servlet")
+        issues = self._check(src, data, knowledge_dir=str(tmp_path))
+        assert issues == [], issues
+
 
 class TestCheckSourceLinks_DocsMdSide:
     """QL1 cross-doc: docs MD side — target MD existence + anchor slug match.
