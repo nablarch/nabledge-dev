@@ -48,9 +48,12 @@
   - `text` に `#` が含まれる場合（例 `JaxRsMethodBinderFactory#handlerList`）は `#` 以降を除去しクラス名のみ採用
   - 同一ページ内の重複は除去（dedup）。出現順を保持
 - 掲載対象: **クラス名が1件以上抽出されたページのみ** classes.md に出力する。クラス名ゼロのページは掲載しない
+- **クラス名を持つページが1つも無い場合（javadoc未生成の旧バージョン: v1.4/1.3/1.2）も classes.md は必ず生成する。** 本文に固定メッセージ `_No class index available for this version (no Javadoc references in knowledge files)._` を出力する。これにより検索プロンプトは全バージョンで「classes.md を読み各ページブロックを走査」のまま変更不要となり、ブロックが無いので候補追加は自然にゼロになる
 - `no_knowledge_content: true` はスキップ
-- フォーマット: `index.md` と同形式 (H2=category, H3=title, `path:` 行, クラス名は `- ClassName` 行)。出力例（1ページ分）:
+- フォーマット: `index.md` と同形式。先頭に `# Class Index` ヘッダ行を出力（index.md の `# Knowledge Index` に倣う）。以降 H2=category, H3=title, `path:` 行, クラス名は `- ClassName` 行。出力例（1ページ分）:
   ```
+  # Class Index
+
   ## component
 
   ### Jakarta RESTful Web Servicesアダプタ
@@ -58,6 +61,12 @@
   - Jackson2BodyConverter
   - JaxbBodyConverter
   - FormUrlEncodedConverter
+  ```
+  クラス名ゼロのバージョンでの出力例:
+  ```
+  # Class Index
+
+  _No class index available for this version (no Javadoc references in knowledge files)._
   ```
 **Steps:**
 - [ ] `classes.py` を実装
@@ -71,6 +80,7 @@
 - `check_classes_coverage(knowledge_dir, classes_path)` 関数（`check_index_coverage` と対）
 - 照合ルール: 対象3カテゴリの JSON のうち **クラス名（javadocリンク）を1件以上含むページ** が classes.md の `path:` エントリに存在することを照合
   - クラス名ゼロのページは classes.md 非掲載が正なので、coverage 対象から除外（FAILにしない）
+  - クラス名を持つページが1つも無いバージョンでは classes.md が固定メッセージのみとなる。この場合 coverage 対象が空集合なので FAIL 0 となる（正常）
   - `no_knowledge_content: true` はスキップ、`javadoc/` `assets/` もスキップ
   - 対象3カテゴリ以外は照合対象外
 **Steps:**
@@ -102,9 +112,10 @@
 ### Task 8: semantic-search.md を更新 — classes.md をページ選択(Step 2)に組み込む
 
 **Artifact**: `.claude/skills/nabledge-6/workflows/semantic-search.md`
-**Design note**: Step 4 (Augment with referenced Javadoc) は変更しない。Step 2 がページを選べば Step 4 が当該 Javadoc を補強する（相補関係、機能重複ではない）。
+**Design note**: classes.md は RBKC が全バージョンで必ず生成する（クラス名ゼロのバージョンは固定メッセージのみ）。よって検索プロンプトは「classes.md が存在する」前提で書け、存在チェック分岐は不要。クラス名ゼロのバージョンでは走査対象ページブロックが無いため候補追加が自然にゼロになる。
+Step 4 (Augment with referenced Javadoc) は変更しない。Step 2 がページを選べば Step 4 が当該 Javadoc を補強する（相補関係）。
 
-**重要 — バージョン差分**: semantic-search.md は全バージョン同一ではない（v6基準で v5 は2行差、v1.4/1.3/1.2 は32行差）。**共通パッチ前提で適用しない。各バージョンで Step 1 / Step 2 の実テキストを確認してから個別に当てる。** 下記 Before は v6 のもの。
+**バージョン差分**: semantic-search.md は全バージョン同一ではない（v6基準で v5 は2行差、v1.4/1.3/1.2 は32行差）。下記 Before は v6 のもの。各バージョンで Step 1 / Step 2 の実テキストを確認し、Before が一致しない場合は当該バージョンの実テキストを Before として記録してから当てる。**ただし追加する内容（After の差分）は全バージョン同一**でよい（classes.md 常時存在のため）。
 
 #### パッチ1: Step 1 に classes.md 読込を追加
 **Before:**
@@ -119,11 +130,10 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
 
 Read `knowledge/index.md` (relative to skill root). Save content as `index_content`.
 Read `knowledge/classes.md` (relative to skill root). Save content as `classes_content`.
-If `classes.md` does not exist (older versions), set `classes_content` to empty and skip the classes.md step in Step 2.
 ```
 
 #### パッチ2: Step 2 手順3の直後に手順3bを挿入（index候補と同列でマージ）
-**Before（手順3の末尾行）:**
+**Before（手順3の末尾行と手順4）:**
 ```
    - All other pages → **skip**
 4. If a purpose was noted, sort candidates using the priority categories for that purpose: pages in the priority categories come first.
@@ -131,7 +141,7 @@ If `classes.md` does not exist (older versions), set `classes_content` to empty 
 **After:**
 ```
    - All other pages → **skip**
-3b. Scan `classes_content`. For each page block, if any class name listed in that block matches a class name or feature name appearing in the question, add that page to candidates (same status as a Step 3 candidate). Deduplicate against candidates already collected in Step 3.
+3b. Scan `classes_content`. For each page block, if any class name listed in that block matches a class name or feature name appearing in the question, add that page to candidates (same status as a Step 3 candidate). Deduplicate against candidates already collected in Step 3. (If `classes_content` contains no page blocks, this step adds nothing.)
 4. If a purpose was noted, sort the merged candidate set (Step 3 + Step 3b) using the priority categories for that purpose: pages in the priority categories come first. Apply the sort once, to the merged set.
 ```
 
@@ -147,8 +157,8 @@ If `classes.md` does not exist (older versions), set `classes_content` to empty 
 
 **Steps:**
 - [ ] v6 に パッチ1〜3 を適用
-- [ ] v5 の Step 1 / Step 2 実テキストを確認し、差分(2行)を踏まえてパッチ1〜3を適用
-- [ ] v1.4 / v1.3 / v1.2 の Step 1 / Step 2 実テキストを確認（32行差あり）、各々の表現に合わせてパッチ1〜3を適用。Before が一致しない場合は当該バージョンの実テキストを Before として記録してから適用する
+- [ ] v5 の Step 1 / Step 2 実テキストを確認し、差分(2行)を踏まえてパッチ1〜3を適用（After の追加内容は同一）
+- [ ] v1.4 / v1.3 / v1.2 の Step 1 / Step 2 実テキストを確認（32行差あり）、各々の Before を実テキストで記録してからパッチ1〜3を適用（After の追加内容は同一）
 - [ ] 全バージョンで Step 4 が無変更であることを確認
 - [ ] 変更差分を作業記録に出力しユーザーに確認
 - [ ] コミット・プッシュ
@@ -165,11 +175,11 @@ If `classes.md` does not exist (older versions), set `classes_content` to empty 
 ### Task 10: 全バージョン RBKC 展開 (v5/v1.4/v1.3/v1.2)
 **Steps:**
 - [ ] 各バージョンで `bash tools/rbkc/rbkc.sh create <v> && bash tools/rbkc/rbkc.sh verify <v>` を実行
-  - v5: 対象カテゴリ有無を確認、classes.md 生成を確認
-  - v1.4 / v1.3 / v1.2: 対象カテゴリ有無を確認、classes.md 生成を確認
-- [ ] 全バージョン FAIL 0 を確認
+  - v5: 対象3カテゴリにクラス名あり（156ファイル）→ classes.md に中身が生成されることを確認
+  - v1.4 / v1.3 / v1.2: javadoc 未生成（クラス名0件）→ classes.md が固定メッセージ `_No class index available for this version..._` のみで生成されることを確認
+- [ ] 全バージョン FAIL 0 を確認（ゼロバージョンも coverage 対象が空集合のため FAIL 0 が正常）
 - [ ] コミット・プッシュ (生成された classes.md ファイルを含む)
 
 ## Done
 
-- [x] Task 0: タスクリスト作成・PR作成・ユーザー確認 — committed `b312d3adb`
+- [x] Task 0: タスクリスト作成・PR作成・ユーザー確認 — committed `5ff81b145`
