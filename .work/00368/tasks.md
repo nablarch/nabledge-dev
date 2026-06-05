@@ -4,6 +4,16 @@
 **Issue**: #368
 **Updated**: 2026-06-05
 
+## In Progress
+
+### Task 1: 設計書更新 — classes.md 生成仕様を RBKC 設計書に追記
+**Artifact**: `tools/rbkc/docs/rbkc-converter-design.md` または新規設計書
+**Steps:**
+- [x] 設計書に classes.md の仕様（対象カテゴリ・フォーマット・クラス名抽出ルール）を追記
+- [x] verify 設計書 (`rbkc-verify-quality-design.md`) に classes.md の検証仕様を追記
+- [x] 設計書をコミット・プッシュ — `0dd249d45`
+- [DECISION: 設計確認が必要。承認後 Task 2 へ進む] PR 上でユーザーに設計確認を依頼
+
 ## Rules
 
 - 1コミット = 1タスク
@@ -16,14 +26,6 @@
 - PRレビュー依頼前に、変更差分が想定どおりの変更のみかをチェックし、結果を作業記録に出力してユーザーに確認する
 
 ## Not Started
-
-### Task 1: 設計書更新 — classes.md 生成仕様を RBKC 設計書に追記
-**Artifact**: `tools/rbkc/docs/rbkc-converter-design.md` または新規設計書
-**Steps:**
-- [ ] 設計書に classes.md の仕様（対象カテゴリ・フォーマット・クラス名抽出ルール）を追記
-- [ ] verify 設計書 (`rbkc-verify-quality-design.md`) に classes.md の検証仕様を追記
-- [ ] 設計書をコミット・プッシュ
-- [ ] PR 上でユーザーに設計確認を依頼
 
 ### Task 2: TDD — test_classes.py を作成 (RED)
 **Artifact**: `tools/rbkc/tests/ut/test_classes.py`
