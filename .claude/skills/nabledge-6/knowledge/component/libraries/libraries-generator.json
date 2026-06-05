@@ -37,7 +37,7 @@
     {
       "id": "s6",
       "title": "ユニバーサルDAO用に採番を設定する",
-      "content": "[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.json#ユニバーサルdao) で本機能を使用するためには、 [BasicDaoContextFactory](../javadoc/javadoc-nablarch-common-dao-BasicDaoContextFactory.json) に対する設定が必要となる。\n\nこの例では、シーケンス採番とテーブル採番の両方を設定しているが、使用しない採番の設定はしなくてよい。\nテーブル採番は推奨しないため、サロゲートキーの採番でシーケンス採番を使用する場合に sequenceIdGenerator を設定すれば良い。\n\nもし、シーケンス採番を使用せずにデータベース側の採番機能(自動採番カラム)を使う場合には、採番の設定自体が不要となる。\n\n```xml\n<!-- テーブル採番モジュールの設定 -->\n<component name=\"tableIdGenerator\" class=\"nablarch.common.idgenerator.TableIdGenerator\">\n  <property name=\"tableName\" value=\"GENERATOR\" />\n  <property name=\"idColumnName\" value=\"ID\" />\n  <property name=\"noColumnName\" value=\"NO\" />\n</component>\n\n<component name=\"daoContextFactory\" class=\"nablarch.common.dao.BasicDaoContextFactory\">\n  <!-- シーケンス採番の設定 -->\n  <property name=\"sequenceIdGenerator\">\n    <component class=\"nablarch.common.idgenerator.SequenceIdGenerator\"/>\n  </property>\n\n  <!-- テーブル採番の設定 -->\n  <property name=\"tableIdGenerator\" ref=\"tableIdGenerator\" />\n\n  <!-- 採番に関係のない設定は省略 -->\n</component>\n\n<component name=\"initializer\"\n    class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <!-- TableIdGeneratorは初期化が必要 -->\n      <component-ref name=\"tableIdGenerator\" />\n    </list>\n  </property>\n</component>\n```",
+      "content": "[ユニバーサルDAO](../../component/libraries/libraries-universal-dao.json#ユニバーサルdao) で本機能を使用するためには、 [BasicDaoContextFactory](../../javadoc/javadoc-nablarch-common-dao-BasicDaoContextFactory.json) に対する設定が必要となる。\n\nこの例では、シーケンス採番とテーブル採番の両方を設定しているが、使用しない採番の設定はしなくてよい。\nテーブル採番は推奨しないため、サロゲートキーの採番でシーケンス採番を使用する場合に sequenceIdGenerator を設定すれば良い。\n\nもし、シーケンス採番を使用せずにデータベース側の採番機能(自動採番カラム)を使う場合には、採番の設定自体が不要となる。\n\n```xml\n<!-- テーブル採番モジュールの設定 -->\n<component name=\"tableIdGenerator\" class=\"nablarch.common.idgenerator.TableIdGenerator\">\n  <property name=\"tableName\" value=\"GENERATOR\" />\n  <property name=\"idColumnName\" value=\"ID\" />\n  <property name=\"noColumnName\" value=\"NO\" />\n</component>\n\n<component name=\"daoContextFactory\" class=\"nablarch.common.dao.BasicDaoContextFactory\">\n  <!-- シーケンス採番の設定 -->\n  <property name=\"sequenceIdGenerator\">\n    <component class=\"nablarch.common.idgenerator.SequenceIdGenerator\"/>\n  </property>\n\n  <!-- テーブル採番の設定 -->\n  <property name=\"tableIdGenerator\" ref=\"tableIdGenerator\" />\n\n  <!-- 採番に関係のない設定は省略 -->\n</component>\n\n<component name=\"initializer\"\n    class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <!-- TableIdGeneratorは初期化が必要 -->\n      <component-ref name=\"tableIdGenerator\" />\n    </list>\n  </property>\n</component>\n```",
       "level": 3
     },
     {
@@ -49,7 +49,7 @@
     {
       "id": "s8",
       "title": "テーブル採番やシーケンス採番を置き換える",
-      "content": "テーブルやシーケンスを使った採番の実装を新しいものに置き換える場合には、\n[IdGenerator](../javadoc/javadoc-nablarch-common-idgenerator-IdGenerator.json) を実装したクラスを作成することで対応できる。\n\n作成したクラスは、 ユニバーサルDAO用に採番を設定する に従いコンポーネント設定ファイルに定義することで使用可能となる。",
+      "content": "テーブルやシーケンスを使った採番の実装を新しいものに置き換える場合には、\n[IdGenerator](../../javadoc/javadoc-nablarch-common-idgenerator-IdGenerator.json) を実装したクラスを作成することで対応できる。\n\n作成したクラスは、 ユニバーサルDAO用に採番を設定する に従いコンポーネント設定ファイルに定義することで使用可能となる。",
       "level": 3
     }
   ]

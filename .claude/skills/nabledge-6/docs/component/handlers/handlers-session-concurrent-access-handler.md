@@ -22,7 +22,7 @@
 
 ## ハンドラクラス名
 
-* [nablarch.fw.web.handler.SessionConcurrentAccessHandler](../javadoc/javadoc-nablarch-fw-web-handler-SessionConcurrentAccessHandler.md)
+* [nablarch.fw.web.handler.SessionConcurrentAccessHandler](../../javadoc/javadoc-nablarch-fw-web-handler-SessionConcurrentAccessHandler.md)
 
 ## モジュール一覧
 

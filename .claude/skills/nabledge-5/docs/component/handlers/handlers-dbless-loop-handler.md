@@ -17,7 +17,7 @@
 
 ## ハンドラクラス名
 
-* [nablarch.fw.handler.DbLessLoopHandler](../javadoc/javadoc-nablarch-fw-handler-DbLessLoopHandler.md)
+* [nablarch.fw.handler.DbLessLoopHandler](../../javadoc/javadoc-nablarch-fw-handler-DbLessLoopHandler.md)
 
 ## モジュール一覧
 

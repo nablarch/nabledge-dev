@@ -27,7 +27,7 @@
 
 ## ハンドラクラス名
 
-* [nablarch.common.handler.DbConnectionManagementHandler](../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md)
+* [nablarch.common.handler.DbConnectionManagementHandler](../../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md)
 
 ## モジュール一覧
 
@@ -48,10 +48,10 @@
 
 ## データベースの接続先を設定する
 
-このハンドラは、 [connectionFactory](../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md)
-プロパティに設定されたファクトリクラス( [ConnectionFactory](../javadoc/javadoc-nablarch-core-db-connection-ConnectionFactory.md) 実装クラス )を使用してデータベース接続を取得する。
+このハンドラは、 [connectionFactory](../../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md)
+プロパティに設定されたファクトリクラス( [ConnectionFactory](../../javadoc/javadoc-nablarch-core-db-connection-ConnectionFactory.md) 実装クラス )を使用してデータベース接続を取得する。
 
-以下の設定ファイル例を参考にし、  [connectionFactory](../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md)
+以下の設定ファイル例を参考にし、  [connectionFactory](../../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md)
 プロパティにファクトリクラスを設定すること。
 
 ```xml
@@ -78,8 +78,8 @@
 このハンドラは、データベース接続オブジェクトをスレッド上で管理する際に、データベース接続名をつけて管理している。
 データベース接続名は、スレッド内で一意とする必要がある。
 
-データベース接続名は、このハンドラの [connectionName](../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md) プロパティに設定する。
-[connectionName](../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md) への設定を省略した場合、その接続はデフォルトのデータベース接続となり簡易的に使用できる。
+データベース接続名は、このハンドラの [connectionName](../../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md) プロパティに設定する。
+[connectionName](../../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md) への設定を省略した場合、その接続はデフォルトのデータベース接続となり簡易的に使用できる。
 このため、最もよく使うデータベース接続をデフォルトとし、それ以外のデータベース接続に対して任意の名前をつけると良い。
 
 以下にデータベース接続名の設定例を示す。
@@ -104,7 +104,7 @@
 
 デフォルトのデータベース接続を使用する
 
-[DbConnection#getConnection](../javadoc/javadoc-nablarch-core-db-connection-DbConnectionContext.md) 呼び出し時に引数を指定する必要が無い。
+[DbConnection#getConnection](../../javadoc/javadoc-nablarch-core-db-connection-DbConnectionContext.md) 呼び出し時に引数を指定する必要が無い。
 引数を指定しないと、自動的にデフォルトのデータベース接続が戻される。
 
 ```java
@@ -113,8 +113,8 @@ AppDbConnection connection = DbConnectionContext.getConnection();
 
 userAccessLogデータベース接続を使用する
 
-[DbConnection#getConnection(String)](../javadoc/javadoc-nablarch-core-db-connection-DbConnectionContext.md) を使用し、引数にデータベース接続名を指定する。
-データベース接続名は [connectionName](../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md) プロパティに設定した値と一致させる必要がある。
+[DbConnection#getConnection(String)](../../javadoc/javadoc-nablarch-core-db-connection-DbConnectionContext.md) を使用し、引数にデータベース接続名を指定する。
+データベース接続名は [connectionName](../../javadoc/javadoc-nablarch-common-handler-DbConnectionManagementHandler.md) プロパティに設定した値と一致させる必要がある。
 
 ```java
 AppDbConnection connection = DbConnectionContext.getConnection("userAccessLog");

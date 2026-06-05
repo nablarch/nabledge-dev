@@ -18,7 +18,7 @@
 
 ## インターセプタクラス名
 
-* [nablarch.common.web.token.OnDoubleSubmission](../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md)
+* [nablarch.common.web.token.OnDoubleSubmission](../../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md)
 
 ## モジュール一覧
 
@@ -31,7 +31,7 @@
 
 ## OnDoubleSubmissionを使用する
 
-[OnDoubleSubmission](../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md) アノテーションを、
+[OnDoubleSubmission](../../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md) アノテーションを、
 アクションのメソッドに対して設定する。
 
 ```java
@@ -45,11 +45,11 @@ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
 ## OnDoubleSubmissionのデフォルト値を指定する
 
 アプリケーション全体で使用する
-[OnDoubleSubmission](../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md) アノテーションのデフォルト値を設定する場合は、
-[BasicDoubleSubmissionHandler](../javadoc/javadoc-nablarch-common-web-token-BasicDoubleSubmissionHandler.md)
+[OnDoubleSubmission](../../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md) アノテーションのデフォルト値を設定する場合は、
+[BasicDoubleSubmissionHandler](../../javadoc/javadoc-nablarch-common-web-token-BasicDoubleSubmissionHandler.md)
 をコンポーネント定義に `doubleSubmissionHandler` という名前で追加する。
 
-[BasicDoubleSubmissionHandler](../javadoc/javadoc-nablarch-common-web-token-BasicDoubleSubmissionHandler.md)
+[BasicDoubleSubmissionHandler](../../javadoc/javadoc-nablarch-common-web-token-BasicDoubleSubmissionHandler.md)
 では、アノテーションの属性が指定されなかった場合に、自身のプロパティに設定されたリソースパス、メッセージID、ステータスコードを使用する。
 
 設定例
@@ -67,8 +67,8 @@ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
 ```
 
 > **Important:**
-> [OnDoubleSubmission](../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md)
-> と [BasicDoubleSubmissionHandler](../javadoc/javadoc-nablarch-common-web-token-BasicDoubleSubmissionHandler.md) の
+> [OnDoubleSubmission](../../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md)
+> と [BasicDoubleSubmissionHandler](../../javadoc/javadoc-nablarch-common-web-token-BasicDoubleSubmissionHandler.md) の
 > どちらもpathの指定がない場合は、二重サブミットと判定した場合に遷移先が不明なため、システムエラーとなる。
 
 > このため、 [トークンを使用した二重サブミットの防止](../../component/libraries/libraries-tag.md#二重サブミットを防ぐ)
@@ -76,6 +76,6 @@ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
 
 ## OnDoubleSubmissionの振る舞いを変更する
 
-[OnDoubleSubmission](../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md) アノテーションの振る舞いは、
-[DoubleSubmissionHandler](../javadoc/javadoc-nablarch-common-web-token-DoubleSubmissionHandler.md)
+[OnDoubleSubmission](../../javadoc/javadoc-nablarch-common-web-token-OnDoubleSubmission.md) アノテーションの振る舞いは、
+[DoubleSubmissionHandler](../../javadoc/javadoc-nablarch-common-web-token-DoubleSubmissionHandler.md)
 インタフェースを実装することで変更できる。実装したクラスをコンポーネント定義に `doubleSubmissionHandler` という名前で追加する。

@@ -9,9 +9,9 @@
 * 巨大なサイズのリクエストを防ぐ
 
 HTTPリクエスト(
-[HttpRequest](../javadoc/javadoc-nablarch-fw-web-HttpRequest.md)
+[HttpRequest](../../javadoc/javadoc-nablarch-fw-web-HttpRequest.md)
 )を要求電文(
-[RequestMessage](../javadoc/javadoc-nablarch-fw-messaging-RequestMessage.md)
+[RequestMessage](../../javadoc/javadoc-nablarch-fw-messaging-RequestMessage.md)
 )に変換するハンドラ。
 
 本ハンドラでは、以下の処理を行う。
@@ -25,7 +25,7 @@ HTTPリクエスト(
 
 ## ハンドラクラス名
 
-* [nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler](../javadoc/javadoc-nablarch-fw-messaging-handler-HttpMessagingRequestParsingHandler.md)
+* [nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler](../../javadoc/javadoc-nablarch-fw-messaging-handler-HttpMessagingRequestParsingHandler.md)
 
 ## モジュール一覧
 
@@ -47,7 +47,7 @@ HTTPリクエスト(
 
 スレッドコンテキスト上に設定されたリクエストIDをもとに、
 要求電文と応答電文の変換に使う
-[DataRecordFormatter](../javadoc/javadoc-nablarch-core-dataformat-DataRecordFormatter.md) を取得するため、
+[DataRecordFormatter](../../javadoc/javadoc-nablarch-core-dataformat-DataRecordFormatter.md) を取得するため、
 [スレッドコンテキスト変数管理ハンドラ](../../component/handlers/handlers-thread-context-handler.md#スレッドコンテキスト変数管理ハンドラ) より後ろに本ハンドラを配置する必要がある。
 
 ## HTTPリクエストを要求電文に変換する
@@ -78,7 +78,7 @@ HTTPリクエスト(
 デフォルトでは読み込んだデータを構造化データとして取り扱うが、
 フレームワーク制御ヘッダに対する各項目の設定は行わない。
 そのため、フレームワーク制御ヘッダに対する各項目を設定する場合、
-[StructuredFwHeaderDefinition](../javadoc/javadoc-nablarch-fw-messaging-reader-StructuredFwHeaderDefinition.md)
+[StructuredFwHeaderDefinition](../../javadoc/javadoc-nablarch-fw-messaging-reader-StructuredFwHeaderDefinition.md)
 をコンポーネント設定ファイルに追加し、電文からヘッダ情報を取得する際のキー情報を指定する。
 
 設定例を以下に示す。
@@ -86,9 +86,9 @@ HTTPリクエスト(
 ポイント
 
 * キー情報は、
-  [StructuredFwHeaderDefinition#fwHeaderKeys](../javadoc/javadoc-nablarch-fw-messaging-reader-StructuredFwHeaderDefinition.md)
+  [StructuredFwHeaderDefinition#fwHeaderKeys](../../javadoc/javadoc-nablarch-fw-messaging-reader-StructuredFwHeaderDefinition.md)
   プロパティに指定する。
-* [StructuredFwHeaderDefinition#fwHeaderKeys](../javadoc/javadoc-nablarch-fw-messaging-reader-StructuredFwHeaderDefinition.md)
+* [StructuredFwHeaderDefinition#fwHeaderKeys](../../javadoc/javadoc-nablarch-fw-messaging-reader-StructuredFwHeaderDefinition.md)
   プロパティには、キーにフィールド名、値に電文上の位置を指定する。
   電文上の位置は構造化データをMapに変換した後のキー情報を記述する。
   構造化データからMapに変換される際のキー情報については、 [JSONやXMLの階層構造のデータを読み書きする](../../component/libraries/libraries-data-format.md#jsonやxmlの階層構造のデータを読み書きする) を参照。
@@ -122,7 +122,7 @@ HTTPリクエスト(
 変換時に捕捉する例外と処理内容を以下に示す。
 以下に示していない例外については捕捉しない。
 
-[nablarch.fw.results.RequestEntityTooLarge](../javadoc/javadoc-nablarch-fw-results-RequestEntityTooLarge.md)
+[nablarch.fw.results.RequestEntityTooLarge](../../javadoc/javadoc-nablarch-fw-results-RequestEntityTooLarge.md)
 
 INFO
 
@@ -131,7 +131,7 @@ INFO
 リクエストボディのサイズ上限を超過したため、証跡ログとして記録する。
 そして、サイズ超過を表すため、HTTPステータスコードが *413*  のレスポンスを生成する。
 
-[nablarch.fw.messaging.MessagingException](../javadoc/javadoc-nablarch-fw-messaging-MessagingException.md)
+[nablarch.fw.messaging.MessagingException](../../javadoc/javadoc-nablarch-fw-messaging-MessagingException.md)
 
 INFO
 
@@ -140,7 +140,7 @@ INFO
 リクエストボディが不正なため、証跡ログとして記録する。
 そして、クライアントエラーを表すため、HTTPステータスコードが *400*  のレスポンスを生成する。
 
-[nablarch.core.dataformat.InvalidDataFormatException](../javadoc/javadoc-nablarch-core-dataformat-InvalidDataFormatException.md)
+[nablarch.core.dataformat.InvalidDataFormatException](../../javadoc/javadoc-nablarch-core-dataformat-InvalidDataFormatException.md)
 
 INFO
 
