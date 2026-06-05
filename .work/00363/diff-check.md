@@ -13,7 +13,8 @@
 
 | カテゴリ | 件数 | 根拠 |
 |---------|------|------|
-| knowledge JSON 既存更新（javadoc リンク追加） | 2554 | v6 315, v5 400, v1.4 352, v1.3 231, v1.2 229（RBKC create 出力カウント） |
+| knowledge JSON 既存更新（javadoc リンク追加） | 715 | v6 315, v5 400（RBKC create 出力カウント。extdoc 記述があるファイルのみ） |
+| knowledge JSON 既存更新（crossdoc `.md`→`.json` 拡張子変更） | 812 | v1.4 352, v1.3 231, v1.2 229（Task 3-B の波及。javadoc 対応なし、リンク拡張子正規化のみ） |
 | knowledge JSON javadoc 新規（v6） | 582 | `ls knowledge/javadoc/*.json \| wc -l` = 582 |
 | knowledge JSON javadoc 新規（v5） | 595 | `ls knowledge/javadoc/*.json \| wc -l` = 595 |
 | docs MD javadoc 新規（v6） | 582 | `ls docs/javadoc/*.md \| wc -l` = 582（JSON と 1:1 対応、missing 0件確認済み） |
@@ -55,7 +56,7 @@
 
 ## knowledge JSON → Javadoc JSON リンク整合性
 
-knowledge JSON に埋め込まれたリンク形式: `[DisplayText](../javadoc/javadoc-{FQCN}.json)`
+knowledge JSON に埋め込まれたリンク形式: `[DisplayText](../../javadoc/javadoc-{FQCN}.json)`
 
 **確認済み（全件スキャン）:**
 - v6: リンク先 `.json` が全件 `knowledge/javadoc/` に存在 → broken link 0件
