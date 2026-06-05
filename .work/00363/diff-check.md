@@ -1,11 +1,11 @@
 # Diff Check — PR #365 (Issue #363)
 
-**Date**: 2026-06-04 (updated 2026-06-04)
+**Date**: 2026-06-04 (updated 2026-06-05)
 **Branch**: 363-javadoc-knowledge vs main
 
 ## Summary
 
-全 4720 ファイル変更（想定外: 0件）。全バージョン verify FAIL=0（Task 6-A で QO3 false positive 修正済み）。
+全 4721 ファイル変更（想定外: 0件）。全バージョン verify FAIL=0（Task 6-A で QO3 false positive 修正済み）。
 
 ---
 
@@ -13,19 +13,29 @@
 
 | カテゴリ | 件数 | 根拠 |
 |---------|------|------|
-| knowledge JSON 既存更新（javadoc リンク追加） | 715 | v6 315, v5 400（RBKC create 出力カウント。extdoc 記述があるファイルのみ） |
-| knowledge JSON 既存更新（crossdoc `.md`→`.json` 拡張子変更） | 812 | v1.4 352, v1.3 231, v1.2 229（Task 3-B の波及。javadoc 対応なし、リンク拡張子正規化のみ） |
+| knowledge JSON 既存更新（v6 javadoc リンク追加） | 316 | `git diff --name-only \| grep 'nabledge-6/knowledge/' \| grep -v '/javadoc/'` = 316 |
+| knowledge JSON 既存更新（v5 javadoc リンク追加） | 401 | `git diff --name-only \| grep 'nabledge-5/knowledge/' \| grep -v '/javadoc/' \| grep -v 'index\.toon'` = 401 |
 | knowledge JSON javadoc 新規（v6） | 582 | `ls knowledge/javadoc/*.json \| wc -l` = 582 |
 | knowledge JSON javadoc 新規（v5） | 595 | `ls knowledge/javadoc/*.json \| wc -l` = 595 |
+| docs MD 既存更新（v6 javadoc リンク追加） | 163 | `git diff --name-only \| grep 'nabledge-6/docs/' \| grep -v '/javadoc/'` = 163 |
+| docs MD 既存更新（v5 javadoc リンク追加） | 165 | `git diff --name-only \| grep 'nabledge-5/docs/' \| grep -v '/javadoc/'` = 165 |
 | docs MD javadoc 新規（v6） | 582 | `ls docs/javadoc/*.md \| wc -l` = 582（JSON と 1:1 対応、missing 0件確認済み） |
 | docs MD javadoc 新規（v5） | 595 | `ls docs/javadoc/*.md \| wc -l` = 595（JSON と 1:1 対応、missing 0件確認済み） |
-| index.toon 削除（v1.2/v1.3/v1.4） | 3 | git log で delete mode 確認済み（v6 は main 時点から不在） |
+| knowledge JSON 既存更新（v1.4 crossdoc `.md`→`.json` 拡張子変更） | 353 | `git diff --name-only \| grep 'nabledge-1.4/knowledge/'` = 353（うち index.toon 削除 1件含む） |
+| knowledge JSON 既存更新（v1.3 crossdoc `.md`→`.json` 拡張子変更） | 232 | `git diff --name-only \| grep 'nabledge-1.3/knowledge/'` = 232（うち index.toon 削除 1件含む） |
+| knowledge JSON 既存更新（v1.2 crossdoc `.md`→`.json` 拡張子変更） | 230 | `git diff --name-only \| grep 'nabledge-1.2/knowledge/'` = 230（うち index.toon 削除 1件含む） |
+| index.toon 削除（v5/v1.2/v1.3/v1.4） | 4 | `git diff --name-only \| grep 'index\.toon'` = 4件（v5 含む）。v1.x 分は上記 v1.x 行の 353/232/230 に含まれる |
 | workflows/semantic-search.md（v6/v5） | 2 | Step 4 Javadoc 拡張追加 |
-| tools/rbkc/scripts/（実装） | 12 | javadoc.py/linkfmt.py/verify.py 等 |
+| tools/rbkc/scripts/（実装） | 10 | `git diff --name-only \| grep 'tools/rbkc/scripts/'` = 10（javadoc.py/linkfmt.py/verify.py 等） |
+| tools/rbkc/docs/（設計書） | 2 | rbkc-converter-design.md / rbkc-verify-quality-design.md |
 | tools/rbkc/tests/ut/（テスト） | 9 | test_javadoc.py/test_verify.py 等 |
 | tools/rbkc/lib/（jar） | 1 | source-to-document-converter-0.0.1.jar |
-| tools/benchmark/（Task 4/5 成果物） | ~350 | scenarios/qa.json + run-1〜3 結果 |
-| .work/00363/（作業ログ） | 4 | notes.md/tasks.md/verify-baseline.md/diff-check.md |
+| tools/benchmark/（Task 4/5 成果物） | 475 | `git diff --name-only \| grep 'tools/benchmark/'` = 475（scenarios/qa.json + run-1〜3 結果） |
+| .work/00363/（作業ログ） | 7 | notes.md / tasks.md / verify-baseline.md / diff-check.md / verify-2j-diff.md / review-by-software-engineer.md / review-by-qa-engineer.md |
+
+**合計**: 4721（上記の重複カウントなし: v1.x 行は index.toon を含む。index.toon 行は参考表示のみ）
+
+**v1.x の変更について**: v1.2/v1.3/v1.4 の変更は javadoc 対応ではなく、Task 3-B（crossdoc リンク拡張子 `.md`→`.json` 正規化）の波及。RBKC 再生成時に全件適用された。
 
 ---
 
@@ -52,16 +62,24 @@
 
 ---
 
----
+## knowledge JSON / docs MD → Javadoc リンク整合性
 
-## knowledge JSON → Javadoc JSON リンク整合性
+### knowledge JSON 側
 
-knowledge JSON に埋め込まれたリンク形式: `[DisplayText](../../javadoc/javadoc-{FQCN}.json)`
+埋め込みリンク形式: `[DisplayText](../../javadoc/javadoc-{FQCN}.json)`
 
 **確認済み（全件スキャン）:**
 - v6: リンク先 `.json` が全件 `knowledge/javadoc/` に存在 → broken link 0件
 - v5: リンク先 `.json` が全件 `knowledge/javadoc/` に存在 → broken link 0件
 - 確認スクリプト: `scripts/verify.py` の QL1 チェック（`rbkc.sh verify` で自動確認）
+
+### docs MD 側
+
+埋め込みリンク形式: `[DisplayText](../../javadoc/javadoc-{FQCN}.md)`
+
+- v6: リンク先 `.md` が全件 `docs/javadoc/` に存在（163件の既存 docs MD に追加）
+- v5: リンク先 `.md` が全件 `docs/javadoc/` に存在（165件の既存 docs MD に追加）
+- 確認スクリプト: `scripts/verify.py` の QL1 チェックで docs MD 側も検証済み
 
 ---
 
@@ -95,5 +113,5 @@ Java ソース（`.tmp/javadoc-sources/`）と生成ファイル（knowledge JSO
 
 ## 備考
 
-- v1.x に javadoc ファイルはない。Issue #363 の success criteria「all 5 versions」は v1.x も対象だが、v1.x の RBKC が javadoc 生成に対応していない。→ Task 6 確認事項として記録
+- v1.x に javadoc ファイルはない。v1.x の RST は `:java:extdoc:` ロールを使用せず FQCN をプレーンテキストで記載しており、javadoc リンク構造がドキュメント自体に存在しない（2026-06-04 ユーザー承認済み）
 - verify は RBKC 実装から独立して動作（`_build_javadoc_map()` が `knowledge/javadoc/` 配下を直接走査）
