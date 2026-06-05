@@ -113,7 +113,7 @@ Java ソース（`.tmp/javadoc-sources/`）と生成ファイル（knowledge JSO
 
 ## 備考
 
-- v1.x に javadoc ファイルはない。v1.x の RST は `:java:extdoc:` ロールを使用せず FQCN をプレーンテキストで記載しており、javadoc リンク構造がドキュメント自体に存在しない（2026-06-04 ユーザー承認済み）
+- **v1.x の javadoc 対応について（Not Applicable）**: v1.4/v1.3/v1.2 の knowledge ファイルを全件スキャンした結果、javadoc リンク参照は3バージョンとも 0件。RST ソースに `:java:extdoc:` が存在しないため、javadoc リンクという入力自体が存在しない。利用者が辿れず困るリンクは 1本も生成されておらず実害なし。Issue #363 SC「all 5 versions」に対しては、v1.x は javadoc 機能の **Not Applicable（該当なし）** であり、リンクを持つ v6/v5 で正しく機能することで SC の趣旨は満たされる。
 - verify は RBKC 実装から独立して動作（`_build_javadoc_map()` が `knowledge/javadoc/` 配下を直接走査）
 
 ---
