@@ -1,0 +1,193 @@
+{
+  "scenario_id": "qa-04",
+  "description": "Bean Validationに対応したFormクラスの単体テストを書きたい。文字種や桁数のテストケースをどう準備すればいいかわからない。",
+  "input": "Bean ValidationのFormクラスの単体テストを書きたい。テストクラスの作り方とテストデータの準備方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states in the list of conditions: '3. `nablarch.test.core.db.EntityTestSupport` を継承する' and demonstrates this in the code example with `public class UserRegistrationFormTest extends EntityTestSupport`. This directly matches the fact.",
+      "fact": "EntityTestSupportを継承してテストクラスを作成する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states 'テストデータをExcelファイルに記述する' in the conclusion section, and further elaborates that the Excel file should be placed in the same directory as the test source code with the same name (different extension). This directly confirms the fact that test data is described in Excel files.",
+      "fact": "テストデータはExcelファイルに記述する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "テストクラスはnablarch.test.core.db.EntityTestSupportを継承する",
+        "supported": true
+      },
+      {
+        "claim": "テストクラスのパッケージはテスト対象Formと同じにする",
+        "supported": true
+      },
+      {
+        "claim": "クラス名を<Formクラス名>Testにする",
+        "supported": true
+      },
+      {
+        "claim": "testValidateCharsetAndLengthメソッドで文字種と文字列長の単項目精査テストを行う",
+        "supported": true
+      },
+      {
+        "claim": "testSingleValidationメソッドで上記以外の単項目精査テストを行う",
+        "supported": true
+      },
+      {
+        "claim": "testBeanValidationメソッドで項目間精査テストを行う",
+        "supported": true
+      },
+      {
+        "claim": "ExcelファイルはテストソースコードとJP同じディレクトリに同じ名前で配置する",
+        "supported": true
+      },
+      {
+        "claim": "全セルの書式は文字列に設定する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "EntityTestConfigurationにvalidationTestStrategyとしてBeanValidationTestStrategyを指定する",
+        "supported": true
+      },
+      {
+        "claim": "characterGeneratorにBasicJapaneseCharacterGeneratorを使用する",
+        "supported": true
+      },
+      {
+        "claim": "プロパティとして別のFormを保持する親FormにはtestValidateCharsetAndLength/testSingleValidationは使用できない",
+        "supported": true
+      },
+      {
+        "claim": "Entityの場合はsetter/getterテスト(testSetterAndGetter)も必須",
+        "supported": true
+      },
+      {
+        "claim": "testBeanValidationの呼び出しにidパラメータは不要（sheetNameのみ）",
+        "supported": true
+      },
+      {
+        "claim": "answerのカラム表にgroupやmessageIdWhenInvalidLength、interpolateKey_n等のカラムが省略されている",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有のAPI名（EntityTestSupport、testValidateCharsetAndLength、testSingleValidation、testBeanValidation、EntityTestConfiguration、BeanValidationTestStrategy、BasicJapaneseCharacterGeneratorなど）、設定方法、動作仕様はいずれもナレッジセクションで裏付けられている。カラム表でgroup・messageIdWhenInvalidLength・interpolateKey_n等の列が省略されているが、これは情報の欠落であり虚偽の記述（捏造）ではない。XMLの<component>要素でname属性が省略されている点も軽微な差異に留まり、Nablarch固有の誤情報の挿入には当たらない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "reason": "Bean ValidationのForm/Entity単体テストに直接対応する専用ページ（目的: テストを書きたいの優先カテゴリ development-tools/testing-framework に該当）"
+      },
+      {
+        "path": "development-tools/testing-framework/testing-framework-01-Abstract.json",
+        "reason": "テストフレームワーク全体の基礎を説明するページ（Excelファイルの命名規約・書式ルール等の補足情報を提供）"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "テストクラスの作成条件（パッケージ・クラス名・継承クラス）を直接説明"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "テストデータ（Excelファイル）の準備方法を直接説明"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "文字種・文字列長テストのExcelカラム構成を詳細に説明"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "testValidateCharsetAndLengthメソッドのコード例と動作を説明"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "EntityTestConfigurationの設定項目一覧（必須設定）"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "コンポーネント設定ファイルの具体的な記述例（BeanValidationTestStrategy含む）"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-Abstract.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "Excelファイルの配置場所・命名規約（テストデータ準備に必要な補足情報）"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "testSingleValidationメソッドのコード例"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "testBeanValidationメソッドのコード例（項目間精査）"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-01-Abstract.json",
+        "section_id": "s14",
+        "relevance": "partial",
+        "reason": "Excelセルの書式を文字列にする制約（重要な注意点）"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 123899,
+    "duration_api_ms": 123267,
+    "num_turns": 6,
+    "total_cost_usd": 0.6966059,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 8097,
+      "cache_read_input_tokens": 477808,
+      "cache_creation_input_tokens": 114266
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3155,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00329,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 8097,
+        "cacheReadInputTokens": 477808,
+        "cacheCreationInputTokens": 114266,
+        "webSearchRequests": 0,
+        "costUSD": 0.6933159,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

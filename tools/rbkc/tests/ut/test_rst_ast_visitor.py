@@ -313,7 +313,7 @@ class TestVisitContainerToctree:
         }
         doctree, _ = parse(source, source_path=source_path)
         parts = extract_document(doctree, doc_map=doc_map, source_path=source_path)
-        assert "[ハンドラ一覧](../../component/handlers/handlers-handlers.md)" in parts.top_content
+        assert "[ハンドラ一覧](../../component/handlers/handlers-handlers.json)" in parts.top_content
         assert parts.top_content.startswith("*")
 
     def test_toctree_unresolved_entries_become_code_spans(self):
@@ -613,3 +613,110 @@ class TestParagraphAnchorSyntheticSection:
         assert "2) Formクラスの精査処理実装" in titles, (
             f"Expected synthetic section '2) Formクラスの精査処理実装' in sections, got: {titles}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Task 2-G: :java:extdoc: internal link resolution via javadoc_map
+# ---------------------------------------------------------------------------
+
+class TestExtdocRoleResolution:
+    """:java:extdoc: resolves to internal javadoc MD link when javadoc_map provided."""
+
+    def _extract(self, rst_source: str, javadoc_map: dict | None = None) -> "DocumentParts":
+        from scripts.common.rst_ast import parse
+        from scripts.common.rst_ast_visitor import extract_document
+        from pathlib import Path
+        doctree, _ = parse(rst_source, source_path=Path("/repo/test.rst"))
+        return extract_document(
+            doctree,
+            label_map={},
+            source_path=Path("/repo/test.rst"),
+            javadoc_map=javadoc_map,
+        )
+
+    def test_pass_nablarch_fqcn_in_map_emits_link(self):
+        """javadoc_map has nablarch FQCN → MD link emitted."""
+        javadoc_map = {"nablarch.common.dao.UniversalDao": "javadoc-nablarch-common-dao-UniversalDao"}
+        src = "Title\n=====\n\n:java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
+        parts = self._extract(src, javadoc_map=javadoc_map)
+        content = parts.top_content + "\n".join(s.content for s in parts.sections)
+        assert "[UniversalDao](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)" in content
+
+    def test_pass_nablarch_fqcn_not_in_map_emits_display_text(self):
+        """javadoc_map exists but FQCN not in map → display text fallback."""
+        javadoc_map = {}  # empty map
+        src = "Title\n=====\n\n:java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
+        parts = self._extract(src, javadoc_map=javadoc_map)
+        content = parts.top_content + "\n".join(s.content for s in parts.sections)
+        assert "UniversalDao" in content
+        assert "](../../javadoc/" not in content
+
+    def test_pass_java_std_lib_emits_display_text(self):
+        """java.* FQCN → always display text (external JDK)."""
+        javadoc_map = {"java.lang.String": "should-never-be-used"}
+        src = "Title\n=====\n\n:java:extdoc:`String <java.lang.String>`\n"
+        parts = self._extract(src, javadoc_map=javadoc_map)
+        content = parts.top_content + "\n".join(s.content for s in parts.sections)
+        assert "String" in content
+        assert "](../../javadoc/" not in content
+
+    def test_pass_jakarta_emits_display_text(self):
+        """jakarta.* FQCN → always display text."""
+        javadoc_map = {}
+        src = "Title\n=====\n\n:java:extdoc:`HttpServletRequest <jakarta.servlet.http.HttpServletRequest>`\n"
+        parts = self._extract(src, javadoc_map=javadoc_map)
+        content = parts.top_content + "\n".join(s.content for s in parts.sections)
+        assert "HttpServletRequest" in content
+        assert "](../../javadoc/" not in content
+
+    def test_pass_method_suffix_resolved_via_class(self):
+        """FQCN with method suffix → class FQCN used for map lookup."""
+        javadoc_map = {"nablarch.common.dao.UniversalDao": "javadoc-nablarch-common-dao-UniversalDao"}
+        # FQCN has #findById suffix
+        src = "Title\n=====\n\n:java:extdoc:`findById <nablarch.common.dao.UniversalDao#findById>`\n"
+        parts = self._extract(src, javadoc_map=javadoc_map)
+        content = parts.top_content + "\n".join(s.content for s in parts.sections)
+        assert "[findById](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)" in content
+
+    def test_pass_no_javadoc_map_falls_back_to_display_text(self):
+        """javadoc_map=None (not provided) → display text fallback (backward compat)."""
+        src = "Title\n=====\n\n:java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
+        parts = self._extract(src, javadoc_map=None)
+        content = parts.top_content + "\n".join(s.content for s in parts.sections)
+        assert "UniversalDao" in content
+        assert "](../../javadoc/" not in content
+
+
+# ---------------------------------------------------------------------------
+# Task 2-H: :javadoc_url: external link resolution
+# ---------------------------------------------------------------------------
+
+class TestJavadocUrlRoleResolution:
+    """:javadoc_url:`LinkText <URL>` resolves to external MD link."""
+
+    def _extract(self, rst_source: str) -> "DocumentParts":
+        from scripts.common.rst_ast import parse
+        from scripts.common.rst_ast_visitor import extract_document
+        from pathlib import Path
+        doctree, _ = parse(rst_source, source_path=Path("/repo/test.rst"))
+        return extract_document(doctree, label_map={}, source_path=Path("/repo/test.rst"))
+
+    def test_external_link_emitted(self):
+        """:javadoc_url:`LinkText <URL>` → [LinkText](URL)."""
+        src = (
+            "Title\n=====\n\n"
+            ":javadoc_url:`Nablarch API <https://nablarch.github.io/docs/>`\n"
+        )
+        parts = self._extract(src)
+        content = parts.top_content + "\n".join(s.content for s in parts.sections)
+        assert "[Nablarch API](https://nablarch.github.io/docs/)" in content
+
+    def test_no_angle_brackets_emits_raw(self):
+        """:javadoc_url:`URL` (no angle brackets) → raw text fallback."""
+        src = (
+            "Title\n=====\n\n"
+            ":javadoc_url:`https://example.com/`\n"
+        )
+        parts = self._extract(src)
+        content = parts.top_content + "\n".join(s.content for s in parts.sections)
+        assert "https://example.com/" in content

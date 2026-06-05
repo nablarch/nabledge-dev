@@ -30,8 +30,8 @@ def emit_crossdoc_link(
 ) -> str:
     """Return the canonical cross-document MD link per spec §3-2-3."""
     if anchor:
-        return f"[{display}](../../{type_}/{category}/{file_id}.md#{anchor})"
-    return f"[{display}](../../{type_}/{category}/{file_id}.md)"
+        return f"[{display}](../../{type_}/{category}/{file_id}.json#{anchor})"
+    return f"[{display}](../../{type_}/{category}/{file_id}.json)"
 
 
 def emit_asset_link(display: str, file_id: str, basename: str) -> str:
@@ -44,7 +44,7 @@ def emit_asset_link(display: str, file_id: str, basename: str) -> str:
 CROSSDOC_LINK_RE = re.compile(
     r"\]\(\.\./\.\./(?P<type>[A-Za-z0-9_\-]+)/"
     r"(?P<category>[A-Za-z0-9_\-]+)/"
-    r"(?P<file_id>[^)\s#]+)\.md(?:#(?P<anchor>[^)\s]+))?\)"
+    r"(?P<file_id>[^)\s#]+)\.json(?:#(?P<anchor>[^)\s]+))?\)"
 )
 
 #: Matches ``](assets/{file_id}/{basename})``.
@@ -53,9 +53,27 @@ ASSET_LINK_RE = re.compile(
 )
 
 
+def emit_javadoc_link(display: str, file_id: str) -> str:
+    """Return the canonical Javadoc JSON link: ``[display](../../javadoc/{file_id}.json)``.
+
+    All knowledge files live at depth-2 (knowledge/{type}/{category}/file.json).
+    The javadoc directory is at knowledge/javadoc/, so the correct relative prefix
+    from any knowledge file is ../../javadoc/ (two levels up, then down into javadoc/).
+    """
+    return f"[{display}](../../javadoc/{file_id}.json)"
+
+
+#: Matches output of :func:`emit_javadoc_link`.
+JAVADOC_LINK_RE = re.compile(
+    r"\]\(\.\./\.\./javadoc/(?P<file_id>[^)\s]+)\.json\)"
+)
+
+
 __all__ = [
     "emit_crossdoc_link",
     "emit_asset_link",
+    "emit_javadoc_link",
     "CROSSDOC_LINK_RE",
     "ASSET_LINK_RE",
+    "JAVADOC_LINK_RE",
 ]

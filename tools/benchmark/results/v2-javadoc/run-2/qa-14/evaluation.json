@@ -1,0 +1,209 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の注意点セクションに「アプリケーションサーバもJakarta EE 10対応のものに変更する必要があります」と明記されており、さらに冒頭の結論でも「アプリケーションサーバの変更」が3つの主要変更の1つとして挙げられています。また「Nablarch 6はJakarta EE 10に対応」という事実も検証結果として明示されています。これらはファクトに記載された「Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある」という内容を十分にカバーしています。",
+      "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes changing Java EE specification names and package names to Jakarta EE equivalents, including: changing `javax.*` namespace to `jakarta.*` in source code, changing dependency groupIds/artifactIds from `javax.*` to `jakarta.*`, changing XML schema specifications to Jakarta EE ones, and changing JSP taglib URIs to Jakarta EE ones. This directly conveys the same information as the fact stating that Java EE specification names and package names are changed to Jakarta EE ones.",
+      "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Nablarch 6はJakarta EE 10に対応",
+        "supported": true
+      },
+      {
+        "claim": "BOMバージョンを6u2に変更する",
+        "supported": true
+      },
+      {
+        "claim": "Java 17以上が必要",
+        "supported": true
+      },
+      {
+        "claim": "jakarta.platform:jakarta.jakartaee-bom:10.0.0の使用を推奨",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet:javax.servlet-api → jakarta.servlet:jakarta.servlet-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet.jsp:javax.servlet.jsp-api → jakarta.servlet.jsp:jakarta.servlet.jsp-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api → jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api",
+        "supported": true
+      },
+      {
+        "claim": "org.apache.geronimo.specs:geronimo-jpa_2.0_spec → jakarta.persistence:jakarta.persistence-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.ws.rs:javax.ws.rs-api → jakarta.ws.rs:jakarta.ws.rs-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.annotation:javax.annotation-api → jakarta.annotation:jakarta.annotation-api",
+        "supported": true
+      },
+      {
+        "claim": "hibernate-validator 5.3.6.Final → org.hibernate.validator:hibernate-validator 8.0.0.Final",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-testing-jetty6をnablarch-testing-jetty12に変更",
+        "supported": true
+      },
+      {
+        "claim": "waitt-maven-pluginをjetty-ee10-maven-pluginに変更",
+        "supported": true
+      },
+      {
+        "claim": "web.xmlのスキーマ指定をjakartaee版(web-app_6_0.xsd, version=6.0)に変更",
+        "supported": true
+      },
+      {
+        "claim": "JSPのtaglib URIをjakarta.tags.coreに変更",
+        "supported": true
+      },
+      {
+        "claim": "javax.*名前空間をjakarta.*に変更（ただしjavax.cryptoなどJava標準ライブラリは除く）",
+        "supported": true
+      },
+      {
+        "claim": "アプリケーションサーバもJakarta EE 10対応のものに変更が必要",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有の主張はすべてknowledge sectionsに記載された内容と一致しており、fabricatedな情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "about/migration/migration-migration.json",
+        "reason": "Nablarch 5→6移行ガイドそのものであり、Jakarta EE 10対応の変更内容を直接扱うページ"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-jakarta-ee.json",
+        "reason": "Nablarch5と6での名称変更の対応表が含まれており、バージョンアップ時の影響把握に有用"
+      },
+      {
+        "path": "releases/releases/releases-nablarch6-releasenote-6.json",
+        "reason": "Nablarch 6リリースノートにJakarta EE 10対応によるシステムへの影響の可能性が記載されている"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "Jakarta EE 10対応の概要と後方非互換の理由を説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "Java 17への最低バージョン変更という実環境への影響を説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "移行に必要な2つの作業（Nablarchバージョンアップ・Jakarta EE対応）の全体像を示す"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "pom.xmlのBOMバージョン変更という具体的な手順とコード例を提供"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "Java EEのAPI依存関係をJakarta EEに変更する手順と代表的な変更例を提供"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "Java EE仕様の実装ライブラリをJakarta EE対応版に置換する手順を説明"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s26",
+        "relevance": "high",
+        "reason": "javax名前空間をjakarta名前空間に変更する詳細手順と注意点を含む"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s27",
+        "relevance": "partial",
+        "reason": "web.xml等のXMLスキーマ変更という補足的な変更内容"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s28",
+        "relevance": "partial",
+        "reason": "JSPのtaglibネームスペース変更という補足的な変更内容"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s33",
+        "relevance": "partial",
+        "reason": "Java EE→Jakarta EEの仕様対応表で名前空間の変換判断に有用"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 146701,
+    "duration_api_ms": 145901,
+    "num_turns": 9,
+    "total_cost_usd": 0.7614358499999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 9721,
+      "cache_read_input_tokens": 592512,
+      "cache_creation_input_tokens": 115867
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3167,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003342,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 9721,
+        "cacheReadInputTokens": 592512,
+        "cacheCreationInputTokens": 115867,
+        "webSearchRequests": 0,
+        "costUSD": 0.75809385,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

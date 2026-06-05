@@ -1,0 +1,196 @@
+{
+  "scenario_id": "oos-impact-01",
+  "description": "既存システムをNablarch 6に移行するにあたり、OAuth2/OpenID Connect認証が必要かどうか影響調査している。NablarchにOAuth2/OIDCの仕組みが組み込まれているか確認したい。",
+  "input": "NablarchでOAuth2やOpenID Connectによる認証を実装したい。Nablarchにその仕組みは組み込まれているか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that 'NablarchにはOAuth2/OpenID Connectの認証機能は組み込まれていない' and that 'フレームワークとしては提供されていない'、citing that authentication specifications vary by project requirements. This directly confirms the fact that Nablarch lacks built-in OAuth2/OpenID Connect authentication functionality.",
+      "fact": "NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchにはOAuth2/OIDCの認証機能は組み込まれていない。認証はプロジェクト要件により仕様が異なるためフレームワークとしては提供されていない",
+        "supported": true
+      },
+      {
+        "claim": "OIDCのIDトークンを用いた認証サンプルがnablarch-biz-sample-allで提供されている",
+        "supported": true
+      },
+      {
+        "claim": "サンプルはnablarch-oidcパッケージで提供される",
+        "supported": true
+      },
+      {
+        "claim": "バックエンドはNablarchのRESTfulウェブサービスを想定し、フロントエンドでIDトークンを取得してバックエンドに送信する構成",
+        "supported": true
+      },
+      {
+        "claim": "AWS Amazon CognitoユーザープールとAzure Active Directory B2Cをサポート",
+        "supported": true
+      },
+      {
+        "claim": "Auth0のjava-jwt(4.4.0)とjwks-rsa(0.22.1)を使用",
+        "supported": true
+      },
+      {
+        "claim": "CognitoIdTokenVerifierでJWTを検証し、失敗時にHTTP 401を返す",
+        "supported": true
+      },
+      {
+        "claim": "JwkProviderBuilderでJWKSエンドポイントから公開鍵を取得する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント定義でCognitoIdTokenVerifier、CognitoSignatureAlgorithmProvider、CognitoRSAKeyProviderを使用",
+        "supported": true
+      },
+      {
+        "claim": "認証成功後にSessionUtil.changeIdとCsrfTokenUtil.regenerateCsrfTokenでセッションIDおよびCSRFトークンを再生成する",
+        "supported": true
+      },
+      {
+        "claim": "decodedJWT.getSubject()でユーザーIDを取得しセッションに保持する",
+        "supported": true
+      },
+      {
+        "claim": "公開鍵は固定値でなくJWKSエンドポイントから取得すること",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有のクレーム（クラス名、設定方法、動作仕様、ライブラリバージョン、コード例）はすべてknowledgeセクションに明示されている内容と一致しており、fabricationは検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "guide/biz-samples/biz-samples-12.json",
+        "reason": "OIDCのIDトークンを用いた認証サンプルで、質問のOAuth2/OIDC認証実装に直接対応するページ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの認証セクションにNablarchの認証に関する方針が記載されている"
+      },
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "セキュリティ対応の目的に合わせてセキュリティチェックの概要ページを候補とした"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "OIDCサンプルの全体概要を説明し、Nablarchでの認証方式が組み込みではなくサンプルによる実装であることを示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "JWTライブラリの依存関係追加方法を示し、実装に必要な情報を提供する"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "コンポーネント定義の具体的な設定例を示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "IDトークン検証の核心的な実装を示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "認証業務アクションの実装例を示す"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションの認証がフレームワーク提供外であることを明示する"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "サンプルのパッケージ情報を提供する"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "サンプルの対象範囲（バックエンドのみ）を示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "提供インタフェースの一覧を示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "提供クラスの一覧を示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "環境依存値の設定方法を示す"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s15",
+        "relevance": "partial",
+        "reason": "認証アクションのURLマッピング方法を示す"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 131681,
+    "duration_api_ms": 131372,
+    "num_turns": 7,
+    "total_cost_usd": 0.6422022500000001,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 8975,
+      "cache_read_input_tokens": 350405,
+      "cache_creation_input_tokens": 106429
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3189,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003329,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 8975,
+        "cacheReadInputTokens": 350405,
+        "cacheCreationInputTokens": 106429,
+        "webSearchRequests": 0,
+        "costUSD": 0.6388732500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,191 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly shows `BusinessDateUtil.getDate()` being used to retrieve the business date, with code examples demonstrating both default and segment-specific usage. This directly corresponds to the fact that BusinessDateUtil is used to obtain the business date.",
+      "fact": "BusinessDateUtilを使用して業務日付を取得する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には、業務日付管理機能がデータベースで管理されること（テーブル構成の説明あり）、BasicBusinessDateProviderの設定が必要であること（XMLコンポーネント定義の例示あり）、初期化対象リストへの設定が必要であることが明記されており、ファクトの内容が含まれている。",
+      "fact": "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "BusinessDateUtil.getDate() で業務日付を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "SystemTimeUtil.getDate() でOS日時を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "SystemTimeUtil.getLocalDateTime() でOS日時を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProvider がDBで業務日付を管理する",
+        "supported": true
+      },
+      {
+        "claim": "区分(PK)と日付カラムでテーブルを構成する",
+        "supported": true
+      },
+      {
+        "claim": "tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManager プロパティを設定する",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント名に businessDateProvider を指定する",
+        "supported": true
+      },
+      {
+        "claim": "initializer の initializeList に businessDateProvider を設定する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateUtil.getDate(\"batch\") のように区分を指定して業務日付を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "provider.setDate(segment, date) で業務日付を更新できる",
+        "supported": true
+      },
+      {
+        "claim": "SystemRepository.get(\"businessDateProvider\") で BasicBusinessDateProvider を取得できる",
+        "supported": true
+      },
+      {
+        "claim": "-DBasicBusinessDateProvider.batch=20160317 のJVMオプションで業務日付を上書きできる",
+        "supported": true
+      },
+      {
+        "claim": "BasicSystemTimeProvider の設定でコンポーネント名に systemTimeProvider を指定する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張（クラス名、API、設定方法、動作仕様）はknowledgeセクションによって裏付けられており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-date.json",
+        "reason": "インデックスに「システム日時(OS日時)と業務日付の切り替えができる」と明記されており、質問と完全に一致する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "systemTimeProviderのコンポーネント定義設定方法を説明しており、実装に必須"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "SystemTimeUtilを使ったOS日時取得方法の説明"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "businessDateProviderのDB設定・コンポーネント定義を含み、業務日付実装の核心"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BusinessDateUtilを使った業務日付取得方法の説明"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "締め処理に関連する業務日付の上書き方法（システムプロパティ）を説明"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s10",
+        "relevance": "high",
+        "reason": "業務日付の更新（setDate）コードを含み、締め処理実装に直結"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "OS日時と業務日付を独立して切り替えられる仕組みの概要説明"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "BusinessDateUtil.getDate()のシグネチャと戻り値型の確認"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "区分指定のBusinessDateUtil.getDate(segment)の使い方"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "SystemTimeUtil.getDate()の戻り値型（Date）の確認"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "SystemTimeUtil.getLocalDateTime()のシグネチャ確認"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 89859,
+    "duration_api_ms": 90934,
+    "num_turns": 7,
+    "total_cost_usd": 0.6153556499999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 5621,
+      "cache_read_input_tokens": 565103,
+      "cache_creation_input_tokens": 95521
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3157,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003282,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 5621,
+        "cacheReadInputTokens": 565103,
+        "cacheCreationInputTokens": 95521,
+        "webSearchRequests": 0,
+        "costUSD": 0.6120736499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

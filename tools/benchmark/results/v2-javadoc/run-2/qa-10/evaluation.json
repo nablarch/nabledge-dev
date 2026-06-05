@@ -1,0 +1,156 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes the $if syntax for variable conditions, stating 'プロパティが null または空文字列の場合、その条件は自動的に除外されます' and provides a detailed exclusion rule table showing that String types are excluded when null or empty string, which matches the fact being checked.",
+      "fact": "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "$if(プロパティ名) {SQL文の条件} 構文で可変条件を記述できる",
+        "supported": true
+      },
+      {
+        "claim": "String型プロパティはnullまたは空文字列のとき条件から除外される",
+        "supported": true
+      },
+      {
+        "claim": "配列・Collection型プロパティはnullまたはサイズ0のとき条件から除外される",
+        "supported": true
+      },
+      {
+        "claim": "それ以外の型はnullのとき除外される",
+        "supported": true
+      },
+      {
+        "claim": "$ifはWHERE句のみで使用可能",
+        "supported": true
+      },
+      {
+        "claim": "$ifのネストは不可",
+        "supported": true
+      },
+      {
+        "claim": "IN句可変化にはパラメータ末尾に[]を付ける（例: :projectClass[]）",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.page().per().findAllBySqlFileでページング付き検索が可能",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopyでフォームから検索条件Beanへ値を移送できる",
+        "supported": true
+      },
+      {
+        "claim": "ProjectSearchDtoのprojectNameはString型、projectStartDateBeginはjava.sql.Date型で定義する",
+        "supported": true
+      },
+      {
+        "claim": "$ifはユーザ入力によって検索条件が変わる場面専用であり、複数SQLの共通化に使うべきでない",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有の主張（$if構文の記法・除外判定ルール・制約・IN句の[]記法・UniversalDaoのページングAPI・BeanUtilの使い方・ProjectSearchDtoのプロパティ型）はすべてナレッジセクションの記述と一致しており、捏造された情報は確認されない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "$if構文による可変条件SQLの実装方法を直接説明している"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "ウェブアプリ検索でSQLファイルと条件Beanを使う方法を提供している"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "reason": "ウェブアプリケーションの検索機能実装の具体的サンプルを提供している"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "$if構文の記法・除外ルール・実装例を完全に説明しており質問への直接回答"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ウェブアプリケーション検索での$if・$sort・UniversalDAO使用の完全な実装例を含む"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "Beanオブジェクトを入力とするSQL実行の基本を説明しており$if利用の前提"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "partial",
+        "reason": "IN句の可変条件（:prop[]記法）を説明しており$ifと組み合わせて使う"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "UniversalDAOで条件Beanを指定して検索する方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "UniversalDAOでSQLファイルを使った検索の基本を説明している"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 83063,
+    "duration_api_ms": 83193,
+    "num_turns": 6,
+    "total_cost_usd": 0.6411403499999999,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 4519,
+      "cache_read_input_tokens": 228947,
+      "cache_creation_input_tokens": 133691
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3195,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003315,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5,
+        "outputTokens": 4519,
+        "cacheReadInputTokens": 228947,
+        "cacheCreationInputTokens": 133691,
+        "webSearchRequests": 0,
+        "costUSD": 0.63782535,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

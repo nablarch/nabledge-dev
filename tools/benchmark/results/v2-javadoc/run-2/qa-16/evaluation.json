@@ -1,0 +1,123 @@
+{
+  "scenario_id": "qa-16",
+  "description": "UniversalDaoでSQLファイルを使ったデータ存在チェックを実装したい。exists メソッドの使い方を知りたい。",
+  "input": "UniversalDao.exists で SQL_ID を指定してデータ存在チェックをする方法を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly mentions `exists(entityClass, sqlId)` as a method that takes a SQL_ID and an entity class without bind variables, and provides a code example `UniversalDao.exists(User.class, \"FIND_BY_STATUS\")` demonstrating its use. This matches the fact about the `exists(Class, String)` method that performs a data existence check using SQL_ID without bind variables.",
+      "fact": "SQL_IDを指定してバインド変数なしでデータ存在チェックを行うexists(Class, String)メソッドがある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly mentions `exists(entityClass, sqlId, params)` method with SQL_ID and bind variables (params), which matches the fact about `exists(Class, String, Object)` method for data existence check with SQL_ID and bind variables.",
+      "fact": "SQL_IDとバインド変数を指定してデータ存在チェックを行うexists(Class, String, Object)メソッドがある"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "UniversalDao.exists(entityClass, sqlId) メソッドが存在する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.exists(entityClass, sqlId, params) メソッドが存在する",
+        "supported": true
+      },
+      {
+        "claim": "戻り値はboolean（存在すればtrue）",
+        "supported": true
+      },
+      {
+        "claim": "検索用のSQLを変換して使用する（件数取得SQL変換）",
+        "supported": true
+      },
+      {
+        "claim": "#を使ったSQL_ID指定が可能（例: SomeClass#FIND_BY_STATUS）",
+        "supported": true
+      },
+      {
+        "claim": "SQLファイルのパスはentityClassのFQCNから導出される",
+        "supported": true
+      },
+      {
+        "claim": "paramsはバインド変数を持つBeanまたはMapで指定する",
+        "supported": true
+      }
+    ],
+    "reason": "全てのNablarch固有クレームはknowledge sectionsのJavadocおよびライブラリドキュメントによって裏付けられている。exists(Class, String)、exists(Class, String, Object)の両メソッドシグネチャ・戻り値・内部動作・SQLファイルパス導出ルール・#によるSQL_ID指定はすべてknowledge sectionsに明記されており、捏造された情報は検出されない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDaoクラスそのものについてのページであり、existsメソッドを含む全APIが記載されている"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "reason": "UniversalDaoのJavadocであり、existsメソッドのシグネチャと動作仕様が記載されている"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "exists(entityClass, sqlId)のシグネチャ・戻り値・パラメータが直接記載されている"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s18",
+        "relevance": "high",
+        "reason": "exists(entityClass, sqlId, params)のシグネチャと動作仕様（検索SQLを変換して使用する）が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "SQLファイルの指定方法（#を使ったパス指定等）が記載されており、SQL_ID指定方法の背景情報となる"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 65720,
+    "duration_api_ms": 65022,
+    "num_turns": 7,
+    "total_cost_usd": 0.6547333999999999,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 3752,
+      "cache_read_input_tokens": 485458,
+      "cache_creation_input_tokens": 119872
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3125,
+        "outputTokens": 30,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003275,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 3752,
+        "cacheReadInputTokens": 485458,
+        "cacheCreationInputTokens": 119872,
+        "webSearchRequests": 0,
+        "costUSD": 0.6514584,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

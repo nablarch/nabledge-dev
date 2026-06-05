@@ -116,6 +116,7 @@ class _MDVisitor:
         source_path=None,
         source_root=None,
         file_id: str = "",
+        javadoc_map: dict | None = None,
     ) -> None:
         self.warnings: list[str] = []
         # Current indent for list / blockquote nesting (as a prefix string).
@@ -140,6 +141,9 @@ class _MDVisitor:
         self._source_root = source_root
         # Phase 22-B-16c: file_id owns assets at ``assets/{file_id}/...``.
         self._file_id: str = file_id
+        # Javadoc map: class FQCN → file_id for :java:extdoc: link resolution.
+        # When None, :java:extdoc: falls back to display text (backward compat).
+        self._javadoc_map: dict | None = javadoc_map
 
     # ------------------------------------------------------------------
     # Public entry
@@ -778,11 +782,41 @@ class _MDVisitor:
                 return display
             from scripts.common.linkfmt import emit_asset_link
             return emit_asset_link(display, self._file_id, basename)
-        if role in {"java:extdoc", "javadoc_url"}:
-            # `LinkText <fqcn>` form → keep LinkText only (Javadoc path is drop)
+        if role == "java:extdoc":
+            # Parse display text and FQCN using partition (first <) to handle
+            # constructor refs like Cls.<init>(args) that contain < in the FQCN.
             if "<" in raw and raw.rstrip().endswith(">"):
-                text, _, _ = raw.rpartition("<")
-                return text.strip() or raw
+                display, _, fqcn_part = raw.partition("<")
+                display = display.strip()
+                fqcn_raw = fqcn_part.rstrip(">").strip()
+            else:
+                display = raw
+                fqcn_raw = raw
+            # Resolve to internal link when javadoc_map is provided and
+            # FQCN is nablarch.* (java.* / jakarta.* are external — display text only).
+            if (
+                self._javadoc_map is not None
+                and not fqcn_raw.startswith(("java.", "jakarta.", "javax."))
+            ):
+                from scripts.common.javadoc_fqcn import class_fqcn as _class_fqcn
+                cls_fqcn = _class_fqcn(fqcn_raw)
+                file_id = self._javadoc_map.get(cls_fqcn)
+                if file_id is not None:
+                    from scripts.common.linkfmt import emit_javadoc_link
+                    return emit_javadoc_link(display or fqcn_raw, file_id)
+                # nablarch.* FQCN not in map → WARN + display text
+                self.warnings.append(
+                    f"javadoc_map miss: :java:extdoc: `{fqcn_raw}` not in javadoc_map"
+                )
+            return display or raw
+        if role == "javadoc_url":
+            # `:javadoc_url:`LinkText <URL>`` → external MD link [LinkText](URL)
+            if "<" in raw and raw.rstrip().endswith(">"):
+                text, _, url_part = raw.rpartition("<")
+                display = text.strip()
+                url = url_part.rstrip(">").strip()
+                if display and url:
+                    return f"[{display}]({url})"
             return raw
         if role == "strong":
             return f"**{raw}**"
@@ -1001,6 +1035,7 @@ def extract_document(
     source_path=None,
     source_root=None,
     file_id: str = "",
+    javadoc_map: dict | None = None,
 ) -> DocumentParts:
     """Walk the document and return top-level title/content + sections."""
     parts = DocumentParts()
@@ -1010,6 +1045,7 @@ def extract_document(
         source_path=source_path,
         source_root=source_root,
         file_id=file_id,
+        javadoc_map=javadoc_map,
     )
 
     # Separate top-level content (before first section) from sections.

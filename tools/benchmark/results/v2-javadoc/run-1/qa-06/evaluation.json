@@ -1,0 +1,156 @@
+{
+  "scenario_id": "qa-06",
+  "description": "Web画面で入力画面と確認画面をそれぞれ別のJSPで作っている。同じフォーム項目を2回書くのが面倒。共通化する方法があると聞いた。",
+  "input": "入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that `<n:confirmationPage path=\"...\" />` is used in the confirmation page JSP to specify the path to the input page JSP, achieving共通化 (commonalization). This matches the fact that 'confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する'.",
+      "fact": "confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "confirmationPageタグは確認画面のJSPで入力画面のJSPへのパスを指定して、入力画面と確認画面の共通化を行う",
+        "supported": true
+      },
+      {
+        "claim": "forInputPageタグは入力画面でのみ表示したい部分を指定する",
+        "supported": true
+      },
+      {
+        "claim": "forConfirmationPageタグは確認画面でのみ表示したい部分を指定する",
+        "supported": true
+      },
+      {
+        "claim": "ignoreConfirmationタグは確認画面で確認画面向けの表示を無効化したい部分に指定する（例：チェックボックスを確認画面でもチェック欄を表示したい場合）",
+        "supported": true
+      },
+      {
+        "claim": "入力・確認画面の表示制御は入力系のタグが対象となる",
+        "supported": true
+      },
+      {
+        "claim": "plainHiddenタグは画面遷移の状態などを画面間で受け渡す目的で使用し、入力・確認画面ともに出力する",
+        "supported": true
+      },
+      {
+        "claim": "hiddenStoreタグはセッションストアに保存したデータを画面間で受け渡すために使用するため、入力・確認画面ともに出力する",
+        "supported": true
+      },
+      {
+        "claim": "確認画面のJSPは<n:confirmationPage path=\"./input.jsp\" />だけを記述する",
+        "supported": true
+      },
+      {
+        "claim": "入力画面のJSPのボタン部分をforInputPageタグとforConfirmationPageタグで分岐する",
+        "supported": true
+      },
+      {
+        "claim": "入力欄（n:text、n:checkbox、n:select等）は入力画面と確認画面で同じJSP記述を使用する",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるすべてのNablarch固有の主張（タグ名、動作仕様、実装例）はナレッジセクションの内容と一致している。JSPの実装例もナレッジセクションのものと完全に一致しており、捏造された情報は検出されない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "s3に「入力画面と確認画面のJSPを共通化して実装を減らす」という機能概要があり、s23に実装詳細がある、質問に直接対応するページ"
+      },
+      {
+        "path": "component/libraries/libraries-tag-reference.json",
+        "reason": "confirmationPage/forInputPage/forConfirmationPage/ignoreConfirmationタグのリファレンスが含まれ、共通化機能の属性仕様を補完する"
+      },
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "入力〜確認〜完了画面間のデータ保持に関係し、hiddenStoreタグとの連携で必要な背景知識を提供する"
+      },
+      {
+        "path": "component/libraries/libraries-create-example.json",
+        "reason": "登録機能（入力→確認→登録）の実装例を示しており、共通化の実際の使い方の参考になる"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "入力画面と確認画面のJSP共通化機能の概要を直接説明しており、質問に対する機能の存在を確認できる"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s23",
+        "relevance": "high",
+        "reason": "共通化に使用する4つのカスタムタグの使い方と完全なコード例が含まれており、実装するために必要な情報が全て揃っている"
+      },
+      {
+        "file": "component/libraries/libraries-tag-reference.json",
+        "section_id": "s64",
+        "relevance": "partial",
+        "reason": "confirmationPageタグのpath属性の仕様を示し、s23の実装例を補完する"
+      },
+      {
+        "file": "component/libraries/libraries-tag-reference.json",
+        "section_id": "s65",
+        "relevance": "partial",
+        "reason": "ignoreConfirmationタグの属性仕様（属性なし）を示す"
+      },
+      {
+        "file": "component/libraries/libraries-tag-reference.json",
+        "section_id": "s66",
+        "relevance": "partial",
+        "reason": "forInputPageタグの属性仕様（属性なし）を示す"
+      },
+      {
+        "file": "component/libraries/libraries-tag-reference.json",
+        "section_id": "s67",
+        "relevance": "partial",
+        "reason": "forConfirmationPageタグの属性仕様（属性なし）を示す"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 68426,
+    "duration_api_ms": 68372,
+    "num_turns": 5,
+    "total_cost_usd": 0.5077411,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 4669,
+      "cache_read_input_tokens": 337147,
+      "cache_creation_input_tokens": 88868
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3159,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003289,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 4669,
+        "cacheReadInputTokens": 337147,
+        "cacheCreationInputTokens": 88868,
+        "webSearchRequests": 0,
+        "costUSD": 0.5044521,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

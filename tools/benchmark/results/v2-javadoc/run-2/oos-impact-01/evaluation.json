@@ -1,0 +1,192 @@
+{
+  "scenario_id": "oos-impact-01",
+  "description": "既存システムをNablarch 6に移行するにあたり、OAuth2/OpenID Connect認証が必要かどうか影響調査している。NablarchにOAuth2/OIDCの仕組みが組み込まれているか確認したい。",
+  "input": "NablarchでOAuth2やOpenID Connectによる認証を実装したい。Nablarchにその仕組みは組み込まれているか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「結論」セクションに「NablarchにはOAuth2/OpenID Connectの認証機能は組み込まれていない」と明示されており、さらに「認証は『フレームワークとしては提供していない。プロジェクト要件に合わせてPJで実装する』」という根拠も示されている。これはfactが述べている内容と同じ情報を含んでいる。",
+      "fact": "NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchにはOAuth2/OpenID Connectの認証機能は組み込まれていない",
+        "supported": true
+      },
+      {
+        "claim": "認証はプロジェクト要件により仕様が異なるため、フレームワークとしては提供していない",
+        "supported": true
+      },
+      {
+        "claim": "公式サンプル nablarch-oidc が提供されている",
+        "supported": true
+      },
+      {
+        "claim": "バックエンドはNablarchのRESTfulウェブサービス",
+        "supported": true
+      },
+      {
+        "claim": "IDトークンはフロントエンド（SPA、モバイルアプリ等）で取得してバックエンドへ送信",
+        "supported": true
+      },
+      {
+        "claim": "対応IDプロバイダ: AWS Cognito（cognitoパッケージ）・Azure ADB2C（adb2cパッケージ）",
+        "supported": true
+      },
+      {
+        "claim": "依存ライブラリ: com.auth0:java-jwt:4.4.0 と com.auth0:jwks-rsa:0.22.1",
+        "supported": true
+      },
+      {
+        "claim": "CognitoIdTokenVerifier, CognitoSignatureAlgorithmProvider, CognitoRSAKeyProvider のコンポーネント定義",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネントのプロパティ: region, userPoolId, clientId",
+        "supported": true
+      },
+      {
+        "claim": "認証成功後に SessionUtil.changeId と CsrfTokenUtil.regenerateCsrfToken を呼び出す",
+        "supported": true
+      },
+      {
+        "claim": "decodedJWT.getSubject() でユーザーIDを取得してセッションに保存",
+        "supported": true
+      },
+      {
+        "claim": "JWTVerificationException 発生時に HTTP 401 を返す",
+        "supported": true
+      },
+      {
+        "claim": "SystemRepository.get(\"idTokenVerifier\") でコンポーネントを取得",
+        "supported": true
+      },
+      {
+        "claim": "環境依存値(リージョン、ユーザープールIDなど)はシステムプロパティまたはOS環境変数で設定",
+        "supported": true
+      },
+      {
+        "claim": "このサンプルはRESTfulウェブサービス構成を想定しており、JSPベースの従来型ウェブアプリへの直接適用は不可",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有のクラス名、設定方法、動作仕様、依存ライブラリのバージョン、コンポーネント構成はすべてナレッジセクションの内容と一致しており、捏造された情報は検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "guide/biz-samples/biz-samples-12.json",
+        "reason": "OIDCのIDトークンを用いた認証サンプルを直接扱うページであり、OAuth2/OIDC認証の実装方法が記載されている"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの認証に関するNablarchの方針（フレームワーク非提供）が記載されている"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "サンプルの概要・前提構成（フロントエンドがIDトークン取得、バックエンドが検証）が記載されており、回答の中核となる"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "サンプルが扱う範囲（Nablarchバックエンドのみ）が明示されており、ウェブアプリケーションへの適用制限を理解するために必要"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "JWTライブラリの具体的な依存関係設定が記載されており、実装に必須"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "IDトークン検証コンポーネントのXML設定が記載されており、実装の根幹"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "CognitoIdTokenVerifierの実装コードが記載されており、JWT検証の仕組みが分かる"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "認証成功時のセッション確立（SessionUtil.put等）の実装コードが記載されており、実装完結のために必要"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションの認証はフレームワーク非提供であることを明示しており、質問への直接の回答となる"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "ソースコードの提供パッケージとGitHubリンクが記載されており、実装参照先として有用"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "提供クラスの一覧と概要が記載されており、コンポーネント構成の把握に有用"
+      },
+      {
+        "file": "guide/biz-samples/biz-samples-12.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "環境依存値の設定方法が記載されており、セキュリティ上の注意点の根拠となる"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 136557,
+    "duration_api_ms": 138404,
+    "num_turns": 5,
+    "total_cost_usd": 0.5753872499999999,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 9093,
+      "cache_read_input_tokens": 228915,
+      "cache_creation_input_tokens": 97861
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3189,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003324,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5,
+        "outputTokens": 9093,
+        "cacheReadInputTokens": 228915,
+        "cacheCreationInputTokens": 97861,
+        "webSearchRequests": 0,
+        "costUSD": 0.57206325,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

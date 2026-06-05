@@ -1,0 +1,180 @@
+{
+  "scenario_id": "review-09",
+  "description": "セキュリティ診断でContent Security Policyを有効にしろと指摘された。NablarchのWeb画面でCSPを設定したい。",
+  "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes combining SecureHandler with ContentSecurityPolicyHeader and JSP custom tag CSP support (nonce-based approach) to enable CSP, which matches the fact's description of combining SecureHandler, ContentSecurityPolicyHeader, and custom tag CSP support.",
+      "fact": "セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "ContentSecurityPolicyHeaderをSecureHandlerのsecureResponseHeaderListに追加することでCSPを有効にできる",
+        "supported": true
+      },
+      {
+        "claim": "ContentSecurityPolicyHeaderのpolicyプロパティにCSPポリシー文字列を設定する",
+        "supported": true
+      },
+      {
+        "claim": "固定ポリシー設定でContent-Security-Policy: default-src 'self'というレスポンスヘッダが書き出される",
+        "supported": true
+      },
+      {
+        "claim": "SecureHandlerのgenerateCspNonceプロパティをtrueに設定することでnonceを生成できる",
+        "supported": true
+      },
+      {
+        "claim": "policyにプレースホルダー$cspNonceSource$を含めることでnonceを埋め込める",
+        "supported": true
+      },
+      {
+        "claim": "$cspNonceSource$はnonce-DhcnhD3khTMePgXwdayK9BsMqXjhguVVのような形式に置換される",
+        "supported": true
+      },
+      {
+        "claim": "formタグが生成するJavaScriptがscript要素にまとめられnonce属性が自動設定される",
+        "supported": true
+      },
+      {
+        "claim": "scriptタグが生成するscript要素のnonce属性にnonceが自動設定される",
+        "supported": true
+      },
+      {
+        "claim": "<n:cspNonce />タグでnonceを任意の要素に埋め込める",
+        "supported": true
+      },
+      {
+        "claim": "reportOnlyをtrueに設定するとContent-Security-Policy-Report-Onlyヘッダが書き出される",
+        "supported": true
+      },
+      {
+        "claim": "SecureHandlerはHTTPレスポンスハンドラよりも後ろに配置すること",
+        "supported": true
+      },
+      {
+        "claim": "onclick属性などにインラインスクリプトを記述するとunsafe-inlineが必要になりCSPの効果が下がる",
+        "supported": true
+      },
+      {
+        "claim": "suppressDefaultSubmit=\"true\"を設定してカスタムタグのデフォルトJavaScript生成を抑制できる",
+        "supported": true
+      },
+      {
+        "claim": "nonceを使う場合JSPから生成されるHTMLはリクエストのたびに変化する",
+        "supported": true
+      }
+    ],
+    "reason": "回答のすべての主要な技術的クレームはナレッジセクションの内容に裏付けられており、クラス名・プロパティ名・動作仕様・設定方法・コード例はすべてナレッジセクションと一致している。ハルシネーションは検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "セキュアハンドラのCSP対応セクション（s6〜s9）がCSP設定の主要情報を提供する"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "JSPカスタムタグのCSP対応（s38〜s40）がnonce利用時のJSP実装方法を提供する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーション機能詳細のCSP対応セクション（s21）が処理方式に対応したCSP情報へのリンクを提供する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSP対応の概要とContentSecurityPolicyHeaderとの組み合わせ方を説明している"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "固定CSPポリシーの設定方法とXML設定例を含む"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "nonce付きCSP設定方法とプレースホルダー`$cspNonceSource$`の使い方を含む"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "report-onlyモードの設定方法を含む"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s38",
+        "relevance": "high",
+        "reason": "nonce有効化時のJSPカスタムタグの動作変化を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s39",
+        "relevance": "high",
+        "reason": "cspNonceタグを使って任意の要素にnonceを埋め込む方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s40",
+        "relevance": "partial",
+        "reason": "インラインスクリプトを避けてCSP対応する際のJavaScript追加方法を説明している"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s21",
+        "relevance": "partial",
+        "reason": "ウェブアプリのCSP対応への参照リンクを提供する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 96760,
+    "duration_api_ms": 95652,
+    "num_turns": 11,
+    "total_cost_usd": 0.8182397,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 6353,
+      "cache_read_input_tokens": 812709,
+      "cache_creation_input_tokens": 126876
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3179,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003314,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 6353,
+        "cacheReadInputTokens": 812709,
+        "cacheCreationInputTokens": 126876,
+        "webSearchRequests": 0,
+        "costUSD": 0.8149257000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

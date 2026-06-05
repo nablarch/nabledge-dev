@@ -46,9 +46,85 @@ class TestCrossDocRoundTrip:
 
         bare = emit_crossdoc_link("D", "t", "c", "fid")
         anchored = emit_crossdoc_link("D", "t", "c", "fid", "a")
-        assert bare.endswith(".md)")
-        assert anchored.endswith(".md#a)")
+        assert bare.endswith(".json)")
+        assert anchored.endswith(".json#a)")
         assert bare + "#a" not in anchored  # different closing paren placement
+
+    def test_crossdoc_link_uses_json_extension(self):
+        from scripts.common.linkfmt import emit_crossdoc_link
+
+        link = emit_crossdoc_link("Foo", "component", "libraries", "libraries-foo")
+        assert ".json" in link
+        assert ".md" not in link
+
+    def test_crossdoc_link_re_matches_json_extension(self):
+        from scripts.common.linkfmt import CROSSDOC_LINK_RE
+
+        json_link = "[Foo](../../component/libraries/libraries-foo.json)"
+        m = CROSSDOC_LINK_RE.search(json_link)
+        assert m is not None, f"CROSSDOC_LINK_RE must match .json links: {json_link}"
+        assert m.group("file_id") == "libraries-foo"
+
+    def test_crossdoc_link_re_matches_json_with_anchor(self):
+        from scripts.common.linkfmt import CROSSDOC_LINK_RE
+
+        json_link = "[Foo](../../component/libraries/libraries-foo.json#section)"
+        m = CROSSDOC_LINK_RE.search(json_link)
+        assert m is not None
+        assert m.group("anchor") == "section"
+
+
+class TestJavadocRoundTrip:
+    def test_emit_javadoc_link_basic(self):
+        from scripts.common.linkfmt import emit_javadoc_link
+
+        result = emit_javadoc_link(
+            "UniversalDao", "javadoc-nablarch-common-dao-UniversalDao"
+        )
+        assert result == "[UniversalDao](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)"
+
+    def test_emit_javadoc_link_various(self):
+        from scripts.common.linkfmt import emit_javadoc_link
+
+        assert emit_javadoc_link("Foo", "javadoc-x-Foo") == "[Foo](../../javadoc/javadoc-x-Foo.json)"
+        assert emit_javadoc_link("日本語", "javadoc-y-Bar") == "[日本語](../../javadoc/javadoc-y-Bar.json)"
+
+    def test_emit_javadoc_link_uses_json_extension(self):
+        from scripts.common.linkfmt import emit_javadoc_link
+
+        link = emit_javadoc_link("SomeClass", "javadoc-com-example-SomeClass")
+        assert ".json" in link
+        assert ".md" not in link
+
+    def test_javadoc_link_re_matches_json_extension(self):
+        from scripts.common.linkfmt import JAVADOC_LINK_RE
+
+        json_link = "[Foo](../../javadoc/javadoc-x-Foo.json)"
+        m = JAVADOC_LINK_RE.search(json_link)
+        assert m is not None, f"JAVADOC_LINK_RE must match .json links: {json_link}"
+        assert m.group("file_id") == "javadoc-x-Foo"
+
+    def test_javadoc_link_re_detects_emit_output(self):
+        from scripts.common.linkfmt import emit_javadoc_link, JAVADOC_LINK_RE
+
+        file_id = "javadoc-nablarch-common-dao-UniversalDao"
+        link = emit_javadoc_link("UniversalDao", file_id)
+        m = JAVADOC_LINK_RE.search(link)
+        assert m is not None, f"JAVADOC_LINK_RE did not match: {link}"
+        assert m.group("file_id") == file_id
+
+    def test_javadoc_link_re_round_trip(self):
+        from scripts.common.linkfmt import emit_javadoc_link, JAVADOC_LINK_RE
+
+        cases = [
+            ("ClassA", "javadoc-com-example-ClassA"),
+            ("SomeClass", "javadoc-nablarch-core-SomeClass"),
+        ]
+        for display, file_id in cases:
+            link = emit_javadoc_link(display, file_id)
+            m = JAVADOC_LINK_RE.search(link)
+            assert m is not None, link
+            assert m.group("file_id") == file_id
 
 
 class TestAssetRoundTrip:

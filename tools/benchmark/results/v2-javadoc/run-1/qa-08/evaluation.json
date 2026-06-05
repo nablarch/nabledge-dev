@@ -1,0 +1,170 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states in section 2 that you should set supported languages in `PropertiesStringResourceLoader` using the `locales` property, and section 1 describes preparing language-specific property files (messages_言語.properties format). This directly matches the fact about preparing property files for each language and configuring supported languages in locales.",
+      "fact": "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "PropertiesStringResourceLoader の locales プロパティでサポート言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "defaultLocale プロパティでデフォルト言語を設定する（未設定時は Locale.getDefault().getLanguage() が使われる）",
+        "supported": true
+      },
+      {
+        "claim": "ファイル名は messages_言語.properties 形式で作成する",
+        "supported": true
+      },
+      {
+        "claim": "messages.properties が存在しない場合はエラーとして処理を終了する",
+        "supported": true
+      },
+      {
+        "claim": "BasicStaticDataCache / StringResourceHolder / BasicApplicationInitializer の XML 設定例",
+        "supported": true
+      },
+      {
+        "claim": "LanguageAttributeInHttpCookie のコンポーネント名は 'languageAttribute' にする",
+        "supported": true
+      },
+      {
+        "claim": "LanguageAttributeInHttpCookie に defaultLanguage / supportedLanguages プロパティを設定する",
+        "supported": true
+      },
+      {
+        "claim": "LanguageAttributeInHttpSession でセッション保持も可能",
+        "supported": true
+      },
+      {
+        "claim": "LanguageAttributeInHttpUtil.keepLanguage() でクッキーとスレッドコンテキストに言語を設定する",
+        "supported": true
+      },
+      {
+        "claim": "I18nHandler の実装例（user.language パラメータを取得して keepLanguage を呼ぶ）",
+        "supported": true
+      },
+      {
+        "claim": "JSP の言語切り替えリンクは n:submitLink + n:param で実装する",
+        "supported": true
+      },
+      {
+        "claim": "JSP で <n:message messageId='...' /> を使ってメッセージを出力する",
+        "supported": true
+      },
+      {
+        "claim": "<n:message messageId='...' language='ja' /> で言語を個別指定できる",
+        "supported": true
+      },
+      {
+        "claim": "DirectoryBasedResourcePathRule / FilenameBasedResourcePathRule で JSP 自体を言語切り替えできる",
+        "supported": true
+      },
+      {
+        "claim": "HttpResponseHandler の contentPathRule プロパティにリソースパスルールを設定する",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のすべての Nablarch 固有の主張（クラス名・プロパティ名・設定例・動作仕様）はナレッジセクションの記述と一致しており、ハルシネーションは検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-message.json",
+        "reason": "メッセージ管理機能は多言語化対応セクションを持ち、質問に直接対応する"
+      },
+      {
+        "path": "component/handlers/handlers-thread-context-handler.json",
+        "reason": "ユーザが言語を選択する画面の実装方法（s7）を含む"
+      },
+      {
+        "path": "component/handlers/handlers-http-response-handler.json",
+        "reason": "言語毎のコンテンツパス切り替え（JSPの多言語化）を扱う"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "messageタグや言語ごとのリソースパス切り替えタグを提供する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "多言語化対応の具体的な設定方法（プロパティファイル作成、PropertiesStringResourceLoader設定）を説明している"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ユーザが言語を選択する画面の実装例（LanguageAttributeInHttpCookie、I18nHandler）を提供している"
+      },
+      {
+        "file": "component/handlers/handlers-http-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "JSPファイル自体を言語ごとに切り替えるDirectoryBasedResourcePathRule/FilenameBasedResourcePathRuleの設定方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s31",
+        "relevance": "high",
+        "reason": "JSPでメッセージを多言語表示するためのmessageタグの使用方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s32",
+        "relevance": "partial",
+        "reason": "言語ごとのリソースパス切り替えに対応したカスタムタグ一覧を提供する補足情報"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 109275,
+    "duration_api_ms": 108961,
+    "num_turns": 6,
+    "total_cost_usd": 0.6281549500000001,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 7839,
+      "cache_read_input_tokens": 459569,
+      "cache_creation_input_tokens": 98511
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3137,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003262,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 7839,
+        "cacheReadInputTokens": 459569,
+        "cacheCreationInputTokens": 98511,
+        "webSearchRequests": 0,
+        "costUSD": 0.62489295,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

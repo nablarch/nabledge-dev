@@ -1,0 +1,182 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のセクション3「任意のSQLファイルで検索」でSQLファイルを作成しSQL IDを指定して検索できることが説明されており、セクション4「検索結果のBeanマッピング」で検索結果がBean（Entity、Form、DTO）にマッピングされることも明記されている。Factの内容は回答に含まれている。",
+      "fact": "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "UniversalDao.findAllBySqlFile()メソッドでSQLファイルを指定して検索できる",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta PersistenceアノテーションをEntityに付けるだけでSQLなしに主キー検索できる",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント定義にBasicDaoContextFactoryをコンポーネント名'daoContextFactory'で設定する",
+        "supported": true
+      },
+      {
+        "claim": "主キー検索にUniversalDao.findById()を使用する",
+        "supported": false
+      },
+      {
+        "claim": "SQLファイルのパスはBeanクラス(sample.entity.User)からsample/entity/User.sqlと導出される",
+        "supported": true
+      },
+      {
+        "claim": "検索条件はEntityではなく専用のBeanを指定する（1テーブルのみの場合はEntityも可）",
+        "supported": true
+      },
+      {
+        "claim": "BeanのプロパティとSELECT句の名前が一致する項目が自動的にマッピングされる",
+        "supported": true
+      },
+      {
+        "claim": "使用できるデータタイプにString, Integer, Long, BigDecimal, Boolean, java.sql.Date, java.sql.Timestamp, LocalDate, LocalDateTime, byte[]が含まれる",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.per(3).page(1).findAllBySqlFile(...)でページングできる",
+        "supported": true
+      },
+      {
+        "claim": "users.getPagination()でPaginationオブジェクトを取得できる",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.defer()を呼び出しDeferredEntityListをtry-with-resourcesでcloseする遅延ロード",
+        "supported": true
+      },
+      {
+        "claim": "defer()使用中はサーバサイドカーソルが開き、トランザクション制御でカーソルがクローズされエラーになる可能性がある",
+        "supported": true
+      },
+      {
+        "claim": "Beanに記載のないデータタイプにマッピングしようとすると実行時例外が発生する",
+        "supported": true
+      }
+    ],
+    "reason": "ほぼすべての主要な主張はknowledgeセクションによって裏付けられている。唯一、'UniversalDao.findById()'というメソッド名がknowledgeセクションに明示されていない（knowledgeは主キーを指定した検索が可能と述べるのみで具体的メソッド名を記載しない）が、これはNablarchの実際のAPIと整合性があり、かつ回答の他の部分は高い精度でknowledgeと一致しているため、全体としてPASSと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDaoそのものを説明するページで、質問の中心テーマに直接対応する"
+      },
+      {
+        "path": "guide/biz-samples/biz-samples-03.json",
+        "reason": "UniversalDaoを使った検索結果一覧表示の実装サンプルを提供する"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "UniversalDaoの内部で使用されるJDBCラッパーで、SQLファイル管理など補完情報を提供する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "ユニバーサルDAOを使うための必須設定(BasicDaoContextFactory)が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "SQLファイルを使った検索の基本実装方法が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "relevance": "high",
+        "reason": "条件を指定した検索の実装例が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "SQLなしで主キー検索できる機能概要が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "検索結果をBeanにマッピングする仕組みが記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "大量データの遅延ロード（defer）の実装方法と注意事項が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "ページング検索の実装方法(per/pageメソッド)が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s25",
+        "relevance": "partial",
+        "reason": "Beanに使用できるデータタイプの制約が記載されている（マッピング時の注意点）"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "UniversalDaoのメソッド詳細を提供するJavadocとしてs5から参照されている"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 109310,
+    "duration_api_ms": 107860,
+    "num_turns": 5,
+    "total_cost_usd": 0.6223668,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 7601,
+      "cache_read_input_tokens": 352466,
+      "cache_creation_input_tokens": 106492
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3119,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0032489999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 7601,
+        "cacheReadInputTokens": 352466,
+        "cacheCreationInputTokens": 106492,
+        "webSearchRequests": 0,
+        "costUSD": 0.6191177999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

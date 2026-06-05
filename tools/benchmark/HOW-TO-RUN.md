@@ -121,7 +121,12 @@ print('updated summary.json:', d['total_scenarios'], 'scenarios')
 | `metrics.json` | 正常完了時 | 実行時間・ターン数・コスト |
 | `trace.json` | 正常完了時 | claudeの生JSON出力（`result`フィールドにLLM出力全文） |
 
-**エラー時の調査**: `error.json` の `exception_type` でエラー種別確認。TimeoutExpiredの場合は単体再実行で回収する。
+**エラー時の調査**:
+
+`error.json` の `exception_type` でエラー種別を確認し、以下で対応を分ける:
+
+- **出力が存在する場合**（`raw_response.txt` または `answer.md` あり）: スキルは回答を生成している。ステップ3bと同じ要領で `raw_response.txt` を読み、must のfact が満たされているかを確認して品質問題か否かを判定する
+- **出力が存在しない場合**（スキルが回答を生成できなかった）: 単体再実行で回収する
 
 ---
 
@@ -147,6 +152,13 @@ python3 -m tools.benchmark.scripts.report \
 
 閾値割れが出たシナリオについて、DeepEval の判定根拠（reason）だけで原因を分類せず、
 **必ず回答とナレッジを突き合わせて事実を確認する**。
+
+**確認対象（必須）**:
+- `evaluation.json` の `diagnostics.selected_pages` に列挙されたページの JSON ファイルを**全セクション**読む（`selected_sections` に挙がったセクションだけでなく、そのページの全内容を確認する）
+- Javadoc ファイルが `selected_sections` に含まれている場合は、その Javadoc JSON を**全セクション**読む
+- クレームに関連するクラス名や機能が `.claude/skills/nabledge-6/knowledge/javadoc/` に存在する場合は、そのファイルも確認する
+
+**注意**: ページの `content`（導入文）はセクション番号がなく、`s1` 以降の named section とは別に存在する。自動評価器はセクション単位でナレッジを渡すため、ページ全体の `content` フィールドを見落としやすい。手動確認では必ずページの `content` も確認すること。
 
 各シナリオについて以下を確認する:
 

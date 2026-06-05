@@ -60,6 +60,7 @@ def convert(
     source_path: "Path | None" = None,
     label_map: dict | None = None,
     doc_map: dict | None = None,
+    javadoc_map: dict | None = None,
 ) -> RSTResult:
     """Convert RST *source* to :class:`RSTResult`.
 
@@ -67,6 +68,7 @@ def convert(
     (yielding CommonMark MD links) or bare ``str`` (legacy single-dir
     title-only rendering).  ``doc_map`` resolves ``:doc:`` targets; pass
     ``source_path`` so the visitor can resolve relative targets.
+    ``javadoc_map`` resolves ``:java:extdoc:`` roles to internal links.
     """
     doctree, _warnings = rst_ast.parse(source, source_path=source_path)
     parts = rst_ast_visitor.extract_document(
@@ -75,6 +77,7 @@ def convert(
         doc_map=doc_map,
         source_path=source_path,
         file_id=file_id,
+        javadoc_map=javadoc_map,
     )
 
     title = parts.top_title or ""

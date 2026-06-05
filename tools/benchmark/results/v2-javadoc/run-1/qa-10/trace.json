@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 124461,
+  "duration_api_ms": 123961,
+  "ttft_ms": 3660,
+  "num_turns": 3,
+  "result": "Step 5-7: 回答を生成し、検証します。\n\n---\n\n**結論**: SQLファイルに `$if(プロパティ名) {条件}` 構文を使い、Beanオブジェクトで条件を渡すことで、入力がある項目だけをWHERE句に含めることができます。`UniversalDao.findAllBySqlFile()` で実行します。\n\n**根拠**:\n\n`$if` 構文のルール：プロパティ値が null または空文字（String の場合）のとき、その条件がSQLから除外されます。配列・Collection の場合は null またはサイズ0のとき除外されます。\n\n**SQLファイル例（Project.sql）**:\n\n```sql\nSEARCH_PROJECT =\nSELECT\n    PROJECT_ID,\n    PROJECT_NAME,\n    ...\nFROM\n    PROJECT\nWHERE\n    USER_ID = :userId\n    AND $if(clientId)               {CLIENT_ID = :clientId}\n    AND $if(projectName)            {PROJECT_NAME LIKE :%projectName%}\n    AND $if(projectType)            {PROJECT_TYPE = :projectType}\n    AND $if(projectClass)           {PROJECT_CLASS IN (:projectClass[])}\n    AND $if(projectStartDateBegin)  {PROJECT_START_DATE >= :projectStartDateBegin}\n    AND $if(projectStartDateEnd)    {PROJECT_START_DATE <= :projectStartDateEnd}\n```\n\n**業務アクション実装例**:\n\n```java\n@InjectForm(form = ProjectSearchForm.class, prefix = \"searchForm\", name = \"searchForm\")\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\npublic HttpResponse list(HttpRequest request, ExecutionContext context) {\n\n    ProjectSearchForm searchForm = context.getRequestScopedVar(\"searchForm\");\n    ProjectSearchDto searchCondition =\n            BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);\n\n    List<Project> searchList = searchProject(searchCondition, context);\n    context.setRequestScopedVar(\"searchResult\", searchList);\n\n    return new HttpResponse(\"/WEB-INF/view/project/index.jsp\");\n}\n\nprivate List<Project> searchProject(ProjectSearchDto searchCondition,\n                                    ExecutionContext context) {\n    return UniversalDao\n            .page(searchCondition.getPageNumber())\n            .per(20L)\n            .findAllBySqlFile(Project.class, \"SEARCH_PROJECT\", searchCondition);\n}\n```\n\n- フォームの値は `BeanUtil.createAndCopy()` で検索条件Bean（`ProjectSearchDto`）にコピーします。フォームのプロパティ名と検索条件BeanのプロパティをSQLの名前付きパラメータ（`:projectName` など）に合わせます。\n- `UniversalDao.findAllBySqlFile()` の第2引数はSQLID（`SEARCH_PROJECT`）、第3引数に検索条件Beanを渡します。\n\n**注意点**:\n- `$if` は **WHERE句のみ** 使用可能です。\n- `$if` の中に `$if` をネストすることはできません。\n- この機能はユーザー入力で条件が変わる検索画面向けです。「条件が異なるだけの複数SQLを共通化する」目的には使わないでください。無理に共通化すると、SQL変更時に思わぬ不具合を埋め込む原因になります（その場合はSQLを複数定義すること）。\n\n参照: `libraries-database.json:s21`, `web-application-getting-started-project-search.json:s1`, `libraries-universal-dao.json:s10`\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-database.json\", \"reason\": \"$if構文による可変条件SQLの核心的な説明が含まれる\"},\n      {\"path\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"reason\": \"ウェブアプリケーションの検索機能における$if使用の完全な実装例が含まれる\"},\n      {\"path\": \"javadoc/javadoc-nablarch-core-db-statement-ParameterizedSqlPStatement.json\", \"reason\": \"可変条件SQL実行に使うParameterizedSqlPStatementのAPIリファレンス\"},\n      {\"path\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\", \"reason\": \"findAllBySqlFileメソッドのAPIリファレンス\"},\n      {\"path\": \"javadoc/javadoc-nablarch-core-beans-BeanUtil.json\", \"reason\": \"フォームから検索条件Beanへのコピーに使うBeanUtilのAPIリファレンス\"},\n      {\"path\": \"javadoc/javadoc-nablarch-common-web-interceptor-InjectForm.json\", \"reason\": \"バリデーション付きフォーム注入に使うInjectFormのAPIリファレンス\"},\n      {\"path\": \"component/libraries/libraries-universal-dao.json\", \"reason\": \"UniversalDaoによる条件指定検索の説明が含まれる\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"概要レベルの説明のみで具体的な実装詳細は他のページで充足される\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s21\", \"relevance\": \"high\", \"reason\": \"$if構文の仕様・制約・コード例を直接説明しており質問への核心的な回答\"},\n      {\"file\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"ウェブアプリ検索でのSQL・フォーム・アクション全体の実装例が揃っている\"},\n      {\"file\": \"javadoc/javadoc-nablarch-core-db-statement-ParameterizedSqlPStatement.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"s21で参照されるJavadoc\"},\n      {\"file\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"s1で参照されるJavadoc\"},\n      {\"file\": \"javadoc/javadoc-nablarch-core-beans-BeanUtil.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"s1で参照されるJavadoc\"},\n      {\"file\": \"javadoc/javadoc-nablarch-common-web-interceptor-InjectForm.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"s1で参照されるJavadoc\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s16\", \"relevance\": \"partial\", \"reason\": \"s21の前提となるBeanオブジェクト入力によるSQL実行の基礎説明\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s22\", \"relevance\": \"partial\", \"reason\": \"$ifとIN句の組み合わせという関連するユースケースの説明\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s10\", \"relevance\": \"partial\", \"reason\": \"UniversalDaoでの条件指定検索のコード例\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s7\", \"relevance\": \"partial\", \"reason\": \"SQLファイルを使った検索の基礎説明\"}\n    ],\n    \"excluded_sections\": []\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-database.json:s21\",\n      \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\",\n      \"javadoc/javadoc-nablarch-core-db-statement-ParameterizedSqlPStatement.json:s1\",\n      \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s1\",\n      \"javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s1\",\n      \"javadoc/javadoc-nablarch-common-web-interceptor-InjectForm.json:s1\",\n      \"component/libraries/libraries-database.json:s16\",\n      \"component/libraries/libraries-database.json:s22\",\n      \"component/libraries/libraries-universal-dao.json:s10\",\n      \"component/libraries/libraries-universal-dao.json:s7\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/libraries/libraries-database.json:s21\", \"reason\": \"$if構文の仕様・除外条件・制約・コード例を回答の根拠として使用\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\", \"reason\": \"SQL定義・フォーム・BeanUtil・InjectForm・UniversalDaoを使った完全な実装例を回答の根拠として使用\"},\n        {\"ref\": \"component/libraries/libraries-universal-dao.json:s10\", \"reason\": \"UniversalDao.findAllBySqlFileの使い方を補足する根拠として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"javadoc/javadoc-nablarch-core-db-statement-ParameterizedSqlPStatement.json:s1\", \"reason\": \"セクション内容がメソッド詳細のみで空であり回答に追加する情報がなかった\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s1\", \"reason\": \"セクション内容がフィールド詳細のみで空であり回答に追加する情報がなかった\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s1\", \"reason\": \"セクション内容がフィールド詳細のみで空であり回答に追加する情報がなかった\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-common-web-interceptor-InjectForm.json:s1\", \"reason\": \"InjectFormの詳細はs1から引用済みのコード例で充足されており追加引用不要\"},\n        {\"ref\": \"component/libraries/libraries-database.json:s16\", \"reason\": \"Beanオブジェクト入力の基礎説明だがs21とs1の内容で充足されているため不使用\"},\n        {\"ref\": \"component/libraries/libraries-database.json:s22\", \"reason\": \"IN句の可変条件はProjectSearchDto例のprojectClass[]で言及されており独立したセクション引用は不要\"},\n        {\"ref\": \"component/libraries/libraries-universal-dao.json:s7\", \"reason\": \"SQLファイルによる検索の基礎説明だがs10とs1で充足されているため不使用\"}\n      ]\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "f39b63eb-b74e-44a0-b177-2e86ed26c889",
+  "total_cost_usd": 0.9298166999999999,
+  "usage": {
+    "input_tokens": 4,
+    "cache_creation_input_tokens": 38892,
+    "cache_read_input_tokens": 121113,
+    "output_tokens": 4468,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 38892
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3195,
+      "outputTokens": 24,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003315,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 14,
+      "outputTokens": 8108,
+      "cacheReadInputTokens": 675224,
+      "cacheCreationInputTokens": 160606,
+      "webSearchRequests": 0,
+      "costUSD": 0.9265017,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "667fa17a-300d-4782-ab85-34fa3fa962e6"
+}

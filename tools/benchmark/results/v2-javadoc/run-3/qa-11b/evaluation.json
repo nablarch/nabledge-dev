@@ -1,0 +1,209 @@
+{
+  "scenario_id": "qa-11b",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「① エラーレスポンスの生成（JaxRsResponseHandler）」セクションおよびテーブルにおいて、「JaxRsResponseHandlerがエラーレスポンスを生成する」という事実が明確に記述されている。具体的には、後続ハンドラで発生した例外をJaxRsResponseHandlerのerrorResponseBuilderが処理してエラーレスポンスを生成すると説明されており、ファクトの内容と一致している。",
+      "fact": "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「② エラー時のログ出力（JaxRsResponseHandler）」セクションに、「エラーログは `JaxRsResponseHandler` の `errorLogWriter`（`JaxRsErrorLogWriter`）が担当します」と明記されており、JaxRsErrorLogWriterが例外に応じたログ出力を行うという事実が含まれている。",
+      "fact": "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "JaxRsResponseHandlerのerrorResponseBuilderプロパティにErrorResponseBuilderを設定してエラーレスポンスを生成する",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseが発生した場合はgetResponse()の戻り値がクライアントに返される",
+        "supported": true
+      },
+      {
+        "claim": "設定省略時はデフォルト実装のErrorResponseBuilderが使用される",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilder処理中に例外が発生した場合、フレームワークはWARNレベルでログ出力しステータスコード500を返す",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsResponseHandlerのerrorLogWriterプロパティにJaxRsErrorLogWriterを設定してログ出力する",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerはServiceError発生時にServiceError実装クラスに依存したログレベルで出力する",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerはResult.Error発生時にFATALレベルでログ出力する",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerで上記以外の例外・エラーはすべてFATALレベルでログ出力される",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandlerはハンドラキューの先頭に配置すること",
+        "supported": true
+      },
+      {
+        "claim": "前段のハンドラで例外が発生した場合はアプリケーションサーバやJVMが処理する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsAccessLogHandlerはロガー名HTTP_ACCESS、レベルINFOでアクセスログを出力する",
+        "supported": true
+      },
+      {
+        "claim": "最小ハンドラ構成でNo.1がグローバルエラーハンドラ、No.2がJaxRsResponseHandler",
+        "supported": true
+      },
+      {
+        "claim": "SampleErrorResponseBuilderでApplicationException時にJSONボディ付き400レスポンスを返す実装例",
+        "supported": true
+      },
+      {
+        "claim": "SampleErrorResponseBuilderでNoDataException時に404を返す実装例",
+        "supported": true
+      }
+    ],
+    "reason": "大部分のクレームはナレッジセクションに支持されている。ただし「上記以外の例外・エラー → FATAL」という記述はナレッジに反する部分がある。GlobalErrorHandlerはThreadDeath（Errorのサブクラス）をFATALではなくINFOレベルで処理し、VirtualMachineError（StackOverflowError/OutOfMemoryError以外）はFATAL後にリスローするという違いがある。しかしこれは省略・簡略化であり、Nablarch固有のAPI名やクラス名・設定方法の捏造はなく、全体として正確性は高いためPASSと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-jaxrs-response-handler.json",
+        "reason": "RESTfulウェブサービスのエラーレスポンス生成とエラーログ出力を担当するハンドラ"
+      },
+      {
+        "path": "component/handlers/handlers-global-error-handler.json",
+        "reason": "未捕捉例外・エラーのFATALログ出力を担当するハンドラ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "RESTfulウェブサービスのハンドラキュー構成（最小構成含む）を説明"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-access-log-handler.json",
+        "reason": "RESTfulウェブサービス用アクセスログ出力ハンドラ"
+      },
+      {
+        "path": "component/libraries/libraries-jaxrs-access-log.json",
+        "reason": "RESTfulウェブサービス用アクセスログの設定・フォーマット詳細"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "エラー時に返却するレスポンスのリンク集（機能詳細の目次）"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "エラーレスポンス生成の仕組み（ErrorResponseBuilder）を直接説明"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "エラーログ出力の仕組み（JaxRsErrorLogWriter）を直接説明"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラー時にJSONメッセージを返す実装例"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "特定例外に個別ステータスコードを返す実装例"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "例外クラスごとのログレベルの仕様表"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ハンドラキュー先頭配置の制約"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "最小ハンドラ構成の表（各ハンドラの例外処理の役割一覧）"
+      },
+      {
+        "file": "component/libraries/libraries-jaxrs-access-log.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "アクセスログの出力方針（ロガー名HTTP_ACCESS、レベルINFO）と設定例"
+      },
+      {
+        "file": "component/libraries/libraries-jaxrs-access-log.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "アクセスログのフォーマット設定詳細"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-access-log-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "アクセスログ出力内容の切り替え方法"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 123761,
+    "duration_api_ms": 122927,
+    "num_turns": 12,
+    "total_cost_usd": 0.8348348,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 7449,
+      "cache_read_input_tokens": 935956,
+      "cache_creation_input_tokens": 117052
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3185,
+        "outputTokens": 30,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003335,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 7449,
+        "cacheReadInputTokens": 935956,
+        "cacheCreationInputTokens": 117052,
+        "webSearchRequests": 0,
+        "costUSD": 0.8314998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

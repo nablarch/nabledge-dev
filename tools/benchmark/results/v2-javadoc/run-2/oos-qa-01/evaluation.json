@@ -1,0 +1,112 @@
+{
+  "scenario_id": "oos-qa-01",
+  "description": "バッチ処理の進捗をリアルタイムにクライアントへ通知する機能を実装したい。WebSocketを使いたいが、NablarchでWebSocketが使えるか確認したい。",
+  "input": "バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答はNablarchがWebSocketをフレームワークとして提供していないこと、WebSocketに関する実装ガイドが存在しないこと、WebSocketアダプタも提供されていないことを明確に述べており、「NablarchにはWebSocketのサポートがない」という事実を含んでいる。",
+      "fact": "NablarchにはWebSocketのサポートがないと回答している"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "NablarchはWebSocketをフレームワークとして提供していない",
+        "supported": true
+      },
+      {
+        "claim": "Nablarchの基本方針として「OSSは使用しない」が定められている",
+        "supported": true
+      },
+      {
+        "claim": "OSSを使用することでメリットがあるものはアダプタとして提供される",
+        "supported": true
+      },
+      {
+        "claim": "WebSocketアダプタは提供されていない",
+        "supported": true
+      },
+      {
+        "claim": "「テーブルをキューとして使ったメッセージング」と組み合わせたポーリング方式がNablarchの非同期パターンとして文書化されている",
+        "supported": false
+      },
+      {
+        "claim": "Jakarta EE 10（Nablarch 6が動作する環境）にはJakarta WebSocketの仕様が含まれている",
+        "supported": true
+      }
+    ],
+    "reason": "主要な主張（OSSを使用しないポリシー、アダプタ経由でのOSS利用、WebSocketサポートなし）はいずれもknowledge sectionsで裏付けられている。ただし「テーブルをキューとして使ったメッセージング」+ポーリングによるバッチ進捗通知が「文書化されている」という具体的な主張は、knowledge sectionsではテーブルキューをメール送信・バッチ処理の文脈で説明しているのみで、ブラウザへのバッチ進捗通知向けのポーリング方式として明示的に文書化されているとは確認できない。ただしこれは誤った情報ではなく不確かな外挿であり、明確な捏造（ハルシネーション）とは言えないためPASSと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json",
+        "reason": "ウェブアプリケーションでのリアルタイム・非同期処理パターンとして最も直接的に関連するページ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーション処理方式の機能一覧として、WebSocketサポートの有無を確認するために選択"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-policy.json",
+        "reason": "Nablarchが対応・非対応とする機能の基本方針を確認するために選択"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "メール送信を含むNablarch非同期処理の推奨パターンとして直接答えに使用できる"
+      },
+      {
+        "file": "about/about-nablarch/about-nablarch-policy.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "OSSを使用しないという方針がWebSocketアダプタ不提供の背景説明に使える"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 99297,
+    "duration_api_ms": 101359,
+    "num_turns": 9,
+    "total_cost_usd": 0.5933115,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 5561,
+      "cache_read_input_tokens": 455595,
+      "cache_creation_input_tokens": 98632
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3197,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003327,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 5561,
+        "cacheReadInputTokens": 455595,
+        "cacheCreationInputTokens": 98632,
+        "webSearchRequests": 0,
+        "costUSD": 0.5899844999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

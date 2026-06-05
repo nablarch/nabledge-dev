@@ -1,0 +1,130 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "reason": "CSRFトークン検証ハンドラそのものの解説ページで、質問に直接回答する"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "s6にCSRF対策のNablarch対応状況と推奨アプローチが記載されている"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "s19にウェブアプリケーションのCSRF対策リンクがある（handlers-csrf-token-verification-handlerへの参照）"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "CSRFトークンのJSP自動出力に関連するカスタムタグ情報がある"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/*",
+        "reason": "バッチ処理はウェブアプリケーションのCSRF対策と無関係"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/*",
+        "reason": "Jakartaバッチは対象処理方式と異なる"
+      },
+      {
+        "path": "processing-pattern/mom-messaging/*",
+        "reason": "MOMメッセージングは対象処理方式と異なる"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/*",
+        "reason": "RESTfulウェブサービスは対象処理方式と異なる（一部CSRFの記載はあるが今回はウェブアプリ優先）"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "ハンドラの配置制約（セッションストアハンドラ・カスタムタグハンドラとの順序）が完全な設定に必須"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "CSRFトークンの生成・検証の具体的な設定例とデフォルト動作を説明しており質問に直接回答"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "ログイン時のトークン再生成という重要なセキュリティ要件を説明している"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "Nablarchが推奨するCSRF対策のアプローチ（二重サブミット防止機能との比較）を補足"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-web-csrf-CsrfTokenUtil.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "s4のCSRFトークン再生成ハンドラから参照されているregenerateCsrfTokenメソッドのAPI仕様"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみでクラス参照情報に過ぎない"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s2",
+        "reason": "Mavenモジュール依存関係のみでCSRF設定方法の回答には不要"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s1-s5",
+        "reason": "SQLインジェクション等他の脆弱性のチェックリストでCSRFとは無関係"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s7-s12",
+        "reason": "HTTPヘッダインジェクション等他の脆弱性でCSRFとは無関係"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+      "check/security-check/security-check-2.チェックリスト.json:s6",
+      "javadoc/javadoc-nablarch-common-web-csrf-CsrfTokenUtil.json:s7"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s3",
+          "reason": "ハンドラの配置制約（セッションストアハンドラ・カスタムタグハンドラの後ろ）を根拠として使用"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s4",
+          "reason": "ハンドラ設定XML例、デフォルト動作（UUID生成・検証対象メソッド・トークン名・400エラー）の根拠として使用"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s5",
+          "reason": "ログイン時のトークン再生成の必要性とCsrfTokenUtil.regenerateCsrfToken呼び出しの根拠として使用"
+        },
+        {
+          "ref": "security-check-2.チェックリスト.json:s6",
+          "reason": "DBを使った二重サブミット防止はCSRF対策にならないという注意点の根拠として使用"
+        },
+        {
+          "ref": "javadoc-nablarch-common-web-csrf-CsrfTokenUtil.json:s7",
+          "reason": "regenerateCsrfTokenメソッドの詳細仕様確認に使用（s5の内容と一致）"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

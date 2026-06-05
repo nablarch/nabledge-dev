@@ -1,0 +1,125 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "相関バリデーションを含むBean Validationの実装方法を直接カバーしている"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーションでBean Validationを実行するために必要なInjectFormインターセプタを説明している"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "Nablarch Validationはレガシーな機能であり、質問はBean Validationを前提とした相関バリデーションに関するため"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "入力値チェックの概要を扱うが、相関バリデーションの具体的な実装方法はbean-validationページが詳細に扱っている"
+      },
+      {
+        "path": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "reason": "テスト方法であり実装したいという目的に対してはbean-validationが優先候補"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-error-message.json",
+        "reason": "バリデーションエラーメッセージ表示に関するページであり、実装方法の主要情報ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "メールアドレスと確認用メールアドレスの一致チェックという質問とほぼ同じ例を含む相関バリデーション実装方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでBean Validationを使うための設定（BeanValidationStrategy）を説明しており、InjectFormと連携するための必要情報"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションのアクションでInjectFormを実際に使う実装例を提供しており、バリデーション実行の全体像を補完する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで実装情報なし"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s2",
+        "reason": "ドメインバリデーションの概要のみ"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s3",
+        "reason": "提供バリデータの概要のみ"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s6",
+        "reason": "Bean Validation全般の設定説明であり、相関バリデーション実装には不要"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "reason": "エラーメッセージ定義の詳細であり、今回の質問の中心ではない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "reason": "バリデーションルール設定の一般論であり相関バリデーション固有情報なし"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "reason": "データベース相関バリデーションは今回の質問（項目間比較）と異なる"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s4",
+        "reason": "エラー時遷移先の設定であり、相関バリデーション実装の核心ではない"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s5",
+        "reason": "グループ指定の機能であり今回の質問には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-InjectForm.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-bean-validation.json:s11",
+          "reason": "@AssertTrueによる相関バリデーションの実装例（メールアドレス一致チェック）と任意項目時の注意点を直接引用した"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s16",
+          "reason": "ウェブアプリケーションでのBean Validation使用方法とBeanValidationStrategy設定への言及に使用した"
+        },
+        {
+          "ref": "handlers-InjectForm.json:s3",
+          "reason": "@InjectFormと@OnErrorを使ったアクション実装例を引用した"
+        }
+      ],
+      "unused": []
+    }
+  }
+}
