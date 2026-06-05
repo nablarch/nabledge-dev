@@ -2,7 +2,7 @@
 
 **PR**: #365
 **Issue**: #363
-**Updated**: 2026-06-05 (session end)
+**Updated**: 2026-06-05 (session end v2)
 
 ## Rules（全タスク共通）
 
@@ -37,7 +37,7 @@ Javadoc へのリンク構造がドキュメント自体に存在しない。
 ### ~~Task 6-C: semantic-search Step 3b を v1.4/v1.3/v1.2 に適用~~ — スコープ外
 Task 6-B がスコープ外のため、javadoc knowledge が存在しない v1.x への Step 3b 追加も不要。
 
-### Task 6-D: 差分チェック + PR レビュー依頼 — レビュー対応中
+### Task 6-D: 差分チェック + PR レビュー依頼 — Approve 待ち
 - **前提**: Task 6-A〜C 完了
 - [x] `git diff main...HEAD --stat` で変更ファイルを全件確認、diff-check.md 更新
 - [x] Expert review（Software Engineer + QA Engineer）— 4 Findings 全修正済み `cbde07d3f`
@@ -48,7 +48,11 @@ Task 6-B がスコープ外のため、javadoc knowledge が存在しない v1.x
 - [x] レビューコメント5件にリプライ済み
 - [x] javadocリンクパス修正（../→../../）+ verify検知強化 — `d646d3465` / `44f8d8083`
 - [x] diff-check.md を敵対的レビューで全件検証・全面書き直し — `67a8b20d7` / `4715972e1`
-- [ ] kiyoさんへリプライ済み確認待ち → Approve 後にマージ
+- [x] diff-check.md 5点訂正（v1.x N/A 記述正確化 + インシデント履歴追加）— `24ce9e267` / `89aa36ee3`
+- [x] PR 本文に Issue #368 リンク追記（qa-05 FAIL 残存の追跡先）
+- [x] 設計書・実装整合確認（verify 全5バージョン FAIL=0、単体テスト 687件 passed）
+- [x] main との競合解消（HOW-TO-RUN.md / .gitignore）+ force push — `d120c5f41`
+- [BLOCKED: kiyoさんの Approve 待ち] マージ実行（`/bb` で完了可）
 
 ---
 
