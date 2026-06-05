@@ -68,18 +68,19 @@
 
 埋め込みリンク形式: `[DisplayText](../../javadoc/javadoc-{FQCN}.json)`
 
-**確認済み（全件スキャン）:**
-- v6: リンク先 `.json` が全件 `knowledge/javadoc/` に存在 → broken link 0件
-- v5: リンク先 `.json` が全件 `knowledge/javadoc/` に存在 → broken link 0件
-- 確認スクリプト: `scripts/verify.py` の QL1 チェック（`rbkc.sh verify` で自動確認）
+**確認済み（全件 リンク元ディレクトリからの相対パス解決検証）:**
+- 検証方法: `scripts/verify.py` の `check_ql1_link_targets` が JAVADOC_LINK_RE でリンクを抽出し、リンク元ファイルの階層から `../../javadoc/{file_id}.json` を解決して対象ファイルの実在を確認
+- v6 + v5 合計 1741件: パス解決成功、broken link 0件
+- 確認完了: わざと存在しない file_id を参照するリンクを挿入すると FAIL になることを実証確認済み（`d646d3465`）
 
 ### docs MD 側
 
 埋め込みリンク形式: `[DisplayText](../../javadoc/javadoc-{FQCN}.md)`
 
-- v6: リンク先 `.md` が全件 `docs/javadoc/` に存在（163件の既存 docs MD に追加）
-- v5: リンク先 `.md` が全件 `docs/javadoc/` に存在（165件の既存 docs MD に追加）
-- 確認スクリプト: `scripts/verify.py` の QL1 チェックで docs MD 側も検証済み
+- 検証方法: 同上（`check_ql1_link_targets` が docs MD 側も検証。`../../javadoc/{file_id}.md` の実在確認）
+- v6: 163件の既存 docs MD に javadoc リンク追加、パス解決全件成功
+- v5: 165件の既存 docs MD に javadoc リンク追加、パス解決全件成功
+- 確認完了: docs MD 側も存在しない file_id でFAILを確認済み
 
 ---
 
@@ -90,8 +91,7 @@ docs MD に対応する Javadoc MD の存在:
 - v5: `knowledge/javadoc/*.json` 595件 ↔ `docs/javadoc/*.md` 595件（missing 0件確認済み）
 - 確認方法: `set(json names) - set(md names)` = 空集合
 
-docs MD からの実遷移は Claude Code が `docs/javadoc/` を MCP でブラウズする形になるため、
-ファイルの存在確認が遷移可能性の保証となる。
+ファイルの存在だけでは遷移可能性の保証にならない。リンク元からの相対パスが実在ファイルに届くことを verify で検証する必要がある（後述「リンク切れ全壊インシデント」参照）。上記の `check_ql1_link_targets` による相対パス解決検証がその保証手段。
 
 ---
 
@@ -115,3 +115,22 @@ Java ソース（`.tmp/javadoc-sources/`）と生成ファイル（knowledge JSO
 
 - v1.x に javadoc ファイルはない。v1.x の RST は `:java:extdoc:` ロールを使用せず FQCN をプレーンテキストで記載しており、javadoc リンク構造がドキュメント自体に存在しない（2026-06-04 ユーザー承認済み）
 - verify は RBKC 実装から独立して動作（`_build_javadoc_map()` が `knowledge/javadoc/` 配下を直接走査）
+
+---
+
+## インシデント履歴
+
+### 2026-06-04: リンク切れ全壊 + verify 検知漏れ
+
+**事象**: PR レビュー中に kiyoさんが knowledge JSON の javadoc リンクをクリックして 404 を確認。全 1741 件がリンク切れだった。
+
+**原因（2点）**:
+1. `emit_javadoc_link` が `../javadoc/` (1段) を生成していた。全知識ファイルは深さ2 (`knowledge/{type}/{category}/`) に存在するため、リンク先は `knowledge/{type}/javadoc/` を指し、正しい `knowledge/javadoc/` に届かなかった。正しくは `../../javadoc/` (2段)。
+2. `check_ql1_link_targets` が `CROSSDOC_LINK_RE` のみ参照し `JAVADOC_LINK_RE` を未使用だったため、javadoc リンクのターゲット実在チェックが行われず FAIL=0 のまま全壊を見落とした。
+
+**修正** (`d646d3465`, `44f8d8083`):
+- `emit_javadoc_link` のパスを `../../javadoc/` に修正（crossdoc リンクと同じ2段に統一）
+- `check_ql1_link_targets` に JAVADOC_LINK_RE によるターゲット実在チェックを追加（JSON側・docs MD側両方）
+- 修正後: 1741件パス解決 100% 確認、存在しない file_id でFAILすることを実証
+
+**教訓**: ファイルの存在確認だけでは遷移可能性を保証できない。リンク元ディレクトリからの相対パス解決が実在ファイルに届くことを verify で検証する必要がある。また、verify に新たなリンク形式（JAVADOC_LINK_RE）を追加する際は、CROSSDOC_LINK_RE と対称的に全チェックを適用すること。
