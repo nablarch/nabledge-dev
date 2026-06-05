@@ -640,7 +640,7 @@ class TestExtdocRoleResolution:
         src = "Title\n=====\n\n:java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
         parts = self._extract(src, javadoc_map=javadoc_map)
         content = parts.top_content + "\n".join(s.content for s in parts.sections)
-        assert "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)" in content
+        assert "[UniversalDao](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)" in content
 
     def test_pass_nablarch_fqcn_not_in_map_emits_display_text(self):
         """javadoc_map exists but FQCN not in map → display text fallback."""
@@ -649,7 +649,7 @@ class TestExtdocRoleResolution:
         parts = self._extract(src, javadoc_map=javadoc_map)
         content = parts.top_content + "\n".join(s.content for s in parts.sections)
         assert "UniversalDao" in content
-        assert "](../javadoc/" not in content
+        assert "](../../javadoc/" not in content
 
     def test_pass_java_std_lib_emits_display_text(self):
         """java.* FQCN → always display text (external JDK)."""
@@ -658,7 +658,7 @@ class TestExtdocRoleResolution:
         parts = self._extract(src, javadoc_map=javadoc_map)
         content = parts.top_content + "\n".join(s.content for s in parts.sections)
         assert "String" in content
-        assert "](../javadoc/" not in content
+        assert "](../../javadoc/" not in content
 
     def test_pass_jakarta_emits_display_text(self):
         """jakarta.* FQCN → always display text."""
@@ -667,7 +667,7 @@ class TestExtdocRoleResolution:
         parts = self._extract(src, javadoc_map=javadoc_map)
         content = parts.top_content + "\n".join(s.content for s in parts.sections)
         assert "HttpServletRequest" in content
-        assert "](../javadoc/" not in content
+        assert "](../../javadoc/" not in content
 
     def test_pass_method_suffix_resolved_via_class(self):
         """FQCN with method suffix → class FQCN used for map lookup."""
@@ -676,7 +676,7 @@ class TestExtdocRoleResolution:
         src = "Title\n=====\n\n:java:extdoc:`findById <nablarch.common.dao.UniversalDao#findById>`\n"
         parts = self._extract(src, javadoc_map=javadoc_map)
         content = parts.top_content + "\n".join(s.content for s in parts.sections)
-        assert "[findById](../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)" in content
+        assert "[findById](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)" in content
 
     def test_pass_no_javadoc_map_falls_back_to_display_text(self):
         """javadoc_map=None (not provided) → display text fallback (backward compat)."""
@@ -684,7 +684,7 @@ class TestExtdocRoleResolution:
         parts = self._extract(src, javadoc_map=None)
         content = parts.top_content + "\n".join(s.content for s in parts.sections)
         assert "UniversalDao" in content
-        assert "](../javadoc/" not in content
+        assert "](../../javadoc/" not in content
 
 
 # ---------------------------------------------------------------------------

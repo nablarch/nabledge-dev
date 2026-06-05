@@ -247,8 +247,8 @@ class TestCheckJsonDocsMdConsistency_QO1:
 
     def test_pass_section_title_with_javadoc_json_link_normalised(self):
         """QO1 PASS: JSON section title has javadoc .json link; docs MD has .md link."""
-        json_title = "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.json) の使い方"
-        docs_title = "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md) の使い方"
+        json_title = "[UniversalDao](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.json) の使い方"
+        docs_title = "[UniversalDao](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.md) の使い方"
         data = {
             "id": "f", "title": "T", "content": "",
             "sections": [{"id": "s1", "title": json_title, "level": 2, "content": "body"}],
@@ -486,10 +486,10 @@ class TestCheckJsonDocsMdConsistency_QO2:
         """QO2 PASS: JSON content has javadoc .json link; docs MD has .md link."""
         data = {
             "id": "f", "title": "T",
-            "content": "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)",
+            "content": "[UniversalDao](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)",
             "sections": [],
         }
-        docs = "# T\n\n[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)\n"
+        docs = "# T\n\n[UniversalDao](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.md)\n"
         assert self._check(data, docs) == []
 
     def test_pass_json_link_with_anchor_normalised(self):
@@ -3006,7 +3006,7 @@ class TestCheckSourceLinks_JsonSide_Extdoc:
         file_id = "javadoc-nablarch-common-dao-UniversalDao"
         self._write_javadoc_json(tmp_path, file_id)
         src = ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
-        md_link = f"[UniversalDao](../javadoc/{file_id}.json)"
+        md_link = f"[UniversalDao](../../javadoc/{file_id}.json)"
         data = self._data(content=f"詳細は {md_link} を参照。")
         issues = self._check(src, data, knowledge_dir=str(tmp_path))
         assert issues == [], issues
@@ -3050,7 +3050,7 @@ class TestCheckSourceLinks_JsonSide_Extdoc:
         self._write_javadoc_json(tmp_path, file_id)
         # FQCN includes method suffix: nablarch.common.dao.UniversalDao#findById
         src = ":java:extdoc:`UniversalDao#findById <nablarch.common.dao.UniversalDao#findById>`\n"
-        md_link = f"[UniversalDao#findById](../javadoc/{file_id}.json)"
+        md_link = f"[UniversalDao#findById](../../javadoc/{file_id}.json)"
         data = self._data(content=f"詳細は {md_link} を参照。")
         issues = self._check(src, data, knowledge_dir=str(tmp_path))
         assert issues == [], issues
@@ -3077,7 +3077,7 @@ class TestCheckSourceLinks_JsonSide_Extdoc:
         self._write_javadoc_json(tmp_path, file_id)
         # display text contains no <, FQCN has <init>
         src = ":java:extdoc:`MessageSenderSettings<nablarch.fw.messaging.MessageSenderSettings.<init>(java.lang.String)>`\n"
-        md_link = f"[MessageSenderSettings](../javadoc/{file_id}.json)"
+        md_link = f"[MessageSenderSettings](../../javadoc/{file_id}.json)"
         data = self._data(content=f"詳細は {md_link} を参照。")
         issues = self._check(src, data, knowledge_dir=str(tmp_path))
         assert issues == [], issues
@@ -4944,6 +4944,95 @@ class TestCheckQL1LinkTargets:
             f"Expected anchor FAIL but got: {issues}"
         )
 
+    # -----------------------------------------------------------------------
+    # QL1 javadoc link path resolution (Issue #363 fix)
+    # -----------------------------------------------------------------------
+
+    def _setup_javadoc(self, tmp_path):
+        """Setup knowledge dir with a javadoc JSON at knowledge/javadoc/{file_id}.json.
+
+        Knowledge files at depth-2 (knowledge/{type}/{category}/file.json).
+        Correct relative path from a depth-2 file to javadoc: ../../javadoc/
+        Wrong (before fix): ../javadoc/ → resolves to knowledge/{type}/javadoc/ (missing)
+        """
+        kn = tmp_path / "knowledge"
+        docs = tmp_path / "docs"
+        (kn / "component" / "libraries").mkdir(parents=True)
+        (docs / "component" / "libraries").mkdir(parents=True)
+        (kn / "javadoc").mkdir(parents=True)
+        (docs / "javadoc").mkdir(parents=True)
+        file_id = "javadoc-nablarch-common-dao-UniversalDao"
+        (kn / "javadoc" / f"{file_id}.json").write_text(
+            f'{{"id":"{file_id}","title":"UniversalDao","content":"","sections":[]}}',
+            encoding="utf-8",
+        )
+        (docs / "javadoc" / f"{file_id}.md").write_text("# UniversalDao\n", encoding="utf-8")
+        return kn, docs, file_id
+
+    def test_pass_javadoc_link_correct_depth(self, tmp_path):
+        """../../javadoc/{file_id}.json from depth-2 file resolves to knowledge/javadoc/ — PASS."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs, file_id = self._setup_javadoc(tmp_path)
+
+        data = {
+            "content": f"See [UniversalDao](../../javadoc/{file_id}.json) for details.",
+            "sections": [],
+        }
+        issues = check_ql1_link_targets(data, kn)
+        assert issues == [], f"Expected PASS but got: {issues}"
+
+    def test_fail_javadoc_link_wrong_depth(self, tmp_path):
+        """../javadoc/{file_id}.json does not match JAVADOC_LINK_RE (../../javadoc/) — not checked → target missing.
+
+        The pre-fix pattern ../javadoc/ is no longer emitted by emit_javadoc_link
+        and is not matched by JAVADOC_LINK_RE. If such a stale link exists in JSON
+        content, it is not a crossdoc link either, so QL1 would silently miss it.
+        The correct fix is at emit time (linkfmt.py), not at verify time.
+        This test confirms that the NEW correct form ../../javadoc/ is checked and passes
+        only when the target exists.
+        """
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, _docs, file_id = self._setup_javadoc(tmp_path)
+        data = {
+            "content": f"See [UniversalDao](../../javadoc/{file_id}.json) for details.",
+            "sections": [],
+        }
+        # Target exists → PASS
+        issues = check_ql1_link_targets(data, kn)
+        assert issues == [], f"Expected PASS (target exists) but got: {issues}"
+
+        # Target missing → FAIL
+        data_missing = {
+            "content": f"See [UniversalDao](../../javadoc/javadoc-nosuch-Class.json) for details.",
+            "sections": [],
+        }
+        issues2 = check_ql1_link_targets(data_missing, kn)
+        assert any("QL1" in i and "javadoc" in i.lower() for i in issues2), (
+            f"Expected QL1 javadoc FAIL but got: {issues2}"
+        )
+
+    def test_pass_javadoc_docs_md_correct_depth(self, tmp_path):
+        """../../javadoc/{file_id}.md in docs MD — target exists → PASS."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs, file_id = self._setup_javadoc(tmp_path)
+
+        data = {"content": "", "sections": []}
+        docs_md = f"# T\n\nSee [UniversalDao](../../javadoc/{file_id}.md) for details.\n"
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        assert issues == [], f"Expected PASS but got: {issues}"
+
+    def test_fail_javadoc_docs_md_wrong_depth(self, tmp_path):
+        """../../javadoc/{file_id}.md in docs MD — target missing → FAIL."""
+        from scripts.verify.verify import check_ql1_link_targets
+        kn, docs, file_id = self._setup_javadoc(tmp_path)
+
+        data = {"content": "", "sections": []}
+        docs_md = f"# T\n\nSee [UniversalDao](../../javadoc/javadoc-nosuch-Class.md) for details.\n"
+        issues = check_ql1_link_targets(data, kn, docs_md_text=docs_md)
+        assert any("QL1" in i and "javadoc" in i.lower() for i in issues), (
+            f"Expected QL1 javadoc docs FAIL but got: {issues}"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Phase 22-B-12: Excel preamble + span-inherit header composition
@@ -5708,7 +5797,7 @@ class TestVerifyFile_ExtdocQC_Symmetrised:
             "\n"
             ":java:extdoc:`UniversalDao <nablarch.common.dao.UniversalDao>`\n"
         )
-        md_link = f"[UniversalDao](../javadoc/{file_id}.json)"
+        md_link = f"[UniversalDao](../../javadoc/{file_id}.json)"
         # JSON title matches RST title; content is the MD link that extdoc normalises to
         json_data = {
             "id": "f", "title": "UniversalDao",
@@ -5745,7 +5834,7 @@ class TestVerifyFile_ExtdocQC_Symmetrised:
         )
         # JSON content: the two MD links that extdoc normalises to (create-side output)
         content = " ".join(
-            f"[{names[i]}](../javadoc/{ids[i]}.json)" for i in range(len(ids))
+            f"[{names[i]}](../../javadoc/{ids[i]}.json)" for i in range(len(ids))
         )
         json_data = {"id": "f", "title": "Overview", "content": content, "sections": []}
         issues = self._verify(source_text, json_data, tmp_path)

@@ -1940,6 +1940,7 @@ def verify_docs_md(source_path, docs_md_path, fmt) -> list[str]:
 from scripts.common.linkfmt import (
     CROSSDOC_LINK_RE as _CROSSDOC_LINK_RE,
     ASSET_LINK_RE as _ASSET_LINK_RE,
+    JAVADOC_LINK_RE as _JAVADOC_LINK_RE,
 )
 
 
@@ -2025,6 +2026,20 @@ def check_ql1_link_targets(
                 out.append((m.group("file_id"), m.group("basename")))
         return out
 
+    _JAVADOC_MD_LINK_RE = __import__("re").compile(
+        r"\]\(\.\./\.\./javadoc/(?P<file_id>[^)\s]+)\.md\)"
+    )
+
+    def _collect_javadoc_links(text: str, ext: str = ".json") -> list[str]:
+        """Extract file_ids from ../../javadoc/{file_id}.{ext} links."""
+        out: list[str] = []
+        pat = _JAVADOC_LINK_RE if ext == ".json" else _JAVADOC_MD_LINK_RE
+        for href in _hrefs_in_md(text):
+            m = pat.search(f"]({href})")
+            if m is not None:
+                out.append(m.group("file_id"))
+        return out
+
     sources: list[str] = []
     sources.append(data.get("content", "") or "")
     for sec in data.get("sections", []) or []:
@@ -2032,6 +2047,7 @@ def check_ql1_link_targets(
 
     seen: set[tuple[str, str, str, str]] = set()
     seen_assets: set[tuple[str, str]] = set()
+    seen_javadoc_json: set[str] = set()
     issues: list[str] = []
 
     for text in sources:
@@ -2070,9 +2086,23 @@ def check_ql1_link_targets(
                     f"[QL1] asset missing: assets/{asset_fid}/{basename} → "
                     f"{asset_path.relative_to(knowledge_root.parent)} not on disk"
                 )
+        # Issue #363 fix: javadoc link target existence check.
+        # ../../javadoc/{file_id}.json must exist at knowledge_dir/javadoc/{file_id}.json.
+        for jfid in _collect_javadoc_links(text):
+            if jfid in seen_javadoc_json:
+                continue
+            seen_javadoc_json.add(jfid)
+            target_json = knowledge_root / "javadoc" / f"{jfid}.json"
+            if not target_json.exists():
+                issues.append(
+                    f"[QL1] javadoc JSON link target missing: "
+                    f"../../javadoc/{jfid}.json → "
+                    f"{target_json.relative_to(knowledge_root.parent)} not on disk"
+                )
 
     if docs_md_text is not None:
         seen_md: set[tuple[str, str, str, str]] = set()
+        seen_javadoc_md: set[str] = set()
         for type_, category, file_id, anchor in _collect_links(docs_md_text):
             key = (type_, category, file_id, anchor)
             if key in seen_md:
@@ -2093,6 +2123,19 @@ def check_ql1_link_targets(
                         f"../../{type_}/{category}/{file_id}.md#{anchor} → "
                         f"heading '{anchor}' missing from {target_md.relative_to(docs_root.parent)}"
                     )
+        # Issue #363 fix: javadoc link target existence check in docs MD.
+        # ../../javadoc/{file_id}.md must exist at docs_dir/javadoc/{file_id}.md.
+        for jfid in _collect_javadoc_links(docs_md_text, ext=".md"):
+            if jfid in seen_javadoc_md:
+                continue
+            seen_javadoc_md.add(jfid)
+            target_md = docs_root / "javadoc" / f"{jfid}.md"
+            if not target_md.exists():
+                issues.append(
+                    f"[QL1] javadoc docs MD link target missing: "
+                    f"../../javadoc/{jfid}.md → "
+                    f"{target_md.relative_to(docs_root.parent)} not on disk"
+                )
 
     return issues
 
@@ -2553,7 +2596,7 @@ def check_source_links(
                     )
                     continue
                 # javadoc JSON exists — check JSON link is present in JSON content
-                _expected_link = f"](../javadoc/{_file_id}.json)"
+                _expected_link = f"](../../javadoc/{_file_id}.json)"
                 if _expected_link not in json_full:
                     issues.append(
                         f"[QL1] :java:extdoc: `{_fqcn_raw}` MD link missing from JSON"

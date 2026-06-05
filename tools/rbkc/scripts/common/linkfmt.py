@@ -54,13 +54,18 @@ ASSET_LINK_RE = re.compile(
 
 
 def emit_javadoc_link(display: str, file_id: str) -> str:
-    """Return the canonical Javadoc JSON link: ``[display](../javadoc/{file_id}.json)``."""
-    return f"[{display}](../javadoc/{file_id}.json)"
+    """Return the canonical Javadoc JSON link: ``[display](../../javadoc/{file_id}.json)``.
+
+    All knowledge files live at depth-2 (knowledge/{type}/{category}/file.json).
+    The javadoc directory is at knowledge/javadoc/, so the correct relative prefix
+    from any knowledge file is ../../javadoc/ (two levels up, then down into javadoc/).
+    """
+    return f"[{display}](../../javadoc/{file_id}.json)"
 
 
 #: Matches output of :func:`emit_javadoc_link`.
 JAVADOC_LINK_RE = re.compile(
-    r"\]\(\.\./javadoc/(?P<file_id>[^)\s]+)\.json\)"
+    r"\]\(\.\./\.\./javadoc/(?P<file_id>[^)\s]+)\.json\)"
 )
 
 

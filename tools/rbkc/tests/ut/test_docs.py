@@ -634,10 +634,10 @@ class TestJsonToMdLinkExtRewrite:
         """Javadoc .json link is rewritten to .md in docs MD output."""
         md = self._make_json(
             tmp_path,
-            "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)",
+            "[UniversalDao](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)",
         )
-        assert "../javadoc/javadoc-nablarch-common-dao-UniversalDao.md" in md
-        assert "../javadoc/javadoc-nablarch-common-dao-UniversalDao.json" not in md
+        assert "../../javadoc/javadoc-nablarch-common-dao-UniversalDao.md" in md
+        assert "../../javadoc/javadoc-nablarch-common-dao-UniversalDao.json" not in md
 
     def test_external_url_not_rewritten(self, tmp_path):
         """External https:// URLs are not affected by the .json→.md rewrite."""

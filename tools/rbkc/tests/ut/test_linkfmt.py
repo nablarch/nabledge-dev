@@ -81,13 +81,13 @@ class TestJavadocRoundTrip:
         result = emit_javadoc_link(
             "UniversalDao", "javadoc-nablarch-common-dao-UniversalDao"
         )
-        assert result == "[UniversalDao](../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)"
+        assert result == "[UniversalDao](../../javadoc/javadoc-nablarch-common-dao-UniversalDao.json)"
 
     def test_emit_javadoc_link_various(self):
         from scripts.common.linkfmt import emit_javadoc_link
 
-        assert emit_javadoc_link("Foo", "javadoc-x-Foo") == "[Foo](../javadoc/javadoc-x-Foo.json)"
-        assert emit_javadoc_link("日本語", "javadoc-y-Bar") == "[日本語](../javadoc/javadoc-y-Bar.json)"
+        assert emit_javadoc_link("Foo", "javadoc-x-Foo") == "[Foo](../../javadoc/javadoc-x-Foo.json)"
+        assert emit_javadoc_link("日本語", "javadoc-y-Bar") == "[日本語](../../javadoc/javadoc-y-Bar.json)"
 
     def test_emit_javadoc_link_uses_json_extension(self):
         from scripts.common.linkfmt import emit_javadoc_link
@@ -99,7 +99,7 @@ class TestJavadocRoundTrip:
     def test_javadoc_link_re_matches_json_extension(self):
         from scripts.common.linkfmt import JAVADOC_LINK_RE
 
-        json_link = "[Foo](../javadoc/javadoc-x-Foo.json)"
+        json_link = "[Foo](../../javadoc/javadoc-x-Foo.json)"
         m = JAVADOC_LINK_RE.search(json_link)
         assert m is not None, f"JAVADOC_LINK_RE must match .json links: {json_link}"
         assert m.group("file_id") == "javadoc-x-Foo"
