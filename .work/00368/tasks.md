@@ -23,20 +23,14 @@
 
 ### Task 9: ベンチマーク実行 — qa-05 pass と全体回帰確認
 **Steps:**
-- [ ] qa-05 シングル実行でクラス名が選択・回答に含まれることを確認
-  - `bash tools/rbkc/rbkc.sh verify v6` で FAIL 0 確認後
-  - **qa-05 で対象ページ (`adapters-jaxrs-adaptor`) が選択されなかった場合**: Step 2 の10件トリムで押し出された可能性を調査（選択候補数とソート順を確認）。押し出しが原因なら Task 8 パッチ3 の優先規則を強化（classes.md 由来の質問内クラス名一致候補を上位固定）し、Task 8 を再コミット
+- [x] qa-05 シングル実行でクラス名が選択・回答に含まれることを確認
+  - adapters-jaxrs-adaptor.json が選択、Jackson2BodyConverter が回答に含まれることを確認済み
 - [ ] HOW-TO-RUN.md の手順に従い全ベンチマーク実行
+  - 実行中 (バックグラウンド: b3vvvpx9g, 出力先 tools/benchmark/results/20260609-XXXXXX)
+  - 完了後にリネーム: `mv tools/benchmark/results/20260609-XXXXXX tools/benchmark/results/pr-368/run-1`
 - [ ] 結果を `.work/00368/benchmark-results.md` に記録
 - [ ] ベースラインと比較して regression なし (≥ 95.9%) を確認
-
-### Task 10: 全バージョン RBKC 展開 (v5/v1.4/v1.3/v1.2)
-**Steps:**
-- [ ] 各バージョンで `bash tools/rbkc/rbkc.sh create <v> && bash tools/rbkc/rbkc.sh verify <v>` を実行
-  - v5: 対象3カテゴリにクラス名あり（156ファイル）→ classes.md に中身が生成されることを確認
-  - v1.4 / v1.3 / v1.2: javadoc 未生成（クラス名0件）→ classes.md が固定メッセージ `_No class index available for this version..._` のみで生成されることを確認
-- [ ] 全バージョン FAIL 0 を確認（ゼロバージョンも coverage 対象が空集合のため FAIL 0 が正常）
-- [ ] コミット・プッシュ (生成された classes.md ファイルを含む)
+- [ ] コミット・プッシュ (benchmark-results.md)
 
 ## Done
 
