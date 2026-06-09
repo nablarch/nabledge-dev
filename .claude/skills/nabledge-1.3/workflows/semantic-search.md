@@ -20,9 +20,10 @@ Pointer JSON:
 
 ---
 
-## Step 1: Read index.md
+## Step 1: Read index.md and classes.md
 
 Read `knowledge/index.md` (relative to skill root). Save content as `index_content`.
+Read `knowledge/classes.md` (relative to skill root). Save content as `classes_content`.
 
 ---
 
@@ -35,7 +36,8 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
    - Does this page cover a feature that directly solves the technical problem in the question? → **candidate**
    - Does this page cover the processing type in the question (if one was specified)? → **candidate**; if it covers a *different* processing type → **skip**
    - All other pages → **skip**
-4. If a purpose was noted, sort candidates using the priority categories for that purpose: pages in the priority categories come first.
+3b. Scan `classes_content`. For each page block, if any class name listed in that block matches a class name or feature name appearing in the question, add that page to candidates (same status as a Step 3 candidate). Deduplicate against candidates already collected in Step 3. (If `classes_content` contains no page blocks, this step adds nothing.)
+4. If a purpose was noted, sort the merged candidate set (Step 3 + Step 3b) using the priority categories for that purpose: pages in the priority categories come first. Apply the sort once, to the merged set.
 
    | 目的 | Priority categories |
    |------|-------------------|
@@ -46,7 +48,7 @@ Read `knowledge/index.md` (relative to skill root). Save content as `index_conte
    | バージョンアップしたい | releases/releases |
    | セキュリティ対応したい | component/handlers, processing-pattern/* |
 
-5. Take up to 10 candidates in order. If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately.
+5. Take up to 10 candidates in order. If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately. When trimming to 10, if a candidate was added in Step 3b because its class name explicitly appears in the question, keep it ahead of index-only candidates that merely match by topic.
 6. Save the selected page paths (relative to knowledge/) as `selected_pages`.
 
 ---
