@@ -7,6 +7,7 @@ Public API:
     verify_file(source_path, json_path, fmt, knowledge_dir) -> list[str]
     verify_docs_md(source_path, docs_md_path, fmt) -> list[str]
     check_index_coverage(knowledge_dir, index_path) -> list[str]
+    check_classes_coverage(knowledge_dir, classes_path) -> list[str]
     check_docs_coverage(knowledge_dir, docs_dir) -> list[str]
     check_source_links(source_text, fmt, data, label_map, source_path) -> list[str]
     check_json_docs_md_consistency(data, docs_md_text) -> list[str]
@@ -533,6 +534,88 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
             issues.append(f"[QO4] index.md lists no_knowledge JSON: {rel}")
             continue
         issues.append(f"[QO4] index.md lists missing JSON: {rel}")
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# QO5: classes.md 網羅性 (Issue #368)
+# ---------------------------------------------------------------------------
+
+_JAVADOC_LINK_RE_VERIFY = re.compile(r"\[([^\]]+)\]\(../../javadoc/javadoc-[^)]+\.json\)")
+_TARGET_CATEGORIES_VERIFY = frozenset(["component", "processing-pattern", "development-tools"])
+
+
+def _has_javadoc_links(data: dict) -> bool:
+    """Return True if any Javadoc link pattern exists in the page content or sections."""
+    text = data.get("content", "") or ""
+    if _JAVADOC_LINK_RE_VERIFY.search(text):
+        return True
+    for section in data.get("sections", []):
+        if _JAVADOC_LINK_RE_VERIFY.search(section.get("content", "") or ""):
+            return True
+    return False
+
+
+def check_classes_coverage(knowledge_dir, classes_path) -> list[str]:
+    """QO5: classes.md must have a 'path:' entry for every target-category JSON
+    that contains at least one Javadoc link.
+
+    Per rbkc-verify-quality-design.md §3-3 QO5:
+    - Target categories: component, processing-pattern, development-tools.
+    - Pages with no Javadoc links are not required in classes.md.
+    - classes.md missing with class-bearing JSONs present: every such JSON is FAIL.
+    - classes.md missing with zero class-bearing JSONs: FAIL 0 (correct state).
+    - Dangling path entry in classes.md: FAIL.
+    - no_knowledge_content: true pages are excluded.
+    - assets/ and javadoc/ subdirs are excluded.
+    """
+    issues: list[str] = []
+    kdir = Path(knowledge_dir)
+    cls_path = Path(classes_path)
+
+    # Scan target-category JSONs and find those with Javadoc links.
+    class_bearing: dict[str, Path] = {}
+    for jf in sorted(kdir.rglob("*.json")):
+        rel_path = jf.relative_to(kdir)
+        parts = rel_path.parts
+        if "assets" in parts or "javadoc" in parts:
+            continue
+        if not parts or parts[0] not in _TARGET_CATEGORIES_VERIFY:
+            continue
+        try:
+            d = json.loads(jf.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if d.get("no_knowledge_content"):
+            continue
+        if _has_javadoc_links(d):
+            rel = str(rel_path).replace("\\", "/")
+            class_bearing[rel] = jf
+
+    if not cls_path.exists():
+        # No classes.md: FAIL only when class-bearing JSONs exist.
+        for rel in sorted(class_bearing):
+            issues.append(
+                f"[QO5] {rel}: JSON not registered in classes.md (classes.md absent)"
+            )
+        return issues
+
+    registered_set = set(_parse_index_md_paths(cls_path.read_text(encoding="utf-8")))
+
+    # Forward: every class-bearing JSON must appear in classes.md.
+    for rel in sorted(class_bearing):
+        if rel not in registered_set:
+            issues.append(f"[QO5] {rel}: JSON not registered in classes.md")
+
+    # Reverse: every path in classes.md must correspond to a real JSON on disk.
+    all_jsons = {
+        str(jf.relative_to(kdir)).replace("\\", "/")
+        for jf in kdir.rglob("*.json")
+    }
+    for rel in sorted(registered_set):
+        if rel not in all_jsons:
+            issues.append(f"[QO5] classes.md lists missing JSON: {rel}")
 
     return issues
 
