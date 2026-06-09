@@ -133,7 +133,7 @@ tools/benchmark/
 各シナリオに対して:
   1. E2Eプロンプト構築（hearing_answer を質問テキストに付記 + e2e-prompt.md テンプレート）
   2. claude -p 実行（TIMEOUT=360秒）
-  3. レスポンスのパース（"### Workflow Details" で分割）
+  3. レスポンスのパース（`<<<WORKFLOW_DETAILS_JSON>>>` マーカーで分割）
   4. 結果ファイル保存
   5. evaluate_scenario() で評価
   6. evaluation.json 保存

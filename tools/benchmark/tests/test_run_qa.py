@@ -130,8 +130,9 @@ class TestParseE2eResponse:
         return (
             f"### Answer\n"
             f"{answer_text}\n\n"
-            f"### Workflow Details\n"
+            f"<<<WORKFLOW_DETAILS_JSON>>>\n"
             f"```json\n{json.dumps(details, ensure_ascii=False, indent=2)}\n```\n"
+            f"<<<END_WORKFLOW_DETAILS>>>\n"
         )
 
     def test_parses_answer_text(self):
@@ -160,19 +161,19 @@ class TestParseE2eResponse:
         assert sections[0]["section_id"] == "s1"
 
     def test_raises_on_missing_workflow_details(self):
-        response = "回答だけで Workflow Details がない"
-        with pytest.raises(ValueError, match="Workflow Details"):
+        response = "回答だけで WORKFLOW_DETAILS_JSON マーカーがない"
+        with pytest.raises(ValueError, match="WORKFLOW_DETAILS_JSON"):
             parse_qa_response(response)
 
     def test_raises_on_invalid_json_in_workflow_details(self):
-        response = "### Answer\n回答\n\n### Workflow Details\n```json\n{invalid json\n```\n"
+        response = "### Answer\n回答\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{invalid json\n```\n<<<END_WORKFLOW_DETAILS>>>\n"
         with pytest.raises(ValueError, match="JSON"):
             parse_qa_response(response)
 
     def test_answer_excludes_workflow_details_section(self):
         response = self._make_response("本文回答")
         result = parse_qa_response(response)
-        assert "Workflow Details" not in result["answer"]
+        assert "WORKFLOW_DETAILS_JSON" not in result["answer"]
         assert "step3" not in result["answer"]
 
     def test_answer_excludes_pre_marker_narration(self):
@@ -183,8 +184,9 @@ class TestParseE2eResponse:
             f"{narration}"
             f"### Answer\n"
             f"本文回答\n\n"
-            f"### Workflow Details\n"
+            f"<<<WORKFLOW_DETAILS_JSON>>>\n"
             f"```json\n{json.dumps(details, ensure_ascii=False, indent=2)}\n```\n"
+            f"<<<END_WORKFLOW_DETAILS>>>\n"
         )
         result = parse_qa_response(response)
         assert "Step 4完了" not in result["answer"]
@@ -192,12 +194,13 @@ class TestParseE2eResponse:
         assert result["answer"] == "本文回答"
 
     def test_answer_marker_absent_falls_back_to_full_text_before_workflow_details(self):
-        """Legacy format without ### Answer marker: text before ### Workflow Details is the answer."""
+        """Without ### Answer marker: text before <<<WORKFLOW_DETAILS_JSON>>> is the answer."""
         details = SAMPLE_WORKFLOW_DETAILS
         response = (
             "レガシー回答テキスト\n\n"
-            "### Workflow Details\n"
+            "<<<WORKFLOW_DETAILS_JSON>>>\n"
             f"```json\n{json.dumps(details, ensure_ascii=False, indent=2)}\n```\n"
+            "<<<END_WORKFLOW_DETAILS>>>\n"
         )
         result = parse_qa_response(response)
         assert result["answer"] == "レガシー回答テキスト"
@@ -268,8 +271,9 @@ class TestRunE2eScenario:
         details = json.dumps(SAMPLE_WORKFLOW_DETAILS, ensure_ascii=False, indent=2)
         return (
             "**結論**: テスト回答\n\n"
-            "### Workflow Details\n"
+            "<<<WORKFLOW_DETAILS_JSON>>>\n"
             f"```json\n{details}\n```\n"
+            "<<<END_WORKFLOW_DETAILS>>>\n"
         )
 
     def _make_mock_proc(self, result_text=None, returncode=0):
@@ -453,7 +457,7 @@ class TestRunE2eAll:
 
     def _make_valid_e2e_response(self):
         details = json.dumps(SAMPLE_WORKFLOW_DETAILS, ensure_ascii=False)
-        return f"テスト回答\n\n### Workflow Details\n```json\n{details}\n```\n"
+        return f"テスト回答\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{details}\n```\n<<<END_WORKFLOW_DETAILS>>>\n"
 
     def _make_mock_proc(self):
         return type("P", (), {
@@ -568,7 +572,7 @@ class TestRunE2eAllErrorHandling:
 
     def _make_valid_proc(self):
         details = json.dumps(SAMPLE_WORKFLOW_DETAILS, ensure_ascii=False)
-        valid_response = f"テスト回答\n\n### Workflow Details\n```json\n{details}\n```\n"
+        valid_response = f"テスト回答\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{details}\n```\n<<<END_WORKFLOW_DETAILS>>>\n"
         claude_out = json.dumps({
             "result": valid_response,
             "duration_ms": 10000,
@@ -812,7 +816,7 @@ class TestMain:
 
     def _make_valid_e2e_response(self):
         details = json.dumps(SAMPLE_WORKFLOW_DETAILS, ensure_ascii=False)
-        return f"回答\n\n### Workflow Details\n```json\n{details}\n```\n"
+        return f"回答\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{details}\n```\n<<<END_WORKFLOW_DETAILS>>>\n"
 
     def _setup_skill_dir(self, tmpdir):
         skill_dir = Path(tmpdir) / "skill"
