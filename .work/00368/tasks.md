@@ -6,7 +6,7 @@
 
 ## In Progress
 
-### Task 3: TDD — verify の classes.md coverage 検証テストを作成 (RED)
+### Task 4: 実装 — `scripts/create/classes.py` を作成 (GREEN)
 
 ## Rules
 
@@ -20,13 +20,6 @@
 - PRレビュー依頼前に、変更差分が想定どおりの変更のみかをチェックし、結果を作業記録に出力してユーザーに確認する
 
 ## Not Started
-
-### Task 3: TDD — verify の classes.md coverage 検証テストを作成 (RED)
-**Artifact**: `tools/rbkc/tests/ut/test_verify.py` 追記
-**Steps:**
-- [ ] `check_classes_coverage()` のテストを作成
-- [ ] RED であることを確認
-- [ ] コミット・プッシュ
 
 ### Task 4: 実装 — `scripts/create/classes.py` を作成 (GREEN)
 **Artifact**: `tools/rbkc/scripts/create/classes.py`
@@ -174,3 +167,4 @@ Read `knowledge/classes.md` (relative to skill root). Save content as `classes_c
 - [x] Task 0: タスクリスト作成・PR作成・ユーザー確認 — committed `5ff81b145`
 - [x] Task 1: 設計書更新 (classes-md-spec.md, rbkc-verify-quality-design.md QO5) — committed `0dd249d45`
 - [x] Task 2: TDD — test_classes.py 作成 (RED) — committed `ac7f7a1f8`
+- [x] Task 3: TDD — TestCheckClassesCoverage を test_verify.py に追加 (RED) — committed `4c04146f5`
