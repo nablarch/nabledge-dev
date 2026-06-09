@@ -6,35 +6,8 @@
 
 ## In Progress
 
-### Task 11: ベンチマーク結果の詳細分析 — PR作成前確認
+(なし)
 
-**Context** (このセッションで実施):
-
-ユーザーから3点の確認要求あり:
-1. 27実行マーカー検証表（元中間ディレクトリ削除済み → pr-368/run-1 で代替確認）
-2. answer_correctness -5.7pp の中身（ベースラインとのシナリオ別比較 + ページ選択分析）
-3. benchmark-results.md の更新とコミット
-
-**確認1 結果**:
-元の27実行中間ディレクトリ（20260609-13xxxx〜14xxxx）は削除済みで実物提示不可。
-pr-368/run-1 の9対象シナリオ全てで trace.json 内に `<<<WORKFLOW_DETAILS_JSON>>>` / `<<<END_WORKFLOW_DETAILS>>>` が存在し `<details>` タグ不在・workflow_details.json VALID を確認。9/9 OK。
-
-**確認2 結果**:
-ベースライン vs PR のシナリオ別 answer_correctness 比較（30件ペア）:
-- qa-11a: 1.000 → 0.10 (-0.900)  判定: LLM回答生成の揺らぎ。同セクション(s4)を読んで出力せず。classes.md非起因
-- qa-05: 0.733 → 0.60 (-0.133)  判定: pre-existing（ベースラインも run-1/2=0.60）
-- qa-12a: 0.800 → 0.70 (-0.100)  判定: ページ選択揺らぎ（libraries-tag.json が excluded に入った）。classes.md 非起因（Step 3b 未発動）
-- review-09: 1.000 → 0.90 (-0.100)  判定: 評価器揺らぎ
-- 残り26件: 変化なし
-PR起因の correctness 低下はゼロ件。
-
-**ユーザーへの未回答質問**:
-benchmark-results.md の更新: PR body の Evidence として記録するか、benchmark-results.md に詳細分析を追記するか、どちらかをユーザーに確認中（→ 回答待ち）
-
-**Steps:**
-- [x] 確認1: pr-368/run-1 の9シナリオでマーカー存在を直接確認（9/9 OK）
-- [x] 確認2: シナリオ別 correctness 比較表作成、ページ選択変化の有無を workflow_details.json で検証
-- [DECISION: benchmark-results.md に詳細分析を追記してコミットするか、PR body のみで記録するか] 確認3: benchmark-results.md 更新・コミット
 
 ## Rules
 
@@ -60,3 +33,5 @@ benchmark-results.md の更新: PR body の Evidence として記録するか、
 - [x] Task 8: semantic-search.md パッチ1〜3 全5バージョン適用 — committed `f75480b40`
 - [x] Task 10: 全バージョン RBKC 展開 (v5/v1.4/v1.3/v1.2) FAIL 0 確認 — committed `d89204139`
 - [x] Task 9: ベンチマーク実行 — 全33シナリオ 95.8% (regression なし) — committed `0f702f7ba`
+- [x] Task 11: ベンチマーク詳細分析 + qa-11a 5回再実行 (5/5=1.0、単発ブレ確定) — committed `ce20c5dac`
+- [x] PR #369 body 更新 (benchmark-results.md リンク + SC最終状態)
