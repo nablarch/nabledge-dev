@@ -6,7 +6,23 @@
 
 ## In Progress
 
-### Task 9: ベンチマーク実行 — qa-05 pass と全体回帰確認
+### Task 9: ベンチマーク実行 — 全体回帰確認（新マーカー対応済み）
+
+**Context**:
+- e2e-prompt.md の `### Workflow Details` を機械可読マーカー `<<<WORKFLOW_DETAILS_JSON>>>` / `<<<END_WORKFLOW_DETAILS>>>` に置換済み（`5a19d4450`）
+- 旧フォーマットで取得した途中結果（20260609-10xxxx 系）は全て削除済み
+- 検証: 新マーカーで9シナリオ × 3run の27実行でパースエラー0件を確認する（ユーザー指示待ち）
+
+**Steps:**
+- [x] qa-05 シングル実行でクラス名が選択・回答に含まれることを確認
+  - adapters-jaxrs-adaptor.json が選択、Jackson2BodyConverter が回答に含まれることを確認済み
+- [x] e2e-prompt.md マーカー堅牢化 (修正A/B/C) — committed `5a19d4450`
+- [ ] [DECISION: 検証実行の指示を待っている] 新マーカーで9シナリオ × 3run（逐次）実行し、27実行中パースエラー0件を確認
+- [ ] 検証OKを確認後、HOW-TO-RUN.md の手順に従い全33シナリオ実行
+  - 完了後にリネーム: `mv tools/benchmark/results/YYYYMMDD-XXXXXX tools/benchmark/results/pr-368/run-1`
+- [ ] 結果を `.work/00368/benchmark-results.md` に記録
+- [ ] ベースラインと比較して regression なし (≥ 95.9%) を確認
+- [ ] コミット・プッシュ (benchmark-results.md)
 
 ## Rules
 
@@ -18,19 +34,6 @@
 - 承認後、1コミット = 1タスクで各タスクを実装する
 - RBKCのcreate/verifyを変更するため: 実装前に設計を行い、設計書・verify設計書を更新してユーザーに確認する
 - PRレビュー依頼前に、変更差分が想定どおりの変更のみかをチェックし、結果を作業記録に出力してユーザーに確認する
-
-## Not Started
-
-### Task 9: ベンチマーク実行 — qa-05 pass と全体回帰確認
-**Steps:**
-- [x] qa-05 シングル実行でクラス名が選択・回答に含まれることを確認
-  - adapters-jaxrs-adaptor.json が選択、Jackson2BodyConverter が回答に含まれることを確認済み
-- [ ] HOW-TO-RUN.md の手順に従い全ベンチマーク実行
-  - 実行中 (バックグラウンド: b3vvvpx9g, 出力先 tools/benchmark/results/20260609-XXXXXX)
-  - 完了後にリネーム: `mv tools/benchmark/results/20260609-XXXXXX tools/benchmark/results/pr-368/run-1`
-- [ ] 結果を `.work/00368/benchmark-results.md` に記録
-- [ ] ベースラインと比較して regression なし (≥ 95.9%) を確認
-- [ ] コミット・プッシュ (benchmark-results.md)
 
 ## Done
 
