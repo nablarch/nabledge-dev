@@ -6,7 +6,7 @@
 
 ## In Progress
 
-### Task 4: 実装 — `scripts/create/classes.py` を作成 (GREEN)
+### Task 6: 実装 — `run.py` に classes.md 生成・verify を統合
 
 ## Rules
 
@@ -20,55 +20,6 @@
 - PRレビュー依頼前に、変更差分が想定どおりの変更のみかをチェックし、結果を作業記録に出力してユーザーに確認する
 
 ## Not Started
-
-### Task 4: 実装 — `scripts/create/classes.py` を作成 (GREEN)
-**Artifact**: `tools/rbkc/scripts/create/classes.py`
-**Contents**:
-- `generate_classes_md(knowledge_dir, output_path)` 関数（`generate_index_md` と対）
-- 対象カテゴリ: `component`, `processing-pattern`, `development-tools`
-- クラス名抽出: Javadoc リンクパターン `[text](../../javadoc/javadoc-*.json)` の `text` 部分を抽出
-  - `text` に `#` が含まれる場合（例 `JaxRsMethodBinderFactory#handlerList`）は `#` 以降を除去しクラス名のみ採用
-  - 同一ページ内の重複は除去（dedup）。出現順を保持
-- 掲載対象: **クラス名が1件以上抽出されたページのみ** classes.md に出力する。クラス名ゼロのページは掲載しない
-- **クラス名を持つページが1つも無い場合（javadoc未生成の旧バージョン: v1.4/1.3/1.2）も classes.md は必ず生成する。** 本文に固定メッセージ `_No class index available for this version (no Javadoc references in knowledge files)._` を出力する。これにより検索プロンプトは全バージョンで「classes.md を読み各ページブロックを走査」のまま変更不要となり、ブロックが無いので候補追加は自然にゼロになる
-- `no_knowledge_content: true` はスキップ
-- フォーマット: `index.md` と同形式。先頭に `# Class Index` ヘッダ行を出力（index.md の `# Knowledge Index` に倣う）。以降 H2=category, H3=title, `path:` 行, クラス名は `- ClassName` 行。出力例（1ページ分）:
-  ```
-  # Class Index
-
-  ## component
-
-  ### Jakarta RESTful Web Servicesアダプタ
-  path: component/adapters/adapters-jaxrs-adaptor.json
-  - Jackson2BodyConverter
-  - JaxbBodyConverter
-  - FormUrlEncodedConverter
-  ```
-  クラス名ゼロのバージョンでの出力例:
-  ```
-  # Class Index
-
-  _No class index available for this version (no Javadoc references in knowledge files)._
-  ```
-**Steps:**
-- [ ] `classes.py` を実装
-- [ ] `pytest tools/rbkc/tests/ut/test_classes.py -x` が GREEN になることを確認
-- [ ] 全テスト pass: `pytest tools/rbkc/tests/ -x`
-- [ ] コミット・プッシュ
-
-### Task 5: 実装 — verify に `check_classes_coverage()` を追加 (GREEN)
-**Artifact**: `tools/rbkc/scripts/verify/verify.py`
-**Contents**:
-- `check_classes_coverage(knowledge_dir, classes_path)` 関数（`check_index_coverage` と対）
-- 照合ルール: 対象3カテゴリの JSON のうち **クラス名（javadocリンク）を1件以上含むページ** が classes.md の `path:` エントリに存在することを照合
-  - クラス名ゼロのページは classes.md 非掲載が正なので、coverage 対象から除外（FAILにしない）
-  - クラス名を持つページが1つも無いバージョンでは classes.md が固定メッセージのみとなる。この場合 coverage 対象が空集合なので FAIL 0 となる（正常）
-  - `no_knowledge_content: true` はスキップ、`javadoc/` `assets/` もスキップ
-  - 対象3カテゴリ以外は照合対象外
-**Steps:**
-- [ ] `verify.py` に `check_classes_coverage()` を追加
-- [ ] `pytest tools/rbkc/tests/ut/test_verify.py -x` が GREEN になることを確認
-- [ ] コミット・プッシュ
 
 ### Task 6: 実装 — `run.py` に classes.md 生成・verify を統合
 **Artifact**: `tools/rbkc/scripts/run.py`
@@ -168,3 +119,5 @@ Read `knowledge/classes.md` (relative to skill root). Save content as `classes_c
 - [x] Task 1: 設計書更新 (classes-md-spec.md, rbkc-verify-quality-design.md QO5) — committed `0dd249d45`
 - [x] Task 2: TDD — test_classes.py 作成 (RED) — committed `ac7f7a1f8`
 - [x] Task 3: TDD — TestCheckClassesCoverage を test_verify.py に追加 (RED) — committed `4c04146f5`
+- [x] Task 4: 実装 — classes.py (generate_classes_md) — committed `fc35cabf4`
+- [x] Task 5: 実装 — verify.py (check_classes_coverage) — committed `b1ab38c53`
