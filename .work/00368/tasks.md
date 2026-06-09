@@ -4,25 +4,6 @@
 **Issue**: #368
 **Updated**: 2026-06-09
 
-## In Progress
-
-### Task 9: ベンチマーク実行 — 全体回帰確認（新マーカー対応済み）
-
-**Context**:
-- e2e-prompt.md の `### Workflow Details` を機械可読マーカー `<<<WORKFLOW_DETAILS_JSON>>>` / `<<<END_WORKFLOW_DETAILS>>>` に置換済み（`5a19d4450`）
-- 旧フォーマットで取得した途中結果（20260609-10xxxx 系）は全て削除済み
-- 検証: 新マーカーで9シナリオ × 3run の27実行でパースエラー0件を確認する（ユーザー指示待ち）
-
-**Steps:**
-- [x] qa-05 シングル実行でクラス名が選択・回答に含まれることを確認
-  - adapters-jaxrs-adaptor.json が選択、Jackson2BodyConverter が回答に含まれることを確認済み
-- [x] e2e-prompt.md マーカー堅牢化 (修正A/B/C) — committed `5a19d4450`
-- [x] 新マーカーで9シナリオ × 3run（逐次）実行し、27実行中パースエラー0件を確認
-- [x] HOW-TO-RUN.md の手順に従い全33シナリオ実行
-  - `tools/benchmark/results/pr-368/run-1` にリネーム済み
-- [x] 結果を `.work/00368/benchmark-results.md` に記録
-- [x] ベースラインと比較して regression なし (≥ 95.9%) を確認 — 95.8% (0.1pp差, 誤差範囲内)
-- [ ] コミット・プッシュ (benchmark-results.md)
 
 ## Rules
 
@@ -47,3 +28,4 @@
 - [x] Task 7: v6 classes.md 生成、FAIL 0 確認 — committed `40d313761`
 - [x] Task 8: semantic-search.md パッチ1〜3 全5バージョン適用 — committed `f75480b40`
 - [x] Task 10: 全バージョン RBKC 展開 (v5/v1.4/v1.3/v1.2) FAIL 0 確認 — committed `d89204139`
+- [x] Task 9: ベンチマーク実行 — 全33シナリオ 95.8% (regression なし) — committed `0f702f7ba`
