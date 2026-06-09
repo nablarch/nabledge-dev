@@ -6,7 +6,7 @@
 
 ## In Progress
 
-### Task 10: 全バージョン RBKC 展開 (v5/v1.4/v1.3/v1.2)
+### Task 9: ベンチマーク実行 — qa-05 pass と全体回帰確認
 
 ## Rules
 
@@ -49,3 +49,4 @@
 - [x] Task 6: run.py 統合 (generate_classes_md + check_classes_coverage) — committed `e3da286b8`
 - [x] Task 7: v6 classes.md 生成、FAIL 0 確認 — committed `40d313761`
 - [x] Task 8: semantic-search.md パッチ1〜3 全5バージョン適用 — committed `f75480b40`
+- [x] Task 10: 全バージョン RBKC 展開 (v5/v1.4/v1.3/v1.2) FAIL 0 確認 — committed `d89204139`
