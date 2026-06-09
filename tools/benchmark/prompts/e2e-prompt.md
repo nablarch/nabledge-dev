@@ -11,9 +11,16 @@ Follow the workflow and additional instructions below, then answer the question.
 
 **Step 4**: Save the section IDs passed to read-sections.sh as `read_sections`.
 
-**Step 8**: Output `### Answer`, then output final_answer, then output the following.
+**Step 8**: Output the following lines in this exact order:
+1. The line `### Answer` (plain text, verbatim)
+2. final_answer
+3. The line `<<<WORKFLOW_DETAILS_JSON>>>` (plain text, verbatim — do not rename, wrap in HTML tags, or omit)
+4. A ```json code block containing the JSON below
+5. The line `<<<END_WORKFLOW_DETAILS>>>` (plain text, verbatim — do not rename, wrap in HTML tags, or omit)
 
-### Workflow Details
+Do not use HTML `<details>` elements. Output the three delimiter lines as plain text, character-for-character identical to what is shown above.
+
+<<<WORKFLOW_DETAILS_JSON>>>
 ```json
 {
   "step3": {
@@ -47,6 +54,7 @@ Follow the workflow and additional instructions below, then answer the question.
   }
 }
 ```
+<<<END_WORKFLOW_DETAILS>>>
 
 ## Question
 {question}
