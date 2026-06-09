@@ -6,7 +6,7 @@
 
 ## In Progress
 
-### Task 6: 実装 — `run.py` に classes.md 生成・verify を統合
+### Task 10: 全バージョン RBKC 展開 (v5/v1.4/v1.3/v1.2)
 
 ## Rules
 
@@ -20,81 +20,6 @@
 - PRレビュー依頼前に、変更差分が想定どおりの変更のみかをチェックし、結果を作業記録に出力してユーザーに確認する
 
 ## Not Started
-
-### Task 6: 実装 — `run.py` に classes.md 生成・verify を統合
-**Artifact**: `tools/rbkc/scripts/run.py`
-**Contents**:
-- `from scripts.create.classes import generate_classes_md` を追加
-- `from scripts.verify.verify import ... check_classes_coverage` を追加
-**Steps:**
-- [ ] `create()` 内 264行 `generate_index_md(output_dir, output_dir / "index.md")` の直後に `generate_classes_md(output_dir, output_dir / "classes.md")` を追加
-- [ ] `update()` 内 315行 `generate_index_md(...)` の直後に同様に追加
-- [ ] `delete()` 内 357行 `generate_index_md(...)` の直後に同様に追加
-- [ ] `verify()` 内 444行 `check_index_coverage` ループの直後に `check_classes_coverage(output_dir, output_dir / "classes.md")` のループを追加（`files is None` の場合のみ）
-- [ ] `pytest tools/rbkc/tests/ -x` が全 pass であることを確認
-- [ ] コミット・プッシュ
-
-### Task 7: RBKC 実行 — v6 の classes.md を生成
-**Steps:**
-- [ ] `bash tools/rbkc/rbkc.sh create v6` を実行
-- [ ] `bash tools/rbkc/rbkc.sh verify v6` で FAIL 0 を確認
-- [ ] `.claude/skills/nabledge-6/knowledge/classes.md` が生成されていることを確認
-- [ ] `Jackson2BodyConverter` が classes.md に含まれることを確認
-- [ ] コミット・プッシュ
-
-### Task 8: semantic-search.md を更新 — classes.md をページ選択(Step 2)に組み込む
-
-**Artifact**: `.claude/skills/nabledge-6/workflows/semantic-search.md`
-**Design note**: classes.md は RBKC が全バージョンで必ず生成する（クラス名ゼロのバージョンは固定メッセージのみ）。よって検索プロンプトは「classes.md が存在する」前提で書け、存在チェック分岐は不要。クラス名ゼロのバージョンでは走査対象ページブロックが無いため候補追加が自然にゼロになる。
-Step 4 (Augment with referenced Javadoc) は変更しない。Step 2 がページを選べば Step 4 が当該 Javadoc を補強する（相補関係）。
-
-**バージョン差分**: semantic-search.md は全バージョン同一ではない（v6基準で v5 は2行差、v1.4/1.3/1.2 は32行差）。下記 Before は v6 のもの。各バージョンで Step 1 / Step 2 の実テキストを確認し、Before が一致しない場合は当該バージョンの実テキストを Before として記録してから当てる。**ただし追加する内容（After の差分）は全バージョン同一**でよい（classes.md 常時存在のため）。
-
-#### パッチ1: Step 1 に classes.md 読込を追加
-**Before:**
-```
-## Step 1: Read index.md
-
-Read `knowledge/index.md` (relative to skill root). Save content as `index_content`.
-```
-**After:**
-```
-## Step 1: Read index.md and classes.md
-
-Read `knowledge/index.md` (relative to skill root). Save content as `index_content`.
-Read `knowledge/classes.md` (relative to skill root). Save content as `classes_content`.
-```
-
-#### パッチ2: Step 2 手順3の直後に手順3bを挿入（index候補と同列でマージ）
-**Before（手順3の末尾行と手順4）:**
-```
-   - All other pages → **skip**
-4. If a purpose was noted, sort candidates using the priority categories for that purpose: pages in the priority categories come first.
-```
-**After:**
-```
-   - All other pages → **skip**
-3b. Scan `classes_content`. For each page block, if any class name listed in that block matches a class name or feature name appearing in the question, add that page to candidates (same status as a Step 3 candidate). Deduplicate against candidates already collected in Step 3. (If `classes_content` contains no page blocks, this step adds nothing.)
-4. If a purpose was noted, sort the merged candidate set (Step 3 + Step 3b) using the priority categories for that purpose: pages in the priority categories come first. Apply the sort once, to the merged set.
-```
-
-#### パッチ3: 手順5のトリム規則に classes.md 由来の保護を追加
-**Before:**
-```
-5. Take up to 10 candidates in order. If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately.
-```
-**After:**
-```
-5. Take up to 10 candidates in order. If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately. When trimming to 10, if a candidate was added in Step 3b because its class name explicitly appears in the question, keep it ahead of index-only candidates that merely match by topic.
-```
-
-**Steps:**
-- [ ] v6 に パッチ1〜3 を適用
-- [ ] v5 の Step 1 / Step 2 実テキストを確認し、差分(2行)を踏まえてパッチ1〜3を適用（After の追加内容は同一）
-- [ ] v1.4 / v1.3 / v1.2 の Step 1 / Step 2 実テキストを確認（32行差あり）、各々の Before を実テキストで記録してからパッチ1〜3を適用（After の追加内容は同一）
-- [ ] 全バージョンで Step 4 が無変更であることを確認
-- [ ] 変更差分を作業記録に出力しユーザーに確認
-- [ ] コミット・プッシュ
 
 ### Task 9: ベンチマーク実行 — qa-05 pass と全体回帰確認
 **Steps:**
@@ -121,3 +46,6 @@ Read `knowledge/classes.md` (relative to skill root). Save content as `classes_c
 - [x] Task 3: TDD — TestCheckClassesCoverage を test_verify.py に追加 (RED) — committed `4c04146f5`
 - [x] Task 4: 実装 — classes.py (generate_classes_md) — committed `fc35cabf4`
 - [x] Task 5: 実装 — verify.py (check_classes_coverage) — committed `b1ab38c53`
+- [x] Task 6: run.py 統合 (generate_classes_md + check_classes_coverage) — committed `e3da286b8`
+- [x] Task 7: v6 classes.md 生成、FAIL 0 確認 — committed `40d313761`
+- [x] Task 8: semantic-search.md パッチ1〜3 全5バージョン適用 — committed `f75480b40`
