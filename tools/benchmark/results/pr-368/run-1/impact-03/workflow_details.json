@@ -1,0 +1,98 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationのページで、s12『データベースとの相関バリデーションを行う』が質問に直接答える"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTfulウェブサービス専用のBean Validationハンドラで、バリデーション実行の仕組みを説明する"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの入力値チェック詳細（s2）がDB相関バリデーションの文脈を補完する"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "Nablarch Validationは旧バリデーション機能でBean Validationとは別のAPIであり質問対象外"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "処理方式がウェブアプリケーションで、質問のRESTfulウェブサービスと異なる"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストはSQLインジェクション対策を列挙するが実装方法は説明しない"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-response-handler.json",
+        "reason": "レスポンスハンドラはエラーレスポンス生成の話であり、バリデーション実装方法には直接関係しない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "『データベースとの相関バリデーションを行う』でカスタムバリデータでのDB検索を禁止し業務アクション側で実装すべき理由を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "アクション側でバリデーションエラーを特定項目に紐づけてApplicationExceptionを投げる具体的な実装例を示す"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで実装に関する具体的情報がない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "reason": "相関バリデーションの@AssertTrueを使う方法だがDBアクセスを伴わない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "reason": "RESTfulウェブサービスでのBean Validation使用方法へのリンクのみで詳細は別セクション参照"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "reason": "バリデーション実行のハンドラ設定説明で、DBバリデーション禁止の根拠には不要"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックへの参照リンクのみでs12の情報と重複しない追加情報がない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-bean-validation.json:s12",
+          "reason": "Bean ValidationでのDB相関バリデーション禁止の理由（SQLインジェクション脆弱性）と業務アクション側での実装方針を根拠として使用"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s13",
+          "reason": "アクション側でエラーを特定項目に紐づけてApplicationExceptionをスローする具体的なコード例を根拠として使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

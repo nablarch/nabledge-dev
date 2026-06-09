@@ -1,0 +1,140 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "XSS対策を含むNablarchセキュリティチェックリスト — セキュリティ対応目的の質問に最優先で該当"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "JSP カスタムタグのHTMLエスケープ仕様を直接説明するページ — 「カスタムタグを使えばサニタイジングされるか」という質問に直接回答できる"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "セキュアハンドラはXSS保険的対策（レスポンスヘッダ設定）に対応するページ — チェックリストで参照されている"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの機能詳細 — CSP対応やCSRFなどセキュリティ関連機能の実装詳細を含む"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "概要のみで具体的なXSS対策情報を含まない"
+      },
+      {
+        "path": "check/security-check/security-check-3.PCIDSS対応表.json",
+        "reason": "PCI DSS対応表であり今回の質問（XSS）と無関係"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "アーキテクチャ概要であり、XSS対策の具体的な情報を含まない"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-about-nablarch.json",
+        "reason": "Nablarchの一般説明でXSS対策の詳細なし"
+      },
+      {
+        "path": "component/libraries/libraries-validation.json",
+        "reason": "入力値チェックの一般的な実装で、XSS特有の対策情報は少ない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "クロスサイト・スクリプティングの対策チェックリストが直接記載されており、Nablarchの対応状況が網羅されている"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "カスタムタグがデフォルトでHTMLエスケープすることを説明し、JavaScript部分の例外についても明記されている"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s50",
+        "relevance": "high",
+        "reason": "HTMLエスケープの具体的な変換内容（文字→エンティティ）とEL式不使用のルールが記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s27",
+        "relevance": "partial",
+        "reason": "HTMLエスケープなしで出力するタグ（rawWrite等）の注意点とXSS脆弱性リスクが説明されている"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s38",
+        "relevance": "partial",
+        "reason": "Content Security Policy対応の説明 — CSP保険的対策との関連性あり"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで具体的なエスケープ仕様なし"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s3",
+        "reason": "入力画面と確認画面の共通化に関するセクションでXSS対策と無関係"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s1",
+        "reason": "SQLインジェクション対策でXSSと無関係"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "reason": "CSRF対策でXSSと無関係"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s9",
+        "reason": "クリックジャッキング対策でXSSと無関係"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s5",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s50",
+      "component/libraries/libraries-tag.json:s38",
+      "component/libraries/libraries-tag.json:s27"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "check/security-check/security-check-2.チェックリスト.json:s5",
+          "reason": "NablarchのXSS対応状況（対応項目・非対応項目）の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s2",
+          "reason": "カスタムタグがデフォルトでHTMLエスケープすること・JavaScriptエスケープ非対応の注意点の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s50",
+          "reason": "HTMLエスケープの具体的な変換テーブルとEL式不使用ルールの根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s27",
+          "reason": "rawWriteタグのXSS脆弱性リスクの注意点として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-tag.json:s38",
+          "reason": "CSP対応の詳細説明だが、今回の質問（カスタムタグのサニタイジング）の主題から外れるため回答から除外"
+        }
+      ]
+    }
+  }
+}

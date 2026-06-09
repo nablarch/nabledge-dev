@@ -1,0 +1,101 @@
+{
+  "step3": {
+    "question_summary": "Nablarchバッチ処理において、業務トランザクションとは独立した別トランザクションでSQLを実行する方法（業務側がロールバックされても別トランザクションの更新を残したい）",
+    "constraints": {
+      "processing_type": "Nablarchバッチ",
+      "purpose": "実装したい"
+    },
+    "pages_evaluated": [
+      {
+        "page": "component/libraries/libraries-database.json",
+        "decision": "candidate",
+        "reason": "s29「現在のトランザクションとは異なるトランザクションでSQLを実行する」がまさに質問のユースケースに直接対応している。JDBCラッパーでの別トランザクション実行方法（SimpleDbTransactionExecutor）を説明している。"
+      },
+      {
+        "page": "component/libraries/libraries-universal-dao.json",
+        "decision": "candidate",
+        "reason": "s20「現在のトランザクションとは異なるトランザクションで実行する」がUniversalDAOでの同等機能（UniversalDao.Transaction）を説明している。実装アプローチの選択肢として必須。"
+      },
+      {
+        "page": "component/adapters/adapters-doma-adaptor.json",
+        "decision": "candidate(partial)",
+        "reason": "s8「別トランザクションで実行する」がDomaアダプタ利用時の別トランザクション実行方法を説明。質問ではDomaを明示していないが、選択肢として有用。目的「実装したい」のpriority categoryに含まれる。"
+      }
+    ],
+    "selected_pages": [
+      "component/libraries/libraries-database.json",
+      "component/libraries/libraries-universal-dao.json",
+      "component/adapters/adapters-doma-adaptor.json"
+    ]
+  },
+  "step4": {
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "業務処理失敗時にもDBへの変更を確定させるための個別トランザクション使用方法を直接説明。SimpleDbTransactionManagerのXML定義とSimpleDbTransactionExecutorのJava実装例を含む。回答の核心。"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "UniversalDao.Transactionを使った別トランザクション実行方法を説明。SimpleDbTransactionManagerの設定方法とUniversalDao.Transactionの実装・呼び出し例を含む。JDBCラッパーと並ぶ主要な実装アプローチ。"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "Domaアダプタ使用時の別トランザクション実行方法（DomaConfig.getTransactionManager().requiresNew()）を提供。Domaを採用しているプロジェクト向けの補足情報として有用だが、質問がDomaを前提としていないためpartial。"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-db-transaction-SimpleDbTransactionManager.json",
+        "section_id": null,
+        "relevance": "high",
+        "reason": "s29およびs20から参照されるJavadoc。SimpleDbTransactionManagerの詳細仕様確認用。"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-db-transaction-SimpleDbTransactionExecutor.json",
+        "section_id": null,
+        "relevance": "high",
+        "reason": "s29から参照されるJavadoc。SimpleDbTransactionExecutorの詳細仕様確認用。"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": null,
+        "relevance": "high",
+        "reason": "s20から参照されるJavadoc。UniversalDao.Transaction内部クラスの詳細仕様確認用。"
+      }
+    ]
+  },
+  "step8": {
+    "verify_result": "PASS",
+    "claims_checked": [
+      {
+        "claim": "SimpleDbTransactionManagerをXMLコンポーネント設定ファイルで定義する（connectionFactory、transactionFactory、dbTransactionNameプロパティ）",
+        "source": "component/libraries/libraries-database.json:s29",
+        "status": "confirmed"
+      },
+      {
+        "claim": "SimpleDbTransactionExecutorを使ってdoTransaction()を呼ぶとSQLが別トランザクションで実行される",
+        "source": "component/libraries/libraries-database.json:s29",
+        "status": "confirmed"
+      },
+      {
+        "claim": "UniversalDao.Transactionを継承してexecute()メソッドにUniversalDAO処理を実装する",
+        "source": "component/libraries/libraries-universal-dao.json:s20",
+        "status": "confirmed"
+      },
+      {
+        "claim": "execute()メソッドが自動的に別トランザクションで実行され、正常終了時コミット・例外時ロールバック",
+        "source": "component/libraries/libraries-universal-dao.json:s20",
+        "status": "confirmed"
+      },
+      {
+        "claim": "Domaアダプタ使用時はDomaConfig.singleton().getTransactionManager().requiresNew()で別トランザクション制御",
+        "source": "component/adapters/adapters-doma-adaptor.json:s8",
+        "status": "confirmed"
+      }
+    ]
+  }
+}

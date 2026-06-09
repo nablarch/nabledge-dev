@@ -1,0 +1,59 @@
+{
+  "scenario_id": "impact-03",
+  "description": "REST APIで登録処理を実装している。入力されたメールアドレスがDB上で重複していないか、バリデーションの段階でチェックしたい。",
+  "input": "Bean Validationの中でDBに問い合わせて重複チェックしたい。カスタムバリデータでDB検索する実装でいいのか？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers all key facts from the expected output. It clearly states that DB correlation validation should be implemented in the business action side (not in Bean Validation), and explicitly explains that values during Bean Validation execution are not guaranteed to be safe. Both core facts from the expected output are present and well-supported with additional context and code examples."
+    },
+    "answer_relevancy": {
+      "score": 0.9285714285714286,
+      "reason": "The score is 0.93 because the actual output contains a reference citation that does not contribute substantively to answering the question about implementing duplicate checks via DB queries within Bean Validation using a custom validator. The rest of the response effectively addresses the question, which is why the score remains high."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 76586,
+    "duration_api_ms": 76054,
+    "num_turns": 7,
+    "total_cost_usd": 0.6697676,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 4013,
+      "cache_read_input_tokens": 523647,
+      "cache_creation_input_tokens": 119730
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3340,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00347,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 4013,
+        "cacheReadInputTokens": 523647,
+        "cacheCreationInputTokens": 119730,
+        "webSearchRequests": 0,
+        "costUSD": 0.6662976,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

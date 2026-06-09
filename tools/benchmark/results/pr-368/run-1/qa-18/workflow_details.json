@@ -1,0 +1,138 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "質問で明示されているBeanUtilの機能を直接解説するページ"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json",
+        "reason": "libraries-bean-util.json のs2セクションから参照されているBeanUtilのJavadoc"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-utility.json",
+        "reason": "汎用ユーティリティのインデックスページであり、BeanUtilの使用方法詳細は含まない"
+      },
+      {
+        "path": "component/libraries/libraries-validation-functional-comparison.json",
+        "reason": "バリデーション比較ページでありgetPropertyとは無関係"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "BeanUtilを参照するが、getPropertyではなくcreateAndCopyの文脈での使用"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "BeanUtil.getPropertyの具体的なコード例が含まれており、質問に直接回答できる"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "getProperty(Object, String)メソッドのAPIスペックとネスト指定不可の制約が明記されている"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json",
+        "section_id": "s15",
+        "relevance": "partial",
+        "reason": "型変換を伴うgetPropertyのオーバーロードの仕様が記述されており補足情報として有用"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "レコードに対してsetProperty/copyを呼び出すと例外になる制約が記述されており参考情報"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s1",
+        "reason": "モジュール一覧であり実装方法の説明を含まない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s3",
+        "reason": "型変換ルールの説明であり、getPropertyの基本的な使い方とは直接関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s4",
+        "reason": "型変換ルールの追加方法であり、質問の範囲外"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s5",
+        "reason": "許容フォーマットの指定方法であり、getPropertyとは無関係"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s6",
+        "reason": "デフォルトフォーマット設定の説明であり、質問の範囲外"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s7",
+        "reason": "プロパティ単位のフォーマット設定の説明であり、質問の範囲外"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s8",
+        "reason": "呼び出し時のフォーマット設定の説明であり、質問の範囲外"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s10",
+        "reason": "レコードの使用方法であり、getPropertyの基本説明の補足に過ぎない"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json",
+        "section_id": "s28",
+        "reason": "setPropertyメソッドのAPIスペックであり、値の取得ではなく設定に関するもの"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json",
+        "section_id": "s52",
+        "reason": "copyメソッドであり、getPropertyとは無関係"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-util.json:s2",
+      "component/libraries/libraries-bean-util.json:s9",
+      "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s14",
+      "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s15"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-bean-util.json:s2",
+          "reason": "getPropertyのコード例（id取得）を引用し、getter経由で取得される旨の説明に使用"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s14",
+          "reason": "トップレベルプロパティのみ指定可能という制約とBeansExceptionの情報に使用"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s15",
+          "reason": "型変換を伴うgetPropertyオーバーロードの説明に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-bean-util.json:s9",
+          "reason": "setProperty/copyとレコードの制約であり、getPropertyの回答には含める必要がなかった"
+        }
+      ]
+    }
+  }
+}

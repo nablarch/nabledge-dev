@@ -1,0 +1,71 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both facts from the Expected Output. Fact 1 — that Jakarta EE 10 is supported and requires a Jakarta EE 10-compatible application server — is explicitly addressed in sections 1 and 8 (e.g., 'Jakarta EE 10対応のアプリケーションサーバが必要（Tomcat 10.x等）'). Fact 2 — that Java EE specification names and package names have been changed to Jakarta EE equivalents — is thoroughly covered throughout sections 3, 5, 6, 7, 9, and 10, with detailed examples of javax.* → jakarta.* namespace changes and renamed specifications. Both expected facts are fully covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly relevant to the input, addressing all aspects of the question about changes that affect applications when upgrading from Nablarch 5 to Nablarch 6 with Jakarta EE 10 support. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9696969696969697,
+      "reason": "The score is 0.97 because the actual output contradicts the retrieval context on one point: it incorrectly states that class or package names were changed, whereas the retrieval context explicitly states that class and package names were NOT changed in order to maintain backward compatibility (後方互換を維持するためにクラスやパッケージの名前は変更されていない)."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "about/migration/migration-migration.json:s2",
+      "about/migration/migration-migration.json:s3",
+      "about/migration/migration-migration.json:s5",
+      "about/migration/migration-migration.json:s7",
+      "about/migration/migration-migration.json:s9",
+      "about/migration/migration-migration.json:s16",
+      "about/migration/migration-migration.json:s26",
+      "about/migration/migration-migration.json:s27",
+      "about/migration/migration-migration.json:s28",
+      "about/migration/migration-migration.json:s24",
+      "about/migration/migration-migration.json:s25",
+      "about/migration/migration-migration.json:s29",
+      "about/about-nablarch/about-nablarch-jakarta-ee.json:s2",
+      "releases/releases/releases-nablarch6-releasenote-6.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 177656,
+    "duration_api_ms": 173484,
+    "num_turns": 8,
+    "total_cost_usd": 0.8281317,
+    "usage": {
+      "input_tokens": 1760,
+      "output_tokens": 10958,
+      "cache_read_input_tokens": 528374,
+      "cache_creation_input_tokens": 132390
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3322,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0035069999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1760,
+        "outputTokens": 10958,
+        "cacheReadInputTokens": 528374,
+        "cacheCreationInputTokens": 132390,
+        "webSearchRequests": 0,
+        "costUSD": 0.8246247,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

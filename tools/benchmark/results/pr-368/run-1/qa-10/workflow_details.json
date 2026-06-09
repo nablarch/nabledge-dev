@@ -1,0 +1,130 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s6・s21で「可変条件を持つSQL」「$if構文」が直接説明されており、質問の核心に当たる"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "reason": "ウェブアプリの検索機能実装例として$if構文を使ったSQLとアクションコードが含まれる"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "SQLファイルを使った検索(findAllBySqlFile)の実装方法を説明しており、$if構文と組み合わせて使用する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリのデータベースアクセス詳細を説明しているが、可変SQL条件の実装詳細はlibraries-database.jsonの方が詳しい"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "アーキテクチャ概要のみで可変条件SQLの実装詳細は含まれない"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "selected_pagesに含まれた（除外なし）"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "DomaアダプタはNablarch標準のJDBCラッパーとは異なるため対象外"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "SQLインジェクション対策の概要のみで実装方法は対象外"
+      },
+      {
+        "path": "about/*",
+        "reason": "Nablarchの概要・バージョン情報のみで実装詳細は含まれない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "$if構文の仕様・制約・SQLとJava実装例を詳細に説明しており、質問に直接回答できる"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "high",
+        "reason": "in句の可変条件($if + :prop[])を説明しており、複数値の可変条件実装に必要"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ウェブアプリの検索機能で$ifを使った実際のSQL・Form・アクション実装例が完整に含まれる"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "findAllBySqlFileメソッドの使い方を説明しており、$if構文と組み合わせて使用する際の参照として有用"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "動的SQL構築機能の概要を示しており、関連機能へのリンクを含むが詳細はs21・s22に委ねている"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s3",
+        "reason": "データベースアクセスの概要のみで可変条件SQLの具体的な実装方法は含まれない"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s23",
+        "reason": "order byのソート項目を動的に切り替える機能でありユーザーの質問とは異なる"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "reason": "条件を指定して検索するが、$if可変条件の実装詳細はlibraries-database.json側が詳しい"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s6",
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s22",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+      "component/libraries/libraries-universal-dao.json:s7"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s21",
+          "reason": "$if構文の仕様・制約・SQL例・Java実装例を回答の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s22",
+          "reason": "in句の可変条件(:prop[])の実装方法を根拠として使用"
+        },
+        {
+          "ref": "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+          "reason": "実際の検索機能SQLとUniversalDAOを使ったアクション実装例を根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s7",
+          "reason": "findAllBySqlFileの基本説明はs1の実装例に含まれるため個別引用不要"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s6",
+          "reason": "動的SQL構築の概要説明のみで、詳細はs21・s22が網羅しているため個別引用不要"
+        }
+      ]
+    }
+  }
+}

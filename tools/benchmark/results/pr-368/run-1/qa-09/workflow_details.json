@@ -1,0 +1,171 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-date.json",
+        "reason": "「システム日時(OS日時)と業務日付の切り替えができる」という機能概要が質問に直接対応しており、業務日付の設定・取得・更新方法を網羅している"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "about/about-nablarch/*",
+        "reason": "Nablarchの概要ページであり業務日付管理の実装方法は含まれない"
+      },
+      {
+        "path": "component/handlers/*",
+        "reason": "ハンドラ群は処理フロー制御であり業務日付管理機能とは無関係"
+      },
+      {
+        "path": "processing-pattern/*",
+        "reason": "各処理方式のアーキテクチャページであり、業務日付管理の実装詳細は含まれない"
+      },
+      {
+        "path": "component/libraries/libraries-repository.json",
+        "reason": "システムリポジトリのDI設定に関するページで業務日付管理の主要情報はない（参照先としてのみ言及される）"
+      },
+      {
+        "path": "その他すべてのページ",
+        "reason": "業務日付・システム日時の取得・管理とは無関係"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "業務日付管理のコンポーネント設定方法（テーブル定義、BasicBusinessDateProviderの登録）を直接説明しており回答に不可欠"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BusinessDateUtilで業務日付を取得する方法を直接説明しており回答に不可欠"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "締め処理・バッチ再実行時に業務日付を上書きする方法を説明しており質問のユースケースに直接対応"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s10",
+        "relevance": "high",
+        "reason": "締め処理後に業務日付を更新するsetDateメソッドの使用方法を直接説明している"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "システム日時と業務日付を独立して管理できる仕組みの概念説明として背景理解に必要"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "システム日時（OS日時）のコンポーネント設定方法を説明しており業務日付との対比として参照価値がある"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "SystemTimeUtilでOS日時を取得する方法を示しており、業務日付との使い分けを説明するのに必要"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "業務日付管理機能に必要なMaven依存関係を示しており実装時に必要な情報"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s1",
+        "reason": "機能概要のタイトルのみで具体的な実装情報がなく、s2でカバーされる"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s4",
+        "reason": "「使用方法」というタイトルのみのセクションで実質的な情報がない"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s11",
+        "reason": "「拡張例」というタイトルのみのセクションで実質的な情報がない"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s12",
+        "reason": "テスト用のシステム日時切り替えはユニットテスト向けで本質問のユースケース（締め処理）とは直接関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s13",
+        "reason": "テスト用の業務日付切り替えはユニットテスト向けで本質問のユースケース（締め処理）とは直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s8",
+      "component/libraries/libraries-date.json:s9",
+      "component/libraries/libraries-date.json:s10",
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s3",
+      "javadoc/javadoc-nablarch-core-date-BasicBusinessDateProvider.json:s1",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-date.json:s7",
+          "reason": "BasicBusinessDateProviderの設定方法・テーブルレイアウトをそのまま引用した"
+        },
+        {
+          "ref": "libraries-date.json:s8",
+          "reason": "BusinessDateUtilで業務日付を取得するという記述を引用した"
+        },
+        {
+          "ref": "libraries-date.json:s9",
+          "reason": "システムプロパティによる業務日付上書き方法と-DBasicBusinessDateProvider.batch例を引用した"
+        },
+        {
+          "ref": "libraries-date.json:s10",
+          "reason": "SystemRepository.get(\"businessDateProvider\")とprovider.setDate()のコード例を引用した"
+        },
+        {
+          "ref": "libraries-date.json:s5",
+          "reason": "BasicSystemTimeProviderとsystemTimeProviderの設定を参照し注意点の説明に使用した"
+        },
+        {
+          "ref": "libraries-date.json:s6",
+          "reason": "SystemTimeUtilでOS日時を取得するという記述を引用した"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-date.json:s2",
+          "reason": "コンポーネント差し替えで切り替えができる仕組みの説明は実装手順の回答には不要と判断した"
+        },
+        {
+          "ref": "libraries-date.json:s3",
+          "reason": "Mavenモジュール設定は注意点として言及したが直接引用はしなかった"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-core-date-BasicBusinessDateProvider.json:s1",
+          "reason": "フィールド詳細のみで内容が空だったため使用しなかった"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s1",
+          "reason": "フィールド詳細のみで内容が空だったため使用しなかった"
+        }
+      ]
+    }
+  }
+}

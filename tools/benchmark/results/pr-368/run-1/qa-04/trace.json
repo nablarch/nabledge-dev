@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 96208,
+  "duration_api_ms": 95762,
+  "ttft_ms": 8420,
+  "ttft_stream_ms": 4388,
+  "time_to_request_ms": 641,
+  "num_turns": 6,
+  "result": "### Answer\n\n**結論**: Bean Validation対応FormクラスのテストはNablarch自動テストフレームワークで提供される `EntityTestSupport` を継承したテストクラスを作成し、テストデータはテストクラスと同名のExcelファイルで準備します。\n\n---\n\n**根拠**:\n\n## テストクラスの作成\n\n以下の条件でテストクラスを作成します。\n\n- テストクラスのパッケージはテスト対象Formと**同じ**にする\n- クラス名は `<Form名>Test` にする\n- `nablarch.test.core.db.EntityTestSupport` を継承する\n\n```java\npackage com.nablarch.example.app.web.form;\n\nimport nablarch.test.core.db.EntityTestSupport;\nimport org.junit.Test;\n\npublic class UserRegistrationFormTest extends EntityTestSupport {\n\n    private static final Class<?> TARGET_CLASS = UserRegistrationForm.class;\n\n    /** 文字種・文字列長の単項目精査テスト */\n    @Test\n    public void testCharsetAndLength() {\n        String sheetName = \"testCharsetAndLength\";\n        String id = \"charsetAndLength\";\n        testValidateCharsetAndLength(TARGET_CLASS, sheetName, id);\n    }\n\n    /** その他の単項目精査テスト（日付フォーマット等） */\n    @Test\n    public void testSingleValidation() {\n        String sheetName = \"testSingleValidation\";\n        String id = \"singleValidation\";\n        testSingleValidation(TARGET_CLASS, sheetName, id);\n    }\n\n    /** 項目間精査テスト（@AssertTrue等） */\n    @Test\n    public void testWholeFormValidation() {\n        String sheetName = \"testWholeFormValidation\";\n        testBeanValidation(TARGET_CLASS, sheetName);\n    }\n}\n```\n\n---\n\n## テストデータの準備（Excelファイル）\n\nExcelファイルは**テストクラスと同じディレクトリ・同じ名前**（拡張子のみ `.xlsx`）で配置します。\n\n### 文字種・文字列長テスト用シートのカラム構成\n\n| カラム名 | 記載内容 |\n|---|---|\n| `propertyName` | テスト対象のプロパティ名 |\n| `allowEmpty` | 未入力を許容するか |\n| `group` | Bean Validationのグループ（省略可） |\n| `min` / `max` | 最小・最大文字列長（省略可） |\n| `messageIdWhenEmptyInput` | 未入力時の期待メッセージ（省略可） |\n| `messageIdWhenNotApplicable` | 文字種不適合時の期待メッセージ |\n| `半角英字`, `半角数字`, ... `外字` | 各文字種を許容するか（`o` or `x`） |\n\n### 項目間精査テスト用シートのカラム構成\n\n- テストケース表のID：`testShots`（固定）\n- 入力パラメータ表のID：`params`（固定）\n- `expectedMessageId1` + `propertyName1` でエラーを期待するプロパティとメッセージを指定\n\n---\n\n## フレームワーク設定（コンポーネント設定ファイル）\n\nBean Validationを使用する場合、テスト用コンポーネント設定に `BeanValidationTestStrategy` を指定する必要があります。\n\n```xml\n<component name=\"entityTestConfiguration\" class=\"nablarch.test.core.entity.EntityTestConfiguration\">\n  <property name=\"maxMessageId\"        value=\"{nablarch.core.validation.ee.Length.max.message}\"/>\n  <property name=\"maxAndMinMessageId\"  value=\"{nablarch.core.validation.ee.Length.min.max.message}\"/>\n  <property name=\"fixLengthMessageId\"  value=\"{nablarch.core.validation.ee.Length.fixed.message}\"/>\n  <property name=\"underLimitMessageId\" value=\"{nablarch.core.validation.ee.Length.min.max.message}\"/>\n  <property name=\"minMessageId\"        value=\"{nablarch.core.validation.ee.Length.min.message}\"/>\n  <property name=\"emptyInputMessageId\" value=\"{nablarch.core.validation.ee.Required.message}\"/>\n  <property name=\"characterGenerator\">\n    <component class=\"nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator\"/>\n  </property>\n  <property name=\"validationTestStrategy\">\n    <component class=\"nablarch.test.core.entity.BeanValidationTestStrategy\"/>\n  </property>\n</component>\n```\n\n---\n\n**注意点**: メッセージデータやコードマスタなどの静的マスタデータは、プロジェクトで管理されたデータがあらかじめDBに投入されている前提です。個別のテストデータとして作成しません。また、プロパティとして別のFormを保持するFormには本テスト方法は使用できません。\n\n参照: testing-framework-01-entityUnitTestWithBeanValidation.json:s2, testing-framework-01-entityUnitTestWithBeanValidation.json:s3, testing-framework-01-entityUnitTestWithBeanValidation.json:s4, testing-framework-01-entityUnitTestWithBeanValidation.json:s5, testing-framework-01-entityUnitTestWithBeanValidation.json:s6, testing-framework-01-entityUnitTestWithBeanValidation.json:s16, testing-framework-01-entityUnitTestWithBeanValidation.json:s17\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"reason\": \"Bean Validationに対応したForm/Entityのクラス単体テストの書き方を直接カバーするページ\"},\n      {\"path\": \"development-tools/testing-framework/testing-framework-01-Abstract.json\", \"reason\": \"自動テストフレームワーク全体の基礎（Excelテストデータ記述方法など）を説明するページで、テストデータ準備に必要\"},\n      {\"path\": \"component/libraries/libraries-bean-validation.json\", \"reason\": \"Bean Validationの機能概要・使用方法を説明するページで、テストの背景知識として関連\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"development-tools/testing-framework/testing-framework-02-entityUnitTestWithNablarchValidation.json\", \"reason\": \"Nablarch Validationに対応したForm/EntityのテストでありBean Validationとは異なる\"},\n      {\"path\": \"development-tools/testing-framework/testing-framework-02-RequestUnitTest.json\", \"reason\": \"リクエスト単体テストであり、Formクラス単体テストとは異なるテスト種別\"},\n      {\"path\": \"development-tools/testing-framework/testing-framework-JUnit5-Extension.json\", \"reason\": \"JUnit5拡張であり質問の主旨（テストクラスの作り方・テストデータの準備）には直接関係しない\"},\n      {\"path\": \"development-tools/testing-framework/testing-framework-02-DbAccessTest.json\", \"reason\": \"DBアクセスクラスのテストであり、Formクラスの単体テストとは対象が異なる\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"section_id\": \"s2\", \"relevance\": \"high\", \"reason\": \"テストデータを記載するExcelファイルの配置方法と前提条件を説明\"},\n      {\"file\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"テストクラスの作成条件（パッケージ・クラス名・継承クラス）とコード例を直接説明\"},\n      {\"file\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"文字種と文字列長の単項目精査テストケースの概要と適用条件を説明\"},\n      {\"file\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"section_id\": \"s5\", \"relevance\": \"high\", \"reason\": \"文字種・文字列長テスト用ExcelシートのカラムとBean Validationグループ指定方法を説明\"},\n      {\"file\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"section_id\": \"s6\", \"relevance\": \"high\", \"reason\": \"testValidateCharsetAndLengthメソッドの使い方とテスト観点を説明\"},\n      {\"file\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"日付フォーマット精査など文字種・文字列長以外の単項目精査テスト方法を説明\"},\n      {\"file\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"section_id\": \"s10\", \"relevance\": \"high\", \"reason\": \"@AssertTrueを使った項目間精査のテストケース作成が必要な旨を説明\"},\n      {\"file\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"section_id\": \"s15\", \"relevance\": \"partial\", \"reason\": \"自動テストフレームワーク設定値の必要性を示す導入セクション\"},\n      {\"file\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"section_id\": \"s16\", \"relevance\": \"high\", \"reason\": \"EntityTestConfigurationの設定項目一覧とBeanValidationTestStrategyの指定方法を説明\"},\n      {\"file\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"section_id\": \"s17\", \"relevance\": \"high\", \"reason\": \"コンポーネント設定ファイルの具体的な記述例（BeanValidationTestStrategyを含む）を提供\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s2\",\n      \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s3\",\n      \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s4\",\n      \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s5\",\n      \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s6\",\n      \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s7\",\n      \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s10\",\n      \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s15\",\n      \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s16\",\n      \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json:s17\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"testing-framework-01-entityUnitTestWithBeanValidation.json:s3\", \"reason\": \"テストクラスの作成条件（パッケージ・クラス名・EntityTestSupport継承）とコード例として使用\"},\n        {\"ref\": \"testing-framework-01-entityUnitTestWithBeanValidation.json:s2\", \"reason\": \"Excelファイルの配置場所（テストクラスと同じディレクトリ・同名）と静的マスタデータの前提として使用\"},\n        {\"ref\": \"testing-framework-01-entityUnitTestWithBeanValidation.json:s5\", \"reason\": \"文字種・文字列長テスト用シートのカラム構成として使用\"},\n        {\"ref\": \"testing-framework-01-entityUnitTestWithBeanValidation.json:s6\", \"reason\": \"testValidateCharsetAndLengthメソッドのコード例として使用\"},\n        {\"ref\": \"testing-framework-01-entityUnitTestWithBeanValidation.json:s16\", \"reason\": \"EntityTestConfigurationの設定項目とBeanValidationTestStrategyの指定として使用\"},\n        {\"ref\": \"testing-framework-01-entityUnitTestWithBeanValidation.json:s17\", \"reason\": \"コンポーネント設定ファイルのXML記述例として使用\"},\n        {\"ref\": \"testing-framework-01-entityUnitTestWithBeanValidation.json:s10\", \"reason\": \"項目間精査（@AssertTrue）のテストが必要な旨の注意点として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"testing-framework-01-entityUnitTestWithBeanValidation.json:s4\", \"reason\": \"s5・s6でカバーされる具体的なテスト例であり回答への追加情報は最小限に留めた\"},\n        {\"ref\": \"testing-framework-01-entityUnitTestWithBeanValidation.json:s7\", \"reason\": \"testSingleValidationの言及はしたが詳細なカラム構成は回答の範囲を超えると判断\"},\n        {\"ref\": \"testing-framework-01-entityUnitTestWithBeanValidation.json:s15\", \"reason\": \"s16の導入セクションのみで実質的な内容はs16に含まれるため個別使用せず\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "d0f2219f-5c97-4675-bfdc-2f8dc6dc90ad",
+  "total_cost_usd": 0.6677636499999999,
+  "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 121765,
+    "cache_read_input_tokens": 380423,
+    "output_tokens": 6237,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 121765
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3310,
+      "outputTokens": 27,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003445,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 6,
+      "outputTokens": 6237,
+      "cacheReadInputTokens": 380423,
+      "cacheCreationInputTokens": 121765,
+      "webSearchRequests": 0,
+      "costUSD": 0.66431865,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "906fbfb9-0d6a-4bb9-b8b4-6fda5a55c6bd"
+}

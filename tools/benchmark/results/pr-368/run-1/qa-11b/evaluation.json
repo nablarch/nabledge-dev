@@ -1,0 +1,65 @@
+{
+  "scenario_id": "qa-11b",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts clearly. It describes JaxRsResponseHandler generating error responses via ErrorResponseBuilder (fact 1) and JaxRsErrorLogWriter performing log output based on exceptions via the errorLogWriter property (fact 2). Both facts are present and accurately represented without contradiction."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response directly and completely addresses the question about the error handling mechanism, including how error screens are displayed and logs are output when errors occur. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9565217391304348,
+      "reason": "The score is 0.96 because the actual output incorrectly states that the minimum handler queue includes only 2 handlers, whereas the retrieval context specifies 7 handlers: グローバルエラーハンドラ、Jakarta RESTful Web Servicesレスポンスハンドラ、データベース接続管理ハンドラ、トランザクション制御ハンドラ、リクエストURIとアクションを紐付けるハンドラ、リクエストボディ変換ハンドラ、Jakarta RESTful Web Services Bean Validationハンドラ."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-response-handler.json:s8",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 143151,
+    "duration_api_ms": 141713,
+    "num_turns": 15,
+    "total_cost_usd": 0.89165045,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 9376,
+      "cache_read_input_tokens": 782399,
+      "cache_creation_input_tokens": 136745
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3340,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00347,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 9376,
+        "cacheReadInputTokens": 782399,
+        "cacheCreationInputTokens": 136745,
+        "webSearchRequests": 0,
+        "costUSD": 0.8881804499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

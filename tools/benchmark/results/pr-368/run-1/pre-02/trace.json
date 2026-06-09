@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 102514,
+  "duration_api_ms": 101258,
+  "ttft_ms": 4603,
+  "ttft_stream_ms": 3118,
+  "time_to_request_ms": 790,
+  "num_turns": 9,
+  "result": "必要なセクションが揃いました。回答を生成します。\n\n### Answer\n\n**結論**: ウェブアプリケーションの入力チェックは、`@InjectForm` アノテーションと Bean Validation（アノテーション）を組み合わせて実装します。Formクラスのプロパティに `@Required`、`@Length`、`@SystemChar` 等のアノテーションを付与し、業務アクションに `@InjectForm` を付与することでバリデーションが自動実行されます。\n\n**根拠**:\n\n**1. Formクラスの作成（バリデーションルール定義）**\n\nFormクラスのプロパティは**すべてString型**で定義し、アノテーションでルールを設定します。\n\n```java\npublic class UserForm {\n\n  @Required\n  @Length(max = 10)\n  @SystemChar(charsetDef = \"全角文字\")\n  private String userName;\n\n  @Required\n  @Length(min = 8, max = 8)\n  @SystemChar(charsetDef = \"半角数字\")\n  private String birthday;\n\n  // getter、setterは省略\n}\n```\n\n**2. ドメインバリデーション（推奨）**\n\n個別にアノテーションを設定するよりも、ドメインBeanにルールをまとめる方法を推奨します。\n\n```java\n// ドメインBean\npublic class SampleDomainBean {\n    @Length(max = 10)\n    @SystemChar(charsetDef = \"全角文字\")\n    String name;\n\n    @Length(min = 8, max = 8)\n    @SystemChar(charsetDef = \"半角数字\")\n    String date;\n}\n\n// DomainManager実装クラス\npublic class SampleDomainManager implements DomainManager<SampleDomainBean> {\n    @Override\n    public Class<SampleDomainBean> getDomainBean() {\n        return SampleDomainBean.class;\n    }\n}\n```\n\nコンポーネント設定ファイル:\n```xml\n<component name=\"domainManager\" class=\"sample.SampleDomainManager\"/>\n```\n\nドメインを使うFormクラス:\n```java\npublic class SampleForm {\n    @Domain(\"name\")\n    @Required\n    private String userName;\n\n    @Domain(\"date\")\n    private String birthday;\n}\n```\n\n**3. 業務アクションでの @InjectForm 使用**\n\n`@InjectForm` アノテーションを業務アクションのメソッドに付与し、`@OnError` でエラー時の遷移先を指定します。\n\n```java\n@InjectForm(form = UserForm.class, prefix = \"form\", validate = \"register\")\n@OnError(type = ApplicationException.class, path = \"forward://registerForm.jsp\")\npublic HttpResponse handle(HttpRequest req, ExecutionContext ctx) {\n\n    // バリデーション済みのフォームをリクエストスコープから取得する\n    UserForm form = ctx.getRequestScopedVar(\"form\");\n\n    // formを元に業務処理を行う\n}\n```\n\n**4. コンポーネント設定（Bean Validationを有効化）**\n\n`BeanValidationStrategy` を `validationStrategy` という名前でコンポーネント定義します。\n\n```xml\n<component name=\"validationStrategy\" class=\"nablarch.common.web.validator.BeanValidationStrategy\" />\n```\n\n**5. エラーメッセージの定義**\n\nプロパティファイルにアノテーションのメッセージIDをキーとして定義します。\n\n```properties\nnablarch.core.validation.ee.Required.message=必須項目です。\nnablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。\nnablarch.core.validation.ee.SystemChar.message={charsetDef}を入力してください。\n```\n\n**注意点**:\n- Formクラスのプロパティは必ず `String` 型にすること。String以外だとBeanへの変換がバリデーション前に失敗し、予期せぬ例外が発生する。\n- `@OnError` が設定されていない場合、バリデーションエラーがシステムエラー扱いとなるため必ず設定すること。\n- `@Required` アノテーションはドメインBeanではなく個別のFormクラス側に設定すること（必須かどうかは機能設計によるため）。\n\n参照: libraries-bean-validation.json:s8, libraries-bean-validation.json:s9, libraries-bean-validation.json:s16, libraries-bean-validation.json:s6, libraries-bean-validation.json:s7, handlers-InjectForm.json:s3, handlers-InjectForm.json:s4\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-bean-validation.json\", \"reason\": \"Bean Validationはウェブアプリケーションの入力チェック実装の主要ライブラリであり、実装方法を直接カバーしている\"},\n      {\"path\": \"component/handlers/handlers-InjectForm.json\", \"reason\": \"ウェブアプリケーションのユーザ入力値チェックに使用するInjectFormインターセプタを詳述している\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"ウェブアプリケーションの入力値チェック機能詳細のエントリポイントページ\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-nablarch-validation.json\", \"reason\": \"Nablarch ValidationはBean Validationの旧来実装であり、Nablarch 6ではBean Validationが主推奨\"},\n      {\"path\": \"component/libraries/libraries-validation.json\", \"reason\": \"概要インデックスページであり実装詳細を含まない\"},\n      {\"path\": \"processing-pattern/web-application/web-application-error-message.json\", \"reason\": \"エラーメッセージ表示に特化しており、バリデーション実装自体の質問には直接関係しない\"},\n      {\"path\": \"processing-pattern/web-application/web-application-client-create2.json\", \"reason\": \"登録確認画面への遷移例のページであり、バリデーション実装の概要質問には直接回答しない\"},\n      {\"path\": \"component/libraries/libraries-validation-functional-comparison.json\", \"reason\": \"Bean ValidationとNablarch Validationの比較表であり、実装方法の説明ではない\"},\n      {\"path\": \"development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json\", \"reason\": \"テスト書き方のページであり、実装方法の質問には直接対応しない\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s8\", \"relevance\": \"high\", \"reason\": \"バリデーションルールのアノテーション設定方法とFormプロパティはString型必須という重要制約を含む\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s9\", \"relevance\": \"high\", \"reason\": \"ドメインバリデーションの実装方法（推奨アプローチ）を具体的なコード例とともに説明している\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s16\", \"relevance\": \"high\", \"reason\": \"ウェブアプリケーションでのBean Validation有効化設定（BeanValidationStrategy）を説明している\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"@InjectFormアノテーションの具体的な使用方法と業務アクションでの実装例を含む\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"バリデーションエラー時の遷移先指定（@OnError）が必須であることを説明している\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s7\", \"relevance\": \"partial\", \"reason\": \"エラーメッセージのプロパティファイル定義方法を説明しており、実装完了に必要な情報\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s6\", \"relevance\": \"partial\", \"reason\": \"Bean Validationを使うためのコンポーネント設定（messageInterpolator等）を説明している\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s2\", \"relevance\": \"partial\", \"reason\": \"ウェブアプリケーションの入力値チェック関連ドキュメントへの参照リンクをまとめている\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s1\", \"reason\": \"機能概要の見出しのみでコンテンツなし\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s5\", \"reason\": \"使用方法の見出しのみでコンテンツなし\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s10\", \"reason\": \"文字種バリデーションの詳細設定であり、基本実装方法の回答には不要\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s11\", \"reason\": \"相関バリデーションは基本的な入力チェック実装の範囲外\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s12\", \"reason\": \"DBとの相関バリデーションは基本実装の範囲外\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s14\", \"reason\": \"一括登録の複数Bean入力は基本実装の範囲外\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s20\", \"reason\": \"明示的バリデーション実行は通常の@InjectForm使用とは別ユースケース\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s1\", \"reason\": \"Nablarch初期化に関する情報でバリデーション実装と直接関係しない\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s3\", \"reason\": \"データベースアクセスに関する情報\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-bean-validation.json:s8\",\n      \"component/libraries/libraries-bean-validation.json:s9\",\n      \"component/libraries/libraries-bean-validation.json:s16\",\n      \"component/handlers/handlers-InjectForm.json:s3\",\n      \"component/handlers/handlers-InjectForm.json:s4\",\n      \"component/libraries/libraries-bean-validation.json:s7\",\n      \"component/libraries/libraries-bean-validation.json:s6\",\n      \"processing-pattern/web-application/web-application-feature-details.json:s2\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"libraries-bean-validation.json:s8\", \"reason\": \"FormプロパティはすべてString型にする必須制約とアノテーション設定方法の説明に使用\"},\n        {\"ref\": \"libraries-bean-validation.json:s9\", \"reason\": \"ドメインバリデーションの実装方法（DomainBean、DomainManager、@Domainアノテーション）の説明に使用\"},\n        {\"ref\": \"libraries-bean-validation.json:s16\", \"reason\": \"BeanValidationStrategyのコンポーネント設定方法の説明に使用\"},\n        {\"ref\": \"handlers-InjectForm.json:s3\", \"reason\": \"@InjectFormアノテーションの業務アクションへの適用方法とコード例に使用\"},\n        {\"ref\": \"handlers-InjectForm.json:s4\", \"reason\": \"@OnErrorアノテーションでエラー時遷移先を必ず指定すべき注意点の説明に使用\"},\n        {\"ref\": \"libraries-bean-validation.json:s7\", \"reason\": \"エラーメッセージのプロパティファイル定義例の説明に使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"libraries-bean-validation.json:s6\", \"reason\": \"messageInterpolatorの設定はデフォルトで動作するため、基本実装の回答では省略\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-feature-details.json:s2\", \"reason\": \"ドキュメントへの参照リンクのみであり、直接的な実装内容を含まないため未使用\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "1014b733-1667-455e-b16f-e3228c813ad2",
+  "total_cost_usd": 0.79075015,
+  "usage": {
+    "input_tokens": 6664,
+    "cache_creation_input_tokens": 138059,
+    "cache_read_input_tokens": 502103,
+    "output_tokens": 6599,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 138059
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3296,
+      "outputTokens": 25,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003421,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 6664,
+      "outputTokens": 6599,
+      "cacheReadInputTokens": 502103,
+      "cacheCreationInputTokens": 138059,
+      "webSearchRequests": 0,
+      "costUSD": 0.7873291499999999,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "0f2b46eb-f3c1-4bda-9b23-16305f8790de"
+}

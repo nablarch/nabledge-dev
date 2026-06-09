@@ -1,0 +1,62 @@
+{
+  "scenario_id": "qa-17",
+  "description": "アプリケーションコードからSystemRepositoryを使ってコンポーネントを取得したい。名前指定と型指定の取得方法を知りたい。",
+  "input": "SystemRepository から登録済みコンポーネントを取得する方法を教えてください",
+  "scores": {
+    "answer_correctness": {
+      "score": 0.6,
+      "reason": "The Expected Output focuses on a single key fact: that `get(String name)` uses type parameters to retrieve components from the repository in a type-safe manner. The Actual Output does cover the `get(String name)` method and mentions `ClassCastException` when types don't match, and shows the generic signature `public static <T> T get(String name)`, which implies type parameter usage. However, the Actual Output does not explicitly emphasize the 'type-safe retrieval using type parameters' aspect as the central point, which is the core claim in the Expected Output. The concept is partially present through the method signature and ClassCastException note, but the explicit framing of type-safe retrieval via type parameters is not directly stated as a conclusion."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about how to retrieve registered components from SystemRepository. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-repository.json:s25",
+      "component/libraries/libraries-repository.json:s24",
+      "component/libraries/libraries-repository.json:s2",
+      "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s11",
+      "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 64888,
+    "duration_api_ms": 64066,
+    "num_turns": 11,
+    "total_cost_usd": 0.43914604999999995,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 3601,
+      "cache_read_input_tokens": 580751,
+      "cache_creation_input_tokens": 55329
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3266,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033859999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 3601,
+        "cacheReadInputTokens": 580751,
+        "cacheCreationInputTokens": 55329,
+        "webSearchRequests": 0,
+        "costUSD": 0.43576004999999995,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

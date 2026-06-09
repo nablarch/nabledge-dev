@@ -1,0 +1,165 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッションストアの特長・選択基準を直接記載したメインページ"
+      },
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "reason": "Redisストアの特長と構成方法を記載したページ"
+      },
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "reason": "スケールアウト時のHTTPセッションの問題と対処方法を記載したページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-jsp-session.json",
+        "reason": "JSPでのセッション自動生成抑制の話であり、スケールアウト・ストア選択には無関係"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "アーキテクチャ概要であり、ストア特長の詳細は含まれない"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストであり、ストア選択の判断基準とは異なる"
+      },
+      {
+        "path": "setup/cloud-native/cloud-native-containerize.json",
+        "reason": "コンテナ化の設定であり、今回の質問範囲外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "各ストア（DB/HIDDEN/HTTPセッション）の特長と選択基準を一覧で記載しており、質問に直接回答できる"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "利用可能な保存先の種類（DB/HIDDEN/HTTPセッション/Redis）を列挙しており概要把握に必要"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "HIDDENストアが冗長化環境で復号失敗する問題と対処方法を記載しており、スケールアウト時の注意点として重要"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "有効期間がHTTPセッションに保存される点とDB保存への変更方法を記載しており、ステートレス化の補足として有用"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "HTTPセッションがスケールアウトを妨げる理由と3つの一般的対処方法を具体的に記載している"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "本番環境でのRedis構成（Sentinel/Cluster）の対応を記載しており、Redisストア選択時の追加情報として有用"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "Redis構成ごとのクライアントクラスを記載しており、Redisストアの可用性オプションを理解するのに有用"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s15",
+        "relevance": "partial",
+        "reason": "Redisストアの有効期限自動管理の特徴を記載しており、DBストアとの差異を補足するのに有用"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s8",
+        "reason": "SessionManagerのコンポーネント設定方法であり、特長の説明ではなく実装詳細"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s9",
+        "reason": "入力～確認～完了画面間でのストア使い分けの実装例であり、スケールアウト選択基準ではない"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s10",
+        "reason": "認証情報保持の実装例であり、ストア特長の説明ではない"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s7",
+        "reason": "clientTypeの設定値の表であり、ストアの特長説明ではない"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s14",
+        "reason": "Redisへの保存方法の技術詳細であり、ストア選択の判断材料ではない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s17",
+      "component/libraries/libraries-stateless-web-app.json:s1",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s6",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-session-store.json:s16",
+          "reason": "各ストアの特長（スケールアウト適性・ヒープ影響）と選択基準の表を回答のメイン根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s2",
+          "reason": "Redisストアの利用可能性を示す概要として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s12",
+          "reason": "HIDDENストア冗長化時の復号失敗問題と設定例を注意点として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s17",
+          "reason": "有効期間のHTTPセッション依存という注意点の補足として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-stateless-web-app.json:s1",
+          "reason": "HTTPセッションストアのスケールアウト問題と3つの対処方法を根拠として使用"
+        },
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15",
+          "reason": "Redisストアの有効期限自動削除メリットとDBストア差異の説明に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5",
+          "reason": "Redis構成オプションの概要説明であり、ストア選択の判断には直接使用しなかった"
+        },
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s6",
+          "reason": "クライアントクラスの詳細であり、500トークン制限内での回答には含める必要がなかった"
+        }
+      ]
+    }
+  }
+}
