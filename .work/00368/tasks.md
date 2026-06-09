@@ -2,17 +2,11 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-05
+**Updated**: 2026-06-09
 
 ## In Progress
 
-### Task 1: 設計書更新 — classes.md 生成仕様を RBKC 設計書に追記
-**Artifact**: `tools/rbkc/docs/rbkc-converter-design.md` または新規設計書
-**Steps:**
-- [x] 設計書に classes.md の仕様（対象カテゴリ・フォーマット・クラス名抽出ルール）を追記
-- [x] verify 設計書 (`rbkc-verify-quality-design.md`) に classes.md の検証仕様を追記
-- [x] 設計書をコミット・プッシュ — `0dd249d45`
-- [DECISION: 設計確認が必要。承認後 Task 2 へ進む] PR 上でユーザーに設計確認を依頼
+### Task 3: TDD — verify の classes.md coverage 検証テストを作成 (RED)
 
 ## Rules
 
@@ -26,13 +20,6 @@
 - PRレビュー依頼前に、変更差分が想定どおりの変更のみかをチェックし、結果を作業記録に出力してユーザーに確認する
 
 ## Not Started
-
-### Task 2: TDD — test_classes.py を作成 (RED)
-**Artifact**: `tools/rbkc/tests/ut/test_classes.py`
-**Steps:**
-- [ ] `generate_classes_md()` の単体テストを作成（対象カテゴリのみ・クラス名抽出・フォーマット検証）
-- [ ] RED であることを確認: `pytest tools/rbkc/tests/ut/test_classes.py -x`
-- [ ] コミット・プッシュ
 
 ### Task 3: TDD — verify の classes.md coverage 検証テストを作成 (RED)
 **Artifact**: `tools/rbkc/tests/ut/test_verify.py` 追記
@@ -185,3 +172,5 @@ Read `knowledge/classes.md` (relative to skill root). Save content as `classes_c
 ## Done
 
 - [x] Task 0: タスクリスト作成・PR作成・ユーザー確認 — committed `5ff81b145`
+- [x] Task 1: 設計書更新 (classes-md-spec.md, rbkc-verify-quality-design.md QO5) — committed `0dd249d45`
+- [x] Task 2: TDD — test_classes.py 作成 (RED) — committed `ac7f7a1f8`
