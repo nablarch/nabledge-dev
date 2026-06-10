@@ -2,11 +2,26 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-09
+**Updated**: 2026-06-10
 
 ## In Progress
 
-(なし)
+### Task 12: ベンチマーク再実行 (HOW-TO-RUN 手順通り 3 run) + qa-05 設計見直し判断
+
+**Status**: run-1 完了・プッシュ済み。qa-05 失敗の根本原因調査完了。ユーザーの設計判断待ち。
+
+**調査結果（事実）**:
+- Issue #368 SC「qa-05 passes」は達成されていない
+- classes.md Step 3b は qa-05 に一度も発動していない（入力にクラス名 Jackson2BodyConverter が出現しないため）
+- qa-05 の 1.0/0.6 は Step 3（index.md 検索）のモデル揺れに依存。3回単体実行で 1/3=1.0、2/3=0.6
+- 今回 run-1 の 0.6 原因: adapters-jaxrs-adaptor が 8番目に選ばれたがセクション評価に届かなかった
+- benchmark-results.md では「Pre-existing」と記録していたが SC 未達の事実は正確に伝えていなかった
+
+**Steps:**
+- [x] フェーズ0: results 整理 (旧軸削除・DeepEval baseline リネーム) — committed `565f2fc49`
+- [x] run-1 実行 (33/33 正常、qa-06 単体再実行で回収) — committed `10f1ae256`
+- [x] qa-05 根本原因調査 (classes.md 非発動の機序・baseline 比較・単体3回実行確認)
+- [DECISION: qa-05 を救う設計を修正するか? 選択肢: (a) Step 3b のマッチ条件を拡張（クラス名だけでなく機能名・概念でもマッチ）、(b) 真因はセクション到達なので adapters-jaxrs-adaptor を index.md で上位に引き上げる別手当、(c) classes.md の守備範囲外として SC を修正する。ユーザー判断必要] → run-2/3 へ進む前に判断待ち
 
 
 ## Rules
