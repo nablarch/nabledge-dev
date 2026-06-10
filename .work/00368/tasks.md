@@ -2,53 +2,14 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-10
+**Updated**: 2026-06-10 (session 2)
 
 ## In Progress
 
-### Task 13: qa-05 設計見直し — 検証実験2本完了、次の方針決定待ち
-
-**Status**: 実験A（classes.md索引比較 9試行）・実験B（ページ上限40+全セクション 7試行）完了。
-semantic-search.md は origin/main に戻し済み（committed `22b22b765`）。
-classes.md資産・RBKCコードは保持。設計方針の次ステップをユーザーが決定待ち。
-
-**実験A結果（classes.md索引比較、9試行）**:
-- 条件A (index.md のみ): adapters-jaxrs-adaptor 選択 2/3（9位, 9位）
-- 条件B (classes.md のみ): adapters-jaxrs-adaptor 選択 3/3（9位, 7位, 9位）
-- 条件C (両方): adapters-jaxrs-adaptor 選択 **0/3**（10枠をindex系ページが占領）
-- 結論事実: index+classes 一括マージ・一括トリムは悪化させる
-
-**実験B結果（ページ上限40+全セクション、qa-05×3＋回帰4本）**:
-- qa-05: correctness 0.6/0.6/0.6、adapter選択 **0/3**（条件0も 0.6/0.6/1.0）
-- 回帰4本（qa-02, qa-11a, review-07, impact-03）: 全1.0変化なし
-- コスト: 条件40-all 平均 $0.612（条件0平均 $0.849 の **0.72x**）
-- 結論事実: ページ上限を40に上げても同じindex系ページが選ばれ続け、adapter到達ゼロ
-
-**実験結果dir (未コミット)**:
-- `tools/benchmark/results/20260610-143114/` (qa-05 trial-1)
-- `tools/benchmark/results/20260610-143341/` (qa-05 trial-2)
-- `tools/benchmark/results/20260610-143552/` (qa-05 trial-3)
-- `tools/benchmark/results/20260610-143806/` (回帰シナリオ)
-
-**Steps:**
-- [x] 実験A: classes.md索引比較 9試行（9サブエージェント）
-- [x] 実験B: ページ上限40+全セクション 7実行（qa-05×3 + 回帰4本）
-- [x] semantic-search.md を origin/main に revert — committed `22b22b765`
-- [x] DECISION: ユーザーが方針 (a) 「独立2経路マージ」を選択 → Task 14で実験
 
 ### Task 14: 実験C — 条件M（独立2経路マージ）検証
 
-**Status**: 実験準備中。.tmp/experiment-m/ に条件M用 semantic-search.md を作成済み。
-
-**実験設計**:
-- 条件M: index経路(N=8) + classes経路(M=4) を独立に完走させ、classes経路優先でマージ
-- 条件0: 現状ベースライン（nabledge-6 そのまま）
-- 評価対象: qa-05 × 3回 ずつ
-- 追加検証: 条件M で qa-02/qa-11a/review-07/impact-03 各1回
-
-**実験資産**:
-- 条件M semantic-search.md: `.tmp/experiment-m/workflows/semantic-search.md`
-- 実験用 skill_dir: `.tmp/experiment-m/` (knowledge/等は nabledge-6 へ symlink)
+**Status**: 完了。実験結果はTask 15サマリーに転記済み。
 
 **Steps:**
 - [x] 条件M semantic-search.md 作成 (`.tmp/experiment-m/workflows/semantic-search.md`)
@@ -57,40 +18,53 @@ classes.md資産・RBKCコードは保持。設計方針の次ステップをユ
 - [x] 条件M: qa-05 × 3回 実行 (20260610-151935/, 20260610-151955/, 20260610-152553/)
 - [x] 条件0: qa-05 × 3回 実行 (既存結果 20260610-143114/143341/143552/ を使用)
 - [x] 条件M: 回帰シナリオ (qa-02/review-07/impact-03: 20260610-152837/, qa-11a: 20260610-153938/)
-- [x] 結果集計・表作成 (会話内で出力済み)
-- [ ] tasks.md 更新・コミット
-- [ ] 実験結果 benchmark/results/ コミット (条件M全試行 + 回帰)
+- [x] 結果集計・表作成 — committed `5ac667383`
+- [x] tasks.md 更新・コミット — committed `02bebca53`
 
-**実験結果サマリー（条件M vs 条件0）**:
+### Task 15: 実験D — 条件20（関門1: 両経路20件）検証
 
-qa-05 (各3回):
-| 条件 | 試行 | correctness | adapter選択 | adapter順位 | adapterセクション到達 |
-|------|------|-------------|------------|------------|----------------------|
-| M | trial-1-retry (152553) | 0.6 | No | — | No |
-| M | trial-2 (151935) | 1.0 | Yes | 6位 | No（枠外） |
-| M | trial-3 (151955) | 0.6 | Yes | 3位 | Yes (s2) |
-| 0 | trial-1 (143114) | 0.6 | No | — | No |
-| 0 | trial-2 (143341) | 0.6 | No | — | No |
-| 0 | trial-3 (143552) | 0.6 | No | — | No |
+**Status**: 実験完了、結果集計済み。
 
-回帰 (各1回):
-| シナリオ | 条件0 SC | 条件M SC | コスト比 |
-|---------|---------|---------|--------|
-| qa-02 | 1.0 | 1.0 | 0.88x |
-| qa-11a | 1.0 | 1.0 | 0.48x |
-| review-07 | 1.0 | 1.0 | 0.91x |
-| impact-03 | 1.0 | 1.0 | 1.50x |
+**実験設計**:
+- 目的: 関門1（adapterページが候補集合に含まれるか）の安定性のみを測定
+- 条件20: index経路20件 + classes経路20件 独立選択 → dedup マージ
+- Step 3以降（セクション読み取り・回答生成）は省略（コスト削減）
+- 評価: qa-05 × 10回、各回 selected_pages に adapter 含有するか Yes/No
 
-次の判断: ユーザーが結果を見て設計方針を決定（結論はユーザー側）
+**実験資産**:
+- 条件20 semantic-search.md: `.tmp/experiment-20/workflows/semantic-search.md`
+- 実験用 skill_dir: `.tmp/experiment-20/` (knowledge/scripts は nabledge-6 へ symlink)
+- ランナー: `tools/benchmark/scripts/run_page_selection.py`
+- プロンプト: `tools/benchmark/prompts/page-selection-only-prompt.md`
+- 結果: `tools/benchmark/results/20260610-163050/`
 
-### Task 12: ベンチマーク再実行 (HOW-TO-RUN 手順通り 3 run) + qa-05 設計見直し判断
+**実験結果（条件20, qa-05 × 10回）**:
+| 試行 | 候補総数 | adapter含有 | 順位 |
+|------|----------|------------|------|
+|  1 | 22 | Yes | 11 |
+|  2 | 26 | Yes | 15 |
+|  3 | 26 | Yes |  6 |
+|  4 | 16 | Yes | 10 |
+|  5 | 23 | Yes | 12 |
+|  6 | 18 | Yes | 10 |
+|  7 | 22 | Yes | 13 |
+|  8 | 21 | Yes | 12 |
+|  9 | 15 | Yes |  6 |
+| 10 | 21 | Yes | 13 |
 
-**Status**: 完了済み（実験結果はTask 13に移管）。
+**結果**: 10/10 回 adapter 含有
 
 **Steps:**
-- [x] フェーズ0: results 整理 (旧軸削除・DeepEval baseline リネーム) — committed `565f2fc49`
-- [x] run-1 実行 (33/33 正常、qa-06 単体再実行で回収) — committed `10f1ae256`
-- [x] qa-05 根本原因調査 (classes.md 非発動の機序・baseline 比較・単体3回実行確認) — committed `e4ca8a50c`
+- [x] 条件20 semantic-search.md 作成 (`.tmp/experiment-20/workflows/semantic-search.md`)
+- [x] 実験用 skill_dir セットアップ (.tmp/experiment-20/)
+- [x] run_page_selection.py ランナー作成
+- [x] 動作確認: trials=1 で動作確認 (.tmp/experiment-20-pre/)
+- [x] 本番: qa-05 × 10回 実行 (20260610-163050/)
+- [x] 結果集計・表作成（会話内で出力済み）
+- [ ] [DECISION: ユーザーが次の打ち手を決定 — 関門1は安定確認。次は関門2（順位を上位に絞る）へ進むか、現条件20のまま後段（correctness）を測るか]
+- [ ] tasks.md 更新・コミット
+- [ ] 実験資産・結果 コミット
+
 
 
 ## Rules
@@ -119,3 +93,6 @@ qa-05 (各3回):
 - [x] Task 9: ベンチマーク実行 — 全33シナリオ 95.8% (regression なし) — committed `0f702f7ba`
 - [x] Task 11: ベンチマーク詳細分析 + qa-11a 5回再実行 (5/5=1.0、単発ブレ確定) — committed `ce20c5dac`
 - [x] PR #369 body 更新 (benchmark-results.md リンク + SC最終状態)
+- [x] Task 12: ベンチマーク再実行 (HOW-TO-RUN 手順通り) + qa-05 根本原因調査 — committed `e4ca8a50c`
+- [x] Task 13: 実験A（classes.md索引比較）+ 実験B（ページ上限40）— committed `5ac667383`
+- [x] Task 14: 実験C — 条件M（独立2経路マージ）qa-05×3 + 回帰4本 — committed `5ac667383`
