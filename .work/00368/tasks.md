@@ -2,10 +2,9 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-10 (session 2)
+**Updated**: 2026-06-10 (session 3)
 
 ## In Progress
-
 
 ### Task 14: 実験C — 条件M（独立2経路マージ）検証
 
@@ -61,9 +60,9 @@
 - [x] 動作確認: trials=1 で動作確認 (.tmp/experiment-20-pre/)
 - [x] 本番: qa-05 × 10回 実行 (20260610-163050/)
 - [x] 結果集計・表作成（会話内で出力済み）
-- [ ] [DECISION: ユーザーが次の打ち手を決定 — 関門1は安定確認。次は関門2（順位を上位に絞る）へ進むか、現条件20のまま後段（correctness）を測るか]
-- [ ] tasks.md 更新・コミット
-- [ ] 実験資産・結果 コミット
+- [x] [DECISION: ユーザーが次の打ち手を決定 → 条件S（3段階判定）実験を実施]
+- [x] tasks.md 更新・コミット — committed `fd3dbc052`
+- [x] 実験資産・結果 コミット — committed `fd3dbc052`
 
 
 
@@ -96,3 +95,5 @@
 - [x] Task 12: ベンチマーク再実行 (HOW-TO-RUN 手順通り) + qa-05 根本原因調査 — committed `e4ca8a50c`
 - [x] Task 13: 実験A（classes.md索引比較）+ 実験B（ページ上限40）— committed `5ac667383`
 - [x] Task 14: 実験C — 条件M（独立2経路マージ）qa-05×3 + 回帰4本 — committed `5ac667383`
+- [x] Task 15: 実験D — 条件20（関門1: 両経路20件）qa-05×10 → 10/10 adapter含有 — committed `fd3dbc052`
+- [x] Task 16: 実験E — 条件S（3段階判定）qa-05×10 → 2/10 adapter含有 — committed `84edd9cc7`
