@@ -6,22 +6,44 @@
 
 ## In Progress
 
+### Task 13: qa-05 設計見直し — 検証実験2本完了、次の方針決定待ち
+
+**Status**: 実験A（classes.md索引比較 9試行）・実験B（ページ上限40+全セクション 7試行）完了。
+semantic-search.md は origin/main に戻し済み（committed `22b22b765`）。
+classes.md資産・RBKCコードは保持。設計方針の次ステップをユーザーが決定待ち。
+
+**実験A結果（classes.md索引比較、9試行）**:
+- 条件A (index.md のみ): adapters-jaxrs-adaptor 選択 2/3（9位, 9位）
+- 条件B (classes.md のみ): adapters-jaxrs-adaptor 選択 3/3（9位, 7位, 9位）
+- 条件C (両方): adapters-jaxrs-adaptor 選択 **0/3**（10枠をindex系ページが占領）
+- 結論事実: index+classes 一括マージ・一括トリムは悪化させる
+
+**実験B結果（ページ上限40+全セクション、qa-05×3＋回帰4本）**:
+- qa-05: correctness 0.6/0.6/0.6、adapter選択 **0/3**（条件0も 0.6/0.6/1.0）
+- 回帰4本（qa-02, qa-11a, review-07, impact-03）: 全1.0変化なし
+- コスト: 条件40-all 平均 $0.612（条件0平均 $0.849 の **0.72x**）
+- 結論事実: ページ上限を40に上げても同じindex系ページが選ばれ続け、adapter到達ゼロ
+
+**実験結果dir (未コミット)**:
+- `tools/benchmark/results/20260610-143114/` (qa-05 trial-1)
+- `tools/benchmark/results/20260610-143341/` (qa-05 trial-2)
+- `tools/benchmark/results/20260610-143552/` (qa-05 trial-3)
+- `tools/benchmark/results/20260610-143806/` (回帰シナリオ)
+
+**Steps:**
+- [x] 実験A: classes.md索引比較 9試行（9サブエージェント）
+- [x] 実験B: ページ上限40+全セクション 7実行（qa-05×3 + 回帰4本）
+- [x] semantic-search.md を origin/main に revert — committed `22b22b765`
+- [DECISION: 次の設計方針を選択。選択肢: (a) index経路とclasses経路を独立に走らせ各枠を保証するマージ方式（実験Aで条件B 3/3確認済み）、(b) index.mdのadapters-jaxrs-adaptorエントリを強化してindex単独で安定選択させる（index.md改修）、(c) SC「qa-05 passes」を削除しこのPRをclasses.md生成のみで完結させる。ユーザー判断必要]
+
 ### Task 12: ベンチマーク再実行 (HOW-TO-RUN 手順通り 3 run) + qa-05 設計見直し判断
 
-**Status**: run-1 完了・プッシュ済み。qa-05 失敗の根本原因調査完了。ユーザーの設計判断待ち。
-
-**調査結果（事実）**:
-- Issue #368 SC「qa-05 passes」は達成されていない
-- classes.md Step 3b は qa-05 に一度も発動していない（入力にクラス名 Jackson2BodyConverter が出現しないため）
-- qa-05 の 1.0/0.6 は Step 3（index.md 検索）のモデル揺れに依存。3回単体実行で 1/3=1.0、2/3=0.6
-- 今回 run-1 の 0.6 原因: adapters-jaxrs-adaptor が 8番目に選ばれたがセクション評価に届かなかった
-- benchmark-results.md では「Pre-existing」と記録していたが SC 未達の事実は正確に伝えていなかった
+**Status**: 完了済み（実験結果はTask 13に移管）。
 
 **Steps:**
 - [x] フェーズ0: results 整理 (旧軸削除・DeepEval baseline リネーム) — committed `565f2fc49`
 - [x] run-1 実行 (33/33 正常、qa-06 単体再実行で回収) — committed `10f1ae256`
-- [x] qa-05 根本原因調査 (classes.md 非発動の機序・baseline 比較・単体3回実行確認)
-- [DECISION: qa-05 を救う設計を修正するか? 選択肢: (a) Step 3b のマッチ条件を拡張（クラス名だけでなく機能名・概念でもマッチ）、(b) 真因はセクション到達なので adapters-jaxrs-adaptor を index.md で上位に引き上げる別手当、(c) classes.md の守備範囲外として SC を修正する。ユーザー判断必要] → run-2/3 へ進む前に判断待ち
+- [x] qa-05 根本原因調査 (classes.md 非発動の機序・baseline 比較・単体3回実行確認) — committed `e4ca8a50c`
 
 
 ## Rules
