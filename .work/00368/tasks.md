@@ -34,7 +34,54 @@ classes.md資産・RBKCコードは保持。設計方針の次ステップをユ
 - [x] 実験A: classes.md索引比較 9試行（9サブエージェント）
 - [x] 実験B: ページ上限40+全セクション 7実行（qa-05×3 + 回帰4本）
 - [x] semantic-search.md を origin/main に revert — committed `22b22b765`
-- [DECISION: 次の設計方針を選択。選択肢: (a) index経路とclasses経路を独立に走らせ各枠を保証するマージ方式（実験Aで条件B 3/3確認済み）、(b) index.mdのadapters-jaxrs-adaptorエントリを強化してindex単独で安定選択させる（index.md改修）、(c) SC「qa-05 passes」を削除しこのPRをclasses.md生成のみで完結させる。ユーザー判断必要]
+- [x] DECISION: ユーザーが方針 (a) 「独立2経路マージ」を選択 → Task 14で実験
+
+### Task 14: 実験C — 条件M（独立2経路マージ）検証
+
+**Status**: 実験準備中。.tmp/experiment-m/ に条件M用 semantic-search.md を作成済み。
+
+**実験設計**:
+- 条件M: index経路(N=8) + classes経路(M=4) を独立に完走させ、classes経路優先でマージ
+- 条件0: 現状ベースライン（nabledge-6 そのまま）
+- 評価対象: qa-05 × 3回 ずつ
+- 追加検証: 条件M で qa-02/qa-11a/review-07/impact-03 各1回
+
+**実験資産**:
+- 条件M semantic-search.md: `.tmp/experiment-m/workflows/semantic-search.md`
+- 実験用 skill_dir: `.tmp/experiment-m/` (knowledge/等は nabledge-6 へ symlink)
+
+**Steps:**
+- [x] 条件M semantic-search.md 作成 (`.tmp/experiment-m/workflows/semantic-search.md`)
+- [x] 実験用 skill_dir セットアップ (.tmp/experiment-m/)
+- [x] 動作確認: pre-01 で1回実行し結果確認 (20260610-151632/)
+- [x] 条件M: qa-05 × 3回 実行 (20260610-151935/, 20260610-151955/, 20260610-152553/)
+- [x] 条件0: qa-05 × 3回 実行 (既存結果 20260610-143114/143341/143552/ を使用)
+- [x] 条件M: 回帰シナリオ (qa-02/review-07/impact-03: 20260610-152837/, qa-11a: 20260610-153938/)
+- [x] 結果集計・表作成 (会話内で出力済み)
+- [ ] tasks.md 更新・コミット
+- [ ] 実験結果 benchmark/results/ コミット (条件M全試行 + 回帰)
+
+**実験結果サマリー（条件M vs 条件0）**:
+
+qa-05 (各3回):
+| 条件 | 試行 | correctness | adapter選択 | adapter順位 | adapterセクション到達 |
+|------|------|-------------|------------|------------|----------------------|
+| M | trial-1-retry (152553) | 0.6 | No | — | No |
+| M | trial-2 (151935) | 1.0 | Yes | 6位 | No（枠外） |
+| M | trial-3 (151955) | 0.6 | Yes | 3位 | Yes (s2) |
+| 0 | trial-1 (143114) | 0.6 | No | — | No |
+| 0 | trial-2 (143341) | 0.6 | No | — | No |
+| 0 | trial-3 (143552) | 0.6 | No | — | No |
+
+回帰 (各1回):
+| シナリオ | 条件0 SC | 条件M SC | コスト比 |
+|---------|---------|---------|--------|
+| qa-02 | 1.0 | 1.0 | 0.88x |
+| qa-11a | 1.0 | 1.0 | 0.48x |
+| review-07 | 1.0 | 1.0 | 0.91x |
+| impact-03 | 1.0 | 1.0 | 1.50x |
+
+次の判断: ユーザーが結果を見て設計方針を決定（結論はユーザー側）
 
 ### Task 12: ベンチマーク再実行 (HOW-TO-RUN 手順通り 3 run) + qa-05 設計見直し判断
 
