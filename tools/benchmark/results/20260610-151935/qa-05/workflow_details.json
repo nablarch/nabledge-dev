@@ -1,0 +1,173 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "RESTfulウェブサービスでの登録機能の具体的な実装例（JSON受信→DB登録）を直接カバーしている"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "reason": "リソースクラスのメソッドシグネチャ（引数・戻り値の型）を説明しており、実装パターンの核心部分"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "reason": "JSONリクエストボディをFormに変換する処理を担うハンドラであり、実装に必須の知識"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "@ValidアノテーションによるBean Validationの動作を説明しており、登録処理の入力チェックに直結"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細（URIマッピング、入力チェック、DBアクセス）の全体像を提供"
+      },
+      {
+        "path": "component/adapters/adapters-jaxrs-adaptor.json",
+        "reason": "JaxRsアダプタの設定（Jackson2BodyConverterなど）はJSON変換に必要なコンポーネント"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDao.insertを使ったDB登録の実装方法（classes経路でBeanUtil/UniversalDaoが命中）"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "reason": "@PathアノテーションによるURLマッピング設定を説明（classes経路でJaxRsPathOptionsProviderが命中）"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-search.json",
+        "reason": "検索機能の実装例であり、登録処理には直接関係しない"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-update.json",
+        "reason": "更新機能の実装例であり、今回の登録処理とは異なる"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationの詳細設定だが、基本的なバリデーションはjaxrs-bean-validation-handlerで十分カバーされる"
+      },
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "BeanUtilはanswer内で使われるが、createAndCopyの基本使用法はgetting-started-createで説明されているため追加不要"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "JSON受信→バリデーション→BeanUtil変換→UniversalDao.insert→HttpResponse返却の完全な実装例が含まれる"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "リソースクラスメソッドの引数（Formを受け取る場合）と戻り値（HttpResponse）の定義パターンを説明している"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "@Consumes(APPLICATION_JSON)を使ったリクエストボディのForm変換の具体的な仕組みを説明している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@ValidアノテーションをメソッドにつけることでBean Validationが実行されることを説明している"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "Jackson2BodyConverterなどのコンバータ設定方法を説明しており、JSON対応に必要な背景知識"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "URIとリソースクラスのマッピング（@Path/@POST）に関連するドキュメントへのポインタを提供"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s2",
+        "reason": "パスパラメータの扱いは登録処理の主題ではない"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s3",
+        "reason": "クエリーパラメータの扱いはPOST登録処理とは関係しない"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s4",
+        "reason": "レスポンスヘッダ設定は登録処理の主題ではない"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s1",
+        "reason": "Nablarchの初期化は別ドキュメント参照のみで具体的内容がない"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックの詳細は別ドキュメント参照のみ"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s6",
+        "reason": "レスポンスボディへの変換はGET処理の説明であり、POST登録とは関係しない"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s5",
+        "reason": "Bean Validationグループの指定は基本的な登録処理では不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "restful-web-service-getting-started-create.json:s1",
+          "reason": "フォームクラスの実装例、@Consumes/@Validアノテーション、BeanUtil.createAndCopy、UniversalDao.insert、HttpResponse 201返却の完全実装例として使用"
+        },
+        {
+          "ref": "restful-web-service-resource-signature.json:s1",
+          "reason": "メソッド引数にフォーム(Java Beans)を受け取るパターンとHttpResponseを返すパターンの説明として参照"
+        },
+        {
+          "ref": "handlers-body-convert-handler.json:s5",
+          "reason": "@Consumes(APPLICATION_JSON)によるリクエストボディ変換の仕組みの説明として参照"
+        },
+        {
+          "ref": "handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "@ValidアノテーションによるBean Validation実行とApplicationException送出の説明として参照"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "handlers-body-convert-handler.json:s4",
+          "reason": "コンバータ設定のXML例は注意点に含めたが、主要実装パターンの説明には不要だったため本文から除外"
+        },
+        {
+          "ref": "restful-web-service-feature-details.json:s5",
+          "reason": "URIマッピングの詳細は別ドキュメントへのリンクのみで具体的コードなし、@Path/@POSTは getting-started-create で説明済み"
+        }
+      ]
+    }
+  }
+}

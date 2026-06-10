@@ -1,0 +1,141 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 317589,
+  "duration_api_ms": 316934,
+  "ttft_ms": 4179,
+  "ttft_stream_ms": 2554,
+  "time_to_request_ms": 686,
+  "num_turns": 20,
+  "result": "十分な情報が揃いました。回答を生成します。\n\n---\n\n### Answer\n\n**結論**: ウェブアプリケーションのエラー処理は、主に「HTTPエラー制御ハンドラ (`HttpErrorHandler`)」が担当し、例外の種類に応じてログレベルとHTTPステータスコードを決定してエラー画面へ誘導する。ログ出力は「障害通知ログ」（監視用）と「障害解析ログ」（解析用）の2種類が使い分けられる。\n\n---\n\n**根拠**:\n\n### 1. 例外種別ごとのログ出力とレスポンス（HttpErrorHandler）\n\n後続ハンドラで発生した例外は、`HttpErrorHandler` が種別ごとに以下の処理を行う：\n\n| 例外クラス | ログレベル | ステータスコード |\n|---|---|---|\n| `NoMoreHandlerException` | INFO | 404 |\n| `HttpErrorResponse` | ログなし | `HttpErrorResponse#getResponse()` の内容 |\n| `Result.Error` | `writeFailureLogPattern` の設定による（FATALの場合あり） | `Error#getStatusCode()` の値 |\n| `StackOverflowError` | FATAL | 500 |\n| 上記以外の例外/エラー | FATAL | 500 |\n\n`writeFailureLogPattern` は正規表現で指定し、マッチしたステータスコードの場合にFATALログを出力する。\n\n### 2. エラー画面の表示（HttpResponseHandler + defaultPages）\n\n`HttpResponseHandler` は、ステータスコードが **400以上** の場合にエラー画面を表示する。表示するページは `HttpErrorHandler` の `defaultPages` プロパティで設定する：\n\n```xml\n<component class=\"nablarch.fw.web.handler.HttpErrorHandler\">\n  <property name=\"defaultPages\">\n    <map>\n      <entry key=\"4..\" value=\"/USER_ERROR.jsp\" />\n      <entry key=\"404\" value=\"/NOT_FOUND.jsp\" />\n      <entry key=\"5..\" value=\"/ERROR.jsp\" />\n      <entry key=\"503\" value=\"/NOT_IN_SERVICE.jsp\" />\n    </map>\n  </property>\n</component>\n```\n\n> 上記設定では `web.xml` の `<error-page>` 設定も合わせて必要。推奨はデフォルトエラーページを `web.xml` 側で設定すること。\n\n### 3. バリデーションエラー時の画面遷移（@OnError）\n\n業務アクションのメソッドに `@OnError` アノテーションを付けることで、特定の例外発生時の遷移先JSPを指定できる：\n\n```java\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    // 業務処理\n}\n```\n\n`ApplicationException` が `HttpErrorResponse` にラップされている場合は、エラーメッセージ情報が `ErrorMessages` に変換されてリクエストスコープの `errors` キーにセットされる（View側で参照可能）。\n\n### 4. 障害ログの2種類の出力\n\nフレームワークは例外発生時に以下2種類の障害ログを出力する：\n\n| ログ種類 | ログレベル | ロガー名 | 出力先 |\n|---|---|---|---|\n| 障害通知ログ | FATAL / ERROR | `MONITOR` | 監視専用ファイル（監視ツールが検知） |\n| 障害解析ログ | FATAL / ERROR | クラス名 | アプリケーションログファイル |\n\n設定例（`log.properties`）：\n```properties\nloggers.MON.nameRegex=MONITOR\nloggers.MON.level=ERROR\nloggers.MON.writerNames=monitorLog\n\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appLog\n```\n\nアプリケーションから直接障害ログを出力する場合は `FailureLogUtil` を使用する：\n\n```java\nFailureLogUtil.logError(e, inputData, \"USER_NOT_FOUND\");\n```\n\n---\n\n**注意点**:\n- `HttpErrorHandler` は `HttpResponseHandler`（レスポンス生成）および `HTTPアクセスログハンドラ` より **後ろ** に配置する必要がある（生成したレスポンスをそれらが処理するため）\n- `GlobalErrorHandler` はハンドラキューの **先頭** に配置すること（先頭より手前で例外が発生するとJVMやアプリサーバが処理することになる）\n- `HttpResponseHandler` 内で致命的エラーが発生した場合は、ステータスコード500の固定HTMLが返される（設定で変更不可）\n\n参照: handlers-HttpErrorHandler.json:s4, handlers-HttpErrorHandler.json:s5, handlers-HttpErrorHandler.json:s6, libraries-failure-log.json:s1, libraries-failure-log.json:s3, handlers-global-error-handler.json:s4, handlers-on-error.json:s3, handlers-http-response-handler.json:s4, handlers-http-response-handler.json:s8\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/handlers/handlers-HttpErrorHandler.json\", \"reason\": \"後続ハンドラの例外に対するログ出力・レスポンス変換を担う中核ハンドラ\"},\n      {\"path\": \"component/libraries/libraries-failure-log.json\", \"reason\": \"障害ログ出力の仕組みと通知ログ/解析ログの2種類を直接説明するページ\"},\n      {\"path\": \"component/handlers/handlers-global-error-handler.json\", \"reason\": \"未捕捉例外を捕捉してログ出力するハンドラの詳細\"},\n      {\"path\": \"component/handlers/handlers-on-error.json\", \"reason\": \"業務アクションでの例外発生時に遷移先を指定するインターセプタ\"},\n      {\"path\": \"component/handlers/handlers-on-errors.json\", \"reason\": \"複数例外に対する遷移先指定インターセプタ\"},\n      {\"path\": \"component/handlers/handlers-http-response-handler.json\", \"reason\": \"ステータスコード400以上でエラー画面を表示する仕組みを含むハンドラ\"},\n      {\"path\": \"component/libraries/libraries-log.json\", \"reason\": \"ログ出力基盤（Logger/LogWriter/LogFormatter）の仕組みを説明するページ\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"全体像のリンク集であり具体的な仕組み説明は含まれないため\"},\n      {\"path\": \"component/handlers/handlers-batch-*\", \"reason\": \"バッチ処理方式であり質問の処理方式（ウェブ）と異なるため\"},\n      {\"path\": \"check/security-check/*\", \"reason\": \"セキュリティチェックであり目的（仕組み理解）と合致しないため\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"例外種別ごとのログレベルとステータスコードの対応表で、仕組みの核心情報\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s5\", \"relevance\": \"high\", \"reason\": \"Result.ErrorのwriteFailureLogPatternによるFATALログ出力制御の説明\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s6\", \"relevance\": \"high\", \"reason\": \"defaultPagesプロパティによるエラー画面の設定方法\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"障害通知ログと障害解析ログの2種類の出力方針とロガー名の説明\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"FailureLogUtilを使った障害ログ出力の実装方法\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"GlobalErrorHandlerの例外種別ごとの処理内容表（ログレベルと戻り値）\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"@OnErrorアノテーションによるエラー時遷移先指定の実装方法\"},\n      {\"file\": \"component/handlers/handlers-http-response-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"ステータスコード400以上でエラー画面を表示する変換条件の説明\"},\n      {\"file\": \"component/handlers/handlers-http-response-handler.json\", \"section_id\": \"s8\", \"relevance\": \"partial\", \"reason\": \"致命的エラー時の固定500レスポンスHTMLの仕様\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"GlobalErrorHandlerのハンドラキュー先頭配置の制約\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s1\", \"reason\": \"ハンドラクラス名のみでコンテンツなし\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s2\", \"reason\": \"モジュール一覧のみで仕組みの説明なし\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s3\", \"reason\": \"制約（配置順序）は注意点として使用するが高優先度ではない\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s2\", \"reason\": \"見出しのみで内容なし\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s4\", \"reason\": \"障害ログの設定詳細（プロパティ一覧）は仕組み理解の目的に対して詳細すぎる\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s4\", \"reason\": \"内部フォワードによる表示データ取得は実装詳細であり今回の目的外\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s5\", \"reason\": \"複数レスポンス指定は実装詳細\"},\n      {\"file\": \"component/handlers/handlers-http-response-handler.json\", \"section_id\": \"s6\", \"reason\": \"ステータスコード400→200変換は仕組み理解の補足情報\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s5\", \"reason\": \"カスタムハンドラ作成の案内であり仕組み理解には不要\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/handlers/handlers-HttpErrorHandler.json:s4\",\n      \"component/handlers/handlers-HttpErrorHandler.json:s5\",\n      \"component/handlers/handlers-HttpErrorHandler.json:s6\",\n      \"component/libraries/libraries-failure-log.json:s1\",\n      \"component/libraries/libraries-failure-log.json:s3\",\n      \"component/handlers/handlers-global-error-handler.json:s4\",\n      \"component/handlers/handlers-on-error.json:s3\",\n      \"component/handlers/handlers-http-response-handler.json:s4\",\n      \"component/handlers/handlers-http-response-handler.json:s8\",\n      \"component/handlers/handlers-global-error-handler.json:s3\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"handlers-HttpErrorHandler.json:s4\", \"reason\": \"例外種別ごとのログレベルとステータスコードの対応表として回答の中核に使用\"},\n        {\"ref\": \"handlers-HttpErrorHandler.json:s5\", \"reason\": \"writeFailureLogPatternによるResult.Errorのログ制御の説明に使用\"},\n        {\"ref\": \"handlers-HttpErrorHandler.json:s6\", \"reason\": \"defaultPagesプロパティの設定例とweb.xml推奨の注意点に使用\"},\n        {\"ref\": \"libraries-failure-log.json:s1\", \"reason\": \"障害通知ログ/障害解析ログの2種類とロガー名MINITORの説明に使用\"},\n        {\"ref\": \"libraries-failure-log.json:s3\", \"reason\": \"FailureLogUtilのコード例に使用\"},\n        {\"ref\": \"handlers-global-error-handler.json:s4\", \"reason\": \"GlobalErrorHandlerの例外処理表に使用\"},\n        {\"ref\": \"handlers-on-error.json:s3\", \"reason\": \"@OnErrorアノテーションのコード例に使用\"},\n        {\"ref\": \"handlers-http-response-handler.json:s4\", \"reason\": \"ステータスコード400以上でエラー画面を表示する仕組みの説明に使用\"},\n        {\"ref\": \"handlers-http-response-handler.json:s8\", \"reason\": \"致命的エラー時の固定500レスポンスの注意点に使用\"},\n        {\"ref\": \"handlers-global-error-handler.json:s3\", \"reason\": \"GlobalErrorHandlerの先頭配置制約を注意点として使用\"}\n      ],\n      \"unused\": []\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "e6caf59e-9717-4a98-9529-f4ea1cde365b",
+  "total_cost_usd": 1.6974432499999998,
+  "usage": {
+    "input_tokens": 21,
+    "cache_creation_input_tokens": 59751,
+    "cache_read_input_tokens": 1119196,
+    "output_tokens": 8402,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 59751
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3342,
+      "outputTokens": 25,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003467,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 33,
+      "outputTokens": 20209,
+      "cacheReadInputTokens": 2041470,
+      "cacheCreationInputTokens": 207547,
+      "webSearchRequests": 0,
+      "costUSD": 1.69397625,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01NypEtBo7WeGg8fJi5ut2ZL",
+      "tool_input": {
+        "command": "ls /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/knowledge/javadoc/ | grep -E \"javadoc-nablarch-fw-NoMoreHandlerException|javadoc-nablarch-fw-web-HttpErrorResponse|javadoc-nablarch-core-message-ApplicationException|javadoc-nablarch-fw-web-message-ErrorMessages|javadoc-nablarch-fw-Result|javadoc-nablarch-fw-web-handler-HttpErrorHandler|javadoc-nablarch-fw-web-HttpResponse|javadoc-nablarch-core-log-app-FailureLogUtil|javadoc-nablarch-fw-results-TransactionAbnormalEnd|javadoc-nablarch-fw-launcher-ProcessAbnormalEnd\"",
+        "description": "Check if referenced Javadoc files exist"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01XLiw1GCAPsTt3eW1YdHvBQ",
+      "tool_input": {
+        "command": "find /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/knowledge/javadoc/ -name \"javadoc-nablarch-fw-NoMoreHandlerException.json\" -o -name \"javadoc-nablarch-fw-web-HttpErrorResponse.json\" -o -name \"javadoc-nablarch-core-message-ApplicationException.json\" -o -name \"javadoc-nablarch-fw-web-message-ErrorMessages.json\" -o -name \"javadoc-nablarch-fw-Result.json\" -o -name \"javadoc-nablarch-fw-web-handler-HttpErrorHandler.json\" -o -name \"javadoc-nablarch-fw-web-HttpResponse.json\" -o -name \"javadoc-nablarch-core-log-app-FailureLogUtil.json\" -o -name \"javadoc-nablarch-fw-results-TransactionAbnormalEnd.json\" -o -name \"javadoc-nablarch-fw-launcher-ProcessAbnormalEnd.json\"",
+        "description": "Check existence of referenced Javadoc files"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_012YD2RvG2mq8Gj7fmik75Jy",
+      "tool_input": {
+        "command": "ls /home/tie303177/work/nabledge/work4/.tmp/experiment-m/scripts/ 2>/dev/null || ls /home/tie303177/work/nabledge/work4/scripts/ 2>/dev/null | head -20",
+        "description": "Find scripts directory"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_016aVEzQnKsCWNq1hDDdDakL",
+      "tool_input": {
+        "command": "ls /home/tie303177/work/nabledge/work4/scripts/",
+        "description": "List scripts directory"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01GpEdndJy8guDCFQLPSFyQ5",
+      "tool_input": {
+        "command": "\\\njq -r '.sections[] | select(.id == \"s4\" or .id == \"s5\" or .id == \"s6\") | \"=== \" + .id + \" ===\\n\" + .content' knowledge/component/handlers/handlers-HttpErrorHandler.json",
+        "description": "Read HttpErrorHandler sections s4, s5, s6"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_0112NfnUt45Sy9PPL31226GA",
+      "tool_input": {
+        "command": "jq -r '.sections[] | select(.id == \"s4\" or .id == \"s5\" or .id == \"s6\") | \"=== \" + .id + \" ===\\n\" + .content' knowledge/component/handlers/handlers-HttpErrorHandler.json",
+        "description": "Read HttpErrorHandler sections s4, s5, s6"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_0138WpZBc5jFHMTZUGer5D86",
+      "tool_input": {
+        "command": "jq -r '.sections[] | select(.id == \"s4\" or .id == \"s5\" or .id == \"s6\") | \"=== \" + .id + \" ===\\n\" + .content' knowledge/component/handlers/handlers-HttpErrorHandler.json",
+        "description": "Read HttpErrorHandler sections s4, s5, s6"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01Ad8dKKwSKLH1Nr3qa811iJ",
+      "tool_input": {
+        "command": "pwd && ls knowledge/component/handlers/",
+        "description": "Check current directory and list handlers"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_017skm1BTfwmryApYCuyAcL1",
+      "tool_input": {
+        "command": "ls knowledge/",
+        "description": "List knowledge directory in experiment-m"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01TRqTbmdNAbd1puNvB7fUft",
+      "tool_input": {
+        "command": "ls /home/tie303177/work/nabledge/work4/.tmp/experiment-m/knowledge/",
+        "description": "List knowledge directory with absolute path"
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "60e04d36-3f27-47e9-9158-6e03219e06cc"
+}

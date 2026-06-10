@@ -1,0 +1,126 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationの実装方法と制約を直接扱うページで、DBとの相関バリデーションに関するセクションが存在する"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの入力値チェックに関する機能詳細を記載するページ"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTfulウェブサービスのBean Validationハンドラの詳細を記載するページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "Nablarch Validationは旧式のバリデーション機能であり、Bean Validationの質問には不適切"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "DBアクセス全般のページで、バリデーション文脈でのDB利用制約を扱っていない"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "DAOの使い方であり、バリデーション文脈での実装方針とは直接関係しない"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "処理方式がRESTfulウェブサービスと指定されており、ウェブアプリケーションページはスキップ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "Bean ValidatioでのDB相関バリデーション（重複チェック）の実装方針を直接説明し、カスタムバリデータでのDB検索を避けるべき理由を明記している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "業務アクション側でDB重複チェックをした際に特定フィールドのエラーとして通知する方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスでBean Validationを使うには@Validアノテーションが必要であることを示す背景情報"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "相関バリデーションの基本的な実装方法（@AssertTrue）を示しており、DBなし相関との使い分けの背景理解に有用"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s1",
+        "reason": "機能概要の見出しのみで具体的な実装情報を持たない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s5",
+        "reason": "使用方法の見出しのみで具体的な実装情報を持たない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s6",
+        "reason": "MessageInterpolatorの設定で、重複チェック実装方針と直接関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "reason": "バリデーションルールの設定方法（アノテーション設定）で、DBアクセス方針には無関係"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s24",
+        "reason": "カスタムアノテーション・ロジックの追加方法で、DBアクセス禁止の文脈では適切でない"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックの概要のみでリンク先参照のみ、具体的な実装情報を持たない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/libraries/libraries-bean-validation.json:s11"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s12",
+          "reason": "Bean ValidationでのDB相関バリデーション禁止と業務アクションでの実装方針を直接引用"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s13",
+          "reason": "ValidationUtil#createMessageForPropertyとApplicationExceptionによるフィールドエラー通知方法を説明"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s17",
+          "reason": "RESTfulウェブサービスでの@Valid使用に関する注意点として補足に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s11",
+          "reason": "@AssertTrueを使った相関バリデーションはDB不使用のケースで、今回の質問（DB重複チェック）には不要だった"
+        }
+      ]
+    }
+  }
+}
