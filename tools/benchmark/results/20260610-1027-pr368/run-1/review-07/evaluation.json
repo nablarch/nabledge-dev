@@ -1,0 +1,62 @@
+{
+  "scenario_id": "review-07",
+  "description": "Web画面で外部サイトからの不正なPOSTリクエストを防ぐ必要がある。CSRF対策をNablarchの仕組みで実装したい。",
+  "input": "外部サイトから不正にPOSTされるのを防ぎたい。NablarchにCSRF対策の仕組みはある？どう設定する？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The expected output contains one key fact: 'CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う' (adding the CSRF token verification handler to the handler configuration enables CSRF token generation and verification). The actual output explicitly covers this fact in the conclusion section, stating that by adding `CsrfTokenVerificationHandler` to the handler configuration, automatic CSRF token generation and verification is performed for all POST requests etc. The actual output fully covers the single expected fact with additional detail."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is fully relevant, directly addressing the question about preventing unauthorized POST requests from external sites and explaining Nablarch's CSRF protection mechanism and its configuration. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s6",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+      "processing-pattern/web-application/web-application-feature-details.json:s19"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 114511,
+    "duration_api_ms": 114340,
+    "num_turns": 11,
+    "total_cost_usd": 0.83812665,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 7062,
+      "cache_read_input_tokens": 653313,
+      "cache_creation_input_tokens": 142049
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3354,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0034890000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 7062,
+        "cacheReadInputTokens": 653313,
+        "cacheCreationInputTokens": 142049,
+        "webSearchRequests": 0,
+        "costUSD": 0.8346376499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

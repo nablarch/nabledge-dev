@@ -1,0 +1,110 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s29に「現在のトランザクションとは異なるトランザクションでSQLを実行する」が直接含まれており、質問に完全一致する"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s20に「現在のトランザクションとは異なるトランザクションで実行する」（UniversalDAO版）が直接含まれている"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "s8に「別トランザクションで実行する」が含まれており、Domaアダプタ利用時の選択肢となる"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "s7「アプリケーションで複数のトランザクションを使用する」が複数トランザクション制御の関連情報"
+      },
+      {
+        "path": "component/handlers/handlers-database-connection-management-handler.json",
+        "reason": "s5「複数のデータベース接続（トランザクション）を使用する」が関連するハンドラ設定情報"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "バッチアーキテクチャ概要のみで別トランザクション実行の具体的な方法は記載なし"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "トランザクション管理の概要であり、別トランザクション実行の具体的実装は上記ページに委ねられている"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチ機能詳細だが別トランザクション実行の具体的説明は含まれていない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "業務トランザクションとは別のトランザクションでSQL実行する方法（SimpleDbTransactionManager + SimpleDbTransactionExecutor）が直接説明されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "ユニバーサルDAO版の別トランザクション実行方法（UniversalDao.Transaction継承）が直接説明されている"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "Domaアダプタ利用時の別トランザクション実行方法（requiresNew）が直接説明されている"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "ハンドラキューで複数トランザクションを設定する方法の背景情報として有用"
+      },
+      {
+        "file": "component/handlers/handlers-database-connection-management-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "複数DB接続の設定方法として参考になるが、質問のメインの要求（ロールバック後も更新を残す）とは異なるアプローチ"
+      }
+    ],
+    "excluded_sections": []
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/adapters/adapters-doma-adaptor.json:s8",
+      "component/handlers/handlers-transaction-management-handler.json:s7",
+      "component/handlers/handlers-database-connection-management-handler.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManagerとSimpleDbTransactionExecutorによる別トランザクション実行の設定例・実装例を引用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s20",
+          "reason": "UniversalDao.Transactionを使ったユニバーサルDAO版の別トランザクション実行例を引用"
+        },
+        {
+          "ref": "adapters-doma-adaptor.json:s8",
+          "reason": "Domaアダプタ利用時のrequiresNewによる別トランザクション実行例を引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "handlers-transaction-management-handler.json:s7",
+          "reason": "複数ハンドラキュー設定は業務トランザクションと並行して別トランザクションを独立させる（ロールバック後も残す）目的とは異なるため未使用"
+        },
+        {
+          "ref": "handlers-database-connection-management-handler.json:s5",
+          "reason": "複数DB接続管理の設定説明であり、質問のメイン要求（ロールバック後も更新を残す独立トランザクション）の回答には直接必要なく未使用"
+        }
+      ]
+    }
+  }
+}

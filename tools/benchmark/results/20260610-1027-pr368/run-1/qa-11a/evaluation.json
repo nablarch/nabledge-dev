@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output clearly covers the expected facts. It explicitly states that HttpErrorHandler determines the HTTP status code based on exception type (shown in the table with NoMoreHandlerException→404, HttpErrorResponse→getResponse() value, etc., and others→500), and it also explicitly states that when HttpErrorResponse's cause is ApplicationException, the error messages are set in the request scope with key name 'errors', enabling JSP to display error messages. Both key facts from the expected output are present and well-explained."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.8636363636363636,
+      "reason": "The score is 0.86 because the actual output contains a few contradictions: it incorrectly states that NoMoreHandlerException is logged at INFO level when it is actually recorded as an audit log (証跡ログ); it mentions adding a 'custom handler' instead of the recommended common error handler approach for system-wide error page transitions; and it reverses the recommendation regarding error page configuration, suggesting defaultPages is the preferred approach when the retrieval context actually recommends configuring default error pages in web.xml."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/handlers/handlers-on-errors.json:s3",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s3",
+      "processing-pattern/web-application/web-application-feature-details.json:s16",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 304897,
+    "duration_api_ms": 303200,
+    "num_turns": 9,
+    "total_cost_usd": 1.5248107499999999,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 8491,
+      "cache_read_input_tokens": 461089,
+      "cache_creation_input_tokens": 44217
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3342,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003477,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 21,
+        "outputTokens": 21285,
+        "cacheReadInputTokens": 1461590,
+        "cacheCreationInputTokens": 203605,
+        "webSearchRequests": 0,
+        "costUSD": 1.52133375,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

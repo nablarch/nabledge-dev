@@ -1,0 +1,136 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "RESTfulウェブサービスでの登録機能の実装パターンを直接解説するページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細（バリデーション・DB・マッピング等）を網羅するページ"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "DBへの登録に使用するUniversalDaoの使い方を解説するライブラリページ"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "フォームのバリデーション実装（RESTfulウェブサービス向け含む）を解説するライブラリページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-client-create4.json",
+        "reason": "ウェブアプリケーション（JSP/Servlet）の登録実装であり、RESTfulウェブサービスとは実装パターンが異なるためスキップ"
+      },
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "BeanUtilはs1内のコードで既に使われており、独立したセクション参照は不要"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "reason": "URLマッピングの詳細設定ページだが、登録実装パターン自体の回答には主要でない"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "バリデーションハンドラの詳細設定ページだが、bean-validation.jsonのs17で参照先として十分"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "フォーム作成からDB登録までの完全な実装パターン（コード例含む）を提供するため"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスで@Validを使ったバリデーション方法を直接説明するため"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "フォームプロパティをString型にすべき理由（バリデーションルール設定の前提）を補足するため"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスにおける排他制御の注意点（ETag/If-Match非対応）を補足するため"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "UniversalDAOを使うための設定（BasicDaoContextFactory）を補足するため"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s1",
+        "reason": "Nablarchの初期化は別ページへの参照のみで具体情報なし"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックは他ライブラリへの参照のみ"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s3",
+        "reason": "DBアクセスは他ライブラリへの参照のみ"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s2",
+        "reason": "機能概要の説明のみでCRUDの実装詳細はない"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s13",
+        "reason": "サロゲートキー採番は質問のスコープ外"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/libraries/libraries-bean-validation.json:s8",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s4",
+      "component/libraries/libraries-universal-dao.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+          "reason": "フォーム作成・@Valid・BeanUtil.createAndCopy・UniversalDao.insert・@Path/@POSTの実装パターン全体の根拠"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s17",
+          "reason": "RESTfulウェブサービスでの@Validを使ったバリデーション方法の根拠"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s8",
+          "reason": "String型プロパティの根拠はs1のコメントで既に言及されており、s8の詳細は回答に不要と判断"
+        },
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s4",
+          "reason": "楽観的ロックの注意点は補足として言及したが、詳細実装は質問スコープ外"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s6",
+          "reason": "設定方法（コンポーネント定義）は実装パターンの回答には直接必要でないため未使用"
+        }
+      ]
+    }
+  }
+}

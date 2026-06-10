@@ -1,0 +1,138 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "カスタムタグのHTMLエスケープ・サニタイジング機能がXSS対策の主要コンポーネントのため選択"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "NablarchのXSS対応範囲をIPA基準で整理したセキュリティチェックリストのため選択"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "セキュアハンドラがXSS関連レスポンスヘッダ（X-XSS-Protection等）を設定するため選択"
+      },
+      {
+        "path": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "reason": "JSP静的解析ツールがエスケープ漏れ検出に使えるとセキュリティチェックリストで参照されているため選択"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーション全般の機能概要でXSS特有の詳細情報が少ないためスキップ"
+      },
+      {
+        "path": "component/handlers/handlers-nablarch-tag-handler.json",
+        "reason": "XSS/エスケープ関連の内容がなかったためスキップ"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-fw-web-handler-secure-XssProtectionHeader.json",
+        "reason": "JavadocよりもセキュアハンドラのドキュメントでXSSヘッダの概要が取得できたためスキップ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "カスタムタグがHTMLエスケープ漏れを防ぐ仕組みとJavaScriptエスケープの制限を説明する核心セクション"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s27",
+        "relevance": "high",
+        "reason": "rawWriteタグとprettyPrintタグの危険性（XSS要因）を説明するセクション"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s50",
+        "relevance": "high",
+        "reason": "HTMLエスケープの変換内容とEL式禁止の注意点を詳述するセクション"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "XSS対策の各項目についてNablarchの対応状況（〇/×）が網羅されているセクション"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "CSP（Content Security Policy）によるXSS軽減をカスタムタグとの連携で説明するセクション"
+      },
+      {
+        "file": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "JSP静的解析ツールによるサニタイジング漏れ検出の概要を説明するセクション"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s1",
+        "reason": "機能概要の目次であり具体的なXSS対策情報はs2/s27/s50にあるためスキップ"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみでs6のCSP説明のほうが直接的なため補足参照のみ"
+      },
+      {
+        "file": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "section_id": "s2",
+        "reason": "仕様セクションが空のためスキップ"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s27",
+      "component/libraries/libraries-tag.json:s50",
+      "check/security-check/security-check-2.チェックリスト.json:s5",
+      "component/handlers/handlers-secure-handler.json:s1",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-tag.json:s2",
+          "reason": "カスタムタグによるHTMLエスケープとJavaScriptエスケープ非対応の説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s27",
+          "reason": "rawWriteタグ・prettyPrintタグの危険性とXSS要因の注意点の説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s50",
+          "reason": "HTMLエスケープの変換内容とEL式使用禁止の注意点に使用"
+        },
+        {
+          "ref": "check/security-check/security-check-2.チェックリスト.json:s5",
+          "reason": "NablarchのXSS対応範囲（IPA対策5-(i)〜(x)の〇/×）の表に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s6",
+          "reason": "CSP対応セクションで保険的対策としてのCSP説明に使用"
+        },
+        {
+          "ref": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1",
+          "reason": "JSP静的解析ツールによるサニタイジング漏れ検出の注意点に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s1",
+          "reason": "ハンドラクラス名のみで、セキュアハンドラの説明はfileのcontentと他セクションで十分カバーできたため"
+        }
+      ]
+    }
+  }
+}

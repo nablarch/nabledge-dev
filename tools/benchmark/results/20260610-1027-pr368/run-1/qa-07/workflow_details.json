@@ -1,0 +1,146 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-data-bind.json",
+        "reason": "CSVファイルをJava Beansオブジェクトとして読み込む機能（データバインド）を直接解説するページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "Nablarchバッチでファイル→DBのGetting Started実装例（DataReader + BatchAction）が含まれる"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチで使用できる標準DataReader（FileDataReader等）の一覧とデータバインド利用時の注意点が記載されている"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチのファイル入出力機能詳細と標準DataReader一覧が記載されている"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "FILE to DBパターンの処理方式分類が記載されている"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-data-format.json",
+        "reason": "汎用データフォーマットはデータバインドと別機能であり、Java Beansバインドには不要"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-getting-started-chunk.json",
+        "reason": "Jakarta Batchの実装例であり、質問はNablarchバッチ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.json",
+        "reason": "エラー処理の説明であり、読み込み実装の直接的な回答ではない"
+      },
+      {
+        "path": "component/libraries/libraries-file-path-management.json",
+        "reason": "ファイルパス管理は補助機能であり、主要な実装方法の説明ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ObjectMapperFactory/ObjectMapperを使ってJava Beansとして1件ずつ読み込む実装例が含まれる核心セクション"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s15",
+        "relevance": "high",
+        "reason": "@Csv/@CsvFormatアノテーションの使い方とフォーマット指定方法が記載されている"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "DataReader実装クラスの具体的な実装例（ZipCodeFileReader）とフォームクラス作成が含まれる"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "BatchActionでhandleメソッドに1行分データを処理する実装例が含まれる"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "標準DataReader一覧とデータバインド使用時はFileDataReaderを使わない旨の注意が記載されている"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "ファイル入出力で使用できる標準DataReader一覧の補足情報"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s1",
+        "reason": "概要・処理フローの案内のみで実装詳細が含まれない"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s1",
+        "reason": "機能概要の説明のみで実装方法は含まれない"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s3",
+        "reason": "FILE to DBパターンの概要説明のみで実装詳細は別ページに委ねられている"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s7",
+          "reason": "ObjectMapperFactory.create()/ObjectMapper.read()の使い方と基本的な読み込みループの実装例"
+        },
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s15",
+          "reason": "@Csv/@CsvFormatアノテーションの定義方法とフォームクラスの作成例"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+          "reason": "ZipCodeFileReaderのDataReader実装例（read/hasNext/closeメソッド、ObjectMapperIteratorの活用、@LineNumber）"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+          "reason": "BatchActionのhandle/createReaderメソッド実装例"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+          "reason": "データバインド使用時はFileDataReaderを使用しないという注意点"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s1",
+          "reason": "概要説明のみで実装コードが含まれず回答には不要"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s5",
+          "reason": "標準DataReader一覧の補足情報のみで、architecture:s7の内容と重複するため不使用"
+        }
+      ]
+    }
+  }
+}

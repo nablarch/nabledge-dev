@@ -1,0 +1,99 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "遅延ロード(defer)機能を含む汎用DAOの解説ページ — 大量データのメモリ節約検索が直接扱われている"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチのアーキテクチャと標準データリーダの一覧が記載されており、DatabaseRecordReaderへの言及がある"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json",
+        "reason": "DatabaseRecordReaderの詳細仕様 — DBを1レコードずつ読み込む標準バッチデータリーダ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "DatabaseRecordReaderへの参照リンクのみで、遅延ロードや大量データ読み込みの実装詳細は含まれていない"
+      },
+      {
+        "path": "component/libraries/libraries-database-functional-comparison.json",
+        "reason": "遅延ロード機能の比較表を含むが、実装手順はlibraries-universal-dao.jsonに委譲しており重複情報"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-pessimistic-lock.json",
+        "reason": "悲観的ロックの解説であり大量データ読み込みとは無関係"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-multiple-process.json",
+        "reason": "並列処理の解説であり1件ずつ読み込む遅延ロードとは直接関係しない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "「検索結果を遅延ロードする」セクション — バッチで大量データを処理する場合のUniversalDao.defer()使用法とコード例が直接記載されている"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "「Nablarchバッチアプリケーションで使用するデータリーダ」セクション — DatabaseRecordReaderを含む標準データリーダの一覧と用途が記載されている"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "DatabaseRecordReaderのクラス概要 — 「DBの参照結果を1レコードづつ読み込む」という仕様を確認するために選択"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s1",
+        "reason": "機能概要の目次セクションのみで実装詳細を含まない"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s14",
+        "reason": "バッチ実行(一括登録・更新・削除)のセクションで、大量データ検索の遅延ロードとは別のテーマ"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "reason": "バッチアプリケーション全体の構成説明で、大量データ読み込み手法には直接言及していない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s9",
+          "reason": "UniversalDao.defer()の使用法、DeferredEntityListのtry-with-resourcesパターン、カーソルとトランザクション制御の注意点を回答に引用"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+          "reason": "DatabaseRecordReaderがバッチの標準データリーダとして提供されている旨の言及に使用"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json:s1",
+          "reason": "DatabaseRecordReaderが「1レコードづつ読み込む」データリーダであることの仕様確認に使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}
