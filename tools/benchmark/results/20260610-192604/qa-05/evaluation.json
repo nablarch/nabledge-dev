@@ -1,0 +1,63 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 0.6,
+      "reason": "The Actual Output covers two of the three expected facts: it mentions using a Form class to receive client-submitted values (ProjectForm implements Serializable with properties), and it explicitly states that all form properties should be declared as String type. However, the third expected fact — that Jackson2BodyConverter is set as the JSON converter — is not mentioned anywhere in the Actual Output. The Actual Output only vaguely references a 'request body conversion handler' without specifying Jackson2BodyConverter by name."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input! It directly addresses the request for REST API resource class implementation patterns for receiving JSON and registering it in a DB — no irrelevant statements at all. Great work!"
+    },
+    "faithfulness": {
+      "score": 0.9230769230769231,
+      "reason": "The score is 0.92 because the actual output incorrectly claims that the BodyConverter for application/json converts JSON into a form, whereas the retrieval context clearly states it converts the request body into a Person object when MediaType.APPLICATION_JSON is specified."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/libraries/libraries-universal-dao.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 109292,
+    "duration_api_ms": 108926,
+    "num_turns": 12,
+    "total_cost_usd": 0.7373043,
+    "usage": {
+      "input_tokens": 13,
+      "output_tokens": 6483,
+      "cache_read_input_tokens": 1151306,
+      "cache_creation_input_tokens": 77642
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3336,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003471,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13,
+        "outputTokens": 6483,
+        "cacheReadInputTokens": 1151306,
+        "cacheCreationInputTokens": 77642,
+        "webSearchRequests": 0,
+        "costUSD": 0.7338333,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

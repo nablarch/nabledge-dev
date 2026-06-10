@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers all three expected facts. (1) 'Formクラスでクライアントから送信された値を受け付ける' is covered by the form class creation section and the explanation that @Consumes causes BodyConvertHandler to auto-convert the request body into the form class. (2) 'プロパティは全てString型で宣言する' is explicitly stated both in the form class example and in the注意点 section. (3) 'JSONのコンバータにはJackson2BodyConverterが設定される' is explicitly mentioned in the注意点 section ('BodyConvertHandler（Jackson2BodyConverterによるJSON変換）') and in the routing configuration comment. All three expected facts are present in the actual output."
+    },
+    "answer_relevancy": {
+      "score": 0.9583333333333334,
+      "reason": "The score is 0.96 because the response is highly relevant and effectively addresses the implementation pattern for a resource class that receives JSON and registers it to a DB via REST API. It is not a perfect score due to a minor mention of PathOptionsProviderRoutesMapping, which relates to routing/CORS configuration and is not directly pertinent to the core question about resource class implementation."
+    },
+    "faithfulness": {
+      "score": 0.9523809523809523,
+      "reason": "The score is 0.95 because the actual output incorrectly states that @Path should be applied to action methods alongside @POST, @Consumes, and @Valid, when in fact @Path is applied to the class level to bind the URI to the action class, not to individual action methods."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/adapters/adapters-router-adaptor.json:s7",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "component/libraries/libraries-universal-dao.json:s5",
+      "component/libraries/libraries-universal-dao.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 325209,
+    "duration_api_ms": 324115,
+    "num_turns": 6,
+    "total_cost_usd": 1.25801965,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 7431,
+      "cache_read_input_tokens": 289573,
+      "cache_creation_input_tokens": 50063
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3336,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003466,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 19,
+        "outputTokens": 22993,
+        "cacheReadInputTokens": 479343,
+        "cacheCreationInputTokens": 204213,
+        "webSearchRequests": 0,
+        "costUSD": 1.25455365,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

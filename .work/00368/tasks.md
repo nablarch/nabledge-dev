@@ -2,7 +2,7 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-10 (session 3)
+**Updated**: 2026-06-10 (session 4)
 
 ## In Progress
 
@@ -97,3 +97,4 @@
 - [x] Task 14: 実験C — 条件M（独立2経路マージ）qa-05×3 + 回帰4本 — committed `5ac667383`
 - [x] Task 15: 実験D — 条件20（関門1: 両経路20件）qa-05×10 → 10/10 adapter含有 — committed `fd3dbc052`
 - [x] Task 16: 実験E — 条件S（3段階判定）qa-05×10 → 2/10 adapter含有 — committed `84edd9cc7`
+- [x] Task 17: 実験F — 条件5step（両経路20件マージ）qa-05×10 + 他4シナリオ × 各1回 — committed `TBD`

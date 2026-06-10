@@ -1,0 +1,117 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean ValidationのDB相関バリデーションに関するセクション（s12）が直接質問に回答する"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTfulウェブサービスでBean Validationを使う方法（@ValidアノテーションとJaxRsBeanValidationHandler）の説明がある"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの入力値チェックの全体像を把握するため"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "NablarchバリデーションはRESTfulウェブサービスでは通常使用せず、Bean Validationが対象"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "処理方式がウェブアプリケーションではなくRESTfulウェブサービスのため"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストはSQLインジェクション対策の参考にはなるが、実装方法の主要情報ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "「データベースとの相関バリデーションを行う」セクションで、Bean ValidatorでのDB検索が不可であることとその理由を明示している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスでの入力値チェック方法（@Valid）を説明しており、正しい実装フローの理解に必要"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@Validアノテーションをリソースメソッドへ設定する具体的実装例が含まれる"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "partial",
+        "reason": "アクション側でバリデーションエラーを特定フィールドに紐づける方法（ValidationUtil.createMessageForProperty）の説明"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "reason": "相関バリデーション（複数項目間）の説明だが、DB検索には触れていないため除外"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s24",
+        "reason": "カスタムバリデータの追加方法だが、今回の質問はDB検索の場所（アクション側で行うべき）の答えが出たため不要"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s5",
+        "reason": "Bean Validationのグループ指定に関するセクションで、DB重複チェックには直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/libraries/libraries-bean-validation.json:s24",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s5",
+      "component/libraries/libraries-bean-validation.json:s13"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-bean-validation.json:s12",
+          "reason": "DB相関バリデーションをBean Validationで行ってはいけない理由（安全でない値でのDBアクセス、SQLインジェクション脆弱性）と、業務アクション側で実装すべきことを直接引用"
+        },
+        {
+          "ref": "handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "RESTfulウェブサービスで@Validアノテーションをリソースメソッドへ設定するコード例を引用"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s13",
+          "reason": "ApplicationExceptionとValidationUtil.createMessageForPropertyを使ったエラー通知方法を引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-bean-validation.json:s17",
+          "reason": "s4（JaxRsBeanValidationハンドラ）の説明と重複するため、回答の簡潔さのために使用しなかった"
+        },
+        {
+          "ref": "handlers-jaxrs-bean-validation-handler.json:s5",
+          "reason": "グループ指定は今回の質問（DB重複チェックの場所）に直接関係しないため未使用"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s24",
+          "reason": "カスタムバリデータの追加方法であり、DB検索はアクション側で行うべきと結論付けたため不要"
+        }
+      ]
+    }
+  }
+}

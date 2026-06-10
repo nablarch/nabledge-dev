@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output explicitly covers both key facts from the expected output. It describes HttpErrorHandler capturing exceptions and returning responses with appropriate status codes based on exception type (detailed in the table showing NoMoreHandlerException→404, HttpErrorResponse→from response, Result.Error→getStatusCode(), etc.). It also explicitly states that when HttpErrorResponse's cause is ApplicationException, the error message information is set in the request scope under the 'errors' key, enabling JSP error display. Both core facts from the expected output are fully addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s3",
+      "component/libraries/libraries-log.json:s3",
+      "processing-pattern/web-application/web-application-feature-details.json:s16",
+      "component/handlers/handlers-on-error.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 185692,
+    "duration_api_ms": 185365,
+    "num_turns": 13,
+    "total_cost_usd": 0.9858047499999999,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 12146,
+      "cache_read_input_tokens": 846865,
+      "cache_creation_input_tokens": 145615
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3342,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003472,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 12146,
+        "cacheReadInputTokens": 846865,
+        "cacheCreationInputTokens": 145615,
+        "webSearchRequests": 0,
+        "costUSD": 0.98233275,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
