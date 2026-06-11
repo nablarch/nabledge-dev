@@ -1,0 +1,65 @@
+{
+  "scenario_id": "qa-05b",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+  "scores": {
+    "answer_correctness": {
+      "score": 0.5,
+      "reason": "The Actual Output mentions Jackson2BodyConverter as the converter for application/json, which covers the first expected fact. However, the Actual Output does not mention JaxRsHandlerListFactory or the approach of implementing it to add support for additional MIME types, which is the second expected fact. Only one of two expected facts is present, resulting in partial coverage."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, directly addressing the request to create a process for receiving JSON via REST API and registering it to a database. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9,
+      "reason": "The score is 0.90 because there are two minor contradictions in the actual output: it incorrectly attributes the @Consumes(MediaType.APPLICATION_JSON) and @Valid annotations to the action class rather than the save method, and it inaccurately suggests that handlers should be configured directly in the handler queue after the routing adapter, when in fact they should be configured within that handler itself, and are automatically added when using the Jakarta RESTful Web Services Adapter."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-universal-dao.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 149231,
+    "duration_api_ms": 147771,
+    "num_turns": 17,
+    "total_cost_usd": 0.83362175,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 9626,
+      "cache_read_input_tokens": 1014530,
+      "cache_creation_input_tokens": 101665
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3463,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003593,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 9626,
+        "cacheReadInputTokens": 1014530,
+        "cacheCreationInputTokens": 101665,
+        "webSearchRequests": 0,
+        "costUSD": 0.83002875,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-05b",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+  "scores": {
+    "answer_correctness": {
+      "score": 0.5,
+      "reason": "The Actual Output mentions Jackson2BodyConverter as the component responsible for JSON body conversion, which matches the first expected fact. However, the second expected fact — that to support additional MIME types, one should implement JaxRsHandlerListFactory — is not clearly stated. The Actual Output mentions JerseyJaxRsHandlerListFactory as a way to auto-configure handlers, but does not address the pattern of implementing JaxRsHandlerListFactory to extend MIME type support. Only one of the two expected facts is clearly covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, which asks about creating a process to receive JSON via REST API and register it in a DB. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "processing-pattern/restful-web-service/restful-web-service-application-design.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s3",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 189712,
+    "duration_api_ms": 189331,
+    "num_turns": 15,
+    "total_cost_usd": 1.0286169,
+    "usage": {
+      "input_tokens": 13,
+      "output_tokens": 12765,
+      "cache_read_input_tokens": 1254133,
+      "cache_creation_input_tokens": 121936
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3463,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003603,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13,
+        "outputTokens": 12765,
+        "cacheReadInputTokens": 1254133,
+        "cacheCreationInputTokens": 121936,
+        "webSearchRequests": 0,
+        "costUSD": 1.0250139,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

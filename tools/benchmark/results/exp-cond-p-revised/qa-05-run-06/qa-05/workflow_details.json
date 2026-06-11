@@ -1,0 +1,159 @@
+{
+  "step3": {
+    "index_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "RESTfulウェブサービスでの登録機能作成のハンズオン例を直接説明しており、JSON受信→DB登録の実装例が含まれる"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細（入力値チェック、DBアクセスなど）を網羅する"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "DBへの登録（insert）を行うユニバーサルDAOの使用方法を説明する"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "reason": "JSONリクエストボディをFormに変換する処理を担うハンドラの説明"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "RESTfulウェブサービスでのバリデーション実装方法を説明する"
+      }
+    ],
+    "classes_pages": [],
+    "merged_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "source": "index"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "source": "index"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "source": "index"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "index"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "reason": "URLマッピング設定の詳細であり、今回の登録処理の核心ではないため除外"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "Bean Validationの詳細はlibraries-bean-validationで十分カバーできるため除外"
+      },
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "BeanUtilはアクションコード内で使われるがそれ自体が質問の主題ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "JSON受信→バリデーション→UniversalDao.insertによるDB登録の完全な実装例を提供する"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "JSONリクエストボディをFormに変換する仕組みと@Consumesアノテーションの動作を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "FormのプロパティをString型にすべき理由を説明する重要な制約"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスでのバリデーション方法（@Valid使用）を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "ユニバーサルDAOを使用するために必要なコンポーネント設定を説明する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s1",
+        "reason": "Nablarch初期化は別ページへの参照のみで具体的な実装情報がない"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックの参照リンクのみで具体的内容はlibraries-bean-validationにある"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s3",
+        "reason": "DBアクセスの参照リンクのみでs1で十分な情報が得られる"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s2",
+        "reason": "概念説明のみでs1の実装例で十分"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s6",
+        "reason": "Bean Validationの設定全般の説明だがRESTサービスでの具体的設定はs17で参照済み"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/libraries/libraries-bean-validation.json:s8",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/libraries/libraries-universal-dao.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "restful-web-service-getting-started-create.json:s1",
+          "reason": "アクションクラスの完全な実装例（@Path, @POST, @Consumes, @Valid, UniversalDao.insert, BeanUtil.createAndCopy, HttpResponse.Status.CREATED）を提供した"
+        },
+        {
+          "ref": "handlers-body-convert-handler.json:s5",
+          "reason": "Content-TypeとConsumesの不一致時のステータス415の注意点を補足するために使用"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s8",
+          "reason": "FormのプロパティをすべてString型にすべきという重要な制約を説明するために使用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s6",
+          "reason": "ユニバーサルDAOの設定（BasicDaoContextFactory）を説明するために使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-bean-validation.json:s17",
+          "reason": "@ValidアノテーションはすでにGetting Startedのs1で説明されており重複するため最終回答では省略した"
+        }
+      ]
+    }
+  }
+}
