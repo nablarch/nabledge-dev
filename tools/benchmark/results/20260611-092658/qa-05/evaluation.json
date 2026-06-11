@@ -1,0 +1,64 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 0.6,
+      "reason": "The Actual Output covers two of the three expected facts: it mentions that Form class is used to receive client-submitted values (covered in section 2 and the table), and that all properties must be declared as String type (explicitly stated). However, the third expected fact — that Jackson2BodyConverter is configured as the JSON converter — is completely absent from the Actual Output. This missing fact results in partial coverage (2 out of 3 expected facts)."
+    },
+    "answer_relevancy": {
+      "score": 0.92,
+      "reason": "The score is 0.92 because the response is largely relevant and helpful in explaining REST API resource class implementation patterns for receiving JSON and registering to a DB. However, it is slightly penalized for including incorrect/misleading statements claiming that Form class properties must all be String type, which is factually wrong since JSON supports various data types. This same error appeared twice, further impacting the score."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-application-design.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 156545,
+    "duration_api_ms": 156312,
+    "num_turns": 5,
+    "total_cost_usd": 0.5853932,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 5234,
+      "cache_read_input_tokens": 214930,
+      "cache_creation_input_tokens": 43386
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3336,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003521,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 21,
+        "outputTokens": 11982,
+        "cacheReadInputTokens": 352464,
+        "cacheCreationInputTokens": 79024,
+        "webSearchRequests": 0,
+        "costUSD": 0.5818722,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
