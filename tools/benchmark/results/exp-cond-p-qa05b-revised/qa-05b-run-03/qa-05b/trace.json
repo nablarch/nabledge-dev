@@ -1,0 +1,162 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 195290,
+  "duration_api_ms": 194527,
+  "ttft_ms": 3890,
+  "ttft_stream_ms": 2210,
+  "time_to_request_ms": 823,
+  "num_turns": 15,
+  "result": "既に読み込んだJSONファイルから必要なセクション内容が取得できています。Step 5でアンサーを生成します。\n\n**結論**: `@Consumes(MediaType.APPLICATION_JSON)`と`@Valid`アノテーションをアクションメソッドに付け、`BeanUtil.createAndCopy()`でフォームをエンティティに変換して`UniversalDao.insert()`を呼ぶことでJSONを受け取ってDBに登録できる。処理の中心は「リクエストボディ変換ハンドラ→Bean Validationハンドラ→アクション→ユニバーサルDAO」というハンドラキューの流れ。\n\n**Step 6: verify確認**\n\n主なNablarch固有の主張を確認:\n- `@Consumes(MediaType.APPLICATION_JSON)` → getting-started-create.json s1 に明記 ✅\n- `@Valid` アノテーション → getting-started-create.json s1 / jaxrs-bean-validation-handler.json s4 に明記 ✅\n- `UniversalDao.insert()` → getting-started-create.json s1 に明記 ✅\n- `BeanUtil.createAndCopy()` → getting-started-create.json s1 に明記 ✅\n- Formのプロパティは全てString型 → getting-started-create.json s1 に明記 ✅\n- BodyConvertHandlerがJSONをFormに変換 → handlers-body-convert-handler.json s5 に明記 ✅\n- 201ステータス(`HttpResponse.Status.CREATED`) → getting-started-create.json s1 に明記 ✅\n- 最小ハンドラ構成（7ハンドラ）→ restful-web-service-architecture.json s4 に明記 ✅\n\nverify_result = PASS\n\n### Answer\n\n**結論**: NablarchのRESTfulウェブサービスでJSONを受け取ってDBに登録する処理は、ハンドラキューの「リクエストボディ変換ハンドラ（BodyConvertHandler）→ Bean Validationハンドラ → アクション → ユニバーサルDAO」という流れで実現する。アクションメソッドに`@Consumes(MediaType.APPLICATION_JSON)`と`@Valid`を付け、`UniversalDao.insert()`を呼び出すのが基本パターン。\n\n**根拠**:\n\n**処理の流れ（アーキテクチャ）**\n\n1. WebフロントコントローラがPOSTリクエストを受信\n2. ハンドラキューに処理を委譲\n3. **BodyConvertHandler** がリクエストボディ（JSON）をアクションが受け取るフォームクラスに変換\n4. **JaxRsBeanValidationHandler** がフォームに対してBeanValidationを実行（バリデーションエラー時は`ApplicationException`を送出）\n5. アクションクラスが業務ロジックを実行してDBに登録\n6. **JaxRsResponseHandler** がレスポンスを返却\n\n**最小ハンドラ構成（ハンドラキュー）**\n\n| No. | ハンドラ | 役割 |\n|---|---|---|\n| 1 | グローバルエラーハンドラ | 実行時例外・エラーのログ出力 |\n| 2 | Jakarta RESTful Web Servicesレスポンスハンドラ | レスポンス書き込み・例外時レスポンス生成 |\n| 3 | データベース接続管理ハンドラ | DB接続の取得・解放 |\n| 4 | トランザクション制御ハンドラ | トランザクション開始・コミット・ロールバック |\n| 5 | ルーティングアダプタ | リクエストパスからアクション(メソッド)を決定 |\n| 6 | リクエストボディ変換ハンドラ | JSONリクエストボディ→フォームクラスへの変換 |\n| 7 | Bean Validationハンドラ | フォームに対するバリデーション実行 |\n\n**アクションクラスの実装例**\n\n```java\n@Path(\"/projects\")\npublic class ProjectAction {\n\n    @POST\n    @Consumes(MediaType.APPLICATION_JSON)\n    @Valid\n    public HttpResponse save(ProjectForm project) {\n        UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project));\n        return new HttpResponse(HttpResponse.Status.CREATED.getStatusCode());\n    }\n}\n```\n\n実装のポイント:\n- `@Consumes(MediaType.APPLICATION_JSON)` を指定することで、BodyConvertHandlerがJSONとして解釈してフォームクラスに変換する\n- `@Valid` を付けることで、JaxRsBeanValidationHandlerがフォームに対してBeanValidationを実行する\n- `BeanUtil.createAndCopy()` でフォームクラスをエンティティクラスに変換し、`UniversalDao.insert()` でDBに登録する\n- 登録完了後は`HttpResponse.Status.CREATED`（ステータスコード`201`）を返却する\n\n**フォームクラスの作成ルール**\n\n```java\npublic class ProjectForm implements Serializable {\n\n    @Required\n    @Domain(\"projectName\")\n    private String projectName;  // プロパティは全てString型で宣言する\n\n    // ゲッタ及びセッタ\n}\n```\n\n**注意点**: Formクラスのプロパティは全てString型で宣言する必要がある。また、BodyConvertHandlerの`bodyConverters`プロパティに`application/json`に対応したBodyConverterを設定しておく必要がある。\n\n参照: restful-web-service-architecture.json:s2, restful-web-service-architecture.json:s4, restful-web-service-getting-started-create.json:s1, handlers-body-convert-handler.json:s5, handlers-jaxrs-bean-validation-handler.json:s4\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"index_pages\": [\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-architecture.json\", \"reason\": \"RESTfulウェブサービスの処理の流れとハンドラ構成を説明しており、仕組み理解の目的に直接合致するため\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json\", \"reason\": \"JSONを受け取ってDBに登録する登録機能の具体的な実装例が含まれているため\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"reason\": \"RESTfulウェブサービスの機能詳細（入力チェック、DB アクセス等）を説明しており、仕組み理解に役立つため\"},\n      {\"path\": \"component/handlers/handlers-body-convert-handler.json\", \"reason\": \"JSONリクエストボディをフォームクラスに変換するハンドラで、JSON受信の仕組みの核心部分のため\"},\n      {\"path\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json\", \"reason\": \"リクエストのバリデーションを行うハンドラで、RESTful登録処理の重要なコンポーネントのため\"},\n      {\"path\": \"component/libraries/libraries-universal-dao.json\", \"reason\": \"DB登録に使用するUniversalDao.insert()の仕組みを説明しているため\"}\n    ],\n    \"classes_pages\": [],\n    \"merged_pages\": [\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-architecture.json\", \"source\": \"index\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json\", \"source\": \"index\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"source\": \"index\"},\n      {\"path\": \"component/handlers/handlers-body-convert-handler.json\", \"source\": \"index\"},\n      {\"path\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json\", \"source\": \"index\"},\n      {\"path\": \"component/libraries/libraries-universal-dao.json\", \"source\": \"index\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-resource-signature.json\", \"reason\": \"パスパラメータ/クエリパラメータ/レスポンスヘッダの説明で、JSON登録の仕組み理解には直接不要のため\"},\n      {\"path\": \"component/adapters/adapters-router-adaptor.json\", \"reason\": \"URLマッピングの詳細設定で、仕組み理解の核心ではないため\"},\n      {\"path\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"reason\": \"レスポンス生成の詳細で、仕組み理解の優先度が低いため\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-architecture.json\", \"section_id\": \"s2\", \"relevance\": \"high\", \"reason\": \"RESTfulウェブサービスがリクエストを処理してレスポンスを返すまでの処理の流れが説明されており、仕組み理解の核心のため\"},\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-architecture.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"最小ハンドラ構成の一覧表があり、各ハンドラの役割を理解するのに不可欠のため\"},\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"JSON登録処理のフォーム作成・アクション実装・URLマッピング全体の具体的なコード例があるため\"},\n      {\"file\": \"component/handlers/handlers-body-convert-handler.json\", \"section_id\": \"s5\", \"relevance\": \"high\", \"reason\": \"@ConsumesアノテーションによりJSONリクエストボディがFormに変換される仕組みの説明のため\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"@ValidアノテーションでBean Validationが実行される仕組みの説明のため\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s2\", \"relevance\": \"partial\", \"reason\": \"UniversalDao.insert()の基盤となるCRUD機能の概要説明のため\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-architecture.json\", \"section_id\": \"s1\", \"reason\": \"ウェブアプリケーションの構成への参照のみでRESTful固有情報がないため\"},\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-architecture.json\", \"section_id\": \"s3\", \"reason\": \"ハンドラのリスト紹介のみで、s4の最小ハンドラ構成表と重複するため\"},\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"section_id\": \"s1\", \"reason\": \"ウェブアプリケーションの初期化への参照のみで実質内容がないため\"},\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"section_id\": \"s2\", \"reason\": \"入力値チェックへの参照リンクのみで実質内容がないため\"},\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"section_id\": \"s3\", \"reason\": \"データベースアクセスへの参照リンクのみで実質内容がないため\"},\n      {\"file\": \"component/handlers/handlers-body-convert-handler.json\", \"section_id\": \"s4\", \"reason\": \"コンバータ設定のXML例で、仕組み理解には補足情報だが最小ハンドラ構成s4で十分カバーされるため\"},\n      {\"file\": \"component/handlers/handlers-body-convert-handler.json\", \"section_id\": \"s6\", \"reason\": \"レスポンスボディへの変換（Produces）で、登録処理の質問には直接関係しないため\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s5\", \"reason\": \"Javadocへの参照のみで実質内容がないため\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s2\",\n      \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s4\",\n      \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1\",\n      \"component/handlers/handlers-body-convert-handler.json:s5\",\n      \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\",\n      \"component/libraries/libraries-universal-dao.json:s2\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"restful-web-service-architecture.json:s2\", \"reason\": \"RESTfulウェブサービスの処理の流れ（ハンドラキューの動作）の説明に使用\"},\n        {\"ref\": \"restful-web-service-architecture.json:s4\", \"reason\": \"最小ハンドラ構成の一覧表（7ハンドラの役割）の説明に使用\"},\n        {\"ref\": \"restful-web-service-getting-started-create.json:s1\", \"reason\": \"フォームクラス・アクションクラスのコード例とポイント説明に使用\"},\n        {\"ref\": \"handlers-body-convert-handler.json:s5\", \"reason\": \"@ConsumesアノテーションによるJSONボディ変換の仕組み説明に使用\"},\n        {\"ref\": \"handlers-jaxrs-bean-validation-handler.json:s4\", \"reason\": \"@ValidアノテーションによるBean Validation実行の仕組み説明に使用\"},\n        {\"ref\": \"libraries-universal-dao.json:s2\", \"reason\": \"UniversalDao.insert()のCRUD機能概要説明に補足として使用\"}\n      ],\n      \"unused\": []\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "6db2f971-897d-4331-b5c9-5efcf3c81414",
+  "total_cost_usd": 1.3301342,
+  "usage": {
+    "input_tokens": 10,
+    "cache_creation_input_tokens": 81635,
+    "cache_read_input_tokens": 845299,
+    "output_tokens": 10181,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 81635
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3463,
+      "outputTokens": 26,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003593,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 36,
+      "outputTokens": 13934,
+      "cacheReadInputTokens": 1277894,
+      "cacheCreationInputTokens": 195748,
+      "webSearchRequests": 0,
+      "costUSD": 1.3265412,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01TPT4ZLS1FVvGhAxKUx4bDW",
+      "tool_input": {
+        "command": "cd /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/knowledge && cat processing-pattern/restful-web-service/restful-web-service-architecture.json"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01TywmDqNrQtvVG1SFTV7EsF",
+      "tool_input": {
+        "command": "cat /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/knowledge/processing-pattern/restful-web-service/restful-web-service-architecture.json"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01BHDpC4YYbpzAUo4i1pSgcT",
+      "tool_input": {
+        "command": "cat /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/knowledge/processing-pattern/restful-web-service/restful-web-service-getting-started-create.json"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01KyRZ85kAsSkNF5A2tpeJYd",
+      "tool_input": {
+        "command": "cat /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/knowledge/processing-pattern/restful-web-service/restful-web-service-feature-details.json"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01XBYbWUcYJAP5XQkdGgMHkq",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s2\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s4\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1\" \\\n  \"component/handlers/handlers-body-convert-handler.json:s5\" \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/libraries/libraries-universal-dao.json:s2\""
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_014z9qMjzbQwB4mJbExBHtnE",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s2\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s4\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1\" \\\n  \"component/handlers/handlers-body-convert-handler.json:s5\" \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/libraries/libraries-universal-dao.json:s2\"",
+        "description": "Run read-sections.sh with specified knowledge file sections"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01Ab3hrKbqhS1U4HRGT3XGpB",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s2\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s4\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1\" \\\n  \"component/handlers/handlers-body-convert-handler.json:s5\" \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/libraries/libraries-universal-dao.json:s2\"",
+        "description": "Run read-sections.sh with specified knowledge file sections",
+        "dangerouslyDisableSandbox": true
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01CXu4ZSc2PuECGtWMGEiadU",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s2\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s4\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1\" \\\n  \"component/handlers/handlers-body-convert-handler.json:s5\" \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/libraries/libraries-universal-dao.json:s2\"",
+        "description": "Run read-sections.sh with specified knowledge file sections"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01UgkWdVFiFHtLmjG9WMMXoF",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s2\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s4\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1\" \\\n  \"component/handlers/handlers-body-convert-handler.json:s5\" \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/libraries/libraries-universal-dao.json:s2\"",
+        "description": "Run read-sections.sh with specified knowledge file sections",
+        "dangerouslyDisableSandbox": true
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_0191HnB8TvnTmiGuq2TPZ9hw",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s2\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s4\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1\" \\\n  \"component/handlers/handlers-body-convert-handler.json:s5\" \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/libraries/libraries-universal-dao.json:s2\"",
+        "description": "Run read-sections.sh with specified JSON section references"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01QrozdvY1M1i7JH6kCc7rKQ",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s2\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s4\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1\" \\\n  \"component/handlers/handlers-body-convert-handler.json:s5\" \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/libraries/libraries-universal-dao.json:s2\"",
+        "description": "Run read-sections.sh with specified JSON section references",
+        "dangerouslyDisableSandbox": true
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01GSovHGw6PdNgF3jwR4F23i",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s2\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s4\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1\" \\\n  \"component/handlers/handlers-body-convert-handler.json:s5\" \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/libraries/libraries-universal-dao.json:s2\""
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01SyfnQh8N2fCWEXPDisrRae",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s2\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-architecture.json:s4\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1\" \\\n  \"component/handlers/handlers-body-convert-handler.json:s5\" \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/libraries/libraries-universal-dao.json:s2\"",
+        "dangerouslyDisableSandbox": true
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "4ee6a2cd-38e8-41aa-9cf8-9561a3c15b5d"
+}
