@@ -2,39 +2,46 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-11 (session 6)
+**Updated**: 2026-06-11 (session 7)
 
 ## In Progress
 
-### Task 19: 実験H — exp-purpose-classes 完了。結論待ち。
+### Task 20: 実験P — 条件P（index/classes各10件、セクション上限20）qa-05b×10回
 
-**Status**: 40実行完了・コミット済み (`327e681f7`)。結論はユーザーが出す。
+**Status**: 10試行完了・結果保存済み。コミット未。結論待ち。
 
-**実験設計**:
-- qa-05（目的=実装したい）と qa-05b（目的=仕組み・動作を理解したい）— 質問文は同一、目的のみ異なる
-- 条件N: 現行 semantic-search.md（index経路のみ）+ 現行 qa.md（10 sections）
-- 条件C: exp版 semantic-search.md（index+classes 各20件マージ）+ exp版 qa.md（30 sections）
-- 各条件 × 2シナリオ × 10回 = 40実行
+**実験設計（条件P）**:
+- semantic-search.md: index経路上限10件 + classes経路上限10件 + dedupマージ（最大20件）
+- qa.md: セクション上限20件
+- e2e-prompt.md: step3に index_pages/classes_pages/merged_pages 記録追加
+- シナリオ: qa-05b × 10回
+- スキルディレクトリ: `.tmp/skill-cond-p/`
 
 **集計結果**:
-| 条件-シナリオ | correctness平均 | adapter_section率 |
-|---|---|---|
-| N-qa-05  | 1.000 | 0% |
-| N-qa-05b | 0.040 | 10% |
-| C-qa-05  | 1.000 | 40% |
-| C-qa-05b | 0.070 | 20% |
+| 試行 | index件数 | classes件数 | merged件数 | adapter出所 | adapter非選出区分 | s2/s4到達 | correctness |
+|------|-----------|------------|-----------|------------|-----------------|-----------|-------------|
+| run-01 | 5 | 5 | 6 | なし | 判定対象外 | × | 0.000 |
+| run-02 | 5 | 5 | 6 | なし | skip判定 | × | 0.000 |
+| run-03 | 5 | 3 | 5 | なし | 判定対象外 | × | 0.000 |
+| run-04 | 6 | 3 | 7 | classes | 判定対象外 | × | 0.000 |
+| run-05 | 4 | 3 | 4 | なし | 判定対象外 | × | 0.500 |
+| run-06 | 7 | 0 | 7 | なし | 判定対象外 | × | 0.000 |
+| run-07 | 4 | 2 | 4 | なし | 判定対象外 | × | 0.300 |
+| run-08 | 5 | 4 | 5 | なし | 判定対象外 | × | 0.000 |
+| run-09 | 5 | 5 | 6 | なし | 判定対象外 | × | 0.000 |
+| run-10 | 6 | 0 | 6 | なし | 判定対象外 | × | 0.000 |
 
-結果: `tools/benchmark/results/exp-purpose-classes/results.md`
+correctness平均: 0.080 / adapter選出: 1/10 / s2/s4到達: 0/10
+
+run-02 skip理由（唯一の記録）: 「JaxRsアダプタは環境設定に関する内容であり、リソースクラスの実装パターン自体の説明には不要」
 
 **Steps:**
-- [x] qa.json 更新（qa-05 Converter を acceptable に移動、qa-05b 追加）
-- [x] 条件C スキルディレクトリ作成（`.tmp/skill-cond-c/`）
-- [x] run_qa.py タイムアウト 360s→600s
-- [x] 条件N × qa-05 × 10回実行
-- [x] 条件N × qa-05b × 10回実行
-- [x] 条件C × qa-05 × 10回実行
-- [x] 条件C × qa-05b × 10回実行
-- [x] 結果集計・results.md 保存・コミット (`327e681f7`)
+- [x] e2e-prompt.md 更新（step3に index_pages/classes_pages/merged_pages フィールド追加）
+- [x] `.tmp/skill-cond-p/` 作成（index/classes各10件、セクション上限20件）
+- [x] 1試行実行・中間記録確認（OK）
+- [x] 残り9試行実行
+- [x] 結果保存: `tools/benchmark/results/exp-cond-p/results.md`
+- [ ] コミット（e2e-prompt.md + 実験結果）
 - [ ] [DECISION: 結論をユーザーが判断する]
 
 
@@ -73,3 +80,4 @@
 - [x] Task 17: 実験F — 条件5step（両経路20件マージ）qa-05×10 + 他4シナリオ × 各1回 — committed `6b72072fb`
 - [x] Task 18: 実験G — 条件5step v2（e2e経路）qa-05×10 → 2/10 adapter含有（検証ゲート失敗）— committed `f2a004c1e`
 - [x] Task 19: 実験H — exp-purpose-classes（条件N/C × qa-05/qa-05b × 10回）— committed `327e681f7`
+- [x] Task 20 (partial): 実験P — e2e-prompt.md 更新 + 条件P × qa-05b × 10回実行・結果保存（コミット未）
