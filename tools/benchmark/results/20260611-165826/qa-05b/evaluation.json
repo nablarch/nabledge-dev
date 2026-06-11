@@ -1,0 +1,62 @@
+{
+  "scenario_id": "qa-05b",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 0.5,
+      "reason": "The Expected Output contains two distinct facts: (1) JSON body conversion is handled by Jackson2BodyConverter, and (2) to add supported MIME types, JaxRsHandlerListFactory should be implemented. The Actual Output covers the first fact by mentioning 'Jackson2BodyConverter などのBodyConverterをハンドラ設定の bodyConverters に含める必要がある'. However, the second fact about implementing JaxRsHandlerListFactory to add supported MIME types is completely absent from the Actual Output. Only one of two expected facts is covered."
+    },
+    "answer_relevancy": {
+      "score": 0.8947368421052632,
+      "reason": "The score is 0.89 because the response largely addresses the input question about implementing a resource class pattern for receiving JSON and registering it to a DB via REST API. However, it loses points for including repeated inaccurate statements about form properties needing to be declared as String type due to Bean Validation specifications, which is both incorrect and not directly relevant to the JSON/REST API registration pattern being asked about."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 100406,
+    "duration_api_ms": 98598,
+    "num_turns": 11,
+    "total_cost_usd": 0.7977197500000001,
+    "usage": {
+      "input_tokens": 16879,
+      "output_tokens": 6238,
+      "cache_read_input_tokens": 608995,
+      "cache_creation_input_tokens": 124571
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3503,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003673,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16879,
+        "outputTokens": 6238,
+        "cacheReadInputTokens": 608995,
+        "cacheCreationInputTokens": 124571,
+        "webSearchRequests": 0,
+        "costUSD": 0.79404675,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

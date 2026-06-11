@@ -1,0 +1,62 @@
+{
+  "scenario_id": "qa-05b",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 0.0,
+      "reason": "The Expected Output contains two specific facts: (1) JSONのボディ変換はJackson2BodyConverterが担当する (Jackson2BodyConverter handles JSON body conversion), and (2) 対応MIMEを増やす場合はJaxRsHandlerListFactoryを実装して対応する (to add supported MIME types, implement JaxRsHandlerListFactory). The Actual Output discusses BodyConvertHandler and BodyConverter in general terms but never specifically mentions 'Jackson2BodyConverter' by name, nor does it mention 'JaxRsHandlerListFactory' for extending MIME type support. Both required facts from the Expected Output are missing from the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 0.9655172413793104,
+      "reason": "The score is 0.97 because the response was highly relevant in addressing the implementation pattern for a REST API resource class that receives JSON and registers it to a DB. It loses a small amount of points for including an irrelevant statement about RESTful web services not supporting optimistic locking via ETag/If-Match, which was not asked about in the input."
+    },
+    "faithfulness": {
+      "score": 0.9615384615384616,
+      "reason": "The score is 0.96 because the actual output references 'BeanUtil.createAndCopy' as a specific method for converting a form into an entity, while the retrieval context only confirms the use of BeanUtil in general without mentioning this specific method name."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 169311,
+    "duration_api_ms": 165644,
+    "num_turns": 23,
+    "total_cost_usd": 1.27824215,
+    "usage": {
+      "input_tokens": 16887,
+      "output_tokens": 10999,
+      "cache_read_input_tokens": 1615898,
+      "cache_creation_input_tokens": 153117
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3503,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003638,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16887,
+        "outputTokens": 10999,
+        "cacheReadInputTokens": 1615898,
+        "cacheCreationInputTokens": 153117,
+        "webSearchRequests": 0,
+        "costUSD": 1.27460415,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

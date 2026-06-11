@@ -7,7 +7,11 @@ Follow the workflow and additional instructions below, then answer the question.
 
 **Step 1 and Step 2**: Skip both steps. The question already contains the hearing result (`（処理方式: X）（目的: Y）`). Start from Step 3.
 
-**Step 3**: While executing semantic-search.md, for each page record why it was selected or skipped. For each section record why it was selected (high/partial) or skipped.
+**Step 3**: While executing semantic-search.md:
+- Record each page selected by the index route (index_pages) and each page selected by the classes route (classes_pages) with the reason.
+- Record the merged page list (merged_pages) with source ("index", "classes", or "both").
+- For each page not selected by either route, record it in excluded_pages with the reason.
+- For each section record why it was selected (high/partial) or skipped.
 
 **Step 4**: Save the section IDs passed to read-sections.sh as `read_sections`.
 
@@ -24,11 +28,17 @@ Do not use HTML `<details>` elements. Output the three delimiter lines as plain 
 ```json
 {
   "step3": {
-    "selected_pages": [
-      {"path": "<page path relative to knowledge/>", "reason": "<one sentence: why this page was selected>"}
+    "index_pages": [
+      {"path": "<page path relative to knowledge/>", "reason": "<one sentence: why this page was selected by the index route>"}
+    ],
+    "classes_pages": [
+      {"path": "<page path relative to knowledge/>", "reason": "<one sentence: why this page was selected by the classes route>"}
+    ],
+    "merged_pages": [
+      {"path": "<page path relative to knowledge/>", "source": "<index|classes|both>"}
     ],
     "excluded_pages": [
-      {"path": "<page path relative to knowledge/>", "reason": "<one sentence: why this page was skipped>"}
+      {"path": "<page path relative to knowledge/>", "reason": "<one sentence: why this page was skipped by both routes>"}
     ],
     "selected_sections": [
       {"file": "<file path>", "section_id": "<sN>", "relevance": "<high|partial>", "reason": "<one sentence: why this section was selected>"}
