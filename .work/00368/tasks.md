@@ -2,40 +2,40 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-11 (session 5)
+**Updated**: 2026-06-11 (session 6)
 
 ## In Progress
 
-### Task 18: 実験G — 条件5step v2（Step番号維持・e2e経路）検証
+### Task 19: 実験H — exp-purpose-classes 完了。結論待ち。
 
-**Status**: 検証ゲート失敗。設計・実行済みだが、merged_pages が条件20（15〜26件）と乖離（4〜12件）。
+**Status**: 40実行完了・コミット済み (`327e681f7`)。結論はユーザーが出す。
 
 **実験設計**:
-- semantic-search.md の Step 番号を現行（1=読込, 2=ページ選択, 3=セクション, 4=Javadoc）のまま維持
-- Step 1 で index.md + classes.md 両方読む
-- Step 2 を「index経路20件 + classes経路20件 + dedupマージ・トリムなし」に拡張
-- qa.md: Step 4 の「Maximum 10 sections total」→「Maximum 30 sections total」
-- 実験資産: `.tmp/experiment-5step-v2/`
-- 結果: `tools/benchmark/results/20260611-09xxxx/` × 10試行
+- qa-05（目的=実装したい）と qa-05b（目的=仕組み・動作を理解したい）— 質問文は同一、目的のみ異なる
+- 条件N: 現行 semantic-search.md（index経路のみ）+ 現行 qa.md（10 sections）
+- 条件C: exp版 semantic-search.md（index+classes 各20件マージ）+ exp版 qa.md（30 sections）
+- 各条件 × 2シナリオ × 10回 = 40実行
 
-**検証ゲート状況**:
-- 試行1: merged=12、adapter含有=Yes → ゲート通過（合格基準に近い）
-- 試行2〜10: merged=4〜8、total_seen=9〜13 → 条件20（15〜26）と乖離
-- adapter 関門1: 2/10
+**集計結果**:
+| 条件-シナリオ | correctness平均 | adapter_section率 |
+|---|---|---|
+| N-qa-05  | 1.000 | 0% |
+| N-qa-05b | 0.040 | 10% |
+| C-qa-05  | 1.000 | 40% |
+| C-qa-05b | 0.070 | 20% |
 
-**失敗原因（調査済み）**:
-- e2e 経路（qa.md → semantic-search 連続実行）では、エージェントがページ選定（Step 2）とセクション選定（Step 3）を1コンテキストで連続実行するため、Step 2 段階で adapter を「実装パターンの主題ではない」として skip する（セクション選定を先読みした早期除外）
-- 条件20は page-selection-only ランナー（「Step 2cで停止」指示）だったため、ページ選定に集中して広く取れた
-- 今回の classes.md を読んだかどうかは e2e の workflow_details.json からは直接判別不能
+結果: `tools/benchmark/results/exp-purpose-classes/results.md`
 
 **Steps:**
-- [x] semantic-search.md 作成 (`.tmp/experiment-5step-v2/workflows/semantic-search.md`)
-- [x] qa.md 作成 (`.tmp/experiment-5step-v2/workflows/qa.md`) — Step 4: 30 sections
-- [x] diff 確認（2ファイルの差分が想定通りであること確認済み）
-- [x] 検証ゲート: 1試行実行 → merged=12、adapter含有=Yes（通過）
-- [x] 残り9試行実行 → merged 4〜8件で条件20と乖離、検証ゲート失敗
-- [x] 失敗原因調査（e2e コンテキスト内でのページ早期絞り込みを確認）
-- [ ] [DECISION: 次の打ち手を決定] — 結果未コミット（タイムアウト失敗試行含む未コミットあり)
+- [x] qa.json 更新（qa-05 Converter を acceptable に移動、qa-05b 追加）
+- [x] 条件C スキルディレクトリ作成（`.tmp/skill-cond-c/`）
+- [x] run_qa.py タイムアウト 360s→600s
+- [x] 条件N × qa-05 × 10回実行
+- [x] 条件N × qa-05b × 10回実行
+- [x] 条件C × qa-05 × 10回実行
+- [x] 条件C × qa-05b × 10回実行
+- [x] 結果集計・results.md 保存・コミット (`327e681f7`)
+- [ ] [DECISION: 結論をユーザーが判断する]
 
 
 
@@ -71,3 +71,5 @@
 - [x] Task 15: 実験D — 条件20（関門1: 両経路20件）qa-05×10 → 10/10 adapter含有 — committed `fd3dbc052`
 - [x] Task 16: 実験E — 条件S（3段階判定）qa-05×10 → 2/10 adapter含有 — committed `84edd9cc7`
 - [x] Task 17: 実験F — 条件5step（両経路20件マージ）qa-05×10 + 他4シナリオ × 各1回 — committed `6b72072fb`
+- [x] Task 18: 実験G — 条件5step v2（e2e経路）qa-05×10 → 2/10 adapter含有（検証ゲート失敗）— committed `f2a004c1e`
+- [x] Task 19: 実験H — exp-purpose-classes（条件N/C × qa-05/qa-05b × 10回）— committed `327e681f7`
