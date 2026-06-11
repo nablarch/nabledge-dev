@@ -2,67 +2,40 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-10 (session 4)
+**Updated**: 2026-06-11 (session 5)
 
 ## In Progress
 
-### Task 14: 実験C — 条件M（独立2経路マージ）検証
+### Task 18: 実験G — 条件5step v2（Step番号維持・e2e経路）検証
 
-**Status**: 完了。実験結果はTask 15サマリーに転記済み。
-
-**Steps:**
-- [x] 条件M semantic-search.md 作成 (`.tmp/experiment-m/workflows/semantic-search.md`)
-- [x] 実験用 skill_dir セットアップ (.tmp/experiment-m/)
-- [x] 動作確認: pre-01 で1回実行し結果確認 (20260610-151632/)
-- [x] 条件M: qa-05 × 3回 実行 (20260610-151935/, 20260610-151955/, 20260610-152553/)
-- [x] 条件0: qa-05 × 3回 実行 (既存結果 20260610-143114/143341/143552/ を使用)
-- [x] 条件M: 回帰シナリオ (qa-02/review-07/impact-03: 20260610-152837/, qa-11a: 20260610-153938/)
-- [x] 結果集計・表作成 — committed `5ac667383`
-- [x] tasks.md 更新・コミット — committed `02bebca53`
-
-### Task 15: 実験D — 条件20（関門1: 両経路20件）検証
-
-**Status**: 実験完了、結果集計済み。
+**Status**: 検証ゲート失敗。設計・実行済みだが、merged_pages が条件20（15〜26件）と乖離（4〜12件）。
 
 **実験設計**:
-- 目的: 関門1（adapterページが候補集合に含まれるか）の安定性のみを測定
-- 条件20: index経路20件 + classes経路20件 独立選択 → dedup マージ
-- Step 3以降（セクション読み取り・回答生成）は省略（コスト削減）
-- 評価: qa-05 × 10回、各回 selected_pages に adapter 含有するか Yes/No
+- semantic-search.md の Step 番号を現行（1=読込, 2=ページ選択, 3=セクション, 4=Javadoc）のまま維持
+- Step 1 で index.md + classes.md 両方読む
+- Step 2 を「index経路20件 + classes経路20件 + dedupマージ・トリムなし」に拡張
+- qa.md: Step 4 の「Maximum 10 sections total」→「Maximum 30 sections total」
+- 実験資産: `.tmp/experiment-5step-v2/`
+- 結果: `tools/benchmark/results/20260611-09xxxx/` × 10試行
 
-**実験資産**:
-- 条件20 semantic-search.md: `.tmp/experiment-20/workflows/semantic-search.md`
-- 実験用 skill_dir: `.tmp/experiment-20/` (knowledge/scripts は nabledge-6 へ symlink)
-- ランナー: `tools/benchmark/scripts/run_page_selection.py`
-- プロンプト: `tools/benchmark/prompts/page-selection-only-prompt.md`
-- 結果: `tools/benchmark/results/20260610-163050/`
+**検証ゲート状況**:
+- 試行1: merged=12、adapter含有=Yes → ゲート通過（合格基準に近い）
+- 試行2〜10: merged=4〜8、total_seen=9〜13 → 条件20（15〜26）と乖離
+- adapter 関門1: 2/10
 
-**実験結果（条件20, qa-05 × 10回）**:
-| 試行 | 候補総数 | adapter含有 | 順位 |
-|------|----------|------------|------|
-|  1 | 22 | Yes | 11 |
-|  2 | 26 | Yes | 15 |
-|  3 | 26 | Yes |  6 |
-|  4 | 16 | Yes | 10 |
-|  5 | 23 | Yes | 12 |
-|  6 | 18 | Yes | 10 |
-|  7 | 22 | Yes | 13 |
-|  8 | 21 | Yes | 12 |
-|  9 | 15 | Yes |  6 |
-| 10 | 21 | Yes | 13 |
-
-**結果**: 10/10 回 adapter 含有
+**失敗原因（調査済み）**:
+- e2e 経路（qa.md → semantic-search 連続実行）では、エージェントがページ選定（Step 2）とセクション選定（Step 3）を1コンテキストで連続実行するため、Step 2 段階で adapter を「実装パターンの主題ではない」として skip する（セクション選定を先読みした早期除外）
+- 条件20は page-selection-only ランナー（「Step 2cで停止」指示）だったため、ページ選定に集中して広く取れた
+- 今回の classes.md を読んだかどうかは e2e の workflow_details.json からは直接判別不能
 
 **Steps:**
-- [x] 条件20 semantic-search.md 作成 (`.tmp/experiment-20/workflows/semantic-search.md`)
-- [x] 実験用 skill_dir セットアップ (.tmp/experiment-20/)
-- [x] run_page_selection.py ランナー作成
-- [x] 動作確認: trials=1 で動作確認 (.tmp/experiment-20-pre/)
-- [x] 本番: qa-05 × 10回 実行 (20260610-163050/)
-- [x] 結果集計・表作成（会話内で出力済み）
-- [x] [DECISION: ユーザーが次の打ち手を決定 → 条件S（3段階判定）実験を実施]
-- [x] tasks.md 更新・コミット — committed `fd3dbc052`
-- [x] 実験資産・結果 コミット — committed `fd3dbc052`
+- [x] semantic-search.md 作成 (`.tmp/experiment-5step-v2/workflows/semantic-search.md`)
+- [x] qa.md 作成 (`.tmp/experiment-5step-v2/workflows/qa.md`) — Step 4: 30 sections
+- [x] diff 確認（2ファイルの差分が想定通りであること確認済み）
+- [x] 検証ゲート: 1試行実行 → merged=12、adapter含有=Yes（通過）
+- [x] 残り9試行実行 → merged 4〜8件で条件20と乖離、検証ゲート失敗
+- [x] 失敗原因調査（e2e コンテキスト内でのページ早期絞り込みを確認）
+- [ ] [DECISION: 次の打ち手を決定] — 結果未コミット（タイムアウト失敗試行含む未コミットあり)
 
 
 
