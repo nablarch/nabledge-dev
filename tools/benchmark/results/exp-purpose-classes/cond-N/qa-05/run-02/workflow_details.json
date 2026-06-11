@@ -1,0 +1,144 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "RESTfulウェブサービスでの登録機能（JSON受信→DB登録）の実装パターンを直接解説するページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "reason": "リソースクラスのメソッドシグネチャ（引数・戻り値の定義方法）を解説するページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細（入力チェック・DBアクセス・URIマッピングなど）のリファレンスページ"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "reason": "リクエストボディをFormに変換する仕組みを解説するハンドラページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "アーキテクチャ概要であり実装パターンの具体的な情報は含まれない"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-search.json",
+        "reason": "検索機能の実装パターンであり登録とは異なる"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "reason": "ルーティング設定の詳細であり今回の主な質問（リソースクラスの実装パターン）への直接的な回答ではない"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "ユニバーサルDAOの詳細は登録操作の補足であり、getting-startedページで十分カバーされている"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "@Validアノテーションの詳細はgetting-startedページの実装例で十分、詳細説明は不要"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "JSON受信→バリデーション→BeanUtil変換→UniversalDao.insertのフル実装例を含む、質問への直接的な回答"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "リソースクラスのメソッド引数・戻り値の選択肢（Form/JaxRsHttpRequest/ExecutionContext）を理解するための補足情報"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "@ConsumesアノテーションとJSONのFormへの自動変換の仕組みを補足する"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "bodyConvertersプロパティの設定方法を補足する（JSON変換コンバータの設定）"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s1",
+        "reason": "初期化はWebアプリケーション側へのリンクのみで実装内容なし"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックへの参照リンクのみでgetting-startedのs1で@Validの使い方は網羅済み"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s3",
+        "reason": "DBアクセスへの参照リンクのみでgetting-startedのs1でUniversalDaoの使い方は網羅済み"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s2",
+        "reason": "パスパラメータはJSON登録の基本実装パターンには不要"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s3",
+        "reason": "クエリーパラメータはPOSTリクエストでのJSON登録には直接関係しない"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "section_id": "s4",
+        "reason": "レスポンスヘッダのカスタマイズは基本的な登録パターンの質問の範囲外"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s6",
+        "reason": "レスポンスボディへの変換はJSON受信→DB登録の質問には直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "restful-web-service-getting-started-create.json:s1",
+          "reason": "Formクラス定義・@Consumes/@Valid/@POST/@Path付きアクションメソッド・BeanUtil.createAndCopy・UniversalDao.insert・HttpResponse.Status.CREATEDの実装例を回答に使用"
+        },
+        {
+          "ref": "handlers-body-convert-handler.json:s5",
+          "reason": "@ConsumesアノテーションでJSON→Form変換が行われる仕組みの説明に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "restful-web-service-resource-signature.json:s1",
+          "reason": "メソッドシグネチャの詳細表はgetting-startedの実装例で十分カバーされており回答に追加情報を加えない"
+        },
+        {
+          "ref": "restful-web-service-feature-details.json:s1",
+          "reason": "Nablarch初期化の参照リンクのみで実装内容を含まず使用しなかった"
+        },
+        {
+          "ref": "handlers-body-convert-handler.json:s4",
+          "reason": "bodyConvertersのXML設定は基本的な実装パターンの回答範囲外と判断し使用しなかった"
+        }
+      ]
+    }
+  }
+}

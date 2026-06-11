@@ -1,0 +1,36 @@
+23c23
+< ## Step 1: Read index.md
+---
+> ## Step 1: Read index.md and classes.md
+25a26
+> Read `knowledge/classes.md` (relative to skill root). Save content as `classes_content`.
+33c34
+< 3. For each page in the index, apply this decision procedure and collect all candidates:
+---
+> 3. **index route** — For each page in `index_content`, apply this decision procedure and collect candidates:
+38,50c39,45
+< 4. If a purpose was noted, sort candidates using the priority categories for that purpose: pages in the priority categories come first.
+< 
+<    | 目的 | Priority categories |
+<    |------|-------------------|
+<    | 実装したい | processing-pattern/*, component/libraries, component/adapters |
+<    | 仕組み・動作を理解したい | component/handlers, component/libraries, about/about-nablarch |
+<    | 不具合・エラーを調査したい | component/handlers, component/libraries, processing-pattern/* |
+<    | テストを書きたい | development-tools/testing-framework, component/libraries |
+<    | バージョンアップしたい | about/migration, releases/releases, about/release-notes |
+<    | セキュリティ対応したい | check/security-check, component/handlers, processing-pattern/* |
+< 
+< 5. Take up to 10 candidates in order. If fewer than 3 candidates exist, do not pad. If no candidates exist, return `{"selected_sections": []}` immediately.
+< 6. Save the selected page paths (relative to knowledge/) as `selected_pages`.
+---
+>    Take up to 20 candidates. Save as `index_pages`.
+> 4. **classes route** — For each page block in `classes_content` (a block is a heading + its `path:` + its class-name list), apply this decision procedure and collect candidates:
+>    - Does any class listed in this block directly implement what the question wants to do (the class name corresponds to the processing the question asks about)? → **candidate**
+>    - Does this block's page cover the exact feature or topic the question is asking about? → **candidate**
+>    - All other blocks → **skip**
+>    Take up to 20 candidates. Save as `classes_pages`.
+> 5. **merge** — Combine `index_pages` and `classes_pages`, deduplicate by path. Do NOT trim. Save the merged list as `selected_pages`.
+56c51
+< For each path in `selected_pages` (up to 10):
+---
+> For each path in `selected_pages`:

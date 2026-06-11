@@ -1,0 +1,66 @@
+{
+  "scenario_id": "qa-05b",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 0.0,
+      "reason": "The Expected Output contains two specific facts: (1) JSON body conversion is handled by Jackson2BodyConverter, and (2) to add supported MIME types, JaxRsHandlerListFactory should be implemented. The Actual Output mentions JaxbBodyConverter instead of Jackson2BodyConverter, which contradicts the first fact. The second fact about JaxRsHandlerListFactory is completely absent from the Actual Output. Neither expected fact is covered correctly, resulting in a coverage ratio of 0/2."
+    },
+    "answer_relevancy": {
+      "score": 0.9545454545454546,
+      "reason": "The score is 0.95 because the response is highly relevant to the question about implementing a resource class pattern for receiving JSON and registering it to a DB via REST API. However, it loses a small amount of points for mentioning JaxbBodyConverter as a JSON converter, which is technically misleading since JaxbBodyConverter is typically designed for XML (JAXB) processing, not JSON — this could cause confusion for someone implementing the solution."
+    },
+    "faithfulness": {
+      "score": 0.9375,
+      "reason": "The score is 0.94 because the actual output incorrectly associates JaxbBodyConverter with handling application/json conversion, when the retrieval context clearly states that JaxbBodyConverter handles application/xml request and response conversion."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 145649,
+    "duration_api_ms": 144907,
+    "num_turns": 17,
+    "total_cost_usd": 0.71308785,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 9871,
+      "cache_read_input_tokens": 867832,
+      "cache_creation_input_tokens": 80311
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3352,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003477,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 9871,
+        "cacheReadInputTokens": 867832,
+        "cacheCreationInputTokens": 80311,
+        "webSearchRequests": 0,
+        "costUSD": 0.70961085,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

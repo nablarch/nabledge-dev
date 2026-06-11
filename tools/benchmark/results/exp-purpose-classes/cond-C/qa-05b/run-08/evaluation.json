@@ -1,0 +1,84 @@
+{
+  "scenario_id": "qa-05b",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+  "scores": {
+    "answer_correctness": {
+      "score": 0.2,
+      "reason": "The Expected Output contains two specific facts: (1) JSON body conversion is handled by Jackson2BodyConverter, and (2) to support additional MIME types, one should implement JaxRsHandlerListFactory. The Actual Output mentions Jackson in passing ('JerseyではJackson') but does not explicitly name 'Jackson2BodyConverter' as the class responsible for JSON body conversion. It also mentions 'JerseyJaxRsHandlerListFactory' but does not address implementing 'JaxRsHandlerListFactory' to add support for additional MIME types. Both expected facts are either absent or only very loosely implied, resulting in poor coverage of the expected information."
+    },
+    "answer_relevancy": {
+      "score": 0.9259259259259259,
+      "reason": "The score is 0.93 because the response largely addresses the question about implementing a resource class pattern for receiving JSON and registering it to a DB via REST API. However, it loses some points for two irrelevant statements: incorrectly claiming all Form class properties must be String type (an unnecessary restriction), and mentioning BodyConvertHandler configuration order relative to the routing adapter, which is a framework-level concern not directly relevant to the resource class implementation pattern being asked about."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-universal-dao.json:s5",
+      "javadoc/javadoc-nablarch-fw-jaxrs-BodyConvertHandler.json:s1",
+      "javadoc/javadoc-nablarch-fw-jaxrs-BodyConverter.json:s1",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s1",
+      "javadoc/javadoc-nablarch-fw-jaxrs-JaxRsHttpRequest.json:s1",
+      "javadoc/javadoc-nablarch-fw-ExecutionContext.json:s1",
+      "javadoc/javadoc-nablarch-fw-web-HttpResponse.json:s1",
+      "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s1",
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s3",
+      "component/handlers/handlers-body-convert-handler.json:s6",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "component/adapters/adapters-router-adaptor.json:s7",
+      "component/libraries/libraries-universal-dao.json:s24",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5",
+      "javadoc/javadoc-nablarch-fw-jaxrs-JaxRsBeanValidationHandler.json:s1",
+      "javadoc/javadoc-nablarch-fw-jaxrs-JaxRsResponseHandler.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 541507,
+    "duration_api_ms": 540168,
+    "num_turns": 6,
+    "total_cost_usd": 2.0296929000000006,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 13164,
+      "cache_read_input_tokens": 323274,
+      "cache_creation_input_tokens": 23852
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3352,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003477,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 34,
+        "outputTokens": 39949,
+        "cacheReadInputTokens": 1636588,
+        "cacheCreationInputTokens": 249574,
+        "webSearchRequests": 0,
+        "costUSD": 2.0262159000000004,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

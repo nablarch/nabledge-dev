@@ -31,7 +31,7 @@ from tools.benchmark.scripts.evaluate import evaluate_scenario
 
 WORKFLOW_FILE = "workflows/qa.md"
 QA_PROMPT_FILE = Path(__file__).parent.parent / "prompts" / "e2e-prompt.md"
-TIMEOUT = 360
+TIMEOUT = 600
 
 class MarkerError(ValueError):
     """Raised when a required benchmark marker is missing from the response.
