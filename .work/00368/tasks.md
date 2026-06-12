@@ -2,7 +2,7 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-12 (session 12)
+**Updated**: 2026-06-12 (session 13)
 
 ## In Progress
 
@@ -18,9 +18,14 @@
   - 同スキーマ比較: baseline-deepeval run-1 も 14/30 割れ — 今回の変更による劣化なし
   - scenario_id 取り違えなし（3件抜き取り確認）
   - qa-17 correctness=0.20: mustセクション(javadoc s11)の内容を回答が明示しなかった → スキル挙動問題
-- [ ] [DECISION: 18/34閾値割れを確認の上、run-2 進行を承認するかユーザー判断待ち]
-- [ ] run-2 実行（34シナリオ）
-- [ ] run-2 report.md 生成・閾値割れ調査
+- [x] run-2 実行（34シナリオ）— committed `837569bba`
+- [x] run-2 report.md 生成済み・プッシュ済み
+- [x] run-2 裏取り完了
+  - 34シナリオ全正常完了・エラー0件
+  - qa-05: ac=1.0/ar=1.0/faith=1.0（run-1 と一致）
+  - qa-19: ac=0.2/ar=1.0/faith=0.9615（run-1: ac=0.0）
+  - 閾値割れ18件（qa-14 faithfulness=None は評価器の一時失敗、除外）
+  - 注意: qa-14 faithfulness が None（評価器失敗）— ベースライン集計時 flaky 扱い候補
 - [ ] run-3 実行（34シナリオ）
 - [ ] run-3 report.md 生成・閾値割れ調査
 - [ ] baseline.json 生成（3run集計）
