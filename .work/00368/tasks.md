@@ -6,76 +6,41 @@
 
 ## In Progress
 
-### Step 1: 実験ゴミ一掃・リバート
+### Step 3後半: qa-05・qa-19 各1回実行・裏取り報告
 
-**目的**: classes.md・rbkc 以外を origin/main 状態に戻し、実験亜種を削除してクリーンな測定基盤を作る。
-
-**残すもの**:
-- 全バージョンの `knowledge/classes.md`
-- `tools/rbkc/` 配下一式（classes.py・設計書含む）
-- `.work/00368/` 配下（作業記録）
-
-**origin/main に戻すもの**:
-- `tools/benchmark/prompts/e2e-prompt.md`（マーカー化前に戻す）
-- `tools/benchmark/run_qa.py`
-- `tools/benchmark/scenarios/qa.json`
-- `tools/benchmark/test_run_qa.py`
-- `docs/benchmark-design.md`
-- `.claude/skills/*/workflows/` 内の検索ワークフロー
-
-**削除するもの（実験ゴミ）**:
-- `tools/benchmark/results/exp-*` 系ディレクトリ
-- `tools/benchmark/results/20260529-1140-baseline-deepeval/`
-- `tools/benchmark/results/pr-368*` 等このPRで作った結果ディレクトリ
-- `tools/benchmark/prompts/page-selection-only-prompt.md`
-- `tools/benchmark/prompts/page-selection-s-prompt.md`
-- `tools/benchmark/run_page_selection*.py`（存在する場合）
-- `.work/00368/experiment-*.md`
+**前提**: Step 3前半（evaluate.py 改修）+ マーカー化 cherry-pick（5a19d445）が完了済み。
 
 **Steps:**
-- [ ] `git checkout origin/main -- <files>` でベンチ・ワークフローを origin/main に戻す
-- [ ] 実験ゴミ（results/exp-* 等）を削除
-- [ ] `git diff origin/main --stat` で「classes.md + rbkc の変更のみ」を確認
-- [ ] コミット・プッシュし停止して報告
-
----
-
-### Step 2: qa.json に 2 シナリオ反映
-
-**目的**: qa-05 修正 + qa-19 追加（位置・番号は変えない）。
-
-**変更内容**:
-- qa-05: input から「リソースクラスの実装パターンを教えてほしい」を削除、Converter を must → acceptable に変更
-- qa-19: qa.json 末尾に追加（input は qa-05 と同一、purpose=「仕組み・動作を理解したい」、must=「JSONのボディ変換はJackson2BodyConverterが担当する」s2 の1つ）
-- 既存 33 シナリオの順番・番号は一切変更しない
-
-**Steps:**
-- [ ] [BLOCKED: qa-05 修正版・qa-19 の確定定義をユーザーから受け取る]
-- [ ] qa.json 更新（qa-05 修正 + qa-19 追加）
-- [ ] `python3 -c "import json; json.load(open('tools/benchmark/scenarios/qa.json'))"` で valid JSON 確認
-- [ ] コミット・プッシュし停止して報告
-
----
-
-### Step 3: ベンチ詳細トレース化 → qa-05・qa-19 各 1 回実行・裏取り報告
-
-**目的**: ワークフロー各ステップの選定結果を `workflow_details` に記録できるよう benchmark を修正し、動作確認する。
-
-**修正内容**:
-- ページ選定の中間・セクション選定・回答で使ったセクションを `workflow_details` に記録
-- 亜種スクリプトを作らず `tools/benchmark/` を直接修正
-
-**裏取り確認項目**:
-- scenario_id が正しいか（qa-19 が qa-05 として実行されていないか）
-- 評価が正しい must で採点しているか
-- 各ステップ記録が出ているか
-
-**Steps:**
-- [ ] benchmark スクリプトを直接修正（workflow_details 記録追加）
-- [ ] qa-05・qa-19 を各 1 回実行
-- [ ] 裏取り（scenario_id・must・各ステップ記録を実物で確認）
-- [ ] 結果＋裏取り結果をセットで報告し停止
+- [ ] qa-05・qa-19 を各1回実行（`--scenario-ids qa-05,qa-19`）
+- [ ] 裏取り（scenario_id・must・各ステップ記録を evaluation.json で実物確認）
+- [ ] 結果＋裏取りをセットで報告し停止
 - [ ] コミット・プッシュ
+
+---
+
+## Done (this session)
+
+### Step 1: 実験ゴミ一掃・リバート — committed `5c7634c84`
+
+- classes.md(5件) + tools/rbkc + .work/00368/tasks.md のみが origin/main との差分になるよう整理
+- benchmark/results を origin/main の7エントリに復元
+- 実験亜種プロンプト・スクリプト・結果ディレクトリを全削除
+
+---
+
+### Step 2: qa.json に 2 シナリオ反映 — committed `2ceeee364` ✅
+
+- qa-05: input 修正（誘導文削除）、must を Form+String型 の2つに、Converter を acceptable に移動
+- qa-19: 末尾に追加、input は qa-05 と同一、purpose=「仕組み・動作を理解したい」、must=Jackson2BodyConverter(s2)
+
+---
+
+### Step 3前半: evaluate.py 改修 + マーカー化 cherry-pick — committed `a042301e4`, `8efacba3f` ✅
+
+- evaluate.py: `purpose` + `expected_facts` を evaluation.json に記録（採点 must の取り違え検出用）
+- e2e-prompt.md: `<<<WORKFLOW_DETAILS_JSON>>>` / `<<<END_WORKFLOW_DETAILS>>>` マーカー化再適用（cherry-pick 5a19d445）
+- run_qa.py: マーカーベースパースに対応済み
+- test_run_qa.py: 57 passed GREEN
 
 ---
 
