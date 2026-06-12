@@ -1,0 +1,137 @@
+{
+  "scenario_id": "qa-12a",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「全体的な仕組み」セクションのステップ2に「HTTPエラー制御ハンドラ（HttpErrorHandler）がApplicationExceptionの保持するメッセージ情報をErrorMessagesに変換し、リクエストスコープに設定する」と明記されており、事実と同じ情報が含まれている。",
+      "fact": "HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する"
+    },
+    {
+      "verdict": "ABSENT",
+      "reason": "事実は「エラー表示タグ（`<n:errors>`や`<n:error>`などのカスタムタグ）でリクエストスコープのエラーメッセージを表示する」という内容です。参照セクションにはJSPのカスタムタグ（`<n:errors filter=\"all\">`や`<n:error name=\"form.userName\">`等）を使ってリクエストスコープのApplicationExceptionからエラーメッセージを表示する方法が説明されています。しかし、回答ではThymeleafを使った`${errors.hasError(...)}`や`${errors.getMessage(...)}`等の実装例が示されており、Nablarchのカスタムタグ（`<n:errors>`、`<n:error>`）を使ったエラー表示については言及されていません。むしろ回答の注意点では「JSPでカスタムタグを使用するとDOM構造の制約によりCSSフレームワークとの相性が悪い場合がある」と否定的な記述があり、事実で述べられているカスタムタグによるエラー表示の説明が回答に含まれていないと判断します。",
+      "fact": "エラー表示タグでリクエストスコープのエラーメッセージを表示する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "HttpErrorResponseの原因例外がApplicationExceptionの場合、ApplicationExceptionが保持するメッセージ情報をErrorMessagesに変換し、リクエストスコープに設定する",
+        "supported": true
+      },
+      {
+        "claim": "リクエストスコープのデフォルトキー名はerrors",
+        "supported": true
+      },
+      {
+        "claim": "キー名はWebConfig#errorMessageRequestAttributeNameプロパティで変更できる",
+        "supported": true
+      },
+      {
+        "claim": "ウェブアプリケーションのユーザ入力値チェックにはInjectFormインターセプタを使用する",
+        "supported": false
+      },
+      {
+        "claim": "BeanValidationStrategyをcomponent name=\"validationStrategy\"として設定する",
+        "supported": false
+      },
+      {
+        "claim": "Thymeleafでerrors.hasError('form.userName')を使用してエラー有無を判定できる",
+        "supported": false
+      },
+      {
+        "claim": "Thymeleafでerrors.getMessage('form.userName')を使用してエラーメッセージを取得できる",
+        "supported": false
+      },
+      {
+        "claim": "Thymeleafでerrors.allMessagesで全メッセージを取得できる",
+        "supported": false
+      },
+      {
+        "claim": "Thymeleafでerrors.globalMessagesでグローバルメッセージを取得できる",
+        "supported": false
+      },
+      {
+        "claim": "ValidationUtil.createMessageForPropertyでプロパティに対するエラーメッセージを設定できる",
+        "supported": false
+      },
+      {
+        "claim": "ItemNamedConstraintViolationConverterFactoryでエラーメッセージに項目名を含められる",
+        "supported": false
+      },
+      {
+        "claim": "BeanValidationStrategyのエラーメッセージのソート順はアプリケーションサーバのgetParameterNames実装依存",
+        "supported": false
+      },
+      {
+        "claim": "メッセージ定義はプロパティファイルでnablarch.core.validation.ee.Length.max.message等をキーとして行う",
+        "supported": true
+      },
+      {
+        "claim": "エラー表示にはJSPカスタムタグ（n:errors, n:error）が使用できる",
+        "supported": true
+      }
+    ],
+    "reason": "HttpErrorHandlerがApplicationExceptionをErrorMessagesに変換してリクエストスコープ（デフォルトキーerrors）に設定する仕組み、およびWebConfig#errorMessageRequestAttributeNameによるキー名変更は知識セクションで裏付けられている。しかし、Thymeleafでのエラー表示に使用するとされるErrorMessagesのメソッド群（hasError、getMessage、allMessages、globalMessages）は知識セクションに一切記載がなく、知識セクションではJSPカスタムタグ（n:errors/n:error）のみが説明されている。また、InjectFormインターセプタ・BeanValidationStrategyの設定・ValidationUtil.createMessageForProperty・ItemNamedConstraintViolationConverterFactoryについても知識セクションに裏付けがなく、ハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 0.5,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[1]: ABSENT — エラー表示タグでリクエストスコープのエラーメッセージを表示する",
+    "hallucination: FAIL — HttpErrorHandlerがApplicationExceptionをErrorMessagesに変換してリクエストスコープ（デフォルトキーerrors）に設定する仕組み、およびWebConfig#errorMessageRequestAttributeNameによるキー名変更は知識セクションで裏付けられている。しかし、Thymeleafでのエラー表示に使用するとされるErrorMessagesのメソッド群（hasError、getMessage、allMessages、globalMessages）は知識セクションに一切記載がなく、知識セクションではJSPカスタムタグ（n:errors/n:error）のみが説明されている。また、InjectFormインターセプタ・BeanValidationStrategyの設定・ValidationUtil.createMessageForProperty・ItemNamedConstraintViolationConverterFactoryについても知識セクションに裏付けがなく、ハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "processing-pattern/web-application/web-application-error-message.json",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s19",
+      "component/libraries/libraries-nablarch-validation.json:s21"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 113002,
+    "duration_api_ms": 111355,
+    "num_turns": 28,
+    "total_cost_usd": 0.67609145,
+    "usage": {
+      "input_tokens": 29,
+      "output_tokens": 7547,
+      "cache_read_input_tokens": 1354984,
+      "cache_creation_input_tokens": 41335
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1183,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0012980000000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 29,
+        "outputTokens": 7547,
+        "cacheReadInputTokens": 1354984,
+        "cacheCreationInputTokens": 41335,
+        "webSearchRequests": 0,
+        "costUSD": 0.67479345,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

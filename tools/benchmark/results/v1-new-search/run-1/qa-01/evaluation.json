@@ -1,0 +1,221 @@
+{
+  "scenario_id": "qa-01",
+  "description": "バッチで10万件のデータを読み込んで加工する処理を書いている。findAllBySqlFileで全件取得したらOutOfMemoryErrorが出た。",
+  "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes using `UniversalDao#defer` method for lazy loading in the section titled '方法2: ユニバーサルDAO遅延ロード', including the same code example and explanation that matches the fact.",
+      "fact": "UniversalDao.deferメソッドで遅延ロードを使用する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「方法2: ユニバーサルDAO遅延ロード」セクションに、「内部でサーバサイドカーソルを使用しているため、`DeferredEntityList#close`の呼び出しが必要（try-with-resourcesで自動close推奨）」と明記されており、ファクトの内容が含まれている。",
+      "fact": "DeferredEntityListのcloseメソッドを呼び出す必要がある"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "DataReaderが入力データを読み込み、データレコードを1件ずつ提供する",
+        "supported": true
+      },
+      {
+        "claim": "handleメソッドが1件分のデータに対して業務ロジックを実行する",
+        "supported": true
+      },
+      {
+        "claim": "処理対象データがなくなるまで繰り返す",
+        "supported": true
+      },
+      {
+        "claim": "DBからデータを読み込む場合は標準提供のDatabaseRecordReaderをcreateReaderで設定する",
+        "supported": true
+      },
+      {
+        "claim": "reader.setStatement(statement)でSQLを設定する",
+        "supported": false
+      },
+      {
+        "claim": "handleメソッド内でSELECTを発行して自前ループするのはアンチパターン",
+        "supported": true
+      },
+      {
+        "claim": "検索結果を全件メモリに展開するためメモリ不足になる",
+        "supported": true
+      },
+      {
+        "claim": "フレームワークのコミット間隔制御が機能しない→トランザクションログを逼迫する",
+        "supported": true
+      },
+      {
+        "claim": "解決法はhandle内で発行しているSQLをcreateReaderで行うようにする",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao#deferメソッドを使って遅延ロードする",
+        "supported": true
+      },
+      {
+        "claim": "遅延ロードはユニバーサルDAOとしては1件ずつロードする",
+        "supported": true
+      },
+      {
+        "claim": "内部でサーバサイドカーソルを使用しているためDeferredEntityList#closeの呼び出しが必要",
+        "supported": true
+      },
+      {
+        "claim": "try-with-resourcesで自動close推奨",
+        "supported": true
+      },
+      {
+        "claim": "カーソルオープン中にトランザクション制御が行われるとカーソルがクローズされる場合がある",
+        "supported": true
+      },
+      {
+        "claim": "使用するRDBMSによって異なるためデータベースベンダーのマニュアルを確認すること",
+        "supported": true
+      },
+      {
+        "claim": "問題がある場合はページングなどで回避する",
+        "supported": true
+      }
+    ],
+    "reason": "主要な主張はすべてナレッジセクションに裏付けられている。唯一未確認の箇所はDatabaseRecordReaderの設定APIとして示された`reader.setStatement(statement)`で、ナレッジセクション中にDatabaseRecordReaderの具体的な設定メソッド名の記載がない。ただし、この点は主張の核心ではなく、他の重要な情報（バッチ処理フロー、アンチパターン、UniversalDao遅延ロード）はいずれも正確に裏付けられているため、全体としてPASSと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチのアーキテクチャ概要ページ — DataReaderの仕組みとDatabaseRecordReaderの説明が含まれる"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチの機能詳細ページ — DatabaseRecordReaderがデータベースアクセス手段として明示されている"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "Nablarchバッチのサンプル実装ページ — DataReaderのread/hasNext/closeパターンの実装例がある"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "handleメソッド内でSELECTしてループするアンチパターンと解決法を直接解説している"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "DB to DBパターンでSELECT結果を1レコードずつhandleで受け取る設計を説明している"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s9でUniversalDao#deferによる遅延ロード（1件ずつロード）の方法を直接解説している"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "JDBCラッパーのデータベースアクセス詳細ページ — 検索範囲指定など補助的な情報がある"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "DataReaderがデータレコードを1件ずつ提供するという処理の流れを説明しており、質問の「1件ずつ読み込む」仕組みの根拠となる"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "DatabaseRecordReaderをDBから読み込む標準データリーダとして明示しており、実装すべきコンポーネントが分かる"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "handleメソッドで自前SELECTループをするアンチパターンがメモリ不足・トランザクションログ逼迫を引き起こすと直接説明している"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s10",
+        "relevance": "high",
+        "reason": "NG実装例として全件SELECTを自前ループするコードが示されており、ユーザーが抱えている問題パターンそのものを示す"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "handleのSQLをcreateReaderに移すことが解決法だと明示しており、実装方針を直接示す"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "DB to DBパターンで入力がSELECT結果の各レコード（1件ずつ）であることを示し、Nablarchバッチの正しい設計パターンを確認できる"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "UniversalDao#deferによる遅延ロードで1件ずつロードする方法とコード例を直接示しており、もう一つの実装選択肢を提供する"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "最小ハンドラ構成でデータリードハンドラが1件読み込んでhandleに渡す役割を示しており、仕組みの背景として有用"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "機能詳細でDatabaseRecordReaderがDB読み込みの標準手段であることを補強する"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "アンチパターンの文脈説明として、少ない件数では問題が発覚しないが大量データで問題が顕在化することを説明している"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 281790,
+    "duration_api_ms": 279167,
+    "num_turns": 4,
+    "total_cost_usd": 1.18342945,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 7262,
+      "cache_read_input_tokens": 130757,
+      "cache_creation_input_tokens": 7766
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3225,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003355,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 20,
+        "outputTokens": 18192,
+        "cacheReadInputTokens": 1195069,
+        "cacheCreationInputTokens": 146297,
+        "webSearchRequests": 0,
+        "costUSD": 1.18007445,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

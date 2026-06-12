@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 88812,
+  "duration_api_ms": 86444,
+  "ttft_ms": 4410,
+  "num_turns": 8,
+  "result": "全セクションを取得しました。回答を生成します。\n\n---\n\n**結論**: NablarchにはOAuth2やOpenID Connect（OIDC）の仕組みは組み込まれていない。ただし、OIDCのIDトークンを用いた認証の**実装サンプル**（`nablarch-biz-sample-all`）が公式提供されており、これを参考に業務アクションとして実装できる。\n\n**根拠**:\n\nNablarchの設計方針として、認証はフレームワーク側では提供しておらず、プロジェクト要件に応じてPJで実装する形になっている。\n\n> 認証については、プロジェクト要件により仕様が異なるため、フレークワークとしては提供していない。プロジェクト要件に合わせてPJで実装する。\n\n一方、公式ビジネスサンプルとして **OIDCのIDトークンを用いた認証サンプル** が提供されており、以下の構成を実装例として参照できる。\n\n**サンプルの前提構成**:\n- NablarchをRESTfulウェブサービスのバックエンドとして使用\n- IDトークンはフロントエンド（SPA、モバイルアプリ等）で取得し、バックエンドに送信\n- 認証成功時にセッションを確立（ステートフルなセッション管理）\n- 認証処理は業務アクションで実装\n\n**対応済みのIDプロバイダー**:\n- AWS Amazon Cognito ユーザープール\n- Microsoft Azure Active Directory B2C (ADB2C)\n\n**実装手順の概要**:\n\n1. JWTライブラリを依存関係に追加（Auth0の `java-jwt` と `jwks-rsa-java` を使用）\n\n```xml\n<dependency>\n  <groupId>com.auth0</groupId>\n  <artifactId>java-jwt</artifactId>\n  <version>4.4.0</version>\n</dependency>\n<dependency>\n  <groupId>com.auth0</groupId>\n  <artifactId>jwks-rsa</artifactId>\n  <version>0.22.1</version>\n</dependency>\n```\n\n2. IDトークン検証コンポーネントをコンポーネント設定ファイルに定義\n\n```xml\n<component name=\"idTokenVerifier\"\n    class=\"please.change.me.common.oidc.verification.cognito.jwt.CognitoIdTokenVerifier\">\n  <property name=\"region\" value=\"${aws.cognito.region}\" />\n  <property name=\"userPoolId\" value=\"${aws.cognito.userPool.id}\" />\n  <property name=\"clientId\" value=\"${aws.cognito.userPool.clientId}\" />\n  <property name=\"signatureAlgorithmProvider\" ref=\"signatureAlgorithmProvider\" />\n</component>\n```\n\n3. 業務アクションでIDトークンを検証し、成功時にセッションを確立\n\n```java\npublic void login(ExecutionContext context, LoginRequestForm form) {\n    DecodedJWT decodedJWT = verifyIdToken(form.getIdToken());\n\n    // 認証成功後にセッションIDとCSRFトークンを変更（セキュリティ強化）\n    SessionUtil.changeId(context);\n    CsrfTokenUtil.regenerateCsrfToken(context);\n\n    String userId = decodedJWT.getSubject();\n    SessionUtil.put(context, \"user.id\", userId);\n}\n```\n\n**注意点**:\n- サンプルはバックエンドでのIDトークン検証のみを対象としており、フロントエンドでのOAuth2認可コードフロー自体の実装は対象外\n- サンプルは2024年9月時点の仕様に基づいているため、利用するサービスの最新仕様を確認してカスタマイズすること\n- 秘匿情報（リージョン、クライアントIDなど）はバージョン管理システムで管理されるファイルへの直接記述を避け、OSEnvironment変数やシステムプロパティで設定すること\n\n参照: `guide/biz-samples/biz-samples-12.json:s2`, `guide/biz-samples/biz-samples-12.json:s11`, `guide/biz-samples/biz-samples-12.json:s13`, `guide/biz-samples/biz-samples-12.json:s14`, `guide/biz-samples/biz-samples-12.json:s16`, `processing-pattern/web-application/web-application-feature-details.json:s13`\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"guide/biz-samples/biz-samples-12.json\", \"reason\": \"OIDCのIDトークンを用いた認証サンプルそのものであり、質問に直接回答する\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"ウェブアプリケーションの認証セクション(s13)にフレームワークの認証方針が記載されている\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"check/security-check/security-check-2.チェックリスト.json\", \"reason\": \"OAuthやOIDC固有の内容ではなく汎用セキュリティチェックリストのため\"},\n      {\"path\": \"about/about-nablarch/about-nablarch-policy.json\", \"reason\": \"OSSポリシー(s6)はサンプルでOSSライブラリを使用しているため関連薄\"},\n      {\"path\": \"guide/biz-samples/biz-samples-01.json\", \"reason\": \"パスワード認証サンプルであり、OAuth2/OIDCとは異なるトピック\"},\n      {\"path\": \"component/libraries/libraries-session-store.json\", \"reason\": \"セッションストアの詳細実装であり、認証方式自体の説明ではないため\"},\n      {\"path\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"reason\": \"CSRFトークン検証はOIDC認証の補足要素であり中心的な情報ではないため\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s2\", \"relevance\": \"high\", \"reason\": \"OIDCサンプルの概要と対応IDプロバイダーを説明しており、Nablarchの認証サポート範囲の全体像がわかる\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s11\", \"relevance\": \"high\", \"reason\": \"JWTライブラリの依存関係追加方法を示しており、実装の出発点となる\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s13\", \"relevance\": \"high\", \"reason\": \"IDトークン検証コンポーネントのコンポーネント定義設定方法を示す\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s14\", \"relevance\": \"high\", \"reason\": \"IDトークン検証の具体的なコード実装（JWTVerifier、署名検証）を示す\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s16\", \"relevance\": \"high\", \"reason\": \"業務アクションでの認証処理とセッション確立の実装コードを示す\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s13\", \"relevance\": \"high\", \"reason\": \"Nablarchとして認証機能はフレームワーク提供ではないという基本方針を明示する\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s1\", \"reason\": \"提供パッケージのリスト情報のみでs2に内容が包含される\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s3\", \"reason\": \"取り扱う範囲の図の説明のみで、テキスト情報としての新規情報が少ない\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s4\", \"reason\": \"構成の親セクションで内容空\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s5\", \"reason\": \"クラス図の参照のみで、テキスト情報として重要な情報が含まれない\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s6\", \"reason\": \"各クラスの責務の親セクションで内容空\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s7\", \"reason\": \"インタフェース一覧表のみで、実装方法には直接不要\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s8\", \"reason\": \"クラス一覧表のみで、実装方法には直接不要\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s9\", \"reason\": \"業務アクションクラス一覧表のみで、実装コードはs16で確認できる\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s10\", \"reason\": \"使用方法の親セクションで内容空\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s12\", \"reason\": \"環境依存値の設定方法。重要だがs13のコンポーネント定義で${...}形式で示されており補足情報\"},\n      {\"file\": \"guide/biz-samples/biz-samples-12.json\", \"section_id\": \"s15\", \"reason\": \"JAX-RSのPath設定はOIDC固有ではなく一般的なマッピング設定のため優先度低\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"guide/biz-samples/biz-samples-12.json:s2\",\n      \"guide/biz-samples/biz-samples-12.json:s11\",\n      \"guide/biz-samples/biz-samples-12.json:s13\",\n      \"guide/biz-samples/biz-samples-12.json:s14\",\n      \"guide/biz-samples/biz-samples-12.json:s16\",\n      \"processing-pattern/web-application/web-application-feature-details.json:s13\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"guide/biz-samples/biz-samples-12.json:s2\", \"reason\": \"OIDCサンプルの概要・対応IDプロバイダー・前提構成を回答の基盤として使用\"},\n        {\"ref\": \"guide/biz-samples/biz-samples-12.json:s11\", \"reason\": \"JWTライブラリのMaven依存関係設定コードを根拠セクションとして使用\"},\n        {\"ref\": \"guide/biz-samples/biz-samples-12.json:s13\", \"reason\": \"コンポーネント定義XMLの設定例を根拠として使用\"},\n        {\"ref\": \"guide/biz-samples/biz-samples-12.json:s14\", \"reason\": \"IDトークン検証コードを根拠として使用\"},\n        {\"ref\": \"guide/biz-samples/biz-samples-12.json:s16\", \"reason\": \"業務アクションでの認証処理・セッション確立コードを根拠として使用\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-feature-details.json:s13\", \"reason\": \"「フレームワークとしては提供していない」という結論の根拠として使用\"}\n      ],\n      \"unused\": []\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "b28db079-3e64-4c8b-bfd9-00e77e04357d",
+  "total_cost_usd": 0.51603535,
+  "usage": {
+    "input_tokens": 9,
+    "cache_creation_input_tokens": 75239,
+    "cache_read_input_tokens": 502187,
+    "output_tokens": 5321,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 75239
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3251,
+      "outputTokens": 28,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003391,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 9,
+      "outputTokens": 5321,
+      "cacheReadInputTokens": 502187,
+      "cacheCreationInputTokens": 75239,
+      "webSearchRequests": 0,
+      "costUSD": 0.51264435,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "11fa1f7b-a4b4-4cac-a5b4-7f5c74ecc422"
+}

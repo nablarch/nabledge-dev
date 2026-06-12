@@ -1,0 +1,137 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「注意点」セクションに「Jakarta EE 10対応のアプリケーションサーバが必要です（後方互換性なし）」と明記されており、事実の「Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある」という情報が含まれている。",
+      "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「名前空間の変更」セクションおよびMaven依存関係の変更セクションにおいて、Jakarta EE 9でパッケージ名前空間が`javax.*`から`jakarta.*`に変更されたこと、仕様名・パッケージ名がJakarta EEのものに変更されたことが明示されている。これは「Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている」という事実と同一の情報を含んでいる。",
+      "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Nablarch 6はJakarta EE 10に対応し、Jakarta EE 10対応のアプリケーションサーバが必要",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch 6はJava 17以上が必須",
+        "supported": true
+      },
+      {
+        "claim": "javax.* → jakarta.* のパッケージ名前空間変更が必要（一般的なJakarta EE移行知識）",
+        "supported": true
+      },
+      {
+        "claim": "Maven依存関係をJakarta EE版に変更する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "web.xmlのXMLスキーマをjakarta.ee版に変更する必要がある（一般的なJakarta EE移行知識）",
+        "supported": true
+      },
+      {
+        "claim": "JSPタグライブラリのURIをjakarta.tags.coreに変更（一般的なJakarta EE移行知識）",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-testing-jetty6 → nablarch-testing-jetty12 に変更が必要",
+        "supported": false
+      },
+      {
+        "claim": "HttpServerFactoryJetty6 → HttpServerFactoryJetty12 クラスへの変更が必要",
+        "supported": false
+      },
+      {
+        "claim": "gsp-dba-maven-plugin を 5.1.0 に更新",
+        "supported": false
+      },
+      {
+        "claim": "waitt-maven-plugin を jetty-ee10-maven-plugin:12.0.12 に変更",
+        "supported": false
+      },
+      {
+        "claim": "jersey-bom を 3.1.8 に更新",
+        "supported": false
+      },
+      {
+        "claim": "activemq-all → artemis-server + artemis-jakarta-server + artemis-jakarta-client に変更",
+        "supported": false
+      },
+      {
+        "claim": "6u3以降へのバージョンアップ時は追加手順が必要",
+        "supported": false
+      }
+    ],
+    "reason": "一般的なJakarta EE移行知識（名前空間変更・XML schema変更・JSPタグライブラリ変更）や、Nablarch 6のJava 17必須・Jakarta EE 10対応サーバ要件は知識セクションで裏付けられる。しかし、nablarch-testing-jetty6/jetty12・HttpServerFactoryJetty6/Jetty12といったNablarch固有クラス・モジュール名、gsp-dba-maven-plugin 5.1.0・waitt-maven-plugin→jetty-ee10-maven-plugin:12.0.12・jersey 3.1.8・activemq→artemisといった具体的なバージョン・ライブラリ移行先、および「6u3以降」という特定バージョン言及は、提供された知識セクションに裏付けがなく、ハルシネーションの疑いがある。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 一般的なJakarta EE移行知識（名前空間変更・XML schema変更・JSPタグライブラリ変更）や、Nablarch 6のJava 17必須・Jakarta EE 10対応サーバ要件は知識セクションで裏付けられる。しかし、nablarch-testing-jetty6/jetty12・HttpServerFactoryJetty6/Jetty12といったNablarch固有クラス・モジュール名、gsp-dba-maven-plugin 5.1.0・waitt-maven-plugin→jetty-ee10-maven-plugin:12.0.12・jersey 3.1.8・activemq→artemisといった具体的なバージョン・ライブラリ移行先、および「6u3以降」という特定バージョン言及は、提供された知識セクションに裏付けがなく、ハルシネーションの疑いがある。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "about/migration/migration-migration.json:s2",
+      "about/migration/migration-migration.json:s9",
+      "about/migration/migration-migration.json:s10",
+      "about/migration/migration-migration.json:s11",
+      "about/migration/migration-migration.json:s12",
+      "about/migration/migration-migration.json:s13",
+      "about/migration/migration-migration.json:s14",
+      "about/migration/migration-migration.json:s15",
+      "about/migration/migration-migration.json:s16",
+      "about/migration/migration-migration.json:s26",
+      "about/migration/migration-migration.json:s27",
+      "about/migration/migration-migration.json:s28"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 64369,
+    "duration_api_ms": 63780,
+    "num_turns": 10,
+    "total_cost_usd": 0.34537599999999996,
+    "usage": {
+      "input_tokens": 1763,
+      "output_tokens": 4903,
+      "cache_read_input_tokens": 318375,
+      "cache_creation_input_tokens": 45238
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1192,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001387,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1763,
+        "outputTokens": 4903,
+        "cacheReadInputTokens": 318375,
+        "cacheCreationInputTokens": 45238,
+        "webSearchRequests": 0,
+        "costUSD": 0.343989,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

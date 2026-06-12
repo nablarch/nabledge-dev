@@ -1,0 +1,132 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that `$if(プロパティ名) {SQL文の条件}` syntax is used to describe variable conditions, and that when a property value is null or empty string, the condition is automatically excluded. This directly matches the fact being checked.",
+      "fact": "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "$if(プロパティ名) {SQL文の条件} 構文でBeanのプロパティ値がnullまたは空文字の場合に条件を自動除外できる",
+        "supported": true
+      },
+      {
+        "claim": "配列やjava.util.Collectionの場合はプロパティ値がnullまたはサイズ0の場合に除外される",
+        "supported": true
+      },
+      {
+        "claim": "上記以外の型の場合はプロパティ値がnullまたは空文字列（Stringの場合）に除外される",
+        "supported": true
+      },
+      {
+        "claim": "$ifが使用できるのはwhere句のみ",
+        "supported": true
+      },
+      {
+        "claim": "$ifの中に$ifを記述することはできない",
+        "supported": true
+      },
+      {
+        "claim": "条件だけが異なる複数のSQLを共通化する目的では使用しないこと",
+        "supported": true
+      },
+      {
+        "claim": "SEARCH_PROJECT SQLの$if構文を用いた可変条件の記述例（clientId, projectName, projectType, projectClass, projectStartDateBegin, projectStartDateEnd）",
+        "supported": true
+      },
+      {
+        "claim": "業務アクションでUniversalDao.page().per(20L).findAllBySqlFile()を使用する実装例",
+        "supported": true
+      },
+      {
+        "claim": "InjectForm・OnErrorアノテーションを付与し、BeanUtil.createAndCopyでフォームから検索条件Beanに変換する",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有の主張（$if構文の記法・除外ルール・制約事項・SQL例・業務アクション実装例）はすべてナレッジセクションに裏付けられている。実装例でprivateメソッドsearchProjectへの委譲をインライン化している点は構造上の違いだが、UniversalDaoの使い方・引数は正確であり、虚偽の情報は含まれていない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s21「可変条件を持つSQLを実行する」が$if構文によるユーザー入力依存の動的SQL条件を直接説明しており、質問に正確に対応する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "reason": "ウェブアプリケーションの検索機能実装例として$if構文を使った実際のSQLと業務アクションの実装を含んでいる"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "$if構文による可変条件SQLの記述ルール、除外条件、制約、コード例が完全に含まれており、質問に直接答える"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションの検索機能として$if構文を使った実際のSQL・フォーム・業務アクションの完全な実装例が含まれている"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "$if構文を含む動的SQL構築機能の概要を説明しており、s21の背景理解を補完する"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "Beanオブジェクトを入力としてSQLを実行する基本メカニズムを説明しており、$if構文の前提知識となる"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 124432,
+    "duration_api_ms": 122666,
+    "num_turns": 4,
+    "total_cost_usd": 0.8830146999999999,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 3175,
+      "cache_read_input_tokens": 103171,
+      "cache_creation_input_tokens": 32194
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3257,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003382,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 15,
+        "outputTokens": 8089,
+        "cacheReadInputTokens": 588184,
+        "cacheCreationInputTokens": 155146,
+        "webSearchRequests": 0,
+        "costUSD": 0.8796326999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

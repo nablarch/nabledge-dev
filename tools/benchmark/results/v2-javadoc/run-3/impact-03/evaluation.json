@@ -1,0 +1,122 @@
+{
+  "scenario_id": "impact-03",
+  "description": "REST APIで登録処理を実装している。入力されたメールアドレスがDB上で重複していないか、バリデーションの段階でチェックしたい。",
+  "input": "Bean Validationの中でDBに問い合わせて重複チェックしたい。カスタムバリデータでDB検索する実装でいいのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する」という内容が明示されており、「Bean Validation実行中のオブジェクトの値は、安全である保証がない」という記述も引用形式で含まれている。Factの両方の主張が回答に含まれている。",
+      "fact": "データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する。Bean Validation実行中のオブジェクトの値は安全である保証がない"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Bean ValidationでDBアクセスを行うことは禁止されている",
+        "supported": true
+      },
+      {
+        "claim": "バリデーション実施前の安全ではない値を使ってDBアクセスを行うことになる",
+        "supported": true
+      },
+      {
+        "claim": "SQLインジェクションなどの脆弱性の原因となるため避けるべき",
+        "supported": true
+      },
+      {
+        "claim": "RESTfulウェブサービスの場合はリソースクラスのメソッドに@Validアノテーションを設定してBean Validationを実行する",
+        "supported": true
+      },
+      {
+        "claim": "業務アクション内でバリデーション済みの安全な値を使ってDBに重複チェックを行う",
+        "supported": true
+      },
+      {
+        "claim": "重複が見つかった場合はApplicationExceptionを送出する",
+        "supported": true
+      },
+      {
+        "claim": "ValidationUtil#createMessageForPropertyを使用してエラーメッセージを構築しApplicationExceptionを送出する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張（DBバリデーション禁止の理由、@Validアノテーションの使用、ApplicationExceptionの送出、ValidationUtil#createMessageForPropertyの使用）はナレッジセクションの内容と一致しており、ハルシネーションは検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean ValidationおよびDBとの相関バリデーション(s12)、カスタムバリデータ(s24)を直接カバーする最重要ページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの入力値チェック(s2)をカバーし、処理方式に合致する"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTful用Bean ValidationハンドラでRESTful処理方式のバリデーション実行方法を説明する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "DB相関バリデーションをBean Validation内でやるべきでない理由とセキュリティ上のリスクを直接説明する"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "アクション側でDB重複チェックを行いエラーを特定項目に紐づける方法を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスにおけるBean Validationの実行方法の概要を提供する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 75250,
+    "duration_api_ms": 74904,
+    "num_turns": 8,
+    "total_cost_usd": 0.58512435,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 3873,
+      "cache_read_input_tokens": 453962,
+      "cache_creation_input_tokens": 103333
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3185,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003315,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 3873,
+        "cacheReadInputTokens": 453962,
+        "cacheCreationInputTokens": 103333,
+        "webSearchRequests": 0,
+        "costUSD": 0.58180935,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

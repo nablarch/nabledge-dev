@@ -1,0 +1,162 @@
+{
+  "scenario_id": "review-07",
+  "description": "Web画面で外部サイトからの不正なPOSTリクエストを防ぐ必要がある。CSRF対策をNablarchの仕組みで実装したい。",
+  "input": "外部サイトから不正にPOSTされるのを防ぎたい。NablarchにCSRF対策の仕組みはある？どう設定する？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states 'ハンドラキューに追加するだけでCSRFトークンの自動生成・検証が有効になります' and provides detailed configuration showing how adding CsrfTokenVerificationHandler to the handler queue (ハンドラ構成) enables CSRF token generation and verification, which directly corresponds to the fact that '本ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う'.",
+      "fact": "CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "CsrfTokenVerificationHandler exists as nablarch.fw.web.handler.CsrfTokenVerificationHandler",
+        "supported": true
+      },
+      {
+        "claim": "Handler must be placed after sessionStoreHandler",
+        "supported": true
+      },
+      {
+        "claim": "Handler must be placed after nablarchTagHandler when using JSP custom tags",
+        "supported": true
+      },
+      {
+        "claim": "Default token generation uses UUID v4",
+        "supported": true
+      },
+      {
+        "claim": "Session store key name is nablarch_csrf-token",
+        "supported": true
+      },
+      {
+        "claim": "GET/HEAD/TRACE/OPTIONS are excluded from verification",
+        "supported": true
+      },
+      {
+        "claim": "Request header X-CSRF-TOKEN is used for token transmission",
+        "supported": true
+      },
+      {
+        "claim": "Request parameter csrf-token is used for token transmission",
+        "supported": true
+      },
+      {
+        "claim": "Verification failure returns BadRequest (400)",
+        "supported": true
+      },
+      {
+        "claim": "CsrfTokenUtil.regenerateCsrfToken can be used to regenerate the CSRF token at login",
+        "supported": true
+      },
+      {
+        "claim": "If session store is destroyed and recreated at login, regenerateCsrfToken is not needed",
+        "supported": true
+      },
+      {
+        "claim": "For testing, replace handler with nablarch.test.NopHandler",
+        "supported": true
+      },
+      {
+        "claim": "JSP custom tags automatically output CSRF token via form tag",
+        "supported": true
+      }
+    ],
+    "reason": "All Nablarch-specific claims in the answer are directly supported by the knowledge sections. The handler class name, placement requirements, default behaviors (UUID v4, session key name, excluded HTTP methods, header/parameter names, failure response), token regeneration API, and test configuration all match the gold standard documentation exactly. No fabricated information detected."
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "reason": "CSRFトークン検証ハンドラそのものの解説ページで、質問に直接回答する"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "s6にCSRF対策のNablarch対応状況と推奨アプローチが記載されている"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "s19にウェブアプリケーションのCSRF対策リンクがある（handlers-csrf-token-verification-handlerへの参照）"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "CSRFトークンのJSP自動出力に関連するカスタムタグ情報がある"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "ハンドラの配置制約（セッションストアハンドラ・カスタムタグハンドラとの順序）が完全な設定に必須"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "CSRFトークンの生成・検証の具体的な設定例とデフォルト動作を説明しており質問に直接回答"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "ログイン時のトークン再生成という重要なセキュリティ要件を説明している"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "Nablarchが推奨するCSRF対策のアプローチ（二重サブミット防止機能との比較）を補足"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-web-csrf-CsrfTokenUtil.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "s4のCSRFトークン再生成ハンドラから参照されているregenerateCsrfTokenメソッドのAPI仕様"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 120533,
+    "duration_api_ms": 119929,
+    "num_turns": 9,
+    "total_cost_usd": 0.76549775,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 7084,
+      "cache_read_input_tokens": 665425,
+      "cache_creation_input_tokens": 121663
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3199,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003344,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 7084,
+        "cacheReadInputTokens": 665425,
+        "cacheCreationInputTokens": 121663,
+        "webSearchRequests": 0,
+        "costUSD": 0.76215375,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

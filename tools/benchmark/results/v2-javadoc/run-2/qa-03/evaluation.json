@@ -1,0 +1,140 @@
+{
+  "scenario_id": "qa-03",
+  "description": "会員登録フォームで、メールアドレスと確認用メールアドレスの一致チェックが必要。Nablarchの入力チェックの仕組みでどうやるのかわからない。",
+  "input": "2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that for Bean Validation, @AssertTrue annotation is used for correlation validation, and provides the same Java code example as in the reference section. The answer also mentions this is the recommended approach.",
+      "fact": "Jakarta Bean Validationの@AssertTrueを使って相関バリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Bean Validationでの相関バリデーションには@AssertTrueアノテーションを使用する",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch Validationでの相関バリデーションには@ValidateForメソッド内で実装する",
+        "supported": true
+      },
+      {
+        "claim": "@AssertTrue(message = \"{compareMailAddress}\")をisEqualsMailAddress()メソッドに付与する実装例",
+        "supported": true
+      },
+      {
+        "claim": "Bean Validationではバリデーションの実行順序が保証されない",
+        "supported": true
+      },
+      {
+        "claim": "任意項目の場合はStringUtil.isNullOrEmptyで未入力チェックをしてからreturn trueする",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch ValidationではValidationUtil.validate()で単項目バリデーションを先に実行する",
+        "supported": true
+      },
+      {
+        "claim": "context.isValid()でエラー有無を確認し、エラーがある場合は相関バリデーションをスキップする",
+        "supported": true
+      },
+      {
+        "claim": "context.createObject()でフォームオブジェクトを生成して相関チェックを行う",
+        "supported": true
+      },
+      {
+        "claim": "相関エラー時はcontext.addMessage(\"compareMailAddress\")でメッセージを追加する",
+        "supported": true
+      },
+      {
+        "claim": "ウェブアプリケーションでBean Validationを使う場合はInjectFormインターセプタとBeanValidationStrategyの設定が必要",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch Validationコード例で@Domain(SampleDomain.MAIL)と@Requiredを使用",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有の主張（@AssertTrue、@ValidateFor、ValidationUtil、ValidationContext、BeanValidationStrategy、InjectFormインターセプタ、StringUtil.isNullOrEmptyによる任意項目チェックなど）はすべてknowledgeセクションの内容と一致しており、捏造された情報は確認されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "相関バリデーション機能を含むBean Validationの主要な説明ページ"
+      },
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "Nablarch独自バリデーションにおける相関バリデーションの実装方法を含むページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "メールアドレスと確認用メールアドレスの一致チェックそのものを例にした相関バリデーション実装例を含む"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "Nablarch ValidationにおけるmailAddressとconfirmMailAddressの相関バリデーション実装例を含む"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでBean Validationを使用するための設定方法を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "Nablarch ValidationでValidateForメソッドを実行する基本構造を説明する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 89529,
+    "duration_api_ms": 89028,
+    "num_turns": 6,
+    "total_cost_usd": 0.6323769499999999,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 5356,
+      "cache_read_input_tokens": 364619,
+      "cache_creation_input_tokens": 117147
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3207,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033320000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 5356,
+        "cacheReadInputTokens": 364619,
+        "cacheCreationInputTokens": 117147,
+        "webSearchRequests": 0,
+        "costUSD": 0.6290449499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

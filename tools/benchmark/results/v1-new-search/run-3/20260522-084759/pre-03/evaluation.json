@@ -1,0 +1,192 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答にはSQLファイルを使った検索（findAllBySqlFile）でSQL IDを指定する方法が示されており、「検索結果はBeanのプロパティ名とSELECT句の名前が一致する項目にマッピングされます」と明記されている。これはファクトの内容（SQLファイル作成・SQL ID指定検索・結果のBeanマッピング）を全て含んでいる。",
+      "fact": "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "UniversalDao.findAllBySqlFile()を使ってSQLファイルで検索できる",
+        "supported": true
+      },
+      {
+        "claim": "EntityにJakarta PersistenceアノテーションをつけてSQLを自動生成できる",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント定義にnablarch.common.dao.BasicDaoContextFactoryをdaoContextFactoryという名前で設定する",
+        "supported": true
+      },
+      {
+        "claim": "@Entity、@IdなどのJakarta Persistenceアノテーションで主キー指定検索が自動生成SQLで実行できる",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.findAllBySqlFile(User.class, \"FIND_BY_NAME\")で全件検索できる",
+        "supported": true
+      },
+      {
+        "claim": "SQLファイルはBeanクラスから導出され、sample.entity.Userはクラスパスのsample/entity/User.sqlが使われる",
+        "supported": true
+      },
+      {
+        "claim": "条件を指定して検索する場合はUniversalDao.findAllBySqlFile(Project.class, \"SEARCH_PROJECT\", condition)を使う",
+        "supported": true
+      },
+      {
+        "claim": "検索条件は専用のBeanを指定し、単一テーブルの場合はEntityも可",
+        "supported": true
+      },
+      {
+        "claim": "ページングはUniversalDao.per(3).page(1).findAllBySqlFile(User.class, \"FIND_ALL_USERS\")で行う",
+        "supported": true
+      },
+      {
+        "claim": "ページング情報はEntityListからPaginationを取得する",
+        "supported": true
+      },
+      {
+        "claim": "遅延ロードはUniversalDao.defer().findAllBySqlFile()で使用できる",
+        "supported": true
+      },
+      {
+        "claim": "遅延ロードはDeferredEntityListにダウンキャストして取得する",
+        "supported": true
+      },
+      {
+        "claim": "遅延ロードはサーバサイドカーソルを使用するためDeferredEntityList#closeの呼び出しが必要",
+        "supported": true
+      },
+      {
+        "claim": "検索結果はBeanのプロパティ名とSELECT句の名前が一致する項目にマッピングされる",
+        "supported": true
+      },
+      {
+        "claim": "JOINした検索結果はfindAllBySqlFileで取得できる",
+        "supported": true
+      }
+    ],
+    "reason": "回答内の全てのNablarch固有のクレームはナレッジセクションによって裏付けられている。API名、クラス名、設定方法、動作仕様すべてが正確である。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDAOそのものを解説するページで、検索方法の直接的な情報を含む"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "UniversalDAOが内部で使用するJDBCラッパーの検索機能を解説する"
+      },
+      {
+        "path": "guide/biz-samples/biz-samples-03.json",
+        "reason": "UniversalDaoを使った検索結果一覧の実装サンプルを提供する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "reason": "ウェブアプリケーションにおける検索機能の実装例を提供する"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-search.json",
+        "reason": "RESTfulウェブサービスにおける検索機能の実装例を提供する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "主キー指定の自動生成SQL検索方法を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "SQLファイルを使った検索とBeanマッピングの仕組みを説明する"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "findAllBySqlFileの具体的な使い方を説明する主要セクション"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "relevance": "high",
+        "reason": "検索条件を指定してfindAllBySqlFileを使う方法を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "事前設定としてBasicDaoContextFactoryの設定が必要"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "JOIN検索結果の取得方針を提供する"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "大量データ処理時の遅延ロード方法を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "ページング検索の実装方法を説明する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 91705,
+    "duration_api_ms": 90029,
+    "num_turns": 5,
+    "total_cost_usd": 0.5861369,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 6229,
+      "cache_read_input_tokens": 323318,
+      "cache_creation_input_tokens": 104634
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3181,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033109999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 6229,
+        "cacheReadInputTokens": 323318,
+        "cacheCreationInputTokens": 104634,
+        "webSearchRequests": 0,
+        "costUSD": 0.5828259,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

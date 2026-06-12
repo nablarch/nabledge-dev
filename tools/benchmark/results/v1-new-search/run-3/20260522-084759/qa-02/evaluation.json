@@ -1,0 +1,207 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "Answerの「createReader で DatabaseRecordReader を生成してDBから読み込む」という記述および実装例のコードに `new DatabaseRecordReader()` が明示されており、DatabaseRecordReaderでデータベースからデータを読み込むという事実が含まれている。",
+      "fact": "DatabaseRecordReaderでデータベースからデータを読み込む"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のコード例では `class AggregationBatchAction extends BatchAction<SomeEntity>` と示されており、BatchActionを継承したアクションクラスを実装するという事実が含まれている。",
+      "fact": "BatchActionを継承したアクションクラスを実装する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "DB to DBパターンで実装する",
+        "supported": true
+      },
+      {
+        "claim": "DatabaseRecordReaderでDBからレコードを1件ずつ読み込む",
+        "supported": true
+      },
+      {
+        "claim": "BatchAction#handleメソッドで集計処理を行う",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.batchInsertで別テーブルに書き込む",
+        "supported": true
+      },
+      {
+        "claim": "都度起動バッチ（DB接続有り）の最小ハンドラ構成が9つ（ステータスコード変換、グローバルエラー、DB接続×2、トランザクション制御×1、リクエストディスパッチ、マルチスレッド、トランザクションループ制御、データリード）",
+        "supported": true
+      },
+      {
+        "claim": "コミット間隔はnablarch.fw.handler.LoopHandlerのcommitIntervalプロパティで設定する",
+        "supported": true
+      },
+      {
+        "claim": "createReaderでDatabaseRecordReaderを生成してDBから読み込む",
+        "supported": true
+      },
+      {
+        "claim": "N+1問題はhandleメソッド内で再度SELECTを発行することで発生し、createReaderのSQLでJOINして回避する",
+        "supported": true
+      },
+      {
+        "claim": "handle内での自前ループはフレームワークのコミット制御が効かずトランザクションログを逼迫する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.defer()で遅延ロードを使用できる",
+        "supported": true
+      },
+      {
+        "claim": "遅延ロード使用中にRDBMSによってはトランザクション制御でカーソルがクローズされる場合がある",
+        "supported": true
+      },
+      {
+        "claim": "batchUpdateでは排他制御が行われないため、排他制御が必要な場合は1レコードずつの更新処理を使用すること",
+        "supported": true
+      },
+      {
+        "claim": "DeferredEntityListはtry-with-resourcesでclose呼び出しが必要",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるNablarch固有の主張（ハンドラ構成、クラス名、設定方法、動作仕様、アンチパターンの説明）はすべてナレッジセクションの内容と一致しており、捏造された情報は見当たらない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "バッチ全体構成・ハンドラ一覧・データリーダ・アクションクラスを網羅するコアページ"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "DB to DBパターンを明示的に分類・説明するパターンガイド"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "N+1問題と自前ループというDB集計バッチ固有のアンチパターンを説明"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "DB読み込みとDB書き込みに使用するUniversalDAOの遅延ロード・batchInsertを説明"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "コミット間隔設定など、DB to DBバッチのループ制御設定を説明"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "DB読み込み→アクション処理→結果書き込みの処理フローを説明"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "都度起動バッチ（DB接続有り）の最小ハンドラ構成テーブルを提供"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "DatabaseRecordReaderを含むDB読み込み用データリーダの一覧"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BatchActionなど使用するアクションクラスの一覧"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "DB to DBパターンの概要（入力はSELECT結果、1レコードずつDB更新）を直接説明"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "handleメソッド内でSELECTを発行するN+1問題を説明"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "handleメソッド内で自前ループするアンチパターンを説明"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "自前ループをcreateReaderのSQLで解決する方針を提示"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "大量データ処理でのUniversalDao.defer()による遅延ロードの使い方とコード例"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "別テーブルへの一括登録にbatchInsertを使用する方法と注意点"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "commitIntervalプロパティによるコミット間隔設定のコード例"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 300480,
+    "duration_api_ms": 296321,
+    "num_turns": 7,
+    "total_cost_usd": 1.156807,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6969,
+      "cache_read_input_tokens": 257117,
+      "cache_creation_input_tokens": 40404
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3255,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0034000000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10576,
+        "outputTokens": 20044,
+        "cacheReadInputTokens": 539405,
+        "cacheCreationInputTokens": 175786,
+        "webSearchRequests": 0,
+        "costUSD": 1.1534069999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

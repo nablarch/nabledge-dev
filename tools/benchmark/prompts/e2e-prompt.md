@@ -7,38 +7,21 @@ Follow the workflow and additional instructions below, then answer the question.
 
 **Step 1 and Step 2**: Skip both steps. The question already contains the hearing result (`（処理方式: X）（目的: Y）`). Start from Step 3.
 
-**Step 3**: While executing semantic-search.md:
-- Record each page selected by the index route (index_pages) and each page selected by the classes route (classes_pages) with the reason.
-- Record the merged page list (merged_pages) with source ("index", "classes", or "both").
-- For each page not selected by either route, record it in excluded_pages with the reason.
-- For each section record why it was selected (high/partial) or skipped.
+**Step 3**: While executing semantic-search.md, for each page record why it was selected or skipped. For each section record why it was selected (high/partial) or skipped.
 
 **Step 4**: Save the section IDs passed to read-sections.sh as `read_sections`.
 
-**Step 8**: Output the following lines in this exact order:
-1. The line `### Answer` (plain text, verbatim)
-2. final_answer
-3. The line `<<<WORKFLOW_DETAILS_JSON>>>` (plain text, verbatim — do not rename, wrap in HTML tags, or omit)
-4. A ```json code block containing the JSON below
-5. The line `<<<END_WORKFLOW_DETAILS>>>` (plain text, verbatim — do not rename, wrap in HTML tags, or omit)
+**Step 8**: Output `### Answer`, then output final_answer, then output the following.
 
-Do not use HTML `<details>` elements. Output the three delimiter lines as plain text, character-for-character identical to what is shown above.
-
-<<<WORKFLOW_DETAILS_JSON>>>
+### Workflow Details
 ```json
 {
   "step3": {
-    "index_pages": [
-      {"path": "<page path relative to knowledge/>", "reason": "<one sentence: why this page was selected by the index route>"}
-    ],
-    "classes_pages": [
-      {"path": "<page path relative to knowledge/>", "reason": "<one sentence: why this page was selected by the classes route>"}
-    ],
-    "merged_pages": [
-      {"path": "<page path relative to knowledge/>", "source": "<index|classes|both>"}
+    "selected_pages": [
+      {"path": "<page path relative to knowledge/>", "reason": "<one sentence: why this page was selected>"}
     ],
     "excluded_pages": [
-      {"path": "<page path relative to knowledge/>", "reason": "<one sentence: why this page was skipped by both routes>"}
+      {"path": "<page path relative to knowledge/>", "reason": "<one sentence: why this page was skipped>"}
     ],
     "selected_sections": [
       {"file": "<file path>", "section_id": "<sN>", "relevance": "<high|partial>", "reason": "<one sentence: why this section was selected>"}
@@ -64,7 +47,6 @@ Do not use HTML `<details>` elements. Output the three delimiter lines as plain 
   }
 }
 ```
-<<<END_WORKFLOW_DETAILS>>>
 
 ## Question
 {question}

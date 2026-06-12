@@ -1,0 +1,127 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「注意点」セクションに「Jakarta EE 10対応のアプリケーションサーバが必要（後方互換なし）」と明記されており、事実の「Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある」という情報が含まれている。",
+      "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「2. `javax` 名前空間 → `jakarta` 名前空間への変更」セクション、およびセクション6の「Nablarchの機能名称変更」の表で、Java EEの仕様名（JAX-RS→Jakarta RESTful Web Services、JSP→Jakarta Server Pages等）およびパッケージ名（javax.*→jakarta.*）がJakarta EEのものに変更されている旨が明示されている。",
+      "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Nablarch 5からNablarch 6への移行にはJakarta EE 10対応が必要",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta EE 10対応のアプリケーションサーバが必要（後方互換なし）",
+        "supported": true
+      },
+      {
+        "claim": "Java 17以上が前提",
+        "supported": true
+      },
+      {
+        "claim": "javax.*名前空間をjakarta.*に変更する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "Java EEの仕様名称がJakarta EEのものに変更された（例: JAX-RS→Jakarta RESTful Web Services等）",
+        "supported": true
+      },
+      {
+        "claim": "クラス・パッケージ名は変更なし（後方互換維持）",
+        "supported": false
+      },
+      {
+        "claim": "Jakarta Batchアプリケーションでjboss-batch-api_1.0_spec→jakarta.batch-apiへの変更が必要",
+        "supported": false
+      },
+      {
+        "claim": "weld-core→weld-core-impl:5.0.1.Finalへの更新が必要",
+        "supported": false
+      },
+      {
+        "claim": "名称変更の具体的マッピング表（JAX-RS BeanValidationハンドラ→Jakarta RESTful Web Services Bean Validationハンドラ等）",
+        "supported": false
+      },
+      {
+        "claim": "XMLスキーマ指定をJakarta EE 10用（web-app_6_0.xsd等）に変更",
+        "supported": false
+      },
+      {
+        "claim": "JSPタグライブラリURIをjakarta.tags.coreに変更",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションはJakarta EE 10対応・Java 17必須・パッケージ名や依存関係の変更が必要という事実を裏付けているが、回答にはNablarch固有の具体的主張が複数含まれており裏付けがない。特に「クラス・パッケージ名は変更なし（後方互換維持）」はNablarch内部APIの後方互換を断言しているが知識セクションに根拠がない。また、weld-core-impl:5.0.1.Finalという具体的バージョン、jboss-batch-api_1.0_specという具体的アーティファクト名、名称変更の詳細マッピング表、XMLスキーマ指定やJSPタグライブラリURIの具体的変更内容はいずれも知識セクションに記載がなく、Nablarch固有の主張としてハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションはJakarta EE 10対応・Java 17必須・パッケージ名や依存関係の変更が必要という事実を裏付けているが、回答にはNablarch固有の具体的主張が複数含まれており裏付けがない。特に「クラス・パッケージ名は変更なし（後方互換維持）」はNablarch内部APIの後方互換を断言しているが知識セクションに根拠がない。また、weld-core-impl:5.0.1.Finalという具体的バージョン、jboss-batch-api_1.0_specという具体的アーティファクト名、名称変更の詳細マッピング表、XMLスキーマ指定やJSPタグライブラリURIの具体的変更内容はいずれも知識セクションに記載がなく、Nablarch固有の主張としてハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "about/migration/migration-migration.json:s2",
+      "about/migration/migration-migration.json:s5",
+      "about/migration/migration-migration.json:s9",
+      "about/migration/migration-migration.json:s16",
+      "about/migration/migration-migration.json:s26",
+      "about/migration/migration-migration.json:s27",
+      "about/migration/migration-migration.json:s28",
+      "about/migration/migration-migration.json:s29",
+      "about/about-nablarch/about-nablarch-jakarta-ee.json:s2",
+      "about/migration/migration-migration.json:s33"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 247045,
+    "duration_api_ms": 245193,
+    "num_turns": 7,
+    "total_cost_usd": 0.91256215,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 5010,
+      "cache_read_input_tokens": 230406,
+      "cache_creation_input_tokens": 36109
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1192,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001372,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2893,
+        "outputTokens": 18390,
+        "cacheReadInputTokens": 876958,
+        "cacheCreationInputTokens": 96953,
+        "webSearchRequests": 0,
+        "costUSD": 0.9111901499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

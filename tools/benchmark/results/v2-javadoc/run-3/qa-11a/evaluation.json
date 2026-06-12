@@ -1,0 +1,224 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "Answerの表中に「HttpErrorResponse」の行として「バリデーション等の業務例外（ApplicationException）が原因の場合、ErrorMessagesをリクエストスコープのerrorsキーに設定」と明記されており、また各例外種別（NoMoreHandlerException→404、HttpErrorResponse→getResponse()のステータス、Result.Error→getStatusCode()、StackOverflowError→500、その他→500）に応じたステータスコードのレスポンスを返す旨が表形式で示されている。これはFactの「例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する」という内容を完全に含んでいる。",
+      "fact": "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "HttpErrorHandlerはnablarch.fw.web.handler.HttpErrorHandlerというクラス名である",
+        "supported": true
+      },
+      {
+        "claim": "NoMoreHandlerExceptionはINFOログ・404レスポンス",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseはログ出力なし・HttpErrorResponse#getResponse()でステータスコードを取得",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseの原因がApplicationExceptionの場合、ErrorMessagesをリクエストスコープのerrorsキーに設定",
+        "supported": true
+      },
+      {
+        "claim": "Result.ErrorはwriteFailureLogPatternの正規表現がステータスコードにマッチした場合のみFATAL",
+        "supported": true
+      },
+      {
+        "claim": "StackOverflowErrorはFATAL・500",
+        "supported": true
+      },
+      {
+        "claim": "上記以外の例外はFATAL・500",
+        "supported": true
+      },
+      {
+        "claim": "defaultPagesプロパティでステータスコードに対応したデフォルトJSPページを設定できる",
+        "supported": true
+      },
+      {
+        "claim": "デフォルトエラーページはweb.xmlのerror-page要素で設定することが推奨される",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerはnablarch.fw.handler.GlobalErrorHandlerというクラス名である",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerはハンドラキューの先頭に配置することが推奨される",
+        "supported": true
+      },
+      {
+        "claim": "ServiceErrorはServiceError#writeLogを呼び出してログ出力し、ログレベルは実装クラスによる",
+        "supported": true
+      },
+      {
+        "claim": "Result.ErrorはFATALレベルのログを出力してResult.Errorを返却",
+        "supported": true
+      },
+      {
+        "claim": "上記以外の例外はFATALレベルのログを出力してInternalErrorを生成・返却",
+        "supported": true
+      },
+      {
+        "claim": "StackOverflowErrorはFATALレベルのログを出力してInternalErrorを生成・返却",
+        "supported": true
+      },
+      {
+        "claim": "ThreadDeath・VirtualMachineErrorはリスロー（ログ記述なし）",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerは設定で実装を切り替えられないためカスタマイズが必要な場合は独自ハンドラを作成する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorアノテーションをアクションメソッドに設定してエラー遷移先を指定できる",
+        "supported": true
+      },
+      {
+        "claim": "type属性にはRuntimeException及びそのサブクラスを指定できる",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorHandlerはHTTPレスポンスハンドラ・HTTPアクセスログハンドラより後ろに配置する必要がある",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のNablarch固有のクラス名・設定方法・動作仕様はすべてknowledgeセクションの記載と一致しており、捏造された情報は確認されない。GlobalErrorHandlerのThreadDeath（INFOログ）・OutOfMemoryError（標準エラー出力+FATALログ）の詳細が省略されているが、これは情報の簡略化であり、誤った主張ではない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-HttpErrorHandler.json",
+        "reason": "HTTPエラー制御ハンドラはウェブアプリケーションのエラー処理・ログ出力の中心的なハンドラ"
+      },
+      {
+        "path": "component/handlers/handlers-global-error-handler.json",
+        "reason": "グローバルエラーハンドラは未捕捉例外を処理する最上位のエラーハンドラ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "reason": "ウェブアプリケーションのエラー時の遷移先指定方法を直接説明するページ"
+      },
+      {
+        "path": "component/handlers/handlers-on-error.json",
+        "reason": "OnErrorインターセプタはアクションレベルでのエラー画面遷移を制御する仕組み"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションのエラー時の画面遷移とステータスコードの機能概要が記載されている"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "例外種別ごとのログレベルとHTTPステータスコードが詳細に記載されている"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "Result.Errorのログ出力条件（writeFailureLogPattern）を説明している"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "defaultPagesによるデフォルトエラーページの設定方法を説明している"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "グローバルエラーハンドラの例外・エラー別処理内容が詳細に記載されている"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "カスタマイズが必要な場合の対応方法を補足している"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "共通ハンドラでエラーページに遷移する実装パターンのコード例を提供している"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "1つの例外に複数遷移先が必要な場合のtry-catchパターンを説明している"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "OnErrorアノテーションの基本的な使い方とコード例を提供している"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "エラー画面に表示するデータを取得するための内部フォワードパターンを説明している"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "エラー時の画面遷移とステータスコードに関する全体像と各機能へのリンクを提供している"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 117867,
+    "duration_api_ms": 117016,
+    "num_turns": 9,
+    "total_cost_usd": 0.6495577499999999,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 7440,
+      "cache_read_input_tokens": 464220,
+      "cache_creation_input_tokens": 105429
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3187,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033120000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 7440,
+        "cacheReadInputTokens": 464220,
+        "cacheCreationInputTokens": 105429,
+        "webSearchRequests": 0,
+        "costUSD": 0.64624575,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

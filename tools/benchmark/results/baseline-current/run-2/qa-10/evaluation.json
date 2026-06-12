@@ -1,0 +1,118 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「$if(プロパティ名) {SQL文の条件}」構文の説明があり、「指定したBeanプロパティがnull・空文字・空コレクションの場合、その条件は自動的に除外されます」と明記されている。これは事実の「$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される」と同じ情報を含んでいる。",
+      "fact": "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "$if(プロパティ名) {SQL文の条件} 構文で可変WHERE条件を記述できる",
+        "supported": true
+      },
+      {
+        "claim": "ParameterizedSqlPStatement を使用する",
+        "supported": true
+      },
+      {
+        "claim": "Beanプロパティがnull・空文字・空コレクションの場合、その条件が自動的に除外される",
+        "supported": true
+      },
+      {
+        "claim": "$if が使えるのはWHERE句のみ",
+        "supported": true
+      },
+      {
+        "claim": "$if のネストは不可",
+        "supported": true
+      },
+      {
+        "claim": "この機能はユーザ入力によって条件が変わる検索画面向けであり、条件だけ異なる複数SQLの共通化に使うものではない",
+        "supported": true
+      },
+      {
+        "claim": "IN句で名前付きパラメータの末尾に [] を付けてBeanプロパティを配列またはCollectionにする",
+        "supported": true
+      },
+      {
+        "claim": "IN句でプロパティ値がnullやサイズ0になる場合は必ず$ifと組み合わせること",
+        "supported": true
+      },
+      {
+        "claim": "プロパティ値がnullの場合に$ifなしだと in (null) になり結果が正しく取れない",
+        "supported": true
+      },
+      {
+        "claim": "BeanのプロパティはBeanUtilを使ってMapに変換されるためBeanUtil非対応の型は使用不可",
+        "supported": true
+      },
+      {
+        "claim": "DbConnectionContext.getConnection() でAppDbConnectionを取得する",
+        "supported": true
+      },
+      {
+        "claim": "prepareParameterizedSqlStatementBySqlId の第2引数に条件を持つBeanオブジェクトを指定する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有の主張（$if構文の記法・除外条件・制約・IN句の[]記法・BeanUtil使用・ParameterizedSqlPStatement等）はすべて知識セクションに裏付けられており、捏造情報は検出されなかった。なお実装例のSQLID（#searchUserと#insertUserの差異）はサンプル値の相違であり、Nablarchの機能仕様に関するハルシネーションではない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "knowledge/component/libraries/libraries-database.json:s21",
+      "knowledge/component/libraries/libraries-database.json:s6",
+      "knowledge/component/libraries/libraries-database.json:s22",
+      "knowledge/component/libraries/libraries-universal-dao.json:s10"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 143722,
+    "duration_api_ms": 138148,
+    "num_turns": 9,
+    "total_cost_usd": 0.7818780500000001,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 2898,
+      "cache_read_input_tokens": 314876,
+      "cache_creation_input_tokens": 30827
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1193,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013130000000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1005,
+        "outputTokens": 7801,
+        "cacheReadInputTokens": 594746,
+        "cacheCreationInputTokens": 128563,
+        "webSearchRequests": 0,
+        "costUSD": 0.7805650500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

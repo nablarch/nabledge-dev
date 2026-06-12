@@ -31,7 +31,7 @@ from tools.benchmark.scripts.evaluate import evaluate_scenario
 
 WORKFLOW_FILE = "workflows/qa.md"
 QA_PROMPT_FILE = Path(__file__).parent.parent / "prompts" / "e2e-prompt.md"
-TIMEOUT = 600
+TIMEOUT = 360
 
 class MarkerError(ValueError):
     """Raised when a required benchmark marker is missing from the response.
@@ -70,8 +70,7 @@ def build_qa_prompt(scenario: dict, workflow_content: str, prompt_template: str 
 
 
 _QA_ANSWER_HEADING = "### Answer"
-_QA_WORKFLOW_DETAILS_START = "<<<WORKFLOW_DETAILS_JSON>>>"
-_QA_WORKFLOW_DETAILS_END = "<<<END_WORKFLOW_DETAILS>>>"
+_QA_WORKFLOW_DETAILS_HEADING = "### Workflow Details"
 
 
 def parse_qa_response(response_text: str) -> dict:
@@ -81,21 +80,20 @@ def parse_qa_response(response_text: str) -> dict:
       ### Answer
       <answer text>
 
-      <<<WORKFLOW_DETAILS_JSON>>>
+      ### Workflow Details
       ```json
       {...}
       ```
-      <<<END_WORKFLOW_DETAILS>>>
 
-    The answer is extracted from between '### Answer' and '<<<WORKFLOW_DETAILS_JSON>>>'.
-    If '### Answer' is absent (legacy format), all text before '<<<WORKFLOW_DETAILS_JSON>>>'
+    The answer is extracted from between '### Answer' and '### Workflow Details'.
+    If '### Answer' is absent (legacy format), all text before '### Workflow Details'
     is used as the answer.
 
-    Raises ValueError if '<<<WORKFLOW_DETAILS_JSON>>>' or the JSON block is missing.
+    Raises ValueError if '### Workflow Details' or the JSON block is missing.
     """
-    idx = response_text.find(_QA_WORKFLOW_DETAILS_START)
+    idx = response_text.find(_QA_WORKFLOW_DETAILS_HEADING)
     if idx == -1:
-        raise ValueError("<<<WORKFLOW_DETAILS_JSON>>> marker not found in response")
+        raise ValueError("Workflow Details section not found in response")
 
     before_workflow = response_text[:idx]
 
@@ -105,13 +103,8 @@ def parse_qa_response(response_text: str) -> dict:
     else:
         answer = before_workflow.strip()
 
-    details_section = response_text[idx + len(_QA_WORKFLOW_DETAILS_START):]
-
-    # Extract JSON: between start marker and end marker (if present), else use fence
-    end_idx = details_section.find(_QA_WORKFLOW_DETAILS_END)
-    if end_idx != -1:
-        details_section = details_section[:end_idx]
-
+    details_section = response_text[idx + len(_QA_WORKFLOW_DETAILS_HEADING):]
+    # extract content from ```json ... ``` fence
     fence_start = details_section.find("```json")
     fence_end = details_section.find("```", fence_start + 3) if fence_start != -1 else -1
     if fence_start == -1 or fence_end == -1:
@@ -122,7 +115,7 @@ def parse_qa_response(response_text: str) -> dict:
     try:
         workflow_details = json.loads(json_raw)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON in workflow details: {e}") from e
+        raise ValueError(f"Invalid JSON in Workflow Details: {e}") from e
 
     return {
         "answer": answer,

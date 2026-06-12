@@ -1,0 +1,128 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「3. 業務日付の取得」セクションに「`BusinessDateUtil` を使って取得します」と明記されており、BusinessDateUtilを使用して業務日付を取得するという事実が含まれている。",
+      "fact": "BusinessDateUtilを使用して業務日付を取得する"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「業務日付はDBテーブルで管理されます」と明記されており、区分を使って複数の業務日付を使い分けられることも説明されています。また、BasicBusinessDateProviderのコンポーネント定義XMLも含まれており、設定が必要であることも示されています。事実の両要素（データベースで複数の業務日付を管理、BasicBusinessDateProviderの設定が必要）が回答に含まれています。",
+      "fact": "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+    }
+  ],
+  "hallucination": {
+    "verdict": "UNCERTAIN",
+    "claims": [
+      {
+        "claim": "Nablarch 6には業務日付管理機能が組み込まれている",
+        "supported": true
+      },
+      {
+        "claim": "システム日時はBasicSystemTimeProvider/SystemTimeUtilで取得する",
+        "supported": false
+      },
+      {
+        "claim": "業務日付はBasicBusinessDateProvider/BusinessDateUtilで取得する",
+        "supported": true
+      },
+      {
+        "claim": "BusinessDateUtilを使って業務日付を取得する",
+        "supported": true
+      },
+      {
+        "claim": "BasicBusinessDateProviderのコンポーネント定義（tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManager）",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネント名にbusinessDateProviderと指定する",
+        "supported": true
+      },
+      {
+        "claim": "初期化対象のリストに設定する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "テーブルには区分（PK）と日付（yyyyMMdd形式）のカラムが必要",
+        "supported": true
+      },
+      {
+        "claim": "区分を指定することで複数の業務日付を使い分けられる",
+        "supported": true
+      },
+      {
+        "claim": "provider.setDate(segment, date)で業務日付を更新できる",
+        "supported": false
+      },
+      {
+        "claim": "システムプロパティ -DBasicBusinessDateProvider.batch=20160317 で業務日付を上書き可能",
+        "supported": false
+      },
+      {
+        "claim": "業務日付管理機能にはnablarch-common-jdbcモジュールが必要",
+        "supported": false
+      }
+    ],
+    "reason": "いくつかの主張が知識セクションに裏付けがない。BasicSystemTimeProvider/SystemTimeUtilについては知識セクションに記載がない。provider.setDate()メソッドの存在、システムプロパティによる日付上書き機能（-DBasicBusinessDateProvider.batch）、nablarch-common-jdbcモジュールの要件は知識セクションに根拠がなく、ハルシネーションの可能性がある。一方、コンポーネント定義の詳細やBusinessDateUtilの使用、初期化設定については知識セクションで裏付けられている。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": null
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: UNCERTAIN — いくつかの主張が知識セクションに裏付けがない。BasicSystemTimeProvider/SystemTimeUtilについては知識セクションに記載がない。provider.setDate()メソッドの存在、システムプロパティによる日付上書き機能（-DBasicBusinessDateProvider.batch）、nablarch-common-jdbcモジュールの要件は知識セクションに根拠がなく、ハルシネーションの可能性がある。一方、コンポーネント定義の詳細やBusinessDateUtilの使用、初期化設定については知識セクションで裏付けられている。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "libraries-date.json:s2",
+      "libraries-date.json:s5",
+      "libraries-date.json:s6",
+      "libraries-date.json:s7",
+      "libraries-date.json:s8",
+      "libraries-date.json:s9",
+      "libraries-date.json:s10"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 54485,
+    "duration_api_ms": 54826,
+    "num_turns": 4,
+    "total_cost_usd": 0.41316875,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 2227,
+      "cache_read_input_tokens": 98387,
+      "cache_creation_input_tokens": 26457
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1191,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001316,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16,
+        "outputTokens": 4186,
+        "cacheReadInputTokens": 386395,
+        "cacheCreationInputTokens": 62159,
+        "webSearchRequests": 0,
+        "costUSD": 0.41185275,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

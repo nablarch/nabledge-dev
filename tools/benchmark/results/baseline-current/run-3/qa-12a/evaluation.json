@@ -1,0 +1,132 @@
+{
+  "scenario_id": "qa-12a",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "回答にはApplicationExceptionがスローされ@OnErrorで指定したエラー画面に遷移するという説明はあるが、「HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する」という具体的な処理（HttpErrorHandlerによる変換処理）については言及されていない。",
+      "fact": "HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する"
+    },
+    {
+      "verdict": "ABSENT",
+      "reason": "回答には`@InjectForm`、`@OnError`、`ApplicationException`を使ったバリデーションエラー処理の説明はあるが、「エラー表示タグ（`<n:errors>`タグや`<n:error>`タグ）を使ってリクエストスコープのエラーメッセージを表示する」という具体的な内容は含まれていない。参照セクションにある`errorsタグ`や`errorタグ`によるエラーメッセージ表示の説明が回答に欠けている。",
+      "fact": "エラー表示タグでリクエストスコープのエラーメッセージを表示する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "@InjectForm と @OnError の組み合わせでバリデーションエラー時のエラー画面遷移を制御できる",
+        "supported": true
+      },
+      {
+        "claim": "バリデーションエラー時に ApplicationException がスローされる",
+        "supported": true
+      },
+      {
+        "claim": "OnError インターセプタが ApplicationException をリクエストスコープに設定する",
+        "supported": true
+      },
+      {
+        "claim": "リクエストスコープのエラーキー名のデフォルトは 'errors'",
+        "supported": true
+      },
+      {
+        "claim": "WebConfig の errorMessageRequestAttributeName プロパティでキー名を変更できる",
+        "supported": true
+      },
+      {
+        "claim": "メッセージプロパティのキーとして nablarch.core.validation.ee.Length.max.message などを使用する",
+        "supported": true
+      },
+      {
+        "claim": "メッセージ内で {max} などアノテーション属性値のプレースホルダを使用できる",
+        "supported": true
+      },
+      {
+        "claim": "BeanValidationStrategy コンポーネントを設定ファイルで定義する",
+        "supported": false
+      },
+      {
+        "claim": "ValidationUtil#createMessageForProperty を使って特定プロパティへエラーを紐付けられる",
+        "supported": false
+      },
+      {
+        "claim": "ItemNamedConstraintViolationConverterFactory を使って項目名付きエラーメッセージを生成できる",
+        "supported": false
+      },
+      {
+        "claim": "BeanValidationStrategy の copyBeanToRequestScopeOnError プロパティを true にするとエラー時もリクエストパラメータをJSPで参照できる",
+        "supported": false
+      },
+      {
+        "claim": "RESTful ウェブサービスでは @Valid アノテーションをリソースクラスのメソッドに設定する",
+        "supported": false
+      }
+    ],
+    "reason": "複数のNablarch固有の主張が知識セクションに裏付けられない。特に ValidationUtil#createMessageForProperty は知識セクションに存在せず、知識セクションでは MessageUtil.createMessage(MessageLevel.ERROR, ...) が相関バリデーションエラーの生成に使われている。また BeanValidationStrategy・ItemNamedConstraintViolationConverterFactory・copyBeanToRequestScopeOnError・RESTful における @Valid の利用はいずれも知識セクションに記載がなく、ハルシネーションと判定される。"
+  },
+  "scores": {
+    "accuracy": 0.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — HttpErrorHandlerがApplicationExceptionのメッセージをErrorMessagesに変換しリクエストスコープに設定する",
+    "claim[1]: ABSENT — エラー表示タグでリクエストスコープのエラーメッセージを表示する",
+    "hallucination: FAIL — 複数のNablarch固有の主張が知識セクションに裏付けられない。特に ValidationUtil#createMessageForProperty は知識セクションに存在せず、知識セクションでは MessageUtil.createMessage(MessageLevel.ERROR, ...) が相関バリデーションエラーの生成に使われている。また BeanValidationStrategy・ItemNamedConstraintViolationConverterFactory・copyBeanToRequestScopeOnError・RESTful における @Valid の利用はいずれも知識セクションに記載がなく、ハルシネーションと判定される。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/libraries/libraries-bean-validation.json:s18",
+      "component/libraries/libraries-bean-validation.json:s19",
+      "component/libraries/libraries-bean-validation.json:s21",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 180021,
+    "duration_api_ms": 178653,
+    "num_turns": 20,
+    "total_cost_usd": 0.7025347,
+    "usage": {
+      "input_tokens": 21,
+      "output_tokens": 5497,
+      "cache_read_input_tokens": 847324,
+      "cache_creation_input_tokens": 39342
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1183,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013030000000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11802,
+        "outputTokens": 11999,
+        "cacheReadInputTokens": 878144,
+        "cacheCreationInputTokens": 59306,
+        "webSearchRequests": 0,
+        "costUSD": 0.7012316999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "scenario_id": "qa-12b",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "UNCERTAIN",
+      "reason": "Answerは「@ValidアノテーションによりJaxRsBeanValidationHandlerがバリデーションを実行し、エラーがあればApplicationExceptionが送出される」と説明しており、バリデーションエラーが発生することは記述されている。しかし、Factが主張する「自動的にエラーレスポンスになる」という部分については、Answerでは「ErrorResponseBuilderを継承したクラスを作成してエラーレスポンスのボディにメッセージを設定する」という追加実装が必要と説明されており、自動的にエラーレスポンスになるとは述べていない。むしろ、カスタム実装が必要であることを強調している。このため、@Validアノテーションのみで自動的にエラーレスポンスになるという事実がAnswerに含まれているかは不明確である。",
+      "fact": "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states that to set error messages in the response body, one should create a class that inherits from ErrorResponseBuilder, and provides a concrete implementation example of SampleErrorResponseBuilder extending ErrorResponseBuilder, which matches the fact exactly.",
+      "fact": "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "リソースクラスのメソッドに@Validアノテーションを設定することでバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsBeanValidationHandlerがBean Validationを実行する",
+        "supported": true
+      },
+      {
+        "claim": "バリデーションエラー時にApplicationExceptionが送出される",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderを継承したクラスを作成してエラーレスポンスのボディにメッセージを設定する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsResponseHandlerはErrorResponseBuilderを使用してレスポンスを生成する",
+        "supported": true
+      },
+      {
+        "claim": "SampleErrorResponseBuilderの実装コードがknowledge sectionsと一致する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsResponseHandlerのerrorResponseBuilderプロパティにSampleErrorResponseBuilderを設定するXML設定例",
+        "supported": true
+      },
+      {
+        "claim": "バリデーションエラーのメッセージはデフォルトでメッセージ管理（プロパティファイル）を使用して構築される",
+        "supported": true
+      },
+      {
+        "claim": "アノテーションのmessage属性に{メッセージID}形式で指定する",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.core.validation.ee.Required.messageのプロパティ定義例",
+        "supported": true
+      },
+      {
+        "claim": "nablarch.core.validation.ee.Length.max.messageのプロパティ定義例",
+        "supported": true
+      },
+      {
+        "claim": "ErrorResponseBuilderの処理中に例外が発生した場合、フレームワークはWARNレベルでログを出力し、ステータスコード500のレスポンスを生成する",
+        "supported": true
+      },
+      {
+        "claim": "JaxRsBeanValidationHandlerはリクエストボディ変換ハンドラよりも後ろに設定する必要がある",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有のクレーム（API名、クラス名、設定方法、動作仕様）はknowledge sectionsによって裏付けられており、ハルシネーションは検出されなかった。"
+  },
+  "scores": {
+    "accuracy": null,
+    "hallucination": 1
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: UNCERTAIN — @Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTfulウェブサービスでBean Validationを実行するハンドラで、@Validアノテーションによるバリデーション実行方法を直接説明している"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-response-handler.json",
+        "reason": "バリデーションエラー時にエラーメッセージをレスポンスに設定する拡張例（ErrorResponseBuilder）を提供している"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationの使い方全般、エラーメッセージの定義方法、RESTfulウェブサービスでの使用方法を説明している"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスのエラー時レスポンスに関する機能詳細へのポインタを含む"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@Validアノテーションによるバリデーション実行の実装例を示している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラー時にJSON形式のエラーメッセージをレスポンスボディに設定する実装例を示している"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ErrorResponseBuilderの設定方法と注意事項（例外時の挙動）を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスでのバリデーション実行方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラーメッセージの定義方法（プロパティファイル）を説明している"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "エラー時レスポンスへの参照先を示しているが内容はリンクのみ"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 75756,
+    "duration_api_ms": 74831,
+    "num_turns": 10,
+    "total_cost_usd": 0.6410803,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 4976,
+      "cache_read_input_tokens": 483736,
+      "cache_creation_input_tokens": 111446
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3235,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00337,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 4976,
+        "cacheReadInputTokens": 483736,
+        "cacheCreationInputTokens": 111446,
+        "webSearchRequests": 0,
+        "costUSD": 0.6377103000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

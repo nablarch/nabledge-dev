@@ -1,0 +1,106 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「コンポーネント定義でこのクラスを差し替えるだけで切り替えが可能です」と明記されており、事実の内容（コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる）が含まれている。",
+      "fact": "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "SystemTimeProviderインタフェースが存在し、コンポーネント定義で実装クラスを差し替えることでシステム日時の取得方法を切り替えられる",
+        "supported": true
+      },
+      {
+        "claim": "切り替えはテスト時など一時的なシステム日時の変更に使用できる",
+        "supported": true
+      },
+      {
+        "claim": "本番用実装クラスとしてnablarch.core.date.BasicSystemTimeProviderが存在する",
+        "supported": false
+      },
+      {
+        "claim": "FixedSystemTimeProviderというテスト用の既製クラスが存在する（nablarch.testパッケージ）",
+        "supported": false
+      },
+      {
+        "claim": "fixedDateプロパティにyyyyMMddHHmmss（14桁）またはyyyyMMddHHmmssSSS（17桁）形式で固定日時を指定できる",
+        "supported": false
+      },
+      {
+        "claim": "アプリケーションコードでのシステム日時取得にSystemTimeUtilを使用する",
+        "supported": false
+      },
+      {
+        "claim": "テストコードからSystemRepository.getObject(\"systemTimeProvider\")でプロバイダを取得できる",
+        "supported": false
+      },
+      {
+        "claim": "同様の仕組みが業務日付（BusinessDate）にも適用できる",
+        "supported": true
+      }
+    ],
+    "reason": "知識セクションではSystemTimeProviderを実装したクラスを「自分で作成する」と明記しているが、回答はnablarch.testパッケージに既製のFixedSystemTimeProviderが存在するかのように記述しており、この主張は知識セクションに裏付けがない。また、BasicSystemTimeProvider、fixedDateプロパティのフォーマット、SystemTimeUtil、SystemRepository.getObjectを用いた取得方法といったNablarch固有の具体的なAPI名・設定仕様も知識セクションに根拠が存在しない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションではSystemTimeProviderを実装したクラスを「自分で作成する」と明記しているが、回答はnablarch.testパッケージに既製のFixedSystemTimeProviderが存在するかのように記述しており、この主張は知識セクションに裏付けがない。また、BasicSystemTimeProvider、fixedDateプロパティのフォーマット、SystemTimeUtil、SystemRepository.getObjectを用いた取得方法といったNablarch固有の具体的なAPI名・設定仕様も知識セクションに根拠が存在しない。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s11",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s12",
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s12"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 52794,
+    "duration_api_ms": 52272,
+    "num_turns": 14,
+    "total_cost_usd": 0.33860575,
+    "usage": {
+      "input_tokens": 15,
+      "output_tokens": 3658,
+      "cache_read_input_tokens": 544715,
+      "cache_creation_input_tokens": 31727
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1185,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0013000000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 15,
+        "outputTokens": 3658,
+        "cacheReadInputTokens": 544715,
+        "cacheCreationInputTokens": 31727,
+        "webSearchRequests": 0,
+        "costUSD": 0.33730575,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

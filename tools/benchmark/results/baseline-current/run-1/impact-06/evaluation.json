@@ -1,0 +1,151 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のDBストアセクションに「ローリングメンテナンス等でAPサーバが停止した場合でもセッション変数の復元が可能」と明記されており、またDBストアの保存先が「データベース」であることも表に示されている。事実の「データベース上のテーブルに保存」「APサーバ停止時もセッション変数の復元が可能」の両方の情報が回答に含まれている。",
+      "fact": "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "回答のHIDDENストアの説明欄に「hiddenタグでクライアント側にセッション変数を引き回す方式」と明記されており、事実の内容（クライアントサイドにhiddenタグで引き回して実現する）と一致している。",
+      "fact": "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "DBストアはローリングメンテナンス等でAPサーバが停止した場合でもセッション変数の復元が可能",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは同一セッションの処理が複数スレッドで実行された場合は後勝ち",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはhiddenタグでクライアント側にセッション変数を引き回す方式",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはAPサーバのヒープを圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数スレッドの並行実行時はセッションのデータはそれぞれのスレッドに紐付けて保存される",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは冗長化環境ではAPサーバごとに異なる暗号化キーが自動生成されるため復号に失敗するケースがある",
+        "supported": false
+      },
+      {
+        "claim": "HIDDENストアで冗長化する場合はすべてのAPサーバで同じ暗号化キー・IVを設定すること",
+        "supported": false
+      },
+      {
+        "claim": "HTTPセッションストアはAPサーバのヒープ領域に保存（設定によってはDB・ファイルも可）",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアは認証情報のようなアプリケーション全体で頻繁に使用する情報の保持に適している",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはAPサーバごとに情報を保持するためスケールアウト時に工夫が必要",
+        "supported": true
+      },
+      {
+        "claim": "Redisストアは保存先がRedisになる以外はDBストアと同じ特性",
+        "supported": true
+      },
+      {
+        "claim": "RedisストアはSentinel（Master-Replica構成）やCluster構成にも対応可能",
+        "supported": false
+      },
+      {
+        "claim": "入力～確認～完了画面の情報保持（複数タブ不可）にはDBストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "入力～確認～完了画面の情報保持（複数タブ許容）にはHIDDENストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "認証情報の保持にはDBストアまたはHTTPセッションストアを使用する",
+        "supported": true
+      },
+      {
+        "claim": "認証情報を除きセッションストアで複数機能に跨るデータの保持は想定されていない",
+        "supported": true
+      },
+      {
+        "claim": "一覧情報のような大量データはセッションストアに保存しない",
+        "supported": true
+      }
+    ],
+    "reason": "3件の未裏付け主張が確認された。①HIDDENストアのスケールアウト時における暗号化キーの自動生成・復号失敗・共通キー設定の必要性、②HIDDENストアの「IVを設定すること」という具体的な設定指示、③RedisストアのSentinel/Cluster構成対応——いずれも知識セクションに記載がないNablarch固有の挙動・仕様に関する主張であり、ハルシネーションと判定する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 3件の未裏付け主張が確認された。①HIDDENストアのスケールアウト時における暗号化キーの自動生成・復号失敗・共通キー設定の必要性、②HIDDENストアの「IVを設定すること」という具体的な設定指示、③RedisストアのSentinel/Cluster構成対応——いずれも知識セクションに記載がないNablarch固有の挙動・仕様に関する主張であり、ハルシネーションと判定する。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-stateless-web-app.json:s1",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s1",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 152967,
+    "duration_api_ms": 151361,
+    "num_turns": 6,
+    "total_cost_usd": 0.5961721999999999,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 4747,
+      "cache_read_input_tokens": 228385,
+      "cache_creation_input_tokens": 30600
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1196,
+        "outputTokens": 21,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001301,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 3841,
+        "outputTokens": 10244,
+        "cacheReadInputTokens": 354319,
+        "cacheCreationInputTokens": 86238,
+        "webSearchRequests": 0,
+        "costUSD": 0.5948711999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッションストア機能の主ドキュメント。DBストア・HIDDENストアの選択基準と入力→確認→完了パターンの説明を含む"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "reason": "セッション変数保存ハンドラのドキュメント。HIDDENストア使用時のハンドラ配置制約と改竄検知の動作の違いを含む"
+      },
+      {
+        "path": "component/libraries/libraries-create-example.json",
+        "reason": "入力→確認→完了パターンの具体的な実装例（SessionUtil.put/get/delete）を含む"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/*",
+        "reason": "処理方式がウェブアプリケーションのため、バッチ関連ページは除外"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/*",
+        "reason": "RESTfulウェブサービスはJSP/セッションベースではないため除外"
+      },
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "reason": "Redisストアの詳細設定であり、DBストアとHIDDENストアの使い分けの理解には不要"
+      },
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "reason": "スケールアウト設計の説明で今回の質問（使い分け理解）の中核ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "DBストアとHIDDENストアの特長と選択基準表を含む主要セクション"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "入力→確認→完了画面間でのストア使い分けを直接説明し、hiddenStoreタグの使い方も示す"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "3種類のストア（DB・HIDDEN・HTTPセッション）の概要一覧"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "HIDDENストアの暗号化設定（冗長構成時の注意事項）"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "SessionManagerのコンポーネント設定例とUSER_SESSIONテーブル定義"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "セッション有効期間の管理方法（デフォルトHTTPセッション、DB変更可能）"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "セッションストアに格納するオブジェクトの制約（シリアライズ可能なJava Beans）"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "HIDDENストア使用時のハンドラ配置制約"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "改竄検知時の動作（HIDDENストア vs その他）"
+      },
+      {
+        "file": "component/libraries/libraries-create-example.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "入力画面初期表示でのSessionUtil.delete使用例"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s10",
+        "reason": "認証情報保持（DBストア固定）の説明で今回の質問範囲外"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s13",
+        "reason": "セッション変数が存在しない場合のエラー遷移設定で使い分けの理解には不要"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s9",
+        "reason": "有効期間のDB保存設定詳細で、今回の質問（使い分け理解）には詳細すぎる"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s7",
+        "reason": "改竄エラー時のweb.xml設定詳細で今回の質問範囲外"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s8",
+      "component/libraries/libraries-session-store.json:s17",
+      "component/handlers/handlers-SessionStoreHandler.json:s3",
+      "component/handlers/handlers-SessionStoreHandler.json:s6",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s6",
+      "component/libraries/libraries-create-example.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-session-store.json:s16",
+          "reason": "選択基準表と各ストアの特長（後勝ち動作を含む）を回答に引用"
+        },
+        {
+          "ref": "libraries-session-store.json:s9",
+          "reason": "入力→確認→完了パターンの使い分け基準とhiddenStoreタグのコード例を引用"
+        },
+        {
+          "ref": "libraries-session-store.json:s12",
+          "reason": "冗長構成時のHIDDENストア暗号化キー設定の注意点とコード例を引用"
+        },
+        {
+          "ref": "handlers-SessionStoreHandler.json:s3",
+          "reason": "HIDDENストア使用時のハンドラ配置制約を注意点として引用"
+        },
+        {
+          "ref": "handlers-SessionStoreHandler.json:s6",
+          "reason": "改竄検知時のストアごとの動作の違いを注意点として引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-session-store.json:s2",
+          "reason": "ストア種類の概要は s16 の選択基準表で十分にカバーされており重複するため使用しなかった"
+        },
+        {
+          "ref": "libraries-session-store.json:s8",
+          "reason": "SessionManager設定XMLは実装目的向けであり、仕組み理解目的の回答には詳細すぎるため使用しなかった"
+        },
+        {
+          "ref": "libraries-session-store.json:s17",
+          "reason": "有効期間の管理は今回の質問の中心ではなく回答に含めると範囲が広がりすぎるため使用しなかった"
+        },
+        {
+          "ref": "libraries-session-store.json:s6",
+          "reason": "シリアライズ制約は今回の質問（使い分け）に直接関係しないため使用しなかった"
+        },
+        {
+          "ref": "libraries-create-example.json:s1",
+          "reason": "SessionUtil.deleteの具体例は実装目的向けであり、仕組み理解目的の回答には不要なため使用しなかった"
+        }
+      ]
+    }
+  }
+}

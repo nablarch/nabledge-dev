@@ -1,0 +1,105 @@
+{
+  "scenario_id": "qa-03",
+  "description": "会員登録フォームで、メールアドレスと確認用メールアドレスの一致チェックが必要。Nablarchの入力チェックの仕組みでどうやるのかわからない。",
+  "input": "2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「方法2: Bean Validation（Jakarta Bean Validation）を使う場合」セクションに、@AssertTrueアノテーションを使って相関バリデーションを実装する方法が明示されており、コード例も参照セクションと一致している。",
+      "fact": "Jakarta Bean Validationの@AssertTrueを使って相関バリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Bean Validationで@AssertTrueアノテーションを使って相関バリデーションを実装する",
+        "supported": true
+      },
+      {
+        "claim": "Bean Validationではバリデーションの実行順序が保証されないため、項目単体のバリデーションより前に相関バリデーションが呼ばれることがある",
+        "supported": true
+      },
+      {
+        "claim": "任意項目の場合はnullチェックを追加してtrueを返す実装が必要",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch Validationで@ValidateForアノテーション付きstaticメソッドを実装し相関バリデーションを行う",
+        "supported": false
+      },
+      {
+        "claim": "ValidationUtil.validateを使って各項目のバリデーションを実施する",
+        "supported": false
+      },
+      {
+        "claim": "context.isValid()でエラー有無を確認し、エラーがある場合は相関チェックをスキップする",
+        "supported": false
+      },
+      {
+        "claim": "context.addMessage()でエラーメッセージを追加する",
+        "supported": false
+      },
+      {
+        "claim": "DBとの相関バリデーション（メールアドレス重複チェック等）はBean Validationでのデータベースアクセスはセキュリティ上のリスク（SQLインジェクション等）があるため業務アクション側で実装すること",
+        "supported": false
+      }
+    ],
+    "reason": "知識セクションにはBean Validation（@AssertTrue）による相関バリデーションの実装方法のみが記載されている。一方、回答には「方法1: Nablarch Validationを使う場合」として@ValidateFor、ValidationUtil.validate、context.isValid()、context.addMessage()等のAPIを用いた実装方法が追加されているが、これらは知識セクションに一切裏付けがなくハルシネーションの可能性がある。また「DBとの相関バリデーションはSQLインジェクション等のリスクがある」という主張も知識セクションに根拠がなく、事実として不正確（SQLインジェクションのリスクは実装方法の問題でありBean Validation使用自体の問題ではない）。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 知識セクションにはBean Validation（@AssertTrue）による相関バリデーションの実装方法のみが記載されている。一方、回答には「方法1: Nablarch Validationを使う場合」として@ValidateFor、ValidationUtil.validate、context.isValid()、context.addMessage()等のAPIを用いた実装方法が追加されているが、これらは知識セクションに一切裏付けがなくハルシネーションの可能性がある。また「DBとの相関バリデーションはSQLインジェクション等のリスクがある」という主張も知識セクションに根拠がなく、事実として不正確（SQLインジェクションのリスクは実装方法の問題でありBean Validation使用自体の問題ではない）。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "component/libraries/libraries-nablarch-validation.json:s14",
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-nablarch-validation.json:s11"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 256763,
+    "duration_api_ms": 251232,
+    "num_turns": 6,
+    "total_cost_usd": 1.41005265,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 3141,
+      "cache_read_input_tokens": 183586,
+      "cache_creation_input_tokens": 29405
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1199,
+        "outputTokens": 23,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001314,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1164,
+        "outputTokens": 17127,
+        "cacheReadInputTokens": 2115668,
+        "cacheCreationInputTokens": 136971,
+        "webSearchRequests": 0,
+        "costUSD": 1.4087386499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

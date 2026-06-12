@@ -1,0 +1,112 @@
+{
+  "scenario_id": "qa-17",
+  "description": "アプリケーションコードからSystemRepositoryを使ってコンポーネントを取得したい。名前指定と型指定の取得方法を知りたい。",
+  "input": "SystemRepository から登録済みコンポーネントを取得する方法を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "ABSENT",
+      "reason": "The answer shows SystemRepository.get() usage with string name parameter and demonstrates type-safe retrieval through assignment to typed variables (e.g., `SampleComponent sample = SystemRepository.get(\"sampleComponent\")`), but it does not explicitly mention the type parameter `<T>` in the method signature or explain that the method uses a generic type parameter for type-safe retrieval. The fact specifically highlights that `get(String name)` uses a type parameter for type-safe component retrieval, which is the key aspect described in the reference section's formal method signature `public static <T> T get(String name)`. This generic type parameter mechanism is not explained in the answer.",
+      "fact": "get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "SystemRepository.get(\"コンポーネント名\") でコンポーネントを取得できる",
+        "supported": true
+      },
+      {
+        "claim": "コンポーネントはXMLのname属性で指定する",
+        "supported": true
+      },
+      {
+        "claim": "ネストしたコンポーネントは\"親名.子名\"で取得できる",
+        "supported": true
+      },
+      {
+        "claim": "DIコンテナの初期化はNablarchが自動で行う（ServletContextListenerや起動クラス）",
+        "supported": true
+      },
+      {
+        "claim": "取得できるオブジェクトはシングルトンである",
+        "supported": true
+      },
+      {
+        "claim": "スレッドセーフである必要がある",
+        "supported": true
+      }
+    ],
+    "reason": "全てのNablarch固有クレームはknowledge sectionsに記載された内容と一致しており、fabricated情報は見当たらない。"
+  },
+  "scores": {
+    "accuracy": 0.0,
+    "hallucination": 1
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "claim[0]: ABSENT — get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-repository.json",
+        "reason": "SystemRepositoryの使用方法を直接解説するページ（s25にオブジェクト取得方法が記載）"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s25",
+        "relevance": "high",
+        "reason": "SystemRepository.get()の使い方とコード例が直接記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s24",
+        "relevance": "partial",
+        "reason": "DIコンテナをシステムリポジトリへ設定する前提知識（通常はNablarchが行う）"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "DIコンテナの概要とシングルトン特性の説明"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 64190,
+    "duration_api_ms": 63020,
+    "num_turns": 7,
+    "total_cost_usd": 0.6373993499999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 3155,
+      "cache_read_input_tokens": 610277,
+      "cache_creation_input_tokens": 107663
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3111,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003231,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 3155,
+        "cacheReadInputTokens": 610277,
+        "cacheCreationInputTokens": 107663,
+        "webSearchRequests": 0,
+        "costUSD": 0.6341683499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

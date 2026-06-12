@@ -1,0 +1,339 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答中に「Jakarta EE 10対応のアプリケーションサーバ（Tomcat 10以降など）が必要」と明記されており、またNablarch 6がJakarta EE 10に対応していることも冒頭の結論部分および詳細説明全体を通じて示されている。これはファクトの内容（Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある）と同等の情報を含んでいる。",
+      "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states in section 4 that 'Jakarta EE 9から名前空間が`javax.*`から`jakarta.*`に変更された' and provides multiple examples of package name changes (e.g., `javax.validation.ConstraintValidator` → `jakarta.validation.ConstraintValidator`). The answer also covers specification name changes through the dependency tables showing Java EE to Jakarta EE transitions. This corresponds to the fact about Java EE specification names and package names being changed to Jakarta EE ones.",
+      "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "Nablarch BOMバージョンを6u2に変更する",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet:javax.servlet-api → jakarta.servlet:jakarta.servlet-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet.jsp:javax.servlet.jsp-api → jakarta.servlet.jsp:jakarta.servlet.jsp-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api → jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api",
+        "supported": true
+      },
+      {
+        "claim": "org.apache.geronimo.specs:geronimo-jpa_2.0_spec → jakarta.persistence:jakarta.persistence-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.ws.rs:javax.ws.rs-api → jakarta.ws.rs:jakarta.ws.rs-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.annotation:javax.annotation-api → jakarta.annotation:jakarta.annotation-api",
+        "supported": true
+      },
+      {
+        "claim": "jakarta.jakartaee-bom:10.0.0 のBOMを使用推奨",
+        "supported": true
+      },
+      {
+        "claim": "hibernate-validator: 5.3.6.Final → 8.0.0.Final (groupIdも変更)",
+        "supported": true
+      },
+      {
+        "claim": "taglibs:standard → org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.0",
+        "supported": true
+      },
+      {
+        "claim": "jersey-bom を 3.1.8 に更新",
+        "supported": true
+      },
+      {
+        "claim": "activemq-all → artemis-server + artemis-jakarta-server + artemis-jakarta-client (各2.37.0)",
+        "supported": true
+      },
+      {
+        "claim": "waitt-maven-plugin → jetty-ee10-maven-plugin:12.0.12",
+        "supported": true
+      },
+      {
+        "claim": "nablarch-testing-jetty6 → nablarch-testing-jetty12",
+        "supported": true
+      },
+      {
+        "claim": "HttpServerFactoryJetty6 → HttpServerFactoryJetty12",
+        "supported": true
+      },
+      {
+        "claim": "JBeret: jberet-core:2.1.4.Final、jberet-se:2.1.4.Final",
+        "supported": true
+      },
+      {
+        "claim": "weld-core-impl:5.0.1.Final および weld-se-core:5.0.1.Final",
+        "supported": true
+      },
+      {
+        "claim": "jboss-batch-api_1.0_spec → jakarta.batch:jakarta.batch-api",
+        "supported": true
+      },
+      {
+        "claim": "Java 17以上が必要",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta EE 10対応のアプリケーションサーバが必要",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch 5最新版へのバージョンアップを事前に完了する必要あり",
+        "supported": true
+      },
+      {
+        "claim": "gsp-dba-maven-plugin をバージョン5.1.0へ更新",
+        "supported": true
+      },
+      {
+        "claim": "Domaアダプタ・Micrometerアダプタを使用している場合は別途更新が必要",
+        "supported": true
+      },
+      {
+        "claim": "web.xml のスキーマを web-app_6_0.xsd (version=6.0) に変更",
+        "supported": true
+      },
+      {
+        "claim": "JSP taglibのURIを jakarta.tags.core に変更",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet.forward.request_uri → jakarta.servlet.forward.request_uri (文字列定数も置換対象)",
+        "supported": true
+      },
+      {
+        "claim": "javax.crypto.SecretKeyFactory などJava標準ライブラリは置換対象外",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のNablarch固有の主張（クラス名・バージョン番号・依存関係の変更内容・設定方法など）は、すべてナレッジセクションに記載された内容と一致しており、捏造された情報は確認されない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "about/migration/migration-migration.json",
+        "reason": "Nablarch 5→6移行ガイドそのものであり、Jakarta EE 10対応の具体的な手順を網羅している"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-jakarta-ee.json",
+        "reason": "Jakarta EEの仕様名変更とNablarch5→6での機能名称変更を説明しており、バージョンアップの影響理解に直結する"
+      },
+      {
+        "path": "releases/releases/releases-nablarch6-releasenote-6.json",
+        "reason": "Nablarch 6リリースノートとしてJakarta EE 10対応の変更点をリスト化している"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "Jakarta EE 10対応が必要な理由と影響範囲（名前空間変更、対応アプリサーバ必要）を直接説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "Java 17以上が必要になるという変更を直接説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "移行の概要（2つの主要作業）を説明しており、s2/s7等の高relevanceセクションの背景として有用"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "Nablarch BOMのバージョン変更手順（pom.xmlの修正）を具体的なコード例付きで説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "Java EE APIをJakarta EE APIに変更する手順と具体例を提供している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s10",
+        "relevance": "high",
+        "reason": "Java Servlet → Jakarta Servletの具体的な依存関係変更を示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "JSP → Jakarta Server Pagesの具体的な依存関係変更を示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "JSTL → Jakarta Standard Tag Libraryの具体的な依存関係変更を示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "JPA → Jakarta Persistenceの具体的な依存関係変更を示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "JAX-RS → Jakarta RESTful Web Servicesの具体的な依存関係変更を示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "Java EE仕様実装ライブラリ（Bean Validation, JSTL, JAX-RS, JMSなど）の更新方法を説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "Bean Validation実装ライブラリ（hibernate-validator）の具体的なバージョン変更を示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s18",
+        "relevance": "high",
+        "reason": "JSTL実装ライブラリの具体的な変更（taglibs→glassfish/jakarta.servlet.jsp.jstl）を示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s19",
+        "relevance": "high",
+        "reason": "JAX-RS実装（Jersey）のバージョンアップ方法を具体的に示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "JMS実装（ActiveMQ→ActiveMQ Artemis）の変更方法を具体的に示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s24",
+        "relevance": "high",
+        "reason": "waitt-maven-pluginからjetty-ee10-maven-pluginへの変更（ウェブアプリ固有）を説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s25",
+        "relevance": "high",
+        "reason": "nablarch-testing-jetty6からnablarch-testing-jetty12への変更（テスト用組み込みサーバ）を説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s26",
+        "relevance": "high",
+        "reason": "コード全体のjavax名前空間をjakarta名前空間に変更する方法を詳細に説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s27",
+        "relevance": "high",
+        "reason": "web.xmlなどのXMLスキーマをJakarta EE 10用に変更する手順を示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s28",
+        "relevance": "high",
+        "reason": "JSPのtaglibディレクティブのネームスペース変更を示している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s29",
+        "relevance": "partial",
+        "reason": "Jakarta Batchアプリ固有のJBeret関連ライブラリ更新手順を説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s21",
+        "relevance": "partial",
+        "reason": "Domaアダプタの更新が必要な旨を説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s22",
+        "relevance": "partial",
+        "reason": "Micrometerアダプタの更新が必要な旨を説明している"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s23",
+        "relevance": "partial",
+        "reason": "gsp-dba-maven-pluginの5.1.0へのバージョンアップが必要な旨を説明している"
+      },
+      {
+        "file": "about/about-nablarch/about-nablarch-jakarta-ee.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "Nablarch5→6での機能名称変更（JAX-RS→Jakarta RESTful Web Services等）の一覧を提供している"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 121630,
+    "duration_api_ms": 121416,
+    "num_turns": 9,
+    "total_cost_usd": 0.6840592000000001,
+    "usage": {
+      "input_tokens": 1762,
+      "output_tokens": 8991,
+      "cache_read_input_tokens": 454629,
+      "cache_creation_input_tokens": 107778
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3167,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003352,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1762,
+        "outputTokens": 8991,
+        "cacheReadInputTokens": 454629,
+        "cacheCreationInputTokens": 107778,
+        "webSearchRequests": 0,
+        "costUSD": 0.6807072000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

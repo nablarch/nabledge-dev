@@ -1,0 +1,129 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答には「セキュリティチェックリストには『Nablarchのカスタムタグはサニタイジングを行います。これによりNablarchのカスタムタグを使った場合には5-(i)の根本的解決が可能です』と明記されています」と記載されており、事実の内容（NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能）が明確に含まれている。",
+      "fact": "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Nablarchのカスタムタグ（<n:write> 等）はデフォルトでHTMLエスケープを行う",
+        "supported": true
+      },
+      {
+        "claim": "エスケープ変換の具体的内容：& → &amp;、< → &lt;、> → &gt;、\" → &#034;、' → &#039;",
+        "supported": false
+      },
+      {
+        "claim": "<n:rawWrite> タグはHTMLエスケープなしで出力する",
+        "supported": false
+      },
+      {
+        "claim": "<n:prettyPrint> は現在非推奨である",
+        "supported": false
+      },
+      {
+        "claim": "5-(ii)～(iv) の対策はプロジェクト側での対応が必要",
+        "supported": true
+      },
+      {
+        "claim": "5-(v) 入力値チェックはNablarchの入力値チェック機能で対応している",
+        "supported": true
+      },
+      {
+        "claim": "5-(vi) HTMLテキスト入力時のパースはNablarch非対応（OSSのHTMLパーサ等で対応を検討）",
+        "supported": true
+      },
+      {
+        "claim": "5-(viii) Content-Type charset設定はHTTP文字エンコード制御ハンドラで対応している",
+        "supported": false
+      },
+      {
+        "claim": "SecureHandler がデフォルトで X-XSS-Protection: 1; mode=block を設定する",
+        "supported": false
+      },
+      {
+        "claim": "5-(x) XSSブラウザ機能有効化ヘッダをセキュアハンドラが自動設定する",
+        "supported": false
+      },
+      {
+        "claim": "ContentSecurityPolicyHeader を組み合わせることでCSP対応できる",
+        "supported": false
+      },
+      {
+        "claim": "JSP静的解析ツールによりカスタムタグ以外の使用によるエスケープ漏れをビルド時に検出できる",
+        "supported": true
+      }
+    ],
+    "reason": "複数のNablarch固有の主張が知識セクションに裏付けられない。具体的には、(1) HTMLエスケープの変換テーブル（&#034;, &#039; 等の具体的な変換先）、(2) <n:rawWrite> の仕様説明、(3) <n:prettyPrint> の非推奨化、(4) HTTP文字エンコード制御ハンドラ（5-(viii)対応）、(5) SecureHandlerによる X-XSS-Protection ヘッダの自動設定、(6) ContentSecurityPolicyHeader の存在と機能 — これら6点はNablarch固有の主張であるが、提供された知識セクションには一切記載がなく、ハルシネーションの疑いがある。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 複数のNablarch固有の主張が知識セクションに裏付けられない。具体的には、(1) HTMLエスケープの変換テーブル（&#034;, &#039; 等の具体的な変換先）、(2) <n:rawWrite> の仕様説明、(3) <n:prettyPrint> の非推奨化、(4) HTTP文字エンコード制御ハンドラ（5-(viii)対応）、(5) SecureHandlerによる X-XSS-Protection ヘッダの自動設定、(6) ContentSecurityPolicyHeader の存在と機能 — これら6点はNablarch固有の主張であるが、提供された知識セクションには一切記載がなく、ハルシネーションの疑いがある。"
+  ],
+  "diagnostics": {
+    "hearing": {
+      "status": "skipped",
+      "questions": []
+    },
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s21",
+      "check/security-check/security-check-2.チェックリスト.json:s22",
+      "check/security-check/security-check-2.チェックリスト.json:s23",
+      "check/security-check/security-check-2.チェックリスト.json:s25",
+      "check/security-check/security-check-2.チェックリスト.json:s26",
+      "check/security-check/security-check-2.チェックリスト.json:s28",
+      "check/security-check/security-check-2.チェックリスト.json:s30",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s27",
+      "component/libraries/libraries-tag.json:s50",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 157809,
+    "duration_api_ms": 155444,
+    "num_turns": 4,
+    "total_cost_usd": 0.9056733,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 4261,
+      "cache_read_input_tokens": 98422,
+      "cache_creation_input_tokens": 29494
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1201,
+        "outputTokens": 31,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001356,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 29,
+        "outputTokens": 11311,
+        "cacheReadInputTokens": 1128876,
+        "cacheCreationInputTokens": 105574,
+        "webSearchRequests": 0,
+        "costUSD": 0.9043173,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

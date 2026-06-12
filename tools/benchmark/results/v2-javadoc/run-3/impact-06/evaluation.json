@@ -1,0 +1,219 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states under the DBストア section: 'データベース上のテーブルに保存する。APサーバが停止してもセッション変数の復元が可能（ローリングメンテナンス対応）' which directly conveys the same information as the fact.",
+      "fact": "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states under the HIDDENストア section: '`hidden` タグでクライアントサイドに保持する。' This directly conveys the same information as the fact that HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する。",
+      "fact": "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "DBストアはデータベース上のテーブルに保存する",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはローリングメンテナンス等でAPサーバが停止した場合でもセッション変数の復元が可能",
+        "supported": true
+      },
+      {
+        "claim": "DBストアはAPサーバのヒープ領域を圧迫しない",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは同一セッションの複数スレッド実行時は後勝ちとなる",
+        "supported": true
+      },
+      {
+        "claim": "DBストアは期限切れセッション情報を削除するバッチが別途必要",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはhiddenタグを使ってクライアントサイドに保持する",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアは複数タブでの画面操作を許容できる",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアはAPサーバが冗長化されている場合、暗号化キーを明示的に設定する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "HIDDENストアのデフォルトはAPサーバ内で自動生成されたキーを使用するため、APサーバごとに異なるキーとなり復号に失敗するケースがある",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはAPサーバのヒープ領域に保存する",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアはAPサーバ毎に情報を保持するため、スケールアウト時に工夫が必要",
+        "supported": true
+      },
+      {
+        "claim": "HTTPセッションストアは大量データを保存するとヒープ領域を圧迫するおそれがある",
+        "supported": true
+      },
+      {
+        "claim": "Redisストアは保存先が異なるだけで特徴はDBストアと同じ",
+        "supported": true
+      },
+      {
+        "claim": "Redisストアはセッション情報保存用テーブルを事前に用意する必要がない",
+        "supported": true
+      },
+      {
+        "claim": "Redisストアは有効期限が切れたセッション情報はRedisが自動削除するため、削除バッチが不要",
+        "supported": true
+      },
+      {
+        "claim": "セッションストアの有効期間はデフォルトではHTTPセッションに保存される",
+        "supported": true
+      },
+      {
+        "claim": "SessionStoreHandlerのexpirationプロパティをDbManagedExpirationに差し替えることで有効期間をデータベースに保存できる",
+        "supported": true
+      },
+      {
+        "claim": "SESSION_OBJECTカラムは有効期間をDBで管理する場合にNull許容で定義する必要がある（ログアウト時にNullレコードが登録される）",
+        "supported": true
+      },
+      {
+        "claim": "HiddenStoreのXML設定例でAesEncryptorとBase64Keyを使用する",
+        "supported": true
+      },
+      {
+        "claim": "DbManagedExpirationのXML設定例でSimpleDbTransactionManagerを使用する",
+        "supported": true
+      }
+    ],
+    "reason": "回答中のすべてのNablarch固有の主張（クラス名、設定方法、動作仕様）はKnowledgeセクションによって裏付けられている。DBストア・HIDDENストア・HTTPセッションストア・Redisストアの特徴説明、スケールアウト時の有効期間DB保存設定、SESSION_OBJECTカラムのNull許容要件、暗号化キーの明示設定要件、XMLの設定例など、すべて正確にドキュメントの内容と一致している。fabricated informationは検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッションストアの特長と選択基準を直接扱う中核ページ"
+      },
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "reason": "APサーバのスケールアウトとHTTPセッション非依存化の設計方針を解説するページ"
+      },
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "reason": "Redisストアの特徴・設定方法を扱うアダプタページ"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "reason": "有効期間のDB保存設定などスケールアウトに必要なハンドラ設定を含む"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "各ストア（DB/HIDDEN/HTTPセッション）の特長と選択基準を網羅的に説明"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "有効期間のデフォルト保存先がHTTPセッションであり、スケールアウト時の注意点を説明"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "HTTPセッションがスケールアウトの障壁となる理由を直接説明"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "HTTPセッションに依存している機能の一覧。スケールアウト対応で変更が必要な機能を特定できる"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "HIDDENストアをスケールアウト環境で使用する際に暗号化キーの明示設定が必要であることを説明"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s15",
+        "relevance": "high",
+        "reason": "RedisストアはTTL機能で有効期限が自動管理されバッチ不要という特徴を説明"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s14",
+        "relevance": "partial",
+        "reason": "Redisへのセッション情報の保存方法（キー形式・エンコーダー）"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "有効期間をDBに保存するための設定変更方法（スケールアウト対応に必須）"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "DbManagedExpirationの設定例（SESSION_OBJECTカラムのNull許容要件も含む）"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 124675,
+    "duration_api_ms": 124534,
+    "num_turns": 8,
+    "total_cost_usd": 0.6983753,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 7352,
+      "cache_read_input_tokens": 483966,
+      "cache_creation_input_tokens": 117210
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3217,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033469999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 7352,
+        "cacheReadInputTokens": 483966,
+        "cacheCreationInputTokens": 117210,
+        "webSearchRequests": 0,
+        "costUSD": 0.6950283,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 142804,
+  "duration_api_ms": 139130,
+  "ttft_ms": 7645,
+  "num_turns": 4,
+  "result": "**結論**: NablarchにはCSRF対策の仕組みがあります。`CsrfTokenVerificationHandler`（CSRFトークン検証ハンドラ）をハンドラキューに追加するだけで、POSTなどの更新系リクエストに対してCSRFトークンの生成・検証が自動的に行われます。アプリケーションプログラマが個別に実装する必要はありません。\n\n**根拠**: JSPカスタムタグを使用するウェブアプリケーションの場合、以下のようにハンドラキューへ追加します。\n\n```xml\n<!-- ハンドラ構成 -->\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <!-- 他のハンドラは省略 -->\n\n      <!-- セッションストアハンドラ -->\n      <component-ref name=\"sessionStoreHandler\" />\n\n      <!-- Nablarchカスタムタグ制御ハンドラ -->\n      <component-ref name=\"nablarchTagHandler\"/>\n\n      <!-- CSRFトークン検証ハンドラ -->\n      <component-ref name=\"csrfTokenVerificationHandler\"/>\n    </list>\n  </property>\n</component>\n\n<component name=\"csrfTokenVerificationHandler\"\n           class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\" />\n```\n\nデフォルトの動作：\n- CSRFトークンはUUIDv4で生成し、セッションストアに保存する\n- `GET` `HEAD` `TRACE` `OPTIONS` は検証対象外。`POST` `PUT` 等は検証対象となる\n- 検証失敗時はBadRequest(400)を返す\n- JSPカスタムタグ使用時は、CSRFトークンが画面に自動出力される\n\n**注意点**:\n- セッションストア（`SessionStoreHandler`）の使用が必須。`sessionStoreHandler` より後ろに配置すること\n- JSPカスタムタグ使用時は、`nablarchTagHandler` より後ろに配置すること\n- ログイン時にセッションIDの再生成のみ行う実装の場合は、`CsrfTokenUtil.regenerateCsrfToken` を呼び出してCSRFトークンも再生成すること（セッションストア自体を破棄・再生成する実装であれば不要）\n- リクエスト単体テストではCSRFトークンの検証に失敗するため、テスト設定でハンドラを`NopHandler`に差し替えて無効化すること\n\n参照: security-check-2.チェックリスト.json:s31, handlers-csrf-token-verification-handler.json:s4, handlers-csrf-token-verification-handler.json:s3, handlers-csrf-token-verification-handler.json:s5\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"check/security-check/security-check-2.チェックリスト.json\", \"reason\": \"Contains CSRF checklist section (s31) that directly covers Nablarch's CSRF protection approach.\"},\n      {\"path\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"reason\": \"Directly named 'CSRFトークン検証ハンドラ' — the primary handler for CSRF protection in Nablarch.\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"Contains s19 'CSRF対策' for the ウェブアプリケーション processing type that matches the question's constraint.\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/handlers/handlers-nablarch-tag-handler.json\", \"reason\": \"Covers hidden tag tampering (改竄) errors, not CSRF protection.\"},\n      {\"path\": \"component/handlers/handlers-secure-handler.json\", \"reason\": \"Covers security response headers (X-Frame-Options, CSP), not CSRF token verification.\"},\n      {\"path\": \"component/libraries/libraries-tag.json\", \"reason\": \"Has double-submit prevention (二重サブミット), which is related but not the primary CSRF mechanism asked about.\"},\n      {\"path\": \"check/security-check/security-check-1.概要.json\", \"reason\": \"Overview only with no specific CSRF implementation information.\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s31\", \"relevance\": \"high\", \"reason\": \"Directly explains Nablarch's CSRF protection feature and recommends using CsrfTokenVerificationHandler.\"},\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"Contains the handler configuration XML and detailed behavior (token generation, verification targets, failure handling).\"},\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"Explains mandatory placement constraints (after sessionStoreHandler and nablarchTagHandler).\"},\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s5\", \"relevance\": \"partial\", \"reason\": \"Explains when and how to regenerate CSRF tokens at login time.\"},\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s2\", \"relevance\": \"partial\", \"reason\": \"Provides the Maven module dependency needed to use the handler.\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s1\", \"reason\": \"SQL injection — not related to CSRF.\"},\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s32\", \"reason\": \"CSRF alternative measure (re-enter password) — s31 covers the recommended approach.\"},\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s33\", \"reason\": \"CSRF Referer check alternative — s31 covers the recommended approach.\"},\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s34\", \"reason\": \"CSRF insurance measure (email notification) — not directly relevant to the implementation question.\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s19\", \"reason\": \"Just a link reference to the CSRF handler — adds no new information beyond what s4 and s31 already provide.\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"check/security-check/security-check-2.チェックリスト.json:s31\",\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s4\",\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s3\",\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s5\",\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s2\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"security-check-2.チェックリスト.json:s31\", \"reason\": \"Provides the Nablarch CSRF feature recommendation and explains the token-based approach.\"},\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s4\", \"reason\": \"Provides the handler configuration XML example and default behavior details.\"},\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s3\", \"reason\": \"Provides the mandatory placement constraints (after sessionStoreHandler and nablarchTagHandler).\"},\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s5\", \"reason\": \"Provides the CSRF token regeneration guidance for login scenarios.\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s2\", \"reason\": \"Maven dependency information was read but not included in the answer as the question focuses on the mechanism and configuration, not build setup.\"}\n      ]\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "b07d0cac-efba-459f-8e0d-3a725425cef4",
+  "total_cost_usd": 0.9333351000000001,
+  "usage": {
+    "input_tokens": 5,
+    "cache_creation_input_tokens": 31846,
+    "cache_read_input_tokens": 103183,
+    "output_tokens": 3235,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 31846
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3261,
+      "outputTokens": 30,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003411,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 16,
+      "outputTokens": 8279,
+      "cacheReadInputTokens": 717487,
+      "cacheCreationInputTokens": 157452,
+      "webSearchRequests": 0,
+      "costUSD": 0.9299241,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "39be9289-13d2-4725-8d80-73cb204207f4"
+}

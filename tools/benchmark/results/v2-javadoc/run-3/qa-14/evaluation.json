@@ -1,0 +1,211 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states in section 1 that 'Nablarch 6はJakarta EE 10対応のアプリケーションサーバ上での動作が必要' (Nablarch 6 requires operation on a Jakarta EE 10-compatible application server), which directly matches the fact that it supports Jakarta EE 10 and must run on a Jakarta EE 10-compatible application server.",
+      "fact": "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある"
+    },
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states in section 7 that Nablarch feature names have changed from Java EE specification names to Jakarta EE names (e.g., 'JAX-RS' → 'Jakarta RESTful Web Services', 'JSP' → 'Jakarta Server Pages', etc.), and throughout the answer it describes the change from Java EE specifications/packages (javax.*) to Jakarta EE ones (jakarta.*). This directly corresponds to the fact that Java EE specification names and package names have been changed to Jakarta EE ones.",
+      "fact": "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Nablarch 6はJakarta EE 10対応のアプリケーションサーバ上での動作が必要",
+        "supported": true
+      },
+      {
+        "claim": "pom.xmlの依存関係をJava EEからJakarta EEに変更する必要がある",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta EE BOMの読み込みを推奨（jakarta.jakartaee-bom 10.0.0）",
+        "supported": true
+      },
+      {
+        "claim": "javax.servlet:javax.servlet-api → jakarta.servlet:jakarta.servlet-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.ws.rs:javax.ws.rs-api → jakarta.ws.rs:jakarta.ws.rs-api",
+        "supported": true
+      },
+      {
+        "claim": "javax.annotation:javax.annotation-api → jakarta.annotation:jakarta.annotation-api",
+        "supported": true
+      },
+      {
+        "claim": "JMS実装をActiveMQからArtemisに変更",
+        "supported": true
+      },
+      {
+        "claim": "javax.crypto.SecretKeyFactoryは標準ライブラリであり変更不要",
+        "supported": true
+      },
+      {
+        "claim": "web.xmlのスキーマをweb-app_3_1.xsdからweb-app_6_0.xsdに変更",
+        "supported": true
+      },
+      {
+        "claim": "JSPタグライブラリのURIをjakarta.tags.coreに変更",
+        "supported": true
+      },
+      {
+        "claim": "クラス名・パッケージ名は変更されていない（コード修正不要）",
+        "supported": true
+      },
+      {
+        "claim": "JAX-RS BeanValidationハンドラ → Jakarta RESTful Web Services Bean Validationハンドラ",
+        "supported": true
+      },
+      {
+        "claim": "JSR352に準拠したバッチアプリケーション → Jakarta Batchに準拠したバッチアプリケーション",
+        "supported": true
+      },
+      {
+        "claim": "Nablarch 6はJava 17以上が必要",
+        "supported": true
+      },
+      {
+        "claim": "移行前にNablarch 5の最新バージョン（5u25）に上げておくことが前提条件",
+        "supported": false
+      }
+    ],
+    "reason": "ほとんどの内容はナレッジセクションに記載の情報と一致しているが、「Nablarch 5の最新バージョン（5u25）」という具体的なバージョン番号がナレッジセクション内のいずれにも記載されていない。ナレッジセクションでは単に「Nablarch 5の最新版へのバージョンアップが済んでいることを前提としている」と述べるのみで、'5u25'という具体的なバージョン番号は登場しない。この点が未裏付けの情報（ハルシネーションの疑い）に該当する。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — ほとんどの内容はナレッジセクションに記載の情報と一致しているが、「Nablarch 5の最新バージョン（5u25）」という具体的なバージョン番号がナレッジセクション内のいずれにも記載されていない。ナレッジセクションでは単に「Nablarch 5の最新版へのバージョンアップが済んでいることを前提としている」と述べるのみで、'5u25'という具体的なバージョン番号は登場しない。この点が未裏付けの情報（ハルシネーションの疑い）に該当する。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "about/migration/migration-migration.json",
+        "reason": "Nablarch 5→6マイグレーションガイドの主要ページ。Jakarta EE 10対応の全手順を網羅する"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-jakarta-ee.json",
+        "reason": "Nablarch 5→6で名称変更になった機能の対応表を含む"
+      },
+      {
+        "path": "releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json",
+        "reason": "Nablarch 5u25→6u2の公式リリースノート。システムへの影響を明記した権威あるソース"
+      },
+      {
+        "path": "releases/releases/releases-nablarch6-releasenote-6.json",
+        "reason": "Nablarch 6初期リリースのJakarta EE 10対応告知"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-versionup-policy.json",
+        "reason": "後方互換ポリシーの例外としてN5→N6が位置づけられる理由の背景説明"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "Jakarta EE 10対応の根本説明。javax→jakartaの名前空間変更と後方互換性維持不可を明記"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "移行に必要な2つの作業（Nablarchバージョンアップ・Jakarta EE対応）の概要"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "Java EE API依存関係をJakarta EEに変更する手順とJakarta EE BOM推奨"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "Java EE仕様実装ライブラリ（hibernate-validator、Jersey等）のJakarta EE版への置き換え方針"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s26",
+        "relevance": "high",
+        "reason": "javax→jakartaの名前空間変更手順。コンパイルエラーのない箇所（文字列・JSP・設定ファイル）への対応も説明"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s27",
+        "relevance": "high",
+        "reason": "web.xmlのXMLスキーマ変更（jcp.org→jakarta.ee、バージョン3.1→6.0）の具体例"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s28",
+        "relevance": "high",
+        "reason": "JSPのtaglibネームスペース変更（java.sun.com→jakarta.tags.core）の具体例"
+      },
+      {
+        "file": "about/migration/migration-migration.json",
+        "section_id": "s33",
+        "relevance": "high",
+        "reason": "Java EE→Jakarta EE仕様対応表。javax.*名前空間プレフィックス一覧で判断根拠を提供"
+      },
+      {
+        "file": "about/about-nablarch/about-nablarch-jakarta-ee.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "Nablarch機能の名称変更一覧（クラス・パッケージ名変更なし）"
+      },
+      {
+        "file": "releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "公式リリースノートでのJakarta EE 10対応のシステム影響宣言"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 336073,
+    "duration_api_ms": 336232,
+    "num_turns": 5,
+    "total_cost_usd": 1.2775607000000004,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 7032,
+      "cache_read_input_tokens": 238513,
+      "cache_creation_input_tokens": 41325
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3167,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003347,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 18,
+        "outputTokens": 21831,
+        "cacheReadInputTokens": 553099,
+        "cacheCreationInputTokens": 208204,
+        "webSearchRequests": 0,
+        "costUSD": 1.2742137000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

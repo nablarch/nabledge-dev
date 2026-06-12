@@ -1,0 +1,166 @@
+{
+  "scenario_id": "qa-13",
+  "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。",
+  "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes using a Form class (ProjectForm) to receive values, applying @Valid annotation for validation, and using UniversalDao.insert() for database registration in a REST API context. This matches the fact exactly.",
+      "fact": "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "@Consumes(MediaType.APPLICATION_JSON)アノテーションでJSON形式のリクエストを受け付ける",
+        "supported": true
+      },
+      {
+        "claim": "@ValidアノテーションでBean Validationによるバリデーションを実行する",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy()でFormオブジェクトをEntityに変換する",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.insert()でエンティティをDBに登録する",
+        "supported": true
+      },
+      {
+        "claim": "HttpResponse.Status.CREATED.getStatusCode()で201を返す",
+        "supported": true
+      },
+      {
+        "claim": "@Path(\"/projects\")と@POSTでURLとメソッドのマッピングを定義する",
+        "supported": true
+      },
+      {
+        "claim": "Formクラスのプロパティは全てString型で宣言する",
+        "supported": true
+      },
+      {
+        "claim": "@Validが設定されたメソッドでバリデーションエラーが発生した場合、後続処理は実行されない",
+        "supported": true
+      }
+    ],
+    "reason": "回答に含まれるすべてのNablarch固有の主張（APIクラス名、アノテーション、動作仕様）はナレッジセクションの内容と一致している。ハルシネーションは検出されなかった。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "RESTfulウェブサービスでの登録機能の実装例を直接カバーしている"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細（バリデーション・DB アクセスへの参照）"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDaoのinsert等、DB登録処理の具体的な使用方法"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTfulサービスでのBean Validationの実装方法"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "RESTfulウェブサービスのユーザ入力値チェックの方法"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "reason": "@ConsumesによるリクエストボディのForm変換の仕組み"
+      },
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "BeanUtil.createAndCopy()によるForm→Entity変換の使用方法"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "フォーム作成・アクションメソッド実装・URLマッピングの具体的なコード例を含む登録処理の完全な実装パターン"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "@Validアノテーションを使ったバリデーション実行方法の補足説明"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "@ConsumesによるリクエストボディのForm変換の仕組みを補足"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスでのバリデーション方法の参照先"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "UniversalDAOを使うためのコンポーネント設定"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s13",
+        "relevance": "partial",
+        "reason": "サロゲートキー採番（主キー自動生成）の設定方法"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "BeanUtil.createAndCopy()の具体的な使用方法"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 105025,
+    "duration_api_ms": 104820,
+    "num_turns": 7,
+    "total_cost_usd": 0.6339251,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6946,
+      "cache_read_input_tokens": 562137,
+      "cache_creation_input_tokens": 95408
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3155,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00329,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 6946,
+        "cacheReadInputTokens": 562137,
+        "cacheCreationInputTokens": 95408,
+        "webSearchRequests": 0,
+        "costUSD": 0.6306351,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

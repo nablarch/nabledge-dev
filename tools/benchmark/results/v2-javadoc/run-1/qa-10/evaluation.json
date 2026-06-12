@@ -1,0 +1,198 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly states '$if構文のルール：プロパティ値が null または空文字（String の場合）のとき、その条件がSQLから除外されます' and shows the $if(プロパティ名) {条件} syntax, which matches the fact about using $if syntax for variable conditions and excluding conditions when property values are null or empty strings.",
+      "fact": "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "$if(プロパティ名) {条件} 構文でWHERE句の条件を可変にできる",
+        "supported": true
+      },
+      {
+        "claim": "プロパティ値がnullまたは空文字（String）のとき条件が除外される",
+        "supported": true
+      },
+      {
+        "claim": "配列・Collectionはnullまたはサイズ0のとき除外される",
+        "supported": true
+      },
+      {
+        "claim": "$ifはWHERE句のみ使用可能",
+        "supported": true
+      },
+      {
+        "claim": "$if内に$ifをネストできない",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.findAllBySqlFile()で実行する",
+        "supported": true
+      },
+      {
+        "claim": "SQLファイル例でPROJECT_NAME LIKE :%projectName% と記述している（途中一致）",
+        "supported": true
+      },
+      {
+        "claim": "BeanUtil.createAndCopy()でフォームから検索条件BeanにコピーするJavaコード",
+        "supported": true
+      },
+      {
+        "claim": "UniversalDao.page().per().findAllBySqlFile()でページング検索を行う",
+        "supported": true
+      },
+      {
+        "claim": "SQLファイル例にPROJECT_END_DATEに関する$if条件が含まれていない（answerのSQLはgold standardより条件が少ない）",
+        "supported": false
+      },
+      {
+        "claim": "SQLファイル例に$sort句が含まれていない（answerのSQLにはgold standardにある$sort句がない）",
+        "supported": false
+      }
+    ],
+    "reason": "回答のSQLファイル例（Project.sql）は、ナレッジセクションにあるgold standardのSQLと比べて不完全です。具体的には、gold standardでは `$if(projectEndDateBegin)` と `$if(projectEndDateEnd)` の条件、および `$sort(sortId)` 句が含まれていますが、回答のSQLにはこれらが欠落しています。これらの欠落はハルシネーションではなく省略ですが、回答のSQLが「正確な例」として提示されているため不正確です。また、回答全体としてNablarch固有のAPI（UniversalDao、BeanUtil、$if構文など）の説明は概ねgold standardと一致しており、重大なハルシネーション（存在しないAPI名・誤った動作仕様の記述）は確認されませんでした。ただし、SQLの提示内容が実際のgold standardと異なる（$sort句・終了日条件の欠落）ため、FAILと判定します。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — 回答のSQLファイル例（Project.sql）は、ナレッジセクションにあるgold standardのSQLと比べて不完全です。具体的には、gold standardでは `$if(projectEndDateBegin)` と `$if(projectEndDateEnd)` の条件、および `$sort(sortId)` 句が含まれていますが、回答のSQLにはこれらが欠落しています。これらの欠落はハルシネーションではなく省略ですが、回答のSQLが「正確な例」として提示されているため不正確です。また、回答全体としてNablarch固有のAPI（UniversalDao、BeanUtil、$if構文など）の説明は概ねgold standardと一致しており、重大なハルシネーション（存在しないAPI名・誤った動作仕様の記述）は確認されませんでした。ただし、SQLの提示内容が実際のgold standardと異なる（$sort句・終了日条件の欠落）ため、FAILと判定します。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "$if構文による可変条件SQLの核心的な説明が含まれる"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "reason": "ウェブアプリケーションの検索機能における$if使用の完全な実装例が含まれる"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-core-db-statement-ParameterizedSqlPStatement.json",
+        "reason": "可変条件SQL実行に使うParameterizedSqlPStatementのAPIリファレンス"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "reason": "findAllBySqlFileメソッドのAPIリファレンス"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json",
+        "reason": "フォームから検索条件Beanへのコピーに使うBeanUtilのAPIリファレンス"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-common-web-interceptor-InjectForm.json",
+        "reason": "バリデーション付きフォーム注入に使うInjectFormのAPIリファレンス"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDaoによる条件指定検索の説明が含まれる"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "$if構文の仕様・制約・コード例を直接説明しており質問への核心的な回答"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ウェブアプリ検索でのSQL・フォーム・アクション全体の実装例が揃っている"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-db-statement-ParameterizedSqlPStatement.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "s21で参照されるJavadoc"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "s1で参照されるJavadoc"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "s1で参照されるJavadoc"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-web-interceptor-InjectForm.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "s1で参照されるJavadoc"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "s21の前提となるBeanオブジェクト入力によるSQL実行の基礎説明"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "partial",
+        "reason": "$ifとIN句の組み合わせという関連するユースケースの説明"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "UniversalDaoでの条件指定検索のコード例"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "SQLファイルを使った検索の基礎説明"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 124461,
+    "duration_api_ms": 123961,
+    "num_turns": 3,
+    "total_cost_usd": 0.9298166999999999,
+    "usage": {
+      "input_tokens": 4,
+      "output_tokens": 4468,
+      "cache_read_input_tokens": 121113,
+      "cache_creation_input_tokens": 38892
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3195,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003315,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 8108,
+        "cacheReadInputTokens": 675224,
+        "cacheCreationInputTokens": 160606,
+        "webSearchRequests": 0,
+        "costUSD": 0.9265017,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

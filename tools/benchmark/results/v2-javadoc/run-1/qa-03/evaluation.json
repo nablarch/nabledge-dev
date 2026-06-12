@@ -1,0 +1,126 @@
+{
+  "scenario_id": "qa-03",
+  "description": "会員登録フォームで、メールアドレスと確認用メールアドレスの一致チェックが必要。Nablarchの入力チェックの仕組みでどうやるのかわからない。",
+  "input": "2つの入力項目が一致しているかチェックしたい。メールアドレスと確認用メールアドレスの相関バリデーションのやり方を教えてほしい",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "The answer explicitly describes using Jakarta Bean Validation's @AssertTrue annotation on a getter method to perform correlation validation, matching the fact. The answer includes the same code example showing @AssertTrue used to validate that mailAddress and confirmMailAddress match, along with the same explanatory notes about execution order not being guaranteed.",
+      "fact": "Jakarta Bean Validationの@AssertTrueを使って相関バリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "@AssertTrueアノテーションをgetterメソッドに付けて相関バリデーションを実装する",
+        "supported": true
+      },
+      {
+        "claim": "SampleFormクラスのisEqualsMailAddress()メソッドに@AssertTrue(message = \"{compareMailAddress}\")を設定する",
+        "supported": true
+      },
+      {
+        "claim": "任意項目の場合はStringUtil.isNullOrEmptyでnull/空チェックを行いtrueを返す",
+        "supported": true
+      },
+      {
+        "claim": "Jakarta Bean Validationではバリデーションの実行順序が保証されないため相関バリデーションが先に呼ばれる場合がある",
+        "supported": true
+      },
+      {
+        "claim": "Formクラスのプロパティは全てString型で定義すること",
+        "supported": true
+      },
+      {
+        "claim": "@InjectFormインターセプタと@OnErrorを組み合わせて使用する",
+        "supported": true
+      },
+      {
+        "claim": "@InjectForm(form = MailForm.class, prefix = \"form\")のように使用する",
+        "supported": true
+      },
+      {
+        "claim": "ctx.getRequestScopedVar(\"form\")でバリデーション済みフォームを取得する",
+        "supported": true
+      },
+      {
+        "claim": "エラーメッセージはメッセージ管理のプロパティファイルで定義する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内の全てのNablarch固有の主張（@AssertTrueによる相関バリデーション、StringUtil.isNullOrEmptyによるnullチェック、@InjectForm/@OnErrorの組み合わせ、String型プロパティの制約、実行順序非保証の注意点）はいずれもknowledgeセクションに記載された内容と一致しており、捏造された情報は確認されない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "相関バリデーションを含むBean Validationの実装方法を直接カバーしている"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーションでBean Validationを実行するために必要なInjectFormインターセプタを説明している"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "メールアドレスと確認用メールアドレスの一致チェックという質問とほぼ同じ例を含む相関バリデーション実装方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでBean Validationを使うための設定（BeanValidationStrategy）を説明しており、InjectFormと連携するための必要情報"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションのアクションでInjectFormを実際に使う実装例を提供しており、バリデーション実行の全体像を補完する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 68847,
+    "duration_api_ms": 68706,
+    "num_turns": 7,
+    "total_cost_usd": 0.5821244,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 4127,
+      "cache_read_input_tokens": 403338,
+      "cache_creation_input_tokens": 105564
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3207,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033320000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 4127,
+        "cacheReadInputTokens": 403338,
+        "cacheCreationInputTokens": 105564,
+        "webSearchRequests": 0,
+        "costUSD": 0.5787924,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

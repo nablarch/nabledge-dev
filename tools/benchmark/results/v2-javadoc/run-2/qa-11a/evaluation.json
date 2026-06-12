@@ -1,0 +1,206 @@
+{
+  "scenario_id": "qa-11a",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の注意点セクションに「HttpErrorResponseの原因例外がApplicationExceptionの場合、エラーメッセージはリクエストスコープのerrorsキーに自動設定される」と明記されており、またテーブルにて例外種別に応じたステータスコード（404、500など）を返すことも記載されている。これらはファクトの内容（例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する）と一致する。",
+      "fact": "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+    }
+  ],
+  "hallucination": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "NoMoreHandlerException → INFOログ、404ステータスコード",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponse → ログ出力なし、レスポンスに従うステータスコード",
+        "supported": true
+      },
+      {
+        "claim": "Result.Error → writeFailureLogPatternに依存（マッチ時FATAL）、Error#getStatusCode()に従うステータスコード",
+        "supported": true
+      },
+      {
+        "claim": "StackOverflowError → FATAL、500",
+        "supported": true
+      },
+      {
+        "claim": "上記以外の例外・エラー（HttpErrorHandlerのテーブル） → FATAL、500",
+        "supported": false
+      },
+      {
+        "claim": "GlobalErrorHandler → ServiceError → ServiceError#writeLogでログ出力（レベルは実装クラス依存）、ServiceErrorを返却",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandler → Result.Error → FATALログ出力後、Result.Errorを返却",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandler → 上記以外の例外クラス → FATALログ出力後、InternalErrorに包んで返却",
+        "supported": true
+      },
+      {
+        "claim": "defaultPagesのXML設定例（4..、404、5..のキー）",
+        "supported": true
+      },
+      {
+        "claim": "defaultPagesよりweb.xmlのerror-page設定を推奨",
+        "supported": true
+      },
+      {
+        "claim": "ExampleErrorForwardHandlerのカスタムエラー処理ハンドラ実装例（NoDataException、OptimisticLockException）",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorインターセプタでApplicationException発生時の遷移先を指定",
+        "supported": true
+      },
+      {
+        "claim": "pathにforward://メソッド名を指定して内部フォワード可能",
+        "supported": true
+      },
+      {
+        "claim": "HttpErrorResponseの原因例外がApplicationExceptionの場合、errorsキーでリクエストスコープに設定",
+        "supported": true
+      },
+      {
+        "claim": "GlobalErrorHandlerは設定で実装を切り替えられないため、プロジェクト固有ハンドラを作成する",
+        "supported": true
+      }
+    ],
+    "reason": "HttpErrorHandlerの例外テーブルにおいて、'上記以外の例外・エラー → FATAL → 500'という記述は不正確である。ナレッジセクションによれば、java.lang.ThreadDeathとjava.lang.StackOverflowError以外のVirtualMachineErrorは、本ハンドラでは何もせず上位ハンドラに処理を任せる（エラーを再送出する）とされており、FAITALログ出力や500ステータスコードを返すわけではない。回答はこの重要な例外ケースを省略し、誤った動作として一般化している。また、GlobalErrorHandlerのエラー処理テーブルも簡略化されており、ThreadDeath（INFOログ後リスロー）やVirtualMachineError（FATALログ後リスロー）など、InternalErrorに包まれずリスローされるエラーケースが'上記以外'カテゴリに誤って含まれている。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 0
+  },
+  "needs_human_review": true,
+  "human_review_items": [
+    "hallucination: FAIL — HttpErrorHandlerの例外テーブルにおいて、'上記以外の例外・エラー → FATAL → 500'という記述は不正確である。ナレッジセクションによれば、java.lang.ThreadDeathとjava.lang.StackOverflowError以外のVirtualMachineErrorは、本ハンドラでは何もせず上位ハンドラに処理を任せる（エラーを再送出する）とされており、FAITALログ出力や500ステータスコードを返すわけではない。回答はこの重要な例外ケースを省略し、誤った動作として一般化している。また、GlobalErrorHandlerのエラー処理テーブルも簡略化されており、ThreadDeath（INFOログ後リスロー）やVirtualMachineError（FATALログ後リスロー）など、InternalErrorに包まれずリスローされるエラーケースが'上記以外'カテゴリに誤って含まれている。"
+  ],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-HttpErrorHandler.json",
+        "reason": "ウェブアプリケーション専用のエラー制御ハンドラで、例外種別ごとのログ出力とレスポンス生成を担う中核ページ"
+      },
+      {
+        "path": "component/handlers/handlers-global-error-handler.json",
+        "reason": "ハンドラキュー最上位で未捕捉例外を処理するハンドラで、FATALログ出力の仕組みを説明する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの機能詳細として、エラー時の画面遷移とステータスコードセクションを含む"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "reason": "エラー時の遷移先の具体的な指定方法（ハンドラとアクション）を説明するページ"
+      },
+      {
+        "path": "component/handlers/handlers-on-error.json",
+        "reason": "アクションメソッド単位でエラー遷移先を指定する@OnErrorインターセプタの使用方法ページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "例外種別ごとのログレベルとステータスコードの対応表が質問に直接回答する"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "Result.ErrorのFATALログ出力条件（writeFailureLogPattern）を説明する"
+      },
+      {
+        "file": "component/handlers/handlers-HttpErrorHandler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "デフォルトエラーページの設定方法（defaultPages）を具体的なXML例で説明する"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "グローバルエラーハンドラの例外・エラー種別ごとの処理内容（ログレベル）を説明する"
+      },
+      {
+        "file": "component/handlers/handlers-global-error-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "カスタムハンドラへの切り替え方針を示す補足情報"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションでのエラー画面遷移とステータスコードの3つのアプローチを整理する"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "共通エラーページへの遷移をカスタムハンドラで実現する実装例を示す"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-forward-error-page.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "1例外クラスに複数遷移先を持つ場合のtry-catch実装方法の補足"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "@OnErrorアノテーションの基本的な使用方法をコード例で示す"
+      },
+      {
+        "file": "component/handlers/handlers-on-error.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "エラー画面表示時にデータ取得するためのforward://パターンを補足する"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 124800,
+    "duration_api_ms": 124031,
+    "num_turns": 10,
+    "total_cost_usd": 0.7787112,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 6980,
+      "cache_read_input_tokens": 921554,
+      "cache_creation_input_tokens": 105120
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3187,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033120000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 6980,
+        "cacheReadInputTokens": 921554,
+        "cacheCreationInputTokens": 105120,
+        "webSearchRequests": 0,
+        "costUSD": 0.7753992000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

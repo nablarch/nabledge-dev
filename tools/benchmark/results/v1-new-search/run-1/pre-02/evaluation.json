@@ -1,0 +1,200 @@
+{
+  "scenario_id": "pre-02",
+  "description": "入力バリデーションの実装方法を知りたいが、バッチかWebかRESTかが不明",
+  "input": "入力チェック（バリデーション）の実装方法を教えてください",
+  "claim_verdicts": [
+    {
+      "verdict": "PRESENT",
+      "reason": "回答の「業務アクションへの設定」セクションで、`@InjectForm` アノテーション（インターセプタ）を業務アクションのメソッドに設定することでバリデーションを行うと明記されており、Factの内容と一致している。",
+      "fact": "WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う"
+    }
+  ],
+  "hallucination": {
+    "verdict": "PASS",
+    "claims": [
+      {
+        "claim": "ウェブアプリケーションの入力値チェックは`@InjectForm`インターセプタを業務アクションのメソッドに設定することで実装する",
+        "supported": true
+      },
+      {
+        "claim": "BeanValidationStrategyを`validationStrategy`という名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "Formクラスのプロパティはすべて`String`型で定義する",
+        "supported": true
+      },
+      {
+        "claim": "@Length、@SystemChar、@Requiredアノテーションを使用する",
+        "supported": true
+      },
+      {
+        "claim": "ドメインバリデーションの使用を推奨する",
+        "supported": true
+      },
+      {
+        "claim": "ドメインBeanにバリデーションルールをまとめ、各Formで`@Domain(\"name\")`のように参照する",
+        "supported": true
+      },
+      {
+        "claim": "DomainManager実装を`domainManager`という名前でコンポーネント定義する",
+        "supported": true
+      },
+      {
+        "claim": "@InjectFormアノテーションをリクエスト処理メソッドに設定する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorでバリデーションエラー時の遷移先を指定する",
+        "supported": true
+      },
+      {
+        "claim": "@OnErrorが設定されていない場合、バリデーションエラーがシステムエラー扱いとなる",
+        "supported": true
+      },
+      {
+        "claim": "リクエストスコープからバリデーション済みのフォームを`ctx.getRequestScopedVar(\"form\")`で取得する",
+        "supported": true
+      },
+      {
+        "claim": "HTMLの入力フォームではprefixに合わせた名前でパラメータを送信する",
+        "supported": true
+      },
+      {
+        "claim": "FormクラスのプロパティをString以外の型にすると変換処理が失敗して障害になる",
+        "supported": true
+      },
+      {
+        "claim": "データベースとの相関バリデーションはSQLインジェクション防止のため業務アクション側で実装する",
+        "supported": true
+      },
+      {
+        "claim": "相関バリデーションは`@AssertTrue`アノテーションを使用して実装する",
+        "supported": true
+      }
+    ],
+    "reason": "回答内のすべてのNablarch固有の主張（APIクラス名、設定方法、動作仕様）はKnowledgeセクションの内容によって裏付けられており、捏造された情報は見当たらない。"
+  },
+  "scores": {
+    "accuracy": 1.0,
+    "hallucination": 1
+  },
+  "needs_human_review": false,
+  "human_review_items": [],
+  "diagnostics": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーションの入力値チェックに直接使うInjectFormインターセプタの実装方法を説明するページ"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationの設定・ルール定義・ドメインバリデーション等、バリデーション実装に必要な情報を網羅するページ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの入力値チェックの概要と参照先を示す機能詳細ページ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-error-message.json",
+        "reason": "バリデーションエラーメッセージの画面表示方法を説明するページ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "@InjectFormアノテーションの具体的な使用方法とコード例が含まれており回答に不可欠"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "バリデーションエラー時の遷移先設定（@OnError必須）という重要な制約が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションでBean ValidationをInjectFormと組み合わせる際の必須設定（BeanValidationStrategy）を説明"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "バリデーションルールの設定方法とFormクラスプロパティをString型にする必要性という重要な制約を説明"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "Bean Validationを使うための設定手順が記載されており実装に不可欠"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "推奨されるドメインバリデーションの実装方法を説明"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "バリデーションエラーメッセージの定義方法を説明"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "相関バリデーションの実装方法を説明（複数項目間の検証）"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s18",
+        "relevance": "partial",
+        "reason": "バリデーションエラー時にリクエストスコープからパラメータを取得する方法を説明"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "Bean Validationのグループ指定方法を説明"
+      }
+    ]
+  },
+  "metrics": {
+    "duration_ms": 94093,
+    "duration_api_ms": 91858,
+    "num_turns": 9,
+    "total_cost_usd": 0.6930510999999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 5871,
+      "cache_read_input_tokens": 568047,
+      "cache_creation_input_tokens": 114992
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3203,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033280000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 5871,
+        "cacheReadInputTokens": 568047,
+        "cacheCreationInputTokens": 114992,
+        "webSearchRequests": 0,
+        "costUSD": 0.6897230999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

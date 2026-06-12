@@ -1,0 +1,58 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 141245,
+  "duration_api_ms": 139575,
+  "ttft_ms": 4465,
+  "num_turns": 4,
+  "result": "**結論**: `$if(プロパティ名) {SQL条件}` 構文を使って SQLファイルに可変条件を記述することで、入力のある項目だけをWHERE句に含める動的SQLを実現できる。\n\n**根拠**:\n\nSQLファイルに `$if` 構文で可変条件を記述する。プロパティが null または空文字列（String型）の場合、その条件が自動的に除外される。\n\n```sql\nSEARCH_PROJECT =\nSELECT\n    PROJECT_ID,\n    PROJECT_NAME,\n    PROJECT_TYPE,\n    PROJECT_CLASS,\n    PROJECT_START_DATE,\n    PROJECT_END_DATE,\n    VERSION\nFROM\n    PROJECT\nWHERE\n    USER_ID = :userId\n    AND $if(clientId)              {CLIENT_ID = :clientId}\n    AND $if(projectName)           {PROJECT_NAME LIKE :%projectName%}\n    AND $if(projectType)           {PROJECT_TYPE = :projectType}\n    AND $if(projectClass)          {PROJECT_CLASS IN (:projectClass[])}\n    AND $if(projectStartDateBegin) {PROJECT_START_DATE >= :projectStartDateBegin}\n    AND $if(projectStartDateEnd)   {PROJECT_START_DATE <= :projectStartDateEnd}\n```\n\n業務アクションでは、フォームの値を検索条件Beanにコピーし、`UniversalDao#findAllBySqlFile` に渡して実行する。\n\n```java\n@InjectForm(form = ProjectSearchForm.class, prefix = \"searchForm\", name = \"searchForm\")\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\npublic HttpResponse list(HttpRequest request, ExecutionContext context) {\n    ProjectSearchForm searchForm = context.getRequestScopedVar(\"searchForm\");\n    ProjectSearchDto searchCondition =\n            BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);\n    List<Project> searchList = searchProject(searchCondition, context);\n    context.setRequestScopedVar(\"searchResult\", searchList);\n    return new HttpResponse(\"/WEB-INF/view/project/index.jsp\");\n}\n\nprivate List<Project> searchProject(ProjectSearchDto searchCondition, ExecutionContext context) {\n    LoginUserPrincipal userContext = SessionUtil.get(context, \"userContext\");\n    searchCondition.setUserId(userContext.getUserId());\n    return UniversalDao\n            .page(searchCondition.getPageNumber())\n            .per(20L)\n            .findAllBySqlFile(Project.class, \"SEARCH_PROJECT\", searchCondition);\n}\n```\n\n`$if` 構文の条件除外ルール:\n- `配列/Collection` 型: プロパティ値が null またはサイズ0のとき除外\n- それ以外の型（String含む）: プロパティ値が null または空文字列のとき除外\n\n制約:\n- 使用できる箇所はwhere句のみ\n- `$if` の入れ子は不可\n\n**注意点**: `$if` はウェブアプリケーションの検索画面のように入力内容によって条件が変わる場合に使うもの。条件だけ異なる複数のSQLを共通化するために使ってはならない（安易な共通化は不具合の原因となる）。\n\n参照: libraries-database.json:s21, web-application-getting-started-project-search.json:s1\n\n---\n\n### Workflow Details\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-database.json\", \"reason\": \"s21に「可変条件を持つSQLを実行する」($if構文)とs16にBean入力SQL実行があり、質問の核心技術を直接カバーする\"},\n      {\"path\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"reason\": \"ウェブアプリケーションの検索機能実装例として$if構文を実際に使ったSQLとアクションコードを含む\"},\n      {\"path\": \"component/libraries/libraries-universal-dao.json\", \"reason\": \"UniversalDao#findAllBySqlFileによる条件付き検索の実装方法を提供する\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"ウェブアプリケーション処理方式のデータベースアクセスの概要が記載されている\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/nablarch-batch/*\", \"reason\": \"処理方式がNablarchバッチであり、ウェブアプリケーションの制約により除外\"},\n      {\"path\": \"processing-pattern/jakarta-batch/*\", \"reason\": \"処理方式がJakartaバッチであり除外\"},\n      {\"path\": \"processing-pattern/restful-web-service/*\", \"reason\": \"処理方式がRESTfulウェブサービスであり除外\"},\n      {\"path\": \"about/*\", \"reason\": \"フレームワーク概要・リリース情報であり動的SQL実装には無関係\"},\n      {\"path\": \"setup/*\", \"reason\": \"セットアップ情報であり実装方法には無関係\"},\n      {\"path\": \"check/security-check/*\", \"reason\": \"セキュリティチェックリストであり動的SQLの実装方法には無関係\"},\n      {\"path\": \"component/handlers/*\", \"reason\": \"ハンドラは可変条件SQL実装の核心ではない\"},\n      {\"path\": \"development-tools/*\", \"reason\": \"開発ツール・テストフレームワークであり実装方法には無関係\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s21\", \"relevance\": \"high\", \"reason\": \"$if構文による可変条件SQLの仕様・制約・コード例を完全に説明しており、質問に直接回答する\"},\n      {\"file\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"ウェブアプリケーション検索機能の実装例として$if構文を使ったSQL・フォーム・アクションの全体コードを含む\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s16\", \"relevance\": \"partial\", \"reason\": \"$if構文が依拠するBeanオブジェクトを入力としたSQL実行の基本的な仕組みを説明する\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s10\", \"relevance\": \"partial\", \"reason\": \"条件を指定したUniversalDao検索の基本的な使い方を補足する\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s7\", \"relevance\": \"partial\", \"reason\": \"SQLファイル指定で検索するUniversalDao#findAllBySqlFileの基本的な使い方を説明する\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s1\", \"reason\": \"概要セクションのみで具体的な実装情報がない\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s6\", \"reason\": \"s21で詳説される内容の概要説明のみであり、s21があれば不要\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s12\", \"reason\": \"SQLファイルの管理方法の一般的な説明であり、$if構文の回答に直接必要ではない\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s22\", \"reason\": \"in句の可変条件はs21の$ifと併用例として触れるが、今回の質問の主軸ではない\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s3\", \"reason\": \"ウェブアプリケーションのDBアクセス概要のみでs1の実装例が揃っていれば不要\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-database.json:s21\",\n      \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\",\n      \"component/libraries/libraries-database.json:s16\",\n      \"component/libraries/libraries-universal-dao.json:s7\",\n      \"component/libraries/libraries-universal-dao.json:s10\",\n      \"component/libraries/libraries-database.json:s12\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/libraries/libraries-database.json:s21\", \"reason\": \"$if構文の仕様・条件除外ルール・制約・コード例の主要な根拠として使用\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\", \"reason\": \"ウェブアプリの実際の検索SQLとアクション実装コード例の根拠として使用\"},\n        {\"ref\": \"component/libraries/libraries-universal-dao.json:s10\", \"reason\": \"UniversalDao.findAllBySqlFileに条件Beanを渡す基本パターンの補足として参照\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"component/libraries/libraries-database.json:s16\", \"reason\": \"Bean入力SQL実行の基本は回答の$ifコードで暗黙的にカバーされており、別途引用は不要と判断\"},\n        {\"ref\": \"component/libraries/libraries-universal-dao.json:s7\", \"reason\": \"SQLファイル指定の基本的な使い方は実装例で明示されているため個別引用は不要\"},\n        {\"ref\": \"component/libraries/libraries-database.json:s12\", \"reason\": \"SQLファイル管理の仕組みは回答の主題ではなく使用しなかった\"}\n      ]\n    }\n  }\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "ec0affab-62f6-45ad-9d05-4a7398db89f8",
+  "total_cost_usd": 1.0240752,
+  "usage": {
+    "input_tokens": 5,
+    "cache_creation_input_tokens": 32252,
+    "cache_read_input_tokens": 103165,
+    "output_tokens": 3760,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 32252
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3257,
+      "outputTokens": 26,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003387,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 17,
+      "outputTokens": 9047,
+      "cacheReadInputTokens": 816249,
+      "cacheCreationInputTokens": 170682,
+      "webSearchRequests": 0,
+      "costUSD": 1.0206882,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "efbe5c2f-fec4-43b0-b7a8-78d91fb5c614"
+}
