@@ -1,0 +1,69 @@
+{
+  "scenario_id": "oos-qa-01",
+  "description": "バッチ処理の進捗をリアルタイムにクライアントへ通知する機能を実装したい。WebSocketを使いたいが、NablarchでWebSocketが使えるか確認したい。",
+  "input": "バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "NablarchにはWebSocketのサポートがないと回答している"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly states that Nablarch does not natively support WebSocket ('NablarchはWebSocketをネイティブサポートしていません'), which directly aligns with the single expected fact that the response should indicate Nablarch has no WebSocket support. The Actual Output not only confirms this fact but provides detailed reasoning, architectural context, and alternative approaches."
+    },
+    "answer_relevancy": {
+      "score": 0.8846153846153846,
+      "reason": "The score is 0.88 because the response mostly addresses the question about WebSocket support in Nablarch, but includes some irrelevant internal architecture details such as how DispatchHandler delegates to action classes, how action classes return HttpResponse, and how HTTP response handlers work. These implementation internals do not help answer whether WebSocket is supported or what alternatives exist for real-time browser notifications of batch progress."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/web-application/web-application-architecture.json:s1",
+      "processing-pattern/web-application/web-application-architecture.json:s3",
+      "about/about-nablarch/about-nablarch-policy.json:s6",
+      "processing-pattern/web-application/web-application-architecture.json:s2",
+      "processing-pattern/web-application/web-application-architecture.json:s4",
+      "about/about-nablarch/about-nablarch-policy.json:s8",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s9",
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 217427,
+    "duration_api_ms": 216201,
+    "num_turns": 10,
+    "total_cost_usd": 0.9601227499999999,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 5876,
+      "cache_read_input_tokens": 530396,
+      "cache_creation_input_tokens": 48481
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3352,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003497,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 20,
+        "outputTokens": 12019,
+        "cacheReadInputTokens": 861915,
+        "cacheCreationInputTokens": 138055,
+        "webSearchRequests": 0,
+        "costUSD": 0.95662575,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

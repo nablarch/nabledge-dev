@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 91417,
+  "duration_api_ms": 89494,
+  "ttft_ms": 6525,
+  "ttft_stream_ms": 4472,
+  "time_to_request_ms": 2154,
+  "num_turns": 6,
+  "result": "Step 5: 回答を生成します。\n\n---\n\n### Answer\n\n**結論**: Nablarchで多言語化を実装するには、①言語別プロパティファイルの作成、②`PropertiesStringResourceLoader`へのロケール設定、③`ThreadContextHandler`で言語属性を初期化する、の3ステップが必要です。ウェブアプリケーションでユーザーに言語選択させる場合は、`LanguageAttributeInHttpCookie`等と`LanguageAttributeInHttpUtil`を組み合わせて使います。\n\n---\n\n**根拠**:\n\n### 1. 言語別プロパティファイルを作成する\n\nデフォルト言語用（例: 日本語）は `messages.properties`、その他の言語は `messages_言語.properties` として配置します。\n\n```none\nmain/resources/messages.properties       # デフォルト言語（例: 日本語）\n               messages_en.properties    # 英語\n               messages_zh.properties    # 中国語\n```\n\n**重要**: `messages.properties`（デフォルト言語用）が存在しない場合はエラーになります。\n\n### 2. PropertiesStringResourceLoaderにサポート言語を設定する\n\nコンポーネント設定ファイル（XML）に以下を追加します。\n\n```xml\n<component class=\"nablarch.core.cache.BasicStaticDataCache\" name=\"messageCache\">\n  <property name=\"loader\">\n    <component class=\"nablarch.core.message.PropertiesStringResourceLoader\">\n      <!-- サポートする言語 -->\n      <property name=\"locales\">\n        <list>\n          <value>en</value>\n          <value>zh</value>\n        </list>\n      </property>\n      <!-- デフォルトの言語（必ず明示的に設定すること） -->\n      <property name=\"defaultLocale\" value=\"ja\" />\n    </component>\n  </property>\n</component>\n\n<component name=\"stringResourceHolder\" class=\"nablarch.core.message.StringResourceHolder\">\n  <property name=\"stringResourceCache\" ref=\"messageCache\" />\n</component>\n\n<component name=\"initializer\"\n           class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"messageCache\" />\n    </list>\n  </property>\n</component>\n```\n\n### 3. ThreadContextHandlerで言語属性を設定する\n\n`ThreadContext#getLanguage`が返すロケールに基づいてメッセージの言語が決まります。`ThreadContextHandler`にデフォルト言語を設定します。\n\n```xml\n<component class=\"nablarch.common.handler.threadcontext.ThreadContextHandler\">\n  <property name=\"attributes\">\n    <list>\n      <!-- 言語 -->\n      <component class=\"nablarch.common.handler.threadcontext.LanguageAttribute\">\n        <property name=\"defaultLanguage\" value=\"ja\" />\n      </component>\n      <!-- 他の属性は省略 -->\n    </list>\n  </property>\n</component>\n```\n\n### 4. ユーザーに言語を選択させる（ウェブアプリケーションの場合）\n\nクッキーやセッションで言語を保持するには `LanguageAttributeInHttpCookie` または `LanguageAttributeInHttpSession` を使います。\n\nコンポーネント設定：\n\n```xml\n<!-- コンポーネント名を\"languageAttribute\"にすること（LanguageAttributeInHttpUtil使用のため） -->\n<component name=\"languageAttribute\"\n           class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie\">\n  <property name=\"defaultLanguage\" value=\"ja\" />\n  <property name=\"supportedLanguages\" value=\"ja,en\" />\n</component>\n```\n\n言語選択ハンドラの実装例：\n\n```java\npublic class I18nHandler implements HttpRequestHandler {\n    public HttpResponse handle(HttpRequest request, ExecutionContext context) {\n        String language = request.getParam(\"user.language\") != null\n            ? request.getParam(\"user.language\")[0] : null;\n        if (StringUtil.hasValue(language)) {\n            // クッキーとスレッドコンテキストに言語を設定する\n            LanguageAttributeInHttpUtil.keepLanguage(request, context, language);\n        }\n        return context.handleNext(request);\n    }\n}\n```\n\nJSP（言語切り替えリンク）：\n\n```jsp\n<n:submitLink uri=\"/action/menu/index\" name=\"switchToEnglish\">\n  英語\n  <n:param paramName=\"user.language\" value=\"en\" />\n</n:submitLink>\n<n:submitLink uri=\"/action/menu/index\" name=\"switchToJapanese\">\n  日本語\n  <n:param paramName=\"user.language\" value=\"ja\" />\n</n:submitLink>\n```\n\n### 5. JSPでメッセージを出力する\n\n`n:message`タグでプロパティファイルのメッセージを画面に表示します。\n\n```jsp\n<n:message messageId=\"label.user.register.title\" />\n```\n\n---\n\n**注意点**:\n- `PropertiesStringResourceLoader.defaultLocale`を**必ず明示的に設定**すること。未設定の場合、`Locale.getDefault().getLanguage()`が使われ、OS設定によって変化するため障害の原因になります。\n- `messages.properties`（デフォルト言語ファイル）が存在しない場合はエラーになります。\n- ウェブアプリケーションでメッセージタグを使った国際化は画面レイアウトが崩れる可能性があるため、レイアウト崩れを許容できる場合のみ使用すること。\n\n参照: libraries-message.json:s8, handlers-thread-context-handler.json:s4, handlers-thread-context-handler.json:s7, handlers-http-response-handler.json:s7, web-application-feature-details.json:s12\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-message.json\", \"reason\": \"多言語化（メッセージの言語切り替え）の直接的な実装方法を提供するページ\"},\n      {\"path\": \"component/handlers/handlers-thread-context-handler.json\", \"reason\": \"言語属性をスレッドコンテキストに設定するハンドラで、多言語化の基盤となるページ\"},\n      {\"path\": \"component/handlers/handlers-http-response-handler.json\", \"reason\": \"言語ごとのコンテンツパス（JSPなど）切り替え機能を提供するページ\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"ウェブアプリケーションの国際化対応の概要を示すページ\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"reason\": \"RESTfulウェブサービスの国際化対応の概要を示すページ\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-code.json\", \"reason\": \"コード名称の多言語化はメッセージ/ラベルの多言語化とは別の機能のため除外\"},\n      {\"path\": \"component/libraries/libraries-tag.json\", \"reason\": \"メッセージタグ自体の実装詳細はlibraries-message.jsonとhandlers-thread-context-handler.jsonで十分カバーされるため除外\"},\n      {\"path\": \"about/about-nablarch/about-nablarch-policy.json\", \"reason\": \"Nablarchの基本方針であり、多言語化の実装方法には直接関係しないため除外\"},\n      {\"path\": \"processing-pattern/http-messaging/http-messaging-feature-details.json\", \"reason\": \"HTTPメッセージングの国際化対応はあるが、質問の主旨（メッセージ/ラベル切り替え）への実装詳細は他ページで十分\"},\n      {\"path\": \"component/libraries/libraries-tag-reference.json\", \"reason\": \"タグリファレンスはタグの詳細仕様で、多言語化の実装手順には直接不要\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s8\", \"relevance\": \"high\", \"reason\": \"多言語化のプロパティファイル設定・PropertiesStringResourceLoaderへのロケール設定の具体的な実装方法を含む\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"ユーザーが言語を選択する画面の実装例（LanguageAttributeInHttpCookie + LanguageAttributeInHttpUtil）を含む\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"ThreadContextHandlerのLanguageAttribute設定例を含む\"},\n      {\"file\": \"component/handlers/handlers-http-response-handler.json\", \"section_id\": \"s7\", \"relevance\": \"partial\", \"reason\": \"言語ごとにJSPパスを切り替える機能（DirectoryBasedResourcePathRule等）の情報を含む\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s12\", \"relevance\": \"partial\", \"reason\": \"ウェブアプリケーションにおける国際化対応の方式選択ガイダンスを含む\"},\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"section_id\": \"s8\", \"relevance\": \"partial\", \"reason\": \"RESTfulウェブサービスにおける国際化対応の参照先を示す\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s6\", \"reason\": \"プロパティファイルの作成単位（アプリケーション単位）はs8の補足情報だが、多言語化の直接的な実装方法ではないため除外\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s7\", \"reason\": \"単言語プロパティファイルの書き方であり、多言語化のs8で十分\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s11\", \"reason\": \"JSPでのメッセージタグ使用例はs8の補足だが、メインの回答に必要な情報はs8で十分\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s8\", \"reason\": \"タイムゾーン選択の実装例であり、言語切り替えの質問には不要\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-message.json:s8\",\n      \"component/handlers/handlers-thread-context-handler.json:s4\",\n      \"component/handlers/handlers-thread-context-handler.json:s7\",\n      \"component/handlers/handlers-http-response-handler.json:s7\",\n      \"processing-pattern/web-application/web-application-feature-details.json:s12\",\n      \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s8\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"libraries-message.json:s8\", \"reason\": \"PropertiesStringResourceLoaderへのロケール設定・言語別プロパティファイルの配置方法の主要情報として使用\"},\n        {\"ref\": \"handlers-thread-context-handler.json:s4\", \"reason\": \"ThreadContextHandlerへのLanguageAttribute設定例として使用\"},\n        {\"ref\": \"handlers-thread-context-handler.json:s7\", \"reason\": \"ユーザー言語選択画面の実装例（LanguageAttributeInHttpCookie・LanguageAttributeInHttpUtil）として使用\"},\n        {\"ref\": \"handlers-http-response-handler.json:s7\", \"reason\": \"言語ごとにJSPパスを切り替える機能の補足情報として参照\"},\n        {\"ref\": \"web-application-feature-details.json:s12\", \"reason\": \"ウェブアプリケーションの国際化方式の注意事項（レイアウト崩れ）として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"restful-web-service-feature-details.json:s8\", \"reason\": \"RESTfulウェブサービスの国際化対応はlibraries-message.jsonへの参照のみで、ウェブアプリケーション向けの回答で十分なため未使用\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "0f1c5cc4-dfec-4f3a-8d67-215a79f4b200",
+  "total_cost_usd": 0.5825736,
+  "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 104792,
+    "cache_read_input_tokens": 345162,
+    "output_tokens": 5508,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 104792
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3292,
+      "outputTokens": 25,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003417,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 6,
+      "outputTokens": 5508,
+      "cacheReadInputTokens": 345162,
+      "cacheCreationInputTokens": 104792,
+      "webSearchRequests": 0,
+      "costUSD": 0.5791566,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "16fc1e0c-46b7-4a4e-90c1-f8660e490b5d"
+}

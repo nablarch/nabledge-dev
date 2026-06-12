@@ -1,0 +1,72 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "BusinessDateUtilを使用して業務日付を取得する",
+    "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers both expected facts clearly. It explicitly mentions using BusinessDateUtil to obtain business dates (with code examples showing BusinessDateUtil.getDate()), and it describes that the business date management feature manages multiple business dates in a database using BasicBusinessDateProvider configuration (with detailed XML configuration examples). Both key facts from the expected output are fully addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, directly addressing the question about obtaining business dates separate from OS datetime and managing the distinction between system datetime and business dates in closing processes. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.95,
+      "reason": "The score is 0.95 because the actual output is largely faithful to the retrieval context, with only one minor contradiction: the actual output uses '20260317' (a future date) as an example for the system property override, whereas the retrieval context uses '20160317' (a past date), which is more contextually appropriate when describing re-running a historical batch."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s8",
+      "component/libraries/libraries-date.json:s9",
+      "component/libraries/libraries-date.json:s10",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s6",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s7",
+      "javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json:s9"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 107544,
+    "duration_api_ms": 105497,
+    "num_turns": 9,
+    "total_cost_usd": 0.65318495,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6637,
+      "cache_read_input_tokens": 564484,
+      "cache_creation_input_tokens": 101553
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3312,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003437,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 6637,
+        "cacheReadInputTokens": 564484,
+        "cacheCreationInputTokens": 101553,
+        "webSearchRequests": 0,
+        "costUSD": 0.64974795,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

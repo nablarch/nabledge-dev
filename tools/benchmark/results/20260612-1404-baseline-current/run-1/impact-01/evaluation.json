@@ -1,0 +1,66 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.9,
+      "reason": "The Actual Output extensively covers the core concept present in the Expected Output: using SimpleDbTransactionManager to define and execute SQL in an independent transaction. The Expected Output contains essentially one key fact — that SimpleDbTransactionManager is used to define individual/separate transactions — and the Actual Output directly addresses this with detailed explanations, XML configuration examples, and multiple implementation approaches. The main expected fact is clearly covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is fully relevant to the question about executing SQL in a separate transaction from the business transaction, with no irrelevant statements. Great job staying on topic!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/libraries/libraries-transaction.json:s5",
+      "component/handlers/handlers-transaction-management-handler.json:s7",
+      "component/adapters/adapters-doma-adaptor.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 187529,
+    "duration_api_ms": 185374,
+    "num_turns": 6,
+    "total_cost_usd": 1.2404515,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 5350,
+      "cache_read_input_tokens": 274318,
+      "cache_creation_input_tokens": 34500
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3348,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003493,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 17,
+        "outputTokens": 13021,
+        "cacheReadInputTokens": 627950,
+        "cacheCreationInputTokens": 227522,
+        "webSearchRequests": 0,
+        "costUSD": 1.2369584999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

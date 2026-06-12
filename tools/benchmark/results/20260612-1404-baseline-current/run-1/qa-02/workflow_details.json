@@ -1,0 +1,161 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチの処理フロー・ハンドラ構成・データリーダ・アクション一覧を含む中心的なアーキテクチャ解説ページ"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "DB to DBパターンを含む入出力分類を直接説明するパターンガイドページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-application-design.json",
+        "reason": "アクションクラス・フォームクラス・エンティティクラスの責務配置を説明するアプリ設計ページ"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-fw-action-BatchAction.json",
+        "reason": "createReader/handleメソッドのAPI仕様を含むBatchActionのJavadocページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "BatchActionを継承した具体的な実装コード例を含むgetting startedページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json",
+        "reason": "DatabaseRecordReaderのAPI詳細はarchitectureページのs7で参照先として言及されており、今回の実装構成説明には他のページで十分カバーできると判断"
+      },
+      {
+        "path": "guide/biz-samples/biz-samples-OnlineAccessLogStatistics.json",
+        "reason": "集計バッチのサンプルとして参考になるが、実装構成の説明はarchitectureとpatternsページで十分カバーできるため除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "DataReaderがレコードを1件ずつ提供しアクションクラスが業務ロジックを実行するという処理フロー全体を説明しており、DB to DBバッチの全体像把握に必須"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "DB接続有りの最小ハンドラ構成を詳細なテーブルで示しており、定期処理バッチの設定構成の根拠として必須"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "DatabaseRecordReaderをDBから読み込む標準データリーダとして明示しており、適切なリーダ選択の根拠として必要"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BatchActionを汎用バッチアクションテンプレートとして明示しており、アクションクラス選択の根拠として必要"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "DB to DBパターンが都度起動バッチで使用可能であることを表で明示しており、パターン分類の根拠として直接的"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "DB to DBパターンの特性（SELECT結果を入力、同一トランザクション）を直接説明しており、質問に最も直接的に答えるセクション"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-application-design.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "アクションクラスの責務（DataReader生成と業務ロジック実行）およびDBからの安全な入力ではフォームクラス不要というTipを含む設計指針"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-fw-action-BatchAction.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "handleメソッドのシグネチャと「原子性を保証される」という仕様を明示しており、業務ロジック実装の根拠として必須"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-fw-action-BatchAction.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "createReaderメソッドのシグネチャを明示しており、DataReader生成メソッドの根拠として必須"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "FILE to DBのサンプルだがBatchAction継承・handle実装・UniversalDao.insert使用という実装パターンのコード例として参考値がある"
+      }
+    ],
+    "excluded_sections": []
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-application-design.json:s1",
+      "javadoc/javadoc-nablarch-fw-action-BatchAction.json:s4",
+      "javadoc/javadoc-nablarch-fw-action-BatchAction.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+          "reason": "DB to DBパターンが都度起動バッチで使用可能であることの根拠として引用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+          "reason": "DB to DBパターンの入力仕様（SELECT結果セット）と同一トランザクション保証の根拠として引用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s5",
+          "reason": "DB接続有りの最小ハンドラ構成テーブル（データベース接続管理ハンドラ等）の根拠として引用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s7",
+          "reason": "DatabaseRecordReaderをDB読み込み用標準データリーダとして示す根拠として引用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s8",
+          "reason": "BatchActionを汎用バッチアクションテンプレートとして示す根拠として引用"
+        },
+        {
+          "ref": "javadoc-nablarch-fw-action-BatchAction.json:s4",
+          "reason": "handle()メソッドのシグネチャと原子性保証の仕様の根拠として引用"
+        },
+        {
+          "ref": "javadoc-nablarch-fw-action-BatchAction.json:s5",
+          "reason": "createReader()メソッドのシグネチャの根拠として引用"
+        },
+        {
+          "ref": "nablarch-batch-application-design.json:s1",
+          "reason": "DBからの安全な入力ではフォームクラス不要でエンティティクラスを直接使用できるというTipの根拠として引用"
+        },
+        {
+          "ref": "nablarch-batch-getting-started-nablarch-batch.json:s3",
+          "reason": "BatchAction継承・UniversalDao.insertを使ったDB書き込みのコード例の根拠として引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "nablarch-batch-architecture.json:s3",
+          "reason": "処理フロー全体の説明として参照したが、回答の構成要素（ハンドラ・アクション・リーダー）が他セクションで直接カバーされるため個別引用は省略"
+        }
+      ]
+    }
+  }
+}

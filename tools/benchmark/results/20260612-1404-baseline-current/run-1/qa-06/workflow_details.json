@@ -1,0 +1,121 @@
+{
+  "question": "入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？（処理方式: ウェブアプリケーション）（目的: 実装したい）",
+  "hearing": {
+    "processing_type": "ウェブアプリケーション",
+    "purpose": "実装したい"
+  },
+  "selected_pages": [
+    {
+      "page": "component/libraries/libraries-tag.json",
+      "reason": "JSP共通化（入力画面・確認画面）の機能を直接カバーするページ。index.mdのs3「入力画面と確認画面のJSPを共通化して実装を減らす」が質問に完全一致。目的「実装したい」の優先カテゴリ component/libraries にも該当。"
+    },
+    {
+      "page": "component/libraries/libraries-tag-reference.json",
+      "reason": "confirmationPage/forInputPage/forConfirmationPage/ignoreConfirmationタグの属性リファレンスを提供。実装に必要なタグ属性の参照先として候補。"
+    }
+  ],
+  "section_selection": {
+    "libraries-tag.json": {
+      "s1": "skip — 機能概要の一般的な説明のみ、具体的な実装情報なし",
+      "s2": "skip — HTMLエスケープの説明、質問と無関係",
+      "s3": "high — JSP共通化の機能概要そのもの。タグ一覧と基本的な仕組みを説明",
+      "s4": "skip — モジュール一覧、ボイラープレート",
+      "s5〜s14": "skip — 使用方法の各サブセクションだが、s23で共通化の詳細が直接得られるため不要",
+      "s23": "high — confirmationPage/forInputPage/forConfirmationPage/ignoreConfirmationの全タグ説明と完全な実装例を含む。回答の主要コンテンツ",
+      "その他": "skip — 他のセクションは質問（JSP共通化）と無関係"
+    },
+    "libraries-tag-reference.json": {
+      "s1〜s63": "skip — form/text/select等の一般タグ属性リファレンス、質問と無関係",
+      "s64": "partial — confirmationPageタグのpath属性定義。s23の内容を補完",
+      "s65": "partial — ignoreConfirmationタグの属性定義（属性なし）",
+      "s66": "partial — forInputPageタグの属性定義（属性なし）",
+      "s67": "partial — forConfirmationPageタグの属性定義（属性なし）"
+    }
+  },
+  "selected_sections": [
+    {
+      "file": "component/libraries/libraries-tag.json",
+      "section_id": "s3",
+      "title": "入力画面と確認画面のJSPを共通化して実装を減らす",
+      "relevance": "high"
+    },
+    {
+      "file": "component/libraries/libraries-tag.json",
+      "section_id": "s23",
+      "title": "入力画面と確認画面を共通化する",
+      "relevance": "high"
+    },
+    {
+      "file": "component/libraries/libraries-tag-reference.json",
+      "section_id": "s64",
+      "title": "confirmationPageタグ",
+      "relevance": "partial"
+    },
+    {
+      "file": "component/libraries/libraries-tag-reference.json",
+      "section_id": "s65",
+      "title": "ignoreConfirmationタグ",
+      "relevance": "partial"
+    },
+    {
+      "file": "component/libraries/libraries-tag-reference.json",
+      "section_id": "s66",
+      "title": "forInputPageタグ",
+      "relevance": "partial"
+    },
+    {
+      "file": "component/libraries/libraries-tag-reference.json",
+      "section_id": "s67",
+      "title": "forConfirmationPageタグ",
+      "relevance": "partial"
+    }
+  ],
+  "read_sections": [
+    "component/libraries/libraries-tag.json:s3",
+    "component/libraries/libraries-tag.json:s23",
+    "component/libraries/libraries-tag-reference.json:s64",
+    "component/libraries/libraries-tag-reference.json:s65",
+    "component/libraries/libraries-tag-reference.json:s66",
+    "component/libraries/libraries-tag-reference.json:s67"
+  ],
+  "verify": {
+    "result": "PASS",
+    "checks": [
+      {
+        "claim": "入力項目のカスタムタグは同じJSP記述のまま確認画面用を出力できる",
+        "source": "libraries-tag.json:s23 — 「入力項目のカスタムタグは、入力画面と全く同じJSP記述のまま、確認画面用を出力できる。」",
+        "status": "PASS"
+      },
+      {
+        "claim": "<n:confirmationPage path=\"...\"> で確認画面から入力画面JSPを参照",
+        "source": "libraries-tag.json:s23 — 「確認画面のJSPで入力画面のJSPへのパスを指定して…」+ コード例、libraries-tag-reference.json:s64 — path属性の定義",
+        "status": "PASS"
+      },
+      {
+        "claim": "<n:forInputPage> で入力画面のみ表示",
+        "source": "libraries-tag.json:s23 — 「入力画面でのみ表示したい部分を指定する。」",
+        "status": "PASS"
+      },
+      {
+        "claim": "<n:forConfirmationPage> で確認画面のみ表示",
+        "source": "libraries-tag.json:s23 — 「確認画面でのみ表示したい部分を指定する。」",
+        "status": "PASS"
+      },
+      {
+        "claim": "<n:ignoreConfirmation> で確認画面向け表示を無効化（チェックボックス例）",
+        "source": "libraries-tag.json:s23 — 「確認画面で、確認画面向けの表示を無効化したい部分に指定する。例えば、チェックボックスを使用した項目で…」",
+        "status": "PASS"
+      },
+      {
+        "claim": "<n:plainHidden> は入力・確認画面ともに出力",
+        "source": "libraries-tag.json:s23 — 「画面遷移の状態などを画面間で受け渡す目的で使用することを想定し、入力・確認画面ともに出力する。」",
+        "status": "PASS"
+      },
+      {
+        "claim": "<n:hiddenStore> は入力・確認画面ともに出力",
+        "source": "libraries-tag.json:s23 — 「セッションストアに保存したデータを画面間で受け渡すために使用するため、入力・確認画面ともに出力する。」",
+        "status": "PASS"
+      }
+    ]
+  }
+}

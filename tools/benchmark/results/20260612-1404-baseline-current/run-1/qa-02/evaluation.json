@@ -1,0 +1,72 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "DatabaseRecordReaderでデータベースからデータを読み込む",
+    "BatchActionを継承したアクションクラスを実装する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers both expected facts: (1) it explicitly mentions using `DatabaseRecordReader` to read data from the database (in sections 1, 4, and the handler queue table), and (2) it explicitly states that a class inheriting `BatchAction` should be implemented (in section 2, with a concrete code example). Both facts from the Expected Output checklist are present and accurately represented without contradiction."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about how to implement a batch process that reads data from a DB, aggregates it, and writes the results to another table. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9411764705882353,
+      "reason": "The score is 0.94 because the actual output incorrectly specifies that the data read handler uses 'DatabaseRecordReader' specifically, whereas the retrieval context states that the data reader used depends on configuration and does not specify a particular implementation."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-application-design.json:s1",
+      "javadoc/javadoc-nablarch-fw-action-BatchAction.json:s4",
+      "javadoc/javadoc-nablarch-fw-action-BatchAction.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 273786,
+    "duration_api_ms": 272228,
+    "num_turns": 6,
+    "total_cost_usd": 0.94064615,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 8055,
+      "cache_read_input_tokens": 274925,
+      "cache_creation_input_tokens": 38258
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3348,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0034879999999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 19,
+        "outputTokens": 18124,
+        "cacheReadInputTokens": 580608,
+        "cacheCreationInputTokens": 130949,
+        "webSearchRequests": 0,
+        "costUSD": 0.9371581499999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

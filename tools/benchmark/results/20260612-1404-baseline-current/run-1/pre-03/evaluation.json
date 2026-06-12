@@ -1,0 +1,73 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers the expected fact that SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる. Specifically, it demonstrates creating SQL files with SQL IDs (e.g., 'FIND_BY_NAME', 'SEARCH_PROJECT'), using those IDs in findAllBySqlFile calls, and mapping results to entity classes (User.class, Project.class). The expected fact is clearly present and not contradicted."
+    },
+    "answer_relevancy": {
+      "score": 0.875,
+      "reason": "The score is 0.88 because the response mostly addresses the question about searching/retrieving data using UniversalDao, but contains some irrelevant statements about updates and deletions (both with UniversalDao and JDBC wrapper), which are not related to the input question focused solely on data retrieval/searching."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/libraries/libraries-universal-dao.json:s12",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s8",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s9",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s11",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s13",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+      "component/libraries/libraries-universal-dao.json:s3",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s25",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s27"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 89356,
+    "duration_api_ms": 87988,
+    "num_turns": 7,
+    "total_cost_usd": 0.66608025,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 5738,
+      "cache_read_input_tokens": 357665,
+      "cache_creation_input_tokens": 125145
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3274,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003399,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 5738,
+        "cacheReadInputTokens": 357665,
+        "cacheCreationInputTokens": 125145,
+        "webSearchRequests": 0,
+        "costUSD": 0.6626812499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

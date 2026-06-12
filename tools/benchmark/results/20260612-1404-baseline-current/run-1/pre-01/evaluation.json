@@ -1,0 +1,71 @@
+{
+  "scenario_id": "pre-01",
+  "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい",
+  "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する",
+    "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts clearly. It explicitly states that Nablarch batch runs as a standalone application launched via the Java command (`java nablarch.fw.launcher.Main`), which aligns with 'javaコマンドから直接起動するスタンドアロンアプリケーション'. It also explicitly covers the `-requestPath` argument format specifying both the action class name and request ID, with detailed examples. Both expected facts are fully addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly relevant to the input, which asks about how to launch a Nablarch batch application and how to write the -requestPath parameter. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9166666666666666,
+      "reason": "The score is 0.92 because the actual output contains a minor inaccuracy in the request path example: it omits the intermediate package sub-path 'xxx' and incorrectly uses a trailing slash in basePath, whereas the retrieval context specifies that for 'nablarch.application.xxx.ExampleBatchAction' with basePackage 'nablarch.application' and basePath '/app/action', the correct request path should be '/app/action/xxx/ExampleBatchAction'."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "component/handlers/handlers-main.json:s3",
+      "component/handlers/handlers-request-path-java-package-mapping.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "component/handlers/handlers-main.json:s1",
+      "component/handlers/handlers-request-path-java-package-mapping.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 242786,
+    "duration_api_ms": 241656,
+    "num_turns": 7,
+    "total_cost_usd": 0.9233744499999998,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6201,
+      "cache_read_input_tokens": 338352,
+      "cache_creation_input_tokens": 68401
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3318,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003493,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 78,
+        "outputTokens": 12204,
+        "cacheReadInputTokens": 503279,
+        "cacheCreationInputTokens": 156161,
+        "webSearchRequests": 0,
+        "costUSD": 0.9198814499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

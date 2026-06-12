@@ -1,0 +1,158 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッションストアの特長と選択基準（s16）が質問に直接回答する"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "reason": "セッション変数保存ハンドラの設定と有効期間DB保存の詳細を含む"
+      },
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "reason": "Redisストアの特徴・有効期限管理・構成オプションを説明している"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "s18でWebアプリのスケールアウト設計への参照がある"
+      },
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "reason": "HTTPセッションに依存する機能とステートレス化の方法を説明している"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "処理方式がウェブアプリケーションのため除外"
+      },
+      {
+        "path": "component/handlers/handlers-session-concurrent-access-handler.json",
+        "reason": "セッション並行アクセスハンドラはセッションストアとは別の機能で直接関係しない"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セッション管理の不備は含むが選択基準の質問には関係が薄い"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "各ストアの特長と選択基準を直接説明している"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "利用可能なストアの種類一覧（Redisストアを含む）を示している"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "スケールアウト環境でHIDDENストアを使う際の暗号化キー共通設定が必要な理由を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "HTTPセッションとスケールアウトの問題を直接説明している"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "HTTPセッションに依存している機能の一覧を提供する"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s15",
+        "relevance": "high",
+        "reason": "Redisストアの有効期限管理（削除バッチ不要）という特徴を説明している"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "Redisストアアダプタの概要（DBストアとの比較）を含む"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s8",
+        "reason": "設定例の詳細で、特長・選択基準の理解には不要"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s9",
+        "reason": "入力画面間の保持方法の実装詳細で、特長理解には不要"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s4",
+        "reason": "ハンドラの設定方法であり、特長・選択基準の回答には不要"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s18",
+        "reason": "ステートレス化へのリンクのみでコンテンツを含まないため除外"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s6",
+        "reason": "クライアントクラスの種類詳細で、特長理解には深く不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-stateless-web-app.json:s1",
+      "component/libraries/libraries-stateless-web-app.json:s2",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s1",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-session-store.json:s16",
+          "reason": "各ストアの特長・制約・選択基準の表を直接引用"
+        },
+        {
+          "ref": "libraries-session-store.json:s2",
+          "reason": "Redisストアを含む4種類の保存先一覧の情報を使用"
+        },
+        {
+          "ref": "libraries-session-store.json:s12",
+          "reason": "スケールアウト環境でのHIDDENストア暗号化キー共通設定の注意点を引用"
+        },
+        {
+          "ref": "libraries-stateless-web-app.json:s1",
+          "reason": "HTTPセッションとスケールアウトの問題（スティッキーセッション等の課題）を引用"
+        },
+        {
+          "ref": "adapters-redisstore-lettuce-adaptor.json:s15",
+          "reason": "Redisストアの有効期限自動削除機能（バッチ不要）の説明を引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-stateless-web-app.json:s2",
+          "reason": "HTTPセッション依存機能の一覧はセッションストアの説明で十分カバーされていたため未使用"
+        },
+        {
+          "ref": "adapters-redisstore-lettuce-adaptor.json:s1",
+          "reason": "Redisアダプタの概要・メリットはs15とs16の内容で代替できたため未使用"
+        }
+      ]
+    }
+  }
+}

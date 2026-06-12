@@ -1,0 +1,117 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "可変条件・動的SQL構築（$if構文）を直接カバーするページで、s21「可変条件を持つSQLを実行する」が質問に直接対応する"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "ユニバーサルDAOはCRUDに特化しており、SQLファイルの$if構文による可変条件は扱わない"
+      },
+      {
+        "path": "component/libraries/libraries-database-management.json",
+        "reason": "DB接続管理の概要ページで可変条件の実装詳細は含まれない"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-policy.json",
+        "reason": "Nablarchの基本方針ページで実装方法は含まれない"
+      },
+      {
+        "path": "component/libraries/libraries-sql-log.json",
+        "reason": "SQLログ出力に関するページで可変条件とは無関係"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "「可変条件を持つSQLを実行する」で$if構文の記述ルールと実装例を詳しく説明しており、質問に直接回答する"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "high",
+        "reason": "in句の条件数が可変となるSQLの記述方法（:param[]と$ifの組み合わせ）を説明しており、可変条件の重要な応用例"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "BeanオブジェクトをSQLに渡す基本メカニズムを説明しており、$if構文を使う際の前提知識として必要"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "動的SQL構築機能の概要セクションで、関連セクションへの参照を提供する"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "SQLをSQLファイルに記述するルールの背景説明（PreparedStatement使用によるSQLインジェクション防止）"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s1",
+        "relevance": "skipped",
+        "reason": "目次のみで実装詳細がない概要セクション"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s2",
+        "relevance": "skipped",
+        "reason": "ダイアレクト機能の説明で可変条件とは無関係"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s23",
+        "relevance": "skipped",
+        "reason": "order byのソート切り替えで今回の質問（where条件の可変）には直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-database.json:s6",
+      "component/libraries/libraries-database.json:s3",
+      "component/libraries/libraries-database.json:s16"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s21",
+          "reason": "$if構文の記述ルール・除外条件・SQLサンプル・Javaコード例をすべて直接引用して回答の骨格とした"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s22",
+          "reason": "in句の可変条件（:param[]と$ifの組み合わせ）のSQL例とJavaコード例を回答に含めた"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s16",
+          "reason": "名前付きパラメータの使用必須（?は不可）という注意点を補足するために参照した"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-database.json:s6",
+          "reason": "概要ポインタのみで実装詳細はs21/s22に集約されているため回答に含める情報がなかった"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s3",
+          "reason": "SQLファイル管理の原則はs21で前提とされており、個別に引用するほどの追加情報がなかった"
+        }
+      ]
+    }
+  }
+}

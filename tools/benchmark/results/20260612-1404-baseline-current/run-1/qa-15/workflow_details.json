@@ -1,0 +1,160 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストにXSS（クロスサイト・スクリプティング）s5が含まれており、Nablarchの対応状況が直接記載されている"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "カスタムタグのHTMLエスケープ機能に関する説明（s2, s50, s27）が含まれており、XSS対策の核心的な情報源"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "セキュアハンドラによるXSS関連レスポンスヘッダ（X-XSS-Protection等）とCSP対応の実装方法を提供"
+      },
+      {
+        "path": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "reason": "JSP静的解析ツールがカスタムタグ以外のタグ使用によるエスケープ漏れを検出し、セキュリティ対応を補完する"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの機能詳細だが、XSS対策の具体的なメカニズムはlibraries-tag.jsonやsecurity-checkに委ねられており重複"
+      },
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "概要のみでXSS具体対策の詳細がないため除外"
+      },
+      {
+        "path": "component/libraries/libraries-tag-reference.json",
+        "reason": "タグリファレンスは個別タグ仕様であり、XSS対策の全体像把握には不要"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "XSSチェックリスト全体とNablarchの対応状況（IPA5-(i)〜(x)）が直接記載されており、回答の骨格となる"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "カスタムタグがデフォルトでHTMLエスケープすること、JavaScriptエスケープは提供しないという重要制約が記載"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s50",
+        "relevance": "high",
+        "reason": "HTMLエスケープの具体的な変換内容（5文字）とEL式使用禁止の制約が記載"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s27",
+        "relevance": "partial",
+        "reason": "rawWrite/prettyPrintタグのXSSリスクと、代替手段（OSSのHTMLパーサ使用）の説明が含まれる"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "X-Frame-Options等のセキュリティヘッダの設定方法が記載されており、XSS保険的対策（5-(x)）に対応"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "CSP（Content Security Policy）対応の説明が含まれ、XSS防止のより強固な対策方法を示す"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "CSP nonce生成の具体的なXML設定例が含まれており、実装方法の参考になる"
+      },
+      {
+        "file": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "JSP静的解析ツールによるエスケープ漏れ検出の概要が記載され、security-check-2.json:s5の「JSP静的解析ツール」への言及を補完する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "section_id": "s2",
+        "reason": "仕様セクションだが内容が空のため使用不可"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s1",
+        "reason": "SQLインジェクション対策でXSS対策とは別項目"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "reason": "CSRF対策であり今回の質問範囲外"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s5",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s50",
+      "component/libraries/libraries-tag.json:s27",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1",
+      "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s2"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "check/security-check/security-check-2.チェックリスト.json:s5",
+          "reason": "IPA 5-(i)〜(x)の対応状況表の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s2",
+          "reason": "カスタムタグのHTMLエスケープとJavaScriptエスケープ非提供の制約の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s50",
+          "reason": "エスケープ変換内容の詳細とEL式禁止の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s27",
+          "reason": "rawWriteタグのXSSリスクとprettyPrintタグの非推奨理由の根拠として使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s4",
+          "reason": "セキュアハンドラのXML設定例の根拠として使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s6",
+          "reason": "CSP対応の説明の根拠として使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s8",
+          "reason": "CSP nonce設定例の根拠として使用"
+        },
+        {
+          "ref": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1",
+          "reason": "JSP静的解析ツールによるエスケープ漏れ検出の説明の根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s2",
+          "reason": "内容が空のため回答に使用できなかった"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "遅延ロード機能（s9）が大量データの1件ずつ読み込みに直接対応"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチのデータリーダ一覧（DatabaseRecordReader等）が記載されている"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "Domaアダプタ経由での遅延ロード実装（s10）がバッチ向け大量データ処理に関連"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "バッチのN+1問題（s4）が大量データ検索のアンチパターンとして関連"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "検索範囲指定（s15）はページング目的であり、1件ずつのストリーミング読み込みとは異なる"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "s4はデータベースアクセスのリンク集のみで実装詳細なし"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "ファイル読み込みのデータリーダ作成例であり、DB大量データ読み込みとは異なる"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "UniversalDao.defer()による遅延ロードがメモリ不足問題の直接的な解決策として記載されている"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "標準データリーダ（DatabaseRecordReader等）の一覧が記載されており補足情報として有用"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "Domaアダプタ経由でのバッチ向け遅延ロード実装例が補足情報として有用"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "N+1問題の説明はあるが、1件ずつ読み込む方法の直接的な解答には含まれないため回答には未使用"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "component/adapters/adapters-doma-adaptor.json:s10",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s4"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s9",
+          "reason": "UniversalDao.defer()の使い方、コード例、注意点（カーソルとトランザクション）をすべて回答に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+          "reason": "DatabaseRecordReaderの存在は示されているが、Javadocのみでメモリ節約の実装詳細がなく回答に含めなかった"
+        },
+        {
+          "ref": "component/adapters/adapters-doma-adaptor.json:s10",
+          "reason": "Domaアダプタ経由の遅延ロードはJakarta Batch向けであり、質問のNablarchバッチには直接対応しないため省略"
+        },
+        {
+          "ref": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s4",
+          "reason": "N+1問題の説明は背景情報であり、実装方法の直接的な回答には含めなかった"
+        }
+      ]
+    }
+  }
+}
