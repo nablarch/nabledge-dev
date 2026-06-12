@@ -2,29 +2,42 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-11 (session 8)
+**Updated**: 2026-06-12 (session 9)
 
 ## In Progress
 
-### Task 21: 実験P revised — qa-05/qa-05b input統一 × 各10回
+### Task 22: 実験P qa-05b must絞り込み版 × 10回 — 結論待ち
 
-**Status**: 20試行完了・結果保存・コミット済み。結論待ち。
+**Status**: 10試行完了・結果保存・コミット済み。結論はユーザーが判断する。
 
-**経緯**: qa-05/qa-05b の input から「リソースクラスの実装パターンを教えてほしい」を削除。両シナリオとも `input = "REST APIでJSONを受け取ってDBに登録する処理を作りたい"` に統一。purpose の違いだけで回答が分かれるかを公正に測定。
+**経緯**: qa-05b の must を s2 のみ（Jackson2BodyConverter担当）に絞り、s4（MIME拡張）を acceptable に格下げ。前回 s2到達5回が全て correctness=0.5 だったのは must2 が質問範囲外だったため。
 
-**集計結果**（条件P構成、各10回）:
-| シナリオ | purpose | correctness平均 | adapter選出 | s2/s4到達 |
-|--------|---------|----------------|------------|---------|
-| qa-05  | 実装したい | **1.000** | 5/10 | 4/10 |
-| qa-05b | 仕組み・動作を理解したい | **0.300** | 5/10 | 5/10 |
+**集計結果**（条件P構成、10回）:
+| 試行 | index | classes | merged | adapter選出 | s2到達 | correctness |
+|------|-------|---------|--------|------------|--------|-------------|
+| run-01 | 3 | 2 | 5 | なし | × | 0.0 |
+| run-02 | 6 | 0 | 6 | なし | × | 0.0 |
+| run-03 | 6 | 0 | 6 | なし | × | 0.0 |
+| run-04 | 6 | 3 | 6 | なし | × | 0.8 |
+| run-05 | 6 | 4 | 6 | なし | × | 0.0 |
+| run-06 | 6 | 4 | 6 | なし | × | 1.0 |
+| run-07 | 5 | 3 | 5 | なし | × | 1.0 |
+| run-08 | 6 | 4 | 6 | なし | × | 0.0 |
+| run-09 | 8 | 0 | 8 | あり | ○ | 1.0 |
+| run-10 | 5 | 0 | 5 | なし | × | 0.0 |
+| **集計** | | | | **1/10** | **1/10** | **avg: 0.380** |
 
-詳細: `tools/benchmark/results/exp-cond-p-revised/results.md`
+詳細: `tools/benchmark/results/exp-cond-p-qa05b-revised/results.md`
+
+**特記事項**:
+- s2到達（run-09 のみ）: correctness=1.0 — 「s2到達→1.0」成立を確認
+- adapter選出率 1/10（前回同条件で 5/10）— セッション間の揺らぎ
+- s2非到達でも 3/10 が correctness≥0.8 — adapterページを読まずに Jackson2BodyConverter を言及（handlers-body-convert-handler.json 内の記述 or LLM事前知識）
 
 **Steps:**
-- [x] qa.json 更新（qa-05/qa-05b input統一）— committed `222eb9674`
-- [x] qa-05 × 10試行実行（条件P構成）
+- [x] qa.json 更新（qa-05b must を s2 のみに絞る）— committed `c0c06dacc`
 - [x] qa-05b × 10試行実行（条件P構成）
-- [x] 結果保存: `tools/benchmark/results/exp-cond-p-revised/results.md` — committed `216262340`
+- [x] 結果保存: `tools/benchmark/results/exp-cond-p-qa05b-revised/results.md` — committed `c0c06dacc`
 - [ ] [DECISION: 結論をユーザーが判断する]
 
 
@@ -64,4 +77,5 @@
 - [x] Task 18: 実験G — 条件5step v2（e2e経路）qa-05×10 → 2/10 adapter含有（検証ゲート失敗）— committed `f2a004c1e`
 - [x] Task 19: 実験H — exp-purpose-classes（条件N/C × qa-05/qa-05b × 10回）— committed `327e681f7`
 - [x] Task 20: 実験P — 条件P × qa-05b × 10回 — committed `07689cc8e`
-- [x] Task 21 (partial): 実験P revised — qa.json更新 + qa-05/qa-05b × 各10回実行・結果保存 — committed `216262340`
+- [x] Task 21: 実験P revised — qa-05/qa-05b input統一 × 各10回 + Task 21 qa.json更新 — committed `216262340`
+- [x] Task 22 (partial): qa-05b must絞り込み版 × 10回実行・結果保存 — committed `c0c06dacc`
