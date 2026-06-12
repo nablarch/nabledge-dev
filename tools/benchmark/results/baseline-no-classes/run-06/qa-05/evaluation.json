@@ -1,0 +1,70 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "Formクラスでクライアントから送信された値を受け付ける",
+    "プロパティは全てString型で宣言する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers both facts from the Expected Output: (1) it explains that a Form class is created to receive values from the client (demonstrated with ProjectForm class), and (2) it explicitly states that 'プロパティは全て `String` 型で宣言する（バリデーション仕様のため）'. Both expected facts are fully present with no contradictions."
+    },
+    "answer_relevancy": {
+      "score": 0.9375,
+      "reason": "The score is 0.94 because the response is highly relevant to the task of creating a REST API that receives JSON and registers it to a DB, but it loses a small amount of points due to mentioning JaxbBodyConverter, which is typically an XML converter rather than a JSON one. This could potentially mislead the user when implementing JSON handling."
+    },
+    "faithfulness": {
+      "score": 0.9285714285714286,
+      "reason": "The score is 0.93 because the actual output incorrectly associates JaxbBodyConverter with application/json conversion, when the retrieval context clearly states that JaxbBodyConverter handles application/xml request and response conversion. JSON conversion would require a separate, different implementation."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/adapters/adapters-router-adaptor.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 78609,
+    "duration_api_ms": 77564,
+    "num_turns": 7,
+    "total_cost_usd": 0.24849339999999998,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 5251,
+      "cache_read_input_tokens": 424973,
+      "cache_creation_input_tokens": 10346
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3296,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003421,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 5251,
+        "cacheReadInputTokens": 424973,
+        "cacheCreationInputTokens": 10346,
+        "webSearchRequests": 0,
+        "costUSD": 0.24507240000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
