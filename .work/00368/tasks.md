@@ -2,9 +2,32 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-12 (session 11)
+**Updated**: 2026-06-12 (session 12)
 
 ## In Progress
+
+### フルベースライン取得 (34シナリオ × 3run) — ラベル: `20260612-1404-baseline-current`
+
+**目的**: classes.mdなし・qa.json 34シナリオ（qa-05修正済み・qa-19追加済み）の正規ベースライン確立。
+
+**Steps:**
+- [x] run-1 実行（34シナリオ、qa-02/qa-07 タイムアウト回収済み）— committed `ca6e48919`
+- [x] run-1 report.md 生成済み
+- [x] run-1 プッシュ済み
+- [x] 閾値割れ18/34 の調査完了（採点・実行の問題ではなく現行検索の実力と確認）
+  - 同スキーマ比較: baseline-deepeval run-1 も 14/30 割れ — 今回の変更による劣化なし
+  - scenario_id 取り違えなし（3件抜き取り確認）
+  - qa-17 correctness=0.20: mustセクション(javadoc s11)の内容を回答が明示しなかった → スキル挙動問題
+- [ ] [DECISION: 18/34閾値割れを確認の上、run-2 進行を承認するかユーザー判断待ち]
+- [ ] run-2 実行（34シナリオ）
+- [ ] run-2 report.md 生成・閾値割れ調査
+- [ ] run-3 実行（34シナリオ）
+- [ ] run-3 report.md 生成・閾値割れ調査
+- [ ] baseline.json 生成（3run集計）
+- [ ] 集計 report.md 作成（Q1〜Q4）
+- [ ] コミット・プッシュ
+
+---
 
 ### Step 3後半: qa-05・qa-19 各1回実行・裏取り報告 ✅
 
