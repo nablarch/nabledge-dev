@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 101637,
+  "duration_api_ms": 100795,
+  "ttft_ms": 5033,
+  "ttft_stream_ms": 4209,
+  "time_to_request_ms": 765,
+  "num_turns": 7,
+  "result": "全セクション取得完了。Step 5〜8に進みます。\n\n### Answer\n\n**結論**: NablarchバッチでCSVファイルを1行ずつJava Beansとして読み込むには、データバインド機能（`nablarch-common-databind`）を使い、フォームクラスに`@Csv`/`@CsvFormat`アノテーションを付与した上で、`DataReader<T>`実装クラスと`BatchAction<T>`を組み合わせて実装します。\n\n**根拠**:\n\n**① フォームクラスの作成（CSVバインド定義）**\n\n`@Csv` と `@CsvFormat` を付与してCSVフォーマットを指定します。\n\n```java\n@Csv(properties = {\"localGovernmentCode\", \"zipCode5digit\", /* 他フィールド */},\n     type = CsvType.CUSTOM)\n@CsvFormat(charset = \"UTF-8\", fieldSeparator = ',',\n        ignoreEmptyLine = true, lineSeparator = \"\\r\\n\", quote = '\"',\n        quoteMode = QuoteMode.NORMAL, requiredHeader = false, emptyToNull = true)\npublic class ZipCodeForm {\n\n    @Domain(\"localGovernmentCode\")\n    @Required\n    private String localGovernmentCode;\n\n    private String zipCode5digit;\n\n    private Long lineNumber;\n\n    @LineNumber\n    public Long getLineNumber() {\n        return lineNumber;\n    }\n    // getter/setter省略\n}\n```\n\nヘッダ行ありの標準CSVであれば `@Csv(type = Csv.CsvType.DEFAULT, ...)` を使うとより簡潔です。\n\n**② DataReader の実装**\n\n```java\npublic class ZipCodeFileReader implements DataReader<ZipCodeForm> {\n\n    private static final String FILE_NAME = \"importZipCode\";\n    private ObjectMapperIterator<ZipCodeForm> iterator;\n\n    @Override\n    public ZipCodeForm read(ExecutionContext ctx) {\n        if (iterator == null) initialize();\n        return iterator.next();\n    }\n\n    @Override\n    public boolean hasNext(ExecutionContext ctx) {\n        if (iterator == null) initialize();\n        return iterator.hasNext();\n    }\n\n    @Override\n    public void close(ExecutionContext ctx) {\n        iterator.close();\n    }\n\n    private void initialize() {\n        File file = FilePathSetting.getInstance()\n                                   .getFileWithoutCreate(\"csv-input\", FILE_NAME);\n        try {\n            iterator = new ObjectMapperIterator<>(\n                ObjectMapperFactory.create(ZipCodeForm.class,\n                                           new FileInputStream(file)));\n        } catch (FileNotFoundException e) {\n            throw new IllegalStateException(e);\n        }\n    }\n}\n```\n\n**③ BatchAction の実装**\n\n```java\npublic class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {\n\n    @Override\n    public Result handle(ZipCodeForm inputData, ExecutionContext ctx) {\n        // 1行分のデータをBeanとして受け取り、業務処理を実行する\n        ZipCodeData data = BeanUtil.createAndCopy(ZipCodeData.class, inputData);\n        UniversalDao.insert(data);\n        return new Result.Success();\n    }\n\n    @Override\n    public DataReader<ZipCodeForm> createReader(ExecutionContext ctx) {\n        return new ZipCodeFileReader();\n    }\n}\n```\n\n**注意点**:\n- 外部から受け付けたCSVファイルの場合、**フォームのプロパティは全てString型で定義**すること。型変換に失敗すると例外が発生してJava Beansが生成されないため、不正データは業務エラーとして別途ハンドリングする必要があります。\n- `ObjectMapper` は使用後に必ず `close()` でリソースを解放すること（`try-with-resources` が利用可能）。\n- `ObjectMapper` はスレッドアンセーフのため、複数スレッドでの共有はできません。\n\n参照: libraries-data-bind.json:s7, libraries-data-bind.json:s15, libraries-data-bind.json:s2, nablarch-batch-getting-started-nablarch-batch.json:s2, nablarch-batch-getting-started-nablarch-batch.json:s3\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-data-bind.json\", \"reason\": \"CSVファイルをJava Beansオブジェクトとして読み込む方法を直接提供するデータバインド機能のページ\"},\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json\", \"reason\": \"Nablarchバッチでファイルを読み込むDataReader/BatchActionの実装例を提供するページ\"},\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json\", \"reason\": \"Nablarchバッチのファイル入出力機能詳細を説明するページ\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/jakarta-batch/jakarta-batch-feature-details.json\", \"reason\": \"Jakarta Batchの実装方式でありNablarchバッチとは異なるため除外\"},\n      {\"path\": \"component/libraries/libraries-data-format.json\", \"reason\": \"汎用データフォーマットはフォーマット定義ファイルを使う方式であり、アノテーションベースのデータバインドとは異なるアプローチのため優先度低\"},\n      {\"path\": \"component/libraries/libraries-bean-util.json\", \"reason\": \"BeanUtilはBean間のコピーに使うライブラリであり、CSVファイル読み込みの主役ではない\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"ObjectMapperFactory.create()とObjectMapper.read()によるJava Beans読み込みの実装方法を直接説明している\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s15\", \"relevance\": \"high\", \"reason\": \"@Csv/@CsvFormatアノテーションによるCSVフォーマット指定方法を説明しており、フォームクラス定義に必須\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s2\", \"relevance\": \"high\", \"reason\": \"外部ファイルのプロパティはString型で定義すべきという重要な制約を説明している\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json\", \"section_id\": \"s2\", \"relevance\": \"high\", \"reason\": \"DataReader<T>の実装方法とObjectMapperIteratorを使ったCSV読み込みの具体的なコード例を提供している\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"BatchAction<T>のhandle()とcreateReader()の実装例を提供しており、バッチ全体の構造を示している\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s8\", \"reason\": \"書き込み（出力）のセクションであり、読み込みを問う質問には不要\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s16\", \"reason\": \"固定長ファイルのフォーマット指定であり、CSVの質問には不要\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s21\", \"reason\": \"フォーマットセット一覧は補足情報であり、s15のコード例で十分\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json\", \"section_id\": \"s5\", \"relevance\": \"partial\", \"reason\": \"ファイル入出力機能詳細のセクションだが、getting-startedのs2/s3でより具体的な実装例が得られるため不要\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-data-bind.json:s7\",\n      \"component/libraries/libraries-data-bind.json:s15\",\n      \"component/libraries/libraries-data-bind.json:s2\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/libraries/libraries-data-bind.json:s7\", \"reason\": \"ObjectMapperFactory.create()とmapper.read()を使った読み込みループの実装パターンを引用した\"},\n        {\"ref\": \"component/libraries/libraries-data-bind.json:s15\", \"reason\": \"@Csv/@CsvFormatアノテーションのコード例をフォームクラス定義の根拠として使用した\"},\n        {\"ref\": \"component/libraries/libraries-data-bind.json:s2\", \"reason\": \"外部ファイルのプロパティは全てString型で定義すべきという注意事項として引用した\"},\n        {\"ref\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2\", \"reason\": \"DataReader実装（read/hasNext/closeメソッド）とObjectMapperIteratorの使用例をそのまま引用した\"},\n        {\"ref\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3\", \"reason\": \"BatchAction継承クラスのhandle()とcreateReader()の実装例を引用した\"}\n      ],\n      \"unused\": []\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "297f6250-c370-45c6-9738-7112f0000bf5",
+  "total_cost_usd": 0.6818946499999999,
+  "usage": {
+    "input_tokens": 8,
+    "cache_creation_input_tokens": 110311,
+    "cache_read_input_tokens": 579898,
+    "output_tokens": 6050,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 110311
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3330,
+      "outputTokens": 31,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0034850000000000003,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 8,
+      "outputTokens": 6050,
+      "cacheReadInputTokens": 579898,
+      "cacheCreationInputTokens": 110311,
+      "webSearchRequests": 0,
+      "costUSD": 0.67840965,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "bf53260a-9602-4e7b-9f5e-de8d2586cedf"
+}

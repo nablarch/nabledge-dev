@@ -1,0 +1,71 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers the core fact in the Expected Output: that system date/time retrieval can be switched by replacing the class specified in the component definition. The Actual Output provides extensive detail on this mechanism, including how FixedSystemTimeProvider replaces BasicSystemTimeProvider using the same component name, which directly supports and elaborates on the expected fact. No facts from the Expected Output are contradicted or misrepresented."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is fully relevant to the question about how to replace the system date/time with an arbitrary date during testing and switch between production and test environments. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9,
+      "reason": "The score is 0.90 because the actual output incorrectly states that fixedDateプロパティ is specified in 14桁 or 17桁 format, when the retrieval context clearly specifies it should be in yyyyMMddHHmmss（12桁）or yyyyMMddHHmmssSSS（15桁）format."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s12",
+      "component/libraries/libraries-date.json:s13",
+      "component/libraries/libraries-date.json:s9",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s11",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s12",
+      "component/libraries/libraries-repository.json:s8",
+      "setup/setting-guide/setting-guide-ManagingEnvironmentalConfiguration.json:s9",
+      "javadoc/javadoc-nablarch-core-date-BasicSystemTimeProvider.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 218249,
+    "duration_api_ms": 216423,
+    "num_turns": 3,
+    "total_cost_usd": 1.01943035,
+    "usage": {
+      "input_tokens": 4,
+      "output_tokens": 4767,
+      "cache_read_input_tokens": 123015,
+      "cache_creation_input_tokens": 37214
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3316,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003446,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 14430,
+        "cacheReadInputTokens": 523257,
+        "cacheCreationInputTokens": 171339,
+        "webSearchRequests": 0,
+        "costUSD": 1.0159843499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

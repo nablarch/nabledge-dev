@@ -1,0 +1,110 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "「遅延ロード」セクション（s9）が大量データのメモリ問題に直接対応する"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "reason": "Nablarchバッチで使用するデータリーダ（DatabaseRecordReader等）の概要を持つ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチのデータベースアクセス実装詳細を持つ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-database-reader.json",
+        "reason": "Jakarta Batchのデータリーダであり、処理方式がNablarchバッチと異なる"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "DomaアダプタのJakarta Batch遅延ロードはNablarchバッチの処理方式外"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "処理パターンの分類ガイドであり、メモリ問題の解決方法に直結しない"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch.json",
+        "reason": "概要ページでありセクション詳細なし"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "「検索結果を遅延ロードする」セクションが質問の核心に直接答える"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "Nablarchバッチで利用可能なデータリーダ一覧（DatabaseRecordReader等）を提供する"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "バッチのデータベースアクセスとDatabaseRecordReaderへの参照を持つ"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで実装方法を含まない"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s12",
+        "reason": "ページングはメモリ問題の代替手段だが質問への直接回答ではない"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "reason": "バッチ処理フローの概要であり遅延ロードの実装方法を含まない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+      "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json:s10",
+      "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json:s11"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s9",
+          "reason": "UniversalDao.defer()の使い方、DeferredEntityListのclose要件、カーソルとトランザクションの注意点をすべて引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+          "reason": "DatabaseRecordReaderの全件キャッシュ動作を確認するために読んだが、答えの主軸はUniversalDao.deferのため本文には含めなかった"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+          "reason": "DatabaseRecordReaderへの参照確認のために読んだが、s9で十分なため使用しなかった"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json:s10",
+          "reason": "DatabaseRecordReaderが全件キャッシュする動作を確認したが、答えにはUniversalDao.deferを採用したため使用しなかった"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json:s11",
+          "reason": "hasNextも同様に全件キャッシュ動作の確認のみで、答えには直接使用しなかった"
+        }
+      ]
+    }
+  }
+}

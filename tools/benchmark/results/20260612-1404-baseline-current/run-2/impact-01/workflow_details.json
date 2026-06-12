@@ -1,0 +1,189 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "別トランザクションでのSQL実行方法（SimpleDbTransactionManager/SimpleDbTransactionExecutor）を直接解説している"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDAOを使って別トランザクションで実行する方法を解説している"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "Domaアダプタ使用時の別トランザクション実装方法を解説している"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "SimpleDbTransactionManagerのtransactionFactoryプロパティに設定するJdbcTransactionFactoryの設定方法を解説している"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "Nablarchバッチの業務トランザクション（メイントランザクション）の構造理解のための背景情報"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "Nablarchバッチのトランザクションループ制御（メイントランザクション単位）の背景情報"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "NablarchバッチのDBアクセス機能の概要と参照先整理"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/jakarta-batch/*",
+        "reason": "処理方式がNablarchバッチと指定されているため除外"
+      },
+      {
+        "path": "processing-pattern/web-application/*",
+        "reason": "異なる処理方式のため除外"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/*",
+        "reason": "異なる処理方式のため除外"
+      },
+      {
+        "path": "component/libraries/libraries-exclusive-control.json",
+        "reason": "排他制御（楽観/悲観ロック）であり別トランザクション実装とは無関係"
+      },
+      {
+        "path": "about/*",
+        "reason": "Nablarch概要ページで実装方法を含まない"
+      },
+      {
+        "path": "development-tools/*",
+        "reason": "テスト・開発ツールで実装目的には不要"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "「現在のトランザクションとは異なるトランザクションでSQLを実行する」というまさに質問に直接答えるセクションで、SimpleDbTransactionManager+SimpleDbTransactionExecutorの設定・実装例を完全に含む"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "UniversalDao.Transactionを使った別トランザクション実行の完全な実装例を含み、NablarchバッチでUniversalDAOを使う場合の推奨アプローチを示す"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "Domaアダプタ使用時のrequiresNewによる別トランザクション実装方法を示す"
+      },
+      {
+        "file": "component/libraries/libraries-transaction.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "JdbcTransactionFactoryの設定例を含み、SimpleDbTransactionManagerのtransactionFactoryプロパティ設定の背景知識として必要"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "Nablarchバッチのメイントランザクション制御の仕組み理解のための背景情報"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "バッチのトランザクションループ制御（メイントランザクション単位）の背景情報"
+      },
+      {
+        "file": "component/handlers/handlers-loop-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "コミット間隔の設定。バッチのメイントランザクション単位の理解に必要"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "NablarchバッチのDBアクセス機能の概要と参照先の整理"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s1-s28,s30-s36",
+        "reason": "SQLファイル管理・like検索・可変条件・バイナリアクセス等で別トランザクション実装とは無関係"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s1-s19,s21-s25",
+        "reason": "CRUD操作・ページング・遅延ロード・採番・排他制御等で別トランザクション実装には不要"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s1-s7,s9-s18",
+        "reason": "s9-s10はJakarta Batch用（対象外）、s11以降はマルチDB接続等で質問の直接回答ではない"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s1-s3,s5-s7",
+        "reason": "特定例外時のコミット設定・トランザクション終了コールバック等で別トランザクション実装の核心部分ではない"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s1-s3,s5-s10",
+        "reason": "起動方法・バリデーション・ファイルIO・エラー処理・マルチプロセス等で別トランザクション実装とは無関係"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/adapters/adapters-doma-adaptor.json:s8",
+      "component/libraries/libraries-transaction.json:s5",
+      "component/handlers/handlers-transaction-management-handler.json:s4",
+      "component/handlers/handlers-loop-handler.json:s4",
+      "component/handlers/handlers-loop-handler.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManager+SimpleDbTransactionExecutorを使った別トランザクション実装の主要解説として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s20",
+          "reason": "UniversalDao.Transactionを使った別トランザクション実装例として使用"
+        },
+        {
+          "ref": "component/adapters/adapters-doma-adaptor.json:s8",
+          "reason": "Domaアダプタ使用時のrequiresNewによる別トランザクション実装例として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-transaction.json:s5",
+          "reason": "JdbcTransactionFactoryの設定（注意点として）言及するために使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/handlers/handlers-transaction-management-handler.json:s4",
+          "reason": "業務トランザクションの背景理解には参考にしたが、回答の直接根拠としては使用しなかった"
+        },
+        {
+          "ref": "component/handlers/handlers-loop-handler.json:s4",
+          "reason": "バッチのメイントランザクション構造の背景情報として参照したが、回答には含めなかった"
+        },
+        {
+          "ref": "component/handlers/handlers-loop-handler.json:s5",
+          "reason": "コミット間隔の設定情報で、別トランザクション実装の直接回答には不要のため未使用"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+          "reason": "DBアクセスの概要参照のみで、回答の直接根拠としては不要のため未使用"
+        }
+      ]
+    }
+  }
+}

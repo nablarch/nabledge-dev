@@ -1,0 +1,72 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "BusinessDateUtilを使用して業務日付を取得する",
+    "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers both facts present in the Expected Output. It explicitly shows the use of `BusinessDateUtil` to retrieve business dates (including `BusinessDateUtil.getDate()` and `BusinessDateUtil.getAllDate()`), and it clearly explains that the business date management feature uses a database table to manage multiple business dates with `BasicBusinessDateProvider` configuration (including XML component definition with table name, segment column, date column, and default segment properties). Both expected facts are addressed with equivalent or greater detail."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input question about obtaining business dates separately from OS datetime, with no irrelevant statements found. Great job staying focused on the topic!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s8",
+      "component/libraries/libraries-date.json:s9",
+      "component/libraries/libraries-date.json:s10",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s6",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s7",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 137609,
+    "duration_api_ms": 136857,
+    "num_turns": 11,
+    "total_cost_usd": 0.5576056,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 6134,
+      "cache_read_input_tokens": 535478,
+      "cache_creation_input_tokens": 35146
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3312,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0034419999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 19,
+        "outputTokens": 9190,
+        "cacheReadInputTokens": 599422,
+        "cacheCreationInputTokens": 63048,
+        "webSearchRequests": 0,
+        "costUSD": 0.5541636000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

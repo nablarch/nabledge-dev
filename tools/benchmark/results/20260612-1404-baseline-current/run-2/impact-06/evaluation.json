@@ -1,0 +1,72 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能",
+    "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both facts from the Expected Output checklist. Fact 1 (DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能) is explicitly addressed in the DBストア section, stating '保存先: データベース上のテーブル' and 'ローリングメンテナンス等でAPサーバが停止した場合でもセッション変数の復元が可能'. Fact 2 (HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する) is explicitly covered with 'クライアントサイド（hiddenタグ）に保存するためAPサーバに状態を持たない'. Both expected facts are fully covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about session variable storage options when scaling out AP servers to multiple instances, and covering the characteristics of each store. Great job!"
+    },
+    "faithfulness": {
+      "score": 0.9629629629629629,
+      "reason": "The score is 0.96 because the actual output incorrectly states that 4 types of stores are provided as standard, when the retrieval context specifies only 3 standard stores (DBストア、HIDDENストア、HTTPセッションストア). Redisストア(Lettuce) is an adapter, not a standard store."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s17",
+      "component/libraries/libraries-stateless-web-app.json:s1",
+      "component/libraries/libraries-stateless-web-app.json:s2",
+      "component/libraries/libraries-stateless-web-app.json:s4",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s1",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s14",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 155951,
+    "duration_api_ms": 155069,
+    "num_turns": 14,
+    "total_cost_usd": 0.5608838,
+    "usage": {
+      "input_tokens": 2541,
+      "output_tokens": 9788,
+      "cache_read_input_tokens": 636221,
+      "cache_creation_input_tokens": 56554
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3372,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003497,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2541,
+        "outputTokens": 9788,
+        "cacheReadInputTokens": 636221,
+        "cacheCreationInputTokens": 56554,
+        "webSearchRequests": 0,
+        "costUSD": 0.5573868000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

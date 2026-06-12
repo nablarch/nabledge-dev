@@ -1,0 +1,69 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "purpose": "セキュリティ対応したい",
+  "expected_facts": [
+    "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output comprehensively covers the core fact stated in the Expected Output: that Nablarch's custom tags enable fundamental XSS resolution through sanitization (HTML escaping). The Actual Output explicitly states this in its conclusion and provides detailed supporting evidence including the escaping table, IPA checklist coverage, and SecureHandler features. The key fact — custom tags perform sanitization enabling root-level XSS defense — is clearly present and accurately represented without contradiction."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly relevant to the input, directly addressing XSS countermeasures in Nablarch and whether sanitizing is applied when using custom tags. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s27",
+      "component/libraries/libraries-tag.json:s50",
+      "check/security-check/security-check-2.チェックリスト.json:s5",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 346671,
+    "duration_api_ms": 343838,
+    "num_turns": 8,
+    "total_cost_usd": 1.3689241499999998,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 8134,
+      "cache_read_input_tokens": 435180,
+      "cache_creation_input_tokens": 56907
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3376,
+        "outputTokens": 40,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003576,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 29,
+        "outputTokens": 19509,
+        "cacheReadInputTokens": 901108,
+        "cacheCreationInputTokens": 213945,
+        "webSearchRequests": 0,
+        "costUSD": 1.36534815,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 121613,
+  "duration_api_ms": 120704,
+  "ttft_ms": 4111,
+  "ttft_stream_ms": 2515,
+  "time_to_request_ms": 795,
+  "num_turns": 8,
+  "result": "十分な情報が集まりました。回答を生成します。\n\n## Step 5: 回答生成\n\n### Answer\n\n**結論**: ウェブアプリケーションでバリデーションエラーのメッセージをユーザーに返すには、業務アクションに `@InjectForm` と `@OnError` アノテーションを設定し、`HTTPエラー制御ハンドラ` がリクエストスコープに格納した `ErrorMessages` オブジェクトをテンプレートエンジンで参照して表示します。\n\n**根拠**:\n\n**1. 業務アクションの実装**\n\n`@InjectForm` でフォームのバリデーションを実行し、`@OnError` でバリデーションエラー発生時の遷移先を指定します。\n\n```java\n@InjectForm(form = UserForm.class, prefix = \"form\", validate = \"register\")\n@OnError(type = ApplicationException.class, path = \"forward://registerForm.jsp\")\npublic HttpResponse handle(HttpRequest req, ExecutionContext ctx) {\n    // バリデーション済みのフォームをリクエストスコープから取得\n    UserForm form = ctx.getRequestScopedVar(\"form\");\n    // formを元に業務処理を行う\n}\n```\n\n> `@OnError` を設定しない場合、バリデーションエラーがシステムエラー扱いになるため必須です。\n\n**2. エラーメッセージのリクエストスコープへの格納**\n\n`HTTPエラー制御ハンドラ` が `ApplicationException` を受け取ると、保持するメッセージ情報を `ErrorMessages` に変換し、デフォルトキー名 `errors` でリクエストスコープに格納します。\n\n**3. テンプレート（Thymeleaf）でのエラーメッセージ表示**\n\n特定のプロパティのエラーを表示する場合:\n```html\n<input type='text' name='form.userName' />\n<span class=\"error\" th:if=\"${errors.hasError('form.userName')}\"\n    th:text=\"${errors.getMessage('form.userName')}\">入力してください。</span>\n```\n\n全てのエラーメッセージを表示する場合:\n```html\n<ul>\n  <li th:each=\"message : ${errors.allMessages}\" th:text=\"${message}\">エラーメッセージ</li>\n</ul>\n```\n\nグローバルメッセージ（特定プロパティに紐づかないメッセージ）を表示する場合:\n```html\n<ul>\n  <li th:each=\"message : ${errors.globalMessages}\" th:text=\"${message}\"></li>\n</ul>\n```\n\n**注意点**:\n- リクエストスコープのキー名は `errors` がデフォルトですが、`WebConfig` の `errorMessageRequestAttributeName` プロパティで変更できます。\n- エラー時の遷移先画面でプルダウン選択肢などの表示データが必要な場合は、`@OnError` の `path` 属性に内部フォワード（`forward://`）を使って初期表示メソッドに処理を委譲します。\n- JSPを使う場合はカスタムタグの `<n:errors>` も使えますが、DOM構造の制約でCSSフレームワークと相性が悪い問題があります。リクエストスコープ上のオブジェクトに直接アクセスする方法も選択できます。\n\n参照: web-application-error-message.json, handlers-InjectForm.json:s3, handlers-InjectForm.json:s4, handlers-on-error.json:s3, handlers-HttpErrorHandler.json:s4\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"processing-pattern/web-application/web-application-error-message.json\", \"reason\": \"バリデーションエラーのメッセージを画面表示する方法を直接説明しているページ\"},\n      {\"path\": \"component/handlers/handlers-InjectForm.json\", \"reason\": \"ウェブアプリケーションでの入力値チェックとフォームバインドを行うInjectFormインターセプタの説明ページ\"},\n      {\"path\": \"component/handlers/handlers-on-error.json\", \"reason\": \"バリデーションエラー時の遷移先指定を行うOnErrorインターセプタの説明ページ\"},\n      {\"path\": \"component/handlers/handlers-HttpErrorHandler.json\", \"reason\": \"ApplicationExceptionをErrorMessagesに変換してリクエストスコープに格納する仕組みを説明するページ\"},\n      {\"path\": \"component/libraries/libraries-bean-validation.json\", \"reason\": \"ウェブアプリケーションのユーザ入力値チェックにBean Validationを使う方法を説明するページ\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"入力値チェックの概要のみで、エラーメッセージ返却の具体的実装が含まれないため除外\"},\n      {\"path\": \"component/libraries/libraries-nablarch-validation.json\", \"reason\": \"Nablarch Validationはウェブアプリケーションで使用できるが、Bean Validationが推奨であり質問の主旨に対してはBean Validation側が優先\"},\n      {\"path\": \"component/libraries/libraries-message.json\", \"reason\": \"メッセージ定義の方法であり、エラーメッセージを返す実装フローとは直接関係しないため除外\"},\n      {\"path\": \"processing-pattern/web-application/web-application-forward-error-page.json\", \"reason\": \"エラー時の遷移先指定方法の詳細であり、OnError説明で十分カバーされるため除外\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"processing-pattern/web-application/web-application-error-message.json\", \"section_id\": \"root\", \"relevance\": \"high\", \"reason\": \"エラーメッセージのリクエストスコープへの格納とテンプレートでの表示方法を直接説明している\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"InjectFormを使った入力値チェックとフォームオブジェクトのリクエストスコープへの格納の実装例を含む\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"バリデーションエラー発生時の遷移先をOnErrorで指定する方法を説明している\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"OnErrorアノテーションの使い方と実装例を含む\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"ApplicationExceptionをErrorMessagesに変換してリクエストスコープにキー名'errors'で格納する仕組みを説明している\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s4\", \"relevance\": \"partial\", \"reason\": \"エラー時の遷移先画面に表示データが必要な場合の内部フォワードパターンを説明している\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s16\", \"relevance\": \"partial\", \"reason\": \"ウェブアプリケーションのユーザ入力値チェックに関する設定方法を説明するセクション\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s1\", \"reason\": \"インターセプタクラス名のみでエラーメッセージ返却の実装に直接関係しない\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s2\", \"reason\": \"モジュール一覧のみで実装方法には関係しない\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s5\", \"reason\": \"Bean Validationのグループはエラーメッセージをユーザーへ返す主旨には関係しない\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s1\", \"reason\": \"インターセプタクラス名のみ\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s5\", \"reason\": \"複数レスポンス指定は質問のスコープ外\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s3\", \"reason\": \"ハンドラの配置制約であり実装方法とは直接関係しない\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s5\", \"reason\": \"Result.Errorのログ出力に関する内容で質問とは関係しない\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s6\", \"reason\": \"デフォルトページ設定であり、バリデーションエラーのメッセージ返却とは直接関係しない\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"processing-pattern/web-application/web-application-error-message.json\",\n      \"component/handlers/handlers-InjectForm.json:s3\",\n      \"component/handlers/handlers-InjectForm.json:s4\",\n      \"component/handlers/handlers-on-error.json:s3\",\n      \"component/handlers/handlers-on-error.json:s4\",\n      \"component/handlers/handlers-HttpErrorHandler.json:s4\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"processing-pattern/web-application/web-application-error-message.json\", \"reason\": \"ErrorMessagesオブジェクトを使ったThymeleafでのエラーメッセージ表示コード例（hasError/getMessage/globalMessages/allMessages）を引用\"},\n        {\"ref\": \"component/handlers/handlers-InjectForm.json:s3\", \"reason\": \"@InjectFormアノテーションの使い方とコード例を引用\"},\n        {\"ref\": \"component/handlers/handlers-InjectForm.json:s4\", \"reason\": \"@OnErrorアノテーションが@InjectFormと組み合わせて必須であることの説明を引用\"},\n        {\"ref\": \"component/handlers/handlers-on-error.json:s3\", \"reason\": \"@OnErrorの実装例を引用\"},\n        {\"ref\": \"component/handlers/handlers-HttpErrorHandler.json:s4\", \"reason\": \"ApplicationExceptionをErrorMessagesに変換してリクエストスコープにキー名'errors'で格納する仕組みの説明を引用\"},\n        {\"ref\": \"component/handlers/handlers-on-error.json:s4\", \"reason\": \"エラー時の遷移先画面で表示データが必要な場合のforward://パターンの注意点として引用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"component/libraries/libraries-bean-validation.json:s16\", \"reason\": \"ウェブアプリケーションでのBean Validation設定の詳細は、InjectFormの説明で十分カバーされており追加情報が不要だったため未使用\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "a01bb07a-3168-4753-a313-c1e1b69a8272",
+  "total_cost_usd": 0.61047915,
+  "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 103593,
+    "cache_read_input_tokens": 337808,
+    "output_tokens": 7813,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 103593
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3330,
+      "outputTokens": 24,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00345,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 6,
+      "outputTokens": 7813,
+      "cacheReadInputTokens": 337808,
+      "cacheCreationInputTokens": 103593,
+      "webSearchRequests": 0,
+      "costUSD": 0.60702915,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "1e064ab8-3ee0-46a1-be4c-9b1c92926762"
+}

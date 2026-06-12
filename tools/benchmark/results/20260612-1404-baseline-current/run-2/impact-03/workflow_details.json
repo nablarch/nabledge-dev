@@ -1,0 +1,111 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationのデータベースとの相関バリデーションについて直接解説するセクション（s12）を含む主要ページ"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTfulウェブサービスにおけるBean Validationの実行方法（@Validアノテーションの使い方）を解説するページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの入力値チェックの詳細を説明するページ"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "業務アクション内でのDB検索実装に必要なユニバーサルDAOの使い方を提供するページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "Nablarch Validationは古い実装方式であり、Bean Validationが質問対象のため除外"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーション向けであり、RESTfulウェブサービスが処理方式のため除外"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "InjectFormインターセプタはウェブアプリケーション用であり、RESTfulウェブサービスでは使用しないため除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "データベースとの相関バリデーションをBean Validationで行うべきでない理由と正しい実装方法が直接記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "業務アクション内でバリデーションエラーを発生させる際のエラーメッセージ構築方法が記載されている"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスでBean Validationを実行するための@Validアノテーションの使い方が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスでのBean Validationの基本的な使い方への参照が記載されている"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "reason": "相関バリデーションだがDBを使わないケースであり、今回の質問には直接関連しない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s24",
+        "reason": "カスタムバリデータの追加方法だが、DBアクセスを避けるべきとの回答に対して逆方向の情報のため"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s6",
+        "reason": "Bean Validationの設定方法であり、DBバリデーションの実装方針の回答には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s17"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-bean-validation.json:s12",
+          "reason": "カスタムバリデータでDBアクセスを行うべきでない理由（SQLインジェクションリスク）と業務アクション実装を推奨する根拠として使用"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s13",
+          "reason": "業務アクション内でエラーを発生させる際のValidationUtil#createMessageForPropertyの使い方の例として使用"
+        },
+        {
+          "ref": "handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "RESTfulウェブサービスでの@Validアノテーションによるバリデーション実行コード例として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-bean-validation.json:s17",
+          "reason": "s4と内容が重複しており、s4のほうが具体的なコード例を含むため不使用"
+        }
+      ]
+    }
+  }
+}

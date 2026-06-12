@@ -1,0 +1,124 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "可変条件を持つSQLを実行する ($if構文) が s21 に記載されており、質問に直接答えるページ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "reason": "ウェブアプリケーションの検索機能実装例として $if 構文の完全な使用例が記載されている"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "UniversalDAO で条件 Bean を渡す findAllBySqlFile の使い方が s10 に記載されている"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-database-management.json",
+        "reason": "データベースアクセス方式の概要のみで実装詳細なし"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "Domaアダプタは別フレームワークであり質問の範囲外"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "データベースアクセスへのポインタのみで $if 構文の詳細なし"
+      },
+      {
+        "path": "guide/biz-samples/biz-samples-03.json",
+        "reason": "検索結果の一覧表示サンプルであり、可変条件SQLの実装方法は対象外"
+      },
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "BeanUtil の型変換は本質問の主題ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "$if(プロパティ名) {SQL文の条件} 構文の詳細な説明と実装例が記載されており、質問に直接答えるセクション"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "複数の $if 条件を持つ検索SQLと業務アクション・UniversalDAO の完全な実装例が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "$if 構文の前提となる Bean を使った名前付きパラメータのバインド方法が説明されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "UniversalDAO に検索条件 Bean を渡す findAllBySqlFile の使い方が記載されている"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "reason": "動的SQL構築の概要説明のみで s21 と重複するため"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "reason": "in句の可変条件は質問の主眼ではなく、必要に応じて補足可能"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s23",
+        "reason": "order by の動的切り替えは質問範囲外"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "reason": "SQLファイルで検索する基本操作のみで可変条件の内容なし"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s12",
+        "reason": "SQLファイル管理の基本設定であり可変条件の実装には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s16",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+      "component/libraries/libraries-universal-dao.json:s10"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s21",
+          "reason": "$if 構文の記述ルール・除外条件・実装例を回答の核心部分として使用"
+        },
+        {
+          "ref": "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+          "reason": "複数条件・ページング込みの完全な検索実装例(SQL・DTO・アクション)を回答に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s10",
+          "reason": "UniversalDAO での findAllBySqlFile による検索条件 Bean 指定方法を回答に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s16",
+          "reason": "prepareParameterizedSqlStatementBySqlId の第2引数に Bean を渡すパターンを回答に使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}
