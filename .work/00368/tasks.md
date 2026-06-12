@@ -2,19 +2,15 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-12 (session 10)
+**Updated**: 2026-06-12 (session 11)
 
 ## In Progress
 
-### Step 3後半: qa-05・qa-19 各1回実行・裏取り報告
+### Step 3後半: qa-05・qa-19 各1回実行・裏取り報告 ✅
 
-**前提**: Step 3前半（evaluate.py 改修）+ マーカー化 cherry-pick（5a19d445）が完了済み。
-
-**Steps:**
-- [ ] qa-05・qa-19 を各1回実行（`--scenario-ids qa-05,qa-19`）
-- [ ] 裏取り（scenario_id・must・各ステップ記録を evaluation.json で実物確認）
-- [ ] 結果＋裏取りをセットで報告し停止
-- [ ] コミット・プッシュ
+- [x] qa-05・qa-19 を各1回実行
+- [x] 裏取り完了（markers OK, scenario_id/purpose/expected_facts 全正）
+- [x] 結果＋裏取り報告（Step 3後半確認済み: `20260612-115048/`）
 
 ---
 
@@ -44,19 +40,12 @@
 
 ---
 
-### Step 4: classes.md なし状態で qa-05・qa-19 × 各 10 回（ベースライン）
+### Step 4: classes.md なし状態で qa-05・qa-19 × 各 10 回（ベースライン） ✅
 
-**目的**: classes.md 導入前のベースラインを取得する。
-
-**前提**: Step 3 で測定が正しく動くと確認済みであること。
-
-**裏取り確認項目**: scenario_id・must・各ステップ記録
-
-**Steps:**
-- [ ] qa-05・qa-19 を各 10 回実行
-- [ ] 裏取り（scenario_id・must・各ステップ記録）
-- [ ] 結果＋裏取りをセットで報告し停止（これがベースライン）
-- [ ] コミット・プッシュ
+- [x] qa-05・qa-19 を各 10 回実行（`baseline-no-classes/`）
+- [x] 裏取り完了（markers 全20 OK, scenario_id/purpose/expected_facts 全正）
+- [x] 結果＋裏取り報告（qa-05: avg 1.000 / qa-19: avg 0.130, s2到達 1/10）
+- [x] コミット・プッシュ `272820720`
 
 ---
 
