@@ -2,7 +2,7 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-15 (session 14)
+**Updated**: 2026-06-15 (session 15)
 
 ## In Progress
 
@@ -51,6 +51,19 @@
 ---
 
 ## Done (this session)
+
+### ベンチ結果整理・シナリオ枝番連番化 ✅ — committed `8f810c9af`
+
+- 作業A: 古いベンチ結果7ディレクトリ+比較mdを削除。results配下が 20260612-1404-baseline-current のみに
+- 作業B: qa.json 枝番ID変更（qa-11a→qa-11, qa-12a→qa-12, qa-11b→qa-20, qa-12b→qa-21）。並び順維持。総数34。
+- 作業C: 本基準内ディレクトリリネーム + baseline.json / report.md / summary.json / evaluation.json 内容置換
+- 作業D: HOW-TO-RUN.md の例示を新IDに更新
+
+### review-06 評価器誤検出への分類訂正 ✅ — committed `2e541f7d2`
+
+- 集約 report.md: line 65 参考文・line 100 テーブル行を「評価器の揺らぎ」に訂正
+- .work/00368/tasks.md: フルベースライン取得行の既知問題リストを訂正
+- run-N/report.md・baseline.json・#361履歴は変更なし（スコープ外）
 
 ### フルベースライン取得 (34シナリオ × 3run) — committed `bed4b930c`
 
