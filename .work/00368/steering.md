@@ -92,8 +92,8 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 # State
 
-<!-- template: update this section at each pause -->
-<!-- Status: paused | running -->
-<!-- Last completed: task id + short description -->
-<!-- Next: task id + short description -->
-<!-- Notes: anything needed to resume without re-reading the conversation -->
+- **Status**: paused
+- **Date**: 2026-06-15
+- **Last completed**: #7 classes.md 追加状態で qa-05・qa-19 × 各 10 回・裏取り報告（commit `495af07a7`）
+- **Next**: #7 完了扱い（ステップ残り: self-check → QA expert review → user review）
+- **Notes**: Step7 実行結果まとめ。qa-05: avg 1.000 (10/10), adapter source=both×9/classes×1。qa-19: avg 0.967 (9/10, run-5 timeout), adapter source=both×9, s2到達 8/9。ベースライン（Step4 classes.mdなし）vs Step7: qa-19 avg 0.130→0.967、adapter選定 1/10→9/9。classes.md の効果は source 記録で直接立証済み（run-5/qa-19 タイムアウト除く全回が both または classes）。次は steering.md の #7 remaining steps（self-check, QA expert review, user review）を実行してから PR 更新・マージ準備へ。PR #369 は OPEN。
