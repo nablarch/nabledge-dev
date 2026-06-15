@@ -1,0 +1,186 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "source": "both",
+        "reason": "RESTfulウェブサービスでDBへの登録機能を直接実装するGetting Startedガイド"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスの入力値チェック・DBアクセス・マッピングなど機能詳細を網羅する"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "source": "index",
+        "reason": "JSONリクエストボディをFormに変換するリクエストボディ変換ハンドラの設定"
+      },
+      {
+        "path": "component/adapters/adapters-jaxrs-adaptor.json",
+        "source": "both",
+        "reason": "Jackson2BodyConverterを含むJAX-RSアダプタの設定（JSON変換に必須）"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index",
+        "reason": "DBへの登録（UniversalDao.insert）の設定・使用方法"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "index",
+        "reason": "@ValidアノテーションによるRESTfulウェブサービスのバリデーション方法"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "source": "index",
+        "reason": "@PathアノテーションによるURLとリソースクラスのマッピング設定"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "アーキテクチャ概要のみで具体的な実装方法は含まれない"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-client-create4.json",
+        "reason": "ウェブアプリケーション（非REST）のDB登録であり処理方式が異なる"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "JDBCラッパーの詳細だが、UniversalDAOが主要手段のため優先度低"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "reason": "シグネチャの詳細だが今回の質問の主要スコープ外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "JSON受信・DB登録の完全な実装例（Form作成・@Consumes・BeanUtil・UniversalDao.insert・@Path/@POST）が含まれる"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "JSON変換に使うBodyConvertHandlerのコンバータ設定方法（Jackson2BodyConverter等）"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "@ConsumesとJSON変換の動作仕様（Content-Type不一致時は415）"
+      },
+      {
+        "file": "component/adapters/adapters-jaxrs-adaptor.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "Jersey環境でJackson2BodyConverterが自動設定されるJerseyJaxRsHandlerListFactoryの設定"
+      },
+      {
+        "file": "component/adapters/adapters-jaxrs-adaptor.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "RESTEasy環境でJackson2BodyConverterが自動設定されるResteasyJaxRsHandlerListFactoryの設定"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "UniversalDAOを使うためのBasicDaoContextFactory設定"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックは参照リンクのみで具体的な実装情報がない"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s3",
+        "reason": "DBアクセスは参照リンクのみで具体的な実装情報がない"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s5",
+        "reason": "URIマッピングは参照リンクのみで具体的な情報がない"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s2",
+        "reason": "機能概要のみでs1の登録方法に直接必要な情報はない"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s5",
+        "reason": "使用方法の目次セクションのみ"
+      },
+      {
+        "file": "component/adapters/adapters-jaxrs-adaptor.json",
+        "section_id": "s4",
+        "reason": "カスタムコンバータ追加の拡張方法であり今回の基本実装では不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/adapters/adapters-jaxrs-adaptor.json:s3",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+          "reason": "Form作成・@Consumes・@Valid・BeanUtil.createAndCopy・UniversalDao.insert・@Path/@POSTの完全な実装例"
+        },
+        {
+          "ref": "component/handlers/handlers-body-convert-handler.json:s4",
+          "reason": "Jackson2BodyConverterを含むBodyConvertHandlerのコンバータ設定の説明"
+        },
+        {
+          "ref": "component/handlers/handlers-body-convert-handler.json:s5",
+          "reason": "@ConsumesとJSON変換の動作仕様の説明"
+        },
+        {
+          "ref": "component/adapters/adapters-jaxrs-adaptor.json:s2",
+          "reason": "Jersey環境でのJerseyJaxRsHandlerListFactoryの設定例"
+        },
+        {
+          "ref": "component/adapters/adapters-jaxrs-adaptor.json:s3",
+          "reason": "RESTEasy環境でのResteasyJaxRsHandlerListFactoryの設定例"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s6",
+          "reason": "UniversalDAO使用のためのBasicDaoContextFactory設定についての注意点"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2",
+          "reason": "参照リンクのみで内容が空のため使用しなかった"
+        },
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s3",
+          "reason": "参照リンクのみで内容が空のため使用しなかった"
+        },
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5",
+          "reason": "参照リンクのみで内容が空のため使用しなかった"
+        }
+      ]
+    }
+  }
+}

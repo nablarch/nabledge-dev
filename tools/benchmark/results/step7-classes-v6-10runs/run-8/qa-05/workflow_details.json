@@ -1,0 +1,155 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "source": "both",
+        "reason": "RESTfulウェブサービスでJSON受信・DB登録の登録機能作成を直接扱っており、最も関連性が高い"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスの機能詳細（入力値チェック、DBアクセス）が記載されている"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "source": "index",
+        "reason": "JSONリクエストボディをFormに変換するリクエストボディ変換ハンドラの設定方法を扱う"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスでのBean Validationの実行方法を扱う"
+      },
+      {
+        "path": "component/adapters/adapters-jaxrs-adaptor.json",
+        "source": "both",
+        "reason": "JacksonでJSONを変換するアダプタ（Jackson2BodyConverter）の設定を扱う"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index",
+        "reason": "UniversalDao.insertによるDB登録の実装方法を扱う"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "アーキテクチャ概要は登録実装の直接的な答えにならない"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationの詳細はJaxRsBeanValidationHandlerのページで十分カバーされる"
+      },
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "BeanUtilの詳細説明は今回の質問の主軸ではない"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "reason": "ルーティングアダプタの詳細設定は登録機能作成の主要な情報ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "JSONを受け取ってDBに登録するアクションの完全な実装例（Form作成、アクションメソッド、URLマッピング）が含まれる"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "ConsumesアノテーションとJSONのBodyConverterによるリクエストボディ変換の仕組みを説明している"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "BodyConverterの設定方法（コンポーネント設定）の背景情報"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "Validアノテーションによるバリデーション実行の実装例を示す"
+      },
+      {
+        "file": "component/adapters/adapters-jaxrs-adaptor.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "Jersey環境でJackson2BodyConverterが自動設定されるコンポーネント設定を示す"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s1",
+        "reason": "Nablarch初期化は別ページへのリンクのみで実装内容がない"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックはリンクのみで、実装詳細はJaxRsBeanValidationHandlerページで十分"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s3",
+        "reason": "DBアクセスはリンクのみで、実装詳細はgetting-started-createページで十分"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s6",
+        "reason": "レスポンスボディ変換は今回の質問（JSON受信・DB登録）の主題ではない"
+      },
+      {
+        "file": "component/adapters/adapters-jaxrs-adaptor.json",
+        "section_id": "s3",
+        "reason": "RESTEasyは代替手段であり、s2（Jersey）が主要情報として十分"
+      },
+      {
+        "file": "component/adapters/adapters-jaxrs-adaptor.json",
+        "section_id": "s4",
+        "reason": "ボディコンバータのカスタマイズは今回の基本実装には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "restful-web-service-getting-started-create.json:s1",
+          "reason": "フォーム作成、アクションメソッドの実装（@Consumes、@Valid、UniversalDao.insert、BeanUtil.createAndCopy）、URLマッピングの実装例として引用"
+        },
+        {
+          "ref": "handlers-body-convert-handler.json:s5",
+          "reason": "ConsumesアノテーションによるJSONリクエストボディのForm変換仕組みと415ステータスコードの注意点として引用"
+        },
+        {
+          "ref": "handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "@ValidアノテーションによるBean Validation実行の説明として引用"
+        },
+        {
+          "ref": "adapters-jaxrs-adaptor.json:s2",
+          "reason": "Jersey環境でのJacksonアダプタ設定（JerseyJaxRsHandlerListFactory）の設定例として引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "handlers-body-convert-handler.json:s4",
+          "reason": "コンポーネント設定の詳細はadapters-jaxrs-adaptor.json:s2で代替できたため未使用"
+        }
+      ]
+    }
+  }
+}

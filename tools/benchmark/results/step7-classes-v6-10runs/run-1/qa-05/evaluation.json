@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "Formクラスでクライアントから送信された値を受け付ける",
+    "プロパティは全てString型で宣言する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts: it mentions creating a Form class to receive client-submitted values ('リクエストJSONを受け取るFormクラスを作成します') and explicitly states that all properties are declared as String type ('プロパティは全てString型で宣言します'). Both facts from the Expected Output checklist are present and accurately represented without contradiction."
+    },
+    "answer_relevancy": {
+      "score": 0.9090909090909091,
+      "reason": "The score is 0.91 because the response largely addressed the task of creating a REST API to receive JSON and register it to a DB. However, it lost some points for including irrelevant details about exclusive control libraries not being usable in RESTful web services, and unnecessary information about optimistic locking and version numbers, which are not related to the basic task of receiving JSON and inserting it into a DB."
+    },
+    "faithfulness": {
+      "score": 0.9473684210526315,
+      "reason": "The score is 0.95 because the actual output slightly misrepresents the configuration of JerseyJaxRsHandlerListFactory and Jackson2BodyConverter, suggesting they may be automatically configured when in fact JerseyJaxRsHandlerListFactory must be explicitly factory-injected into the handlerList property of JaxRsMethodBinderFactory, and Jackson2BodyConverter must be explicitly set as the JSON converter."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/handlers/handlers-body-convert-handler.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 167016,
+    "duration_api_ms": 163661,
+    "num_turns": 13,
+    "total_cost_usd": 1.0271594499999999,
+    "usage": {
+      "input_tokens": 14,
+      "output_tokens": 9752,
+      "cache_read_input_tokens": 1100664,
+      "cache_creation_input_tokens": 145863
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3457,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003652,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 9752,
+        "cacheReadInputTokens": 1100664,
+        "cacheCreationInputTokens": 145863,
+        "webSearchRequests": 0,
+        "costUSD": 1.0235074499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

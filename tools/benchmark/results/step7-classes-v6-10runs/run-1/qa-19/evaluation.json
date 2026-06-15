@@ -1,0 +1,60 @@
+{
+  "scenario_id": "qa-19",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "JSONのボディ変換はJackson2BodyConverterが担当する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The expected fact that 'JSONのボディ変換はJackson2BodyConverterが担当する' (JSON body conversion is handled by Jackson2BodyConverter) is explicitly covered in the actual output. It is mentioned in the section '2. JSONボディの変換（BodyConvertHandler + Jackson2BodyConverter）' where it states 'JSON変換には Jackson2BodyConverter が使われます' and includes an XML configuration example showing the Jackson2BodyConverter component."
+    },
+    "answer_relevancy": {
+      "score": 0.9148936170212766,
+      "reason": "The score is 0.91 because the actual output largely addresses the implementation of a REST API that receives JSON and registers it to a DB, which is exactly what was asked. However, it is slightly penalized for including several system/processing log messages that are irrelevant to the implementation topic, such as file loading completion notices and internal processing step indicators, which do not contribute to answering the question."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 336177,
+    "duration_api_ms": 333367,
+    "num_turns": 20,
+    "total_cost_usd": 1.4736083500000001,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 18584,
+      "cache_read_input_tokens": 632418,
+      "cache_creation_input_tokens": 200250
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3473,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003658,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 40507,
+        "outputTokens": 24523,
+        "cacheReadInputTokens": 757052,
+        "cacheCreationInputTokens": 200925,
+        "webSearchRequests": 0,
+        "costUSD": 1.46995035,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
