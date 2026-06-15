@@ -1,0 +1,96 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "reason": "UniversalDao クラスの Javadoc で exists メソッドの詳細シグネチャが直接記載されている"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "ユニバーサルDAO の使用方法ドキュメントで SQL_ID 指定方法と SQLファイルパス導出ルールが記載されている"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "javadoc/javadoc-nablarch-common-dao-DaoContext.json",
+        "reason": "DaoContext インタフェースは exists の直接的な使い方を説明しない"
+      },
+      {
+        "path": "guide/biz-samples/biz-samples-03.json",
+        "reason": "ビジネスサンプルで exists メソッドの具体的な使い方が記載されている可能性があるが、Javadoc と libraries ドキュメントで十分"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-search.json",
+        "reason": "RESTful Web サービス固有の検索パターンで、exists の SQL_ID 指定には直接関係しない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "バインド変数なしの exists(Class, String) メソッドが SQL_ID を受け取ることを直接説明している"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s18",
+        "relevance": "high",
+        "reason": "バインド変数ありの exists(Class, String, Object) メソッドの詳細と戻り値仕様を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "SQL_ID からの SQLファイルパス導出ルールと '#' 記法を説明しており、exists の SQL_ID 指定方法を補完する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s15",
+        "reason": "countBySqlFile はデータ存在チェックではなく件数取得であり、exists とは異なるメソッド"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s16",
+        "reason": "countBySqlFile のバインド変数あり版も同様に exists とは無関係"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s11",
+        "reason": "findAllBySqlFile は複数件検索であり存在確認には使わない"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s5",
+        "reason": "使用方法の概要セクションで内容が空のため情報なし"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18",
+      "component/libraries/libraries-universal-dao.json:s7"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17",
+          "reason": "バインド変数なしの exists メソッドシグネチャと戻り値の説明に使用"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18",
+          "reason": "バインド変数ありの exists メソッドシグネチャと「検索用のSQLを変換して使用する」という動作仕様の説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s7",
+          "reason": "SQLファイルのパス導出ルールと '#' 記法の説明に使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

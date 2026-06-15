@@ -1,0 +1,71 @@
+{
+  "scenario_id": "impact-03",
+  "description": "REST APIで登録処理を実装している。入力されたメールアドレスがDB上で重複していないか、バリデーションの段階でチェックしたい。",
+  "input": "Bean Validationの中でDBに問い合わせて重複チェックしたい。カスタムバリデータでDB検索する実装でいいのか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する。Bean Validation実行中のオブジェクトの値は安全である保証がない"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers both key facts from the expected output: (1) DB/duplicate validation should be implemented in the business action (not Bean Validation), and (2) the reason being that values during Bean Validation execution are not guaranteed to be safe. Both facts are explicitly addressed with additional detail and code examples, fully satisfying the expected output's checklist."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is fully relevant to the question about implementing duplicate checks via DB queries within Bean Validation using a custom validator. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s24",
+      "component/libraries/libraries-bean-validation.json:s20",
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 243785,
+    "duration_api_ms": 242379,
+    "num_turns": 6,
+    "total_cost_usd": 0.9513878000000001,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 5842,
+      "cache_read_input_tokens": 309711,
+      "cache_creation_input_tokens": 8467
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3404,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0035989999999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 19,
+        "outputTokens": 15780,
+        "cacheReadInputTokens": 588231,
+        "cacheCreationInputTokens": 142550,
+        "webSearchRequests": 0,
+        "costUSD": 0.9477888000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
