@@ -55,7 +55,7 @@
 ### フルベースライン取得 (34シナリオ × 3run) — committed `bed4b930c`
 
 - 3 run完了（run-1〜run-3、各34シナリオ）
-- 既知スキル挙動問題: qa-17、qa-19、review-06
+- 既知スキル挙動問題: qa-17、qa-19（review-06 は評価器の誤検出と確定。回答はナレッジと一致、flaky吸収）
 - baseline.json生成済み（stable 9/34、flaky 25/34）、退行検出可能
 
 ### Step 3後半: qa-05・qa-19 各1回実行・裏取り報告 ✅ — committed `20260612-115048`
