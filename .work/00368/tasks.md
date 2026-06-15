@@ -6,45 +6,61 @@
 
 ## In Progress
 
-### フルベースライン取得 (34シナリオ × 3run) — ラベル: `20260612-1404-baseline-current`
+### Step 5: v6 semantic-search.md を直接書き換え
 
-**目的**: classes.mdなし・qa.json 34シナリオ（qa-05修正済み・qa-19追加済み）の正規ベースライン確立。
+**目的**: index.md 10件 + classes.md 10件 → 合計 20件 → セクション選定 → 回答生成 という設計をクリーンな semantic-search.md として実装する。
+
+**制約**:
+- 亜種（exp-semantic-search 等）を作らず v6 本体を直接書き換える
+- 全ステップ番号を振り直したクリーンな構成にする
+- e2e-prompt / qa.md の「Step スキップ」指示との番号整合を取る（番号衝突禁止）
+- 整合確認はレビュアー（ユーザー）が実物で確認して設計を渡す
 
 **Steps:**
-- [x] run-1 実行（34シナリオ、qa-02/qa-07 タイムアウト回収済み）— committed `ca6e48919`
-- [x] run-1 report.md 生成済み
-- [x] run-1 プッシュ済み
-- [x] 閾値割れ18/34 の調査完了（採点・実行の問題ではなく現行検索の実力と確認）
-  - 同スキーマ比較: baseline-deepeval run-1 も 14/30 割れ — 今回の変更による劣化なし
-  - scenario_id 取り違えなし（3件抜き取り確認）
-  - qa-17 correctness=0.20: mustセクション(javadoc s11)の内容を回答が明示しなかった → スキル挙動問題
-- [x] run-2 実行（34シナリオ）— committed `837569bba`
-- [x] run-2 report.md 生成済み・プッシュ済み
-- [x] run-2 裏取り完了
-  - 34シナリオ全正常完了・エラー0件
-  - qa-05: ac=1.0/ar=1.0/faith=1.0（run-1 と一致）
-  - qa-19: ac=0.2/ar=1.0/faith=0.9615（run-1: ac=0.0）
-  - 閾値割れ18件（qa-14 faithfulness=None は評価器の一時失敗、除外）
-  - 注意: qa-14 faithfulness が None（評価器失敗）— ベースライン集計時 flaky 扱い候補
-- [x] run-3 実行（34シナリオ、qa-08 タイムアウト回収済み）
-- [x] run-3 report.md 生成・閾値割れ調査完了
-  - スキル挙動問題: qa-17（3run一貫correctness低）、qa-19（3run全てJackson2BodyConverter未言及）、review-06（3run一貫faithfulness低）、qa-01 run-3のみブレ
-  - 評価器の揺らぎ: impact系・pre系・qa-11a/b等 faithfulness 軽微ブレ
-- [x] baseline.json 生成（3run集計）— 34シナリオ、stable 9/34、flaky 25/34
-- [x] 集計 report.md 作成（Q1〜Q4）— Q4: YES（退行検出に使用可能）
-- [x] コミット・プッシュ — committed `bed4b930c`
+- [BLOCKED: e2e-prompt / qa.md の Step 番号整合確認をユーザーから受け取る]
+- [ ] v6 `semantic-search.md` を直接書き換え（全ステップ番号振り直し）
+- [ ] コミット・プッシュし停止して報告
 
 ---
 
-### Step 3後半: qa-05・qa-19 各1回実行・裏取り報告 ✅
+### Step 6: 変更後の検索で qa-05・qa-19 各 1 回実行・裏取り報告
 
-- [x] qa-05・qa-19 を各1回実行
-- [x] 裏取り完了（markers OK, scenario_id/purpose/expected_facts 全正）
-- [x] 結果＋裏取り報告（Step 3後半確認済み: `20260612-115048/`）
+**目的**: Step 5 の semantic-search.md 変更が設計通り動くか確認する。
+
+**裏取り確認項目**: 測定が設計通り動いたか・scenario_id・must・中間記録
+
+**Steps:**
+- [ ] qa-05・qa-19 を各 1 回実行
+- [ ] 裏取り（測定が設計通り動いたか、scenario_id・must・中間記録）
+- [ ] 結果＋裏取りをセットで報告し停止
+- [ ] コミット・プッシュ
+
+---
+
+### Step 7: classes.md 追加状態で qa-05・qa-19 × 各 10 回・裏取り報告
+
+**目的**: classes.md 効果を Step 4（ベースライン）と比較する。
+
+**Steps:**
+- [ ] qa-05・qa-19 を各 10 回実行
+- [ ] 裏取り（scenario_id・must・各ステップ記録）
+- [ ] Step 4（ベースライン）と比較
+- [ ] 結果＋裏取りをセットで報告
+- [ ] コミット・プッシュ
 
 ---
 
 ## Done (this session)
+
+### フルベースライン取得 (34シナリオ × 3run) — committed `bed4b930c`
+
+- 3 run完了（run-1〜run-3、各34シナリオ）
+- 既知スキル挙動問題: qa-17、qa-19、review-06
+- baseline.json生成済み（stable 9/34、flaky 25/34）、退行検出可能
+
+### Step 3後半: qa-05・qa-19 各1回実行・裏取り報告 ✅ — committed `20260612-115048`
+
+---
 
 ### Step 1: 実験ゴミ一掃・リバート — committed `5c7634c84`
 
