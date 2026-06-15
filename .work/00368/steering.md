@@ -92,8 +92,8 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 # State
 
-- **Status**: paused
-- **Date**: 2026-06-15
-- **Last completed**: #6 変更後の検索で qa-05・qa-19 各 1 回実行・裏取り報告（commit `250351e18`）
-- **Next**: #7 classes.md 追加状態で qa-05・qa-19 × 各 10 回・裏取り報告
-- **Notes**: #5/#6 完了。semantic-search.md は Phase A–E 構成に書き換え済み、qa.md Step4 上限も 10→20 済み。#7 は `python3 -m tools.benchmark.scripts.run_qa --scenario-ids qa-05,qa-19` を 10 回繰り返し（逐次）、結果を `step7-classes-v6-10runs/` 以下に保存してから Step 4 ベースライン（qa-05: avg 1.000 / qa-19: avg 0.130）と比較する。PR #369 は OPEN 状態。
+<!-- template: update this section at each pause -->
+<!-- Status: paused | running -->
+<!-- Last completed: task id + short description -->
+<!-- Next: task id + short description -->
+<!-- Notes: anything needed to resume without re-reading the conversation -->
