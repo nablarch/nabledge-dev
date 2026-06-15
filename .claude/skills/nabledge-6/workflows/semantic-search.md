@@ -94,7 +94,7 @@ For each path in `merged_pages` (up to 20):
    - Sections that contain only concept definitions with no implementation details
    - Sections that explain the same information as a high section from a different angle
 
-Collect all high sections first. Fill remaining slots with partial sections until the total reaches 20. If 20 high sections already exist, add no partial sections.
+Collect all high sections first. Fill remaining slots with partial sections until the total reaches 12. If 12 high sections already exist, add no partial sections.
 
 Save as `selected_sections`.
 
@@ -117,6 +117,8 @@ Limits and guards:
 - Add at most 10 Javadoc files in total across all selected sections (not per
   section). If more than 10 distinct Javadoc links exist, keep those referenced
   from high sections first, then partial, in document order.
+- Note: the caller (qa.md Step 4) reads at most 12 entries total, counting both
+  body sections and Javadoc together. Javadoc does not get a separate budget.
 - Deduplicate by Javadoc path: never add the same file twice.
 - Only follow links matching `../javadoc/javadoc-*.json`. Ignore external URLs
   (`http(s)://...`) and non-Javadoc internal links.
