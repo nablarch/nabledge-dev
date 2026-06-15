@@ -54,7 +54,7 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 ---
 
-### #7: classes.md 追加状態で qa-05・qa-19 × 各 10 回・裏取り報告
+### #7: classes.md 追加状態で qa-05・qa-19 × 各 10 回・裏取り報告 ✅
 
 **Purpose**: classes.md 効果を Step 4（ベースライン）と比較して定量評価する。
 
@@ -62,12 +62,12 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 **Steps**:
 
-- [ ] qa-05・qa-19 を各 10 回実行
-- [ ] 裏取り（scenario_id・must・各ステップ記録）
-- [ ] Step 4 ベースライン（qa-05: avg 1.000 / qa-19: avg 0.130）と比較
-- [ ] self-check（完了基準を OK/NG で確認、checks/task-7.md に記録）
-- [ ] QA expert review（subagent）
-- [ ] user review
+- [x] qa-05・qa-19 を各 10 回実行
+- [x] 裏取り（scenario_id・must・各ステップ記録）
+- [x] Step 4 ベースライン（qa-05: avg 1.000 / qa-19: avg 0.130）と比較
+- [x] self-check（完了基準を OK/NG で確認、checks/task-7.md に記録）
+- [x] QA expert review（subagent）
+- [x] user review
 
 **Completion criteria**:
 
@@ -98,12 +98,12 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 **Steps**:
 
-- [ ] 編集3点適用・commit (`d8364e4c8` 適用済み)
-- [ ] qa-05・qa-19 を各 10 回実行（結果: `step8-limit12-v6-10runs`）
-- [ ] 裏取り（qa-19 s2到達率・correctness・cost/time・read_sections分布をStep7と比較）
-- [ ] self-check（checks/task-8.md 作成）
-- [ ] QA expert review（subagent）
-- [ ] user review
+- [x] 編集3点適用・commit (`d8364e4c8` 適用済み)
+- [x] qa-05・qa-19 を各 10 回実行（結果: `step8-limit12-v6-10runs`）
+- [x] 裏取り（qa-19 s2到達率・correctness・cost/time・read_sections分布をStep7と比較）
+- [x] self-check（checks/task-8.md 作成）
+- [x] QA expert review（subagent）
+- [x] user review（実験A指示を受領 → #9 に反映）
 
 **Completion criteria**:
 
@@ -111,15 +111,42 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 - Step7（上限20）との定量比較（s2到達率・correctness・cost・time・read_sections）が示されている
 - qa-19 s2到達率が Step7（9/9）から退行していない（退行時は報告して停止）
 
+### #9: 実験A — 上限20 vs 上限12 の影響分離（qa-19 各20回）
+
+**Purpose**: 上限12適用後 qa-19 correctness 0.7 発生が1→3回に増えたことが、上限変更の影響かばらつきかを n=20 で分離する。
+
+**Prerequisites**: #8 完了
+
+**Steps**:
+
+- [ ] `git fetch origin pull/369/head` で最新取得
+- [ ] 条件1（上限12・現状のまま）: qa-19 × 20 回実行 → `tools/benchmark/results/expA-limit12/run-{i}/`
+- [ ] 条件2（上限20・一時変更）: semantic-search.md + qa.md を上限20に変更 → qa-19 × 20 回実行 → `tools/benchmark/results/expA-limit20/run-{i}/`
+- [ ] 一時変更を破棄（`git checkout -- ...` で上限12復元・確認）
+- [ ] 裏取り（correctness分布・s2到達率・read_sections・減点回reason全文・cost/time）
+- [ ] self-check（checks/task-9.md 作成）
+- [ ] 報告
+
+**Completion criteria**:
+
+- 条件1・条件2 それぞれ有効20回（TIMEOUT再実行含む）の実行結果が揃っている
+- correctness分布（1.0/0.8/0.7/その他 回数・平均）・s2到達率・read中央値/最大・cost/time が2条件並べて示されている
+- correctness<1.0 の全回について evaluation.json の answer_correctness.reason 全文が列挙されている
+- 実験後、上限12コミット済み状態（d8364e4c8）に戻っていることが確認されている
+
+**Constraints**:
+
+- 上限20変更をコミットしない（一時変更・実験後必ず破棄）
+- 既存ベンチ結果（baseline-current/step6/7/8）を変更・削除しない
+- correctness の合否・FAIL判定をしない（reason全文報告まで）
+- 他バージョンのスキルを触らない
+
 # State
 
-- **Status**: paused
-- **Date**: 2026-06-15
-- **Last completed**: #8 ベンチマーク実行・QA review完了（commit `2890cfb7d`）
-- **Next**: #8 user review（ユーザーの承認待ち）
-- **Notes**: タスク #8 の裏取り・QA review が完了し、ユーザーレビュー提示済み。
-  結果サマリー: qa-19 s2到達率 10/10（Step7: 9/9と同等以上）、cost -6.6%、read_max 19→12。
-  correctness微減（-0.077/-0.020）は確率的ばらつき範囲内。QA review: 0 Findings。
-  ユーザーに「上限12変更はマージ可能か？」を確認中。
-  承認後の次アクション: steering.md #8 を完了チェックオフ → PR #369 更新 → マージ準備。
-  ブランチ: 368-classes-md-for-class-search (PR #369 OPEN)。
+<!-- template placeholder -->
+
+- **Status**: active
+- **Date**: 2026-06-16
+- **Last completed**: #8 完了（user review受領 = 実験A指示）
+- **Next**: #9 実験A実行
+- **Notes**: ブランチ: 368-classes-md-for-class-search (PR #369 OPEN)。
