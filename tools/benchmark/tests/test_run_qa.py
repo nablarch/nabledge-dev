@@ -105,7 +105,7 @@ class TestBuildE2ePrompt:
 SAMPLE_WORKFLOW_DETAILS = {
     "step3": {
         "selected_pages": [
-            {"path": "path/to/file.json", "reason": "relevant page"}
+            {"path": "path/to/file.json", "source": "index", "reason": "relevant page"}
         ],
         "excluded_pages": [],
         "selected_sections": [
@@ -153,6 +153,7 @@ class TestParseE2eResponse:
         result = parse_qa_response(response)
         pages = result["workflow_details"]["step3"]["selected_pages"]
         assert pages[0]["path"] == "path/to/file.json"
+        assert pages[0]["source"] == "index"
 
     def test_parses_selected_sections(self):
         response = self._make_response("回答テキスト")

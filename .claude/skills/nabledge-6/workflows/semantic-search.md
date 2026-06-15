@@ -73,7 +73,8 @@ Pointer JSON:
 1. Concatenate `index_pages` then `class_pages`.
 2. Deduplicate by page path, keeping first occurrence (index order, then class order).
 3. Keep at most 20 pages. Save as `merged_pages`.
-4. If `merged_pages` is empty, return `{"selected_sections": []}` immediately and stop.
+4. For each page in `merged_pages`, record its `source`: `"index"` if it appears only in `index_pages`, `"classes"` if it appears only in `class_pages`, `"both"` if it appears in both. Determine this from actual set membership, not from reasoning about the question.
+5. If `merged_pages` is empty, return `{"selected_sections": []}` immediately and stop.
 
 ---
 
