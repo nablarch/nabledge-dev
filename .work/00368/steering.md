@@ -90,10 +90,31 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 - **Evidence**: Task 15（条件20: 10/10）、Task 22（条件P: 1/10）等の実験結果
 - **Sources**: .work/00368/tasks.md 過去の実験結果サマリー
 
+### #8: 上限12適用後 qa-05・qa-19 × 各 10 回・裏取り報告
+
+**Purpose**: Phase D 上限 20→12 の変更が正確率・adapter s2 到達率に退行をもたらさないことを実測で確認する。
+
+**Prerequisites**: #7完了（Step7結果 qa-05:avg1.000 / qa-19:avg0.967、s2到達9/9が基準値）
+
+**Steps**:
+
+- [ ] 編集3点適用・commit (`d8364e4c8` 適用済み)
+- [ ] qa-05・qa-19 を各 10 回実行（結果: `step8-limit12-v6-10runs`）
+- [ ] 裏取り（qa-19 s2到達率・correctness・cost/time・read_sections分布をStep7と比較）
+- [ ] self-check（checks/task-8.md 作成）
+- [ ] QA expert review（subagent）
+- [ ] user review
+
+**Completion criteria**:
+
+- qa-05・qa-19 各 10 回の実行結果が揃っている
+- Step7（上限20）との定量比較（s2到達率・correctness・cost・time・read_sections）が示されている
+- qa-19 s2到達率が Step7（9/9）から退行していない（退行時は報告して停止）
+
 # State
 
-- **Status**: paused
+- **Status**: active
 - **Date**: 2026-06-15
-- **Last completed**: #7 classes.md 追加状態で qa-05・qa-19 × 各 10 回・裏取り報告（commit `495af07a7`）
-- **Next**: #7 完了扱い（ステップ残り: self-check → QA expert review → user review）
-- **Notes**: Step7 実行結果まとめ。qa-05: avg 1.000 (10/10), adapter source=both×9/classes×1。qa-19: avg 0.967 (9/10, run-5 timeout), adapter source=both×9, s2到達 8/9。ベースライン（Step4 classes.mdなし）vs Step7: qa-19 avg 0.130→0.967、adapter選定 1/10→9/9。classes.md の効果は source 記録で直接立証済み（run-5/qa-19 タイムアウト除く全回が both または classes）。次は steering.md の #7 remaining steps（self-check, QA expert review, user review）を実行してから PR 更新・マージ準備へ。PR #369 は OPEN。
+- **Last completed**: commit `d8364e4c8` (refactor: align section limits, semantic-search.md + qa.md 3箇所編集)
+- **Next**: #8 ベンチマーク実行中（run-1〜run-10 逐次）
+- **Notes**: #7は #8 ARGUMENTSで新タスクに吸収。run-1 バックグラウンド実行中。

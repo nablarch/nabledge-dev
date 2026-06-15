@@ -1,0 +1,72 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "Formクラスでクライアントから送信された値を受け付ける",
+    "プロパティは全てString型で宣言する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts: it describes using a Form class (ProjectForm) to receive values from the client, and explicitly states that properties should be declared as String type ('プロパティは**全てString型**で宣言する'). Both expected facts from the checklist are present and correctly represented without contradiction."
+    },
+    "answer_relevancy": {
+      "score": 0.75,
+      "reason": "The score is 0.75 because the actual output does address the core task of receiving JSON via REST API and registering it in the DB, which is why it's not lower. However, it loses points for including irrelevant details such as JBoss/WildFly-specific routing limitations and workarounds, optimistic locking with @Version, and ETag/If-Match support — none of which were asked about in the input."
+    },
+    "faithfulness": {
+      "score": 0.875,
+      "reason": "The score is 0.88 because the actual output contains two minor contradictions: it specifies 'BeanUtil.createAndCopy' as the method for converting a Form to an Entity, which is not confirmed in the retrieval context, and incorrectly conflates form and JSON concepts by claiming @POST + @Consumes + @Valid together allow receiving JSON 'from a form'. Additionally, the actual output mentions 'BasicApplicationInitializer' as the specific initializer for PathOptionsProviderRoutesMapping, which is not stated in the retrieval context. These are relatively minor unverified specifics, keeping the score fairly high."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "component/adapters/adapters-router-adaptor.json:s7",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "component/adapters/adapters-jaxrs-adaptor.json:s1",
+      "component/adapters/adapters-router-adaptor.json:s3",
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 217528,
+    "duration_api_ms": 215146,
+    "num_turns": 11,
+    "total_cost_usd": 0.9162654,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 13949,
+      "cache_read_input_tokens": 635223,
+      "cache_creation_input_tokens": 136746
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3477,
+        "outputTokens": 33,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0036420000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 13949,
+        "cacheReadInputTokens": 635223,
+        "cacheCreationInputTokens": 136746,
+        "webSearchRequests": 0,
+        "costUSD": 0.9126234000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
