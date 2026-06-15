@@ -2,7 +2,7 @@
 
 **PR**: #369
 **Issue**: #368
-**Updated**: 2026-06-12 (session 13)
+**Updated**: 2026-06-15 (session 14)
 
 ## In Progress
 
@@ -26,11 +26,13 @@
   - qa-19: ac=0.2/ar=1.0/faith=0.9615（run-1: ac=0.0）
   - 閾値割れ18件（qa-14 faithfulness=None は評価器の一時失敗、除外）
   - 注意: qa-14 faithfulness が None（評価器失敗）— ベースライン集計時 flaky 扱い候補
-- [ ] run-3 実行（34シナリオ）
-- [ ] run-3 report.md 生成・閾値割れ調査
-- [ ] baseline.json 生成（3run集計）
-- [ ] 集計 report.md 作成（Q1〜Q4）
-- [ ] コミット・プッシュ
+- [x] run-3 実行（34シナリオ、qa-08 タイムアウト回収済み）
+- [x] run-3 report.md 生成・閾値割れ調査完了
+  - スキル挙動問題: qa-17（3run一貫correctness低）、qa-19（3run全てJackson2BodyConverter未言及）、review-06（3run一貫faithfulness低）、qa-01 run-3のみブレ
+  - 評価器の揺らぎ: impact系・pre系・qa-11a/b等 faithfulness 軽微ブレ
+- [x] baseline.json 生成（3run集計）— 34シナリオ、stable 9/34、flaky 25/34
+- [x] 集計 report.md 作成（Q1〜Q4）— Q4: YES（退行検出に使用可能）
+- [x] コミット・プッシュ — committed `bed4b930c`
 
 ---
 
