@@ -113,8 +113,13 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 # State
 
-- **Status**: active
+- **Status**: paused
 - **Date**: 2026-06-15
-- **Last completed**: commit `d8364e4c8` (refactor: align section limits, semantic-search.md + qa.md 3箇所編集)
-- **Next**: #8 ベンチマーク実行中（run-1〜run-10 逐次）
-- **Notes**: #7は #8 ARGUMENTSで新タスクに吸収。run-1 バックグラウンド実行中。
+- **Last completed**: #8 ベンチマーク実行・QA review完了（commit `2890cfb7d`）
+- **Next**: #8 user review（ユーザーの承認待ち）
+- **Notes**: タスク #8 の裏取り・QA review が完了し、ユーザーレビュー提示済み。
+  結果サマリー: qa-19 s2到達率 10/10（Step7: 9/9と同等以上）、cost -6.6%、read_max 19→12。
+  correctness微減（-0.077/-0.020）は確率的ばらつき範囲内。QA review: 0 Findings。
+  ユーザーに「上限12変更はマージ可能か？」を確認中。
+  承認後の次アクション: steering.md #8 を完了チェックオフ → PR #369 更新 → マージ準備。
+  ブランチ: 368-classes-md-for-class-search (PR #369 OPEN)。
