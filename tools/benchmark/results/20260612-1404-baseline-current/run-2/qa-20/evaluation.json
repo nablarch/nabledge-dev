@@ -1,0 +1,70 @@
+{
+  "scenario_id": "qa-20",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
+    "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers both facts from the Expected Output. It explicitly states that `ErrorResponseBuilder` (used by `JaxRsResponseHandler`) generates error responses based on exceptions, and that `JaxRsErrorLogWriter` handles log output based on exceptions. Both facts are addressed clearly and in detail, with specific sections dedicated to each component's role in error handling."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.95,
+      "reason": "The score is 0.95 because the actual output incorrectly states that 'the client cannot receive a response' when an exception occurs during ErrorResponseBuilder processing, whereas the retrieval context explicitly states that the framework logs at WARN level and generates a status code 500 response, meaning the client does in fact receive a response."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-response-handler.json:s8",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-jaxrs-access-log-handler.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 106710,
+    "duration_api_ms": 105559,
+    "num_turns": 9,
+    "total_cost_usd": 0.65052825,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 7072,
+      "cache_read_input_tokens": 462495,
+      "cache_creation_input_tokens": 107253
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3340,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00348,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 7072,
+        "cacheReadInputTokens": 462495,
+        "cacheCreationInputTokens": 107253,
+        "webSearchRequests": 0,
+        "costUSD": 0.6470482499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

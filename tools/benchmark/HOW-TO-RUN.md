@@ -70,18 +70,18 @@ for s in d['scenarios']:
         print(s['id'], '-', s.get('error', '')[:60])
 "
 
-# 失敗シナリオを単体再実行（例: qa-11a, oos-qa-01）
+# 失敗シナリオを単体再実行（例: qa-11, oos-qa-01）
 python3 -m tools.benchmark.scripts.run_qa \
   --scenarios tools/benchmark/scenarios/qa.json \
   --skill-dir .claude/skills/nabledge-6 \
-  --scenario-ids qa-11a,oos-qa-01
+  --scenario-ids qa-11,oos-qa-01
 ```
 
 完了後、再実行結果をrun-Nディレクトリへ上書きコピー:
 ```bash
 RUNDIR=tools/benchmark/results/{run-label}/run-N
 NEWDIR=tools/benchmark/results/YYYYMMDD-HHMMSS
-for sid in qa-11a oos-qa-01; do
+for sid in qa-11 oos-qa-01; do
   rm -rf $RUNDIR/$sid
   cp -r $NEWDIR/$sid $RUNDIR/$sid
 done
@@ -95,7 +95,7 @@ import json, pathlib
 p = pathlib.Path('$RUNDIR/summary.json')
 d = json.loads(p.read_text())
 # remove error entries for retried scenarios
-retry_ids = {'qa-11a', 'oos-qa-01'}
+retry_ids = {'qa-11', 'oos-qa-01'}
 d['scenarios'] = [s for s in d['scenarios'] if s['id'] not in retry_ids]
 # append new entries from new summary
 new_d = json.loads(pathlib.Path('$NEWDIR/summary.json').read_text())
@@ -248,7 +248,7 @@ baseline.json には以下が含まれる:
 YES / NO（+ 1〜2文で根拠）
 
 例: YES。30シナリオ全件が正常完了し、3 run分のスコアが取得できた。
-例: NO。run-2 で qa-11a がタイムアウト（360s）。単体再実行で回収済み。
+例: NO。run-2 で qa-11 がタイムアウト（360s）。単体再実行で回収済み。
 
 ---
 
@@ -375,7 +375,7 @@ python3 -m tools.benchmark.scripts.report \
 
 | シナリオID | 低下指標 | 再現性 | 原因分類 | 対応 |
 |---|---|---|---|---|
-| qa-12a | faithfulness | 3/3 | ナレッジ未収録 | 要改善: ナレッジ追加 |
+| qa-12 | faithfulness | 3/3 | ナレッジ未収録 | 要改善: ナレッジ追加 |
 | impact-03 | answer_relevancy | 1/3 | 揺らぎ | 対処不要 |
 
 ---

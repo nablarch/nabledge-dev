@@ -91,9 +91,9 @@ YES。34シナリオのうち安定シナリオ（3 run全指標通過）は9件
 | pre-03 | 入門シナリオ | 回答正確性(2), 回答関連性(1) | 2/3, 1/3 | 評価基準の問題 | 回答は正しいがexpected_factsと完全一致しない | 正確な説明を提供 | ナレッジに記述あり | 期待値の粒度の問題で2/3失敗、スキル回答は実質正しい |
 | qa-01 | 大量データの1件ずつ読み込み | 回答正確性(1) | 1/3 | スキルの挙動問題 | run-3のみ: UniversalDao.deferの代わりにDatabaseRecordReaderパターンを回答 | run-3: DatabaseRecordReaderで主キーのみ取得するパターン | UniversalDao.defer + DeferredEntityList.close | run-3のみ異なるアプローチ、スキルのブレ（1/3） |
 | qa-02 | UniversalDaoでページング検索 | 回答関連性(1), 忠実性(1) | 各1/3 | 評価器の揺らぎ | answer_correctness=1.0で一貫 | ページング実装を説明 | — | 各指標1/3のみ、揺らぎ |
-| qa-11a | qa-11aシナリオ | 忠実性(2) | 2/3 | 評価器の揺らぎ | faithfulness 0.955〜0.967 | — | — | 軽微なブレ（0.95〜0.97） |
-| qa-11b | qa-11bシナリオ | 忠実性(3) | 3/3 | 評価器の揺らぎ | faithfulness 0.950〜0.962 | — | — | 3run全て0.95〜0.96、閾値0.99未達だが一貫した軽微なブレ |
-| qa-12a | テスト用のバッチ起動 | 回答正確性(1), 忠実性(2) | 1/3, 2/3 | スキルの挙動問題 | correctness=0.4(run-2): 期待される事実の一部が欠落。faithfulness: ナレッジにない詳細を追加 | 実装例を説明 | ナレッジに詳細あり | correctness低下は検索ミスの可能性。faithfulnessブレは軽微 |
+| qa-11 | qa-11シナリオ | 忠実性(2) | 2/3 | 評価器の揺らぎ | faithfulness 0.955〜0.967 | — | — | 軽微なブレ（0.95〜0.97） |
+| qa-20 | qa-20シナリオ | 忠実性(3) | 3/3 | 評価器の揺らぎ | faithfulness 0.950〜0.962 | — | — | 3run全て0.95〜0.96、閾値0.99未達だが一貫した軽微なブレ |
+| qa-12 | テスト用のバッチ起動 | 回答正確性(1), 忠実性(2) | 1/3, 2/3 | スキルの挙動問題 | correctness=0.4(run-2): 期待される事実の一部が欠落。faithfulness: ナレッジにない詳細を追加 | 実装例を説明 | ナレッジに詳細あり | correctness低下は検索ミスの可能性。faithfulnessブレは軽微 |
 | qa-17 | SystemRepositoryからのコンポーネント取得 | 回答正確性(3), 回答関連性(2) | 3/3, 2/3 | スキルの挙動問題 | 「型パラメータを利用した型安全な取得」という事実を3run全て明示せず | get()で型キャストして取得と説明するが「型パラメータ」「型安全」というキーワードを含まない | get(String name)で型パラメータを利用して型安全に取得できる | 3run一貫してcorrectness低い。expected_factの「型パラメータ」「型安全」に対してスキルは同等の動作を示すが言葉の一致なし。評価基準の問題と境界線上だがnabledgeの目的（正確な情報提供）から見るとスキル挙動問題と分類 |
 | qa-18 | 影響調査系 | 回答正確性(1), 回答関連性(2) | 1/3, 2/3 | 評価器の揺らぎ | answer_relevancy 0.889〜0.909 | — | — | 軽微なブレ、correctnessは2/3で通過 |
 | qa-19 | RESTful JSONボディ変換の仕組み | 回答正確性(3), 忠実性(1) | 3/3, 1/3 | スキルの挙動問題 | correctness=0.0〜0.2: Jackson2BodyConverterが3run全て未言及 | BodyConvertHandlerが担当と説明するが具体的実装クラス（Jackson2BodyConverter）を言及しない | Jackson2BodyConverterが担当。knowledge/component/adapters/adapters-jaxrs-adaptor.json に記載あり | step3でadapters-jaxrs-adaptorページが選ばれず（handlers-body-convert-handler等を選択）、Jackson2BodyConverterの情報に到達できない。検索経路の問題 |

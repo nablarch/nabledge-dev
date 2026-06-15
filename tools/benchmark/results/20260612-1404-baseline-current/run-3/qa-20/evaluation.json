@@ -1,0 +1,71 @@
+{
+  "scenario_id": "qa-20",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
+    "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts. It explicitly mentions 'JaxRsResponseHandler' (as 'Jakarta RESTful Web Servicesレスポンスハンドラ') generating error responses based on exceptions via the ErrorResponseBuilder, and 'JaxRsErrorLogWriter' handling log output based on exceptions via the errorLogWriter property. Both key facts from the Expected Output are addressed clearly with detailed explanations."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9615384615384616,
+      "reason": "The score is 0.96 because the actual output correctly describes the main behavior (WARN level logging and status code 500 response) when an exception occurs during ErrorResponseBuilder processing, but is slightly incomplete as it omits the detail that the framework continues subsequent processing after generating the 500 response."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-response-handler.json:s8",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s5",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 305743,
+    "duration_api_ms": 305200,
+    "num_turns": 9,
+    "total_cost_usd": 1.0071995999999999,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 7855,
+      "cache_read_input_tokens": 441728,
+      "cache_creation_input_tokens": 40404
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3404,
+        "outputTokens": 38,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003594,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 30,
+        "outputTokens": 22245,
+        "cacheReadInputTokens": 914777,
+        "cacheCreationInputTokens": 105442,
+        "webSearchRequests": 0,
+        "costUSD": 1.0036056,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
