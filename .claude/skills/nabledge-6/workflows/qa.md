@@ -143,7 +143,7 @@ Save the returned `selected_sections` array as `selected_sections`.
 From `selected_sections`, select sections to read:
 1. All `high` sections first
 2. Then `partial` sections to fill remaining slots
-3. Maximum 10 sections total
+3. Maximum 20 sections total
 
 Build the argument list: for each selected section, `"{file}:{section_id}"`.
 
