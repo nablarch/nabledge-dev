@@ -94,7 +94,7 @@ For each path in `merged_pages` (up to 20):
    - Sections that contain only concept definitions with no implementation details
    - Sections that explain the same information as a high section from a different angle
 
-Collect all high sections first. Fill remaining slots with partial sections until the total reaches 12. If 12 high sections already exist, add no partial sections.
+Collect all high sections first. Fill remaining slots with partial sections until the total reaches 20. If 20 high sections already exist, add no partial sections.
 
 Save as `selected_sections`.
 
