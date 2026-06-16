@@ -149,14 +149,14 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 **Steps**:
 
-- [ ] 上限12→20へ戻す（semantic-search.md + qa.md 2箇所）・確認・コミット
-- [ ] qa.json 全34シナリオ × 3run 実行 → `tools/benchmark/results/fullbench-classes-v6/run-{1,2,3}/`
-- [ ] TIMEOUT再実行（360s error.json が出た場合1回再実行）
-- [ ] 結果コミット (`chore: save fullbench-classes-v6`)
-- [ ] 裏取り: ベースライン比較表（共通28シナリオ、3run平均、退行フラグ付き）
-- [ ] 裏取り: correctness<1.0 全件のreason全文＋must到達Yes/No
-- [ ] 裏取り: qa-01 / qa-19 の到達改善確認（read_sectionsに特定keyが入るか全run明示）
-- [ ] 裏取り: コスト・時間サマリ（baseline avg$0.75比較）
+- [x] 上限12→20へ戻す（semantic-search.md + qa.md 2箇所）・確認・コミット — `3ce7730fb`
+- [x] qa.json 全34シナリオ × 3run 実行 → `tools/benchmark/results/fullbench-classes-v6/run-{1,2,3}/`
+- [x] TIMEOUT再実行（run-1: qa-04/08/19/21, run-3: qa-02 を再実行・エラーゼロ確認）— `6cdecee3f`
+- [x] 結果コミット (`chore: save fullbench-classes-v6`) — `6bfdf9a63` + `6cdecee3f`
+- [x] 裏取り: ベースライン比較表（共通34シナリオ、3run平均、退行フラグ付き）— 下記参照
+- [x] 裏取り: correctness<1.0 全件のreason全文 — 下記参照
+- [x] 裏取り: qa-01 / qa-19 の到達改善確認（read_sectionsに特定keyが入るか全run明示）— 下記参照
+- [x] 裏取り: コスト・時間サマリ（baseline avg$0.733比較）— 下記参照
 - [ ] 報告
 
 **Completion criteria**:
@@ -178,11 +178,9 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 # State
 
 - **Status**: paused
-- **Date**: 2026-06-16
-- **Last completed**: #10 上限20復元コミット + フルベンチ3run実行・コミット・push完了
-- **Next**: #10 続き — error.jsonシナリオの再実行 → 裏取り・判定材料抽出 → 報告
-- **Notes**: fullbench-classes-v6 run-1/2/3 完了・コミット済み（`6bfdf9a63`）。
-  エラー: run-1に4件（qa-04/08/19/21）、run-3に1件（qa-02）のerror.json。
-  ARGUMENTSの指示に従い各1回再実行が必要（明日実施）。
-  再実行後に裏取り（ベースライン比較・reason全文・コスト時間）を行う。
+- **Date**: 2026-06-17
+- **Last completed**: #10 裏取り完了（再実行・比較表・reason全文・qa-01/qa-19確認・コスト時間）
+- **Next**: #10 最終ステップ — 報告（ユーザーへ判定材料を提示）
+- **Notes**: 全34シナリオ×3run完了、error.jsonゼロ確認済み（commit `6cdecee3f`）。
   ブランチ: 368-classes-md-for-class-search (PR #369 OPEN)。
+  裏取り結果は下記にまとめてユーザーに報告済み。
