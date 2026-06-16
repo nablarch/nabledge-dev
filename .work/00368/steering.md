@@ -119,13 +119,13 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 **Steps**:
 
-- [ ] `git fetch origin pull/369/head` で最新取得
-- [ ] 条件1（上限12・現状のまま）: qa-19 × 20 回実行 → `tools/benchmark/results/expA-limit12/run-{i}/`
-- [ ] 条件2（上限20・一時変更）: semantic-search.md + qa.md を上限20に変更 → qa-19 × 20 回実行 → `tools/benchmark/results/expA-limit20/run-{i}/`
-- [ ] 一時変更を破棄（`git checkout -- ...` で上限12復元・確認）
-- [ ] 裏取り（correctness分布・s2到達率・read_sections・減点回reason全文・cost/time）
-- [ ] self-check（checks/task-9.md 作成）
-- [ ] 報告
+- [x] `git fetch origin pull/369/head` で最新取得
+- [x] 条件1（上限12・現状のまま）: qa-19 × 20 回実行 → `tools/benchmark/results/expA-limit12/run-{i}/`
+- [x] 条件2（上限20・一時変更）: semantic-search.md + qa.md を上限20に変更 → qa-19 × 20 回実行 → `tools/benchmark/results/expA-limit20/run-{i}/`
+- [x] 一時変更を破棄（`git checkout -- ...` で上限12復元・確認）
+- [x] 裏取り（correctness分布・s2到達率・read_sections・減点回reason全文・cost/time）
+- [x] self-check（checks/task-9.md 作成）
+- [x] 報告
 
 **Completion criteria**:
 
@@ -141,16 +141,45 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 - correctness の合否・FAIL判定をしない（reason全文報告まで）
 - 他バージョンのスキルを触らない
 
+### #10: 上限20復元 + 全34シナリオフルベンチ（3run）+ 判定材料抽出
+
+**Purpose**: 実験A結果（上限12に利得なし）を受け、上限12→20へ戻す。その状態で全34シナリオのフルベンチを実行し、ベースライン（`20260612-1404-baseline-current`）との比較で退行を検出する判定材料を抽出する。
+
+**Prerequisites**: #9 完了（実験A結果確定・ユーザー判定受領）
+
+**Steps**:
+
+- [ ] 上限12→20へ戻す（semantic-search.md + qa.md 2箇所）・確認・コミット
+- [ ] qa.json 全34シナリオ × 3run 実行 → `tools/benchmark/results/fullbench-classes-v6/run-{1,2,3}/`
+- [ ] TIMEOUT再実行（360s error.json が出た場合1回再実行）
+- [ ] 結果コミット (`chore: save fullbench-classes-v6`)
+- [ ] 裏取り: ベースライン比較表（共通28シナリオ、3run平均、退行フラグ付き）
+- [ ] 裏取り: correctness<1.0 全件のreason全文＋must到達Yes/No
+- [ ] 裏取り: qa-01 / qa-19 の到達改善確認（read_sectionsに特定keyが入るか全run明示）
+- [ ] 裏取り: コスト・時間サマリ（baseline avg$0.75比較）
+- [ ] 報告
+
+**Completion criteria**:
+
+- 上限20復元が確認されている（grep出力添付）
+- 全34シナリオ × 3run の結果が `fullbench-classes-v6` に揃っている（error.jsonは再実行後も失敗の場合のみ残存・報告）
+- ベースライン比較表（共通28シナリオ）に退行フラグが付いている
+- correctness<1.0 の全件について reason全文が省略なく記載されている
+- qa-01: read_sections に `libraries-universal-dao.json:s9` が入るか 3run 全て明示
+- qa-19: adapter:s2 到達と correctness を 3run 全て明示
+
+**Constraints**:
+
+- 合否・FAIL・退行の最終判定をしない（材料を出すまでがCCの仕事）
+- 既存ベンチ結果（baseline-current/step6/7/8/expA）を変更・削除しない
+- 他バージョンのスキルを触らない
+- reason を要約・取捨選択しない（閾値割れは1件残らず全文）
+
 # State
 
-- **Status**: paused
+- **Status**: in_progress
 - **Date**: 2026-06-16
-- **Last completed**: #9 実験A実行・裏取り・コミット完了（commit `eb0746412`）
-- **Next**: #9 user review（ユーザーの判定待ち）
-- **Notes**: 実験A（qa-19 × 上限12/20 各20回）完了・push済み。
-  結果: 上限12 avg=0.940（1.0×16/0.8×1/0.7×2/0.6×1）/ 上限20 avg=0.990（1.0×19/0.8×1）。
-  s2到達率は両条件とも20/20。減点パターンは全回「Jackson2BodyConverterへの言及が間接的」。
-  上限12一時変更は破棄済み（d8364e4c8状態に復元確認済み）。
-  判定（上限差が有意か・上限20へ戻すか維持するか）はKiyo+Claudeが行う。
-  判定後の次アクション: #9完了チェックオフ → steering.md更新 → 必要ならスキル変更＋PR更新 → マージ準備。
+- **Last completed**: #9 全ステップ完了（実験A実行・裏取り・コミット・ユーザー判定受領）
+- **Next**: #10 上限20復元 + フルベンチ実行
+- **Notes**: ユーザー判定: 実験Aで上限12に利得なし確定 → 上限20へ戻す + 全34シナリオフルベンチ実施。
   ブランチ: 368-classes-md-for-class-search (PR #369 OPEN)。
