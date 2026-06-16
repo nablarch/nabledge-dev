@@ -187,7 +187,7 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 - [x] REPORTS-INDEX.md 作成
 - [x] HOW-TO-RUN.md に手順追記
 - [x] self-check（計7ファイル存在確認・regression verdict転記・HOW-TO-RUN.md追記確認）
-- [ ] コミット・プッシュ
+- [x] コミット・プッシュ — `ae92f88b1`
 
 **Completion criteria**:
 
@@ -198,8 +198,7 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 # State
 
-- **Status**: in_progress
-- **Date**: 2026-06-17
-- **Last completed**: #10 全ステップ完了（再実行・裏取り・報告）
-- **Next**: #11 レポート生成
-- **Notes**: #11 開始。report.md は3run分既存。regression-check.md・REPORTS-INDEX.md・HOW-TO-RUN.md追記が未実施。
+<!-- STATUS -->
+<!-- LAST_COMPLETED -->
+<!-- NEXT -->
+<!-- NOTES -->
