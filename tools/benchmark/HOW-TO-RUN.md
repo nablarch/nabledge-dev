@@ -387,3 +387,32 @@ git add tools/benchmark/results/{run-label}/
 git commit -m "chore: save {run-label} E2E benchmark results ({N} runs)"
 git push
 ```
+
+---
+
+## ベンチ後のレポート生成（必須・3種）
+
+ベンチ実行後は必ず以下を実行し、3種のレポートを生成・コミットすること。
+
+### (1) run別レポート
+各 run について:
+```bash
+python3 -m tools.benchmark.scripts.report --run-dir <results>/<label>/run-N
+```
+→ run-N/report.md（シナリオ別スコア＋cost/time分布 p50/p95/max）
+
+### (3) baseline差分レポート
+比較対象 baseline の baseline.json を用意（無ければ --baseline-runs で生成）し:
+```bash
+python3 -m tools.benchmark.scripts.report \
+  --run-dir <results>/<label>/run-N \
+  --compare-baseline <baseline>/baseline.json || true
+```
+→ run-N/regression-check.md
+
+### (2) 3run横断集約
+現状 report.py 未対応（別タスクで追加予定）。暫定で REPORTS-INDEX.md に run別レポートの目次を作る。
+
+### 注意
+- レポートは必ずコミットする（summary.json だけで済ませない）。
+- cost/time は平均でなく中央値(p50)・p95・最大を確認する（平均はばらつきを隠す）。
