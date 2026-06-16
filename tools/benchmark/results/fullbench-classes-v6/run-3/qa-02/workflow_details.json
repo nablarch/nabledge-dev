@@ -1,0 +1,213 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "source": "index",
+        "reason": "Nablarchバッチアプリケーションのアーキテクチャ概要でハンドラ構成・データリーダ・アクションクラスを網羅的に説明している"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "source": "index",
+        "reason": "Nablarchバッチのデータベースアクセス実装の詳細とDatabaseRecordReaderへの参照が含まれる"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "source": "index",
+        "reason": "BatchActionとUniversalDaoを使ったDB書き込みの具体的な実装例が含まれる"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "source": "index",
+        "reason": "DB to DBパターンなどバッチ処理のパターン分類が記載されており、今回のユースケースに直接対応する"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index",
+        "reason": "DBへの書き込みにUniversalDaoを使う際の設定・遅延ロード・バッチ実行の使い方が含まれる"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-architecture.json",
+        "reason": "Jakarta Batchは別の処理方式であり、今回の質問はNablarchバッチに限定されている"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.json",
+        "reason": "エラー処理の詳細は今回の実装構成の質問には不要"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "source": "index",
+        "reason": "トランザクションループ制御ハンドラの設定詳細はアーキテクチャ概要セクションで十分"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-multiple-process.json",
+        "reason": "マルチプロセス化は今回の基本構成の質問の範囲外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "バッチの処理の流れ（DataReader→BatchAction→Result）を説明しており、DB to DB実装の骨格となる"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "都度起動バッチ（DB接続有り）の最小ハンドラ構成の表が含まれ、実装に必要なハンドラ一覧がわかる"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "DatabaseRecordReaderなど標準提供データリーダの一覧が含まれる"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BatchActionなど標準提供アクションクラスの一覧が含まれる"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "バッチのデータベースアクセスに使用するDatabaseRecordReaderへの参照が記載されている"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "BatchActionを継承した業務アクションの具体的な実装例（handle, createReader, UniversalDao.insert）が含まれる"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "DB to DBパターンの定義（入力=SELECTの結果セット、1レコード=同一トランザクション）が記載されている"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "都度起動バッチが定期処理に適することが記載されている"
+      },
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "DB to DBが都度起動バッチで使用されることを示すパターン表が含まれる"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "大量データ読み込み時のUniversalDao.defer()遅延ロードの使い方と注意点が含まれる"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s14",
+        "relevance": "partial",
+        "reason": "バッチINSERT/UPDATE/DELETEのbatchInsert等の使い方が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "UniversalDAOを使うための設定（BasicDaoContextFactory）が含まれる"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s6",
+        "reason": "常駐バッチのハンドラ構成は定期処理（都度起動）の質問には不要"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s2",
+        "reason": "-requestPathの書式説明は今回の回答の主眼ではなく参考程度"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s2",
+        "reason": "ファイル読み込み用のDataReaderの実装例であり、DB to DBパターンには直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/libraries/libraries-universal-dao.json:s14",
+      "component/libraries/libraries-universal-dao.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "nablarch-batch-architecture.json:s3",
+          "reason": "バッチの処理フロー（DataReader→handle→Result→ループ）の説明に使用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s5",
+          "reason": "都度起動バッチ（DB接続有り）の最小ハンドラ構成の表に使用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s7",
+          "reason": "DatabaseRecordReaderの説明に使用"
+        },
+        {
+          "ref": "nablarch-batch-architecture.json:s8",
+          "reason": "BatchActionの説明に使用"
+        },
+        {
+          "ref": "nablarch-batch-getting-started-nablarch-batch.json:s3",
+          "reason": "BatchActionを継承したhandle/createReaderの実装例に使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+          "reason": "DB to DBパターンの特徴（同一トランザクション、不整合なし）の説明に使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+          "reason": "都度起動バッチが定期処理に適するという説明に使用"
+        },
+        {
+          "ref": "nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+          "reason": "DB to DBパターンが都度起動で使えることの根拠に使用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s9",
+          "reason": "大量データ時の遅延ロード（UniversalDao.defer()）の注意点に使用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s14",
+          "reason": "batchInsert等の一括操作についての注意点として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "nablarch-batch-feature-details.json:s4",
+          "reason": "DatabaseRecordReaderへの参照はs7で既にカバーしているため不使用"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s6",
+          "reason": "設定のXML詳細は今回の回答スコープ（実装構成の概要）には含めなかった"
+        }
+      ]
+    }
+  }
+}

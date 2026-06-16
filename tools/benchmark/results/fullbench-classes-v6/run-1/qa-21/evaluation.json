@@ -1,0 +1,70 @@
+{
+  "scenario_id": "qa-21",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+    "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both key facts from the Expected Output. It explains that @Valid annotation triggers automatic validation error handling (via JaxRsBeanValidationHandler throwing ApplicationException), and it thoroughly explains creating an ErrorResponseBuilder subclass to set error messages in the response body. Both expected facts are fully covered, with the Actual Output providing additional implementation details and code examples that reinforce the core claims."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing how to return error messages to users when input validation errors occur. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9090909090909091,
+      "reason": "The score is 0.91 because the actual output incorrectly claims that no response can be returned to the client when an exception occurs during ErrorResponseBuilder processing. In contrast, the retrieval context states that the framework logs the exception at WARN level, generates a response with status code 500, and continues subsequent processing — meaning a response is indeed returned to the client."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11",
+      "component/libraries/libraries-bean-validation.json:s7"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 183093,
+    "duration_api_ms": 181423,
+    "num_turns": 9,
+    "total_cost_usd": 0.8627416,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 13548,
+      "cache_read_input_tokens": 479772,
+      "cache_creation_input_tokens": 136496
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3509,
+        "outputTokens": 40,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003709,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 13548,
+        "cacheReadInputTokens": 479772,
+        "cacheCreationInputTokens": 136496,
+        "webSearchRequests": 0,
+        "costUSD": 0.8590325999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
