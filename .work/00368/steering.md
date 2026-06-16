@@ -177,9 +177,12 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 # State
 
-- **Status**: in_progress
+- **Status**: paused
 - **Date**: 2026-06-16
-- **Last completed**: #9 全ステップ完了（実験A実行・裏取り・コミット・ユーザー判定受領）
-- **Next**: #10 上限20復元 + フルベンチ実行
-- **Notes**: ユーザー判定: 実験Aで上限12に利得なし確定 → 上限20へ戻す + 全34シナリオフルベンチ実施。
+- **Last completed**: #10 上限20復元コミット + フルベンチ3run実行・コミット・push完了
+- **Next**: #10 続き — error.jsonシナリオの再実行 → 裏取り・判定材料抽出 → 報告
+- **Notes**: fullbench-classes-v6 run-1/2/3 完了・コミット済み（`6bfdf9a63`）。
+  エラー: run-1に4件（qa-04/08/19/21）、run-3に1件（qa-02）のerror.json。
+  ARGUMENTSの指示に従い各1回再実行が必要（明日実施）。
+  再実行後に裏取り（ベースライン比較・reason全文・コスト時間）を行う。
   ブランチ: 368-classes-md-for-class-search (PR #369 OPEN)。
