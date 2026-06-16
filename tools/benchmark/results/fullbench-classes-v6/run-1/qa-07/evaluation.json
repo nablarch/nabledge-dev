@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-07",
+  "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。",
+  "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly covers the key fact from the Expected Output: using ObjectMapperFactory#create to generate an ObjectMapper for reading data. This is shown in the code example with `ObjectMapperFactory.create(ZipCodeForm.class, new FileInputStream(csvFile))` and the direct usage example `ObjectMapperFactory.create(Person.class, inputStream)`. The expected fact is fully addressed."
+    },
+    "answer_relevancy": {
+      "score": 0.9473684210526315,
+      "reason": "The score is 0.95 because the response is largely relevant and effectively addresses how to read CSV rows as Java Bean objects. However, it loses a small amount of points for including an unrelated mention of inserting data with UniversalDao, which is a post-processing step that goes beyond the scope of the question asked."
+    },
+    "faithfulness": {
+      "score": 0.9473684210526315,
+      "reason": "The score is 0.95 because the actual output incorrectly suggests calling mapper.read() until it returns null as a simpler alternative for DataReader implementation, whereas the retrieval context states that ObjectMapper does not have a hasNext method and recommends using ObjectMapperIterator to simplify the implementation instead."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "component/libraries/libraries-data-bind.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 174934,
+    "duration_api_ms": 174315,
+    "num_turns": 15,
+    "total_cost_usd": 1.12608705,
+    "usage": {
+      "input_tokens": 15,
+      "output_tokens": 10433,
+      "cache_read_input_tokens": 1651091,
+      "cache_creation_input_tokens": 125461
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3511,
+        "outputTokens": 46,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003741,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 15,
+        "outputTokens": 10433,
+        "cacheReadInputTokens": 1651091,
+        "cacheCreationInputTokens": 125461,
+        "webSearchRequests": 0,
+        "costUSD": 1.12234605,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

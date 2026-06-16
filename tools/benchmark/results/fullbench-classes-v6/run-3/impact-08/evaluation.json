@@ -1,0 +1,68 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly states that system date/time can be switched by replacing the class specified in the component definition ('コンポーネント定義で指定するクラスを差し替えるだけで取得方法が切り替わる'), which directly covers the single expected fact. The coverage is complete."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is fully relevant to the question about how to replace the system date/time with an arbitrary date during testing and switch between production and test environments. No irrelevant statements were identified!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s12",
+      "component/libraries/libraries-date.json:s13",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 111051,
+    "duration_api_ms": 109892,
+    "num_turns": 14,
+    "total_cost_usd": 0.4947324999999999,
+    "usage": {
+      "input_tokens": 15,
+      "output_tokens": 7011,
+      "cache_read_input_tokens": 753260,
+      "cache_creation_input_tokens": 42634
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3497,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003667,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 15,
+        "outputTokens": 7011,
+        "cacheReadInputTokens": 753260,
+        "cacheCreationInputTokens": 42634,
+        "webSearchRequests": 0,
+        "costUSD": 0.49106549999999993,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

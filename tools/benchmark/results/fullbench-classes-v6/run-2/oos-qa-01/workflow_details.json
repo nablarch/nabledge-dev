@@ -1,0 +1,78 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json",
+        "source": "index",
+        "reason": "WebSocketの代替となるNablarchの非同期処理パターン（テーブルキューメッセージング）が記載されており、質問のユースケースに最も関連する"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-policy.json",
+        "source": "index",
+        "reason": "OSSは使用しないというNablarchの基本方針が記載されており、WebSocketアダプタが存在しない背景を説明できる"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションの機能詳細一覧にWebSocket関連の記載があるか確認するために選定"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "アーキテクチャ概要はWebSocket実装に関する情報を含まないと判断"
+      },
+      {
+        "path": "component/handlers/handlers-web.json",
+        "reason": "ウェブアプリ専用ハンドラ一覧だがWebSocket関連ハンドラが存在しないことは知識ファイル検索で確認済み"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "メール送信ユースケースにおける常駐バッチとテーブルキューの使い分けを説明しており、非同期パターンの補足情報となる"
+      },
+      {
+        "file": "about/about-nablarch/about-nablarch-policy.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "OSSは使用しないという方針が明記されており、WebSocketアダプタが提供されていない背景を説明する根拠となる"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s1-s21",
+        "reason": "WebSocket関連の情報が一切含まれておらず、全セクションをスキップ"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1",
+      "about/about-nablarch/about-nablarch-policy.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:body",
+          "reason": "Webアプリ→DBデータ登録→テーブルキューが処理という非同期パターンの説明に使用"
+        },
+        {
+          "ref": "about/about-nablarch/about-nablarch-policy.json:s6",
+          "reason": "OSSは使用しないという基本方針の根拠として引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1",
+          "reason": "メール送信ユースケースの補足情報であり、WebSocket通知の質問には直接関係しないため回答本文では不使用"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能",
+    "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers both expected facts clearly. It explicitly states that the DBストア saves to a database table ('データベース上のテーブル') and that it can restore session variables even when the AP server stops ('ローリングメンテナンス等でサーバが停止しても復元可能'). It also clearly states that the HIDDENストア stores information on the client side using hidden tags ('クライアントサイド（hiddenタグで画面間引き回し）'). Both expected facts are fully addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about session variable storage options when scaling out to multiple AP servers, with no irrelevant statements found. Great job covering the key characteristics of each session store!"
+    },
+    "faithfulness": {
+      "score": 0.96875,
+      "reason": "The score is 0.97 because the actual output incorrectly states that authentication information should be held using a DB store or Redis store, whereas the retrieval context specifies it should be held using a DB store or HTTP session store."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s17",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s6",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s14",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15",
+      "component/libraries/libraries-stateless-web-app.json:s1",
+      "component/libraries/libraries-stateless-web-app.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 172054,
+    "duration_api_ms": 171148,
+    "num_turns": 16,
+    "total_cost_usd": 1.2284574499999998,
+    "usage": {
+      "input_tokens": 17,
+      "output_tokens": 11142,
+      "cache_read_input_tokens": 1865049,
+      "cache_creation_input_tokens": 132805
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3553,
+        "outputTokens": 38,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0037430000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 17,
+        "outputTokens": 11142,
+        "cacheReadInputTokens": 1865049,
+        "cacheCreationInputTokens": 132805,
+        "webSearchRequests": 0,
+        "costUSD": 1.2247144499999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

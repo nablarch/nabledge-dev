@@ -1,0 +1,68 @@
+{
+  "scenario_id": "qa-13",
+  "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。",
+  "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers all facts in the Expected Output: it explains using a Form class to receive values, using @Valid for validation, and using UniversalDao.insert for registration. Additionally, the Actual Output provides extensive detail including code examples, annotations, and implementation notes, but the core expected facts are all present."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, directly addressing the implementation patterns for registering form data into a database. No irrelevant statements were identified!"
+    },
+    "faithfulness": {
+      "score": 0.9285714285714286,
+      "reason": "The score is 0.93 because the actual output incorrectly associates JerseyJaxRsHandlerListFactory with RESTEasy adapters, when the retrieval context clearly indicates that JerseyJaxRsHandlerListFactory is specific to the Jersey adapter. No RESTEasy adapter is mentioned in the retrieval context."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s46",
+      "component/libraries/libraries-bean-validation.json:s8",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s3",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/adapters/adapters-router-adaptor.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 301732,
+    "duration_api_ms": 300126,
+    "num_turns": 19,
+    "total_cost_usd": 1.5870437499999999,
+    "usage": {
+      "input_tokens": 17,
+      "output_tokens": 12659,
+      "cache_read_input_tokens": 1558612,
+      "cache_creation_input_tokens": 210421
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3491,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003661,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 1491,
+        "outputTokens": 18228,
+        "cacheReadInputTokens": 1718745,
+        "cacheCreationInputTokens": 210631,
+        "webSearchRequests": 0,
+        "costUSD": 1.58338275,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

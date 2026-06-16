@@ -1,0 +1,69 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers the key fact from the Expected Output: using a SQL file with a specified SQL ID for searching, and mapping results to a Bean. The Actual Output explicitly shows `findAllBySqlFile()` with SQL ID specification, demonstrates Bean class mapping (User.class, Project.class), and explains that SQL file paths are auto-derived from the Bean class. All core elements of the expected fact are present and clearly explained."
+    },
+    "answer_relevancy": {
+      "score": 0.9,
+      "reason": "The score is 0.90 because the response mostly addresses how to search data using UniversalDao, but includes some irrelevant information about limitations for update/delete operations and recommendations for alternative tools for those operations, which are unrelated to the question about searching data."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/libraries/libraries-universal-dao.json:s12",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "component/libraries/libraries-universal-dao.json:s2",
+      "component/libraries/libraries-universal-dao.json:s3",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 141579,
+    "duration_api_ms": 140965,
+    "num_turns": 7,
+    "total_cost_usd": 0.7961123499999999,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 9615,
+      "cache_read_input_tokens": 498042,
+      "cache_creation_input_tokens": 133021
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3455,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003625,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 9615,
+        "cacheReadInputTokens": 498042,
+        "cacheCreationInputTokens": 133021,
+        "webSearchRequests": 0,
+        "costUSD": 0.7924873499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

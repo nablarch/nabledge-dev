@@ -1,0 +1,100 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "index",
+        "reason": "index.md に「可変条件を持つSQLを実行する」(s21)、「実行時のBeanオブジェクトの状態を元にSQL文を動的に構築できる」(s6) が記載されており、ユーザーの入力に応じて条件を動的に変えるSQLの実装に直接対応するページ。"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "ユニバーサルDAOはCRUDの簡易化が主眼であり、可変条件のSQLファイル記述機能（$if構文）はJDBCラッパー側の機能のため対象外。"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "reason": "検索機能サンプルだが、可変条件の記述ルールを説明するページではなく実装例のみのため、libraries-database.jsonで十分にカバーされる。"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーション機能詳細は処理方式の概要であり、SQL可変条件の実装詳細は含まない。"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "$if構文による可変条件の記述ルールと実装例を含む、質問に直接答えるセクション。"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "ParameterizedSqlPStatementを使ったBeanオブジェクトによるSQL実行の基礎であり、s21の前提となるセクション。"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "partial",
+        "reason": "IN句の条件数が可変となる場合の:param[]構文を説明しており、可変条件と組み合わせて使う補足情報として有用。"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "動的SQL構築の機能概要として、可変条件・in句・order byの動的切り替えへの参照を含むナビゲーション情報。"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s19",
+        "reason": "like検索のエスケープ処理は今回の質問（可変条件）と直接関係しない。"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s23",
+        "reason": "order byのソート項目動的切り替えは質問の範囲外。"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s12",
+        "reason": "SQLファイル管理の基本設定は今回の質問の直接的な回答ではない。"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s6",
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-database.json:s16"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s21",
+          "reason": "$if構文の記述ルール、除外条件、実装例を回答の中心として使用した。"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s16",
+          "reason": "ParameterizedSqlPStatementとBeanオブジェクトによるSQL実行の基礎説明として参照した。"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s22",
+          "reason": "IN句の可変条件（:param[]構文）を注意点として補足した。"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-database.json:s6",
+          "reason": "機能概要の見出しのみで内容が薄く、s21の詳細説明で十分にカバーされるため回答には直接引用しなかった。"
+        }
+      ]
+    }
+  }
+}

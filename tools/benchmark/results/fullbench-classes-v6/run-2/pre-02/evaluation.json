@@ -1,0 +1,69 @@
+{
+  "scenario_id": "pre-02",
+  "description": "入力バリデーションの実装方法を知りたいが、バッチかWebかRESTかが不明",
+  "input": "入力チェック（バリデーション）の実装方法を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly covers the key fact from the Expected Output: it states that `@InjectForm` interceptor is used for validation in web applications (mentioned in the conclusion and Step 3). The expected fact about using InjectForm interceptor for validation in web applications is clearly and thoroughly covered."
+    },
+    "answer_relevancy": {
+      "score": 0.95,
+      "reason": "The score is 0.95 because the response is highly relevant to the question about input validation implementation. However, it loses some points for including an inaccurate statement about SQL injection prevention being a reason why Bean Validation does not perform DB access, when the actual reasons are related to transaction management and separation of responsibilities. This minor inaccuracy slightly detracts from an otherwise well-targeted response."
+    },
+    "faithfulness": {
+      "score": 0.9473684210526315,
+      "reason": "The score is 0.95 because the actual output incorrectly states that defining all Bean class properties as String is mandatory ('しなければならない'), when the retrieval context only states that it is 'recommended' (推奨)."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s8",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/libraries/libraries-bean-validation.json:s9",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s6",
+      "processing-pattern/web-application/web-application-feature-details.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 177134,
+    "duration_api_ms": 175842,
+    "num_turns": 10,
+    "total_cost_usd": 0.9162269999999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 11864,
+      "cache_read_input_tokens": 645320,
+      "cache_creation_input_tokens": 144260
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3477,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003672,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 11864,
+        "cacheReadInputTokens": 645320,
+        "cacheCreationInputTokens": 144260,
+        "webSearchRequests": 0,
+        "costUSD": 0.912555,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

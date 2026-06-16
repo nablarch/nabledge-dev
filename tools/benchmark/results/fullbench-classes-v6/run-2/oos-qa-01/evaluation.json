@@ -1,0 +1,63 @@
+{
+  "scenario_id": "oos-qa-01",
+  "description": "バッチ処理の進捗をリアルタイムにクライアントへ通知する機能を実装したい。WebSocketを使いたいが、NablarchでWebSocketが使えるか確認したい。",
+  "input": "バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "NablarchにはWebSocketのサポートがないと回答している"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly states that Nablarch does not provide a dedicated handler/adapter for WebSocket support, which directly covers the expected fact that 'Nablarch does not support WebSocket.' The response goes into considerable detail explaining the lack of WebSocket support and alternative patterns, but the core expected fact is fully covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input question about using WebSocket in Nablarch for real-time batch processing progress notifications to the browser. No irrelevant statements were identified!"
+    },
+    "faithfulness": {
+      "score": 0.9166666666666666,
+      "reason": "The score is 0.92 because the actual output slightly misrepresents Nablarch's OSS policy by suggesting a blanket 'do not use OSS in production code' policy, when in fact the retrieval context clarifies that while Nablarch's production code avoids OSS to quickly respond to critical bugs/vulnerabilities, it still provides adapter components that allow OSS usage."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1",
+      "about/about-nablarch/about-nablarch-policy.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 215043,
+    "duration_api_ms": 214004,
+    "num_turns": 12,
+    "total_cost_usd": 0.9299448999999999,
+    "usage": {
+      "input_tokens": 13,
+      "output_tokens": 12857,
+      "cache_read_input_tokens": 1141593,
+      "cache_creation_input_tokens": 104228
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3533,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003718,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13,
+        "outputTokens": 12857,
+        "cacheReadInputTokens": 1141593,
+        "cacheCreationInputTokens": 104228,
+        "webSearchRequests": 0,
+        "costUSD": 0.9262269,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

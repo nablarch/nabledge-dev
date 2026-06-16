@@ -1,0 +1,70 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "purpose": "セキュリティ対応したい",
+  "expected_facts": [
+    "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers the key fact stated in the Expected Output: that Nablarch's custom tags perform sanitizing (HTMLエスケープ/サニタイジング) to fundamentally resolve XSS (根本的解決). The Actual Output explicitly states this in the conclusion and provides detailed supporting evidence, including the specific escape mappings and references to IPA standard 5-(i). The core claim is thoroughly addressed and confirmed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly relevant to the input, addressing the question about XSS countermeasures in Nablarch and whether sanitizing is performed when using custom tags. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9444444444444444,
+      "reason": "The score is 0.94 because the actual output slightly misrepresents the relationship between prettyPrint and rawWrite by grouping them together as both 'outputting without escaping', when the retrieval context describes them separately. While prettyPrint does output decorative HTML tags without escaping, equating its escaping behavior directly with rawWrite is a partial misrepresentation of the source material."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s5",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s50",
+      "component/libraries/libraries-tag.json:s27",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/libraries/libraries-tag.json:s38",
+      "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1",
+      "component/handlers/handlers-secure-handler.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 160179,
+    "duration_api_ms": 159004,
+    "num_turns": 9,
+    "total_cost_usd": 0.93732015,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 9502,
+      "cache_read_input_tokens": 927723,
+      "cache_creation_input_tokens": 136719
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3557,
+        "outputTokens": 38,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003747,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 9502,
+        "cacheReadInputTokens": 927723,
+        "cacheCreationInputTokens": 136719,
+        "webSearchRequests": 0,
+        "costUSD": 0.9335731499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

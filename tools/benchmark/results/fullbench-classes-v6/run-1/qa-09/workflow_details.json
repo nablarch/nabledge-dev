@@ -1,0 +1,197 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-date.json",
+        "source": "both",
+        "reason": "「日付管理」ページでシステム日時(OS日時)と業務日付の切り替えを直接扱っており、質問に完全に合致する"
+      },
+      {
+        "path": "component/adapters/adapters-jsr310-adaptor.json",
+        "source": "classes",
+        "reason": "DateTimeConfiguration/BasicDateTimeConfigurationがDate and Time APIの日時設定を扱う可能性があり、業務日付管理の補足情報になり得る"
+      },
+      {
+        "path": "development-tools/testing-framework/testing-framework-03-Tips.json",
+        "source": "index",
+        "reason": "s11「システム日時を任意の値に固定したい」が実装の参考になる可能性がある"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "その他すべてのページ",
+        "reason": "業務日付・システム日時の管理機能と直接関係がない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "システム日時の設定方法（BasicSystemTimeProvider）を説明しており、実装に必須"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "SystemTimeUtilを使ったシステム日時の取得方法を説明しており、実装に必須"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "業務日付管理機能の設定方法（BasicBusinessDateProvider）を説明しており、実装に必須"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "BusinessDateUtilを使った業務日付の取得方法を説明しており、実装に必須"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "業務日付の上書き方法を説明しており、締め処理での再実行シナリオに直接対応"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s10",
+        "relevance": "high",
+        "reason": "業務日付の更新（setDate）方法を説明しており、締め処理実装に必須"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "BusinessDateUtil.getDate()のシグネチャと戻り値を明示しており、APIの正確な使い方を示す"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "区分を指定したBusinessDateUtil.getDate(String)のシグネチャを明示しており、複数区分管理に必須"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "SystemTimeUtil.getDate()のシグネチャを提供し、システム日時取得APIの補足情報となる"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "SystemTimeUtil.getDateString()でyyyyMMdd形式の文字列取得ができることを示し、業務日付と同形式での比較に役立つ"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s1",
+        "reason": "機能概要の見出しのみで具体的な実装情報がない"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s2",
+        "reason": "コンポーネント差し替えの概念説明のみで実装手順は他のセクションで補完できる"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s3",
+        "reason": "モジュール一覧はMavenの依存関係設定で、質問の実装方法とは直接関係がない"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s4",
+        "reason": "使用方法の見出しのみで内容がない"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s11",
+        "reason": "拡張例の見出しのみで内容がない"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s12",
+        "reason": "テスト時のシステム日時切り替えで、締め処理の実装とは関係がない"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s13",
+        "reason": "テスト時の業務日付切り替えで、締め処理の実装とは関係がない"
+      },
+      {
+        "file": "component/adapters/adapters-jsr310-adaptor.json",
+        "全セクション": "",
+        "reason": "Date and Time APIアダプタはLocalDateTime型サポートで業務日付管理とは別機能のため除外"
+      },
+      {
+        "file": "development-tools/testing-framework/testing-framework-03-Tips.json",
+        "全セクション": "",
+        "reason": "テスト向けのTipsで、締め処理の実装には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s8",
+      "component/libraries/libraries-date.json:s9",
+      "component/libraries/libraries-date.json:s10",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s6",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s7",
+      "javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json:s9",
+      "javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json:s12"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-date.json:s5",
+          "reason": "BasicSystemTimeProviderの設定XMLをそのまま引用"
+        },
+        {
+          "ref": "libraries-date.json:s6",
+          "reason": "SystemTimeUtilを使ったシステム日時取得の説明"
+        },
+        {
+          "ref": "libraries-date.json:s7",
+          "reason": "BasicBusinessDateProviderの設定XMLをそのまま引用"
+        },
+        {
+          "ref": "libraries-date.json:s8",
+          "reason": "BusinessDateUtilを使った業務日付取得の説明"
+        },
+        {
+          "ref": "libraries-date.json:s9",
+          "reason": "システムプロパティによる業務日付上書きの説明"
+        },
+        {
+          "ref": "libraries-date.json:s10",
+          "reason": "setDateによる業務日付更新のコード例をそのまま引用"
+        },
+        {
+          "ref": "javadoc-nablarch-core-date-BusinessDateUtil.json:s6",
+          "reason": "BusinessDateUtil.getDate()のシグネチャと戻り値型を確認"
+        },
+        {
+          "ref": "javadoc-nablarch-core-date-BusinessDateUtil.json:s7",
+          "reason": "区分付きBusinessDateUtil.getDate(String)のシグネチャを確認"
+        },
+        {
+          "ref": "javadoc-nablarch-core-date-SystemTimeUtil.json:s9",
+          "reason": "SystemTimeUtil.getDate()の戻り値型を確認"
+        },
+        {
+          "ref": "javadoc-nablarch-core-date-SystemTimeUtil.json:s12",
+          "reason": "SystemTimeUtil.getDateString()のシグネチャと説明を引用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

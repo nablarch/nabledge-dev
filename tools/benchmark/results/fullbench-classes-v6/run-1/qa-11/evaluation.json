@@ -1,0 +1,75 @@
+{
+  "scenario_id": "qa-11",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output thoroughly covers the expected facts. It explicitly describes HttpErrorHandler handling exceptions based on type with corresponding HTTP status codes (via the table showing NoMoreHandlerException→404, HttpErrorResponse→its own status, etc., and 500 for others). It also explicitly states that when HttpErrorResponse's cause is ApplicationException, error messages are converted to ErrorMessages and set in the request scope under the 'errors' key, which directly corresponds to the expected fact about ApplicationException error messages being set in the request scope. Both key facts from the Expected Output are present and well-explained."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9642857142857143,
+      "reason": "The score is 0.96 because the actual output contains a minor misrepresentation regarding FATAL level logging for Result.Error. The retrieval context states that FATAL level logging is performed for Result.Error (including subclasses) unconditionally, while the actual output implies that FATAL logging is conditional on the writeFailureLogPattern matching Error#getStatusCode(), which is not supported by the retrieval context."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/handlers/handlers-HttpErrorHandler.json:s3",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s3",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/handlers/handlers-on-error.json:s4",
+      "component/handlers/handlers-on-error.json:s5",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s2",
+      "processing-pattern/web-application/web-application-feature-details.json:s16",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 224241,
+    "duration_api_ms": 223361,
+    "num_turns": 10,
+    "total_cost_usd": 0.8911591999999999,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 16826,
+      "cache_read_input_tokens": 486259,
+      "cache_creation_input_tokens": 130434
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3523,
+        "outputTokens": 44,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0037430000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 16826,
+        "cacheReadInputTokens": 486259,
+        "cacheCreationInputTokens": 130434,
+        "webSearchRequests": 0,
+        "costUSD": 0.8874162000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

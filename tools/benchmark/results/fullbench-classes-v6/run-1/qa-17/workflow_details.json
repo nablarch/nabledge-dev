@@ -1,0 +1,110 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-repository.json",
+        "source": "both",
+        "reason": "「システムリポジトリ」ページで、s25「システムリポジトリからオブジェクトを取得する」が質問に直接対応し、Phase Aのindex.mdとPhase Bのclasses.mdの両方で選出された"
+      },
+      {
+        "path": "component/libraries/libraries-role-check.json",
+        "source": "classes",
+        "reason": "classes.mdに SystemRepository クラスが掲載されているが、認可チェックの文脈であり直接の回答には不要"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "about/about-nablarch/about-nablarch-architecture.json",
+        "reason": "アーキテクチャ概要であり、SystemRepositoryからのオブジェクト取得方法の実装手順は含まない"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-nablarch-servlet-context-listener.json",
+        "reason": "サーブレットコンテキスト初期化リスナーに関するページで、取得APIの実装方法は含まない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s25",
+        "relevance": "high",
+        "reason": "SystemRepository.get()の使い方と取得例が直接記載されており、質問に完全に回答できる"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s24",
+        "relevance": "partial",
+        "reason": "取得の前提となるDIコンテナのロードについて背景情報を提供する"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "コンポーネントのname属性定義方法を示し、取得時のキー名を理解するために必要"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s1",
+        "reason": "機能概要の見出しのみでコンテンツがない"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s2",
+        "reason": "DIコンテナの概要説明であり、取得方法の実装詳細は含まない"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s3",
+        "reason": "オブジェクト初期化の説明であり、取得方法とは関係ない"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s5",
+        "reason": "使用方法の見出しのみでコンテンツがない"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s6",
+        "reason": "XMLのルートノード定義方法で、コンポーネント取得の直接的な情報は含まない"
+      },
+      {
+        "file": "component/libraries/libraries-role-check.json",
+        "section_id": "s1",
+        "reason": "認可チェックの機能概要であり、SystemRepositoryからのコンポーネント取得方法とは直接関係ない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-repository.json:s25",
+      "component/libraries/libraries-repository.json:s24",
+      "component/libraries/libraries-repository.json:s7",
+      "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-repository.json:s25",
+          "reason": "SystemRepository.get()の使い方とコード例を直接引用して回答の根拠とした"
+        },
+        {
+          "ref": "libraries-repository.json:s24",
+          "reason": "DIコンテナのロードが通常は個別実装不要という注意点の根拠とした"
+        },
+        {
+          "ref": "libraries-repository.json:s7",
+          "reason": "シングルトンであることの注意点の根拠とした"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s1",
+          "reason": "セクション内容が「フィールドの詳細」の見出しのみで実質的なコンテンツがなかったため使用しなかった"
+        }
+      ]
+    }
+  }
+}

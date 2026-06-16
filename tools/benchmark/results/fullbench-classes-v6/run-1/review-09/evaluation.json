@@ -1,0 +1,69 @@
+{
+  "scenario_id": "review-09",
+  "description": "セキュリティ診断でContent Security Policyを有効にしろと指摘された。NablarchのWeb画面でCSPを設定したい。",
+  "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
+  "purpose": "セキュリティ対応したい",
+  "expected_facts": [
+    "セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Expected Output contains a single key fact: combining SecureHandler, ContentSecurityPolicyHeader, and custom tag CSP support to enable CSP. The Actual Output comprehensively covers all three components — it details SecureHandler configuration with ContentSecurityPolicyHeader, explains the nonce-based approach for JSP custom tags (including form tag, script tag, and cspNonce tag behavior), and shows how these elements work together. All aspects of the expected fact are explicitly addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing how to configure Content Security Policy (CSP) in Nablarch's web screen without any irrelevant statements. Great job!"
+    },
+    "faithfulness": {
+      "score": 0.8823529411764706,
+      "reason": "The score is 0.88 because the actual output correctly states that SecureHandler must be placed after the HTTP response handler, but incorrectly explains the reason for this ordering. The retrieval context specifies that the HTTP response handler writes the response headers set by SecureHandler to the Servlet API response object, meaning SecureHandler sets the headers first and then the HTTP response handler writes them. The actual output reverses this relationship, misstating the directional dependency between SecureHandler and the HTTP response handler."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "component/handlers/handlers-secure-handler.json:s3",
+      "component/libraries/libraries-tag.json:s38",
+      "component/libraries/libraries-tag.json:s39",
+      "component/libraries/libraries-tag.json:s40"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 186175,
+    "duration_api_ms": 184833,
+    "num_turns": 10,
+    "total_cost_usd": 1.03443405,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 12590,
+      "cache_read_input_tokens": 970826,
+      "cache_creation_input_tokens": 146835
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3515,
+        "outputTokens": 32,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003675,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 12590,
+        "cacheReadInputTokens": 970826,
+        "cacheCreationInputTokens": 146835,
+        "webSearchRequests": 0,
+        "costUSD": 1.0307590500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

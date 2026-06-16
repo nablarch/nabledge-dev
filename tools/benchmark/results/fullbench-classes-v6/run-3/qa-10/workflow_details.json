@@ -1,0 +1,123 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "index",
+        "reason": "s21「可変条件を持つSQLを実行する」がウェブアプリケーションの動的検索条件に直接対応する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションの検索機能作成の実装例として$if構文の実際の使用パターンを含む"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index",
+        "reason": "任意SQLファイルによる検索(findAllBySqlFile)で$if構文と組み合わせて使用できる"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "BeanUtilはフォームから条件Beanへのコピーで補助的に使うが、動的SQL構築の直接的な回答ではない"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "バリデーションは質問の範囲外"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "機能詳細の概要ページであり具体的な実装例はない"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "Domaアダプタは処理方式がウェブアプリのNablarchネイティブDBアクセスとは別"
+      },
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "バリデーション関連であり動的SQL構築とは無関係"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "可変条件($if構文)の記述ルールと実装例を直接説明している"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "high",
+        "reason": "in句を可変にする方法($if+[]記法)を説明しており、検索条件の典型的なパターンに含まれる"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションの検索機能での$if構文の実際の使用パターン(SQL+アクション実装)を含む完全な実装例"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "$if構文などの動的SQL構築機能の概要説明"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s19",
+        "reason": "like検索のエスケープ処理は補足情報だが質問の中心ではない"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s23",
+        "reason": "order byの動的切り替えは質問の範囲外"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "reason": "Beanオブジェクトを入力としたSQL実行の基礎説明はs21でカバーされる"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "reason": "findAllBySqlFileの説明はs1の実装例でカバーされる"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s6",
+      "component/libraries/libraries-database.json:s22",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s21",
+          "reason": "$if構文のルールと実装例（ParameterizedSqlPStatement使用）を回答の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s22",
+          "reason": "in句を可変にするための$if+[]記法を回答に含めた"
+        },
+        {
+          "ref": "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+          "reason": "ウェブアプリケーションでのSQL定義と業務アクション実装例（UniversalDao使用）を根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-database.json:s6",
+          "reason": "s21とs22でカバーされる概要説明のため回答に直接引用しなかった"
+        }
+      ]
+    }
+  }
+}

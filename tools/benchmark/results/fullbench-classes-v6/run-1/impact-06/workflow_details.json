@@ -1,0 +1,171 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "source": "both",
+        "reason": "セッションストアの特長と選択基準セクションが質問に直接回答する"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "source": "both",
+        "reason": "有効期間のDB保存などスケールアウト関連の設定を含む"
+      },
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "source": "both",
+        "reason": "Redisをセッション保存先として使用するアダプタで、スケールアウト時の選択肢の一つ"
+      },
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "source": "index",
+        "reason": "APサーバのスケールアウトとHTTPセッション非依存化の基本的な考え方を説明"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションのスケールアウト設計セクションを含む"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "カスタムタグの実装であり、セッション保存先の選択とは直接関係しない"
+      },
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "reason": "CSRFトークンの検証であり、セッション保存先の特徴とは無関係"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "各ストアの特徴と選択基準を表形式で直接説明しており、質問に完全に回答する"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "スケールアウト時にHTTPセッションが問題になる理由と基本的な対処方針を説明"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "保存先の種類（DBストア、HIDDENストア、HTTPセッションストア、Redisストア）を一覧で紹介"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "Redis構成（単一、Master-Replica、Cluster）ごとのクライアントクラスの特徴を説明"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "冗長化環境でHIDDENストアを使う際の暗号化キー設定の注意点を説明"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "セッション有効期間のデフォルト保存先（HTTPセッション）とDB変更の方法を説明"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "有効期間をHTTPセッションからDBに変更するための設定情報"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "HTTPセッションに依存している機能の一覧を提供"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "本番環境での実際のRedis構成（Sentinel、Cluster等）の説明"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s18",
+        "reason": "リンクのみでlibraries-stateless-web-app.jsonへの参照しか含まない"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s8",
+        "reason": "セッションストアの設定方法の詳細で、ストア特徴の理解には不要"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s4",
+        "reason": "SessionManagerの設定方法であり、ストア特徴の比較とは直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-stateless-web-app.json:s1",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s6",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s17",
+      "component/handlers/handlers-SessionStoreHandler.json:s9",
+      "component/libraries/libraries-stateless-web-app.json:s2",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-session-store.json:s16",
+          "reason": "各ストアの特徴と選択基準の表を回答の主要内容として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-stateless-web-app.json:s1",
+          "reason": "HTTPセッションのスケールアウト問題とTwelve-Factor Appの廃棄容易性の説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s2",
+          "reason": "4種類のストアの概要と、Redisストアアダプタへの言及に使用"
+        },
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s6",
+          "reason": "Redisの構成オプション（単一、Master-Replica、Cluster）の説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s12",
+          "reason": "HIDDENストア冗長化時の暗号化キー問題とコード例に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-session-store.json:s17",
+          "reason": "有効期間のDB保存についての注意点として参照したが、回答の主旨は保存先の特徴の比較なので詳細設定は割愛"
+        },
+        {
+          "ref": "component/handlers/handlers-SessionStoreHandler.json:s9",
+          "reason": "有効期間DB保存の設定方法だが、注意点の言及のみにとどめた"
+        },
+        {
+          "ref": "component/libraries/libraries-stateless-web-app.json:s2",
+          "reason": "HTTPセッション依存機能の一覧だが回答の主要内容として直接引用せず"
+        },
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5",
+          "reason": "Redisの各構成の説明の導入部だが詳細は回答に不要"
+        }
+      ]
+    }
+  }
+}

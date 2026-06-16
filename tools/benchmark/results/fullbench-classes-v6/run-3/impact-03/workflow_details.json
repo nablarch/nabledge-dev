@@ -1,0 +1,106 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "both",
+        "reason": "Bean Validationの機能ページで、s12にDBとの相関バリデーションについての記載がある"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスのBean Validationハンドラで、リソースメソッドへの@Valid設定方法を扱う"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスの機能詳細ページで、入力値チェックの概要がある"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "アーキテクチャ概要のみで実装方法の詳細なし"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "Universal DAOの使い方でDB検索そのものの情報だが、バリデーション設計の方針はbean-validationページで完結する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "DBとの相関バリデーションはカスタムバリデータではなく業務アクション側で行うべきという設計方針を直接記述"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "アクション側でDBチェックしてエラーを特定フィールドに紐付ける実装方法を示す"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスでのBean Validation実行方法の概要"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "リソースメソッドに@Validを設定してBean Validationを実行する具体的コード例"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "reason": "相関バリデーションの一般的な説明でDB検索には関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s24",
+        "reason": "プロジェクト固有アノテーション追加方法で質問の方向性と異なる（カスタムバリデータは推奨されないため）"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックの概要のみで、bean-validationページのs12で十分に回答できる"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-bean-validation.json:s12",
+          "reason": "DBとの相関バリデーションはBean Validationではなく業務アクション側で行うべきという設計方針の根拠として使用"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s13",
+          "reason": "業務アクション側でDBチェックしてValidationUtil#createMessageForPropertyでエラーを生成する実装方法の根拠として使用"
+        },
+        {
+          "ref": "handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "@ValidアノテーションによるRESTfulのBean Validation実行例として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-bean-validation.json:s17",
+          "reason": "s4で十分に内容がカバーされており、冗長になるため回答には含めなかった"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers both facts from the Expected Output: (1) it explicitly describes the $if syntax for defining variable conditions in SQL files, and (2) it clearly states that properties with null or empty string values are automatically excluded from the conditions at runtime. The Actual Output goes into considerably more detail with code examples and additional notes, but all core facts from the Expected Output are present and addressed."
+    },
+    "answer_relevancy": {
+      "score": 0.8461538461538461,
+      "reason": "The score is 0.85 because the response largely addresses the core question about dynamically filtering SQL conditions based on user input, which is relevant. However, the score cannot be higher because the response includes irrelevant content about SQL commonalization and SQL definition splitting policies, neither of which were asked about in the input."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s16",
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-database.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 114940,
+    "duration_api_ms": 113922,
+    "num_turns": 8,
+    "total_cost_usd": 0.8294764999999998,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 5955,
+      "cache_read_input_tokens": 761695,
+      "cache_creation_input_tokens": 135444
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3531,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003701,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 5955,
+        "cacheReadInputTokens": 761695,
+        "cacheCreationInputTokens": 135444,
+        "webSearchRequests": 0,
+        "costUSD": 0.8257754999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

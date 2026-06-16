@@ -1,0 +1,137 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "source": "both",
+        "reason": "RESTfulウェブサービスでBean Validationを実行するハンドラであり、質問に直接関係する"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-response-handler.json",
+        "source": "both",
+        "reason": "エラー時のレスポンス生成を担うハンドラであり、エラーメッセージをクライアントに返す方法の核心"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "index",
+        "reason": "Bean Validationの使用方法とエラーメッセージ定義の詳細が記載されている"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスの機能詳細であり、入力チェックとエラー時レスポンスへの参照先が記載されている"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-error-message.json",
+        "reason": "ウェブアプリケーション向けの画面表示用であり、RESTfulウェブサービスとは別処理方式"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーション向けのインターセプタであり、RESTfulウェブサービスでは使用しない"
+      },
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "旧来のNablarch Validationであり、RESTfulウェブサービスではBean Validationを使用する"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@ValidアノテーションによるRESTfulウェブサービスのバリデーション実行方法が説明されている"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラー時にJSON形式のエラーメッセージをレスポンスに設定するErrorResponseBuilderの実装例が含まれている"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ErrorResponseBuilderの仕組みと設定方法が説明されている"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラー時のエラーメッセージ定義方法（プロパティファイル）が説明されている"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスのユーザ入力値チェック方法（@Valid）への参照が記載されている"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "エラー時に返却するレスポンスの設定箇所へのリンクが含まれている"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックへのリンクのみで具体的な実装情報がない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "reason": "バリデーションルールの設定方法であり、エラーメッセージ返却の直接的な回答ではない"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s5",
+        "reason": "Bean Validationのグループ指定であり、今回の質問には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "@ValidアノテーションによるRESTfulウェブサービスでのバリデーション実行コード例を使用"
+        },
+        {
+          "ref": "handlers-jaxrs-response-handler.json:s7",
+          "reason": "ErrorResponseBuilderを継承してJSON形式のエラーメッセージをレスポンスに設定する実装例を使用"
+        },
+        {
+          "ref": "handlers-jaxrs-response-handler.json:s4",
+          "reason": "ErrorResponseBuilderの設定XMLと注意事項（処理中の例外に関する制約）を使用"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s7",
+          "reason": "バリデーションエラーメッセージのプロパティファイル定義例を使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-bean-validation.json:s17",
+          "reason": "@Validの使用方法はhandlers-jaxrs-bean-validation-handler.json:s4で既にカバーされている"
+        },
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11",
+          "reason": "他セクションへのリンクのみで直接使用できる実装情報がなかった"
+        }
+      ]
+    }
+  }
+}

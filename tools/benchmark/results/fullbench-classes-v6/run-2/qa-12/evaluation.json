@@ -1,0 +1,69 @@
+{
+  "scenario_id": "qa-12",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "エラー表示タグでリクエストスコープのエラーメッセージを表示する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Expected Output contains a single key fact: displaying error messages from the request scope using error display tags. The Actual Output explicitly covers this fact, demonstrating both JSP custom tags (n:errors, n:error) and Thymeleaf templates accessing request-scoped ErrorMessages (key: 'errors') to display validation error messages. The Actual Output fully satisfies the expected fact and provides extensive additional detail."
+    },
+    "answer_relevancy": {
+      "score": 0.8571428571428571,
+      "reason": "The score is 0.86 because the response mostly addresses how to return error messages to users during input validation, but loses some points due to irrelevant content: a duplicate statement, and two subjective recommendations comparing JSP vs Thymeleaf/CSS framework compatibility, which go beyond the scope of the question asked."
+    },
+    "faithfulness": {
+      "score": 0.95,
+      "reason": "The score is 0.95 because the actual output is largely faithful to the retrieval context, with only a minor inaccuracy where it states the key name can be changed in a 'WebConfig' class, whereas the retrieval context specifies it is configured via the 'errorMessageRequestAttributeName' property in the component configuration file."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/web-application/web-application-error-message.json:全体",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-tag.json:s29"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 146013,
+    "duration_api_ms": 146662,
+    "num_turns": 9,
+    "total_cost_usd": 0.8290291,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 9174,
+      "cache_read_input_tokens": 627447,
+      "cache_creation_input_tokens": 133180
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3511,
+        "outputTokens": 45,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0037359999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 9174,
+        "cacheReadInputTokens": 627447,
+        "cacheCreationInputTokens": 133180,
+        "webSearchRequests": 0,
+        "costUSD": 0.8252931,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "source": "both",
+        "reason": "index.mdにCSP対応のs6-s9が明示されており、classes.mdにもSecureHandlerクラスとして登録されているため"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "index.mdのs21にContent Security Policy(CSP)対応が記載されており、ウェブアプリケーションのCSP対応を網羅するページとして選択"
+      },
+      {
+        "path": "component/libraries/libraries-tag-reference.json",
+        "source": "index",
+        "reason": "index.mdのs56にcspNonceタグが記載されており、nonce対応でJSPカスタムタグへの影響を確認するために選択"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "source": "index",
+        "reason": "index.mdのs38にJSPカスタムタグのCSP対応が記載されており、nonceとカスタムタグの連携を確認するために選択"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "セキュリティチェックリストであり、CSPの設定方法（実装）には直接関係しないため除外"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "チェックリストであり、CSP実装方法には直接関係しないため除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSP対応の全体像（ContentSecurityPolicyHeaderとカスタムタグの組み合わせ）を説明しているため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "固定CSPヘッダの設定方法をXML設定例付きで説明しているため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "nonceを生成するCSP設定方法をXML設定例付きで説明しており、JSPカスタムタグとの連携も含むため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "report-onlyモードの設定方法を説明しており、段階的なCSP導入に有用なため"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s21",
+        "relevance": "partial",
+        "reason": "CSP対応へのリンクのみ含むため"
+      },
+      {
+        "file": "component/libraries/libraries-tag-reference.json",
+        "section_id": "s56",
+        "relevance": "high",
+        "reason": "cspNonceタグの使用方法（sourceFormat属性）を説明しているため"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s38",
+        "relevance": "high",
+        "reason": "nonce有効時のJSPカスタムタグの動作変化（formタグ、scriptタグ）を説明しているため"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s21",
+        "reason": "リンクのみで実質的な内容がなく、secure-handlerページで内容を取得済みのため回答には不使用"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "processing-pattern/web-application/web-application-feature-details.json:s21",
+      "component/libraries/libraries-tag-reference.json:s56",
+      "component/libraries/libraries-tag.json:s38"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s6",
+          "reason": "CSP対応の全体構成（ContentSecurityPolicyHeader + カスタムタグの組み合わせ）の説明に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s7",
+          "reason": "固定CSPヘッダのXML設定例をそのまま引用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s8",
+          "reason": "nonceを生成するCSP設定のXML設定例と、カスタムタグの動作変化の説明に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s9",
+          "reason": "report-onlyモードのXML設定例をそのまま引用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s38",
+          "reason": "nonce有効時のformタグ・scriptタグの動作変化の説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag-reference.json:s56",
+          "reason": "cspNonceタグのsourceFormat属性の説明に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "processing-pattern/web-application/web-application-feature-details.json:s21",
+          "reason": "secure-handlerへのリンクのみで実質的な内容がなく、他のセクションで同等の情報を提供済みのため不使用"
+        }
+      ]
+    }
+  }
+}

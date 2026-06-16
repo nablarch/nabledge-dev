@@ -1,0 +1,68 @@
+{
+  "scenario_id": "qa-05",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "Formクラスでクライアントから送信された値を受け付ける",
+    "プロパティは全てString型で宣言する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts: it mentions creating a Form class to receive client-submitted values (ProjectForm implementing Serializable with properties), and explicitly states 'プロパティは全てString型で宣言する' (declare all properties as String type) both in the code example and in the notes section. Both expected facts from the checklist are present and accurately represented without distortion."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, which asks about creating a process to receive JSON via REST API and register it in a DB. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9230769230769231,
+      "reason": "The score is 0.92 because the actual output incorrectly frames the requirement for declaring all ProjectForm properties as String type as being specifically tied to Bean Validation, when the retrieval context presents this simply as a general property declaration rule, not a Bean Validation requirement."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "component/libraries/libraries-bean-validation.json:s17"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 173288,
+    "duration_api_ms": 172363,
+    "num_turns": 11,
+    "total_cost_usd": 0.8217666,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 12620,
+      "cache_read_input_tokens": 619027,
+      "cache_creation_input_tokens": 118154
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3477,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003657,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 12620,
+        "cacheReadInputTokens": 619027,
+        "cacheCreationInputTokens": 118154,
+        "webSearchRequests": 0,
+        "costUSD": 0.8181096,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
