@@ -1,0 +1,69 @@
+{
+  "scenario_id": "qa-19",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "JSONのボディ変換はJackson2BodyConverterが担当する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.6,
+      "reason": "The Actual Output mentions `Jackson2BodyConverter` once in the context of explaining that it is automatically configured when using JerseyJaxRsHandlerListFactory/ResteasyJaxRsHandlerListFactory. This does reference the key fact from the Expected Output that Jackson2BodyConverter handles JSON body conversion. However, the mention is brief and indirect, not explicitly stating that 'JSON body conversion is handled by Jackson2BodyConverter' as a primary fact. The core fact is present but not prominently featured."
+    },
+    "answer_relevancy": {
+      "score": 0.9655172413793104,
+      "reason": "The score is 0.97 because the response is highly relevant to the task of receiving JSON via REST API and registering it to a DB. It loses a small amount of points for including a note about @Context and Jakarta CDI unavailability, which is a side constraint rather than directly addressing the core implementation task."
+    },
+    "faithfulness": {
+      "score": 0.9473684210526315,
+      "reason": "The score is 0.95 because the actual output references a specific method `BeanUtil.createAndCopy()` for converting form objects to entity objects, whereas the retrieval context only mentions BeanUtil being used for this conversion without specifying the exact method name, making this specific detail unverifiable from the context."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s3",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 134996,
+    "duration_api_ms": 128808,
+    "num_turns": 10,
+    "total_cost_usd": 0.8300215499999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 9376,
+      "cache_read_input_tokens": 621336,
+      "cache_creation_input_tokens": 133141
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3493,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003678,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 9376,
+        "cacheReadInputTokens": 621336,
+        "cacheCreationInputTokens": 133141,
+        "webSearchRequests": 0,
+        "costUSD": 0.82634355,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

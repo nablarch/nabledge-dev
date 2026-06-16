@@ -1,0 +1,69 @@
+{
+  "scenario_id": "qa-19",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "JSONのボディ変換はJackson2BodyConverterが担当する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly mentions Jackson2BodyConverter in multiple places, including in the architecture description ('JacksonアダプタはJSONに `Jackson2BodyConverter` を使用') and in the XML configuration comment ('`Jackson2BodyConverter` がJSONコンバータとして自動設定される'). This directly and accurately covers the expected fact that Jackson2BodyConverter is responsible for JSON body conversion."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, directly addressing the request to create a process for receiving JSON via REST API and registering it to a database. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9655172413793104,
+      "reason": "The score is 0.97 because the actual output slightly misnames one of the 7 minimum handlers, referring to it as a 'routing adapter' instead of the correct 'handler linking request URI to action' as specified in the retrieval context, making it an otherwise highly faithful response."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s3",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/handlers/handlers-body-convert-handler.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 145737,
+    "duration_api_ms": 145148,
+    "num_turns": 10,
+    "total_cost_usd": 0.9442777000000002,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 10163,
+      "cache_read_input_tokens": 1019064,
+      "cache_creation_input_tokens": 128646
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3493,
+        "outputTokens": 33,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003658,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 10163,
+        "cacheReadInputTokens": 1019064,
+        "cacheCreationInputTokens": 128646,
+        "webSearchRequests": 0,
+        "costUSD": 0.9406197000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
