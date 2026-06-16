@@ -157,7 +157,7 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 - [x] 裏取り: correctness<1.0 全件のreason全文 — 下記参照
 - [x] 裏取り: qa-01 / qa-19 の到達改善確認（read_sectionsに特定keyが入るか全run明示）— 下記参照
 - [x] 裏取り: コスト・時間サマリ（baseline avg$0.733比較）— 下記参照
-- [ ] 報告
+- [x] 報告 — 2026-06-17 ユーザーへ判定材料提示済み
 
 **Completion criteria**:
 
@@ -179,8 +179,11 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 - **Status**: paused
 - **Date**: 2026-06-17
-- **Last completed**: #10 裏取り完了（再実行・比較表・reason全文・qa-01/qa-19確認・コスト時間）
-- **Next**: #10 最終ステップ — 報告（ユーザーへ判定材料を提示）
-- **Notes**: 全34シナリオ×3run完了、error.jsonゼロ確認済み（commit `6cdecee3f`）。
+- **Last completed**: #10 全ステップ完了（再実行・裏取り・報告）
+- **Next**: ユーザーの判定を待つ（退行フラグ8件の解釈 + acceptanceへの判断）
+- **Notes**: fullbench-classes-v6 34×3run完了、error.jsonゼロ（commit `6cdecee3f`）。
+  判定材料をユーザーへ提示済み（比較表・reason全文・qa-01/qa-19確認・コスト+20.8%）。
   ブランチ: 368-classes-md-for-class-search (PR #369 OPEN)。
-  裏取り結果は下記にまとめてユーザーに報告済み。
+  退行フラグ8件はBL stddev=0シナリオでfai/rel平均が1.0未満の軽微な低下。
+  qa-01/qa-19は大幅改善（+0.333/+0.933）でGoal達成を示している。
+  次アクション: ユーザーの承認後にPRマージまたは追加調査を判断。
