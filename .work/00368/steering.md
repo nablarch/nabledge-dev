@@ -143,10 +143,14 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 # State
 
-<!-- template placeholder -->
-
-- **Status**: active
+- **Status**: paused
 - **Date**: 2026-06-16
-- **Last completed**: #8 完了（user review受領 = 実験A指示）
-- **Next**: #9 実験A実行
-- **Notes**: ブランチ: 368-classes-md-for-class-search (PR #369 OPEN)。
+- **Last completed**: #9 実験A実行・裏取り・コミット完了（commit `eb0746412`）
+- **Next**: #9 user review（ユーザーの判定待ち）
+- **Notes**: 実験A（qa-19 × 上限12/20 各20回）完了・push済み。
+  結果: 上限12 avg=0.940（1.0×16/0.8×1/0.7×2/0.6×1）/ 上限20 avg=0.990（1.0×19/0.8×1）。
+  s2到達率は両条件とも20/20。減点パターンは全回「Jackson2BodyConverterへの言及が間接的」。
+  上限12一時変更は破棄済み（d8364e4c8状態に復元確認済み）。
+  判定（上限差が有意か・上限20へ戻すか維持するか）はKiyo+Claudeが行う。
+  判定後の次アクション: #9完了チェックオフ → steering.md更新 → 必要ならスキル変更＋PR更新 → マージ準備。
+  ブランチ: 368-classes-md-for-class-search (PR #369 OPEN)。
