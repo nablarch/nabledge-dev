@@ -226,13 +226,22 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 - **Status**: paused
 - **Date**: 2026-06-17
-- **Last completed**: #12 実行済みだが確認方法に問題あり（code-analysis はクラス名未指定、keyword-search・semantic-search も結果内容未確認）
-- **Next**: #12 をやり直す。各バージョンのスキルを実行し、実際の出力トレース（どのフェーズを通過したか）と結果内容をエージェントに返させ、CCが判断する。
+- **Last completed**: #12 やり直し実行完了（20通り全実行・checks/task-12.md 更新済み）。ユーザーから2つの注記に関する質問あり、回答済み。
+- **Next**: ユーザーの質問への回答内容を踏まえた #12 の最終判定待ち。承認されれば steering.md の #12 を ✅ にしてコミット・プッシュ。その後 Acceptance criteria の確認に進む。
 - **Notes**: PR #369 OPEN (branch: 368-classes-md-for-class-search)。
-  #12 やり直し方針:
-  - 各エントリで「結果が返ってくるクエリ」を使う
-  - code-analysis: クラス名を指定して実行（v6/v5: ImportZipCodeFileAction、v1.4/1.3/1.2: W11AC02Action）
-  - keyword-search: 結果が出るキーワードを使う（v6/v5: UniversalDao、v1.4/1.3/1.2: codeSelect）
-  - semantic-search: Phase A→E のトレースと最終回答を返させる
-  - QA: verify_result=PASS まで確認済み（再実行不要）
-  - エージェントには「出力を要約せず、どのセクションを読んだか・Phase B 候補数・最終回答の先頭100文字」を返させる
+  #12 redo の実行結果: 20/20 OK（全バージョン × 全入口）。checks/task-12.md に各入口の Phase B 候補数・read_sections・最終回答先頭100文字を記録済み。QA verdict: PASS。
+  
+  ユーザー質問への回答内容（2つの注記について）:
+  
+  **注記1: v1.4 keyword-search max-turns=30 途中終了**
+  - 結果なし打ち切り（30ターンで最終回答が返らなかった）
+  - 「展開前から同じ問題」は直接確認未実施（keyword-search.md/sh/index.md は今回変更なし、という間接証拠のみ）
+  - v1.4 だけ 30 ターン不足の直接原因は特定できていない（index サイズは主因ではない、v5は5212行で30ターン完了）
+  - 通常運用（benchmark/test-setup）では max-turns 指定なし（benchmark は bash 直実行）→ 対話利用での影響は不明
+  
+  **注記2: code-analysis record-start.sh パーミッション**
+  - settings.json に Bash(bash scripts/*) の allow なし → 全バージョン共通の制約
+  - 出力ファイルに duration 記録あり（W11AC02Action: 4m26s）→ record-start.sh・finalize-output.sh は実行された
+  - .nabledge-code-analysis-start-* ファイル 4 つが残存（finalize が一部クリーンアップできなかった）
+  - v6 code-analysis は出力が v5 に上書きされており完全性確認不可
+  - 「既存制約」は settings.json の過去コミット履歴で bash scripts の allow 追加記録なし → 一貫して allow 外
