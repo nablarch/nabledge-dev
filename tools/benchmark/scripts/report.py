@@ -95,6 +95,14 @@ def format_scenario_report(evaluation: dict) -> str:
     return "\n".join(lines)
 
 
+def _perf_stats(vals: list) -> tuple:
+    """Return (avg, p50, p95, max, sum) for a list of numeric values."""
+    if not vals:
+        return None, None, None, None, None
+    s = sorted(vals)
+    return sum(s) / len(s), s[len(s) // 2], s[int(len(s) * 0.95)], max(s), sum(s)
+
+
 def format_summary_report(evaluations: list[dict]) -> str:
     """Generate aggregate summary report."""
     if not evaluations:
@@ -144,12 +152,6 @@ def format_summary_report(evaluations: list[dict]) -> str:
 
     all_metrics = [ev.get("metrics", {}) for ev in evaluations]
 
-    def _stats(vals: list) -> tuple:
-        if not vals:
-            return None, None, None, None, None
-        s = sorted(vals)
-        return sum(s) / len(s), s[len(s) // 2], s[int(len(s) * 0.95)], max(s), sum(s)
-
     durations     = [m["duration_ms"] for m in all_metrics if m.get("duration_ms")]
     api_durations = [m["duration_api_ms"] for m in all_metrics if m.get("duration_api_ms")]
     num_turns_list = [m["num_turns"] for m in all_metrics if m.get("num_turns")]
@@ -159,13 +161,13 @@ def format_summary_report(evaluations: list[dict]) -> str:
     cache_read    = [m.get("usage", {}).get("cache_read_input_tokens", 0) for m in all_metrics if m.get("usage", {}).get("cache_read_input_tokens")]
 
     if durations:
-        d_avg, d_p50, d_p95, d_max, _ = _stats([v / 1000 for v in durations])
-        da_avg, da_p50, da_p95, da_max, _ = _stats([v / 1000 for v in api_durations]) if api_durations else (None,)*5
-        t_avg, t_p50, t_p95, t_max, _ = _stats(num_turns_list) if num_turns_list else (None,)*5
-        c_avg, c_p50, c_p95, c_max, c_sum = _stats(costs) if costs else (None,)*5
-        in_avg, in_p50, in_p95, in_max, _ = _stats(in_tokens) if in_tokens else (None,)*5
-        out_avg, out_p50, out_p95, out_max, _ = _stats(out_tokens) if out_tokens else (None,)*5
-        cr_avg, cr_p50, cr_p95, cr_max, _ = _stats(cache_read) if cache_read else (None,)*5
+        d_avg, d_p50, d_p95, d_max, _ = _perf_stats([v / 1000 for v in durations])
+        da_avg, da_p50, da_p95, da_max, _ = _perf_stats([v / 1000 for v in api_durations]) if api_durations else (None,)*5
+        t_avg, t_p50, t_p95, t_max, _ = _perf_stats(num_turns_list) if num_turns_list else (None,)*5
+        c_avg, c_p50, c_p95, c_max, c_sum = _perf_stats(costs) if costs else (None,)*5
+        in_avg, in_p50, in_p95, in_max, _ = _perf_stats(in_tokens) if in_tokens else (None,)*5
+        out_avg, out_p50, out_p95, out_max, _ = _perf_stats(out_tokens) if out_tokens else (None,)*5
+        cr_avg, cr_p50, cr_p95, cr_max, _ = _perf_stats(cache_read) if cache_read else (None,)*5
 
         def _fmt_s(v): return f"{v:.0f}s" if v is not None else "N/A"
         def _fmt_n(v): return f"{v:,.0f}" if v is not None else "N/A"
@@ -215,6 +217,110 @@ def generate_full_report(evaluations: list[dict]) -> str:
         parts.append(format_scenario_report(ev))
 
     return "\n".join(parts)
+
+
+def format_crossrun_summary(runs: list[list[dict]]) -> str:
+    """Generate cross-run aggregate report from N run evaluation lists."""
+    baseline = build_baseline(runs)
+    global_stats = baseline["global"]
+    scenarios = baseline["scenarios"]
+
+    all_evals = [ev for run in runs for ev in run]
+    total_scenarios = len(scenarios)
+
+    def _fmt(v, fmt=".3f"):
+        return f"{v:{fmt}}" if v is not None else "N/A"
+
+    lines = [
+        "# 3run横断集約レポート",
+        "",
+        f"run数: {len(runs)} / シナリオ数: {total_scenarios}",
+        "",
+        "## スコアサマリー（3run × 全シナリオ）",
+        "",
+        "| 指標 | 平均 | 閾値通過率 |",
+        "|---|---|---|",
+    ]
+
+    for key in _DEEPEVAL_KEYS:
+        g = global_stats.get(key, {})
+        mean = g.get("mean")
+        thr = _DEEPEVAL_THRESHOLDS[key]
+        pass_count = sum(
+            1 for ev in all_evals
+            if (_score_value(ev.get("scores", {}), key) or 0) >= thr
+        )
+        total_evals = sum(
+            1 for ev in all_evals
+            if _score_value(ev.get("scores", {}), key) is not None
+        )
+        lines.append(f"| {key} | {_fmt(mean)} | {pass_count}/{total_evals} |")
+
+    lines.extend([
+        "",
+        "## シナリオ別 3run集約",
+        "",
+        "| scenario | corr mean±sd | rel mean±sd | faith mean±sd | flaky |",
+        "|---|---|---|---|---|",
+    ])
+
+    for sid in sorted(scenarios):
+        sc = scenarios[sid]
+        flaky_mark = "⚠️" if sc.get("flaky") else ""
+
+        def _ms(key):
+            m = sc.get(key, {})
+            mv, sv = m.get("mean"), m.get("stddev")
+            if mv is None:
+                return "N/A"
+            return f"{mv:.3f}±{sv:.3f}"
+
+        lines.append(
+            f"| {sid} | {_ms('answer_correctness')} | {_ms('answer_relevancy')} "
+            f"| {_ms('faithfulness')} | {flaky_mark} |"
+        )
+
+    lines.append("")
+
+    all_metrics = [ev.get("metrics", {}) for ev in all_evals]
+    durations    = [m["duration_ms"] for m in all_metrics if m.get("duration_ms")]
+    num_turns_list = [m["num_turns"] for m in all_metrics if m.get("num_turns")]
+    costs        = [m["total_cost_usd"] for m in all_metrics if m.get("total_cost_usd")]
+    cache_create = [
+        m.get("usage", {}).get("cache_creation_input_tokens", 0)
+        for m in all_metrics if m.get("usage", {}).get("cache_creation_input_tokens")
+    ]
+    cache_read   = [
+        m.get("usage", {}).get("cache_read_input_tokens", 0)
+        for m in all_metrics if m.get("usage", {}).get("cache_read_input_tokens")
+    ]
+
+    def _fmt_s(v): return f"{v:.0f}s" if v is not None else "N/A"
+    def _fmt_n(v): return f"{v:,.0f}" if v is not None else "N/A"
+    def _fmt_c(v): return f"${v:.3f}" if v is not None else "N/A"
+
+    d_avg, d_p50, d_p95, d_max, _ = _perf_stats([v / 1000 for v in durations]) if durations else (None,)*5
+    t_avg, t_p50, t_p95, t_max, _ = _perf_stats(num_turns_list) if num_turns_list else (None,)*5
+    c_avg, c_p50, c_p95, c_max, c_sum = _perf_stats(costs) if costs else (None,)*5
+    cc_avg, cc_p50, cc_p95, cc_max, _ = _perf_stats(cache_create) if cache_create else (None,)*5
+    cr_avg, cr_p50, cr_p95, cr_max, _ = _perf_stats(cache_read) if cache_read else (None,)*5
+
+    lines.extend([
+        "## パフォーマンス横断集約（3run × 全シナリオ）",
+        "",
+        "| メトリクス | 平均 | P50 | P95 | 最大 | 合計 |",
+        "|---|---|---|---|---|---|",
+        f"| 実行時間 | {_fmt_s(d_avg)} | {_fmt_s(d_p50)} | {_fmt_s(d_p95)} | {_fmt_s(d_max)} | — |",
+        f"| コスト | {_fmt_c(c_avg)} | {_fmt_c(c_p50)} | {_fmt_c(c_p95)} | {_fmt_c(c_max)} | {_fmt_c(c_sum)} |",
+        f"| ターン数 | {_fmt_n(t_avg)} | {_fmt_n(t_p50)} | {_fmt_n(t_p95)} | {_fmt_n(t_max)} | — |",
+        f"| cache_creation | {_fmt_n(cc_avg)} | {_fmt_n(cc_p50)} | {_fmt_n(cc_p95)} | {_fmt_n(cc_max)} | — |",
+        f"| cache_read | {_fmt_n(cr_avg)} | {_fmt_n(cr_p50)} | {_fmt_n(cr_p95)} | {_fmt_n(cr_max)} | — |",
+        "",
+        "> 注: 平均はばらつきを隠すため、必ず P50・最大も確認すること。",
+        "",
+    ])
+
+    return "\n".join(lines)
 
 
 def _load_evaluations(run_dir: Path) -> list[dict]:
@@ -509,7 +615,25 @@ def main():
         "--compare-baseline", metavar="FILE",
         help="Path to baseline.json for regression check (used with --run-dir)",
     )
+    parser.add_argument(
+        "--crossrun-dir", metavar="DIR",
+        help="Directory containing run-* subdirs; generates crossrun-summary.md",
+    )
     args = parser.parse_args()
+
+    if args.crossrun_dir:
+        crossrun_dir = Path(args.crossrun_dir)
+        run_dirs = sorted(crossrun_dir.glob("run-*"))
+        if len(run_dirs) < 2:
+            print(f"Error: --crossrun-dir requires at least 2 run-* subdirectories, found {len(run_dirs)}", file=sys.stderr)
+            sys.exit(1)
+        runs = [_load_evaluations(d) for d in run_dirs]
+        report = format_crossrun_summary(runs)
+        report_path = crossrun_dir / "crossrun-summary.md"
+        report_path.write_text(report, encoding="utf-8")
+        print(f"Cross-run summary written to {report_path}", file=sys.stderr)
+        print(report)
+        return
 
     if args.baseline_runs:
         # Build baseline.json from multiple run dirs

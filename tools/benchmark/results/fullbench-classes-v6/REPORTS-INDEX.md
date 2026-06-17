@@ -13,5 +13,4 @@
 - [run-3](run-3/regression-check.md)
 
 ## (2) 3run横断集約
-未実装。report.py に横断集約機能を追加する別タスクで対応予定。
-現状は上記 run別レポート3つを参照。
+- [crossrun-summary.md](crossrun-summary.md)
