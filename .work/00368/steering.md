@@ -198,7 +198,12 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 # State
 
-<!-- STATUS -->
-<!-- LAST_COMPLETED -->
-<!-- NEXT -->
-<!-- NOTES -->
+- **Status**: paused
+- **Date**: 2026-06-17
+- **Last completed**: #11 レポート3種生成（report.md既存・regression-check.md・REPORTS-INDEX.md）+ #12 横断集約実装（format_crossrun_summary / --crossrun-dir / テスト / crossrun-summary.md生成 / HOW-TO-RUN.md誤記修正）
+- **Next**: ユーザーレビュー待ち（PR #369 の全タスク完了）
+- **Notes**: commit `b1b538e63` まで全タスク完了・プッシュ済み。
+  PR #369 OPEN (branch: 368-classes-md-for-class-search)。
+  steering.md の全タスク（#5〜#11 + #12相当）完了。
+  次アクション: ユーザーがレビューして承認すれば PR マージ。
+  追加タスクが発生する場合は /rn:hi で再開。
