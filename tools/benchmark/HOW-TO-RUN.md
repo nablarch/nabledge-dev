@@ -14,7 +14,7 @@
   ```bash
   pip install -r tools/benchmark/requirements.txt
   ```
-- `{run-label}` の例: `v1-new-search`（新スキル第1版）、`v2-new-search`（改善後）。別ベンチは必ず別ラベルにする。
+- `{run-label}` は **`YYYYMMDD-HHMM-{識別}`** 形式（日時+識別）にする。日時は本ベンチ run-1 の実行時刻（`summary.json` の `executed_at`）を用いる。時刻HHMM を含めるのは、同日複数回取得を区別するため。識別は内容が分かる短い語（例: `baseline-current`, `fullbench-classes-v6`）。例: `20260616-1214-fullbench-classes-v6`。別ベンチは必ず別ラベルにする。
 
 ---
 
