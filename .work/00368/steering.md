@@ -175,7 +175,7 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 - 他バージョンのスキルを触らない
 - reason を要約・取捨選択しない（閾値割れは1件残らず全文）
 
-### #12: 全バージョン × 全入口スモークテスト
+### #12: 全バージョン × 全入口スモークテスト ✅
 
 **Purpose**: semantic-search.md を全5バージョンに展開後、各入口（QA/semantic-search/keyword-search/code-analysis）が正常完了するかを確認する。特に v1.4/1.3/1.2 は classes.md が空（"_No class index available_"）なので Phase B が候補なしで正常フローするかを重点確認。
 
@@ -224,27 +224,4 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 # State
 
-- **Status**: paused
-- **Date**: 2026-06-17
-- **Last completed**: PR #369 全差分精査完了（/rn:hi 引数タスク）。3085件 = 想定A:15 / B:8 / C:3049 / D:7 / E:4 / 想定外:2（いずれも懸念なし）。
-- **Next**: ユーザーによる #12 最終判定。承認されれば steering.md の #12 を ✅ にしてコミット・プッシュ。その後 Acceptance criteria の確認に進む。
-- **Notes**: PR #369 OPEN (branch: 368-classes-md-for-class-search)。
-  #12 redo の実行結果: 20/20 OK（全バージョン × 全入口）。checks/task-12.md に各入口の Phase B 候補数・read_sections・最終回答先頭100文字を記録済み。QA verdict: PASS。
-  
-  **PR #369 全差分精査結果（2026-06-17）**:
-  - 想定外2件: HOW-TO-RUN.md（命名規則追加）、e2e-prompt.md（マーカー変更）— いずれも想定Bリスト記載漏れだが想定B（ベンチ基盤）と完全整合。懸念なし。
-  - 削除ベンチ結果: v1-new-search/v2-javadoc/baseline-deepeval は後継あり or 役割終了。keyword-search/full-text-scan は新検索確定で不要。支障なし。
-  - semantic-search.md 5バージョン md5 一致確認済み。qa.md Step4 5バージョン完全一致確認済み。
-  
-  ユーザー質問への回答内容（2つの注記について）:
-  
-  **注記1: v1.4 keyword-search max-turns=30 途中終了**
-  - 結果なし打ち切り（30ターンで最終回答が返らなかった）
-  - v1.4 だけ 30 ターン不足の直接原因は特定できていない（index サイズは主因ではない、v5は5212行で30ターン完了）
-  - 通常運用（benchmark/test-setup）では max-turns 指定なし → 対話利用での影響は不明
-  
-  **注記2: code-analysis record-start.sh パーミッション**
-  - settings.json に Bash(bash scripts/*) の allow なし → 全バージョン共通の制約
-  - 出力ファイルに duration 記録あり → record-start.sh・finalize-output.sh は実行された
-  - .nabledge-code-analysis-start-* ファイル 4 つが残存
-  - 「既存制約」は settings.json の過去コミット履歴で bash scripts の allow 追加記録なし → 一貫して allow 外
+<!-- template placeholder -->
