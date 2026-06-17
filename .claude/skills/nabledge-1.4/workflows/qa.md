@@ -132,7 +132,7 @@ Save the returned `selected_sections` array as `selected_sections`.
 ## Step 4: Read section content
 
 From `selected_sections`, select sections to read:
-1. All `high` sections first
+1. All `high` sections first (body sections and Javadoc together)
 2. Then `partial` sections to fill remaining slots
 3. Maximum 20 entries total, counting body sections and Javadoc together
 
