@@ -61,7 +61,7 @@ Pointer JSON:
    - Does any class listed under this page implement, handle, or directly relate to a concept from step 2? → **candidate**
    - If a processing type constraint was noted and this page clearly belongs to a *different* processing type → **skip**
    - Otherwise → **skip**
-4. When judging step 3, reason from the class's evident responsibility (inferable from its name and the page title), not from a string match against the question. Example: for "JSONボディ変換", the page titled "Jakarta RESTful Web Servicesアダプタ" listing `Jackson2BodyConverter` is a candidate, because that class converts JSON bodies — even though the question never says "Jackson2BodyConverter".
+4. When judging step 3, reason from the class's evident responsibility (inferable from its name and the page title), not from a string match against the question. Example: when the question asks about a concept (e.g. a kind of data conversion, transaction handling, or validation), a page whose listed class clearly performs that responsibility is a candidate — even when the question never names that class.
 5. Take up to 10 candidates. Save the selected page paths (relative to `knowledge/`) as `class_pages`. If none, `class_pages = []`.
 
 ---
