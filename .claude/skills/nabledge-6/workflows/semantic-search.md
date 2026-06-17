@@ -18,8 +18,6 @@ Pointer JSON:
 }
 ```
 
-> Note: This workflow uses **Phase A–E** as internal step labels. These are independent of the `Step N` numbering in `qa.md` and in the benchmark prompt. Do not treat any "skip Step 1/2" instruction from a caller as applying to Phase A or Phase B — those instructions refer to `qa.md`'s own Step numbering, never to the phases here.
-
 ---
 
 ## Phase A: Select pages from index.md
