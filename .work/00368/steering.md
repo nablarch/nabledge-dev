@@ -200,12 +200,11 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 - **Status**: paused
 - **Date**: 2026-06-17
-- **Last completed**: quality-report.md 作成（commit `da3dbad47`）+ テンプレート化・HOW-TO-RUN 統合（commit `682584c4d`）+ REPORTS-INDEX 廃止・「出荷/審査」表現除去（commit `79b7c26b8`）
+- **Last completed**: 指示A（semantic-search.md 全5バージョン展開・qa.md 上限20統一、commit `864057305`）+ 指示C（baseline レポート構成統一・旧 report.md 削除、commit `51493ca39`）。指示B（RBKC create/verify 全5バージョン確認）も実施済み（差分0件・FAIL 0件）。
 - **Next**: ユーザーレビュー待ち（PR #369 の全タスク完了）
 - **Notes**: PR #369 OPEN (branch: 368-classes-md-for-class-search)。
-  results/ は `20260612-1404-baseline-current` と `20260616-1214-fullbench-classes-v6` の2つのみ。
-  quality-report.md が `20260616-1214-fullbench-classes-v6/` に追加済み（総合評価: 良好）。
-  テンプレート `tools/benchmark/templates/quality-report-template.md` 新規作成。
-  HOW-TO-RUN.md フェーズC-3 を品質評価レポート作成ステップに置換済み。
+  results/ は `20260612-1404-baseline-current` と `20260616-1214-fullbench-classes-v6` の2つ。
+  両ディレクトリのレポート構成が統一済み（crossrun-summary.md + quality-report.md + run別report.md）。
+  semantic-search.md は全5バージョン同一ハッシュ（Phase A-E・上限20・バージョン非依存例文）。
   次アクション: ユーザーがレビューして承認すれば PR マージ。
   追加タスクが発生する場合は /rn:hi で再開。
