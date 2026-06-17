@@ -205,7 +205,7 @@ git push
 
 判定は必ずナレッジ照合に基づく（reason だけで判定しない）。結果はステップ C-3 の集計レポート付録に記録する。
 
-## ステップ C-3: 品質評価レポート作成（出荷審査の根拠）
+## ステップ C-3: 品質評価レポート作成
 
 横断集約（crossrun-summary.md）と run別レポートを素材に、品質評価レポートを作成する。
 
@@ -327,7 +327,7 @@ git push
 |---|---|---|
 | `run-N/report.md` | B-3 | run別スコア＋cost/time分布 |
 | `crossrun-summary.md` | C-1 | 3run横断集約 |
-| `quality-report.md` | C-3 | 出荷審査の根拠（合否①②＋計測③④＋退行） |
+| `quality-report.md` | C-3 | 品質評価（合否①②＋計測③④＋退行） |
 | `baseline.json` | D-1 | 退行検出の基準 |
 | `run-N/regression-check.md` | E-1 | ベースライン差分 |
 
