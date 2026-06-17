@@ -200,10 +200,10 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 - **Status**: paused
 - **Date**: 2026-06-17
-- **Last completed**: #11 レポート3種生成（report.md既存・regression-check.md・REPORTS-INDEX.md）+ #12 横断集約実装（format_crossrun_summary / --crossrun-dir / テスト / crossrun-summary.md生成 / HOW-TO-RUN.md誤記修正）
+- **Last completed**: HOW-TO-RUN.md 全文置換（フェーズA–E > ステップ > アクション3層構造へ再構成、commit `173554d58`）+ 中間ベンチ結果5ディレクトリ削除（commit `b2fa1ce5c`）
 - **Next**: ユーザーレビュー待ち（PR #369 の全タスク完了）
-- **Notes**: commit `b1b538e63` まで全タスク完了・プッシュ済み。
-  PR #369 OPEN (branch: 368-classes-md-for-class-search)。
-  steering.md の全タスク（#5〜#11 + #12相当）完了。
+- **Notes**: PR #369 OPEN (branch: 368-classes-md-for-class-search)。
+  results/ は `20260612-1404-baseline-current` と `fullbench-classes-v6` の2つのみに整理済み。
+  HOW-TO-RUN.md は新構成（フェーズA–E）に置換済み。
   次アクション: ユーザーがレビューして承認すれば PR マージ。
   追加タスクが発生する場合は /rn:hi で再開。
