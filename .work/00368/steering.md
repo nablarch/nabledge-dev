@@ -175,6 +175,32 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 - 他バージョンのスキルを触らない
 - reason を要約・取捨選択しない（閾値割れは1件残らず全文）
 
+### #12: 全バージョン × 全入口スモークテスト
+
+**Purpose**: semantic-search.md を全5バージョンに展開後、各入口（QA/semantic-search/keyword-search/code-analysis）が正常完了するかを確認する。特に v1.4/1.3/1.2 は classes.md が空（"_No class index available_"）なので Phase B が候補なしで正常フローするかを重点確認。
+
+**Prerequisites**: #11 完了（最新ブランチ展開済み）
+
+**Steps**:
+
+- [ ] 各バージョンの代表クラス確認（v6: UniversalDao, v5: UniversalDao, v1.4/1.3/1.2: classes.md 空のためどのクラスでも Phase B 空通過）
+- [ ] 20通り実行（5バージョン × 4入口 = 20回）
+- [ ] 結果記録（checks/task-12.md に OK/異常 をバージョン×入口マトリクスで）
+- [ ] 報告
+
+**Completion criteria**:
+
+- 全20通りについて OK/異常が記録されている
+- v1.4/1.3/1.2 の semantic-search / QA で Phase B が空 classes.md を「候補なし」で正常通過したことが確認されている
+- 異常があれば内容（エラーメッセージ等）が全文記載されている
+
+**Constraints**:
+
+- スキルファイル（semantic-search.md 等）を変更しない（実行のみ）
+- 異常を勝手に修正しない（報告して停止）
+
+---
+
 ### #11: fullbench-classes-v6 レポート3種生成 + HOW-TO-RUN.md 手順固定
 
 **Purpose**: report.md（既存）・regression-check.md（baseline差分）を3run分生成し、REPORTS-INDEX.md で目次化。HOW-TO-RUN.md にレポート生成手順を追記して再現性を仕組み化する。
@@ -200,11 +226,9 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 - **Status**: paused
 - **Date**: 2026-06-17
-- **Last completed**: 指示A（semantic-search.md 全5バージョン展開・qa.md 上限20統一、commit `864057305`）+ 指示C（baseline レポート構成統一・旧 report.md 削除、commit `51493ca39`）。指示B（RBKC create/verify 全5バージョン確認）も実施済み（差分0件・FAIL 0件）。
-- **Next**: ユーザーレビュー待ち（PR #369 の全タスク完了）
+- **Last completed**: #11 完了。#12 タスク追加済み（steering.md に記録）。
+- **Next**: #12 全バージョン × 全入口スモークテスト実行
 - **Notes**: PR #369 OPEN (branch: 368-classes-md-for-class-search)。
-  results/ は `20260612-1404-baseline-current` と `20260616-1214-fullbench-classes-v6` の2つ。
-  両ディレクトリのレポート構成が統一済み（crossrun-summary.md + quality-report.md + run別report.md）。
-  semantic-search.md は全5バージョン同一ハッシュ（Phase A-E・上限20・バージョン非依存例文）。
-  次アクション: ユーザーがレビューして承認すれば PR マージ。
-  追加タスクが発生する場合は /rn:hi で再開。
+  #12 実行方法: `claude -p` は bash 権限プロンプトで詰まるため NG。
+  正しい方法: Agent tool でサブエージェントを起動し、その中で Skill tool（/n6, /n5, /n1.4, /n1.3, /n1.2）を呼び出す。
+  5バージョン並列 × 各4入口逐次 = 20通り。v1.4/1.3/1.2 は classes.md 空のため Phase B 空通過の確認が重点。
