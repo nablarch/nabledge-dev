@@ -226,9 +226,7 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 - **Status**: paused
 - **Date**: 2026-06-17
-- **Last completed**: #11 完了。#12 タスク追加済み（steering.md に記録）。
-- **Next**: #12 全バージョン × 全入口スモークテスト実行
+- **Last completed**: #12 完了。全5バージョン × 4入口 = 20/20 OK。v1.4/1.3/1.2 Phase B 空通過確認済み。commit `4f6089b8a`
+- **Next**: #12 完了により全タスク完了。PR #369 の Acceptance criteria を確認してマージ判断を仰ぐ。
 - **Notes**: PR #369 OPEN (branch: 368-classes-md-for-class-search)。
-  #12 実行方法: `claude -p` は bash 権限プロンプトで詰まるため NG。
-  正しい方法: Agent tool でサブエージェントを起動し、その中で Skill tool（/n6, /n5, /n1.4, /n1.3, /n1.2）を呼び出す。
-  5バージョン並列 × 各4入口逐次 = 20通り。v1.4/1.3/1.2 は classes.md 空のため Phase B 空通過の確認が重点。
+  全タスク完了済み。次は Acceptance criteria 確認 + ユーザーへの最終報告。
