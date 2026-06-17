@@ -226,7 +226,13 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 - **Status**: paused
 - **Date**: 2026-06-17
-- **Last completed**: #12 完了。全5バージョン × 4入口 = 20/20 OK。v1.4/1.3/1.2 Phase B 空通過確認済み。commit `4f6089b8a`
-- **Next**: #12 完了により全タスク完了。PR #369 の Acceptance criteria を確認してマージ判断を仰ぐ。
+- **Last completed**: #12 実行済みだが確認方法に問題あり（code-analysis はクラス名未指定、keyword-search・semantic-search も結果内容未確認）
+- **Next**: #12 をやり直す。各バージョンのスキルを実行し、実際の出力トレース（どのフェーズを通過したか）と結果内容をエージェントに返させ、CCが判断する。
 - **Notes**: PR #369 OPEN (branch: 368-classes-md-for-class-search)。
-  全タスク完了済み。次は Acceptance criteria 確認 + ユーザーへの最終報告。
+  #12 やり直し方針:
+  - 各エントリで「結果が返ってくるクエリ」を使う
+  - code-analysis: クラス名を指定して実行（v6/v5: ImportZipCodeFileAction、v1.4/1.3/1.2: W11AC02Action）
+  - keyword-search: 結果が出るキーワードを使う（v6/v5: UniversalDao、v1.4/1.3/1.2: codeSelect）
+  - semantic-search: Phase A→E のトレースと最終回答を返させる
+  - QA: verify_result=PASS まで確認済み（再実行不要）
+  - エージェントには「出力を要約せず、どのセクションを読んだか・Phase B 候補数・最終回答の先頭100文字」を返させる
