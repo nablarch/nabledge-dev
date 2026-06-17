@@ -200,10 +200,12 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 - **Status**: paused
 - **Date**: 2026-06-17
-- **Last completed**: HOW-TO-RUN.md 全文置換（フェーズA–E > ステップ > アクション3層構造へ再構成、commit `173554d58`）+ 中間ベンチ結果5ディレクトリ削除（commit `b2fa1ce5c`）
+- **Last completed**: quality-report.md 作成（commit `da3dbad47`）+ テンプレート化・HOW-TO-RUN 統合（commit `682584c4d`）+ REPORTS-INDEX 廃止・「出荷/審査」表現除去（commit `79b7c26b8`）
 - **Next**: ユーザーレビュー待ち（PR #369 の全タスク完了）
 - **Notes**: PR #369 OPEN (branch: 368-classes-md-for-class-search)。
-  results/ は `20260612-1404-baseline-current` と `fullbench-classes-v6` の2つのみに整理済み。
-  HOW-TO-RUN.md は新構成（フェーズA–E）に置換済み。
+  results/ は `20260612-1404-baseline-current` と `20260616-1214-fullbench-classes-v6` の2つのみ。
+  quality-report.md が `20260616-1214-fullbench-classes-v6/` に追加済み（総合評価: 良好）。
+  テンプレート `tools/benchmark/templates/quality-report-template.md` 新規作成。
+  HOW-TO-RUN.md フェーズC-3 を品質評価レポート作成ステップに置換済み。
   次アクション: ユーザーがレビューして承認すれば PR マージ。
   追加タスクが発生する場合は /rn:hi で再開。
