@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 87554,
+  "duration_api_ms": 86787,
+  "ttft_ms": 4321,
+  "ttft_stream_ms": 2707,
+  "time_to_request_ms": 883,
+  "num_turns": 6,
+  "result": "Step 4でセクション内容を読み込みました。Step 5のアンサー生成に進みます。\n\nselected_sections:\n- `component/libraries/libraries-database.json:s21` (high) — `$if` 構文の直接説明\n- `processing-pattern/web-application/web-application-getting-started-project-search.json:s1` (high) — ウェブ検索機能での完全な実装例\n- `component/libraries/libraries-database.json:s16` (partial) — Bean入力でのSQL実行の前提\n- `component/libraries/libraries-universal-dao.json:s10` (partial) — UniversalDAOでの条件Bean渡し\n\nStep 6 Verify: 全てのNablarch固有の主張（`$if`構文、`prepareParameterizedSqlStatementBySqlId`、`retrieve`、`UniversalDao.findAllBySqlFile`）はs21またはweb-app-search s1のセクション内容に直接記載されています。`verify_result = PASS`\n\n---\n\n### Answer\n\n**結論**: SQLファイル内で `$if(プロパティ名) {SQL文の条件}` 構文を使うことで、Beanのプロパティが null や空文字の場合にその条件を自動的に除外できます。\n\n**根拠**:\n\n#### 1. SQLファイルに `$if` 構文で可変条件を記述する\n\n```sql\nSEARCH_PROJECT =\nSELECT\n    PROJECT_ID,\n    PROJECT_NAME,\n    PROJECT_START_DATE\nFROM\n    PROJECT\nWHERE\n    USER_ID = :userId\n    AND $if(projectName)           {PROJECT_NAME LIKE :%projectName%}\n    AND $if(projectType)           {PROJECT_TYPE = :projectType}\n    AND $if(projectStartDateBegin) {PROJECT_START_DATE >= :projectStartDateBegin}\n    AND $if(projectStartDateEnd)   {PROJECT_START_DATE <= :projectStartDateEnd}\n```\n\n除外される条件:\n- 通常型（String等）: プロパティ値が `null` または空文字列の場合\n- 配列・`Collection` 型: プロパティ値が `null` またはサイズ0の場合\n\n#### 2. 検索条件 Bean を作成する\n\n```java\npublic class ProjectSearchDto implements Serializable {\n    private String projectName;\n    private java.sql.Date projectStartDateBegin;\n    private java.sql.Date projectStartDateEnd;\n    // ゲッタ・セッタは省略\n}\n```\n\n#### 3-A. UniversalDAO を使う場合（推奨）\n\n```java\nProjectSearchDto searchCondition = BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);\n\nList<Project> result = UniversalDao\n    .page(searchCondition.getPageNumber())\n    .per(20L)\n    .findAllBySqlFile(Project.class, \"SEARCH_PROJECT\", searchCondition);\n```\n\n#### 3-B. JDBCラッパー（`DbConnectionContext`）を使う場合\n\n```java\nAppDbConnection connection = DbConnectionContext.getConnection();\n\n// 第2引数に条件 Bean を渡すことで $if の判定が行われる\nParameterizedSqlPStatement statement =\n    connection.prepareParameterizedSqlStatementBySqlId(\n        \"jp.co.example.ProjectAction#SEARCH_PROJECT\", searchCondition);\n\nSqlResultSet result = statement.retrieve(searchCondition);\n```\n\n> **重要**: `prepareParameterizedSqlStatementBySqlId` の **第2引数** に条件 Bean を渡すことで、その Bean の状態を元に `$if` の条件が組み立てられます。\n\n**注意点**:\n- `$if` はwhere句のみで使用可能です。`$if` の中に `$if` はネストできません。\n- この機能は「ユーザの入力によって検索条件が変わる」用途向けです。条件だけ異なる複数のSQLを共通化するために使用するものではなく、機能ごとにSQLを定義してください。\n- in句を可変にしたい場合は `$if(userKbn) {user_kbn in (:userKbn[])}` のように `[]` を末尾に付けます。\n\n参照: libraries-database.json:s21, web-application-getting-started-project-search.json:s1, libraries-database.json:s16, libraries-universal-dao.json:s10\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-database.json\", \"reason\": \"可変条件を持つSQLを実行する ($if構文) が s21 に記載されており、質問に直接答えるページ\"},\n      {\"path\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"reason\": \"ウェブアプリケーションの検索機能実装例として $if 構文の完全な使用例が記載されている\"},\n      {\"path\": \"component/libraries/libraries-universal-dao.json\", \"reason\": \"UniversalDAO で条件 Bean を渡す findAllBySqlFile の使い方が s10 に記載されている\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-database-management.json\", \"reason\": \"データベースアクセス方式の概要のみで実装詳細なし\"},\n      {\"path\": \"component/adapters/adapters-doma-adaptor.json\", \"reason\": \"Domaアダプタは別フレームワークであり質問の範囲外\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"データベースアクセスへのポインタのみで $if 構文の詳細なし\"},\n      {\"path\": \"guide/biz-samples/biz-samples-03.json\", \"reason\": \"検索結果の一覧表示サンプルであり、可変条件SQLの実装方法は対象外\"},\n      {\"path\": \"component/libraries/libraries-bean-util.json\", \"reason\": \"BeanUtil の型変換は本質問の主題ではない\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s21\", \"relevance\": \"high\", \"reason\": \"$if(プロパティ名) {SQL文の条件} 構文の詳細な説明と実装例が記載されており、質問に直接答えるセクション\"},\n      {\"file\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"複数の $if 条件を持つ検索SQLと業務アクション・UniversalDAO の完全な実装例が記載されている\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s16\", \"relevance\": \"partial\", \"reason\": \"$if 構文の前提となる Bean を使った名前付きパラメータのバインド方法が説明されている\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s10\", \"relevance\": \"partial\", \"reason\": \"UniversalDAO に検索条件 Bean を渡す findAllBySqlFile の使い方が記載されている\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s6\", \"reason\": \"動的SQL構築の概要説明のみで s21 と重複するため\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s22\", \"reason\": \"in句の可変条件は質問の主眼ではなく、必要に応じて補足可能\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s23\", \"reason\": \"order by の動的切り替えは質問範囲外\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s7\", \"reason\": \"SQLファイルで検索する基本操作のみで可変条件の内容なし\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s12\", \"reason\": \"SQLファイル管理の基本設定であり可変条件の実装には不要\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-database.json:s21\",\n      \"component/libraries/libraries-database.json:s16\",\n      \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\",\n      \"component/libraries/libraries-universal-dao.json:s10\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/libraries/libraries-database.json:s21\", \"reason\": \"$if 構文の記述ルール・除外条件・実装例を回答の核心部分として使用\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\", \"reason\": \"複数条件・ページング込みの完全な検索実装例(SQL・DTO・アクション)を回答に使用\"},\n        {\"ref\": \"component/libraries/libraries-universal-dao.json:s10\", \"reason\": \"UniversalDAO での findAllBySqlFile による検索条件 Bean 指定方法を回答に使用\"},\n        {\"ref\": \"component/libraries/libraries-database.json:s16\", \"reason\": \"prepareParameterizedSqlStatementBySqlId の第2引数に Bean を渡すパターンを回答に使用\"}\n      ],\n      \"unused\": []\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "9f48502b-6a6f-49f3-a1b5-bbdfa363b72e",
+  "total_cost_usd": 0.6465190000000001,
+  "usage": {
+    "input_tokens": 5,
+    "cache_creation_input_tokens": 133930,
+    "cache_read_input_tokens": 225355,
+    "output_tokens": 4879,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 133930
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3350,
+      "outputTokens": 25,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0034750000000000002,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 5,
+      "outputTokens": 4879,
+      "cacheReadInputTokens": 225355,
+      "cacheCreationInputTokens": 133930,
+      "webSearchRequests": 0,
+      "costUSD": 0.643044,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "1ab14ed7-d34e-457d-80e4-a3cbb4b52204"
+}

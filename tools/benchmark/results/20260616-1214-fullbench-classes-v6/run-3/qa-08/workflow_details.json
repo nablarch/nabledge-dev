@@ -1,0 +1,171 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-message.json",
+        "source": "index",
+        "reason": "「メッセージ管理」ページはメッセージの多言語化対応セクション(s8)を持ち、質問に直接答える"
+      },
+      {
+        "path": "component/handlers/handlers-thread-context-handler.json",
+        "source": "both",
+        "reason": "言語をユーザが選択する画面の実装(s7)と言語属性クラス群(s4)を持ち、国際化の言語切り替えに必須"
+      },
+      {
+        "path": "component/handlers/handlers-http-response-handler.json",
+        "source": "index",
+        "reason": "言語毎のコンテンツパス切り替え(s7)機能を持ち、JSPの多言語化に関連する"
+      },
+      {
+        "path": "component/libraries/libraries-code.json",
+        "source": "index",
+        "reason": "コード管理の名称多言語化対応(s8)を持ち、ラベル切り替えの一側面に関連する"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "メッセージ出力タグは libraries-message.json からリンクで参照されるが、独立した選定には至らない"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "国際化対応セクションがあるが、同内容はハンドラ・ライブラリページで十分カバーされる"
+      },
+      {
+        "path": "processing-pattern/http-messaging/http-messaging-feature-details.json",
+        "reason": "処理方式がnullで特定処理方式に依存しない質問のため優先度が低い"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "処理方式がnullのため特定処理方式依存ページは除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "多言語化対応の主要セクション：言語別プロパティファイル作成方法とPropertiesStringResourceLoaderの設定例を含む"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ユーザが言語を選択する画面実装例とLanguageAttributeInHttpCookie/keepLanguageの具体的な使い方を含む"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "ThreadContextHandlerの言語属性クラス一覧と設定例を提供し、s7の背景として必要"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "プロパティファイルへのメッセージ定義方法（ファイル形式・UTF-8・記述例）を示す"
+      },
+      {
+        "file": "component/handlers/handlers-http-response-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "JSPリソースの言語別パス切り替え機能（DirectoryBasedResourcePathRule等）を説明する"
+      },
+      {
+        "file": "component/libraries/libraries-code.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "コード名称の多言語化対応（コード名称テーブルへの言語別データ登録）を説明する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで実装情報なし"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s2",
+        "reason": "定義場所の選択（DB vs プロパティファイル）の説明で、多言語化とは直接関係ない"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s9",
+        "reason": "業務例外送出の説明で、多言語化とは直接関係ない"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s14",
+        "reason": "ファイル名変更の拡張例で、基本的な多言語化には不要"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s15",
+        "reason": "DBでの管理の拡張例で、基本的な多言語化には不要"
+      },
+      {
+        "file": "component/handlers/handlers-http-response-handler.json",
+        "section_id": "s4",
+        "reason": "応答変換方法（スキームとステータスコード）の説明で多言語化と無関係"
+      },
+      {
+        "file": "component/libraries/libraries-code.json",
+        "section_id": "s6",
+        "reason": "コード管理の初期設定（テーブル作成等）で多言語化の補足情報としては範囲外"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/handlers/handlers-thread-context-handler.json:s4",
+      "component/libraries/libraries-message.json:s7",
+      "component/handlers/handlers-http-response-handler.json:s7",
+      "component/libraries/libraries-code.json:s8",
+      "javadoc/javadoc-nablarch-core-message-PropertiesStringResourceLoader.json:s5",
+      "javadoc/javadoc-nablarch-core-message-PropertiesStringResourceLoader.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-message.json:s8",
+          "reason": "多言語化対応の主要実装手順（プロパティファイル構成・PropertiesStringResourceLoader設定・defaultLocale必須）を直接引用"
+        },
+        {
+          "ref": "handlers-thread-context-handler.json:s7",
+          "reason": "LanguageAttributeInHttpCookieとkeepLanguageによる言語切り替え実装例を引用"
+        },
+        {
+          "ref": "handlers-thread-context-handler.json:s4",
+          "reason": "ThreadContextHandlerの言語属性クラス一覧の参照情報として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "libraries-message.json:s7",
+          "reason": "プロパティファイルの基本記述方法はs8の内容で十分カバーされているため不要"
+        },
+        {
+          "ref": "handlers-http-response-handler.json:s7",
+          "reason": "JSPのパス切り替えは補足的な情報であり、500トークン制限内では主要な実装手順を優先した"
+        },
+        {
+          "ref": "libraries-code.json:s8",
+          "reason": "コード名称の多言語化はメッセージ/ラベル切り替えとは別の機能であり、質問の主旨とは異なるため除外"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-core-message-PropertiesStringResourceLoader.json:s5",
+          "reason": "s8の設定例で十分であり、Javadocの個別フィールド説明は不要"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-core-message-PropertiesStringResourceLoader.json:s6",
+          "reason": "同上"
+        }
+      ]
+    }
+  }
+}

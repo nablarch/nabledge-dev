@@ -1,0 +1,100 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 256485,
+  "duration_api_ms": 253899,
+  "ttft_ms": 5334,
+  "ttft_stream_ms": 3888,
+  "time_to_request_ms": 1666,
+  "num_turns": 15,
+  "result": "Step 4で読み込んだセクション：`s21`, `s22`, `s6`, `s3`, `s16`\n\nStep 5-7: 回答を生成してverifyします。\n\n**verify確認：**\n- `$if(プロパティ名) {SQL文の条件}` 構文 → s21で明示\n- nullや空文字列で条件除外 → s21で明示\n- `prepareParameterizedSqlStatementBySqlId`の第2引数にBeanを渡す → s21の実装例で明示\n- in句の可変は`:パラメータ名[]`と`$if`を組み合わせる → s22で明示\n\n全クレームがsections_contentで裏付けられているため `verify_result = PASS`。\n\n---\n\n### Answer\n\n**結論**: `$if(プロパティ名) {SQL文の条件}` という特殊構文をSQLファイルのwhere句に記述することで、Beanのプロパティ値がnull・空文字列の場合にその条件を自動的に除外できます。\n\n**根拠**:\n\nSQLファイルに `$if` 構文で可変条件を定義します。\n\n```sql\nselect\n  user_id,\n  user_name,\n  user_kbn\nfrom\n  user\nwhere\n  $if (userName) {user_name like :userName%}\n  and $if (userKbn) {user_kbn in ('1', '2')}\n  and birthday = :birthday\n```\n\nJavaの実装では、`prepareParameterizedSqlStatementBySqlId` の**第2引数**に条件Beanを渡します。このBeanの状態を元にSQL文が動的に組み立てられます。\n\n```java\nUserEntity entity = new UserEntity();\nentity.setUserName(\"なまえ\");  // userKbnはnull（条件から除外される）\n\nAppDbConnection connection = DbConnectionContext.getConnection();\n\n// 2番目の引数に条件Beanを渡すことで可変条件が組み立てられる\nParameterizedSqlPStatement statement = connection.prepareParameterizedSqlStatementBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#searchUser\", entity);\n\nSqlResultSet result = statement.retrieve(entity);\n```\n\n`$if` の除外条件：\n- 配列・`java.util.Collection` → nullまたはサイズ0のとき除外\n- それ以外（String等）→ nullまたは空文字列のとき除外\n\n**in句が可変の場合**は、`$if` と `:パラメータ名[]` を組み合わせます：\n\n```sql\nselect user_id, user_name, user_kbn\nfrom user\nwhere\n  $if (userKbn) {user_kbn in (:userKbn[])}\n```\n\n```java\nUserSearchCondition condition = new UserSearchCondition();\ncondition.setUserKbn(Arrays.asList(\"1\", \"3\"));\n\nParameterizedSqlPStatement statement = connection.prepareParameterizedSqlStatementBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#searchUser\", condition);\n\nSqlResultSet result = statement.retrieve(condition);\n```\n\n**注意点**:\n- `$if` はwhere句のみで使用可能。`$if` 内に `$if` はネストできません。\n- `$if` は検索画面のように入力によって条件が変わる場合に使うもので、条件だけが異なる複数のSQLの共通化には使わないこと（共通化すると意図しない不具合の原因になります）。\n- INパラメータにはJDBC標準の `?` ではなく、必ず名前付きパラメータ（`:プロパティ名`）を使うこと。\n\n参照: libraries-database.json:s21, libraries-database.json:s22, libraries-database.json:s16\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-database.json\", \"reason\": \"可変条件・動的SQL構築（$if構文）を直接カバーするページで、s21「可変条件を持つSQLを実行する」が質問に直接対応する\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-universal-dao.json\", \"reason\": \"ユニバーサルDAOはCRUDに特化しており、SQLファイルの$if構文による可変条件は扱わない\"},\n      {\"path\": \"component/libraries/libraries-database-management.json\", \"reason\": \"DB接続管理の概要ページで可変条件の実装詳細は含まれない\"},\n      {\"path\": \"about/about-nablarch/about-nablarch-policy.json\", \"reason\": \"Nablarchの基本方針ページで実装方法は含まれない\"},\n      {\"path\": \"component/libraries/libraries-sql-log.json\", \"reason\": \"SQLログ出力に関するページで可変条件とは無関係\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s21\", \"relevance\": \"high\", \"reason\": \"「可変条件を持つSQLを実行する」で$if構文の記述ルールと実装例を詳しく説明しており、質問に直接回答する\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s22\", \"relevance\": \"high\", \"reason\": \"in句の条件数が可変となるSQLの記述方法（:param[]と$ifの組み合わせ）を説明しており、可変条件の重要な応用例\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s16\", \"relevance\": \"partial\", \"reason\": \"BeanオブジェクトをSQLに渡す基本メカニズムを説明しており、$if構文を使う際の前提知識として必要\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s6\", \"relevance\": \"partial\", \"reason\": \"動的SQL構築機能の概要セクションで、関連セクションへの参照を提供する\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"SQLをSQLファイルに記述するルールの背景説明（PreparedStatement使用によるSQLインジェクション防止）\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s1\", \"relevance\": \"skipped\", \"reason\": \"目次のみで実装詳細がない概要セクション\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s2\", \"relevance\": \"skipped\", \"reason\": \"ダイアレクト機能の説明で可変条件とは無関係\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s23\", \"relevance\": \"skipped\", \"reason\": \"order byのソート切り替えで今回の質問（where条件の可変）には直接関係しない\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-database.json:s21\",\n      \"component/libraries/libraries-database.json:s22\",\n      \"component/libraries/libraries-database.json:s6\",\n      \"component/libraries/libraries-database.json:s3\",\n      \"component/libraries/libraries-database.json:s16\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/libraries/libraries-database.json:s21\", \"reason\": \"$if構文の記述ルール・除外条件・SQLサンプル・Javaコード例をすべて直接引用して回答の骨格とした\"},\n        {\"ref\": \"component/libraries/libraries-database.json:s22\", \"reason\": \"in句の可変条件（:param[]と$ifの組み合わせ）のSQL例とJavaコード例を回答に含めた\"},\n        {\"ref\": \"component/libraries/libraries-database.json:s16\", \"reason\": \"名前付きパラメータの使用必須（?は不可）という注意点を補足するために参照した\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"component/libraries/libraries-database.json:s6\", \"reason\": \"概要ポインタのみで実装詳細はs21/s22に集約されているため回答に含める情報がなかった\"},\n        {\"ref\": \"component/libraries/libraries-database.json:s3\", \"reason\": \"SQLファイル管理の原則はs21で前提とされており、個別に引用するほどの追加情報がなかった\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "0bd04c59-40cd-401a-a212-86d5aa8ff955",
+  "total_cost_usd": 1.05191735,
+  "usage": {
+    "input_tokens": 16,
+    "cache_creation_input_tokens": 66305,
+    "cache_read_input_tokens": 848688,
+    "output_tokens": 5898,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 66305
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3350,
+      "outputTokens": 21,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003455,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 27,
+      "outputTokens": 15090,
+      "cacheReadInputTokens": 992092,
+      "cacheCreationInputTokens": 139841,
+      "webSearchRequests": 0,
+      "costUSD": 1.04846235,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_0169t6iQ3QXsRYcuGLi2tYXD",
+      "tool_input": {
+        "command": "cd /home/tie303177/work/nabledge/work4 && cat .claude/skills/nabledge-6/workflows/semantic-search.md",
+        "description": "Read semantic-search workflow"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01RTwqbdwY9eGRyXUGoWJaq9",
+      "tool_input": {
+        "command": "cat /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/knowledge/component/libraries/libraries-database.json | python3 -c \"import json,sys; d=json.load(sys.stdin); [print(k, ':', v.get('title','') if isinstance(v,dict) else '') for k,v in d.items() if k.startswith('s')]\" 2>/dev/null | head -50",
+        "description": "List sections in libraries-database.json"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_017iq1m327SQpetneS5BezTc",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \"component/libraries/libraries-database.json:s21\" \"component/libraries/libraries-database.json:s22\" \"component/libraries/libraries-database.json:s6\" \"component/libraries/libraries-database.json:s3\" \"component/libraries/libraries-database.json:s16\"",
+        "description": "Read key sections about dynamic SQL conditions"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01GtqZNBZFG5NqueHUwR485e",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \"component/libraries/libraries-database.json:s21\" \"component/libraries/libraries-database.json:s22\" \"component/libraries/libraries-database.json:s6\" \"component/libraries/libraries-database.json:s3\" \"component/libraries/libraries-database.json:s16\""
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_018Utxvz7k8kiLUvVdFWUYGP",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge/work4/.claude/skills/nabledge-6/scripts/read-sections.sh \"component/libraries/libraries-database.json:s21\" \"component/libraries/libraries-database.json:s22\" \"component/libraries/libraries-database.json:s6\" \"component/libraries/libraries-database.json:s3\" \"component/libraries/libraries-database.json:s16\"",
+        "dangerouslyDisableSandbox": true
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "fac856da-c4fb-4ef6-a16e-ee7cb2bc1aa9"
+}

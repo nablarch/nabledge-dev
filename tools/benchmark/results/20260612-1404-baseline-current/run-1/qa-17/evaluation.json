@@ -1,0 +1,64 @@
+{
+  "scenario_id": "qa-17",
+  "description": "アプリケーションコードからSystemRepositoryを使ってコンポーネントを取得したい。名前指定と型指定の取得方法を知りたい。",
+  "input": "SystemRepository から登録済みコンポーネントを取得する方法を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.2,
+      "reason": "The Expected Output specifically mentions using a type parameter with get(String name) for type-safe component retrieval from the repository. The Actual Output does show SystemRepository.get() usage with type casting (e.g., `SampleComponent sample = SystemRepository.get(\"sampleComponent\")`), which implicitly demonstrates type-safe retrieval via Java's generic type inference. However, the Actual Output never explicitly mentions 'type parameter' or 'type-safe' retrieval as a key feature, which is the core fact in the Expected Output. The response focuses on XML configuration, singleton behavior, and loading mechanisms rather than highlighting the type parameter aspect of the get method."
+    },
+    "answer_relevancy": {
+      "score": 0.5714285714285714,
+      "reason": "The score is 0.57 because while the actual output does address how to retrieve registered components from SystemRepository to some extent, it contains several irrelevant statements that dilute the response. These include details about singleton behavior, cautions about what not to store in components, multi-threaded environment behavior, potential bugs from singleton sharing, and reference sources. These tangential points detract significantly from directly answering the question about how to retrieve components from SystemRepository."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-repository.json:s25",
+      "component/libraries/libraries-repository.json:s24",
+      "component/libraries/libraries-repository.json:s7"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 94483,
+    "duration_api_ms": 92391,
+    "num_turns": 7,
+    "total_cost_usd": 0.6638396,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 5343,
+      "cache_read_input_tokens": 604057,
+      "cache_creation_input_tokens": 106418
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3266,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0033859999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 5343,
+        "cacheReadInputTokens": 604057,
+        "cacheCreationInputTokens": 106418,
+        "webSearchRequests": 0,
+        "costUSD": 0.6604536,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

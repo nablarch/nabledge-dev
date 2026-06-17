@@ -1,0 +1,94 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "index",
+        "reason": "index.mdに相関バリデーション(s11)とウェブアプリケーションのユーザ入力値チェック(s16)が明示されており、目的が「実装したい」でcomponent/librariesは優先カテゴリのため選択"
+      },
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "source": "index",
+        "reason": "index.mdに相関バリデーション(s14)が明示されており、Bean ValidationとNablarch Validationの両方のアプローチをカバーするため選択"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "InjectFormの詳細はBean Validationページから参照されるが、相関バリデーションの実装自体には不要なため除外"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの機能詳細ページだが、バリデーション実装の具体的なコード例はcomponent/librariesページに集約されているため除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "メールアドレスと確認用メールアドレスの一致チェックを行う相関バリデーションの具体的なコード例が記載されており、質問に直接回答できる"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "Nablarch ValidationでmailaddressとconfirmMailAddressを使った相関バリデーションの具体的なコード例が記載されており、質問に直接回答できる"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでBean Validationを使うための設定(BeanValidationStrategy)が記載されており、実装に必要な背景情報として有用"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "reason": "バリデーションルールの設定方法（単項目）の説明で、相関バリデーションには直接関係しないため除外"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s9",
+        "reason": "ドメインバリデーションの説明で、相関バリデーションには直接関係しないため除外"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "reason": "データベースとの相関バリデーションの説明で、今回の質問（2項目の一致チェック）とは異なるため除外"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s11",
+        "reason": "バリデーションの実行方法の説明で、相関バリデーションのコア実装であるs14で十分カバーされるため除外"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-nablarch-validation.json:s14",
+      "component/libraries/libraries-bean-validation.json:s16"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s11",
+          "reason": "Bean Validationでの相関バリデーション実装例（@AssertTrueの使用方法と任意項目での注意点）を回答に引用した"
+        },
+        {
+          "ref": "component/libraries/libraries-nablarch-validation.json:s14",
+          "reason": "Nablarch Validationでの相関バリデーション実装例（@ValidateForとValidationContextの使用方法）を回答に引用した"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s16",
+          "reason": "ウェブアプリケーションでBean Validationを使うためのBeanValidationStrategy設定を回答に引用した"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

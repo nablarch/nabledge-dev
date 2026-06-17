@@ -394,6 +394,81 @@ Javadoc JSON (`knowledge/javadoc/` 配下) は index.md に登録しない:
 
 verify の QO4 チェックは `knowledge/javadoc/` 配下の JSON を対象外とする（`rbkc-verify-quality-design.md` §3-3 参照）。
 
+### 5-3. classes.md 生成 (Issue #368)
+
+#### 概要
+
+クラス名から知識ページを引くための逆引きインデックスファイル `knowledge/classes.md` を生成する。`index.md` と対になるファイルであり、`semantic-search` の Step 2 でクラス名検索の補助インデックスとして使用される。
+
+#### 生成仕様
+
+- **生成関数**: `generate_classes_md(knowledge_dir, output_path)`（`scripts/create/classes.py`）
+- **生成タイミング**: `create` / `update` / `delete` の各コマンドで `generate_index_md()` の直後に実行
+- **全バージョン必須生成**: クラス名が0件のバージョン（v1.4/v1.3/v1.2）でも `classes.md` を必ず生成する。これにより `semantic-search` はバージョン依存分岐なしで `classes.md` を読める
+
+#### 対象カテゴリ
+
+`component`、`processing-pattern`、`development-tools` の3カテゴリ配下の JSON のみを対象とする。
+
+- `no_knowledge_content: true` の JSON はスキップ
+- `javadoc/` および `assets/` 配下はスキップ
+
+#### クラス名抽出ルール
+
+各 JSON ファイルの `content` および `sections[].content` 中の Javadoc リンクパターン `[text](../../javadoc/javadoc-*.json)` の `text` 部分を抽出する。
+
+- `text` に `#` が含まれる場合（例: `JaxRsMethodBinderFactory#handlerList`）は `#` 以降を除去してクラス名のみ採用
+- 同一ページ内の重複は除去。出現順を保持
+
+#### 掲載対象
+
+クラス名が1件以上抽出されたページのみ `classes.md` に出力する。クラス名ゼロのページは掲載しない。
+
+#### クラス名ゼロのバージョン向け固定メッセージ
+
+クラス名を持つページが1つも無いバージョン（javadoc 未生成の旧バージョン: v1.4/v1.3/v1.2）では、`classes.md` の本文に以下の固定メッセージを出力する:
+
+```
+_No class index available for this version (no Javadoc references in knowledge files)._
+```
+
+これにより `semantic-search` は全バージョンで「`classes.md` を読み各ページブロックを走査」のまま変更不要となる。ブロックが無いので候補追加は自然にゼロになる。
+
+#### 出力フォーマット
+
+`index.md` と同形式。先頭に `# Class Index` ヘッダ行を出力（`index.md` の `# Knowledge Index` に倣う）。以降 H2=category、H3=title、`path:` 行、クラス名は `- ClassName` 行。
+
+通常バージョンの出力例（1ページ分）:
+
+```
+# Class Index
+
+## component
+
+### Jakarta RESTful Web Servicesアダプタ
+path: component/adapters/adapters-jaxrs-adaptor.json
+- Jackson2BodyConverter
+- JaxbBodyConverter
+- FormUrlEncodedConverter
+```
+
+クラス名ゼロのバージョンでの出力例:
+
+```
+# Class Index
+
+_No class index available for this version (no Javadoc references in knowledge files)._
+```
+
+#### QO5（classes.md 網羅性チェック）
+
+verify に `check_classes_coverage()` を追加する（`rbkc-verify-quality-design.md` §3-3 参照）。
+
+- 照合ルール: 対象3カテゴリの JSON のうちクラス名を1件以上含むページが `classes.md` の `path:` エントリに存在することを照合
+- クラス名ゼロのページは `classes.md` 非掲載が正なので coverage 対象から除外
+- クラス名を持つページが1つも無いバージョンでは coverage 対象が空集合となるため FAIL 0（正常）
+- `classes.md` 自体は `index.md` と同様にメタデータファイルとして QO3/QO4 スキャン除外対象とする
+
 ## 6. 参考: docutils 設定
 
 `scripts/common/rst_ast.py` 経由で以下を一元設定:

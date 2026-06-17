@@ -1,0 +1,141 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-message.json",
+        "source": "index",
+        "reason": "多言語化対応セクション（s8）を含み、メッセージのプロパティファイルによる国際化実装を直接カバーする"
+      },
+      {
+        "path": "component/handlers/handlers-thread-context-handler.json",
+        "source": "index",
+        "reason": "言語属性クラスの設定と、ユーザが言語を選択する画面の実装例（s7）を含む"
+      },
+      {
+        "path": "component/handlers/handlers-http-response-handler.json",
+        "source": "index",
+        "reason": "言語毎のコンテンツパスの切り替え（s7）に関連するが、今回の質問の主要テーマとは少し外れるため補足候補"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-code.json",
+        "reason": "コード管理の多言語化は名称の多言語化（s8）で対応するが、今回のメッセージ/ラベル切り替えの主要回答は libraries-message.json が担う"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "国際化対応の参照先リンクが含まれるが、具体的な実装情報は libraries-message と thread-context-handler に集約されている"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTful向けの国際化対応リンクが含まれるが、処理方式が指定されていないため優先度が低い"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "多言語化対応の実装方法（PropertiesStringResourceLoader設定・プロパティファイル作成）を直接説明する"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ユーザが言語を選択できる画面の実装例（LanguageAttributeInHttpCookie・keepLanguage）を含む"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "言語属性クラス（LanguageAttribute等）の一覧と設定例を提供する背景情報"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "プロパティファイルへのメッセージ定義方法の具体例（基礎知識）"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "JSPのmessageタグによる固定文言表示方法（ラベル切り替えの実装に関連）"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで実装情報なし"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s2",
+        "reason": "メッセージ定義場所の概念説明のみ"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s6",
+        "reason": "プロパティファイルの作成単位に関する設計ガイダンスで実装詳細でない"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s9",
+        "reason": "業務例外送出の方法で多言語化とは別トピック"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s10",
+        "reason": "埋め込み文字の使い方で多言語化とは別トピック"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s8",
+        "reason": "タイムゾーン選択の実装で、言語切り替えとは別トピック"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s4",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/libraries/libraries-message.json:s7",
+      "component/libraries/libraries-message.json:s11",
+      "component/handlers/handlers-http-response-handler.json:s7"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-message.json:s8",
+          "reason": "PropertiesStringResourceLoaderの設定・プロパティファイル命名規則・デフォルトロケール設定の回答の中核"
+        },
+        {
+          "ref": "component/handlers/handlers-thread-context-handler.json:s7",
+          "reason": "LanguageAttributeInHttpCookieの設定とkeepLanguageを用いた言語切り替えハンドラの実装例"
+        },
+        {
+          "ref": "component/handlers/handlers-thread-context-handler.json:s4",
+          "reason": "言語属性クラス（LanguageAttribute等）の設定例"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-message.json:s7",
+          "reason": "プロパティファイルの基本定義例はs8の説明で十分カバーされ、重複のため省略"
+        },
+        {
+          "ref": "component/libraries/libraries-message.json:s11",
+          "reason": "JSPのmessageタグ（n:message）は補足情報として言及可能だが回答の核心ではないため省略"
+        },
+        {
+          "ref": "component/handlers/handlers-http-response-handler.json:s7",
+          "reason": "言語毎のコンテンツパス切り替えはHTMLリソースの話で、メッセージ/ラベル切り替えの主題と異なるため不使用"
+        }
+      ]
+    }
+  }
+}

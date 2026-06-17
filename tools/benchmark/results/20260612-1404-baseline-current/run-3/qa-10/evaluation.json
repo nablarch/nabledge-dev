@@ -1,0 +1,71 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers the Expected Output's key facts: it explains the $if syntax for variable conditions in SQL files, and explicitly states that conditions are excluded when the property value is null or an empty string (空文字列). The Actual Output goes well beyond the Expected Output with detailed code examples and additional notes, but all core facts from the Expected Output are clearly present and covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, which asks about writing SQL with dynamic search conditions based on user input. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s16",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-database.json:s6",
+      "component/libraries/libraries-database.json:s12",
+      "component/libraries/libraries-database.json:s3",
+      "component/libraries/libraries-universal-dao.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 217449,
+    "duration_api_ms": 214205,
+    "num_turns": 4,
+    "total_cost_usd": 1.0077326500000001,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 5952,
+      "cache_read_input_tokens": 179112,
+      "cache_creation_input_tokens": 47330
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3414,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0035889999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 13808,
+        "cacheReadInputTokens": 608293,
+        "cacheCreationInputTokens": 163865,
+        "webSearchRequests": 0,
+        "costUSD": 1.00414365,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

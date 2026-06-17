@@ -1,0 +1,71 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly contains the key fact from the Expected Output: that by replacing the class specified in the component definition (コンポーネント定義で指定するクラスを差し替えることで), the method of obtaining system time can be switched (システム日時の取得方法を切り替えられる). This exact concept is explicitly stated in the Actual Output under the '仕組み' section: 'コンポーネント定義で指定するクラスを差し替えるだけで、アプリケーション全体のシステム日時の取得方法を切り替えられる。' The single expected fact is fully covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is fully relevant to the question about how to replace the system date/time with an arbitrary date during testing and switch between production and test environments. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9230769230769231,
+      "reason": "The score is 0.92 because the actual output mostly aligns with the retrieval context, but contains a contradiction regarding the date value: when the system date is September 14, 2010 (2010年9月14日), the actual output sets fixedDate to '20100913123456', which corresponds to September 13 rather than September 14, creating an inconsistency with the stated system date."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s12",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s11",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s12",
+      "setup/setting-guide/setting-guide-ManagingEnvironmentalConfiguration.json:s9",
+      "setup/setting-guide/setting-guide-ManagingEnvironmentalConfiguration.json:s10",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s13",
+      "setup/setting-guide/setting-guide-ManagingEnvironmentalConfiguration.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 163507,
+    "duration_api_ms": 162514,
+    "num_turns": 3,
+    "total_cost_usd": 0.5946559499999999,
+    "usage": {
+      "input_tokens": 4,
+      "output_tokens": 5989,
+      "cache_read_input_tokens": 149039,
+      "cache_creation_input_tokens": 6823
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3380,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003555,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 10874,
+        "cacheReadInputTokens": 325414,
+        "cacheCreationInputTokens": 88089,
+        "webSearchRequests": 0,
+        "costUSD": 0.59110095,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

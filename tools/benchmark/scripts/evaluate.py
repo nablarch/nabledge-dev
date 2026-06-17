@@ -152,6 +152,8 @@ def evaluate_scenario(
         "scenario_id": scenario_id,
         "description": scenario.get("given", {}).get("description", ""),
         "input": scenario.get("when", {}).get("input", ""),
+        "purpose": scenario.get("when", {}).get("hearing_answer", {}).get("purpose", ""),
+        "expected_facts": [m.get("fact", "") for m in scenario.get("then", {}).get("must", [])],
         "scores": scores,
         "diagnostics": {
             "search_sections": (

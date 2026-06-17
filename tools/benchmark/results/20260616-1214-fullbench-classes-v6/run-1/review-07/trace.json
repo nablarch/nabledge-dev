@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 118558,
+  "duration_api_ms": 117577,
+  "ttft_ms": 3515,
+  "ttft_stream_ms": 2400,
+  "time_to_request_ms": 1078,
+  "num_turns": 8,
+  "result": "全情報を取得できました。回答を生成します。\n\n**結論**: NablarchにはCSRF対策専用のハンドラ（`CsrfTokenVerificationHandler`）があり、ハンドラ構成に追加するだけでPOSTなどのリクエストに対してCSRFトークンの自動生成・検証が行われる。\n\n### Answer\n\n**結論**: NablarchのCSRF対策は `CsrfTokenVerificationHandler`（CSRFトークン検証ハンドラ）をハンドラ構成に追加するだけで有効になる。アプリケーションプログラマが個別に実装する必要はなく、漏れなくチェックできる。\n\n**根拠**:\n\n#### 基本的な設定方法\n\nコンポーネント設定ファイル（XML）のハンドラキューに以下の順序でハンドラを追加する。\n\n```xml\n<!-- ハンドラ構成 -->\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <!-- 他のハンドラは省略 -->\n\n      <!-- セッションストアハンドラ（必須：CSRFハンドラより前に配置） -->\n      <component-ref name=\"sessionStoreHandler\" />\n\n      <!-- Nablarchカスタムタグ制御ハンドラ（JSP使用時：CSRFハンドラより前に配置） -->\n      <component-ref name=\"nablarchTagHandler\"/>\n\n      <!-- CSRFトークン検証ハンドラ -->\n      <component-ref name=\"csrfTokenVerificationHandler\"/>\n    </list>\n  </property>\n</component>\n\n<component name=\"csrfTokenVerificationHandler\"\n           class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\" />\n```\n\n#### デフォルトの動作\n\n| 項目 | デフォルト値 |\n|------|-------------|\n| トークン生成方式 | UUIDv4（`UUIDv4CsrfTokenGenerator`） |\n| 検証対象外のHTTPメソッド | `GET` `HEAD` `TRACE` `OPTIONS` |\n| 検証対象 | POST・PUT等（上記以外のメソッド） |\n| トークンの送信方法 | リクエストヘッダ `X-CSRF-TOKEN` またはパラメータ `csrf-token` |\n| 検証失敗時のレスポンス | `BadRequest(400)` |\n\nJSPにNablarchカスタムタグ（`n:form`等）を使用している場合、CSRFトークンは画面に自動で埋め込まれる（実装不要）。\n\n#### カスタマイズが必要な場合\n\nトークン名などを変更する場合は `WebConfig` で設定できる。\n\n```xml\n<component name=\"webConfig\" class=\"nablarch.common.web.WebConfig\">\n  <!-- リクエストヘッダから取得する際のヘッダ名 -->\n  <property name=\"csrfTokenHeaderName\" value=\"X-CUSTOM-CSRF-TOKEN\" />\n  <!-- リクエストパラメータから取得する際のパラメータ名 -->\n  <property name=\"csrfTokenParameterName\" value=\"custom-csrf-token\" />\n  <!-- セッションストアに格納する際のキー名 -->\n  <property name=\"csrfTokenSessionStoredVarName\" value=\"custom-csrf-token\" />\n</component>\n```\n\n**注意点**:\n- `CsrfTokenVerificationHandler` はCSRFトークンをセッションストアに格納するため、**セッション変数保存ハンドラ（`SessionStoreHandler`）より後ろ**に配置すること。\n- ログイン時にセッションIDのみを再生成する実装の場合は、`CsrfTokenUtil.regenerateCsrfToken` メソッドを呼び出してCSRFトークンも再生成すること。セッションストア自体を破棄して再生成する実装であれば不要。\n- リクエスト単体テスト時はCSRFトークンの検証が失敗するため、テスト設定でこのハンドラを `NopHandler` に差し替えて無効化すること。\n\n参照: handlers-csrf-token-verification-handler.json:s4, handlers-csrf-token-verification-handler.json:s3, handlers-csrf-token-verification-handler.json:s5, security-check-2.チェックリスト.json:s6\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"source\": \"both\", \"reason\": \"CSRFトークンの生成と検証を担うハンドラであり、質問のCSRF対策の仕組みと設定方法に直接対応する\"},\n      {\"path\": \"check/security-check/security-check-2.チェックリスト.json\", \"source\": \"index\", \"reason\": \"セキュリティチェックリストにCSRF対策の対応状況が記載されており、セキュリティ対応目的の質問に合致する\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"source\": \"index\", \"reason\": \"ウェブアプリケーションの機能詳細にCSRF対策のセクションが存在し、処理方式がウェブアプリケーションと指定されている\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"reason\": \"RESTfulウェブサービスの機能詳細であり、処理方式がウェブアプリケーションと指定されているためスキップ\"},\n      {\"path\": \"about/about-nablarch/about-nablarch-architecture.json\", \"reason\": \"アーキテクチャ概要であり、CSRF対策の具体的な設定方法には関係しない\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"CSRFトークンの生成と検証の設定方法（コンポーネント定義XML例・デフォルト動作の詳細）が記載されており、質問への直接回答\"},\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"ハンドラの配置順序に関する制約（セッション変数保存ハンドラより後ろに配置すること）が記載されており、設定時の必須知識\"},\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s5\", \"relevance\": \"partial\", \"reason\": \"ログイン時のCSRFトークン再生成の必要性と方法が記載されており、セキュリティ対応として重要な補足情報\"},\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s6\", \"relevance\": \"partial\", \"reason\": \"NablarchのCSRF対策機能の推奨理由（二重サブミット防止機能との使い分け）が記載されており背景理解に有用\"},\n      {\"file\": \"component/handlers/handlers-csrf-token-verification-handler.json\", \"section_id\": \"s1\", \"relevance\": \"partial\", \"reason\": \"ハンドラクラス名（nablarch.fw.web.handler.CsrfTokenVerificationHandler）が記載されており、設定ファイルに必要\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s19\", \"reason\": \"CSRF対策の参照リンクのみであり、handlers-csrf-token-verification-handler.jsonで十分な情報が得られる\"},\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s1\", \"reason\": \"SQLインジェクションのチェック項目であり、CSRFとは無関係\"},\n      {\"file\": \"check/security-check/security-check-2.チェックリスト.json\", \"section_id\": \"s4\", \"reason\": \"セッション管理の不備のチェック項目であり、CSRF対策とは直接関係しない\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s4\",\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s3\",\n      \"check/security-check/security-check-2.チェックリスト.json:s6\",\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s5\",\n      \"component/handlers/handlers-csrf-token-verification-handler.json:s1\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s4\", \"reason\": \"ハンドラ構成へのXML設定例、デフォルトの検証動作（HTTPメソッド判定・トークン名・失敗時レスポンス）を回答の根拠として使用\"},\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s3\", \"reason\": \"ハンドラ配置順序の制約（セッション変数保存ハンドラより後ろに配置）を注意点として使用\"},\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s5\", \"reason\": \"ログイン時のCSRFトークン再生成の必要性（CsrfTokenUtil.regenerateCsrfToken）を注意点として使用\"},\n        {\"ref\": \"security-check-2.チェックリスト.json:s6\", \"reason\": \"CSRF対策機能の推奨理由の背景知識として参照（ただし回答本文への直接引用は行っていない）\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"handlers-csrf-token-verification-handler.json:s1\", \"reason\": \"ハンドラクラス名はs4の設定例内に含まれているため独立したセクションとしては使用しなかった\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "a23c17b1-63b1-497a-bccd-4c3c3df062de",
+  "total_cost_usd": 0.8024815000000001,
+  "usage": {
+    "input_tokens": 7,
+    "cache_creation_input_tokens": 141930,
+    "cache_read_input_tokens": 509710,
+    "output_tokens": 7573,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 141930
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3535,
+      "outputTokens": 36,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003715,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 7,
+      "outputTokens": 7573,
+      "cacheReadInputTokens": 509710,
+      "cacheCreationInputTokens": 141930,
+      "webSearchRequests": 0,
+      "costUSD": 0.7987664999999999,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "289d8c12-605a-4682-bc3d-373b88048e0f"
+}

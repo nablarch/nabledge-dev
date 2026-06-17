@@ -1,0 +1,83 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "index",
+        "reason": "Bean Validationライブラリのページで、DBとの相関バリデーション（s12）を含む直接関連セクションがある"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスの機能詳細ページで、入力値チェックの概要セクション（s2）を含む"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービス向けBean Validationハンドラの設定・使用方法を説明するページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "Nablarch Validationはレガシー機能で、今回の質問はBean Validationに限定されるため除外"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーション（非REST）の機能詳細で、処理方式がRESTfulウェブサービスと異なるため除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "「データベースとの相関バリデーションを行う」セクションで、カスタムバリデータでのDB検索が推奨されない理由と代替実装方針を直接説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "アクションハンドラ側でバリデーションエラーを項目に紐付ける方法（ValidationUtil#createMessageForProperty）を説明しており、業務アクション側実装の補完情報"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "reason": "相関バリデーションのセクションだが、DBアクセスなしの@AssertTrueを使った実装で、今回の質問とは直接関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "reason": "RESTfulウェブサービスでのバリデーション実行方法の概要で、DB重複チェックの実装方法には言及していない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s24",
+        "reason": "カスタムバリデータの追加方法だが、DBアクセス可否については言及しておらず、s12で既にカバーされている"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s12",
+          "reason": "Bean ValidationでのDB相関バリデーションが禁止される理由（SQLインジェクションリスク、値の安全性保証がない）と業務アクション側での実装方針を根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s13",
+          "reason": "業務アクション側でDBチェックエラーを項目に紐付ける実装方法（ValidationUtil#createMessageForProperty + ApplicationException）を根拠として使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

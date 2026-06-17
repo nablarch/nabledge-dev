@@ -1,0 +1,175 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "CSP対応の主要ハンドラ（SecureHandler）のドキュメントで、s6〜s9がCSP設定専用のセクション"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "JSPカスタムタグのCSP対応（s38）とcspNonceタグの使用方法（s39）を含む"
+      },
+      {
+        "path": "component/libraries/libraries-tag-reference.json",
+        "reason": "cspNonceタグのリファレンス（s56）を含む"
+      },
+      {
+        "path": "releases/releases/releases-nablarch6u2-releasenote-6u2 (6u1からの変更点).json",
+        "reason": "nonce対応がいつ追加されたかの背景情報（s5）"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストであり、CSPの設定方法ではなく検証項目が中心"
+      },
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "セキュリティチェックの概要のみで設定方法の情報なし"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "s21にCSP対応セクションがあるがhandlers-secure-handler.jsonの内容に包含される"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-fw-web-handler-SecureHandler.json",
+        "reason": "Javadocのため実装手順のドキュメントより詳細度が低く、ハンドラドキュメントで代替可能"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSP対応の全体概要と関連コンポーネントの説明"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "固定CSPヘッダを設定する具体的な設定例"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "nonceを使ったCSP設定の具体的な設定例とプレースホルダーの説明"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "report-onlyモードの設定方法"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "SecureHandlerの配置に関する制約（HTTPレスポンスハンドラより後ろ）"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s38",
+        "relevance": "high",
+        "reason": "nonce有効時のカスタムタグの動作変化の説明"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s39",
+        "relevance": "high",
+        "reason": "cspNonceタグでインライン要素にnonceを埋め込む方法と具体例"
+      },
+      {
+        "file": "component/libraries/libraries-tag-reference.json",
+        "section_id": "s56",
+        "relevance": "partial",
+        "reason": "cspNonceタグのsourceFormat属性の仕様説明"
+      },
+      {
+        "file": "releases/releases/releases-nablarch6u2-releasenote-6u2 (6u1からの変更点).json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "CSP nonce対応が6u2で追加された経緯の補足情報"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみで設定方法の情報なし"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s2",
+        "reason": "Mavenモジュール情報のみ"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s4",
+        "reason": "デフォルトヘッダ値変更の説明でCSP固有ではない"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s5",
+        "reason": "カスタムレスポンスヘッダの追加方法でCSP固有ではない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "component/handlers/handlers-secure-handler.json:s3",
+      "component/libraries/libraries-tag.json:s38",
+      "component/libraries/libraries-tag.json:s39",
+      "component/libraries/libraries-tag-reference.json:s56",
+      "releases/releases/releases-nablarch6u2-releasenote-6u2 (6u1からの変更点).json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s6",
+          "reason": "CSP対応の概要とContentSecurityPolicyHeaderの役割を説明するために使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s7",
+          "reason": "固定CSPヘッダの設定例（XMLコード）をそのまま引用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s8",
+          "reason": "nonce対応のgenerateCspNonce設定と$cspNonceSource$プレースホルダーの説明・設定例を引用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s9",
+          "reason": "report-onlyモードの設定例を引用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s3",
+          "reason": "SecureHandlerをHTTPレスポンスハンドラより後ろに配置する制約を注意点として引用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s38",
+          "reason": "generateCspNonce有効時にカスタムタグのscript要素にnonceが自動付与されることを説明するために使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s39",
+          "reason": "cspNonceタグでstyle要素にnonceを付与する例（JSP・HTMLコード）を引用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag-reference.json:s56",
+          "reason": "cspNonceタグのsourceFormat属性の説明に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "releases/releases/releases-nablarch6u2-releasenote-6u2 (6u1からの変更点).json:s5",
+          "reason": "6u2でnonce対応が追加された経緯の補足情報だが、設定方法の説明に直接必要ではないため未使用"
+        }
+      ]
+    }
+  }
+}

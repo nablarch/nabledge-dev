@@ -1,0 +1,60 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "purpose": "セキュリティ対応したい",
+  "expected_facts": [
+    "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly states that Nablarch's custom tags perform HTML escaping by default, which constitutes sanitization for fundamental XSS prevention. The section '5-(i) ウェブページ出力のエスケープ処理（根本的解決）' directly addresses the Expected Output's claim that custom tags enable XSS fundamental resolution through sanitization. The summary also confirms 'HTML文脈での出力のサニタイジングは自動的に対応されます（根本的解決）'. The single expected fact is fully covered."
+    },
+    "answer_relevancy": {
+      "score": 0.7659574468085106,
+      "reason": "The score is 0.77 because while the actual output addresses the core XSS question regarding Nablarch's capabilities and custom tag sanitization, it is weighed down by numerous source citation/verification notes and a meta-statement about response validation that are not directly relevant to answering the question. These 11 irrelevant statements dilute the response, preventing a higher score. The score remains at 0.77 because the substantive content does address the XSS and Nablarch custom tag sanitization topic."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 324886,
+    "duration_api_ms": 323416,
+    "num_turns": 15,
+    "total_cost_usd": 1.45947905,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 14432,
+      "cache_read_input_tokens": 726406,
+      "cache_creation_input_tokens": 213277
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3557,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0037519999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 24861,
+        "outputTokens": 21161,
+        "cacheReadInputTokens": 876326,
+        "cacheCreationInputTokens": 213555,
+        "webSearchRequests": 0,
+        "costUSD": 1.4557270500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

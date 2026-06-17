@@ -1,0 +1,114 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "CSRFチェックリスト (s6) がCSRF対策の概要とNablarchでの対応状況を直接説明している"
+      },
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "reason": "CSRFトークン検証ハンドラそのものを解説するページで、設定方法・動作の詳細が含まれる"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションのCSRF対策 (s19) へのリンクを持ち、処理方式=ウェブアプリケーションに対応する"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "処理方式がRESTfulウェブサービスであり、質問はウェブアプリケーションを対象としている"
+      },
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "概要のみでCSRF対策の具体的な設定情報は含まれない"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "reason": "セキュアハンドラはXSSやクリックジャッキング対応であり、CSRFトークン検証とは異なる"
+      },
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッションストアはCSRFトークンの格納先として関連するが、CSRF対策の主題ではない"
+      },
+      {
+        "path": "component/libraries/libraries-db-double-submit.json",
+        "reason": "データベースを使用した二重サブミット防止はCSRF対策に対応していないと明記されており、主要な回答にはならない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "CSRF脆弱性に対するNablarchの対応状況と推奨機能を直接説明している"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "CSRFトークン検証ハンドラの設定方法・デフォルト動作・カスタマイズ方法が完全に記載されている"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ハンドラの配置順序という必須制約を説明しており、設定時に欠かせない背景知識である"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "ログイン時のCSRFトークン再生成という重要なセキュリティ注意事項を提供している"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s1",
+        "reason": "クラス名の一覧のみで、s4で既に言及されている"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s2",
+        "reason": "Mavenの依存関係定義のみで、設定方法の理解には不要"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s19",
+        "reason": "CSRFトークン検証ハンドラへのポインタのみで独自の内容がなく、s4で既にカバーされている"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s6",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "security-check-2.チェックリスト.json:s6",
+          "reason": "CSRF対策機能の推奨とハンドラ追加だけで漏れなくチェックできるという根拠に使用"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s4",
+          "reason": "ハンドラの設定XMLコード例・デフォルト動作（検証対象HTTPメソッド、トークン名、失敗時のレスポンス）の根拠に使用"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s3",
+          "reason": "セッション変数保存ハンドラおよびNablarchカスタムタグ制御ハンドラより後ろに配置するという制約の根拠に使用"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s5",
+          "reason": "ログイン時のCSRFトークン再生成（CsrfTokenUtil.regenerateCsrfToken）についての注意点に使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

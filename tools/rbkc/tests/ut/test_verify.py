@@ -5840,3 +5840,234 @@ class TestVerifyFile_ExtdocQC_Symmetrised:
         issues = self._verify(source_text, json_data, tmp_path)
         qc_issues = [i for i in issues if i.startswith("[QC1]") or i.startswith("[QC2]")]
         assert qc_issues == [], f"Unexpected QC1/QC2 issues: {qc_issues}"
+
+
+# ---------------------------------------------------------------------------
+# QO5: classes.md 網羅性 (Issue #368)
+# ---------------------------------------------------------------------------
+
+class TestCheckClassesCoverage:
+    """QO5: every target-category JSON with Javadoc links must be in classes.md."""
+
+    _TARGET_CATS = ["component", "processing-pattern", "development-tools"]
+
+    def _check(self, knowledge_dir, classes_path):
+        from scripts.verify.verify import check_classes_coverage
+        return check_classes_coverage(knowledge_dir, classes_path)
+
+    def _write_json(self, kdir: Path, rel: str, data: dict) -> None:
+        p = kdir / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+
+    def _write_classes_md(self, path: Path, entries: list[str]) -> None:
+        """Write classes.md with 'path: {rel}' lines for given relative paths."""
+        lines = ["# Class Index", ""]
+        for rel in entries:
+            lines.append("### title")
+            lines.append(f"path: {rel}")
+            lines.append("")
+        path.write_text("\n".join(lines), encoding="utf-8")
+
+    def _javadoc_content(self, class_names: list[str]) -> str:
+        return " ".join(
+            f"[{c}](../../javadoc/javadoc-{c}.json)" for c in class_names
+        )
+
+    # ------------------------------------------------------------------
+    # PASS cases
+    # ------------------------------------------------------------------
+
+    def test_pass_all_files_registered(self, tmp_path):
+        """All target-category JSONs with classes are in classes.md → no issues."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/adapters/a.json", {
+            "id": "a", "title": "A", "no_knowledge_content": False,
+            "content": self._javadoc_content(["FooConverter"]),
+            "sections": [],
+        })
+        cls_md = tmp_path / "classes.md"
+        self._write_classes_md(cls_md, ["component/adapters/a.json"])
+        assert self._check(kdir, cls_md) == []
+
+    def test_pass_zero_class_version(self, tmp_path):
+        """When no JSON has any Javadoc links, coverage target is empty → FAIL 0."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/adapters/a.json", {
+            "id": "a", "title": "A", "no_knowledge_content": False,
+            "content": "No javadoc links here.",
+            "sections": [],
+        })
+        cls_md = tmp_path / "classes.md"
+        cls_md.write_text(
+            "# Class Index\n\n"
+            "_No class index available for this version (no Javadoc references in knowledge files)._\n",
+            encoding="utf-8",
+        )
+        assert self._check(kdir, cls_md) == []
+
+    def test_pass_empty_knowledge_dir(self, tmp_path):
+        """Empty knowledge dir → no coverage targets → FAIL 0."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        cls_md = tmp_path / "classes.md"
+        cls_md.write_text("# Class Index\n\n_No class index available..._\n", encoding="utf-8")
+        assert self._check(kdir, cls_md) == []
+
+    def test_pass_no_knowledge_content_excluded(self, tmp_path):
+        """Pages with no_knowledge_content: true are not coverage targets."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/adapters/skip.json", {
+            "id": "skip", "title": "Skip", "no_knowledge_content": True,
+            "content": self._javadoc_content(["SkipClass"]),
+            "sections": [],
+        })
+        cls_md = tmp_path / "classes.md"
+        self._write_classes_md(cls_md, [])
+        assert self._check(kdir, cls_md) == []
+
+    def test_pass_zero_class_page_not_required(self, tmp_path):
+        """A target-category page with zero classes is not required in classes.md."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/adapters/noclass.json", {
+            "id": "nc", "title": "NoClass", "no_knowledge_content": False,
+            "content": "Plain text, no Javadoc links.",
+            "sections": [],
+        })
+        cls_md = tmp_path / "classes.md"
+        self._write_classes_md(cls_md, [])
+        assert self._check(kdir, cls_md) == []
+
+    def test_pass_other_category_not_required(self, tmp_path):
+        """JSONs outside the 3 target categories are not coverage targets."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "getting-started/intro/a.json", {
+            "id": "a", "title": "A", "no_knowledge_content": False,
+            "content": self._javadoc_content(["SomeClass"]),
+            "sections": [],
+        })
+        cls_md = tmp_path / "classes.md"
+        self._write_classes_md(cls_md, [])
+        assert self._check(kdir, cls_md) == []
+
+    def test_pass_assets_excluded(self, tmp_path):
+        """Files under assets/ are not coverage targets."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/assets/x.json", {
+            "id": "x", "title": "X", "no_knowledge_content": False,
+            "content": self._javadoc_content(["AssetClass"]),
+            "sections": [],
+        })
+        cls_md = tmp_path / "classes.md"
+        self._write_classes_md(cls_md, [])
+        assert self._check(kdir, cls_md) == []
+
+    def test_pass_javadoc_dir_excluded(self, tmp_path):
+        """Files under javadoc/ are not coverage targets."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/javadoc/javadoc-Foo.json", {
+            "id": "javadoc-Foo", "title": "class Foo", "no_knowledge_content": False,
+            "content": self._javadoc_content(["Foo"]),
+            "sections": [],
+        })
+        cls_md = tmp_path / "classes.md"
+        self._write_classes_md(cls_md, [])
+        assert self._check(kdir, cls_md) == []
+
+    def test_pass_classes_in_sections_covered(self, tmp_path):
+        """Classes extracted from sections[].content are also covered by registration."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/adapters/a.json", {
+            "id": "a", "title": "A", "no_knowledge_content": False,
+            "content": "",
+            "sections": [
+                {"id": "s1", "title": "S",
+                 "content": self._javadoc_content(["SectionClass"]), "level": 2}
+            ],
+        })
+        cls_md = tmp_path / "classes.md"
+        self._write_classes_md(cls_md, ["component/adapters/a.json"])
+        assert self._check(kdir, cls_md) == []
+
+    # ------------------------------------------------------------------
+    # FAIL: JSON not in classes.md
+    # ------------------------------------------------------------------
+
+    def test_fail_json_not_registered(self, tmp_path):
+        """Target JSON with classes absent from classes.md → QO5 FAIL."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/adapters/a.json", {
+            "id": "a", "title": "A", "no_knowledge_content": False,
+            "content": self._javadoc_content(["FooConverter"]),
+            "sections": [],
+        })
+        cls_md = tmp_path / "classes.md"
+        self._write_classes_md(cls_md, [])
+        issues = self._check(kdir, cls_md)
+        assert any("QO5" in i and "component/adapters/a.json" in i for i in issues)
+
+    def test_fail_all_three_target_categories(self, tmp_path):
+        """Each of the 3 target categories can produce QO5 FAILs."""
+        kdir = tmp_path / "knowledge"
+        for cat in self._TARGET_CATS:
+            self._write_json(kdir, f"{cat}/sub/p.json", {
+                "id": "p", "title": "P", "no_knowledge_content": False,
+                "content": self._javadoc_content(["CatClass"]),
+                "sections": [],
+            })
+        cls_md = tmp_path / "classes.md"
+        self._write_classes_md(cls_md, [])
+        issues = self._check(kdir, cls_md)
+        for cat in self._TARGET_CATS:
+            assert any("QO5" in i and f"{cat}/sub/p.json" in i for i in issues), (
+                f"Expected QO5 FAIL for {cat}"
+            )
+
+    # ------------------------------------------------------------------
+    # FAIL: dangling entry in classes.md
+    # ------------------------------------------------------------------
+
+    def test_fail_dangling_entry(self, tmp_path):
+        """A path: entry in classes.md with no matching JSON on disk → QO5 FAIL."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/adapters/real.json", {
+            "id": "real", "title": "Real", "no_knowledge_content": False,
+            "content": self._javadoc_content(["RealClass"]),
+            "sections": [],
+        })
+        cls_md = tmp_path / "classes.md"
+        self._write_classes_md(cls_md, ["component/adapters/real.json", "component/adapters/ghost.json"])
+        issues = self._check(kdir, cls_md)
+        assert any("QO5" in i and "ghost.json" in i for i in issues)
+
+    # ------------------------------------------------------------------
+    # FAIL: classes.md absent when classes exist
+    # ------------------------------------------------------------------
+
+    def test_fail_classes_md_absent_with_class_json(self, tmp_path):
+        """When classes.md is missing but class-bearing JSONs exist → QO5 FAIL per JSON."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/adapters/a.json", {
+            "id": "a", "title": "A", "no_knowledge_content": False,
+            "content": self._javadoc_content(["FooConverter"]),
+            "sections": [],
+        })
+        self._write_json(kdir, "component/adapters/b.json", {
+            "id": "b", "title": "B", "no_knowledge_content": False,
+            "content": self._javadoc_content(["BarConverter"]),
+            "sections": [],
+        })
+        issues = self._check(kdir, tmp_path / "nonexistent.md")
+        assert any("QO5" in i and "a.json" in i for i in issues)
+        assert any("QO5" in i and "b.json" in i for i in issues)
+
+    def test_pass_classes_md_absent_zero_class_version(self, tmp_path):
+        """When classes.md is missing AND no JSON has any classes → FAIL 0 (target empty)."""
+        kdir = tmp_path / "knowledge"
+        self._write_json(kdir, "component/adapters/a.json", {
+            "id": "a", "title": "A", "no_knowledge_content": False,
+            "content": "No javadoc links.",
+            "sections": [],
+        })
+        issues = self._check(kdir, tmp_path / "nonexistent.md")
+        assert issues == []

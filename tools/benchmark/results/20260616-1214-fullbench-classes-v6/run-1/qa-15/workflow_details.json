@@ -1,0 +1,140 @@
+{
+  "question": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？（処理方式: ウェブアプリケーション）（目的: セキュリティ対応したい）",
+  "processing_type": "ウェブアプリケーション",
+  "purpose": "セキュリティ対応したい",
+  "phase_a_pages": [
+    {
+      "path": "check/security-check/security-check-2.チェックリスト.json",
+      "reason": "XSS対策（5番）のNablarch対応状況を網羅的に記載"
+    },
+    {
+      "path": "check/security-check/security-check-1.概要.json",
+      "reason": "IPAセキュリティチェックリスト対応文書の概要"
+    },
+    {
+      "path": "component/libraries/libraries-tag.json",
+      "reason": "カスタムタグのHTMLエスケープ機能を直接説明（s2 = HTMLエスケープ漏れを防げる）"
+    },
+    {
+      "path": "component/handlers/handlers-secure-handler.json",
+      "reason": "X-XSS-Protectionヘッダ等のセキュリティヘッダ設定（5-(x)対応）"
+    },
+    {
+      "path": "component/handlers/handlers-nablarch-tag-handler.json",
+      "reason": "NablarchTagHandlerはhidden暗号化・改竄チェックのためXSS直接対応ではないが関連ハンドラとして選択"
+    },
+    {
+      "path": "component/handlers/handlers-http-character-encoding-handler.json",
+      "reason": "Content-Typeのcharset設定（5-(viii)対応）"
+    },
+    {
+      "path": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+      "reason": "JSPのサニタイジング漏れをCIで検出するツール"
+    }
+  ],
+  "phase_b_pages": [
+    {
+      "path": "component/libraries/libraries-tag.json",
+      "reason": "CustomTagConfig, NablarchTagHandlerクラスがカスタムタグのHTMLエスケープを担当"
+    },
+    {
+      "path": "component/handlers/handlers-secure-handler.json",
+      "reason": "SecureHandler, XssProtectionHeaderクラスがXSS保護ヘッダを担当"
+    }
+  ],
+  "merged_pages": [
+    {
+      "path": "check/security-check/security-check-2.チェックリスト.json",
+      "source": "index"
+    },
+    {
+      "path": "check/security-check/security-check-1.概要.json",
+      "source": "index"
+    },
+    {
+      "path": "component/libraries/libraries-tag.json",
+      "source": "both"
+    },
+    {
+      "path": "component/handlers/handlers-secure-handler.json",
+      "source": "both"
+    },
+    {
+      "path": "component/handlers/handlers-nablarch-tag-handler.json",
+      "source": "index"
+    },
+    {
+      "path": "component/handlers/handlers-http-character-encoding-handler.json",
+      "source": "index"
+    },
+    {
+      "path": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+      "source": "index"
+    }
+  ],
+  "selected_sections": [
+    {
+      "file": "check/security-check/security-check-2.チェックリスト.json",
+      "section_id": "s5",
+      "relevance": "high"
+    },
+    {
+      "file": "component/libraries/libraries-tag.json",
+      "section_id": "s2",
+      "relevance": "high"
+    },
+    {
+      "file": "component/handlers/handlers-secure-handler.json",
+      "section_id": "s6",
+      "relevance": "high"
+    },
+    {
+      "file": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+      "section_id": "s1",
+      "relevance": "high"
+    },
+    {
+      "file": "component/libraries/libraries-tag.json",
+      "section_id": "s50",
+      "relevance": "high"
+    },
+    {
+      "file": "component/handlers/handlers-secure-handler.json",
+      "section_id": "s7",
+      "relevance": "partial"
+    },
+    {
+      "file": "component/handlers/handlers-secure-handler.json",
+      "section_id": "s8",
+      "relevance": "partial"
+    },
+    {
+      "file": "component/handlers/handlers-http-character-encoding-handler.json",
+      "section_id": "s4",
+      "relevance": "partial"
+    },
+    {
+      "file": "component/libraries/libraries-tag.json",
+      "section_id": "s38",
+      "relevance": "partial"
+    },
+    {
+      "file": "component/handlers/handlers-secure-handler.json",
+      "section_id": "s4",
+      "relevance": "partial"
+    }
+  ],
+  "read_sections": [
+    "check/security-check/security-check-2.チェックリスト.json:s5",
+    "component/libraries/libraries-tag.json:s2",
+    "component/handlers/handlers-secure-handler.json:s6",
+    "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1",
+    "component/libraries/libraries-tag.json:s50",
+    "component/handlers/handlers-secure-handler.json:s7",
+    "component/handlers/handlers-secure-handler.json:s8",
+    "component/handlers/handlers-http-character-encoding-handler.json:s4",
+    "component/libraries/libraries-tag.json:s38",
+    "component/handlers/handlers-secure-handler.json:s4"
+  ],
+  "verify_result": "PASS"
+}

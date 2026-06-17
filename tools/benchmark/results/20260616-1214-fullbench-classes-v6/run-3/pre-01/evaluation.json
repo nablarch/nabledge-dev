@@ -1,0 +1,66 @@
+{
+  "scenario_id": "pre-01",
+  "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい",
+  "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する",
+    "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both facts from the Expected Output. It mentions that the batch application is launched using the Java command (standalone application), and it explains the -requestPath argument format specifying the action class name and request ID. Both key facts are present and well-elaborated in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 0.9285714285714286,
+      "reason": "The score is 0.93 because the response is mostly relevant to explaining how to start a Nablarch batch application and how to write -requestPath. However, it slightly loses points for including an implementation detail about storing userId in a session context variable, which is unrelated to the startup process or -requestPath syntax."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-main.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2",
+      "component/handlers/handlers-main.json:s4",
+      "component/handlers/handlers-main.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 126118,
+    "duration_api_ms": 125444,
+    "num_turns": 11,
+    "total_cost_usd": 0.7997380500000001,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 6752,
+      "cache_read_input_tokens": 905191,
+      "cache_creation_input_tokens": 112849
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3499,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0036839999999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 6752,
+        "cacheReadInputTokens": 905191,
+        "cacheCreationInputTokens": 112849,
+        "webSearchRequests": 0,
+        "costUSD": 0.7960540500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

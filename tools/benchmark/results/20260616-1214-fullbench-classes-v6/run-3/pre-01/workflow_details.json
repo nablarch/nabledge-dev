@@ -1,0 +1,130 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "source": "index",
+        "reason": "バッチアプリケーションの起動方法を直接扱うページで、処理方式: Nablarchバッチと一致する"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "source": "index",
+        "reason": "s2でリクエストパスによるアクションとリクエストIDの指定を直接説明している"
+      },
+      {
+        "path": "component/handlers/handlers-main.json",
+        "source": "both",
+        "reason": "共通起動ランチャ（Main）で-requestPathを含む起動オプションの詳細を説明している"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-batch.json",
+        "reason": "概要ページであり具体的な起動方法の情報がない"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch.json",
+        "reason": "概要ページであり具体的な起動方法の情報がない"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "処理パターンの分類であり-requestPathの書き方に関する情報がない"
+      },
+      {
+        "path": "component/handlers/handlers-request-path-java-package-mapping.json",
+        "reason": "リクエストディスパッチハンドラの設定であり起動オプション自体の説明ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "-requestPathを含む必須3オプションの書式と実行例を直接説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "-requestPathの書式（アクションクラス名/リクエストID）とリクエストIDの役割を直接説明している"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "任意オプションの追加方法を説明しており起動オプション全体の理解に役立つ"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "異常終了時の挙動と終了コードの仕様を説明している"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s1",
+        "reason": "handlers-main.jsonへの参照リンクのみでありs3と重複する"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s2",
+        "reason": "システムリポジトリ初期化の説明でありs1同様handlers-main.jsonへの参照のみ"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "reason": "アーキテクチャ概要の説明であり具体的な起動方法の情報はない"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "処理の流れの説明であり-requestPathの書き方には直接関係しない"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみでありJavadocリンクだけのセクション"
+      },
+      {
+        "file": "component/handlers/handlers-main.json",
+        "section_id": "s2",
+        "reason": "モジュール設定のセクションであり起動方法とは無関係"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-main.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2",
+      "component/handlers/handlers-main.json:s4",
+      "component/handlers/handlers-main.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/handlers/handlers-main.json:s3",
+          "reason": "起動コマンドの実行例と必須3オプションの説明を引用した"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2",
+          "reason": "-requestPathの書式（書式と指定例）とリクエストIDの役割を引用した"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/handlers/handlers-main.json:s4",
+          "reason": "任意オプションの詳細は質問の主旨から外れるため回答に含めなかった"
+        },
+        {
+          "ref": "component/handlers/handlers-main.json:s5",
+          "reason": "例外処理の詳細表は注意点として言及するに留めた"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能",
+    "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.9,
+      "reason": "Both facts from the Expected Output are covered in the Actual Output. The first fact about DBストア saving to a database table and allowing session restoration even when AP servers stop is explicitly mentioned in the DBストア section (✅ ローリングメンテナンス等でAPサーバが停止しても復元可能). The second fact about HIDDENストア using client-side hidden tags is covered in the description of HIDDENストア (クライアント側に保存するためAPサーバ間の共有不要, and the general description of client-side storage). Both expected facts are clearly addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about which session variable storage options to choose when scaling out AP servers to multiple instances, and covering the characteristics of each store. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.967741935483871,
+      "reason": "The score is 0.97 because the actual output is almost entirely faithful to the retrieval context, with the identified 'contradiction' actually turning out to be correct upon closer inspection — the claim about HIDDEN store being recommended when multiple tabs are permitted aligns accurately with the retrieval context."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-stateless-web-app.json:s1",
+      "component/libraries/libraries-stateless-web-app.json:s2",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 109611,
+    "duration_api_ms": 108393,
+    "num_turns": 9,
+    "total_cost_usd": 0.7026673999999999,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 6656,
+      "cache_read_input_tokens": 488348,
+      "cache_creation_input_tokens": 120748
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3372,
+        "outputTokens": 25,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003497,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 6656,
+        "cacheReadInputTokens": 488348,
+        "cacheCreationInputTokens": 120748,
+        "webSearchRequests": 0,
+        "costUSD": 0.6991704000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

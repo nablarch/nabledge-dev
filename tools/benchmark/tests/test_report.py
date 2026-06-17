@@ -10,6 +10,7 @@ from tools.benchmark.scripts.report import (
     build_baseline,
     compare_against_baseline,
     format_comparison_report,
+    format_crossrun_summary,
     format_scenario_report,
     format_summary_report,
     format_regression_report,
@@ -294,6 +295,89 @@ class TestCompareAgainstBaseline:
         result = compare_against_baseline(new_eval, bl)
         assert result["verdict"] == "CLEAN"
         assert any(sid == "new-01" for sid in result["new_scenarios"])
+
+
+class TestFormatCrossrunSummary:
+    """format_crossrun_summary: 複数runの評価リストから横断集約レポートを生成する。"""
+
+    def _make_runs(self, n_runs=2):
+        """n_runs分のダミー evaluation リストを返す。"""
+        runs = []
+        for i in range(n_runs):
+            cost = 0.01 * (i + 1)
+            evals = [
+                _make_evaluation(
+                    scenario_id="qa-01",
+                    deepeval_scores={
+                        "answer_correctness": {"score": 1.0, "reason": "ok"},
+                        "answer_relevancy": {"score": 0.9, "reason": "ok"},
+                        "faithfulness": {"score": 1.0, "reason": "ok"},
+                    },
+                    metrics={
+                        "duration_ms": 30000, "duration_api_ms": 28000, "num_turns": 5,
+                        "total_cost_usd": cost,
+                        "usage": {
+                            "input_tokens": 1000, "output_tokens": 200,
+                            "cache_read_input_tokens": 300, "cache_creation_input_tokens": 50,
+                        },
+                        "model_usage": {},
+                    },
+                ),
+                _make_evaluation(
+                    scenario_id="qa-02",
+                    deepeval_scores={
+                        "answer_correctness": {"score": 0.8, "reason": "partial"},
+                        "answer_relevancy": {"score": 0.85, "reason": "ok"},
+                        "faithfulness": {"score": 0.9, "reason": "ok"},
+                    },
+                    metrics={
+                        "duration_ms": 40000, "duration_api_ms": 38000, "num_turns": 7,
+                        "total_cost_usd": cost + 0.005,
+                        "usage": {
+                            "input_tokens": 1500, "output_tokens": 300,
+                            "cache_read_input_tokens": 400, "cache_creation_input_tokens": 60,
+                        },
+                        "model_usage": {},
+                    },
+                ),
+            ]
+            runs.append(evals)
+        return runs
+
+    def test_report_has_heading(self):
+        runs = self._make_runs(2)
+        report = format_crossrun_summary(runs)
+        assert "3run横断集約レポート" in report
+
+    def test_report_has_score_summary_section(self):
+        runs = self._make_runs(2)
+        report = format_crossrun_summary(runs)
+        assert "スコアサマリー" in report
+
+    def test_report_has_perf_section(self):
+        runs = self._make_runs(2)
+        report = format_crossrun_summary(runs)
+        assert "パフォーマンス横断集約" in report
+
+    def test_all_scenarios_present(self):
+        runs = self._make_runs(2)
+        report = format_crossrun_summary(runs)
+        assert "qa-01" in report
+        assert "qa-02" in report
+
+    def test_cost_total_computed_correctly(self):
+        # run-0: qa-01=$0.01, qa-02=$0.015 → run total $0.025
+        # run-1: qa-01=$0.02, qa-02=$0.025 → run total $0.045
+        # total across all = $0.025 + $0.045 = $0.070
+        runs = self._make_runs(2)
+        report = format_crossrun_summary(runs)
+        assert "$0.070" in report
+
+    def test_flaky_marker_shown(self):
+        # qa-02 has answer_correctness 0.8 < threshold 0.99, so flaky
+        runs = self._make_runs(2)
+        report = format_crossrun_summary(runs)
+        assert "⚠" in report
 
 
 class TestFormatRegressionReport:

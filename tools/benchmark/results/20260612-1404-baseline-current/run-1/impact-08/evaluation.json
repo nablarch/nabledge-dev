@@ -1,0 +1,71 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers the key fact from the Expected Output: that the method for obtaining system time can be switched by replacing the class specified in the component definition. The Actual Output explains this concept in detail, including that the `systemTimeProvider` component name is used, that implementing `SystemTimeProvider` and registering it in the test component definition achieves the switch, and that no application code changes are needed. The single expected fact is fully present and well-elaborated in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing how to replace the system date/time with an arbitrary date during testing and how to switch between production and test environments. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "knowledge/component/libraries/libraries-date.json:s2",
+      "knowledge/component/libraries/libraries-date.json:s5",
+      "knowledge/component/libraries/libraries-date.json:s7",
+      "knowledge/component/libraries/libraries-date.json:s9",
+      "knowledge/component/libraries/libraries-date.json:s12",
+      "knowledge/component/libraries/libraries-date.json:s13",
+      "knowledge/javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json:s1",
+      "knowledge/javadoc/javadoc-nablarch-core-date-BasicSystemTimeProvider.json:s1",
+      "knowledge/javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s1",
+      "knowledge/javadoc/javadoc-nablarch-core-date-BasicBusinessDateProvider.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 136060,
+    "duration_api_ms": 135157,
+    "num_turns": 9,
+    "total_cost_usd": 0.60250275,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 6335,
+      "cache_read_input_tokens": 442183,
+      "cache_creation_input_tokens": 44682
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3316,
+        "outputTokens": 28,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003456,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16,
+        "outputTokens": 8970,
+        "cacheReadInputTokens": 511275,
+        "cacheCreationInputTokens": 82951,
+        "webSearchRequests": 0,
+        "costUSD": 0.59904675,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

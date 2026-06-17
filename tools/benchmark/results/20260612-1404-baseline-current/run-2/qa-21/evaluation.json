@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-21",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+    "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers both key facts from the expected output. First, it explicitly explains that @Valid annotation is used to trigger validation and that errors result in ApplicationException being thrown (equivalent to 'バリデーションエラーが自動的にエラーレスポンスになる'). Second, it explicitly covers inheriting ErrorResponseBuilder and setting error messages in the response body ('ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する'). Both expected facts are clearly and thoroughly covered with code examples and additional context."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, directly addressing how to return error messages to users when input validation errors occur. No irrelevant statements were identified!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 109475,
+    "duration_api_ms": 108546,
+    "num_turns": 13,
+    "total_cost_usd": 0.79303545,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 6645,
+      "cache_read_input_tokens": 870969,
+      "cache_creation_input_tokens": 114293
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3328,
+        "outputTokens": 22,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0034379999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 6645,
+        "cacheReadInputTokens": 870969,
+        "cacheCreationInputTokens": 114293,
+        "webSearchRequests": 0,
+        "costUSD": 0.7895974499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-repository.json",
+        "source": "both",
+        "reason": "index.md の s25「システムリポジトリからオブジェクトを取得する」が質問に直接対応し、classes.md にも SystemRepository クラスがリストされているため両フェーズで選択"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-role-check.json",
+        "reason": "classes.md に SystemRepository クラスが登場するが、主題はアノテーションによる認可チェックであり、システムリポジトリからのコンポーネント取得という質問の主題とは直接関係しないためスキップ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s25",
+        "relevance": "high",
+        "reason": "「システムリポジトリからオブジェクトを取得する」セクションで SystemRepository.get の使い方を具体例付きで説明しており、質問に直接回答する"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s24",
+        "relevance": "partial",
+        "reason": "s25 が「DIコンテナの情報を事前に設定する必要がある」と参照しており、前提条件の理解に必要"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-repository-SystemRepository.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "s25 から参照されている SystemRepository クラスの get メソッドのシグネチャ・戻り値・例外を定義しており、実装時に不可欠"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-repository-SystemRepository.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "s25 から参照されている SystemRepository クラスの getObject メソッドも存在するため補足情報として選択"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s1",
+        "reason": "機能概要の空セクションで具体的情報なし"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s2",
+        "reason": "DIコンテナ概要の説明であり取得方法には直接関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s3",
+        "reason": "初期化機能の説明で取得方法と無関係"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s4",
+        "reason": "モジュール一覧のみでコンポーネント取得方法に関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s5",
+        "reason": "使用方法の空セクション"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s6",
+        "reason": "XML定義方法の説明で取得方法の直接回答にならない"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s7",
+        "reason": "Java Beansオブジェクト設定方法で取得方法の直接回答にならない"
+      },
+      {
+        "file": "component/libraries/libraries-repository.json",
+        "section_id": "s26",
+        "reason": "環境設定ファイルの記述ルールでコンポーネント取得と無関係"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-repository.json:s25",
+      "component/libraries/libraries-repository.json:s24",
+      "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s11",
+      "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-repository.json:s25",
+          "reason": "SystemRepository.get の使い方、コード例、ネストしたコンポーネントの取得方法を直接引用"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s11",
+          "reason": "get メソッドのシグネチャ・戻り値・例外を回答に含めるため使用"
+        },
+        {
+          "ref": "component/libraries/libraries-repository.json:s24",
+          "reason": "DIコンテナの事前設定が必要という注意点の根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s8",
+          "reason": "getObject メソッドは型キャストが必要な低レベルAPIであり、型安全な get メソッドで十分回答できるため使用しなかった"
+        }
+      ]
+    }
+  }
+}

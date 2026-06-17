@@ -1,0 +1,69 @@
+{
+  "scenario_id": "qa-15",
+  "description": "セキュリティ診断でXSS（クロスサイト・スクリプティング）の指摘を受けた。Nablarchでの対応状況と対策方法を知りたい。",
+  "input": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "purpose": "セキュリティ対応したい",
+  "expected_facts": [
+    "NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The expected output states that Nablarch's custom tags can fundamentally solve XSS through sanitizing. The actual output clearly conveys this same fact, explicitly stating that custom tags (like n:write) automatically perform HTML escaping/sanitizing, and that this covers the 5-(i) checklist item for web page output element escaping. The core fact is fully covered and even elaborated upon with supporting details."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is fully relevant to the input, addressing the question about XSS countermeasures in Nablarch and whether sanitizing is performed when using custom tags. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.96,
+      "reason": "The score is 0.96 because the actual output contains a minor overgeneralization, claiming that custom tags are mandatory for all value output scenarios. However, the retrieval context clarifies that EL expressions CAN be used in non-output contexts (e.g., setting objects to JSTL forEach tags or custom tag attributes), meaning custom tags are not strictly required in ALL cases."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s5",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s50",
+      "component/libraries/libraries-tag.json:s27",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 114083,
+    "duration_api_ms": 113247,
+    "num_turns": 9,
+    "total_cost_usd": 0.6394434,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 6708,
+      "cache_read_input_tokens": 592808,
+      "cache_creation_input_tokens": 95308
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3376,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003546,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 6708,
+        "cacheReadInputTokens": 592808,
+        "cacheCreationInputTokens": 95308,
+        "webSearchRequests": 0,
+        "costUSD": 0.6358974,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

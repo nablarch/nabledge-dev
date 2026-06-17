@@ -1,0 +1,65 @@
+{
+  "scenario_id": "qa-13",
+  "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。",
+  "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output contains all key facts from the Expected Output: (1) using a Form class to receive values, (2) using @Valid for validation, and (3) using UniversalDao.insert for registration in a REST API context. The Actual Output not only covers all expected facts but provides significantly more detail, including code examples, implementation notes, and additional considerations. Full coverage of the expected facts is achieved."
+    },
+    "answer_relevancy": {
+      "score": 0.9444444444444444,
+      "reason": "The score is 0.94 because the response mostly addresses the implementation pattern for registering form data in a DB, but includes a mention of optimistic locking with ETag and If-Match, which is beyond the scope of the basic implementation pattern being asked about."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "component/libraries/libraries-bean-validation.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 144607,
+    "duration_api_ms": 143412,
+    "num_turns": 12,
+    "total_cost_usd": 0.9517198,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 9064,
+      "cache_read_input_tokens": 1070511,
+      "cache_creation_input_tokens": 130906
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3491,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003676,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 9064,
+        "cacheReadInputTokens": 1070511,
+        "cacheCreationInputTokens": 130906,
+        "webSearchRequests": 0,
+        "costUSD": 0.9480438,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

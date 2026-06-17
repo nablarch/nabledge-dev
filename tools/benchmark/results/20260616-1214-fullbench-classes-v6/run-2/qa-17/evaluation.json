@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-17",
+  "description": "アプリケーションコードからSystemRepositoryを使ってコンポーネントを取得したい。名前指定と型指定の取得方法を知りたい。",
+  "input": "SystemRepository から登録済みコンポーネントを取得する方法を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.7,
+      "reason": "The Expected Output focuses on a single fact: that `get(String name)` uses type parameters to retrieve components from the repository in a type-safe manner. The Actual Output does cover this fact, mentioning that the type parameter `<T>` specifies the return type and that a `ClassCastException` is thrown if the type argument doesn't match. However, the Actual Output goes far beyond this single fact with extensive additional information about XML configuration, nested components, and other methods. The core fact about type-safe retrieval via type parameters is present but somewhat buried in the broader response."
+    },
+    "answer_relevancy": {
+      "score": 0.7692307692307693,
+      "reason": "The score is 0.77 because the actual output contains some irrelevant information: mentions of SystemRepository being a singleton, cautions about request-specific data retention, and the necessity of thread-safe design — none of which directly address the question of how to retrieve registered components from SystemRepository. These tangential details lower the score, though the response still covers the core retrieval method sufficiently to warrant a reasonable score."
+    },
+    "faithfulness": {
+      "score": 0.9230769230769231,
+      "reason": "The score is 0.92 because the actual output overgeneralizes thread-safety requirements, claiming that ALL instances managed by the DI container must be thread-safe by design, when the retrieval context specifically states that only components whose state is intentionally changed or shared across the entire application need to be thread-safe."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-repository.json:s25",
+      "component/libraries/libraries-repository.json:s24",
+      "component/libraries/libraries-repository.json:s7",
+      "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s11",
+      "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s9",
+      "javadoc/javadoc-nablarch-core-repository-SystemRepository.json:s10"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 116976,
+    "duration_api_ms": 118133,
+    "num_turns": 11,
+    "total_cost_usd": 0.9610961,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 6922,
+      "cache_read_input_tokens": 1234177,
+      "cache_creation_input_tokens": 128892
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3447,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003632,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 6922,
+        "cacheReadInputTokens": 1234177,
+        "cacheCreationInputTokens": 128892,
+        "webSearchRequests": 0,
+        "costUSD": 0.9574640999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

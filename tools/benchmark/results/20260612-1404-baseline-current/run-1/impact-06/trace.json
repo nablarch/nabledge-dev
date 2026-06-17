@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 109611,
+  "duration_api_ms": 108393,
+  "ttft_ms": 4851,
+  "ttft_stream_ms": 2951,
+  "time_to_request_ms": 960,
+  "num_turns": 9,
+  "result": "Step 5で回答を生成します。\n\n### Answer\n\n**結論**: スケールアウト環境では**DBストア**または**Redisストア**を選ぶべきです。HTTPセッションストアはAPサーバ毎に状態を持つためスケールアウト時に工夫が必要であり、HIDDENストアはサーバ間共有の問題はないものの用途が入力データの画面間受け渡しに限定されます。\n\n**根拠**:\n\nNablarchが提供するセッション変数の保存先は標準3種類＋Redisアダプタの計4種類です。\n\n---\n\n**① DBストア（データベース上のテーブル）**\n\n| 特長 | 内容 |\n|---|---|\n| スケールアウト | ✅ 全APサーバが同一DBを参照するため、共有が容易 |\n| APサーバ停止時 | ✅ ローリングメンテナンス等でAPサーバが停止しても復元可能 |\n| ヒープ消費 | ✅ APサーバのヒープを圧迫しない |\n| 並行アクセス | ⚠ 同一セッションが複数スレッドで処理された場合は後勝ち（先のデータが消失する） |\n| 運用 | ⚠ 有効期限切れセッション削除バッチが必要 |\n\n有効期間をデフォルトのHTTPセッションではなくDBに保存する設定（`DbManagedExpiration`）にすると、HTTPセッション非依存でのスケールアウトが実現できます。\n\n---\n\n**② HIDDENストア（クライアントサイド）**\n\n| 特長 | 内容 |\n|---|---|\n| スケールアウト | ✅ クライアント側に保存するためAPサーバ間の共有不要 |\n| 用途 | 入力～確認～完了画面間での入力データ保持（複数タブ許容時） |\n| ヒープ消費 | ✅ APサーバのヒープを圧迫しない |\n| 注意 | サーバが冗長化されている場合、暗号化キーを明示的に設定しないと復号失敗が起きる |\n\nスケールアウト環境でHIDDENストアを使用する場合は、APサーバごとに自動生成される暗号化キーではなく、**全APサーバで共通のキーを明示設定**することが必要です：\n\n```xml\n<component class=\"nablarch.common.web.session.store.HiddenStore\">\n  <property name=\"encryptor\">\n    <component class=\"nablarch.common.encryption.AesEncryptor\">\n      <property name=\"base64Key\">\n        <component class=\"nablarch.common.encryption.Base64Key\">\n          <property name=\"key\" value=\"OwYMOWbnLyYy93P8oIayeg==\" />\n          <property name=\"iv\" value=\"NOj5OUN+GlyGYTc6FM0+nw==\" />\n        </component>\n      </property>\n    </component>\n  </property>\n</component>\n```\n\n---\n\n**③ HTTPセッションストア（APサーバのヒープ領域）**\n\n| 特長 | 内容 |\n|---|---|\n| スケールアウト | ❌ APサーバ毎に情報を保持するため、スケールアウト時に工夫が必要 |\n| 用途 | 認証情報等、アプリ全体で頻繁に使用する情報の保持に適している |\n| ヒープ消費 | ⚠ 大量データを保存するとヒープを圧迫する恐れがある |\n\nスケールアウトするには、ロードバランサーのスティッキーセッション、セッションレプリケーション、またはHTTPセッション保存先のNoSQL化が必要ですが、これらはいずれも廃棄容易性の点で劣るかAPサーバ依存となります。\n\n---\n\n**④ Redisストア（Lettuceアダプタ）**\n\n| 特長 | 内容 |\n|---|---|\n| スケールアウト | ✅ DBストアと同様の特徴（保存先が異なるだけ） |\n| テーブル準備 | ✅ 事前にテーブルを用意する必要がない |\n| 有効期限管理 | ✅ Redisの有効期限機能を使用するため、削除バッチが不要 |\n| 構成 | 単一・Master-Replica・Cluster構成に対応 |\n\n---\n\n**選択基準まとめ**\n\n| 用途 | 推奨ストア |\n|---|---|\n| 入力データの画面間保持（複数タブ許容しない）| DBストア |\n| 入力データの画面間保持（複数タブ許容する）| HIDDENストア（暗号化キー共通設定必須） |\n| 認証情報の保持 | DBストアまたはHTTPセッションストア |\n| スケールアウト環境全般 | DBストアまたはRedisストア |\n\n**注意点**: セッションストアのデフォルト有効期間保存先はHTTPセッションです。完全なステートレス化（HTTPセッション非依存）を実現するには、`DbManagedExpiration` または Redisストアを使用して有効期間もHTTPセッション外に保存する設定が必要です。\n\n参照: libraries-session-store.json:s16, libraries-session-store.json:s2, libraries-session-store.json:s12, libraries-stateless-web-app.json:s1, adapters-redisstore-lettuce-adaptor.json:s15\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-session-store.json\", \"reason\": \"セッションストアの特長と選択基準（s16）が質問に直接回答する\"},\n      {\"path\": \"component/handlers/handlers-SessionStoreHandler.json\", \"reason\": \"セッション変数保存ハンドラの設定と有効期間DB保存の詳細を含む\"},\n      {\"path\": \"component/adapters/adapters-redisstore-lettuce-adaptor.json\", \"reason\": \"Redisストアの特徴・有効期限管理・構成オプションを説明している\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"s18でWebアプリのスケールアウト設計への参照がある\"},\n      {\"path\": \"component/libraries/libraries-stateless-web-app.json\", \"reason\": \"HTTPセッションに依存する機能とステートレス化の方法を説明している\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"reason\": \"処理方式がウェブアプリケーションのため除外\"},\n      {\"path\": \"component/handlers/handlers-session-concurrent-access-handler.json\", \"reason\": \"セッション並行アクセスハンドラはセッションストアとは別の機能で直接関係しない\"},\n      {\"path\": \"check/security-check/security-check-2.チェックリスト.json\", \"reason\": \"セッション管理の不備は含むが選択基準の質問には関係が薄い\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s16\", \"relevance\": \"high\", \"reason\": \"各ストアの特長と選択基準を直接説明している\"},\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s2\", \"relevance\": \"high\", \"reason\": \"利用可能なストアの種類一覧（Redisストアを含む）を示している\"},\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s12\", \"relevance\": \"high\", \"reason\": \"スケールアウト環境でHIDDENストアを使う際の暗号化キー共通設定が必要な理由を説明している\"},\n      {\"file\": \"component/libraries/libraries-stateless-web-app.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"HTTPセッションとスケールアウトの問題を直接説明している\"},\n      {\"file\": \"component/libraries/libraries-stateless-web-app.json\", \"section_id\": \"s2\", \"relevance\": \"partial\", \"reason\": \"HTTPセッションに依存している機能の一覧を提供する\"},\n      {\"file\": \"component/adapters/adapters-redisstore-lettuce-adaptor.json\", \"section_id\": \"s15\", \"relevance\": \"high\", \"reason\": \"Redisストアの有効期限管理（削除バッチ不要）という特徴を説明している\"},\n      {\"file\": \"component/adapters/adapters-redisstore-lettuce-adaptor.json\", \"section_id\": \"s1\", \"relevance\": \"partial\", \"reason\": \"Redisストアアダプタの概要（DBストアとの比較）を含む\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s8\", \"reason\": \"設定例の詳細で、特長・選択基準の理解には不要\"},\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s9\", \"reason\": \"入力画面間の保持方法の実装詳細で、特長理解には不要\"},\n      {\"file\": \"component/handlers/handlers-SessionStoreHandler.json\", \"section_id\": \"s4\", \"reason\": \"ハンドラの設定方法であり、特長・選択基準の回答には不要\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s18\", \"reason\": \"ステートレス化へのリンクのみでコンテンツを含まないため除外\"},\n      {\"file\": \"component/adapters/adapters-redisstore-lettuce-adaptor.json\", \"section_id\": \"s6\", \"reason\": \"クライアントクラスの種類詳細で、特長理解には深く不要\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-session-store.json:s16\",\n      \"component/libraries/libraries-session-store.json:s2\",\n      \"component/libraries/libraries-session-store.json:s12\",\n      \"component/libraries/libraries-stateless-web-app.json:s1\",\n      \"component/libraries/libraries-stateless-web-app.json:s2\",\n      \"component/adapters/adapters-redisstore-lettuce-adaptor.json:s1\",\n      \"component/adapters/adapters-redisstore-lettuce-adaptor.json:s15\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"libraries-session-store.json:s16\", \"reason\": \"各ストアの特長・制約・選択基準の表を直接引用\"},\n        {\"ref\": \"libraries-session-store.json:s2\", \"reason\": \"Redisストアを含む4種類の保存先一覧の情報を使用\"},\n        {\"ref\": \"libraries-session-store.json:s12\", \"reason\": \"スケールアウト環境でのHIDDENストア暗号化キー共通設定の注意点を引用\"},\n        {\"ref\": \"libraries-stateless-web-app.json:s1\", \"reason\": \"HTTPセッションとスケールアウトの問題（スティッキーセッション等の課題）を引用\"},\n        {\"ref\": \"adapters-redisstore-lettuce-adaptor.json:s15\", \"reason\": \"Redisストアの有効期限自動削除機能（バッチ不要）の説明を引用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"libraries-stateless-web-app.json:s2\", \"reason\": \"HTTPセッション依存機能の一覧はセッションストアの説明で十分カバーされていたため未使用\"},\n        {\"ref\": \"adapters-redisstore-lettuce-adaptor.json:s1\", \"reason\": \"Redisアダプタの概要・メリットはs15とs16の内容で代替できたため未使用\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "82176db9-64bd-406b-9d3c-241b9289bbb3",
+  "total_cost_usd": 0.7026673999999999,
+  "usage": {
+    "input_tokens": 7,
+    "cache_creation_input_tokens": 120748,
+    "cache_read_input_tokens": 488348,
+    "output_tokens": 6656,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 120748
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3372,
+      "outputTokens": 25,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003497,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 7,
+      "outputTokens": 6656,
+      "cacheReadInputTokens": 488348,
+      "cacheCreationInputTokens": 120748,
+      "webSearchRequests": 0,
+      "costUSD": 0.6991704000000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "644782cd-b815-4f85-934e-d475394ab5b1"
+}

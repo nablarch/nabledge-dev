@@ -1,0 +1,128 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの機能詳細ページで、入力値のチェックおよびエラー時に返却するレスポンスが直接まとめられているため"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-response-handler.json",
+        "reason": "RESTfulウェブサービスでのエラーレスポンス生成を担うハンドラであり、エラーメッセージ返却の実装方法が記載されているため"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTfulウェブサービスのバリデーション実行ハンドラで、@Validアノテーションの設定方法が記載されているため"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationの設定・使用方法を解説するページで、RESTfulウェブサービス向けのバリデーション手順への参照が含まれるため"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-error-message.json",
+        "reason": "ウェブアプリケーション（JSP）向けのエラーメッセージ表示であり、RESTfulウェブサービスとは異なる処理方式のため"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "reason": "ウェブアプリケーション向けのInjectFormインターセプタであり、RESTfulウェブサービスでは使用しないため"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-access-log-handler.json",
+        "reason": "アクセスログのハンドラであり、エラーレスポンス生成とは無関係のため"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@Validアノテーションの設定方法とバリデーション実行の具体的コード例が含まれており、質問に直接答えるため"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "バリデーションエラー時にエラーメッセージをレスポンスボディに設定して返却する具体的な実装例が記載されているため"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-response-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "ErrorResponseBuilderの仕組みと設定方法を説明しており、s7の実装例を理解するための背景情報として必要なため"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ハンドラキューでの配置制約（リクエストボディ変換ハンドラより後ろ）を説明しており、注意点として有用なため"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスのエラー時レスポンスに関する参照をまとめており、全体像の把握に役立つため"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービス向けバリデーションの概要のみでhandlers-jaxrs-bean-validation-handler.json:s4への参照のみの内容であり、s4で十分カバーされるため"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "libraries-validation.jsonへの参照のみで実装詳細がなく、他セクションで十分カバーされるため"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s5",
+        "reason": "Bean Validationのグループ指定に関する内容で、今回の質問（エラーメッセージ返却）とは直接関係しないため"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "@ValidアノテーションとApplicationException送出の説明・コード例を回答の「バリデーション実行」部分に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-jaxrs-response-handler.json:s7",
+          "reason": "ErrorResponseBuilderを継承してJSONエラーレスポンスを返す実装例を回答の「エラーメッセージ返却」部分に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-jaxrs-response-handler.json:s4",
+          "reason": "JaxRsResponseHandlerへのerrorResponseBuilder登録のXML設定例を回答に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-jaxrs-bean-validation-handler.json:s3",
+          "reason": "ハンドラキュー配置順の制約を注意点として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s17",
+          "reason": "handlers-jaxrs-bean-validation-handler.json:s4への参照のみで独自の情報を含まないため使用しなかった"
+        },
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11",
+          "reason": "handlers-jaxrs-response-handler.jsonへの参照のみであり、直接引用する内容がなかったため使用しなかった"
+        }
+      ]
+    }
+  }
+}

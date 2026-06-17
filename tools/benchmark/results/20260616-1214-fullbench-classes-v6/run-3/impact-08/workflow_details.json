@@ -1,0 +1,140 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-date.json",
+        "source": "both",
+        "reason": "日付管理機能を直接扱うページで、システム日時の切り替え（テスト用差し替え）を明示的に説明している。Phase Aのindex.mdでs12「システム日時を切り替える」、Phase Bのclasses.mdでBasicSystemTimeProvider/SystemTimeUtil/BusinessDateUtil等が一致。"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/adapters/adapters-jsr310-adaptor.json",
+        "reason": "JSR310アダプタはJava標準日時APIの変換を扱うページであり、システム日時の本番/テスト切り替えとは直接関係しない。"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "コンポーネント定義のクラス差し替えによる切り替えの仕組みを直接説明しており、質問の核心に答えるセクション。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "ユニットテスト時のシステム日時切り替え手順を直接説明しており、質問に完全に対応する。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "ユニットテスト時の業務日付切り替え手順を説明しており、日時切り替えの全体像に必要。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "s12を理解するのに必要なシステム日時管理機能の設定（コンポーネント名など）を説明している。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "SystemTimeUtilによる取得方法を説明しており、切り替えが何に効くかを理解するのに必要。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "s13を理解するのに必要な業務日付管理機能の設定を説明している。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "BusinessDateUtilによる取得方法を説明しており、業務日付切り替えの文脈補完に必要。"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s1",
+        "reason": "機能概要の見出しのみでコンテンツなし。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s3",
+        "reason": "モジュール一覧（Mavenの依存定義）であり、仕組みの理解には不要。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s4",
+        "reason": "使用方法の見出しのみでコンテンツなし。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s9",
+        "reason": "業務日付を任意の日付に上書く（システムプロパティ経由）は障害時再実行向けであり、テスト/本番切り替えの質問とは趣旨が異なる。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s10",
+        "reason": "業務日付の更新（プログラム的なsetDate呼び出し）であり、コンポーネント定義差し替えによる切り替えとは異なる用途。"
+      },
+      {
+        "file": "component/libraries/libraries-date.json",
+        "section_id": "s11",
+        "reason": "拡張例の見出しのみでコンテンツなし。"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s12",
+      "component/libraries/libraries-date.json:s13",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-date.json:s2",
+          "reason": "コンポーネント定義差し替えによる切り替えの仕組みを説明するために使用。"
+        },
+        {
+          "ref": "component/libraries/libraries-date.json:s5",
+          "reason": "本番環境でのBasicSystemTimeProviderのコンポーネント設定例（XMLコード）を使用。"
+        },
+        {
+          "ref": "component/libraries/libraries-date.json:s6",
+          "reason": "SystemTimeUtilによるシステム日時取得について言及するために使用。"
+        },
+        {
+          "ref": "component/libraries/libraries-date.json:s12",
+          "reason": "テスト時のシステム日時切り替え手順（SystemTimeProvider実装）を直接引用。"
+        },
+        {
+          "ref": "component/libraries/libraries-date.json:s13",
+          "reason": "テスト時の業務日付切り替え手順（BusinessDateProvider実装）を直接引用。"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-date.json:s7",
+          "reason": "業務日付のDB設定詳細はテスト切り替えの仕組み説明には深すぎるため、注意点レベルの言及にとどめ詳細は省略。"
+        },
+        {
+          "ref": "component/libraries/libraries-date.json:s8",
+          "reason": "BusinessDateUtilによる取得はs6と対称的な内容であり、回答中でBusinessDateUtilに触れた際の根拠として参照したが直接引用は不要だった。"
+        }
+      ]
+    }
+  }
+}

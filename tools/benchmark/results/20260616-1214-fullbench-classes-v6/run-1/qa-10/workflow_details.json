@@ -1,0 +1,134 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "index",
+        "reason": "s21「可変条件を持つSQLを実行する」、s6「動的SQL構築」など、入力内容によって検索条件が変わるSQLを直接カバーするセクションがある"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションの検索機能実装例で、$if構文を使った可変条件SQLの実践的な使い方が含まれている"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index",
+        "reason": "SQLファイルを指定した検索（findAllBySqlFile）を提供しており、可変条件SQLと組み合わせて使う主要なAPIである"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションのデータベースアクセス機能詳細への参照があり、処理方式としての概要確認に使う"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "Domaアダプタは別のDB接続方式であり、JDBCラッパーの可変条件構文（$if）は対象外"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-search.json",
+        "reason": "処理方式がRESTfulウェブサービスであり、今回はウェブアプリケーションの質問"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "「可変条件を持つSQLを実行する」セクションで$if構文の記述ルール・除外条件・実装例を詳細に説明しており、質問に直接答えるコアコンテンツ"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ウェブアプリケーションの検索機能で$if構文を使った実践的なSQL例とアクション実装例があり、端的な実装イメージを提供する"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "high",
+        "reason": "IN句の可変条件（:param[]記法）を説明するセクションで、複数選択条件の実装に必要"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "SQLファイルの管理方法の背景知識で、$if構文を使うSQLファイルの書き方理解を補完する"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "findAllBySqlFileメソッドの使い方でSQLIDの指定方法を補完する"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "動的SQL構築機能の全体像を示すセクションで、可変条件・IN句・ORDER BY動的切り替えへのナビゲーション"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションのデータベースアクセス機能の概要参照のみでありシンプルな参照"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s13",
+        "reason": "SQLIDを指定してSQLを実行するセクションで、可変条件の核心ではなく$ifと直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s6",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-database.json:s12",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "processing-pattern/web-application/web-application-feature-details.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s21",
+          "reason": "$if構文のルール・除外条件・実装例を回答の主軸として使用"
+        },
+        {
+          "ref": "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+          "reason": "実践的なSQL例（Project.sql）とアクション実装例（UniversalDao.findAllBySqlFile使用）を引用"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s22",
+          "reason": "IN句の可変条件（:param[]記法）と$if組み合わせの注意点を引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-database.json:s12",
+          "reason": "SQLファイル管理の基本は回答の本筋でなく省略"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s7",
+          "reason": "findAllBySqlFileの使い方はs1のコード例で十分カバーされており重複のため省略"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s6",
+          "reason": "機能概要への参照のみで実装詳細を含まず回答に不要"
+        },
+        {
+          "ref": "processing-pattern/web-application/web-application-feature-details.json:s3",
+          "reason": "DBアクセスへの単純なリンクのみで実質的な内容がない"
+        }
+      ]
+    }
+  }
+}

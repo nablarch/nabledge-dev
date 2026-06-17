@@ -33,6 +33,7 @@ from pathlib import Path
 from scripts.common.sources import FileInfo, classify_sources, scan_sources
 from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.create.docs import generate_docs
+from scripts.create.classes import generate_classes_md
 from scripts.create.index import generate_index_md
 from scripts.create.javadoc import javadoc_generate
 from scripts.create.resolver import collect_asset_refs, copy_assets
@@ -41,6 +42,7 @@ from scripts.verify.verify import (
     verify_file,
     verify_docs_md,
     check_index_coverage,
+    check_classes_coverage,
     check_docs_coverage,
     check_source_links,
     check_json_docs_md_consistency,
@@ -262,6 +264,7 @@ def create(
 
     copy_assets(all_asset_refs, output_dir)
     generate_index_md(output_dir, output_dir / "index.md")
+    generate_classes_md(output_dir, output_dir / "classes.md")
     generate_docs(output_dir, docs_dir, version)
 
     snap = make_snapshot(file_infos, repo_root, version)
@@ -313,6 +316,7 @@ def update(
 
     copy_assets(changed_asset_refs, output_dir)
     generate_index_md(output_dir, output_dir / "index.md")
+    generate_classes_md(output_dir, output_dir / "classes.md")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 
     # Update snapshot to reflect current state
@@ -355,6 +359,7 @@ def delete(
                 count += 1
 
     generate_index_md(output_dir, output_dir / "index.md")
+    generate_classes_md(output_dir, output_dir / "classes.md")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 
     # Update snapshot
@@ -443,6 +448,11 @@ def verify(
         index_path = output_dir / "index.md"
         for issue in check_index_coverage(output_dir, index_path):
             print(f"FAIL index.md: {issue}", file=sys.stderr)
+            all_ok = False
+
+        classes_path = output_dir / "classes.md"
+        for issue in check_classes_coverage(output_dir, classes_path):
+            print(f"FAIL classes.md: {issue}", file=sys.stderr)
             all_ok = False
 
         for issue in check_docs_coverage(output_dir, docs_dir):

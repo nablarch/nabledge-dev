@@ -1,0 +1,65 @@
+{
+  "scenario_id": "qa-18",
+  "description": "BeanUtilを使ってJava BeansオブジェクトのプロパティをAPIで取得したい。getPropertyメソッドの使い方を知りたい。",
+  "input": "BeanUtil の getProperty で Bean のプロパティ値を取得する方法を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "getProperty(Object bean, String propertyName)でJavaBeansオブジェクトまたはレコードから指定したプロパティの値を取得する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.6,
+      "reason": "The Actual Output covers the core fact from the Expected Output: using BeanUtil.getProperty(bean, propertyName) to retrieve a property value from a JavaBeans object. However, the Expected Output specifically mentions that the method works with both 'JavaBeansオブジェクト' and 'レコード（record）', while the Actual Output actually states that passing a record to BeanUtil methods causes a runtime exception — which contradicts the expected fact about record support. The main concept is covered but with a notable discrepancy regarding record support."
+    },
+    "answer_relevancy": {
+      "score": 0.875,
+      "reason": "The score is 0.88 because the response mostly addresses how to use BeanUtil.getProperty to retrieve Bean property values as asked, but contains an irrelevant statement about BeanUtil.setProperty and BeanUtil.copy with records, which is unrelated to the input question. Removing that irrelevant portion would bring the score closer to a perfect 1.0."
+    },
+    "faithfulness": {
+      "score": 0.8888888888888888,
+      "reason": "The score is 0.89 because the actual output incorrectly claims that passing a record to BeanUtil.setProperty() or BeanUtil.copy() causes a runtime exception, whereas the retrieval context states that these methods support both JavaBeans objects and records using getter/setter methods, with no mention of any such runtime exception."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-bean-util.json:s2",
+      "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s14",
+      "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s15",
+      "component/libraries/libraries-bean-util.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 101851,
+    "duration_api_ms": 100648,
+    "num_turns": 7,
+    "total_cost_usd": 0.77296845,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 5901,
+      "cache_read_input_tokens": 616274,
+      "cache_creation_input_tokens": 132247
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3451,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003621,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 5901,
+        "cacheReadInputTokens": 616274,
+        "cacheCreationInputTokens": 132247,
+        "webSearchRequests": 0,
+        "costUSD": 0.7693474499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "step3": {
+    "phase_a_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "source": "index",
+        "selected": true,
+        "reason": "XSSチェックリスト（s5）を含む。IPA全10項目のNablarch対応状況が直接記載されており、質問への直接的な回答になる"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "source": "index",
+        "selected": true,
+        "reason": "カスタムタグのHTMLエスケープ機能（s2, s50）を含む。「カスタムタグを使えばサニタイジングされるのか」に直接回答"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "source": "index",
+        "selected": true,
+        "reason": "SecureHandlerによるXSS保険的対策ヘッダ（X-XSS-Protection等）とCSP対応を含む"
+      },
+      {
+        "path": "component/handlers/handlers-nablarch-tag-handler.json",
+        "source": "index",
+        "selected": true,
+        "reason": "カスタムタグ処理ハンドラ（NablarchTagHandler）の概要確認のため選択したが、XSS直接関連セクションなし"
+      }
+    ],
+    "phase_b_pages": [
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "source": "both",
+        "reason": "SecureHandler, XssProtectionHeaderクラスがXSS対策ヘッダの概念に合致"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "source": "both",
+        "reason": "CustomTagConfig, safeTagsプロパティがカスタムタグ制御に合致"
+      }
+    ],
+    "merged_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "source": "index"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "source": "both"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "source": "both"
+      },
+      {
+        "path": "component/handlers/handlers-nablarch-tag-handler.json",
+        "source": "index"
+      }
+    ]
+  },
+  "step4": {
+    "selected_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s5",
+        "relevance": "high"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s2",
+        "relevance": "high"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s50",
+        "relevance": "high"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "partial"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s4",
+        "relevance": "partial"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s38",
+        "relevance": "partial"
+      }
+    ]
+  },
+  "step8": {
+    "verify": "PASS",
+    "all_claims_sourced": true
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "both",
+        "reason": "ユニバーサルDAOの機能を直接説明するページであり、UniversalDaoクラスを含むためPhase AとPhase Bの両方で選択された"
+      },
+      {
+        "path": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "source": "both",
+        "reason": "libraries-universal-dao.json の s5 がこのJavadocを参照しており、Phase EでUniversalDaoクラスのメソッド詳細を提供する"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "JDBCラッパーのページであり、UniversalDao.existsの直接の実装詳細は含まれない"
+      },
+      {
+        "path": "component/libraries/libraries-database-management.json",
+        "reason": "概要ページのみでexistsメソッドの具体的な実装情報は含まれない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "UniversalDao.existsのバインド変数なしシグネチャを直接説明しており、SQL IDを指定した存在チェックの方法そのもの"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s18",
+        "relevance": "high",
+        "reason": "UniversalDao.existsのバインド変数ありシグネチャを直接説明しており、SQL IDと検索条件を指定した存在チェックの方法そのもの"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "SQLファイルのパス導出方法とSQL IDの指定形式（#区切り）を説明しており、existsメソッド使用時のSQL IDの書き方を理解するために必要"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "SQLファイルを使ったSQL IDの検索ができることの背景説明として補足的な情報を提供する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s1",
+        "reason": "機能概要の見出しのみで具体的な実装情報を含まない"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s2",
+        "reason": "CRUDの概要説明であり、existsメソッドには直接関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s5",
+        "reason": "Javadocへの参照のみで実装情報を含まない（Javadoc自体は選択済み）"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "reason": "BasicDaoContextFactoryの設定説明であり、existsの使い方には直接不要"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s15",
+        "reason": "countBySqlFileメソッドの説明であり、existsとは異なるメソッド"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s16",
+        "reason": "countBySqlFileのバインド変数版の説明であり、existsとは異なるメソッド"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17",
+          "reason": "existsメソッドのバインド変数なしシグネチャ・パラメータ・戻り値を回答に直接使用"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18",
+          "reason": "existsメソッドのバインド変数ありシグネチャ・パラメータ・戻り値・「検索用のSQLを変換して使用する」の説明を回答に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s7",
+          "reason": "SQLファイルのパス導出方法と#区切り指定の説明を回答に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s3",
+          "reason": "s7で十分にSQL IDの指定方法が説明されており、s3の内容（BeanへのマッピングとSQL ID検索の概要）は回答に必要な追加情報を提供しなかった"
+        }
+      ]
+    }
+  }
+}

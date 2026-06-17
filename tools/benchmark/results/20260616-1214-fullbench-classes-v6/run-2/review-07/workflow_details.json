@@ -1,0 +1,126 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "source": "both",
+        "reason": "CSRFトークン検証ハンドラの直接ドキュメントで、CSRF対策の実装方法を網羅している"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "source": "index",
+        "reason": "セキュリティチェックリストにCSRF対策の項目(s6)があり、Nablarch対応状況を確認できる"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションの機能詳細にCSRF対策(s19)への参照リンクがある"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "概要のみで設定方法の詳細が含まれない"
+      },
+      {
+        "path": "check/security-check/security-check-3.PCIDSS対応表.json",
+        "reason": "PCIDSS対応表はCSRF設定方法と直接関係しない"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "アーキテクチャ概要のみでCSRF設定詳細は含まれない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "CSRFトークンの生成と検証の設定例・デフォルト動作を詳述しており、質問に直接回答できる"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "ハンドラの配置順序制約（SessionStoreHandler後ろ、NablarchTagHandler後ろ）を説明しており必須情報"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "ログイン時のCSRFトークン再生成についての重要な注意点を含む"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "CSRF対策の全体方針とDbTokenManagerの注意点を補足する情報を含む"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s19",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションのCSRF対策はhandlers-csrf-token-verification-handlerへの参照のみで内容が薄い"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみでJavadocリンクであり詳細情報なし"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s2",
+        "reason": "Mavenモジュール依存定義のみで設定方法と直接関係しない"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s1",
+        "reason": "Nablarch初期化に関するセクションでCSRFと無関係"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックに関するセクションでCSRFと無関係"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "check/security-check/security-check-2.チェックリスト.json:s6",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+      "processing-pattern/web-application/web-application-feature-details.json:s19"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s4",
+          "reason": "ハンドラ設定のXML例、デフォルト動作、トークン名、HTTPメソッド判定、検証失敗時の挙動を回答に使用"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s3",
+          "reason": "ハンドラ配置順序の制約（SessionStoreHandler後ろ、NablarchTagHandler後ろ）を注意点として使用"
+        },
+        {
+          "ref": "handlers-csrf-token-verification-handler.json:s5",
+          "reason": "ログイン時のCSRFトークン再生成（CsrfTokenUtil.regenerateCsrfToken）を注意点として使用"
+        },
+        {
+          "ref": "security-check-2.チェックリスト.json:s6",
+          "reason": "DbTokenManagerのCSRF非対応の注意点とCSRF対策ハンドラ推奨を補足情報として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "web-application-feature-details.json:s19",
+          "reason": "handlers-csrf-token-verification-handlerへの参照リンクのみで独自の情報を含まず回答で不要"
+        }
+      ]
+    }
+  }
+}

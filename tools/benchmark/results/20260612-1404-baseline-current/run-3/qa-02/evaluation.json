@@ -1,0 +1,69 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "DatabaseRecordReaderでデータベースからデータを読み込む",
+    "BatchActionを継承したアクションクラスを実装する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly mentions both expected facts: it references `DatabaseRecordReader` for reading data from the database (in the processing flow, handler configuration, and code example), and it demonstrates implementing an action class that inherits from `BatchAction` (shown in the code example `public class SummaryBatchAction extends BatchAction<SummaryForm>`). Both facts from the Expected Output are clearly covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about how to implement a batch process that reads data from a DB, aggregates it, and writes the results to another table. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 98748,
+    "duration_api_ms": 98110,
+    "num_turns": 10,
+    "total_cost_usd": 0.5493637,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 6322,
+      "cache_read_input_tokens": 545909,
+      "cache_creation_input_tokens": 76572
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3412,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003592,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 6322,
+        "cacheReadInputTokens": 545909,
+        "cacheCreationInputTokens": 76572,
+        "webSearchRequests": 0,
+        "costUSD": 0.5457717,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

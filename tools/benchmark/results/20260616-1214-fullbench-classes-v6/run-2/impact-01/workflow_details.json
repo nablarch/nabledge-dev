@@ -1,0 +1,111 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "both",
+        "reason": "index.mdにs29「現在のトランザクションとは異なるトランザクションでSQLを実行する」が明示されており、classes.mdにもSimpleDbTransactionManagerが登録されている"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "both",
+        "reason": "index.mdにs20「現在のトランザクションとは異なるトランザクションで実行する」が明示されており、classes.mdにもUniversalDao.TransactionとSimpleDbTransactionManagerが登録されている"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "source": "both",
+        "reason": "index.mdにs8「別トランザクションで実行する」が明示されており、classes.mdにもDomaConfigとTransactionalが登録されている"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "source": "both",
+        "reason": "index.mdにs7「アプリケーションで複数のトランザクションを使用する」が明示されており、ハンドラ経由での複数トランザクション設定が関連する可能性がある"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "トランザクション管理の基本設定であり、別トランザクション実行の具体的な実装方法は上記ページでカバーされている"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチアプリケーション全般の機能詳細であり、別トランザクション実行の具体的方法はlibraries-database.jsonに集約されている"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "「業務処理が失敗した場合でも必ずデータベースへの変更を確定したい場合」を例示しており、SimpleDbTransactionManagerとSimpleDbTransactionExecutorの実装方法を完全にカバーしている"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "ユニバーサルDAOを用いた別トランザクション実行方法(UniversalDao.Transaction継承パターン)を完全にカバーしている"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "Domaアダプタを使用している場合の別トランザクション実行方法(DomaConfig.getTransactionManager().requiresNew())を示している"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "ハンドラ経由での複数トランザクション設定方法を示しているが、これは並列トランザクション設定であり質問の「ロールバック後も更新を残す」用途とは少し異なる"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s4",
+        "reason": "トランザクション制御対象の設定であり、別トランザクション実行とは直接関係しない"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s5",
+        "reason": "特定例外時のコミット設定であり、別トランザクション実行とは異なる"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s6",
+        "reason": "トランザクション終了時の任意処理であり、別トランザクション実行とは直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/adapters/adapters-doma-adaptor.json:s8",
+      "component/handlers/handlers-transaction-management-handler.json:s7"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManagerとSimpleDbTransactionExecutorを使った別トランザクション実装方法のコンポーネント設定例とJavaコード例を回答の中心として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s20",
+          "reason": "UniversalDao.Transactionを継承したパターンの実装例を使用"
+        },
+        {
+          "ref": "component/adapters/adapters-doma-adaptor.json:s8",
+          "reason": "Domaアダプタ利用時の注意点として言及"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/handlers/handlers-transaction-management-handler.json:s7",
+          "reason": "ハンドラキューへの複数トランザクション設定は質問の「ロールバック後も別トランザクションの更新を残す」という要件とは異なるアプローチのため回答本文には含めなかった"
+        }
+      ]
+    }
+  }
+}

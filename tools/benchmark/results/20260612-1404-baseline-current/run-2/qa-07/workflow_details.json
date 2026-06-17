@@ -1,0 +1,123 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-data-bind.json",
+        "reason": "CSVファイルをJava Beansオブジェクトとして読み込む方法を直接提供するデータバインド機能のページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "reason": "Nablarchバッチでファイルを読み込むDataReader/BatchActionの実装例を提供するページ"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチのファイル入出力機能詳細を説明するページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-feature-details.json",
+        "reason": "Jakarta Batchの実装方式でありNablarchバッチとは異なるため除外"
+      },
+      {
+        "path": "component/libraries/libraries-data-format.json",
+        "reason": "汎用データフォーマットはフォーマット定義ファイルを使う方式であり、アノテーションベースのデータバインドとは異なるアプローチのため優先度低"
+      },
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "BeanUtilはBean間のコピーに使うライブラリであり、CSVファイル読み込みの主役ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ObjectMapperFactory.create()とObjectMapper.read()によるJava Beans読み込みの実装方法を直接説明している"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s15",
+        "relevance": "high",
+        "reason": "@Csv/@CsvFormatアノテーションによるCSVフォーマット指定方法を説明しており、フォームクラス定義に必須"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "外部ファイルのプロパティはString型で定義すべきという重要な制約を説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "DataReader<T>の実装方法とObjectMapperIteratorを使ったCSV読み込みの具体的なコード例を提供している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "BatchAction<T>のhandle()とcreateReader()の実装例を提供しており、バッチ全体の構造を示している"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s8",
+        "reason": "書き込み（出力）のセクションであり、読み込みを問う質問には不要"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s16",
+        "reason": "固定長ファイルのフォーマット指定であり、CSVの質問には不要"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s21",
+        "reason": "フォーマットセット一覧は補足情報であり、s15のコード例で十分"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "ファイル入出力機能詳細のセクションだが、getting-startedのs2/s3でより具体的な実装例が得られるため不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "component/libraries/libraries-data-bind.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s7",
+          "reason": "ObjectMapperFactory.create()とmapper.read()を使った読み込みループの実装パターンを引用した"
+        },
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s15",
+          "reason": "@Csv/@CsvFormatアノテーションのコード例をフォームクラス定義の根拠として使用した"
+        },
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s2",
+          "reason": "外部ファイルのプロパティは全てString型で定義すべきという注意事項として引用した"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+          "reason": "DataReader実装（read/hasNext/closeメソッド）とObjectMapperIteratorの使用例をそのまま引用した"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+          "reason": "BatchAction継承クラスのhandle()とcreateReader()の実装例を引用した"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

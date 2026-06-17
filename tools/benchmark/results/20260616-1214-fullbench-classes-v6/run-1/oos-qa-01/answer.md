@@ -1,0 +1,12 @@
+**結論**: NablarchにはWebSocketのサポート機能は提供されていません。
+
+NablarchのウェブアプリケーションはServlet APIを前提とした構成を採用しており、知識ファイルにはWebSocketを利用するための機能やAPIに関する記載は含まれていません。
+
+**根拠**:
+Nablarchのウェブアプリケーションアーキテクチャは、リクエスト/レスポンス型のHTTP通信をハンドラキューで処理する設計です。WebSocketはこのモデルとは異なる常時接続型のプロトコルであり、Nablarchのフレームワーク機能として提供されている範囲外となります。
+
+**注意点**:
+- NablarchはServlet APIベースでアプリケーションを構成するため、アプリケーションサーバー（TomcatなどのServlet 5.0以上対応）がWebSocketをサポートしていれば、Nablarchのフレームワーク外でJakarta WebSocket API（`jakarta.websocket`）を直接使用して実装することは技術的に可能です。ただし、この場合はNablarchのハンドラキューやセッションストアなどの機能は使用できません。
+- バッチ処理の進捗をブラウザへリアルタイム通知する要件については、Nablarchのパターンとして「テーブルをキューとして使ったメッセージング」でバッチの状態をDBに書き込み、ブラウザ側がポーリングで取得する方式が知識ファイルに記載されたアーキテクチャパターンに沿った代替アプローチです。
+
+参照: processing-pattern/web-application/web-application-architecture.json:s1

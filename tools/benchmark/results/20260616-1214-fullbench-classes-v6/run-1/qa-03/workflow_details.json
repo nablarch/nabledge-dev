@@ -1,0 +1,128 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "index",
+        "reason": "index.mdにs11「相関バリデーションを行う」が明示されており、相関バリデーションの実装方法を直接カバーするページ。"
+      },
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "source": "index",
+        "reason": "index.mdにs14「相関バリデーションを行う」が記載されており、Nablarch Validationでの相関バリデーション実装も候補として選択。"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションのs2「入力値のチェック」がバリデーション実装の全体的な流れを示す。"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションでのBean Validation実行に必要な@InjectFormインターセプタの使用方法をカバーする。"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-client-create2.json",
+        "source": "classes",
+        "reason": "classes.mdに@InjectFormとInjectFormクラスが記載されており、ウェブアプリの入力確認フロー実装例を含む。"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "reason": "Nablarch ValidationはBean Validationの代替実装だが、Nablarch 6ではBean Validationが推奨されるため、Bean Validationの情報が充足している場合はPartialとして扱い最終的に不要と判断。"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "s2入力値チェックは概要のみでBean Validationページへの参照にとどまり、s11の具体的な実装が充足しているため除外。"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-client-create2.json",
+        "reason": "@InjectFormの使用例はhandlers-InjectForm.json:s3でカバーされているため除外。"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "メールアドレスと確認用メールアドレスの相関バリデーション実装例が@AssertTrueを使用して直接記載されており、質問に完全に対応する。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでBean Validationを使用するためのBeanValidationStrategy設定が記載されており、実装に必要な設定情報を提供する。"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "@InjectFormアノテーションの具体的な使用方法と業務アクションへの適用例が記載されており、ウェブアプリでのバリデーション実行フローを補完する。"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s1",
+        "reason": "機能概要の見出しのみで内容がなく、情報を提供しない。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s2",
+        "reason": "ドメインバリデーションの概要説明のみで相関バリデーションとは直接関係しない。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s3",
+        "reason": "提供バリデータ一覧の説明で相関バリデーション実装には不要。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "reason": "単項目バリデーションルールの設定方法で相関バリデーションには直接関係しない。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "reason": "DBとの相関バリデーションで、項目間の一致チェックとは別のトピック。"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s4",
+        "reason": "@OnErrorの説明はs3の実装例内で言及されており独立して読む必要はない。"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s5",
+        "reason": "Bean Validationのグループ機能は今回の質問（項目一致チェック）に不要。"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-InjectForm.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-bean-validation.json:s11",
+          "reason": "@AssertTrueを用いたメールアドレス相関バリデーションの実装例（コード・注意点含む）を回答の核として使用した。"
+        },
+        {
+          "ref": "libraries-bean-validation.json:s16",
+          "reason": "BeanValidationStrategyのコンポーネント設定（validationStrategy）をウェブアプリ設定として使用した。"
+        },
+        {
+          "ref": "handlers-InjectForm.json:s3",
+          "reason": "@InjectFormと@OnErrorの業務アクションへの適用例を回答の実装手順として使用した。"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "scenario_id": "review-08",
+  "description": "Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。",
+  "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly covers the key fact in the Expected Output: that DBストア is used when multiple tab operations are not allowed, and HIDDENストア is used when they are allowed. This is stated clearly in the conclusion section and reinforced in the selection criteria table. All expected facts are covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly relevant to the input question about how to differentiate between DB store and HIDDEN store when maintaining session variables across input, confirmation, and completion screens. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9523809523809523,
+      "reason": "The score is 0.95 because the actual output mostly aligns with the retrieval context, with one minor contradiction: it incorrectly states that Forms should not be saved because doing so leaves unvalidated, untrusted values in a long-lived session, whereas the retrieval context specifies the reason is that saving a Form introduces unnecessary data conversion processes and tight coupling. The correct recommendation from the context is to save Entities instead."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/handlers/handlers-SessionStoreHandler.json:s3",
+      "component/libraries/libraries-session-store.json:s8",
+      "component/handlers/handlers-SessionStoreHandler.json:s4",
+      "component/libraries/libraries-create-example.json:s2",
+      "component/libraries/libraries-create-example.json:s3",
+      "component/libraries/libraries-create-example.json:s4",
+      "component/libraries/libraries-session-store.json:s12"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 182416,
+    "duration_api_ms": 181555,
+    "num_turns": 3,
+    "total_cost_usd": 0.76435425,
+    "usage": {
+      "input_tokens": 4,
+      "output_tokens": 6422,
+      "cache_read_input_tokens": 120576,
+      "cache_creation_input_tokens": 37657
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3362,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003507,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 11036,
+        "cacheReadInputTokens": 381250,
+        "cacheCreationInputTokens": 128239,
+        "webSearchRequests": 0,
+        "costUSD": 0.76084725,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

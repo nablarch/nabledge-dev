@@ -1,0 +1,122 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "index",
+        "reason": "s29に「現在のトランザクションとは異なるトランザクションでSQLを実行する」が明示されており、質問に直接回答する。"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index",
+        "reason": "s20に「現在のトランザクションとは異なるトランザクションで実行する」があり、UniversalDAO版の実装方法を提供する。"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "source": "index",
+        "reason": "s8「別トランザクションで実行する」があるが、Domaアダプタ使用時の方法であり参考として選択。"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "source": "index",
+        "reason": "s7「アプリケーションで複数のトランザクションを使用する」が複数トランザクション管理の背景情報を提供する。"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "source": "index",
+        "reason": "トランザクション基本設定（JdbcTransactionFactory）の理解に必要な背景情報を含む。"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチのデータベースアクセス概要のみで、別トランザクション実行の具体的な方法は含まない。"
+      },
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "バッチのトランザクションループ制御ハンドラで、別トランザクション実行の実装方法と無関係。"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "別トランザクションでSQLを実行する具体的な方法（SimpleDbTransactionManager + SimpleDbTransactionExecutor）とコード例を提供する。"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "UniversalDAOを使った別トランザクション実行方法（UniversalDao.Transaction）とコード例を提供する。"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "Domaアダプタ使用時の別トランザクション実行方法を提供するが、標準的な方法ではない。"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "複数トランザクション管理の設定例を含むが、別トランザクションの独立コミットというユースケースには間接的。"
+      },
+      {
+        "file": "component/libraries/libraries-transaction.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "JdbcTransactionFactoryの設定方法を説明し、SimpleDbTransactionManagerの前提となる設定情報を提供する。"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s4",
+        "reason": "トランザクション制御対象の基本設定のみで、別トランザクション実行には不要。"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s5",
+        "reason": "特定の例外時のコミット設定であり、質問の独立トランザクションとは別の機能。"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/adapters/adapters-doma-adaptor.json:s8",
+      "component/handlers/handlers-transaction-management-handler.json:s7",
+      "component/libraries/libraries-transaction.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManager + SimpleDbTransactionExecutorによる別トランザクション実行の主要な説明とコード例として使用。"
+        },
+        {
+          "ref": "libraries-universal-dao.json:s20",
+          "reason": "UniversalDAO使用時の別トランザクション実行方法（UniversalDao.Transaction）として使用。"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "adapters-doma-adaptor.json:s8",
+          "reason": "Domaアダプタ特有の実装方法であり、Nablarchバッチの標準的なユースケースに直接関係しないため割愛。"
+        },
+        {
+          "ref": "handlers-transaction-management-handler.json:s7",
+          "reason": "複数トランザクションのハンドラ設定例で、個別トランザクション実行の実装方法と異なるため割愛。"
+        },
+        {
+          "ref": "libraries-transaction.json:s5",
+          "reason": "JdbcTransactionFactoryの基本設定で、回答の主要な内容に含める必要がなかったため割愛。"
+        }
+      ]
+    }
+  }
+}

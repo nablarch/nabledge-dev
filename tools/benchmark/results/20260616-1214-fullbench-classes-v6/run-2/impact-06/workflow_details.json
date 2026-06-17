@@ -1,0 +1,237 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "source": "index",
+        "reason": "セッションストアの特長・選択基準を直接カバーしており、保存先の種類と選択基準が含まれる"
+      },
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "source": "both",
+        "reason": "Redisをセッション保存先として使用するアダプタで、スケールアウト時の選択肢として直接関連する"
+      },
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "source": "index",
+        "reason": "APサーバのスケールアウトを行う際にHTTPセッション非依存化が必要な理由と方法を説明している"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "source": "index",
+        "reason": "セッション変数保存ハンドラの設定（有効期間のDB保存など）がスケールアウト設計に関連する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションのスケールアウト設計セクション(s18)が含まれる"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "reason": "セクション読み込みで確認したが、s16等の主要情報はlibraries-session-store.jsonに含まれるため補足的な役割"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "s18はリンクのみの内容でありlibraries-stateless-web-app.jsonを参照するだけのため最終的に読み込み対象から除外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "各ストアの特長と選択基準を網羅的に説明しており、スケールアウト時の選択判断に直接必要"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "標準提供の3ストアとRedisストアの概要を説明しており、保存先の全体像を把握するのに必要"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "HIDDENストアで冗長化時に暗号化キーを統一する必要があるという重要な制約が含まれる"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "有効期間のデフォルト保存先がHTTPセッションであり、スケールアウト時に変更が必要である点を説明"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "Redisの構成（Sentinel/Cluster等）の説明があり、本番環境での選択肢を示す"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "構成ごとのクライアントクラスの違いを説明しており、Redis構成選択の根拠となる"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s14",
+        "relevance": "partial",
+        "reason": "Redisでのセッション情報の保存形式の説明（補足情報として有用）"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s15",
+        "relevance": "high",
+        "reason": "有効期限の自動管理（削除バッチ不要）というDBストアに対するメリットを説明"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "HTTPセッションのスケールアウト問題の根本的な理由と3つの一般的対処法を説明"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "セッションストアのHTTPセッション非依存化の設定方法へのリンクを提供"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s1",
+        "reason": "セクションタイトルのみで内容が空"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s3",
+        "reason": "直列化の仕組みの選択であり、スケールアウトに直接関係しない"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s8",
+        "reason": "セッションストアの設定方法の詳細は質問の主旨（特徴理解）に対して二次的"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s1",
+        "reason": "ローカル開発環境での起動方法であり、本番スケールアウト設計には直接関係しない"
+      },
+      {
+        "file": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "section_id": "s2",
+        "reason": "設定手順の概要のみで内容が薄い"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s18",
+        "reason": "リンクのみの内容でありlibraries-stateless-web-app.jsonの内容と重複する"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s2",
+        "reason": "HTTPセッション依存機能の列挙のみで、各ストアの特徴説明には不要"
+      },
+      {
+        "file": "component/libraries/libraries-stateless-web-app.json",
+        "section_id": "s3",
+        "reason": "内容が薄く、概要のみ"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-session-store.json:s1",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-session-store.json:s3",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s17",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s1",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s6",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s7",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s14",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15",
+      "component/libraries/libraries-stateless-web-app.json:s1",
+      "component/libraries/libraries-stateless-web-app.json:s3",
+      "component/libraries/libraries-stateless-web-app.json:s4",
+      "processing-pattern/web-application/web-application-feature-details.json:s18"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-session-store.json:s16",
+          "reason": "各ストア（DB/HIDDEN/HTTPセッション）の特徴と選択基準の表を回答の核として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s2",
+          "reason": "標準提供の3ストアとRedisストアの概要説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s12",
+          "reason": "HIDDENストアの冗長化時に暗号化キー統一が必要という制約と設定例に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s17",
+          "reason": "有効期間のデフォルト保存先がHTTPセッションである旨の説明に使用"
+        },
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5",
+          "reason": "本番でのRedis構成（Master-Replica/Cluster）への対応に使用"
+        },
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s6",
+          "reason": "Redisの構成ごとのクライアントクラス説明に使用"
+        },
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s14",
+          "reason": "RedisのキーがnablarchSession.<セッションID>形式で保存される旨の補足に使用"
+        },
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15",
+          "reason": "有効期限切れセッションの自動削除（削除バッチ不要）のメリット説明に使用"
+        },
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s7",
+          "reason": "nablarch.lettuce.clientTypeの設定値とクライアントクラスの対応表に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-stateless-web-app.json:s1",
+          "reason": "HTTPセッションがスケールアウトに問題を引き起こす根本理由と一般的対処法の説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-stateless-web-app.json:s4",
+          "reason": "セッションストアのHTTPセッション非依存化（有効期間をDBに保存）への参照に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-session-store.json:s1",
+          "reason": "セクション内容が空であったため使用しなかった"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s3",
+          "reason": "直列化の仕組みは質問のスコープ外のため使用しなかった"
+        },
+        {
+          "ref": "component/adapters/adapters-redisstore-lettuce-adaptor.json:s1",
+          "reason": "ローカル開発向けの内容であり本番スケールアウトには不要"
+        },
+        {
+          "ref": "component/libraries/libraries-stateless-web-app.json:s3",
+          "reason": "内容が薄く、s4にリンクのみのため独立して引用しなかった"
+        },
+        {
+          "ref": "processing-pattern/web-application/web-application-feature-details.json:s18",
+          "reason": "リンクのみの内容でありlibraries-stateless-web-app.jsonを直接参照した"
+        }
+      ]
+    }
+  }
+}

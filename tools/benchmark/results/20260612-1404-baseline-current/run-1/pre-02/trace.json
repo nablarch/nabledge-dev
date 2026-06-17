@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 115988,
+  "duration_api_ms": 114063,
+  "ttft_ms": 3930,
+  "ttft_stream_ms": 2528,
+  "time_to_request_ms": 848,
+  "num_turns": 8,
+  "result": "必要なセクションがすべて取得できました。回答を生成します。\n\n### Answer\n\n**結論**: ウェブアプリケーションのバリデーションは、`@InjectForm` インターセプタを業務アクションのメソッドに設定することで実装します。Formクラスに Bean Validation のアノテーションを設定し、バリデーション済みフォームをリクエストスコープから取得して業務処理を行います。\n\n**根拠**:\n\n**1. BeanValidationStrategy の設定**\n\nコンポーネント設定ファイルに `validationStrategy` という名前で `BeanValidationStrategy` を定義します。\n\n```xml\n<component name=\"validationStrategy\" class=\"nablarch.common.web.validator.BeanValidationStrategy\" />\n```\n\n**2. Formクラスの作成**\n\nFormクラスのプロパティは必ず `String` 型で定義し、バリデーションアノテーションを設定します（ドメインバリデーションの使用を推奨）。\n\n```java\n// ドメインBeanの定義\npublic class SampleDomainBean {\n    @Length(max = 10)\n    @SystemChar(charsetDef = \"全角文字\")\n    String name;\n\n    @Length(min = 8, max = 8)\n    @SystemChar(charsetDef = \"半角数字\")\n    String date;\n}\n\n// Formクラス（@Domainでドメイン名を指定、@Requiredは個別のBeanに設定）\npublic class SampleForm {\n    @Domain(\"name\")\n    @Required\n    private String userName;\n\n    @Domain(\"date\")\n    private String birthday;\n\n    // getter、setter\n}\n```\n\n**3. 業務アクションへの @InjectForm 設定**\n\n```java\n@InjectForm(form = UserForm.class, prefix = \"form\", validate = \"register\")\n@OnError(type = ApplicationException.class, path = \"forward://registerForm.jsp\")\npublic HttpResponse handle(HttpRequest req, ExecutionContext ctx) {\n\n    // リクエストスコープからバリデーション済みのフォームを取得する\n    UserForm form = ctx.getRequestScopedVar(\"form\");\n\n    // formを元に業務処理を行う\n}\n```\n\n- `prefix = \"form\"` を指定すると、`form.xxx` という名前のリクエストパラメータがバリデーション対象になります。\n- `@OnError` が設定されていない場合、バリデーションエラーがシステムエラー扱いになるため、必ず設定してください。\n\n**4. エラーメッセージの画面表示（Thymeleaf の例）**\n\nバリデーションエラーメッセージはリクエストスコープの `ErrorMessages` から取得します。\n\n```html\n<!-- 特定項目のエラー表示 -->\n<span class=\"error\" th:if=\"${errors.hasError('form.userName')}\"\n    th:text=\"${errors.getMessage('form.userName')}\">入力してください。</span>\n\n<!-- 全エラーの表示 -->\n<ul>\n  <li th:each=\"message : ${errors.allMessages}\" th:text=\"${message}\">エラーメッセージ</li>\n</ul>\n```\n\n**5. エラーメッセージの定義**\n\nプロパティファイルにメッセージIDをキーとしてメッセージを定義します。\n\n```properties\nnablarch.core.validation.ee.Required.message=入力してください。\nnablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。\nnablarch.core.validation.ee.SystemChar.message={charsetDef}を入力してください。\n```\n\n**注意点**:\n- Formクラスのプロパティは全て `String` 型にすること。`String` 以外の型があると、不正な値が送信された際にバリデーション前にBean変換が失敗し障害になります。\n- `@OnError` を必ず設定すること。設定しないとバリデーションエラーがシステムエラーになります。\n- データベースとの相関バリデーションは、SQLインジェクション対策のため Bean Validation ではなく業務アクション側で実装してください。\n\n参照: libraries-bean-validation.json:s8, libraries-bean-validation.json:s9, libraries-bean-validation.json:s16, handlers-InjectForm.json:s3, handlers-InjectForm.json:s4, libraries-bean-validation.json:s6, libraries-bean-validation.json:s7, web-application-error-message.json:s1\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-bean-validation.json\", \"reason\": \"Bean Validationはウェブアプリケーションの入力チェックの主要な実装手段であり、質問に直接対応する\"},\n      {\"path\": \"component/handlers/handlers-InjectForm.json\", \"reason\": \"ウェブアプリケーションのユーザ入力値チェックに使用するInjectFormインターセプタを説明する\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"ウェブアプリケーションの入力値チェック機能詳細へのポインタを提供する\"},\n      {\"path\": \"processing-pattern/web-application/web-application-error-message.json\", \"reason\": \"バリデーションエラーメッセージの画面表示方法を説明する\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-nablarch-validation.json\", \"reason\": \"Nablarch 6ではBean Validationが推奨であり、NablarchValidationは旧来の方式のためスキップ\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"reason\": \"処理方式がウェブアプリケーションに指定されているためRESTfulウェブサービスはスキップ\"},\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json\", \"reason\": \"バッチ処理は対象外\"},\n      {\"path\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json\", \"reason\": \"RESTfulウェブサービス用のハンドラであり、ウェブアプリケーション対象外\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s8\", \"relevance\": \"high\", \"reason\": \"バリデーションルールをアノテーションで設定する方法と、Formのプロパティは全てString型にするという重要な制約を説明する\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s9\", \"relevance\": \"high\", \"reason\": \"推奨されるドメインバリデーションの設定・実装方法を詳細に説明する\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s16\", \"relevance\": \"high\", \"reason\": \"ウェブアプリケーションでのバリデーション方法（InjectForm使用）とBeanValidationStrategyの設定を説明する\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"@InjectFormアノテーションの実装例とリクエストスコープからフォーム取得方法を示す\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"@OnErrorによるバリデーションエラー時の遷移先指定が必須であることを説明する\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s6\", \"relevance\": \"partial\", \"reason\": \"Bean Validationを使うための全体的な設定方針を示す\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s7\", \"relevance\": \"partial\", \"reason\": \"バリデーションエラーメッセージのプロパティファイルでの定義方法を説明する\"},\n      {\"file\": \"processing-pattern/web-application/web-application-error-message.json\", \"section_id\": \"s1\", \"relevance\": \"partial\", \"reason\": \"画面でのエラーメッセージ表示にErrorMessagesを使う方法と実装例を提供する\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s1\", \"reason\": \"機能概要のみで実装詳細なし\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s2\", \"reason\": \"概要説明のみ\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s3\", \"reason\": \"概要説明のみで実装詳細なし\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s10\", \"reason\": \"文字種バリデーションの詳細設定であり、基本的な実装方法の回答には不要\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s11\", \"reason\": \"相関バリデーションは質問の主旨外\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s12\", \"reason\": \"DBとの相関バリデーションは質問の主旨外\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s17\", \"reason\": \"RESTfulウェブサービス用であり対象外\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s2\", \"reason\": \"入力値チェックへの参照ポインタのみでコンテンツが少なく、直接の実装情報はないためスキップ\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-bean-validation.json:s8\",\n      \"component/libraries/libraries-bean-validation.json:s9\",\n      \"component/libraries/libraries-bean-validation.json:s16\",\n      \"component/handlers/handlers-InjectForm.json:s3\",\n      \"component/handlers/handlers-InjectForm.json:s4\",\n      \"component/libraries/libraries-bean-validation.json:s6\",\n      \"component/libraries/libraries-bean-validation.json:s7\",\n      \"processing-pattern/web-application/web-application-error-message.json:s1\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/libraries/libraries-bean-validation.json:s16\", \"reason\": \"BeanValidationStrategyの設定方法とInjectFormインターセプタ使用の指示を引用\"},\n        {\"ref\": \"component/handlers/handlers-InjectForm.json:s3\", \"reason\": \"@InjectFormアノテーションの実装コード例を引用\"},\n        {\"ref\": \"component/handlers/handlers-InjectForm.json:s4\", \"reason\": \"@OnErrorの必須性と設定方法を引用\"},\n        {\"ref\": \"component/libraries/libraries-bean-validation.json:s9\", \"reason\": \"ドメインBeanの実装例と@InjectFormへの@Domain/@Required使用例を引用\"},\n        {\"ref\": \"component/libraries/libraries-bean-validation.json:s8\", \"reason\": \"Formプロパティは全てString型にするという制約とアノテーション設定方法を引用\"},\n        {\"ref\": \"component/libraries/libraries-bean-validation.json:s7\", \"reason\": \"エラーメッセージのプロパティファイル定義例を引用\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-error-message.json:s1\", \"reason\": \"Thymeleafを使ったエラーメッセージ表示のHTML実装例を引用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"component/libraries/libraries-bean-validation.json:s6\", \"reason\": \"s16でウェブアプリ向け設定が説明されており、s6は重複するため回答には使用しなかった\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "2b87976a-fb9f-4c3c-8a25-cc7744965f39",
+  "total_cost_usd": 0.68183035,
+  "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 122285,
+    "cache_read_input_tokens": 348592,
+    "output_tokens": 7683,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 122285
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3296,
+      "outputTokens": 25,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003421,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 6,
+      "outputTokens": 7683,
+      "cacheReadInputTokens": 348592,
+      "cacheCreationInputTokens": 122285,
+      "webSearchRequests": 0,
+      "costUSD": 0.67840935,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "7cbbd3dd-34bc-42b1-9039-f89f2333ab5b"
+}

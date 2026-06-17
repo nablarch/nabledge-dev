@@ -1,0 +1,69 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Expected Output states one key fact: SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる (SQL file creation with SQL ID specification for search, with results mapped to Beans). The Actual Output clearly covers this fact - it demonstrates defining SQL IDs in SQL files (e.g., 'SEARCH_PROJECT' in Project.sql), using findAllBySqlFile() with SQL ID specification, and mapping results to Bean classes (Project.class, User.class). The core concept is fully addressed."
+    },
+    "answer_relevancy": {
+      "score": 0.8333333333333334,
+      "reason": "The score is 0.83 because the response generally addresses how to search database data using UniversalDao, including relevant use of findAllBySqlFile. However, it loses points for two issues: an incorrect statement about findAllBySqlFile's argument order (SQL ID is the first argument, not the second), and the inclusion of unrelated information about batchUpdate and optimistic locking, which are irrelevant to the question about database searching."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "component/libraries/libraries-universal-dao.json:s12",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+      "component/libraries/libraries-universal-dao.json:s3",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "component/libraries/libraries-universal-dao.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 153365,
+    "duration_api_ms": 152633,
+    "num_turns": 7,
+    "total_cost_usd": 0.77348035,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 10397,
+      "cache_read_input_tokens": 352287,
+      "cache_creation_input_tokens": 135519
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3455,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003625,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 10397,
+        "cacheReadInputTokens": 352287,
+        "cacheCreationInputTokens": 135519,
+        "webSearchRequests": 0,
+        "costUSD": 0.76985535,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

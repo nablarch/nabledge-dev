@@ -1,0 +1,69 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly mentions and demonstrates the use of `SimpleDbTransactionManager` to define individual (separate) transactions, which directly covers the expected fact that 'SimpleDbTransactionManagerを使って個別トランザクションを定義する'. The actual output provides detailed XML configuration and Java code examples showing how to set up and use SimpleDbTransactionManager for independent transactions."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, directly addressing how to execute SQL in a separate transaction from the business transaction and ensuring updates persist even after a rollback. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/adapters/adapters-doma-adaptor.json:s8",
+      "component/libraries/libraries-transaction.json:s5",
+      "component/handlers/handlers-transaction-management-handler.json:s4",
+      "component/handlers/handlers-loop-handler.json:s4",
+      "component/handlers/handlers-loop-handler.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 179044,
+    "duration_api_ms": 178321,
+    "num_turns": 3,
+    "total_cost_usd": 1.0732885,
+    "usage": {
+      "input_tokens": 4,
+      "output_tokens": 5473,
+      "cache_read_input_tokens": 121404,
+      "cache_creation_input_tokens": 38648
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3348,
+        "outputTokens": 29,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003493,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 11344,
+        "cacheReadInputTokens": 725120,
+        "cacheCreationInputTokens": 181882,
+        "webSearchRequests": 0,
+        "costUSD": 1.0697955000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -503,7 +503,7 @@
       },
       "when": {
         "workflow": "qa",
-        "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい。リソースクラスの実装パターンを教えてほしい",
+        "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
         "expected_hearing": "should_skip",
         "hearing_answer": {
           "processing_type": "RESTfulウェブサービス",
@@ -519,15 +519,11 @@
           {
             "fact": "プロパティは全てString型で宣言する",
             "section": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1"
-          },
-          {
-            "fact": "JSONのコンバータにはJackson2BodyConverterが設定される",
-            "section": "component/adapters/adapters-jaxrs-adaptor.json:s2"
           }
         ],
         "acceptable": [
           {
-            "section": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1"
+            "section": "component/adapters/adapters-jaxrs-adaptor.json:s2"
           }
         ]
       }
@@ -687,7 +683,7 @@
       }
     },
     {
-      "id": "qa-11a",
+      "id": "qa-11",
       "given": {
         "usecase": "qa",
         "category": "error-handling",
@@ -720,7 +716,7 @@
       }
     },
     {
-      "id": "qa-11b",
+      "id": "qa-20",
       "given": {
         "usecase": "qa",
         "category": "error-handling",
@@ -750,7 +746,7 @@
       }
     },
     {
-      "id": "qa-12a",
+      "id": "qa-12",
       "given": {
         "usecase": "qa",
         "category": "validation",
@@ -784,7 +780,7 @@
       }
     },
     {
-      "id": "qa-12b",
+      "id": "qa-21",
       "given": {
         "usecase": "qa",
         "category": "validation",
@@ -1064,6 +1060,39 @@
           }
         ],
         "acceptable": []
+      }
+    },
+    {
+      "id": "qa-19",
+      "given": {
+        "usecase": "qa",
+        "category": "rest-arch",
+        "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。"
+      },
+      "when": {
+        "workflow": "qa",
+        "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+        "expected_hearing": "should_skip",
+        "hearing_answer": {
+          "processing_type": "RESTfulウェブサービス",
+          "purpose": "仕組み・動作を理解したい"
+        }
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "JSONのボディ変換はJackson2BodyConverterが担当する",
+            "section": "component/adapters/adapters-jaxrs-adaptor.json:s2"
+          }
+        ],
+        "acceptable": [
+          {
+            "section": "component/adapters/adapters-jaxrs-adaptor.json:s3"
+          },
+          {
+            "section": "component/adapters/adapters-jaxrs-adaptor.json:s4"
+          }
+        ]
       }
     }
   ]

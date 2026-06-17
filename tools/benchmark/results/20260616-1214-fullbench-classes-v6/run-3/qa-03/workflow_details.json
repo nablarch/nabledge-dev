@@ -1,0 +1,89 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "index",
+        "reason": "index.mdにs11「相関バリデーションを行う」が明示されており、質問に直接対応するページ。"
+      },
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "source": "index",
+        "reason": "index.mdにs14「相関バリデーションを行う」があり、NablarchバリデーションAPIでの相関バリデーション実装方法が含まれる候補。"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "処理方式がウェブアプリケーションであり、s2「入力値のチェック」がバリデーション設定の文脈を提供する。"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションのバリデーションはInjectFormインターセプタ経由で行われるため候補。"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "処理方式がウェブアプリケーションであり、RESTfulウェブサービスは異なる処理方式のためスキップ。"
+      },
+      {
+        "path": "development-tools/testing-framework/testing-framework-01-entityUnitTestWithBeanValidation.json",
+        "reason": "目的が実装であり、テスト実施方法の説明ページは対象外。"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "「相関バリデーションを行う」セクションであり、メールアドレス一致チェックの実装例を含む直接的な回答。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでBean Validationを使用するためのInjectForm設定方法を説明しており、背景情報として有用。"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "reason": "バリデーションルール設定の一般的な説明であり、相関バリデーションに特化した内容ではない。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s9",
+        "reason": "ドメインバリデーションの説明であり、今回の相関バリデーションの質問には直接関係しない。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "reason": "データベースとの相関バリデーションの説明であり、項目間一致チェックとは異なるユースケース。"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-bean-validation.json:s16"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s11",
+          "reason": "@AssertTrueを使った相関バリデーションの実装例とバリデーション順序に関する注意点が回答の核となるため使用。"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s16",
+          "reason": "ウェブアプリケーションのInjectForm設定の背景情報だが、相関バリデーション実装の直接的な説明ではないため回答には含めなかった。"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "scenario_id": "review-06",
+  "description": "REST APIのリソースクラスでJaxRsHttpRequestからクエリーパラメータを取得する処理を書いている。URLパスの一部をパスパラメータとして使う箇所もある。",
+  "input": "REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る",
+    "クエリーパラメータはJaxRsHttpRequestから取得する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both key facts in the Expected Output. It explains that path parameters are defined by name in routing configuration (via @Path annotation with {param} syntax or routes.xml with :param syntax) and retrieved in the resource class using JaxRsHttpRequest.getPathParam(). It also clearly explains that query parameters are retrieved from JaxRsHttpRequest (via getParamMap()). Both expected facts are fully addressed with detailed examples and context."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly relevant to the input, which asks about REST API implementation for receiving URL path parameters and query parameters, including routing configuration. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.875,
+      "reason": "The score is 0.88 because the actual output contains two contradictions: it misrepresents query parameters as being 'set using a path that excludes routing' when the context states that routing maps resource classes based on paths excluding query parameters, and it incorrectly uses the `:parameter name` format for path parameters instead of the correct `{parameter name}` format specified by the Jakarta RESTful Web Services specification."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/adapters/adapters-router-adaptor.json:s7",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "component/adapters/adapters-router-adaptor.json:s9",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s3",
+      "component/adapters/adapters-router-adaptor.json:s3",
+      "component/adapters/adapters-router-adaptor.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 109493,
+    "duration_api_ms": 108478,
+    "num_turns": 6,
+    "total_cost_usd": 0.26722975000000004,
+    "usage": {
+      "input_tokens": 5,
+      "output_tokens": 7926,
+      "cache_read_input_tokens": 312405,
+      "cache_creation_input_tokens": 13603
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3432,
+        "outputTokens": 32,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003592,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 5,
+        "outputTokens": 7926,
+        "cacheReadInputTokens": 312405,
+        "cacheCreationInputTokens": 13603,
+        "webSearchRequests": 0,
+        "costUSD": 0.26363775,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

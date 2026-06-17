@@ -1,0 +1,150 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-message.json",
+        "reason": "多言語化（メッセージの言語切り替え）の直接的な実装方法を提供するページ"
+      },
+      {
+        "path": "component/handlers/handlers-thread-context-handler.json",
+        "reason": "言語属性をスレッドコンテキストに設定するハンドラで、多言語化の基盤となるページ"
+      },
+      {
+        "path": "component/handlers/handlers-http-response-handler.json",
+        "reason": "言語ごとのコンテンツパス（JSPなど）切り替え機能を提供するページ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションの国際化対応の概要を示すページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの国際化対応の概要を示すページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-code.json",
+        "reason": "コード名称の多言語化はメッセージ/ラベルの多言語化とは別の機能のため除外"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "reason": "メッセージタグ自体の実装詳細はlibraries-message.jsonとhandlers-thread-context-handler.jsonで十分カバーされるため除外"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-policy.json",
+        "reason": "Nablarchの基本方針であり、多言語化の実装方法には直接関係しないため除外"
+      },
+      {
+        "path": "processing-pattern/http-messaging/http-messaging-feature-details.json",
+        "reason": "HTTPメッセージングの国際化対応はあるが、質問の主旨（メッセージ/ラベル切り替え）への実装詳細は他ページで十分"
+      },
+      {
+        "path": "component/libraries/libraries-tag-reference.json",
+        "reason": "タグリファレンスはタグの詳細仕様で、多言語化の実装手順には直接不要"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s8",
+        "relevance": "high",
+        "reason": "多言語化のプロパティファイル設定・PropertiesStringResourceLoaderへのロケール設定の具体的な実装方法を含む"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ユーザーが言語を選択する画面の実装例（LanguageAttributeInHttpCookie + LanguageAttributeInHttpUtil）を含む"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "ThreadContextHandlerのLanguageAttribute設定例を含む"
+      },
+      {
+        "file": "component/handlers/handlers-http-response-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "言語ごとにJSPパスを切り替える機能（DirectoryBasedResourcePathRule等）の情報を含む"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s12",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションにおける国際化対応の方式選択ガイダンスを含む"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスにおける国際化対応の参照先を示す"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s6",
+        "reason": "プロパティファイルの作成単位（アプリケーション単位）はs8の補足情報だが、多言語化の直接的な実装方法ではないため除外"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s7",
+        "reason": "単言語プロパティファイルの書き方であり、多言語化のs8で十分"
+      },
+      {
+        "file": "component/libraries/libraries-message.json",
+        "section_id": "s11",
+        "reason": "JSPでのメッセージタグ使用例はs8の補足だが、メインの回答に必要な情報はs8で十分"
+      },
+      {
+        "file": "component/handlers/handlers-thread-context-handler.json",
+        "section_id": "s8",
+        "reason": "タイムゾーン選択の実装例であり、言語切り替えの質問には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s4",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/handlers/handlers-http-response-handler.json:s7",
+      "processing-pattern/web-application/web-application-feature-details.json:s12",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "libraries-message.json:s8",
+          "reason": "PropertiesStringResourceLoaderへのロケール設定・言語別プロパティファイルの配置方法の主要情報として使用"
+        },
+        {
+          "ref": "handlers-thread-context-handler.json:s4",
+          "reason": "ThreadContextHandlerへのLanguageAttribute設定例として使用"
+        },
+        {
+          "ref": "handlers-thread-context-handler.json:s7",
+          "reason": "ユーザー言語選択画面の実装例（LanguageAttributeInHttpCookie・LanguageAttributeInHttpUtil）として使用"
+        },
+        {
+          "ref": "handlers-http-response-handler.json:s7",
+          "reason": "言語ごとにJSPパスを切り替える機能の補足情報として参照"
+        },
+        {
+          "ref": "web-application-feature-details.json:s12",
+          "reason": "ウェブアプリケーションの国際化方式の注意事項（レイアウト崩れ）として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "restful-web-service-feature-details.json:s8",
+          "reason": "RESTfulウェブサービスの国際化対応はlibraries-message.jsonへの参照のみで、ウェブアプリケーション向けの回答で十分なため未使用"
+        }
+      ]
+    }
+  }
+}

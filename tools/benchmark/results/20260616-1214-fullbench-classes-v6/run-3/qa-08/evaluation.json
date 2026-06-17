@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The expected output contains two key facts: (1) preparing property files for each language, and (2) setting supported languages in the 'locales' property. The actual output explicitly covers both facts — it demonstrates creating language-specific property files (messages.properties, messages_en.properties) and shows the XML configuration with the 'locales' property in PropertiesStringResourceLoader. Both expected facts are fully covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, directly addressing the question about how to switch messages and labels between Japanese and English for multilingual support. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9523809523809523,
+      "reason": "The score is 0.95 because the actual output incorrectly implies that 'defaultLocale' is a mandatory or required setting, whereas the retrieval context states that it is optional — if not configured, the system falls back to Locale.getDefault().getLanguage(). Additionally, the retrieval context clarifies that the default locale does not need to be added to the supported languages list, suggesting the actual output may have misrepresented this behavior."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/handlers/handlers-thread-context-handler.json:s4",
+      "component/libraries/libraries-message.json:s7",
+      "component/handlers/handlers-http-response-handler.json:s7",
+      "component/libraries/libraries-code.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 142193,
+    "duration_api_ms": 140629,
+    "num_turns": 13,
+    "total_cost_usd": 0.8914774500000001,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 9037,
+      "cache_read_input_tokens": 811749,
+      "cache_creation_input_tokens": 135657
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3473,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0036479999999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 9037,
+        "cacheReadInputTokens": 811749,
+        "cacheCreationInputTokens": 135657,
+        "webSearchRequests": 0,
+        "costUSD": 0.88782945,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

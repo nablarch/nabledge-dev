@@ -70,7 +70,8 @@ def build_qa_prompt(scenario: dict, workflow_content: str, prompt_template: str 
 
 
 _QA_ANSWER_HEADING = "### Answer"
-_QA_WORKFLOW_DETAILS_HEADING = "### Workflow Details"
+_QA_WORKFLOW_DETAILS_START = "<<<WORKFLOW_DETAILS_JSON>>>"
+_QA_WORKFLOW_DETAILS_END = "<<<END_WORKFLOW_DETAILS>>>"
 
 
 def parse_qa_response(response_text: str) -> dict:
@@ -80,20 +81,21 @@ def parse_qa_response(response_text: str) -> dict:
       ### Answer
       <answer text>
 
-      ### Workflow Details
+      <<<WORKFLOW_DETAILS_JSON>>>
       ```json
       {...}
       ```
+      <<<END_WORKFLOW_DETAILS>>>
 
-    The answer is extracted from between '### Answer' and '### Workflow Details'.
-    If '### Answer' is absent (legacy format), all text before '### Workflow Details'
+    The answer is extracted from between '### Answer' and '<<<WORKFLOW_DETAILS_JSON>>>'.
+    If '### Answer' is absent (legacy format), all text before '<<<WORKFLOW_DETAILS_JSON>>>'
     is used as the answer.
 
-    Raises ValueError if '### Workflow Details' or the JSON block is missing.
+    Raises ValueError if '<<<WORKFLOW_DETAILS_JSON>>>' or the JSON block is missing.
     """
-    idx = response_text.find(_QA_WORKFLOW_DETAILS_HEADING)
+    idx = response_text.find(_QA_WORKFLOW_DETAILS_START)
     if idx == -1:
-        raise ValueError("Workflow Details section not found in response")
+        raise ValueError("<<<WORKFLOW_DETAILS_JSON>>> marker not found in response")
 
     before_workflow = response_text[:idx]
 
@@ -103,8 +105,13 @@ def parse_qa_response(response_text: str) -> dict:
     else:
         answer = before_workflow.strip()
 
-    details_section = response_text[idx + len(_QA_WORKFLOW_DETAILS_HEADING):]
-    # extract content from ```json ... ``` fence
+    details_section = response_text[idx + len(_QA_WORKFLOW_DETAILS_START):]
+
+    # Extract JSON: between start marker and end marker (if present), else use fence
+    end_idx = details_section.find(_QA_WORKFLOW_DETAILS_END)
+    if end_idx != -1:
+        details_section = details_section[:end_idx]
+
     fence_start = details_section.find("```json")
     fence_end = details_section.find("```", fence_start + 3) if fence_start != -1 else -1
     if fence_start == -1 or fence_end == -1:
@@ -115,7 +122,7 @@ def parse_qa_response(response_text: str) -> dict:
     try:
         workflow_details = json.loads(json_raw)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON in Workflow Details: {e}") from e
+        raise ValueError(f"Invalid JSON in workflow details: {e}") from e
 
     return {
         "answer": answer,

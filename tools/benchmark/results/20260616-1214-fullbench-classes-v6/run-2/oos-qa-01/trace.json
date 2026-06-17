@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 215043,
+  "duration_api_ms": 214004,
+  "ttft_ms": 4462,
+  "ttft_stream_ms": 3415,
+  "time_to_request_ms": 1048,
+  "num_turns": 12,
+  "result": "Phase D/E の結果：WebSocket関連のセクションは存在しない。知識ファイルに含まれる非同期処理パターンと基本方針のセクションを回答に使用します。\n\n### Answer\n\n**結論**: NablarchにはWebSocketをサポートする専用のハンドラ・アダプタは提供されておらず、この情報は知識ファイルに含まれていません。バッチ処理の進捗をWebアプリと連携させる仕組みとして、Nablarchでは「テーブルをキューとして使ったメッセージング」による非同期処理パターンが提供されています。\n\n**根拠**: Nablarchの非同期処理パターンとして、以下の構成が推奨されています。\n\n1. **Webアプリ側**: リクエストを受け付けて、後続処理に必要なデータをDBに登録し、レスポンスを返却する\n2. **テーブルキューメッセージング側**: DBへのデータ登録を検知し、バッチ処理を実行する\n\nこの仕組みにより、処理の起動と実行を分離した非同期処理が実現できます。\n\nただし、このパターンは「バッチを非同期で起動・実行する」仕組みを提供するものであり、WebSocketのようなサーバーからブラウザへのリアルタイムプッシュ通知の仕組みそのものは提供しません。進捗状況をブラウザへ伝えるには、クライアント側でHTTPポーリングを行い、DBに保存された進捗データを定期的に参照する設計を別途実装することになります。\n\nまた、Nablarchの基本方針として「プロダクションコードはOSSを使用しない」とあり、アダプタとしてOSSコンポーネントは利用可能ですが、WebSocket専用のアダプタは現時点で提供されていません。\n\n**注意点**: WebSocketのリアルタイムプッシュ通知（Jakarta WebSocket等）については、知識ファイルの対象範囲外です。アプリケーションサーバー側のJakarta WebSocket実装を活用する場合は、Nablarchのハンドラキューの管理外での実装になります。\n\n参照: guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json, about/about-nablarch/about-nablarch-policy.json:s6\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json\", \"source\": \"index\", \"reason\": \"WebSocketの代替となるNablarchの非同期処理パターン（テーブルキューメッセージング）が記載されており、質問のユースケースに最も関連する\"},\n      {\"path\": \"about/about-nablarch/about-nablarch-policy.json\", \"source\": \"index\", \"reason\": \"OSSは使用しないというNablarchの基本方針が記載されており、WebSocketアダプタが存在しない背景を説明できる\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"source\": \"index\", \"reason\": \"ウェブアプリケーションの機能詳細一覧にWebSocket関連の記載があるか確認するために選定\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/web-application/web-application-architecture.json\", \"reason\": \"アーキテクチャ概要はWebSocket実装に関する情報を含まないと判断\"},\n      {\"path\": \"component/handlers/handlers-web.json\", \"reason\": \"ウェブアプリ専用ハンドラ一覧だがWebSocket関連ハンドラが存在しないことは知識ファイル検索で確認済み\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json\", \"section_id\": \"s1\", \"relevance\": \"partial\", \"reason\": \"メール送信ユースケースにおける常駐バッチとテーブルキューの使い分けを説明しており、非同期パターンの補足情報となる\"},\n      {\"file\": \"about/about-nablarch/about-nablarch-policy.json\", \"section_id\": \"s6\", \"relevance\": \"partial\", \"reason\": \"OSSは使用しないという方針が明記されており、WebSocketアダプタが提供されていない背景を説明する根拠となる\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s1-s21\", \"reason\": \"WebSocket関連の情報が一切含まれておらず、全セクションをスキップ\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1\",\n      \"about/about-nablarch/about-nablarch-policy.json:s6\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:body\", \"reason\": \"Webアプリ→DBデータ登録→テーブルキューが処理という非同期パターンの説明に使用\"},\n        {\"ref\": \"about/about-nablarch/about-nablarch-policy.json:s6\", \"reason\": \"OSSは使用しないという基本方針の根拠として引用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1\", \"reason\": \"メール送信ユースケースの補足情報であり、WebSocket通知の質問には直接関係しないため回答本文では不使用\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "179b5d41-db89-40d8-832a-7fd55679a156",
+  "total_cost_usd": 0.9299448999999999,
+  "usage": {
+    "input_tokens": 13,
+    "cache_creation_input_tokens": 104228,
+    "cache_read_input_tokens": 1141593,
+    "output_tokens": 12857,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 104228
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3533,
+      "outputTokens": 37,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003718,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 13,
+      "outputTokens": 12857,
+      "cacheReadInputTokens": 1141593,
+      "cacheCreationInputTokens": 104228,
+      "webSearchRequests": 0,
+      "costUSD": 0.9262269,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "05409b63-ab9e-4997-8a43-21ae10bda22b"
+}

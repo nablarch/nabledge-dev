@@ -1,0 +1,187 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationを直接扱うページ。DBとの相関バリデーションに関するs12、RESTful向けのs17を含む"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービスの処理方式を扱うページ。入力値チェックとDB アクセスの章を含む"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "JAX-RS向けBean Validationハンドラの実装方法（@Valid）を説明するページ"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "アクション側でDBアクセスする際に使用するUniversalDAOの実装例を含むページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "処理方式がウェブアプリケーションのため対象外"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチ処理のため対象外"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "UniversalDAOで十分カバーできるため優先度を下げてスキップ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "DBとの相関バリデーションはBean Validationではなく業務アクション側で実装すべき理由を直接説明する核心セクション"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスにおけるユーザ入力値チェックの方法を説明するRESTful固有セクション"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスにおける入力値チェックの章で処理方式の文脈を確認"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@ValidアノテーションによるBean Validationの実行方法をコード例付きで説明するセクション"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "partial",
+        "reason": "アクション側バリデーションエラーを特定項目に紐づけるValidationUtil#createMessageForPropertyの実装例"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s24",
+        "relevance": "partial",
+        "reason": "カスタムアノテーション追加の方法を説明するセクション（カスタムバリデータに関する質問への補足）"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s20",
+        "relevance": "partial",
+        "reason": "明示的バリデーション実行の方法（ValidatorUtil#validate）を説明するセクション"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "相関バリデーションの背景（@AssertTrueの使用方法と実行順序の注意点）"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "アクション側でDB重複チェックを実装する際に使用するUniversalDao.findAllBySqlFileの実装例"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスにおけるDBアクセス方法の参照先を確認"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで実装詳細なし"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "reason": "ウェブアプリケーション向けのため対象外"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s6",
+        "reason": "設定方法の背景情報で今回の質問の核心ではない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "reason": "バリデーションルール設定の一般情報でDB重複チェックに直接関係しない"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s3",
+        "reason": "ハンドラの制約（BodyConvertHandlerの後に配置）で重複チェック実装には直接不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s24",
+      "component/libraries/libraries-bean-validation.json:s20",
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s3"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s12",
+          "reason": "カスタムバリデータでのDB検索が推奨されない理由（セキュリティ・SQLインジェクション）と業務アクション側での実装指針を引用"
+        },
+        {
+          "ref": "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "@ValidアノテーションによるBean Validationの実行コード例を引用"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s13",
+          "reason": "アクション側でのDB重複チェック後にValidationUtil#createMessageForPropertyでエラーを特定項目に紐づける実装例を引用"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s10",
+          "reason": "アクション側でUniversalDao.findAllBySqlFileを使ってDB重複チェックを実装する方法の根拠として参照"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s11",
+          "reason": "相関バリデーションにおけるバリデーション実行順序の非保証についての注意点を根拠として参照"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s17",
+          "reason": "RESTful向け入力チェックはs4で十分カバーされており、s17は参照先リンクのみで追加情報なし"
+        },
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2",
+          "reason": "入力値チェックの章への参照のみで実装詳細を含まなかった"
+        },
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s3",
+          "reason": "DBアクセスライブラリへの参照のみで実装詳細を含まなかった"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s24",
+          "reason": "カスタムバリデータ追加の一般的な方法だが、DBアクセスすべきでないという本質的な回答には不要"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s20",
+          "reason": "明示的バリデーション実行の方法で、今回の重複チェック実装フローには直接使用しなかった"
+        }
+      ]
+    }
+  }
+}

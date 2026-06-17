@@ -1,0 +1,76 @@
+{
+  "scenario_id": "qa-11",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers the key facts from the Expected Output. It explicitly describes HttpErrorHandler returning responses based on exception types with corresponding HTTP status codes (404 for NoMoreHandlerException, 500 for StackOverflowError, etc.), and it states that when HttpErrorResponse's cause is ApplicationException, ErrorMessages are set to the request scope under the key 'errors', enabling JSP display via '${errors}'. Both core facts from the Expected Output are present and accurately represented in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9393939393939394,
+      "reason": "The score is 0.94 because the actual output is largely faithful to the retrieval context, with only two minor contradictions: it incorrectly implies that writeFailureLogPattern controls Result.Error log output rather than accurately describing it as outputting FATAL level logs when the expression matches the status code from Error#getStatusCode(), and it incorrectly groups ThreadDeath and VirtualMachineError as having the same log behavior, when in fact ThreadDeath results in an INFO level log and rethrow while VirtualMachineError results in a FATAL level log and rethrow."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s3",
+      "component/handlers/handlers-global-error-handler.json:s5",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/handlers/handlers-on-error.json:s4",
+      "component/handlers/handlers-on-errors.json:s3",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s3",
+      "component/libraries/libraries-failure-log.json:s4",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s2",
+      "processing-pattern/web-application/web-application-feature-details.json:s16"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 151102,
+    "duration_api_ms": 150243,
+    "num_turns": 12,
+    "total_cost_usd": 0.88066205,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 10253,
+      "cache_read_input_tokens": 637621,
+      "cache_creation_input_tokens": 141817
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3523,
+        "outputTokens": 44,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0037430000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 10253,
+        "cacheReadInputTokens": 637621,
+        "cacheCreationInputTokens": 141817,
+        "webSearchRequests": 0,
+        "costUSD": 0.8769190500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

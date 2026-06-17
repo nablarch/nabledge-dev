@@ -1,0 +1,117 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "s29「現在のトランザクションとは異なるトランザクションでSQLを実行する」が質問に直接回答する。"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "s20「現在のトランザクションとは異なるトランザクションで実行する」がUniversalDAO版の別トランザクション実装を説明する。"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "SimpleDbTransactionManagerに設定するJdbcTransactionFactoryの定義方法として参照が必要な背景情報を持つ。"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "複数トランザクション使用時のハンドラキュー設定方法を説明しており、背景情報として有用。"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "s8「別トランザクションで実行する」がDomaアダプタ使用時の別トランザクション実装を説明する。"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/handlers/handlers-loop-handler.json",
+        "reason": "トランザクションループ制御ハンドラはコミット間隔制御に関するもので、業務トランザクションとは別トランザクション実行という質問の直接的な回答ではない。"
+      },
+      {
+        "path": "component/handlers/handlers-database-connection-management-handler.json",
+        "reason": "複数DB接続管理に関する内容で、ロールバック後も更新を残すための別トランザクション実行パターンとは異なる。"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "「現在のトランザクションとは異なるトランザクションでSQLを実行する」がSimpleDbTransactionManager+SimpleDbTransactionExecutorによる実装例を提供しており、質問に完全に回答する。"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "UniversalDAO版の別トランザクション実装（SimpleDbTransactionManager+UniversalDao.Transaction）を提供しており、選択肢の一つとして重要。"
+      },
+      {
+        "file": "component/libraries/libraries-transaction.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "JdbcTransactionFactoryの定義方法を説明しており、SimpleDbTransactionManagerのtransactionFactoryプロパティに何を設定するかの背景情報として有用。"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "複数トランザクション並行管理の設定例を提供しており、業務トランザクションと別トランザクション共存時の参考情報として有用。"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "Domaアダプタ使用時のrequiresNewによる別トランザクション実装を説明しており、Doma採用プロジェクト向けの代替手段として有用。"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-transaction.json",
+        "section_id": "s6",
+        "reason": "トランザクションタイムアウトの設定に関するセクションで、別トランザクション実行という質問の目的とは無関係。"
+      },
+      {
+        "file": "component/handlers/handlers-transaction-management-handler.json",
+        "section_id": "s4",
+        "reason": "基本的なトランザクション制御対象の設定方法で、s7（複数トランザクション）と内容が重複する上、別トランザクション実行の直接的な情報を含まない。"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20",
+      "component/libraries/libraries-transaction.json:s5",
+      "component/handlers/handlers-transaction-management-handler.json:s7",
+      "component/adapters/adapters-doma-adaptor.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManager+SimpleDbTransactionExecutorによる別トランザクション実行の設定例・実装例を回答に引用した。"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s20",
+          "reason": "UniversalDao.Transactionを使った別トランザクション実行の設定例・実装例を回答に引用した。"
+        },
+        {
+          "ref": "component/adapters/adapters-doma-adaptor.json:s8",
+          "reason": "Domaアダプタ使用時のrequiresNewによる実装例を回答に引用した。"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-transaction.json:s5",
+          "reason": "JdbcTransactionFactoryの設定は背景情報として読んだが、回答ではSimpleDbTransactionManagerの設定例（connectionFactory/transactionFactory参照）で十分に説明できているため引用しなかった。"
+        },
+        {
+          "ref": "component/handlers/handlers-transaction-management-handler.json:s7",
+          "reason": "複数TransactionManagementHandlerのハンドラキュー設定は異なるDB接続の並行管理パターンであり、質問のユースケース（ロールバック後も更新を保持）への回答としてはSimpleDbTransactionManagerパターンの方が適切なため含めなかった。"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-architecture.json",
+        "reason": "Nablarchウェブアプリのアーキテクチャと標準ハンドラ一覧を網羅しており、WebSocketハンドラの有無を直接確認できる"
+      },
+      {
+        "path": "about/about-nablarch/about-nablarch-policy.json",
+        "reason": "OSSを使用しない方針がWebSocketサポートの欠如の根拠となるため"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチ実行中の状態保持機能を確認し、代替手段（DB経由ポーリング）の根拠を得るため"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json",
+        "reason": "バッチ進捗情報として取得可能なデータ（TPS、残件数など）を確認するため"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "機能一覧はWebSocketを含まないが、個別セクションにWebSocket関連情報がなく、アーキテクチャページでカバーできる"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json",
+        "reason": "非同期処理パターンの説明があるが、セクションはメール送信のみでブラウザ通知に直接関係しない"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-retention-state.json",
+        "reason": "セクションが存在しない（sections: []）ため選択不可"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-architecture.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "NablarchウェブアプリがServlet APIベースであることを明示しており、WebSocketの非サポートの技術的根拠となる"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-architecture.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "標準ハンドラ一覧を網羅しており、WebSocketハンドラが存在しないことを直接示す"
+      },
+      {
+        "file": "about/about-nablarch/about-nablarch-policy.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "OSSを使用しない方針がWebSocketサポートを提供しない根本理由を説明している"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-architecture.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "リクエスト・レスポンス型の処理フローを示し、常時接続型WebSocketとの構造的差異を裏付ける"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-architecture.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "最小ハンドラ構成を示し、WebSocketハンドラが存在しないことをさらに補強する"
+      },
+      {
+        "file": "about/about-nablarch/about-nablarch-policy.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "スレッドセーフ設計がハンドラキュー＋スレッドモデルに基づくことを示し、永続接続モデルのWebSocketと異なることを補強する"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "バッチ実行中の状態保持が可能であることを示し、DB経由ポーリングの代替手段に対する根拠を提供する"
+      },
+      {
+        "file": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json",
+        "section_id": "s1",
+        "relevance": "partial",
+        "reason": "TPS・残件数・終了予測時間などの進捗データが利用可能であることを示す"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "about/about-nablarch/about-nablarch-policy.json",
+        "section_id": "s1",
+        "reason": "未入力値のnull変換に関する方針で、WebSocketと無関係"
+      },
+      {
+        "file": "about/about-nablarch/about-nablarch-policy.json",
+        "section_id": "s2",
+        "reason": "コレクションのnull非返却方針で、WebSocketと無関係"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s7",
+        "reason": "バッチ実行制御（マルチスレッド・コミット間隔等）で、ブラウザ通知とは直接関係しない"
+      },
+      {
+        "file": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json",
+        "section_id": "s2",
+        "reason": "ログファイル出力の設定で、ブラウザ通知の実現方法とは無関係"
+      },
+      {
+        "file": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json",
+        "section_id": "s3",
+        "reason": "Batchletステップでのログ出力実装例で、ブラウザへの通知手段の質問には直接回答しない"
+      },
+      {
+        "file": "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json",
+        "section_id": "s4",
+        "reason": "Chunkステップでのログ出力実装例で、ブラウザへの通知手段の質問には直接回答しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/web-application/web-application-architecture.json:s1",
+      "processing-pattern/web-application/web-application-architecture.json:s3",
+      "about/about-nablarch/about-nablarch-policy.json:s6",
+      "processing-pattern/web-application/web-application-architecture.json:s2",
+      "processing-pattern/web-application/web-application-architecture.json:s4",
+      "about/about-nablarch/about-nablarch-policy.json:s8",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s9",
+      "processing-pattern/jakarta-batch/jakarta-batch-progress-log.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "web-application-architecture.json:s1",
+          "reason": "Servlet APIベースのアーキテクチャを明示し、WebSocket非サポートの技術的根拠として使用"
+        },
+        {
+          "ref": "web-application-architecture.json:s2",
+          "reason": "リクエスト・レスポンス型の処理フローを示し、常時接続型WebSocketとの構造的差異の根拠として使用"
+        },
+        {
+          "ref": "web-application-architecture.json:s3",
+          "reason": "標準ハンドラ一覧を示し、WebSocketハンドラが存在しないことの直接証拠として使用"
+        },
+        {
+          "ref": "about-nablarch-policy.json:s6",
+          "reason": "OSSを使用しない方針を示し、WebSocketサポートがない理由の説明として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "web-application-architecture.json:s4",
+          "reason": "最小ハンドラ構成の詳細テーブルはs3で既にカバーされており、回答に重複情報のため使用しなかった"
+        },
+        {
+          "ref": "about-nablarch-policy.json:s8",
+          "reason": "スレッドセーフ設計の説明は補強情報だが、回答の結論を変えないため簡潔さのために省略"
+        },
+        {
+          "ref": "nablarch-batch-feature-details.json:s9",
+          "reason": "バッチ状態保持はリンクのみで具体的実装情報がなく、代替手段の説明は知識ファイル外として扱った"
+        },
+        {
+          "ref": "jakarta-batch-progress-log.json:s1",
+          "reason": "進捗データの種類（TPS等）は参考になるが、WebSocketの実現可否という質問の核心からは外れるため回答本文への引用を省略"
+        }
+      ]
+    }
+  }
+}
