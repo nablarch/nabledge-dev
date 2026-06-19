@@ -224,33 +224,4 @@ classes.md を使ったクラス名ベースのページ選定が qa-05（Jackso
 
 # State
 
-Status: paused
-Date: 2026-06-19
-Last completed: エキスパート試算（3方式コスト比較）+ ベンチマーク分析（mustファイル・top-k期待値）
-Next: Recall@k 事前検証スクリプト作成・実行（`sentence-transformers` でRAGの精度を機械的に実測）
-Notes: |
-  作業ブランチ: cost-optimization-docs（PR #374）
-  タスクファイル: docs/reports/tasks.md
-
-  現在の状況:
-  - コスト最適化評価レポート2本（architecture / nabledge）+ 依頼書（brief）をdocs/reports/に追加済み
-  - エキスパートレビュー9 Findingsを受け、主要な修正点を特定済み
-  - エキスパートによる3方式コスト試算完了:
-    - 現状: warm ¥80.6【事実】/ cold ¥265【試算】
-    - サブ化: warm ¥28【試算】/ cold ¥53【試算】
-    - RAG: top-5 warm ¥9.5 〜 top-150 warm ¥45【試算】
-
-  RAGのノックアウトファクター分析:
-  - ベンチマーク34シナリオのmust: 44セクション / 22ファイル
-  - mustファイルの平均: 34KB・19.6セクション（例: libraries-tag.json = 166KB・51セクション）
-  - 512tokチャンクで刻むと: qa-06/qa-12のmustファイルが81チャンク、期待値top-40以上必要
-  - 通常RAGのtop-kは3〜10 → 設計として成立しない
-  - ただしこれは「期待値計算」。Recall@k実測で裏付けが必要
-
-  次のアクション:
-  1. `python3 -c "import sentence_transformers"` でライブラリ確認
-  2. Recall@kスクリプト作成・実行（docs/reports/recall_at_k.py）
-  3. 実測結果でレポート2本を更新
-
-  保留判断:
-  - レポートの書き直しはRecall@k実測後に実施（実測なしで書き直すと再び「試算」止まり）
+<!-- template placeholder -->
