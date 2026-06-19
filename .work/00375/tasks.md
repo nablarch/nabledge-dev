@@ -1,6 +1,6 @@
 # Tasks: Nabledge コスト最適化評価レポート作成
 
-**Branch**: cost-optimization-docs
+**Branch**: 375-cost-optimization-docs
 **Updated**: 2026-06-19
 
 ## In Progress
