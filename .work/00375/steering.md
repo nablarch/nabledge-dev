@@ -27,7 +27,7 @@ See [tasks.md](tasks.md).
 # State
 
 Status: paused
-Date: 2026-06-19
+Date: 2026-06-22
 Last completed: エキスパート試算（3方式コスト比較）+ ベンチマーク分析（mustファイル・top-k期待値）
 Next: Recall@k 事前検証スクリプト作成・実行
 Notes: |
