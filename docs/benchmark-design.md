@@ -53,7 +53,7 @@ tools/benchmark/
       "when": {
         "workflow": "qa",
         "input": "質問テキスト",
-        "expected_hearing": "should_skip | should_ask",
+        "expected_hearing": "should_skip | must_ask | nice_to_ask",
         "hearing_answer": {
           "processing_type": "処理方式名 | null",
           "purpose": "目的名"
@@ -79,7 +79,7 @@ tools/benchmark/
 | `id` | シナリオID（例: `pre-01`, `qa-01`, `impact-01`） |
 | `phase` | フェーズ（`pre-benchmark`, `benchmark`, `impact`） |
 | `when.input` | ユーザーの質問テキスト |
-| `when.expected_hearing` | ヒアリングが発生するか（`should_skip`: スキップ予想、`should_ask`: 発生予想） |
+| `when.expected_hearing` | ヒアリングの期待値（`should_skip`: スキップ予想、`must_ask`: ヒアリング必須、`nice_to_ask`: ヒアリングが望ましいが任意） |
 | `when.hearing_answer` | ランナーがStep 1/2をスキップしてStep 3から開始するための事前設定値 |
 | `then.must` | 回答に必ず含まれるべき事実のリスト（`section` はDeepEvalが `retrieval_context` を構築する際に参照するナレッジセクション） |
 | `then.acceptable` | あってもよいセクションのリスト（評価には不使用） |
@@ -162,7 +162,7 @@ summary.json 保存
 | `evaluation.json` | 正常完了時 | 自動評価結果 |
 | `error.json` | エラー時のみ | エラー内容（`error`, `exception_type`） |
 | `raw_response.txt` | MarkerError時のみ | パース失敗したレスポンス全文 |
-| `summary.json` | 実行完了時 | 全シナリオのサマリー（`total_scenarios`, `skill_dir`, `scenarios_file`, `executed_at`） |
+| `summary.json` | 実行完了時 | 全シナリオのサマリー（`total_scenarios`, `skill_dir`, `scenarios_file`, `executed_at`, `scenarios`） |
 
 ---
 
@@ -277,6 +277,8 @@ report.py でレポート生成（閾値割れシナリオを一覧）
 |---|---|
 | フルレポート（1実行） | `{run-dir}/report.md` |
 | 比較レポート | `{run-dir}/comparison-{label_b}.md` |
+| 退行チェックレポート | `{run-dir}/regression-check.md` |
+| 3run横断集約レポート | `{crossrun-dir}/crossrun-summary.md` |
 
 ---
 

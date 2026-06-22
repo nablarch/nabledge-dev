@@ -4,13 +4,12 @@ Runs the qa.md workflow for each scenario, capturing diagnostic markers from
 the response to extract hearing, search, and answer information.
 
 Output per scenario:
-  {output-dir}/{scenario-id}/hearing.json    — hearing behavior (skipped or asked)
-  {output-dir}/{scenario-id}/search.json     — search results (section IDs)
-  {output-dir}/{scenario-id}/answer.md       — generated answer text
-  {output-dir}/{scenario-id}/metrics.json    — performance metrics
-  {output-dir}/{scenario-id}/trace.json      — full claude -p JSON output (for QA review)
-  {output-dir}/{scenario-id}/evaluation.json — evaluation results
-  {output-dir}/summary.json                  — run summary with context
+  {output-dir}/{scenario-id}/workflow_details.json — step3/step4/step8 details (pages, sections, answer sections)
+  {output-dir}/{scenario-id}/answer.md             — generated answer text
+  {output-dir}/{scenario-id}/metrics.json          — performance metrics
+  {output-dir}/{scenario-id}/trace.json            — full claude -p JSON output (for QA review)
+  {output-dir}/{scenario-id}/evaluation.json       — evaluation results
+  {output-dir}/summary.json                        — run summary with context
 """
 from __future__ import annotations
 
