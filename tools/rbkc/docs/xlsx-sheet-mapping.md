@@ -8,7 +8,7 @@
 |---------|-------|-------------|
 | P1 | 93 | Header detected → structured sections (existing behavior, no change) |
 | P1-merged | 2 | P1 with title-column merged rows → group rows by merge range into one section per vulnerability |
-| P2-1 | 16 | Column-indent → Markdown headings (col0=H1, col1=H2, col2=H3, col3+=body) |
+| P2-1 | 16 | Column-indent → Markdown headings (col0=H2, col1=H3, col2=H4, col3+=body) |
 | P2-2 | 96 | Current behavior maintained (step tables, single-col lists, etc.) |
 | P2-3 | 3 | Embedded LF preserved as Markdown line breaks (`  \n`) |
 | P2-4 | 2 | 2-col table with preamble: preamble as plain text, data as Markdown table (LF→`<br>`) |
