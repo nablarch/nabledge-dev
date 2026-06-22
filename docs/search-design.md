@@ -42,10 +42,10 @@ v6の検索実装（`workflows/`, `scripts/`）の設計。
 ```
 Nablarch公式ドキュメント（RST/Markdown/Excel）
   ↓ tools/rbkc/rbkc.sh create 6
-知識JSON（353ファイル）+ knowledge/index.md
+知識JSON（353ファイル）+ knowledge/index.md + knowledge/classes.md
 ```
 
-`index.md` は `tools/benchmark/scripts/generate_index.py` が生成する。カテゴリ（H2）→ページ（H3）→セクション（L2/L3）の階層構造で、意味検索の Step 1 でページ選定の手がかりとして使われる。
+`index.md` はカテゴリ（H2）→ページ（H3）→セクション（L2/L3）の階層構造で、意味検索の Phase A でページ選定の手がかりとして使われる。`classes.md` は各ページが持つクラス名を索引し、意味検索の Phase B でクラス名ベースのページ補完選定に使われる。どちらも RBKC（`tools/rbkc/scripts/run.py`）が自動生成する。
 
 ---
 
@@ -136,10 +136,10 @@ Step 8: 最終回答を出力
 
 ### Step 4: セクション内容の読み取り
 
-`selected_sections` から読み取り対象を選ぶ:
+`selected_sections` から読み取り対象を選ぶ（本文セクションと Javadoc を合わせてカウント）:
 1. `high` セクションを優先
 2. 空きスロットに `partial` セクションを追加
-3. 合計最大10件
+3. 合計最大20件
 
 ```bash
 bash scripts/read-sections.sh "file1.json:s1" "file2.json:s3" ...
@@ -219,7 +219,7 @@ bash scripts/read-sections.sh "file1.json:s1" "file2.json:s3" ...
 
 ## 意味検索（`workflows/semantic-search.md`）
 
-**設計意図**: 軽量な `index.md`（テキスト）でページを絞り込んでから、重いナレッジJSON（最大10ファイル）を読む2段階構成にすることで、不要なファイル読み込みを最小化する。目的（実装したい／理解したい等）によるカテゴリ優先ソートで、質問の文脈に合ったページを上位に持ってくる。
+**設計意図**: 3段階構成で不要なファイル読み込みを最小化する。まず軽量な `index.md`（本文テキスト索引）と `classes.md`（クラス名索引）でページを独立に候補選定し、マージ・重複除去してから重いナレッジJSONを読む。`index.md` は文書内容でページを選び、`classes.md` は質問が示す概念に対応するクラスを実装するページを補完的に拾う。目的によるカテゴリ優先ソートで、質問の文脈に合ったページを上位に持ってくる。
 
 ### 入力
 
@@ -229,38 +229,54 @@ bash scripts/read-sections.sh "file1.json:s1" "file2.json:s3" ...
 
 ポインタJSON（`selected_sections` 配列）
 
-### ステップ
+### フェーズ
 
-**Step 1: インデックス読み取り**
+**Phase A: index.md からのページ選定**
 
-`knowledge/index.md` を読む。内容を `index_content` として保存。
-
-**Step 2: ページ選定**
-
-1. 質問の要約（1文）を書く
-2. `（処理方式: X）` / `（目的: X）` の制約を抽出する
-3. インデックス内の各ページに対して以下の決定手順を適用する:
+1. `knowledge/index.md` を読む。内容を `index_content` として保存
+2. 質問の要約（1文）を書く
+3. `（処理方式: X）` / `（目的: X）` の制約を抽出する
+4. インデックス内の各ページに対して以下の決定手順を適用し、候補を収集する:
    - 質問が尋ねている機能・コンポーネント・トピックをカバーするページ → **候補**
    - 質問の技術的問題を直接解決する機能をカバーするページ → **候補**
    - 質問で指定された処理方式をカバーするページ → **候補**（*異なる*処理方式をカバーするページ → **スキップ**）
    - それ以外 → **スキップ**
-4. 目的が特定された場合、以下の優先カテゴリ順で候補をソートする:
+5. 目的が特定された場合、以下の優先カテゴリ順で候補をソートする:
 
 | 目的 | 優先カテゴリ |
 |---|---|
 | 実装したい | `processing-pattern/*`, `component/libraries`, `component/adapters` |
-| 仕組み・動作を理解したい | `component/handlers`, `component/libraries`, `about/about-nablarch` |
+| 仕組み・動作を理解したい | `component/handlers`, `component/libraries`, `component/adapters`, `about/about-nablarch` |
 | 不具合・エラーを調査したい | `component/handlers`, `component/libraries`, `processing-pattern/*` |
 | テストを書きたい | `development-tools/testing-framework`, `component/libraries` |
 | バージョンアップしたい | `about/migration`, `releases/releases`, `about/release-notes` |
 | セキュリティ対応したい | `check/security-check`, `component/handlers`, `processing-pattern/*` |
 
-5. 候補がゼロなら `{"selected_sections": []}` を即時返す。そうでなければ上位10件を選ぶ（3件未満でもパディングしない）
-6. 選択したページパス（`knowledge/` からの相対パス）を `selected_pages` として保存する
+6. 上位10件を選ぶ（3件未満でもパディングしない）。選択したページパスを `index_pages` として保存する
 
-**Step 3: セクション選定**
+**Phase B: classes.md からのページ選定**
 
-`selected_pages` 内の各パスについて（最大10件）:
+`classes.md` は各ページが持つクラス名を索引する。質問がクラス名を明示しない場合でも、質問が示す概念（操作・機構・責務）に対応するクラスを実装するページを補完的に選定できる。
+
+1. `knowledge/classes.md` を読む。内容を `classes_content` として保存
+2. 質問（および処理方式・目的の制約）から、関連するNablarchの**概念・操作**を導出する（クラス名の直接一致ではなく、例: 「JSONボディ変換」「排他制御」「ルーティング」）
+3. `classes_content` の各ページエントリに対して:
+   - そのページのいずれかのクラスが、手順2で導出した概念を実装・処理・直接関連していれば → **候補**
+   - 処理方式の制約があり、そのページが明らかに*異なる*処理方式に属する → **スキップ**
+   - それ以外 → **スキップ**
+4. 上位10件を選ぶ。選択したページパスを `class_pages` として保存する
+
+**Phase C: ページのマージ**
+
+1. `index_pages` に続けて `class_pages` を連結する
+2. ページパスで重複除去（先出しを優先）
+3. 最大20件を保持し `merged_pages` として保存する
+4. 各ページの `source` を記録する: `index_pages` のみ→ `"index"`、`class_pages` のみ → `"classes"`、両方 → `"both"`
+5. `merged_pages` が空なら `{"selected_sections": []}` を即時返す
+
+**Phase D: セクション選定**
+
+`merged_pages` 内の各パスについて（最大20件）:
 1. `knowledge/{path}` を読む
 2. 各セクションに以下の決定手順を適用する:
    - 「このセクションなしに質問への完全な回答は不可能か？」→ **high**
@@ -274,7 +290,18 @@ bash scripts/read-sections.sh "file1.json:s1" "file2.json:s3" ...
    - 実装の詳細を持たない概念定義のみのセクション
    - high セクションと同じ情報を別の角度から説明するセクション
 
-high セクションを優先して収集する。合計30件になるまで partial セクションを追加する（high が30件ある場合は partial を追加しない）。
+high セクションを優先して収集する。合計20件になるまで partial セクションを追加する（high が20件ある場合は partial を追加しない）。`selected_sections` として保存する。
+
+**Phase E: Javadoc の付加**
+
+`selected_sections` 内の各セクションの `content` に含まれる `[text](../javadoc/javadoc-*.json)` 形式の内部リンクをスキャンする。
+
+見つかった各 Javadoc パスについて:
+- `knowledge/javadoc/javadoc-*.json` に解決する
+- そのセクションの `relevance` を引き継いで `selected_sections` に追加する（high セクションから参照された Javadoc は high、partial から参照された場合は partial。両方から参照された場合は高い方を使用）
+- 同一 Javadoc ファイルは重複追加しない
+
+上限: 全体で最大10 Javadocファイルまで（high 参照分を先に、次に partial 分を、それぞれ文書順で）。Javadoc ファイルが存在しない場合はスキップ。
 
 返値: relevance 降順（high → partial）でソートしたポインタJSON
 
