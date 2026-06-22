@@ -87,7 +87,7 @@ Nabledgeは3つの要素で構成されます。
 
 1. **知識基盤**
 
-   構造化されたNablarch知識（TOON形式インデックス、JSON形式知識ファイル）
+   構造化されたNablarch知識（Markdown形式インデックス、JSON形式知識ファイル）
 
 2. **ワークフロー**
 
@@ -112,14 +112,14 @@ graph TB
         direction TB
 
         subgraph workflows["🤖 ワークフロー（LLM実行）"]
-            WF_SEARCH["知識検索<br/>(keyword-search)<br/>関連度判定"]
+            WF_SEARCH["知識検索<br/>(semantic-search/keyword-search)<br/>関連度判定"]
             WF_DELEGATE["代行作業<br/>実装調査・コード生成・レビュー"]
             WF_GENERATE["知識ファイル生成・検証<br/>3分/ファイル・20%サンプリング"]
         end
 
         subgraph knowledge["知識基盤"]
-            INDEX["インデックス(TOON)<br/>93エントリ・650検索ヒント"]
-            JSON["知識ファイル(JSON)<br/>60ファイル・420Kトークン"]
+            INDEX["インデックス(Markdown)<br/>index.md + classes.md"]
+            JSON["知識ファイル(JSON)<br/>353ファイル以上"]
             MD["知識ファイル(Markdown)<br/>人間確認用・根拠追跡"]
         end
     end
@@ -176,15 +176,15 @@ graph TB
 
 2. **知識検索**
 
-   AIツールがワークフロー（知識検索）を実行し、keyword-searchで検索します
+   AIツールがワークフロー（知識検索）を実行し、semantic-searchおよびkeyword-searchで検索します
 
 3. **セクション特定**
 
-   関連度の高いセクションを特定します（High/Partial/Noneの3段階）
+   関連度の高いセクションを特定します（high/partialの2段階）
 
 4. **代行作業実行**
 
-   ワークフロー（代行作業）を実行し、知識ファイルを参照します（上位10セクション ≈ 5,000トークン）
+   ワークフロー（代行作業）を実行し、知識ファイルを参照します（上位20セクション）
 
 5. **結果返却**
 
@@ -198,11 +198,11 @@ graph TB
 
 - **検索**
 
-  3段階キーワード抽出 + 2段階検索プロセス（ファイル→セクション）で高精度を実現
+  index.md（本文索引）+ classes.md（クラス名索引）の2経路でページを選定し、セクション単位で関連度判定
 
 - **トークン効率**
 
-  TOON形式で30-60%削減、セクション単位抽出で必要最小限（5,000トークン）に抑制
+  セクション単位抽出で必要最小限に抑制
 
 - **正確性**
 
@@ -279,19 +279,26 @@ Claude Codeの標準配布方式を採用します。GitHubからの自動取得
 nabledge-6/
 ├── SKILL.md                    # スキル定義
 ├── knowledge/                  # 知識
-│   ├── index.toon              # 検索インデックス（TOON形式）
-│   ├── features/               # ① 機能・実装パターン
+│   ├── index.md                # 意味検索インデックス（Markdown形式）
+│   ├── classes.md              # クラス名ベース検索インデックス
+│   ├── component/              # コンポーネント（ハンドラ・ライブラリ・アダプタ等）
 │   │   ├── handlers/           # ハンドラ単位
 │   │   ├── libraries/          # ライブラリ単位
-│   │   ├── processing/         # 処理方式単位
-│   │   ├── tools/              # ツール単位
 │   │   └── adapters/           # アダプタ単位
-│   ├── checks/                 # ② チェック項目
-│   └── releases/               # ③ リリースノート
+│   ├── processing-pattern/     # 処理方式別実装パターン
+│   ├── development-tools/      # 開発ツール
+│   ├── check/                  # チェック項目
+│   ├── about/                  # Nablarch概要・移行・リリースノート
+│   ├── releases/               # リリースノート
+│   ├── javadoc/                # Javadoc
+│   ├── setup/                  # セットアップ
+│   ├── assets/                 # アセット
+│   └── guide/                  # ガイド
 ├── workflows/                  # ワークフロー（代行単位）
 ├── scripts/                    # スクリプト
 ├── assets/                     # アセット
-└── docs/                       # 人向け閲覧用（JSON→MD自動変換）
+├── docs/                       # 人向け閲覧用（JSON→MD自動変換）
+└── plugin/                     # マーケットプレイス配布用メタデータ・CHANGELOG
 ```
 
 **命名規則**
@@ -304,149 +311,41 @@ nabledge-6/
 
 ### 2.5 検索設計
 
-Nabledgeの検索は、ユーザーの依頼から必要な知識を高精度で特定する仕組みです。3段階のキーワード抽出と、2段階の検索プロセス（ファイル選定→セクション選定）で実現します。
+Nabledgeの検索は、ユーザーの依頼から必要な知識を高精度で特定する仕組みです。詳細は `docs/search-design.md` を参照してください。
 
 #### 検索の全体フロー
 
 ```
 ユーザー依頼（例：「ページングを実装したい」）
   ↓
-① 3段階キーワード抽出
+① 質問分類（処理方式・目的の確定）
   ↓
-② ファイル選定（index.toonで検索）
+② 意味検索（semantic-search.md）
+    Phase A: index.md でページ候補選定
+    Phase B: classes.md でクラス名ベース補完選定
+    Phase C: マージ・重複除去（最大20ページ）
+    Phase D: セクション選定（最大20件）
+    Phase E: Javadoc付加（最大10件）
   ↓
-③ セクション選定（ファイル内indexで検索）
+③ セクション内容の読み取り（最大20件）
   ↓
-④ 関連度判定（High/Partial/None）
-  ↓
-⑤ 検索結果構造化（pointers）
-  ↓
-⑥ コンテキスト管理（上位N件抽出）
+④ 回答生成・ハルシネーション検証
 ```
 
-#### ① 3段階キーワード抽出
+#### インデックス構造
 
-ユーザーの依頼から、以下の3段階でキーワードを抽出します。
+**`knowledge/index.md`**: カテゴリ（H2）→ページ（H3）→セクション（箇条書き）の階層Markdown。意味検索 Phase A のページ選定に使用。
 
-| レベル | 名称 | 説明 | 例 |
-|:-----:|------|------|-----|
-| Level 1 | Technical domain（技術領域） | データベース, バッチ, ハンドラ, Web, REST, テスト など | データベース, database |
-| Level 2 | Technical component（技術要素） | DAO, JDBC, JPA, Bean Validation, JSON, XML など | DAO, UniversalDao, O/Rマッパー |
-| Level 3 | Functional（機能） | ページング, 検索, 登録, 更新, 削除, 接続, コミット など | ページング, paging, per, page, limit, offset |
+**`knowledge/classes.md`**: ページタイトル（H3）+ `path:` 行 + クラス名リスト（`- ClassName`）の形式。意味検索 Phase B のクラス名ベース補完に使用。
 
-**例**
+#### 関連度判定
 
-依頼「ページングを実装したい」→ Level 1「データベース」、Level 2「DAO」、Level 3「ページング」に分解
+セクション単位で high / partial の2段階で判定:
 
-#### ② ファイル選定（index.toon）
-
-**使用するキーワード**
-
-Level 1（技術領域）+ Level 2（技術要素）
-
-**index.toonの構造**:
-```toon
-# Nabledge-6 Knowledge Index
-
-files[N,]{path,hints}:
-  features/handlers/common/global-error-handler.json, グローバルエラーハンドラ GlobalErrorHandler 未捕捉例外 エラーハンドリング 例外処理
-  features/libraries/universal-dao.json, ユニバーサルDAO UniversalDao CRUD 検索 ページング データベース DAO
-```
-
-- TOON形式でJSONより30-60%トークン削減
-- 93エントリ、約650検索ヒント → 約5-7Kトークン
-- 各ファイルのパスと検索ヒント（Level 1 + Level 2）を記載
-
-**マッチング例**
-
-「データベース」「DAO」で `universal-dao.json` が候補に
-
-#### ③ セクション選定（ファイル内index）
-
-**使用するキーワード**
-
-Level 2（技術要素）+ Level 3（機能）
-
-**ファイル内indexの構造**:
-```json
-{
-  "index": [
-    { "id": "overview", "hints": ["UniversalDao", "ユニバーサルDAO"] },
-    { "id": "paging", "hints": ["ページング", "paging", "per", "page", "limit", "offset"] },
-    { "id": "search", "hints": ["検索", "search", "条件指定"] }
-  ]
-}
-```
-
-- 各セクションの検索ヒント（Level 2 + Level 3）を記載
-- セクション単位で関連度を判定
-
-**マッチング例**
-
-「ページング」「paging」で `paging` セクションが候補に
-
-#### ④ 関連度判定
-
-候補となったセクションの実際の内容を読み、ユーザーの依頼に対する関連度を判定します。
-
-| レベル | 値 | 判断基準 |
-|:------:|:---:|---------|
-| **High** | 2 | 依頼に直接回答できる |
-| **Partial** | 1 | 依頼に関連し、補足として有用 |
-| **None** | 0 | 関連なし（対象外） |
-
-**ファイルの関連度**
-
-そのファイル内のセクション関連度の最大値
-
-**例**: `universal-dao.json`
-- `paging` セクション: High (2)
-- `search` セクション: Partial (1)
-- `overview` セクション: Partial (1)
-→ ファイルの関連度 = 2 (最大値)
-
-#### ⑤ 検索結果構造化（pointers）
-
-検索結果をpointers構造で返します。
-
-```json
-{
-  "files": [
-    { "id": "F1", "path": "features/libraries/universal-dao.json", "relevance": 2, "matched_hints": ["データベース", "DAO"] }
-  ],
-  "sections": [
-    { "file_id": "F1", "section": "paging", "relevance": 2, "matched_hints": ["ページング", "paging", "per", "page"] },
-    { "file_id": "F1", "section": "search", "relevance": 1, "matched_hints": ["検索"] }
-  ]
-}
-```
-
-**構造の特徴**:
-- `sections` を関連度降順でソート → 最重要セクションから読める
-- `files` でファイル単位の重要度を把握
-- ファイルパスは1回だけ出現、`file_id` で参照（重複排除）
-- `matched_hints` で判断根拠を追跡可能
-
-#### ⑥ コンテキスト管理（上位N件抽出）
-
-関連度の高いセクションを抽出します。
-
-| 項目 | 推奨値 | 根拠 |
-|------|--------|------|
-| sections | 上位10件 | 1セクション平均500トークン × 10 = 約5,000トークン（コンテキストの2.5%） |
-
-**動的調整**:
-- High（2点）のセクションが10件未満 → Partial（1点）も含めて最大15件まで拡張
-- High（2点）のセクションが20件以上 → 上位15件まで拡張
-- コンテキスト使用率が80%超 → セクション数を減らす（最小5件）
-
-**設計判断**:
-- セクション単位で抽出することで、ファイル全体（約7,000トークン）ではなく必要最小限（約500トークン）に抑えます
-- 全60ファイル（約420,000トークン）をコンテキストウィンドウ（200,000トークン）内で運用可能にします
-
-#### 将来の拡張
-
-現状、keyword-searchだけで十分な検索精度が得られています。将来的に検索精度の向上が必要になった場合は、intent-search（目的→カテゴリ、対象→ファイルで絞り込む方式）の導入を検討します。
+| レベル | 判断基準 |
+|:------:|---------|
+| **high** | このセクションなしに質問への完全な回答は不可能 |
+| **partial** | high セクションを使う際に必要な背景や設定を提供しており、high だけからは推測できない |
 
 ### 2.6 知識ファイル設計
 
@@ -456,22 +355,22 @@ Level 2（技術要素）+ Level 3（機能）
 
 ```json
 {
-  "schema_version": "1.0",
-  "id": "ファイル識別子",
+  "id": "ファイル識別子（カテゴリパスなし）",
   "title": "タイトル（日本語）",
-  "official_doc_urls": ["https://nablarch.github.io/docs/..."],
-  "index": [
-    { "id": "セクションID", "hints": ["検索ヒント1", "検索ヒント2"] }
-  ],
-  "sections": {
-    "overview": {
-      "summary": "100-200文字の要約",
-      /* セクション固有のプロパティ */
-    },
-    "セクションID": { /* ... */ }
-  }
+  "content": "ページ導入文（セクション開始前のトップレベル内容）",
+  "no_knowledge_content": false,
+  "sections": [
+    {
+      "id": "sN",
+      "title": "セクションタイトル",
+      "content": "セクション本文",
+      "level": 2
+    }
+  ]
 }
 ```
+
+詳細なスキーマ定義は `tools/rbkc/docs/rbkc-json-schema-design.md` を参照してください。
 
 **設計判断**
 

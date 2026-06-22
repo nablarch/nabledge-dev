@@ -29,13 +29,30 @@
 ```
 tools/rbkc/scripts/
 ├── common/         ← create と verify が共有する純粋ロジック層
-│   ├── rst_ast.py      ← docutils パーサ設定・AST ユーティリティ
-│   ├── md_ast.py       ← markdown-it-py パーサ設定
-│   ├── labels.py       ← RST ラベル解決 (LabelTarget)
-│   └── github_slug.py  ← GitHub heading anchor 生成
+│   ├── rst_ast.py          ← docutils パーサ設定・AST ユーティリティ
+│   ├── rst_ast_visitor.py  ← RST AST Visitor 基底クラス
+│   ├── rst_normaliser.py   ← RST → 正規化 MD 変換
+│   ├── rst_admonition.py   ← RST admonition ノード処理
+│   ├── md_ast.py           ← markdown-it-py パーサ設定
+│   ├── md_ast_visitor.py   ← MD AST Visitor 基底クラス
+│   ├── md_normaliser.py    ← MD → 正規化 MD 変換
+│   ├── labels.py           ← RST ラベル解決 (LabelTarget)
+│   ├── github_slug.py      ← GitHub heading anchor 生成
+│   ├── linkfmt.py          ← リンク形式変換
+│   ├── file_id.py          ← ファイル識別子生成
+│   ├── handler_js.py       ← ハンドラJS処理
+│   ├── javadoc_fqcn.py     ← Javadoc 完全修飾クラス名処理
+│   └── sources.py          ← ソースファイル管理
 ├── create/         ← 変換実装（verify からのインポート禁止）
 │   ├── converters/ ← フォーマット別 AST → RSTResult 変換
-│   └── docs.py     ← RSTResult → docs MD 生成
+│   ├── classes.py  ← classes.md 生成
+│   ├── classify.py ← ファイル分類
+│   ├── differ.py   ← 差分検出
+│   ├── docs.py     ← RSTResult → docs MD 生成
+│   ├── index.py    ← index.md 生成
+│   ├── javadoc.py  ← Javadoc 変換
+│   ├── resolver.py ← 参照解決
+│   └── scan.py     ← ソーススキャン
 └── verify/         ← 検証実装（create からのインポート禁止）
     └── verify.py   ← JSON / docs MD / index.md の品質チェック
 ```

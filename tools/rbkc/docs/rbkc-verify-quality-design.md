@@ -34,7 +34,7 @@ verify は品質観点を ID で管理する。ID の形式：
 - **RBKC mapping**: `docs/mapping/` 配下にある「どのソースファイルをどの知識ファイル（JSON）に変換するか」を定義したマッピングファイル群。mapping に「採用」されていないソースファイルは RBKC の変換対象外となる。QL1 の dangling reference 判定で「そのファイルが変換対象か否か」を判断するために参照する（§3-2-2 の象限分類参照）。
 - **corpus**: RBKC が対象とするソースファイル全体（`.lw/nab-official/` 配下の RST / MD / Excel）。「corpus 全量」は全ファイルを指す。
 - **Phase**: RBKC 開発の機能追加フェーズを識別するラベル（例: Phase 22-B-16）。「Phase XX の変更点」とあれば、その機能が追加された開発ラウンドを指す。仕様変更の経緯を追う際に参照するが、現在の仕様そのものは本書の本文に記載されている。
-- **tokenizer / 正規化ソース**: verify が QC1–QC4 を検証する際に使うテキスト処理。ソース（RST/MD）を公式パーサで AST 化し、Visitor で Markdown 等価形式に変換した文字列を「正規化ソース」と呼ぶ。この正規化ソースから JSON のトークンを順番に削除（sequential-delete）することで欠落・捏造・重複・配置ミスを検出する。「tokenizer」はこの正規化処理を行う部品を指す（`scripts/common/rst_normaliser.py` / `scripts/common/md_ast.py`）。詳細は §3-1 の STS 参照。
+- **tokenizer / 正規化ソース**: verify が QC1–QC4 を検証する際に使うテキスト処理。ソース（RST/MD）を公式パーサで AST 化し、Visitor で Markdown 等価形式に変換した文字列を「正規化ソース」と呼ぶ。この正規化ソースから JSON のトークンを順番に削除（sequential-delete）することで欠落・捏造・重複・配置ミスを検出する。「tokenizer」はこの正規化処理を行う部品を指す（`scripts/common/rst_normaliser.py` / `scripts/common/md_normaliser.py`）。詳細は §3-1 の STS 参照。
 
 ---
 
