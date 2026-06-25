@@ -58,76 +58,86 @@ The BM25 query terms are extracted by the LLM from the user's question.
 
 # Tasks
 
-### #1: Establish v6 benchmark baseline
+### #1: Confirm existing benchmark baseline
 
-**Purpose**: Record current v6 benchmark pass count and cost so post-change results have a
-comparison point.
+**Purpose**: Identify which existing benchmark result to use as the pre-change reference,
+so no re-run is needed and the comparison is anchored to a real prior measurement.
 
 **Prerequisites**: none
 
 **Steps**:
 
-- [ ] Locate the benchmark runner command for v6 (check `tools/tests/` or project docs)
-- [ ] Run the benchmark and capture: scenario pass count, total cost, execution time
-- [ ] Save results to `.rn/issue-382/baseline.md`
+- [ ] Review `tools/benchmark/results/` — identify the most recent completed run with crossrun-summary or baseline.json
+- [ ] Record the label, scenario pass count, p50 cost, and p50 execution time in `.rn/issue-382/baseline.md`
 - [ ] Commit and push `.rn/issue-382/baseline.md`
-- [ ] Self-check: baseline.md contains pass count, cost, and execution time for all 34 scenarios
+- [ ] Self-check: baseline.md names the exact run label and contains pass count, p50 cost, p50 execution time
 
 **Completion criteria**:
 
-- `.rn/issue-382/baseline.md` exists and contains v6 benchmark pass count, cost per query (or total), and execution time
-- The recorded pass count is the pre-change reference used in task #3 comparison
+- `.rn/issue-382/baseline.md` exists and names the run label used as baseline
+- It contains pass count (out of 34), p50 cost per query, and p50 execution time from that run
 
 ---
 
 ### #2: Design the BM25 pre-search step for qa.md
 
 **Purpose**: Define the exact wording and placement of the new BM25 step in `qa.md` before
-writing any code, following the design-before-implementation rule.
+writing any code. Key open questions to resolve: (a) use existing `keyword-search.sh` as-is
+(substring, no new library) or introduce a true BM25 library (rank-bm25 etc., requires user
+setup); (b) how the LLM extracts search terms from the question; (c) exact PASS/FAIL branching
+into the fallback path.
 
 **Prerequisites**: none (can run parallel to #1)
 
 **Steps**:
 
-- [ ] Draft the BM25 step as a standalone markdown block: term extraction logic, script invocation, answer generation, verifier reuse, PASS/FAIL branching
-- [ ] Consult Software Engineer expert (subagent) to review the draft for correctness and edge cases
+- [ ] Research: check whether `docs/reports/cost-optimization-nabledge.md` §4 used the existing script or a separate BM25 library for the "21/32 complete" measurement
+- [ ] Decide on engine (existing script vs new library) — if new library, document the user setup step required
+- [ ] Draft the BM25 step as a standalone markdown block: term extraction, script invocation, answer generation, verifier reuse, PASS/FAIL branching
+- [ ] Consult Software Engineer expert (subagent) to review for correctness and edge cases
 - [ ] Revise based on findings
 - [ ] Save final draft to `.rn/issue-382/bm25-step-draft.md`
-- [ ] User review — present draft and ask for approval before implementation
-- [ ] Self-check: draft covers all branches (no hits, PASS, FAIL), reuses Step-6 verifier, does not duplicate existing steps
+- [ ] User review — present draft (including engine decision and any setup impact) and ask for approval before implementation
+- [ ] Self-check: draft covers all branches (no hits, PASS, FAIL→fallback), user setup impact documented
 
 **Completion criteria**:
 
 - `.rn/issue-382/bm25-step-draft.md` exists with the full step text
+- Engine choice (existing script or new library) is stated with rationale
+- If a new library is needed, the user setup step is documented
 - User has approved the draft
 - All branches (no BM25 hits, PASS, FAIL→fallback) are explicitly specified
 
 ---
 
-### #3: Implement BM25 step in v6 qa.md and verify benchmark
+### #3: Implement BM25 step in v6 qa.md and verify incrementally
 
-**Purpose**: Insert the approved BM25 step into v6 `qa.md` and confirm no benchmark regression
-and cost reduction.
+**Purpose**: Insert the approved BM25 step into v6 `qa.md` and verify correctness
+incrementally — single scenario first, then path-coverage sample, then full 3-run benchmark
+— following the HOW-TO-RUN.md procedure.
 
 **Prerequisites**: #1 (baseline), #2 (approved draft)
 
 **Steps**:
 
-- [ ] Insert the approved BM25 step into `.claude/skills/nabledge-6/workflows/qa.md` before the current Step 3
-- [ ] Renumber subsequent steps if needed
-- [ ] Run v6 benchmark; record pass count, cost, execution time
-- [ ] Compare against baseline: all 34 scenarios pass, cost is lower
-- [ ] Save comparison to `.rn/issue-382/benchmark-result.md`
+- [ ] Insert the approved BM25 step into `.claude/skills/nabledge-6/workflows/qa.md` before the current Step 3; renumber subsequent steps if needed
+- [ ] **Phase A (1 scenario)**: run `pre-01` via `run_qa --scenario-ids pre-01`; confirm exit 0, answer.md non-empty, BM25 path exercised; delete tmp dir after
+- [ ] **Path-coverage sample (3–5 scenarios)**: select scenarios that cover BM25-complete path, BM25-FAIL→fallback path, and no-hits path; run them; inspect `workflow_details.json` to confirm each path behaved as designed; fix qa.md if any path misbehaves
+- [ ] **Phase B/C full benchmark**: 3 runs × 34 scenarios per HOW-TO-RUN.md; generate per-run reports and crossrun-summary; commit each run immediately after completion
+- [ ] Phase E regression check: compare against baseline from #1
+- [ ] Save comparison summary to `.rn/issue-382/benchmark-result.md`
 - [ ] Software Engineer expert review (subagent)
 - [ ] User review
-- [ ] Commit and push `qa.md` change + benchmark result
+- [ ] Commit and push `qa.md` change + benchmark results
 
 **Completion criteria**:
 
 - `.claude/skills/nabledge-6/workflows/qa.md` contains the BM25 pre-search step
-- v6 benchmark: 34/34 scenarios pass
-- v6 benchmark: cost per query lower than baseline
-- `.rn/issue-382/benchmark-result.md` documents both numbers
+- Phase A: single-scenario run exits 0 and BM25 path is exercised
+- Path-coverage sample: all three paths (BM25-complete, BM25-FAIL→fallback, no-hits) confirmed working
+- Full benchmark (3 runs): regression check CLEAN vs baseline from #1
+- Full benchmark: p50 cost per query lower than baseline p50
+- `.rn/issue-382/benchmark-result.md` documents the comparison
 
 ---
 
