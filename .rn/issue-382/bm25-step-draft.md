@@ -117,7 +117,7 @@ Save the output as `bm25_content`.
 
 ### Step 3-4: Generate answer from BM25 hits
 
-Generate the answer using **exactly the same format, constraints, and rules as Step 5** (answer generation). Substitute `bm25_content` for `sections_content`. Save as `bm25_answer_text`.
+Generate the answer using **exactly the same format, constraints, and rules as Step 6** (answer generation). Substitute `bm25_content` for `sections_content`. Save as `bm25_answer_text`.
 
 - If `processing_type` is not null, focus on approaches that match that type.
 - For any gap in the sections, write "この情報は知識ファイルの対象範囲外です" — do not infer.
@@ -126,9 +126,9 @@ Generate the answer using **exactly the same format, constraints, and rules as S
 
 ### Step 3-5: Verify BM25 answer
 
-Apply the same verification procedure as Step 6 (hallucination check), using `bm25_answer_text` as the answer and `bm25_content` as the sections.
+Apply the same verification procedure as Step 7 (hallucination check), using `bm25_answer_text` as the answer and `bm25_content` as the sections.
 
-Check that all Nablarch-specific claims in `bm25_answer_text` are supported by `bm25_content`. Use the same claim categories and boundary rules as Step 6.
+Check that all Nablarch-specific claims in `bm25_answer_text` are supported by `bm25_content`. Use the same claim categories and boundary rules as Step 7.
 
 If any claim is unsupported, set `bm25_verify = FAIL`. Otherwise set `bm25_verify = PASS`.
 
