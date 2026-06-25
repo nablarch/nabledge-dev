@@ -2,15 +2,18 @@
 
 RAGネイティブのNabledge実装を構築し、現行エージェンティック検索との比較ベンチマークを実施して、RAG採用の可否を証拠に基づいて判定する。
 
-設計書（`docs/reports/rag/rag-nabledge-design.md`）に基づいてRAGパイプライン（Qdrant + Cohere Embed v4 + LlamaIndex）を実装し、現行ベンチマーク（34シナリオ × 3 run）と同条件でE2E評価を行う。計測結果からadopt/rejectの結論を出す。
+設計書（`docs/reports/rag/rag-nabledge-design.md`）に基づいてRAGパイプライン（Qdrant + Cohere Embed + LlamaIndex）を実装し、現行ベンチマーク（34シナリオ × 3 run）と同条件でE2E評価を行う。計測結果からadopt/rejectの結論を出す。
+
+当初設計の `cohere.embed-v4:0` は SCP でブロックされているため、まず `cohere.embed-multilingual-v3`（512トークン制約あり）で実装・計測を進める。v4のSCP解除後にモデルを差し替えて全件再計測する。
 
 # Acceptance criteria
 
-- 設計書の技術スタック（Qdrant, Cohere Embed v4, LlamaIndex）に基づいてIndexingパイプラインが実装されている
-- RAG版 `run_qa.py` が実装されており、現行と同じ `workflow_details.json` / `answer.md` / `metrics.json` / `evaluation.json` を出力する
-- v6の全34シナリオで3 run分のE2Eベンチマーク結果が得られている
-- 評価レポート（`quality-report.md`）が作成されており、現行ベースライン（`20260616-1214-fullbench-classes-v6`）との比較が含まれる
-- レポートに明確なadopt/reject結論が記載されている
+- RAGパイプライン（Qdrant + Cohere Embed + LlamaIndex）が実装されており、モデルIDを設定で切り替えられる
+- RAG版 `run_rag_qa.py` が実装されており、現行と同じ `workflow_details.json` / `answer.md` / `metrics.json` / `evaluation.json` を出力する
+- v3モデルで v6の全34シナリオが動作し、3 run分のベンチマーク結果が得られている（v3制約の影響は結果に明記）
+- 評価レポートが作成されており、現行ベースライン（`20260616-1214-fullbench-classes-v6`）との比較が含まれる
+- v4解除後に再Indexing・再計測して v4条件での評価レポートが得られている
+- 最終レポートに明確なadopt/reject結論が記載されている
 
 # Assumptions
 
@@ -18,7 +21,9 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - DockerとDocker Composeがローカルで利用可能
 - 現行JSON知識ファイル（`.claude/skills/nabledge-6/knowledge/`）がIndexingの入力として使用可能
 - 現行ベンチマーク（`tools/benchmark/`）のDeepEval評価層・`evaluate.py`・手順骨格はそのまま流用する
-- Cohere Embed v4 BedrockモデルID: `cohere.embed-v4:0`、リージョン: `ap-northeast-1`
+- 当面使用するモデル: `cohere.embed-multilingual-v3`（512トークン制約あり、v4解除待ち）
+- v4解除後に差し替え予定: `cohere.embed-v4:0`、リージョン: `ap-northeast-1`
+- v3の512トークン制約により、シナリオ参照ページの48%（31中15ページ）で入力が切れる — 計測結果はv3の限界を反映する
 - 設計書§2.2の事実（JSON構造、規模、メタ導出規則）は正確である
 
 # Rules
@@ -58,9 +63,10 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 **Completion criteria**:
 
 - `tools/rag/docker/docker-compose.yml` が存在し、`docker compose up` でQdrantが起動する
-- `tools/rag/scripts/index.py` が `--limit 10` で実行でき、Qdrantに10ファイル分のpointが格納される
+- `tools/rag/scripts/index.py` が `--limit 10 --model cohere.embed-multilingual-v3` で実行でき、Qdrantに10ファイル分のpointが格納される
 - 格納されたpointのmetadataに `processing_type` / `category` / `page_id` / `section_id` が含まれている
 - `tools/rag/tests/test_index.py` のテストがすべてパスする
+- モデルIDがコマンドライン引数（`--model`）で切り替えられる（v4差し替えに備えて）
 
 ### #2: v6全件Indexing実行
 
@@ -184,9 +190,36 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - レポートにadopt/rejectの結論が明記されている
 - Issue #383のSuccess Criteriaが満たされている（v6ベンチ結果取得・評価レポート作成・adopt/reject結論）
 
+### #7: v4モデルへの差し替えと全件再計測
+
+**Purpose**: `cohere.embed-v4:0` のSCP解除後、モデルを差し替えて全件再Indexing・再計測し、v3との比較を含む最終評価レポートを作成する
+
+**Prerequisites**: #6 + v4 SCP解除
+
+**Steps**:
+
+- [ ] `--model cohere.embed-v4:0` で全件再Indexing実行（Qdrantストレージをリセットして再生成）
+- [ ] 全34シナリオ × 3 run 再計測（ラベル: `{date}-rag-v4-k10-filter`）
+- [ ] crossrun-summary.md / quality-report.md 生成・コミット
+- [ ] `docs/reports/rag/rag-evaluation-report.md` を更新（v3結果 vs v4結果の比較追記、最終adopt/reject結論）
+- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-7.md`）
+- [ ] QA expert review（subagent）
+- [ ] user review
+
+**Completion criteria**:
+
+- v4モデルで全34シナリオの3 run結果が揃っている
+- 評価レポートに v3 vs v4 の比較が含まれている
+- 最終adopt/reject結論が明記されている
+
 # Decisions
 
-（未記録）
+## D-1: v3で先行実装・v4解除後に差し替え
+- **Issue**: `cohere.embed-v4:0` が SCP でブロック。v3（512トークン制約）で進めるか、v4解除を待つか
+- **Conclusion**: v3で実装・計測を進め、v4解除後に差し替えて再計測する
+- **Rationale**: v3でも「切れていないシナリオ」で動作確認・パイプライン検証はできる。v4解除待ちで全作業を止めるより、並行して進める方が効率的
+- **Evidence**: シナリオ参照ページ31中15ページ（48%）がv3の512トークン制約を超える。v4は128Kトークン・最安値（$0.02/1M）・東京対応
+- **Sources**: 実測（binary search）、AWS公式ドキュメント
 
 # State
 
