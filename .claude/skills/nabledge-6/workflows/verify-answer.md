@@ -4,6 +4,7 @@ Verifies that all Nablarch-specific claims in the answer are supported by the so
 
 ## Input
 
+- `{question}`: User's question (natural Japanese text).
 - `{answer_text}`: Generated answer string.
 - `{selected_sections}`: Array of section pointers in `{"file": "...", "section_id": "...", "relevance": "..."}` format. Used only to identify which pages to read.
 

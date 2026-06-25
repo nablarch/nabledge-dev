@@ -42,6 +42,7 @@ Execute `workflows/generate-answer.md`:
 Save result as `answer_text`.
 
 Execute `workflows/verify-answer.md`:
+- `{question}` = user's question
 - `{answer_text}` = answer_text
 - `{selected_sections}` = bm25_sections
 
@@ -84,6 +85,7 @@ Execute `workflows/generate-answer.md`:
 Save result as `answer_text`.
 
 Execute `workflows/verify-answer.md`:
+- `{question}` = user's question
 - `{answer_text}` = answer_text
 - `{selected_sections}` = sem_sections
 
