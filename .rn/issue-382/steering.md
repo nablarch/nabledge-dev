@@ -79,34 +79,33 @@ so no re-run is needed and the comparison is anchored to a real prior measuremen
 
 ---
 
-### #2: Design the BM25 pre-search step for qa.md
+### #2: Select BM25 library and design the BM25 pre-search step for qa.md
 
-**Purpose**: Define the exact wording and placement of the new BM25 step in `qa.md` before
-writing any code. Key open questions to resolve: (a) use existing `keyword-search.sh` as-is
-(substring, no new library) or introduce a true BM25 library (rank-bm25 etc., requires user
-setup); (b) how the LLM extracts search terms from the question; (c) exact PASS/FAIL branching
-into the fallback path.
+**Purpose**: Select a BM25 library, get user approval on the choice and any setup impact,
+then define the exact wording and placement of the new BM25 step in `qa.md` before writing
+any code. The existing `keyword-search.sh` (substring matching, no scoring) is not BM25 and
+will not be used as the BM25 engine.
 
 **Prerequisites**: none (can run parallel to #1)
 
 **Steps**:
 
-- [ ] Research: check whether `docs/reports/cost-optimization-nabledge.md` §4 used the existing script or a separate BM25 library for the "21/32 complete" measurement
-- [ ] Decide on engine (existing script vs new library) — if new library, document the user setup step required
-- [ ] Draft the BM25 step as a standalone markdown block: term extraction, script invocation, answer generation, verifier reuse, PASS/FAIL branching
+- [ ] Survey candidate BM25 libraries (e.g. rank-bm25, bm25s, Whoosh): license, pip install size, Python version compatibility, maintenance status
+- [ ] Identify the user setup impact: which library to `pip install`, whether it must be added to a requirements file, whether setup scripts need updating
+- [ ] Present library comparison and recommended choice to user; get approval before proceeding
+- [ ] Draft the BM25 step as a standalone markdown block: index build, term extraction by LLM from question, BM25 query, answer generation from hits, Step-6 verifier reuse, PASS/FAIL branching into semantic-search fallback
 - [ ] Consult Software Engineer expert (subagent) to review for correctness and edge cases
 - [ ] Revise based on findings
 - [ ] Save final draft to `.rn/issue-382/bm25-step-draft.md`
-- [ ] User review — present draft (including engine decision and any setup impact) and ask for approval before implementation
-- [ ] Self-check: draft covers all branches (no hits, PASS, FAIL→fallback), user setup impact documented
+- [ ] User review — present full draft and get approval before implementation
+- [ ] Self-check: library choice approved, all branches (no hits, PASS, FAIL→fallback) specified, setup steps documented
 
 **Completion criteria**:
 
+- BM25 library selected and user-approved, with setup steps documented
 - `.rn/issue-382/bm25-step-draft.md` exists with the full step text
-- Engine choice (existing script or new library) is stated with rationale
-- If a new library is needed, the user setup step is documented
-- User has approved the draft
 - All branches (no BM25 hits, PASS, FAIL→fallback) are explicitly specified
+- User has approved the draft
 
 ---
 
