@@ -139,11 +139,28 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - `pre-01〜pre-03` + `qa-01〜qa-10` の計13シナリオが全件完了（エラーなし）
 - 各シナリオの `workflow_details.json` に `read_sections` が記録されている
 
-### #5: 全34シナリオ × 3 run ベンチマーク実行
+### #5: v4差し替え・全件Indexing
+
+**Purpose**: `cohere.embed-v4:0` のSCP解除後、モデルを差し替えてQdrantを全件再Indexingする
+
+**Prerequisites**: #4 + v4 SCP解除
+
+**Steps**:
+
+- [ ] `--model cohere.embed-v4:0` で全件Indexing実行（Qdrantストレージをリセット）
+- [ ] point数・metadata確認（#2と同じ受入基準）
+- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-5.md`）
+- [ ] user review
+
+**Completion criteria**:
+
+- Qdrantコレクションに9,000件以上のpointが `cohere.embed-v4:0` でベクトル化されて格納されている
+
+### #6: 全34シナリオ × 3 run ベンチマーク実行
 
 **Purpose**: k=10・メタフィルタありの条件で全34シナリオを3 run実施し、crossrun-summary.md と quality-report.md を生成する
 
-**Prerequisites**: #4
+**Prerequisites**: #5
 
 **Steps**:
 
@@ -153,7 +170,7 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - [ ] フェーズC-1: crossrun-summary.md 生成・コミット
 - [ ] フェーズC-2: 閾値割れシナリオの裏付け調査（answer.md とナレッジの突き合わせ）
 - [ ] フェーズC-3: quality-report.md 作成・コミット（現行ベースライン `20260616-1214-fullbench-classes-v6` との比較を含む）
-- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-5.md`）
+- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-6.md`）
 - [ ] QA expert review（subagent）
 - [ ] user review
 
@@ -163,15 +180,15 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - `crossrun-summary.md` と `quality-report.md` が生成されている
 - `quality-report.md` に現行ベースライン（`20260616-1214-fullbench-classes-v6`）との比較が含まれている
 
-### #6: 採用判定レポート作成
+### #7: 採用判定レポート作成
 
 **Purpose**: 計測結果を総括し、必要に応じて追加計測を行い、RAG採用の可否を結論づける評価レポートを作成する
 
-**Prerequisites**: #5
+**Prerequisites**: #6
 
 **Steps**:
 
-- [ ] #5の結果を評価する（34シナリオ全パスかどうか）
+- [ ] #6の結果を評価する（34シナリオ全パスかどうか）
 - [ ] 必要に応じてk=20 / naive（フィルタなし）条件を追加計測する（設計書§7.2）
 - [ ] 必要に応じてCohere Rerank 3.5を投入して再計測する（設計書§7.3 step 6）
 - [ ] `docs/reports/rag/rag-evaluation-report.md` を作成する
@@ -179,7 +196,7 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
   - 現行エージェンティック検索との比較（精度・コスト・速度）
   - 語彙ギャップ分析（miss/partialシナリオの原因分析）
   - 明確なadopt/reject結論と理由
-- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-6.md`）
+- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-7.md`）
 - [ ] QA expert review（subagent）
 - [ ] user review
 
@@ -190,34 +207,13 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - レポートにadopt/rejectの結論が明記されている
 - Issue #383のSuccess Criteriaが満たされている（v6ベンチ結果取得・評価レポート作成・adopt/reject結論）
 
-### #7: v4モデルへの差し替えと全件再計測
-
-**Purpose**: `cohere.embed-v4:0` のSCP解除後、モデルを差し替えて全件再Indexing・再計測し、v3との比較を含む最終評価レポートを作成する
-
-**Prerequisites**: #6 + v4 SCP解除
-
-**Steps**:
-
-- [ ] `--model cohere.embed-v4:0` で全件再Indexing実行（Qdrantストレージをリセットして再生成）
-- [ ] 全34シナリオ × 3 run 再計測（ラベル: `{date}-rag-v4-k10-filter`）
-- [ ] crossrun-summary.md / quality-report.md 生成・コミット
-- [ ] `docs/reports/rag/rag-evaluation-report.md` を更新（v3結果 vs v4結果の比較追記、最終adopt/reject結論）
-- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-7.md`）
-- [ ] QA expert review（subagent）
-- [ ] user review
-
-**Completion criteria**:
-
-- v4モデルで全34シナリオの3 run結果が揃っている
-- 評価レポートに v3 vs v4 の比較が含まれている
-- 最終adopt/reject結論が明記されている
 
 # Decisions
 
 ## D-1: v3で先行実装・v4解除後に差し替え
 - **Issue**: `cohere.embed-v4:0` が SCP でブロック。v3（512トークン制約）で進めるか、v4解除を待つか
-- **Conclusion**: v3で実装・計測を進め、v4解除後に差し替えて再計測する
-- **Rationale**: v3でも「切れていないシナリオ」で動作確認・パイプライン検証はできる。v4解除待ちで全作業を止めるより、並行して進める方が効率的
+- **Conclusion**: v3で実装・動作確認（#1〜#4）を進め、フルベンチ（#6）はv4解除後に実施する
+- **Rationale**: v3でパイプライン全体の動作確認はできる。フルベンチはv4解除後に一度だけ実施すれば十分で、v3での中間計測は不要
 - **Evidence**: シナリオ参照ページ31中15ページ（48%）がv3の512トークン制約を超える。v4は128Kトークン・最安値（$0.02/1M）・東京対応
 - **Sources**: 実測（binary search）、AWS公式ドキュメント
 
