@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 17161,
+  "duration_api_ms": 17788,
+  "ttft_ms": 17136,
+  "ttft_stream_ms": 3924,
+  "time_to_request_ms": 1988,
+  "num_turns": 1,
+  "result": "### Answer\n\nRESTfulウェブサービスでパスパラメータとクエリーパラメータを扱う実装方法を説明します。\n\n---\n\n## パスパラメータ（URLパスの一部を受け取る）\n\n### ルーティング設定\n\n`routes.xml` でパスパラメータ部に名前を設定し、`requirements` で書式を制限します。\n\n```xml\n<routes>\n  <get path=\"users/:id\" to=\"UsersResource#find\">\n    <requirements>\n      <requirement name=\"id\" value=\"\\d+$\" />\n    </requirements>\n  </get>\n</routes>\n```\n\n### リソースクラスの実装\n\n`JaxRsHttpRequest#getPathParam(String)` でパラメータ値を取得します。引数にはルーティング設定で指定したパラメータ名を渡します。\n\n```java\n@Produces(MediaType.APPLICATION_JSON)\npublic User find(JaxRsHttpRequest req) {\n    Long id = Long.valueOf(req.getPathParam(\"id\"));\n    return UniversalDao.findById(User.class, id);\n}\n```\n\n> **注意:** Jakarta RESTful Web Services の `@PathParam` アノテーションは使用できません。\n\n---\n\n## クエリーパラメータ（URL末尾の検索条件を受け取る）\n\n例: `GET /users/search?name=Duke`\n\n### ルーティング設定\n\nクエリーパラメータを除いたパスでマッピングします。\n\n```xml\n<routes>\n  <get path=\"users/search\" to=\"Users#search\"/>\n</routes>\n```\n\n### リソースクラスの実装\n\n`JaxRsHttpRequest#getParamMap()` でクエリーパラメータを取得し、`BeanUtil` でFormクラスにマッピングします。取り出したパラメータは必要に応じてバリデーションしてください。\n\n```java\npublic HttpResponse search(JaxRsHttpRequest req) {\n    // リクエストパラメータをBeanに変換\n    UserSearchForm form = BeanUtil.createAndCopy(UserSearchForm.class, req.getParamMap());\n\n    // バリデーションの実行\n    ValidatorUtil.validate(form);\n\n    // 業務ロジックを実行する（省略）\n}\n\npublic class UserSearchForm {\n    private String name;\n    // 省略\n}\n```\n\n> **注意:** Jakarta RESTful Web Services の `@QueryParam` アノテーションは使用できません。\n\n---\n\n## `@Path` アノテーションを使ったルーティング定義（別方式）\n\n`@Path` アノテーションでルーティングを定義する場合は、Jakarta RESTful Web Services の仕様に従った記法でパスパラメータを定義します。\n\n```java\n@Path(\"/sample\")\npublic class TestAction {\n\n    @GET\n    @Path(\"/bar/{id : \\\\d+}\")  // 正規表現で数値のみ許容\n    @Produces(MediaType.APPLICATION_JSON)\n    public Person bar(JaxRsHttpRequest request) {\n        int id = Integer.parseInt(request.getPathParam(\"id\"));\n        // 省略\n    }\n}\n```\n\n`{パラメータ名 : 正規表現}` の形式で書式を制限でき、パラメータ値は同様に `JaxRsHttpRequest#getPathParam(String)` で取得します。",
+  "stop_reason": "end_turn",
+  "session_id": "47f46c44-a8ed-437f-a237-091b3ec6e6ac",
+  "total_cost_usd": 0.19471500000000003,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 46468,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 918,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 46468
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 6484,
+      "outputTokens": 40,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.006684,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 918,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 46468,
+      "webSearchRequests": 0,
+      "costUSD": 0.18803100000000003,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "07d8ced0-2253-4974-81f1-81b032268553"
+}
