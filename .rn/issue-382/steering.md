@@ -229,10 +229,26 @@ versions, as the workflow is superseded and confusingly named.
 
 # State
 
-- **Status**: not suspended
-- **Date**: 2026-06-25
 - **Status**: paused
 - **Date**: 2026-06-25
-- **Last completed**: #2 (design). #3 in progress — Phase A done, refactor to full-text-search.md done
-- **Next**: #3 path-coverage sample (3–5 scenarios covering BM25-complete, FAIL→fallback, no-hits paths)
-- **Notes**: baseline = 20260612-1404-baseline-current (25/34, p50 $0.682, 118s). bm25s installed in /home/tie303177/venv. bm25-search.sh and full-text-search.md committed. qa.md Step 3 now calls full-text-search.md. .bm25-index/ is runtime-generated (untracked, gitignored). Next: run path-coverage sample — suggest scenarios with Nablarch class names (BM25-complete candidate), abstract question (no-hits candidate), and one where BM25 should fail verify (fallback candidate); inspect workflow_details.json for each path.
+- **Last completed**: #2 (design). #3 in progress — workflow redesign agreed and partially implemented
+- **Next**: #3 — implement `check-answerable.md` and update qa.md to final agreed flow
+- **Notes**: baseline = 20260612-1404-baseline-current (25/34, p50 $0.682, 118s). bm25s installed in /home/tie303177/venv. .bm25-index/ is runtime-generated (untracked, gitignored).
+  Workflow redesign status (commits up to 2f584461):
+  - hearing.md ✅ 新規
+  - full-text-search.md ✅ BM25検索のみ、selected_sections返却
+  - semantic-search.md ✅ 明示パラメータ化
+  - generate-answer.md ✅ 新規（read-sections.sh使用、{findings}で再生成）
+  - verify-answer.md ✅ ページ全体読み取り、ハルシ+脱落検証、{question}入力あり
+  - check-answerable.md ❌ 未作成（次のアクション）
+  - qa.md ❌ 最終フローに未更新
+  最終合意フロー（qa.md）:
+    Step 1: hearing.md {question} → processing_type, purpose
+    Step 2: full-text-search.md {question} → sections
+    Step 3: check-answerable.md {question}, {sections} → OK→Step5 / NG→Step4
+    Step 4: semantic-search.md {question},{processing_type},{purpose} → sections
+    Step 5: generate-answer.md {question},{processing_type},{sections} → answer_text
+    Step 6: verify-answer.md {question},{answer_text},{sections} → OK→Step7 / NG→Step5(1回のみ,{findings}付き)
+    Step 7: output
+  generate-answer.mdの{excluded_claims}は{findings}にリネーム要。
+  path-coverage sampleはwf実装完了後に実施。
