@@ -193,23 +193,48 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - `quality-report.md` に pass rate（数値）が含まれている
 - `quality-report.md` に現行ベースライン（`20260616-1214-fullbench-classes-v6`）の同シナリオとの比較が含まれている
 
-### #7: 採用判定レポート作成
+### #7: v4解除後の全件Indexing・全34シナリオ × 3 run ベンチマーク
 
-**Purpose**: 計測結果を総括し、必要に応じて追加計測を行い、RAG採用の可否を結論づける評価レポートを作成する
+**Purpose**: `cohere.embed-v4:0` のSCP解除後に全知識をv4で再Indexingし、全34シナリオ × 3 runでフルベンチマークを実施する
 
-**Prerequisites**: #6
+**Prerequisites**: #6、v4 SCP解除
 
 **Steps**:
 
-- [ ] #6の結果を評価する（34シナリオ全パスかどうか）
+- [ ] `cohere.embed-v4:0` が Bedrock から呼び出せることを確認する（`python3 -c "from tools.rag.scripts.query import embed; embed(['test'], 'cohere.embed-v4:0')"` が成功する）
+- [ ] Qdrantストレージをリセットし、v4モデルで全935ページを再Indexingする（`python3 tools/rag/scripts/index.py --model cohere.embed-v4:0`）
+- [ ] Indexing完了後にpoint数を確認する（9,000件以上）
+- [ ] run-1: 全34シナリオで実行 → エラー確認 → コミット
+- [ ] run-2: 同上
+- [ ] run-3: 同上
+- [ ] フェーズC: crossrun-summary.md 生成・コミット（run-1〜run-3、全34シナリオ）
+- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-7.md`）
+- [ ] QA expert review（subagent）
+- [ ] user review
+
+**Completion criteria**:
+
+- `cohere.embed-v4:0` でIndexingが完了し、Qdrantに9,000件以上のpointが格納されている
+- 全34シナリオ × 3 runに `error.json` が存在しないこと
+- `crossrun-summary.md` に34シナリオ全件のスコアが記載されている
+
+### #8: 採用判定レポート作成
+
+**Purpose**: v4での全34シナリオ計測結果を総括し、RAG採用の可否を結論づける評価レポートを作成する
+
+**Prerequisites**: #7
+
+**Steps**:
+
+- [ ] #7の結果を評価する（34シナリオのpass rate確認）
 - [ ] 必要に応じてk=20 / naive（フィルタなし）条件を追加計測する（設計書§7.2）
 - [ ] 必要に応じてCohere Rerank 3.5を投入して再計測する（設計書§7.3 step 6）
 - [ ] `docs/reports/rag/rag-evaluation-report.md` を作成する
-  - 計測条件・結果サマリー
+  - 計測条件・結果サマリー（v3限定8シナリオ × v4全34シナリオ）
   - 現行エージェンティック検索との比較（精度・コスト・速度）
   - 語彙ギャップ分析（miss/partialシナリオの原因分析）
   - 明確なadopt/reject結論と理由
-- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-7.md`）
+- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-8.md`）
 - [ ] QA expert review（subagent）
 - [ ] user review
 
@@ -223,11 +248,11 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 # Decisions
 
-## D-1: v3で先行実装・v4解除後に差し替え（変更: v4待たずv3有効範囲で評価）
+## D-1: v3で先行実装・v4解除後に全件再計測（確定）
 - **Issue**: `cohere.embed-v4:0` が SCP でブロック。v3（512トークン制約）で進めるか、v4解除を待つか
 - **Original conclusion**: v3で実装・動作確認（#1〜#4）を進め、フルベンチ（#6）はv4解除後に実施する
-- **Revised conclusion** (2026-06-25): v4解除の見通しが立たないため、v3で切断されていないセクションのみを参照するシナリオを機械的に選定し、そのシナリオで評価を完結させる。1 runで安定を確認してから3 runに進む。
-- **Rationale**: v3の2048文字制限の影響を受けないシナリオ（全セクションが2048字以内）のみを対象にすれば、v3制約の影響を排除した公平な比較ができる。v4は将来の差し替え先として残す。
+- **Revised conclusion** (2026-06-25): v4解除の見通しが立たないため、v3で切断されていないセクションのみを参照するシナリオ（8件）を機械的に選定し、3 runの中間計測（#5〜#6）を実施した。採用判定は v4解除後の全34シナリオ計測（#7〜#8）で行う。
+- **Rationale**: v3限定8シナリオはv3制約の影響を受けない公平な計測だが、全体の採用判定には全34シナリオが必要。v4解除後に全件再Indexing・再計測して判定する。
 - **Evidence**: シナリオ参照ページ31中15ページ（48%）がv3の512トークン制約を超える。v4は128Kトークン・最安値（$0.02/1M）・東京対応
 - **Sources**: 実測（binary search）、AWS公式ドキュメント
 
