@@ -18,7 +18,9 @@ from typing import Any
 _KNOWLEDGE_DIR = pathlib.Path(".claude/skills/nabledge-6/knowledge")
 _SCENARIO_FILE = pathlib.Path("tools/benchmark/scenarios/qa.json")
 _OUTPUT_FILE = pathlib.Path("tools/rag/v3-eligible-scenarios.json")
-_V3_MAX_CHARS = 2048  # same as index.py MAX_CHARS["cohere.embed-multilingual-v3"]
+# Sections whose text exceeds this length have their embedding truncated by index.py,
+# reducing retrieval quality. Scenarios referencing such sections are excluded.
+_V3_MAX_CHARS = 2048
 
 
 def build_text(page_title: str, section_title: str, section_content: str) -> str:
@@ -30,8 +32,12 @@ def find_truncated_pages(knowledge_dir: pathlib.Path) -> dict[str, list[str]]:
     truncated: dict[str, list[str]] = {}
     for json_file in knowledge_dir.rglob("*.json"):
         page_id = str(json_file.relative_to(knowledge_dir).with_suffix(""))
-        with open(json_file, encoding="utf-8") as f:
-            page: dict[str, Any] = json.load(f)
+        try:
+            with open(json_file, encoding="utf-8") as f:
+                page: dict[str, Any] = json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"[WARN] Skipping {json_file}: {e}", file=sys.stderr)
+            continue
         page_title: str = page.get("title", "")
         bad_sections: list[str] = []
         for section in page.get("sections", []):
@@ -49,6 +55,11 @@ def find_truncated_pages(knowledge_dir: pathlib.Path) -> dict[str, list[str]]:
 
 def page_id_from_section_ref(section_ref: str) -> str:
     """Extract page_id from 'path/to/file.json:sN' format."""
+    if ":" not in section_ref:
+        print(
+            f"[WARN] section_ref has no ':' separator, using path as-is: {section_ref!r}",
+            file=sys.stderr,
+        )
     path_part = section_ref.split(":")[0]
     return str(pathlib.Path(path_part).with_suffix(""))
 
@@ -131,7 +142,10 @@ def main() -> None:
 
     with open(scenario_file, encoding="utf-8") as f:
         data = json.load(f)
-    scenarios = data["scenarios"]
+    scenarios = data.get("scenarios")
+    if scenarios is None:
+        print(f"ERROR: 'scenarios' key missing in {scenario_file}", file=sys.stderr)
+        sys.exit(1)
     print(f"  Total scenarios: {len(scenarios)}", flush=True)
 
     eligible, ineligible = select_scenarios(scenarios, truncated)
