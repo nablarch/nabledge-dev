@@ -283,6 +283,7 @@ _QDRANT_HOST = "localhost"
 _QDRANT_PORT = 6333
 _COLLECTION_NAME = "nabledge-6"
 _VECTOR_SIZE = 1024  # Cohere Embed v3 default; v4 is 1536
+_UPSERT_BATCH_SIZE = 500  # keep each upsert well under Qdrant's 33 MB payload limit
 
 
 def ensure_collection(client: Any, vector_size: int) -> None:
@@ -302,7 +303,7 @@ def upsert_chunks(
     chunks: list[dict[str, Any]],
     embeddings: list[list[float]],
 ) -> None:
-    """Upsert chunks with their embeddings into Qdrant."""
+    """Upsert chunks with their embeddings into Qdrant in batches."""
     from qdrant_client.models import PointStruct  # noqa: PLC0415
 
     points = [
@@ -313,7 +314,8 @@ def upsert_chunks(
         )
         for chunk, emb in zip(chunks, embeddings)
     ]
-    client.upsert(collection_name=_COLLECTION_NAME, points=points)
+    for i in range(0, len(points), _UPSERT_BATCH_SIZE):
+        client.upsert(collection_name=_COLLECTION_NAME, points=points[i : i + _UPSERT_BATCH_SIZE])
 
 
 # ---------------------------------------------------------------------------
