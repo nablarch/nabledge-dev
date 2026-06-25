@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 19327,
+  "duration_api_ms": 18458,
+  "ttft_ms": 19307,
+  "ttft_stream_ms": 5960,
+  "time_to_request_ms": 2349,
+  "num_turns": 1,
+  "result": "### Answer\n\nNablarchのRESTfulウェブサービスでは、パスパラメータとクエリーパラメータの2通りの方法でURLからパラメータを受け取れます。\n\n---\n\n## パスパラメータ（例：`GET /users/123`）\n\n### ルーティング設定\n\n`routes.xml` でパスパラメータ部に名前と制約を設定します。\n\n```xml\n<routes>\n  <get path=\"users/:id\" to=\"UsersResource#find\">\n    <requirements>\n      <requirement name=\"id\" value=\"\\d+$\" />\n    </requirements>\n  </get>\n</routes>\n```\n\n### リソースクラスの実装\n\n`JaxRsHttpRequest#getPathParam(String)` でパラメータを取得します。\n\n```java\n@Produces(MediaType.APPLICATION_JSON)\npublic User find(JaxRsHttpRequest req) {\n    Long id = Long.valueOf(req.getPathParam(\"id\"));\n    return UniversalDao.findById(User.class, id);\n}\n```\n\n> **注意:** Jakarta RESTful Web Servicesの `@PathParam` アノテーションは使用できません。\n\n---\n\n## クエリーパラメータ（例：`GET /users/search?name=Duke`）\n\n### ルーティング設定\n\nクエリーパラメータ部を除いたパスでマッピングします。\n\n```xml\n<routes>\n  <get path=\"users/search\" to=\"Users#search\"/>\n</routes>\n```\n\n### リソースクラスの実装\n\n`JaxRsHttpRequest#getParamMap()` で取得し、`BeanUtil` でFormクラスにマッピングします。\n\n```java\npublic HttpResponse search(JaxRsHttpRequest req) {\n    // リクエストパラメータをFormに変換\n    UserSearchForm form = BeanUtil.createAndCopy(UserSearchForm.class, req.getParamMap());\n\n    // バリデーション実行\n    ValidatorUtil.validate(form);\n\n    // 業務ロジック（省略）\n}\n\npublic class UserSearchForm {\n    private String name;\n    // 省略\n}\n```\n\n> **注意:** Jakarta RESTful Web Servicesの `@QueryParam` アノテーションは使用できません。\n\n---\n\n## `@Path` アノテーションを使う方法（ルーティングアダプタ利用時）\n\nルーティング設定ファイルではなく `@Path` アノテーションでルーティングを定義する場合は、Jakarta RESTful Web Servicesの記法でパスパラメータを記述できます。\n\n```java\n@Path(\"/sample\")\npublic class TestAction {\n\n    @GET\n    @Path(\"/bar/{id : \\\\d+}\")  // 正規表現で数値のみ許容\n    @Produces(MediaType.APPLICATION_JSON)\n    public Person bar(JaxRsHttpRequest request) {\n        int id = Integer.parseInt(request.getPathParam(\"id\"));\n        // 省略\n    }\n}\n```\n\n`{パラメータ名}` でパラメータを定義し、`{パラメータ名 : 正規表現}` で書式を制限できます。値の取得は同様に `getPathParam(String)` を使います。",
+  "stop_reason": "end_turn",
+  "session_id": "fc5d5235-7314-4860-91fb-02f4395de571",
+  "total_cost_usd": 0.14983460000000004,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 33674,
+    "cache_read_input_tokens": 12757,
+    "output_tokens": 870,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 33674
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 6484,
+      "outputTokens": 38,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.006674,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 870,
+      "cacheReadInputTokens": 12757,
+      "cacheCreationInputTokens": 33674,
+      "webSearchRequests": 0,
+      "costUSD": 0.14316060000000003,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "8608a89b-13db-40f1-8790-adf65baf4314"
+}
