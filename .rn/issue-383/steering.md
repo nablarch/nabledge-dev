@@ -131,11 +131,11 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 **Steps**:
 
-- [ ] `pre-*` 全件（pre-01〜pre-03、3件）で実行し、全件完了・出力正常を確認する
-- [ ] `qa-*` の前半（qa-01〜qa-10、10件）を追加実行し、完了・出力正常を確認する
-- [ ] エラー・タイムアウトがあれば原因を調査・修正する
-- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-4.md`）
-- [ ] QA expert review（subagent）
+- [x] `pre-*` 全件（pre-01〜pre-03、3件）で実行し、全件完了・出力正常を確認する
+- [x] `qa-*` の前半（qa-01〜qa-10、10件）を追加実行し、完了・出力正常を確認する
+- [x] エラー・タイムアウトがあれば原因を調査・修正する
+- [x] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-4.md`）
+- [x] QA expert review（subagent）
 - [ ] user review
 
 **Completion criteria**:
