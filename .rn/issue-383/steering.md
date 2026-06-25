@@ -65,6 +65,7 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - `tools/rag/docker/docker-compose.yml` が存在し、`docker compose up` でQdrantが起動する
 - `tools/rag/scripts/index.py` が `--limit 10 --model cohere.embed-multilingual-v3` で実行でき、Qdrantに10ファイル分のpointが格納される
 - 格納されたpointのmetadataに `processing_type` / `category` / `page_id` / `section_id` が含まれている
+- 格納された1件の `page_id` を使って、knowledge ディレクトリの対応JSONファイルが実際に開けること（`open(knowledge_dir / page_id + ".json")` が成功する）
 - `tools/rag/tests/test_index.py` のテストがすべてパスする
 - モデルIDがコマンドライン引数（`--model`）で切り替えられる（v4差し替えに備えて）
 
@@ -87,6 +88,7 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 - Qdrantコレクションに9,000件以上のpointが格納されている（設計書§2.2の9,376 sections相当）
 - 抽出した1件のmetadataに `processing_type` / `category` / `page_id` / `section_id` / `class_names` が含まれている
+- 抽出した1件の `page_id` を使って、knowledge ディレクトリの対応JSONファイルが実際に開けること（`open(knowledge_dir / page_id + ".json")` が成功する）
 
 ### #3: RAG版クエリエンジン実装（1シナリオ動作確認まで）
 
@@ -116,7 +118,9 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 - `run_rag_qa.py --scenario-ids pre-01` が終了コード0で完了する
 - 出力ディレクトリに `workflow_details.json` / `answer.md` / `metrics.json` / `evaluation.json` が揃う
-- `workflow_details.json` の `read_sections` が `path.json:sN` 形式で記録されている
+- `workflow_details.json` の `step3.selected_sections` が1件以上あること
+- `workflow_details.json` の `read_sections` が `path.json:sN` 形式で記録されており、各パスが knowledge ディレクトリに実際に存在すること
+- `answer.md` に `(content unavailable)` が含まれないこと（知識セクションが実際に取得・使用されている）
 - `tools/rag/tests/test_query.py` のテストがすべてパスする
 
 ### #4: 段階的スケールアップ（pre-* 全件 → pre-* + qa-* 前半）
@@ -136,8 +140,9 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 **Completion criteria**:
 
-- `pre-01〜pre-03` + `qa-01〜qa-10` の計13シナリオが全件完了（エラーなし）
-- 各シナリオの `workflow_details.json` に `read_sections` が記録されている
+- `pre-01〜pre-03` + `qa-01〜qa-10` の計13シナリオすべてに `error.json` が存在しないこと
+- 各シナリオの `workflow_details.json` の `step3.selected_sections` が1件以上あること
+- 各シナリオの `answer.md` に `(content unavailable)` が含まれないこと
 
 ### #5: v4差し替え・全件Indexing
 
@@ -154,7 +159,9 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 **Completion criteria**:
 
-- Qdrantコレクションに9,000件以上のpointが `cohere.embed-v4:0` でベクトル化されて格納されている
+- Qdrantコレクションに9,000件以上のpointが格納されている
+- Indexing実行ログに `--model cohere.embed-v4:0` が使用されたことが確認できること（コマンド履歴またはログ出力）
+- 抽出した1件の `page_id` を使って、knowledge ディレクトリの対応JSONファイルが実際に開けること
 
 ### #6: 全34シナリオ × 3 run ベンチマーク実行
 
@@ -176,8 +183,9 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 **Completion criteria**:
 
-- `tools/benchmark/results/{date}-rag-k10-filter/` に run-1 / run-2 / run-3 の全34シナリオ結果が揃っている
-- `crossrun-summary.md` と `quality-report.md` が生成されている
+- run-1 / run-2 / run-3 の全34シナリオ × 3 runに `error.json` が存在しないこと
+- `crossrun-summary.md` に全34シナリオのスコアが記載されている
+- `quality-report.md` に pass rate（数値）が含まれている
 - `quality-report.md` に現行ベースライン（`20260616-1214-fullbench-classes-v6`）との比較が含まれている
 
 ### #7: 採用判定レポート作成
@@ -203,8 +211,8 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 **Completion criteria**:
 
 - `docs/reports/rag/rag-evaluation-report.md` が存在する
-- レポートに現行比較（精度・コスト・速度）が含まれている
-- レポートにadopt/rejectの結論が明記されている
+- レポートに現行比較の具体的な数値（pass rate・コスト・速度）が含まれている
+- レポートのadopt/reject結論に、その根拠として使った数値が明示されている
 - Issue #383のSuccess Criteriaが満たされている（v6ベンチ結果取得・評価レポート作成・adopt/reject結論）
 
 
