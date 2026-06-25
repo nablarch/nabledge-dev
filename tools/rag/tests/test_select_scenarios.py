@@ -6,8 +6,8 @@ import sys
 
 import pytest
 
-sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "scripts"))
-from select_scenarios import (  # noqa: E402
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.parent.parent))
+from tools.rag.scripts.select_scenarios import (  # noqa: E402
     build_text,
     find_truncated_pages,
     page_id_from_section_ref,
@@ -86,6 +86,20 @@ class TestPageIdFromSectionRef:
 
         # Then
         assert result == "page"
+
+    def test_ref_with_no_colon_returns_path_stripped_of_json_suffix(self, capsys):
+        # Given: malformed ref with no ':' separator
+        section_ref = "page.json"
+
+        # When
+        result = page_id_from_section_ref(section_ref)
+
+        # Then: returns path without .json suffix (graceful degradation)
+        assert result == "page"
+        # And: a warning was printed to stderr
+        captured = capsys.readouterr()
+        assert "[WARN]" in captured.err
+        assert "page.json" in captured.err
 
 
 class TestFindTruncatedPages:
