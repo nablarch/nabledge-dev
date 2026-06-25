@@ -237,21 +237,4 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: paused
-- **Date**: 2026-06-25
-- **Last completed**: #4 (commit 767fff85)
-- **Next**: #5 — v3非切断シナリオ選定 + 1 run安定確認
-- **Notes**: |
-    #1〜#4 完了。#5 から着手。
-
-    **#5 の内容（ステアリング更新済み）**:
-    - D-1 が改訂済み: v4解除待たず、v3で切断されていないシナリオを機械的に選定して評価完結
-    - `tools/rag/scripts/select_scenarios.py` を実装して `tools/rag/v3-eligible-scenarios.json` を生成する
-      - 全セクションの `text = page_title + section_title + content` を計算し、2048字超のセクションを持つ page_id を列挙
-      - 各シナリオ定義の期待参照ページが切断ページを含まないシナリオIDを選定して保存
-    - 選定シナリオ全件で run-1 を実施し、error.json なし・(content unavailable) なしを確認
-    - 問題があれば修正して安定確認 → #6（3 run）に進む
-
-    **Qdrant コンテナ**: localhost:6333 で起動中。再起動後は `docker compose -f tools/rag/docker/docker-compose.yml up -d`
-
-    **シナリオ定義場所**: `tools/benchmark/scenarios/` — 各シナリオのexpected_pagesなどを確認して選定スクリプトを実装すること
+- **Status**: not suspended
