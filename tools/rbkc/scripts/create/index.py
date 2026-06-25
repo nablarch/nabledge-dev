@@ -139,7 +139,7 @@ def generate_fts_hints_md(knowledge_dir: Path, output_path: Path) -> None:
     Files with ``no_knowledge_content: true``, files under ``assets/``,
     and files under ``javadoc/`` are excluded.
 
-    Format: H2 per category → H3 per page title (title field or file stem).
+    Format: H2 per category → H3 per file stem (e.g. ``libraries-bean-validation``).
 
     Args:
         knowledge_dir: Root directory containing knowledge JSON files.
@@ -172,8 +172,7 @@ def generate_fts_hints_md(knowledge_dir: Path, output_path: Path) -> None:
             continue
         if data.get("no_knowledge_content") is True:
             continue
-        title = data.get("title", json_path.stem)
-        files_by_category.setdefault(category, []).append(title)
+        files_by_category.setdefault(category, []).append(json_path.stem)
 
     lines = ["# FTS Hints", ""]
 
