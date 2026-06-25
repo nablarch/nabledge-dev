@@ -144,49 +144,54 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - 各シナリオの `workflow_details.json` の `step3.selected_sections` が1件以上あること
 - 各シナリオの `answer.md` に `(content unavailable)` が含まれないこと
 
-### #5: v4差し替え・全件Indexing
+### #5: v3非切断シナリオ選定 + 1 run安定確認
 
-**Purpose**: `cohere.embed-v4:0` のSCP解除後、モデルを差し替えてQdrantを全件再Indexingする
+**Purpose**: v3の2048文字制限で切り捨てられていないセクションのみを参照するシナリオを機械的に選定し、1 runで出力が安定することを確認する。問題があれば改善してから3 runに進む。
 
-**Prerequisites**: #4 + v4 SCP解除
+**Prerequisites**: #4
 
 **Steps**:
 
-- [ ] `--model cohere.embed-v4:0` で全件Indexing実行（Qdrantストレージをリセット）
-- [ ] point数・metadata確認（#2と同じ受入基準）
+- [ ] `tools/rag/scripts/select_scenarios.py` を実装する
+  - 全935ページの全セクションについて `text = page_title + section_title + content` を計算し、2048字超のセクションを持つ `page_id` を列挙する
+  - 各シナリオ定義（`tools/benchmark/scenarios/`）の期待参照ページ（`expected_pages` 等）を読み込み、切断ページを含まないシナリオIDを出力する
+  - 結果を `tools/rag/v3-eligible-scenarios.json` に保存する（シナリオID一覧 + 選定理由）
+- [ ] 選定されたシナリオ全件で run-1 を実施する
+- [ ] run-1 の全シナリオに `error.json` がないこと・`(content unavailable)` がないことを確認する
+- [ ] 問題があれば根本原因を修正し、再実行して安定を確認する
 - [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-5.md`）
+- [ ] QA expert review（subagent）
 - [ ] user review
 
 **Completion criteria**:
 
-- Qdrantコレクションに9,000件以上のpointが格納されている
-- Indexing実行ログに `--model cohere.embed-v4:0` が使用されたことが確認できること（コマンド履歴またはログ出力）
-- 抽出した1件の `page_id` を使って、knowledge ディレクトリの対応JSONファイルが実際に開けること
+- `tools/rag/v3-eligible-scenarios.json` が存在し、選定シナリオID一覧と各シナリオが選ばれた理由（参照ページが全て2048字以内）が記録されている
+- 選定シナリオ全件の run-1 に `error.json` が存在しないこと
+- 選定シナリオ全件の run-1 の `answer.md` に `(content unavailable)` が含まれないこと
 
-### #6: 全34シナリオ × 3 run ベンチマーク実行
+### #6: 選定シナリオ × 3 run ベンチマーク実行
 
-**Purpose**: k=10・メタフィルタありの条件で全34シナリオを3 run実施し、crossrun-summary.md と quality-report.md を生成する
+**Purpose**: #5で安定確認した選定シナリオを3 run実施し、crossrun-summary.md と quality-report.md を生成する
 
 **Prerequisites**: #5
 
 **Steps**:
 
-- [ ] run-1: 全34シナリオ実行 → `HOW-TO-RUN.md` B-2（エラー回収）→ B-3（レポート生成）→ B-4（コミット）
-- [ ] run-2: 同上
+- [ ] run-2: 選定シナリオ全件実行 → エラー確認 → レポート生成 → コミット
 - [ ] run-3: 同上
-- [ ] フェーズC-1: crossrun-summary.md 生成・コミット
+- [ ] フェーズC-1: crossrun-summary.md 生成・コミット（run-1〜run-3）
 - [ ] フェーズC-2: 閾値割れシナリオの裏付け調査（answer.md とナレッジの突き合わせ）
-- [ ] フェーズC-3: quality-report.md 作成・コミット（現行ベースライン `20260616-1214-fullbench-classes-v6` との比較を含む）
+- [ ] フェーズC-3: quality-report.md 作成・コミット（現行ベースライン `20260616-1214-fullbench-classes-v6` の同シナリオとの比較を含む）
 - [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-6.md`）
 - [ ] QA expert review（subagent）
 - [ ] user review
 
 **Completion criteria**:
 
-- run-1 / run-2 / run-3 の全34シナリオ × 3 runに `error.json` が存在しないこと
-- `crossrun-summary.md` に全34シナリオのスコアが記載されている
+- run-1 / run-2 / run-3 の選定シナリオ全件 × 3 runに `error.json` が存在しないこと
+- `crossrun-summary.md` に選定シナリオ全件のスコアが記載されている
 - `quality-report.md` に pass rate（数値）が含まれている
-- `quality-report.md` に現行ベースライン（`20260616-1214-fullbench-classes-v6`）との比較が含まれている
+- `quality-report.md` に現行ベースライン（`20260616-1214-fullbench-classes-v6`）の同シナリオとの比較が含まれている
 
 ### #7: 採用判定レポート作成
 
@@ -218,10 +223,11 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 # Decisions
 
-## D-1: v3で先行実装・v4解除後に差し替え
+## D-1: v3で先行実装・v4解除後に差し替え（変更: v4待たずv3有効範囲で評価）
 - **Issue**: `cohere.embed-v4:0` が SCP でブロック。v3（512トークン制約）で進めるか、v4解除を待つか
-- **Conclusion**: v3で実装・動作確認（#1〜#4）を進め、フルベンチ（#6）はv4解除後に実施する
-- **Rationale**: v3でパイプライン全体の動作確認はできる。フルベンチはv4解除後に一度だけ実施すれば十分で、v3での中間計測は不要
+- **Original conclusion**: v3で実装・動作確認（#1〜#4）を進め、フルベンチ（#6）はv4解除後に実施する
+- **Revised conclusion** (2026-06-25): v4解除の見通しが立たないため、v3で切断されていないセクションのみを参照するシナリオを機械的に選定し、そのシナリオで評価を完結させる。1 runで安定を確認してから3 runに進む。
+- **Rationale**: v3の2048文字制限の影響を受けないシナリオ（全セクションが2048字以内）のみを対象にすれば、v3制約の影響を排除した公平な比較ができる。v4は将来の差し替え先として残す。
 - **Evidence**: シナリオ参照ページ31中15ページ（48%）がv3の512トークン制約を超える。v4は128Kトークン・最安値（$0.02/1M）・東京対応
 - **Sources**: 実測（binary search）、AWS公式ドキュメント
 
