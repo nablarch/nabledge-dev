@@ -231,4 +231,29 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: not suspended
+- **Status**: paused
+- **Date**: 2026-06-25
+- **Last completed**: #2 (commit 98d888d6)
+- **Next**: #3 — RAG版クエリエンジン実装（1シナリオ動作確認まで）— 実装・レビュー完了だがバグ修正が残っている
+- **Notes**: |
+    #1・#2 完了。#3 は実装・全レビュー（QA/Language/SE × 2ラウンド）まで完了。
+    ただし新完了条件「answer.md に (content unavailable) が含まれないこと」を満たしていない。
+
+    **バグ**: index.py が page_id をJSONファイルの `id` フィールド（basename のみ、例: `nablarch-batch-architecture`）で保存している。
+    knowledge ディレクトリ上の実際のパスは `processing-pattern/nablarch-batch/nablarch-batch-architecture.json` だが、
+    query.py / run_rag_qa.py は `knowledge_dir / page_id + ".json"` = `knowledge_dir/nablarch-batch-architecture.json` を開こうとするため、ファイルが見つからず
+    `(content unavailable: ...)` にフォールバックする。LLMの一般知識で回答しているためスコアは偶然高いが、RAGとして機能していない。
+
+    **修正方針（調査済み）**:
+    - index.py で page_id に `rel_path`（knowledgeルートからの相対パス、拡張子なし）を使うよう変更する
+      例: `processing-pattern/nablarch-batch/nablarch-batch-architecture`
+    - query.py の `_page_id_to_file_path` はそのまま（`.json` を付けるだけ）で動く
+    - Qdrant の全件再Indexing が必要（page_id の値が変わるため）
+    - #3 タスクの steps に「page_id バグ修正 → 全件再Indexing → pre-01 再実行」を追加して完了させる
+
+    **現状コミット**:
+    - 実装: 567d4b72, bb10b659, 32d51060, e6e41b1a（全push済み）
+    - check file: 3d41f508（coordinator ledger、pushは未）
+    - ステアリング強化: 98ce3d0c（pushは未）
+
+    Qdrant コンテナは localhost:6333 で起動中。再起動後は `docker compose -f tools/rag/docker/docker-compose.yml up -d` で起動する。
