@@ -125,7 +125,7 @@ def parse_classes_md(md_path: pathlib.Path) -> dict[str, list[str]]:
         if stripped.startswith("path:"):
             # Save previous entry
             if current_path is not None:
-                page_id = pathlib.PurePosixPath(current_path).stem
+                page_id = str(pathlib.PurePosixPath(current_path).with_suffix(""))
                 mapping[page_id] = current_classes
             raw_path = stripped[len("path:"):].strip()
             current_path = raw_path
@@ -137,7 +137,7 @@ def parse_classes_md(md_path: pathlib.Path) -> dict[str, list[str]]:
 
     # Save last entry
     if current_path is not None:
-        page_id = pathlib.PurePosixPath(current_path).stem
+        page_id = str(pathlib.PurePosixPath(current_path).with_suffix(""))
         mapping[page_id] = current_classes
 
     return mapping
@@ -168,7 +168,7 @@ def build_chunks(
         List of chunk dicts (one per section).
     """
     path_meta = derive_metadata_from_path(rel_path)
-    page_id: str = page["id"]
+    page_id: str = str(rel_path.with_suffix(""))
     page_title: str = page.get("title", "")
     class_names: list[str] = class_map.get(page_id, [])
 

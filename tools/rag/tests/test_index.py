@@ -168,17 +168,17 @@ class TestParseClassesMd:
         md_path.write_text(classes_md_text, encoding="utf-8")
         mapping = parse_classes_md(md_path)
         # page id = basename without .json
-        assert "nablarch-batch-architecture" in mapping
-        assert "BatchActionBase" in mapping["nablarch-batch-architecture"]
-        assert "RequestHandlerEntry" in mapping["nablarch-batch-architecture"]
+        assert "processing-pattern/nablarch-batch/nablarch-batch-architecture" in mapping
+        assert "BatchActionBase" in mapping["processing-pattern/nablarch-batch/nablarch-batch-architecture"]
+        assert "RequestHandlerEntry" in mapping["processing-pattern/nablarch-batch/nablarch-batch-architecture"]
 
     def test_parses_component_page_classes(self, classes_md_text, tmp_path):
         md_path = tmp_path / "classes.md"
         md_path.write_text(classes_md_text, encoding="utf-8")
         mapping = parse_classes_md(md_path)
-        assert "adapters-doma-adaptor" in mapping
-        assert "Transactional" in mapping["adapters-doma-adaptor"]
-        assert "DomaDaoRepository" in mapping["adapters-doma-adaptor"]
+        assert "component/adapters/adapters-doma-adaptor" in mapping
+        assert "Transactional" in mapping["component/adapters/adapters-doma-adaptor"]
+        assert "DomaDaoRepository" in mapping["component/adapters/adapters-doma-adaptor"]
 
     def test_returns_empty_dict_if_file_missing(self, tmp_path):
         md_path = tmp_path / "nonexistent.md"
@@ -222,7 +222,7 @@ class TestBuildChunks:
     def test_metadata_page_id(self, sample_page):
         rel_path = pathlib.Path("processing-pattern/nablarch-batch/nablarch-batch-architecture.json")
         chunks = build_chunks(sample_page, rel_path, class_map={})
-        assert chunks[0]["metadata"]["page_id"] == "nablarch-batch-architecture"
+        assert chunks[0]["metadata"]["page_id"] == "processing-pattern/nablarch-batch/nablarch-batch-architecture"
 
     def test_metadata_section_id(self, sample_page):
         rel_path = pathlib.Path("processing-pattern/nablarch-batch/nablarch-batch-architecture.json")
@@ -250,7 +250,7 @@ class TestBuildChunks:
 
     def test_metadata_class_names_from_map(self, sample_page):
         rel_path = pathlib.Path("processing-pattern/nablarch-batch/nablarch-batch-architecture.json")
-        class_map = {"nablarch-batch-architecture": ["BatchActionBase", "RequestHandlerEntry"]}
+        class_map = {"processing-pattern/nablarch-batch/nablarch-batch-architecture": ["BatchActionBase", "RequestHandlerEntry"]}
         chunks = build_chunks(sample_page, rel_path, class_map=class_map)
         # Both sections of the same page get the same class_names
         assert "BatchActionBase" in chunks[0]["metadata"]["class_names"]
