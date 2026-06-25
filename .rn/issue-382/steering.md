@@ -119,8 +119,9 @@ incrementally — single scenario first, then path-coverage sample, then full 3-
 
 **Steps**:
 
-- [ ] Insert the approved BM25 step into `.claude/skills/nabledge-6/workflows/qa.md` before the current Step 3; renumber subsequent steps if needed
-- [ ] **Phase A (1 scenario)**: run `pre-01` via `run_qa --scenario-ids pre-01`; confirm exit 0, answer.md non-empty, BM25 path exercised; delete tmp dir after
+- [x] Insert the approved BM25 step into `.claude/skills/nabledge-6/workflows/qa.md` before the current Step 3; renumber subsequent steps if needed
+- [x] **Phase A (1 scenario)**: run `pre-01` via `run_qa --scenario-ids pre-01`; confirm exit 0, answer.md non-empty, BM25 path exercised; delete tmp dir after
+- [x] Refactor: extract BM25 step to `workflows/full-text-search.md`; qa.md Step 3 becomes a concise workflow call (mirrors semantic-search.md pattern)
 - [ ] **Path-coverage sample (3–5 scenarios)**: select scenarios that cover BM25-complete path, BM25-FAIL→fallback path, and no-hits path; run them; inspect `workflow_details.json` to confirm each path behaved as designed; fix qa.md if any path misbehaves
 - [ ] **Phase B/C full benchmark**: 3 runs × 34 scenarios per HOW-TO-RUN.md; generate per-run reports and crossrun-summary; commit each run immediately after completion
 - [ ] Phase E regression check: compare against baseline from #1
@@ -230,6 +231,8 @@ versions, as the workflow is superseded and confusingly named.
 
 - **Status**: not suspended
 - **Date**: 2026-06-25
-- **Last completed**: #2 Select BM25 library and design BM25 pre-search step
-- **Next**: #3 Implement BM25 step in v6 qa.md and verify incrementally
-- **Notes**: baseline = 20260612-1404-baseline-current (25/34, p50 $0.682, 118s); bm25s selected (D-1); term extraction: cut from question as-is, typo-correct only (D-2)
+- **Status**: paused
+- **Date**: 2026-06-25
+- **Last completed**: #2 (design). #3 in progress — Phase A done, refactor to full-text-search.md done
+- **Next**: #3 path-coverage sample (3–5 scenarios covering BM25-complete, FAIL→fallback, no-hits paths)
+- **Notes**: baseline = 20260612-1404-baseline-current (25/34, p50 $0.682, 118s). bm25s installed in /home/tie303177/venv. bm25-search.sh and full-text-search.md committed. qa.md Step 3 now calls full-text-search.md. .bm25-index/ is runtime-generated (untracked, gitignored). Next: run path-coverage sample — suggest scenarios with Nablarch class names (BM25-complete candidate), abstract question (no-hits candidate), and one where BM25 should fail verify (fallback candidate); inspect workflow_details.json for each path.
