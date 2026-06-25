@@ -262,12 +262,12 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: paused
-- **Date**: 2026-06-25
+- **Status**: not suspended
+- **Date**: 2026-06-26
 - **Last completed**: #6 (commit 385a782a) — v3限定8シナリオ × 3 run ベンチマーク + crossrun-summary + quality-report
-- **Next**: #7 — v4解除後の全件Indexing・全34シナリオ × 3 run ベンチマーク
+- **Next**: #7 — v4解除後の全件Indexing・全34シナリオ × 3 run ベンチマーク（v4 SCP解除待ちでブロック中）
 - **Notes**: |
-    #1〜#6 完了。v4 SCP解除待ち。解除連絡が来たら #7 から着手。
+    #1〜#6 完了。#7はv4 SCP解除待ちでブロック中（AccessDeniedException確認済み 2026-06-26）。
 
     **#6 結果サマリー**:
     - v3 eligible 8シナリオ × 3 run: correctness 0.979, relevancy 0.977, faithfulness 0.944
