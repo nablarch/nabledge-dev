@@ -67,10 +67,10 @@ so no re-run is needed and the comparison is anchored to a real prior measuremen
 
 **Steps**:
 
-- [ ] Review `tools/benchmark/results/` — identify the most recent completed run with crossrun-summary or baseline.json
-- [ ] Record the label, scenario pass count, p50 cost, and p50 execution time in `.rn/issue-382/baseline.md`
-- [ ] Commit and push `.rn/issue-382/baseline.md`
-- [ ] Self-check: baseline.md names the exact run label and contains pass count, p50 cost, p50 execution time
+- [x] Review `tools/benchmark/results/` — identify the most recent completed run with crossrun-summary or baseline.json
+- [x] Record the label, scenario pass count, p50 cost, and p50 execution time in `.rn/issue-382/baseline.md`
+- [x] Commit and push `.rn/issue-382/baseline.md`
+- [x] Self-check: baseline.md names the exact run label and contains pass count, p50 cost, p50 execution time
 
 **Completion criteria**:
 
@@ -218,6 +218,6 @@ versions, as the workflow is superseded and confusingly named.
 
 - **Status**: not suspended
 - **Date**: 2026-06-25
-- **Last completed**: (none)
-- **Next**: #1 Establish v6 benchmark baseline
-- **Notes**: baseline (#1) and design (#2) can run in parallel
+- **Last completed**: #1 Confirm existing benchmark baseline
+- **Next**: #2 Select BM25 library and design pre-search step
+- **Notes**: baseline = 20260612-1404-baseline-current; pass 25/34, p50 cost $0.682, p50 time 118s
