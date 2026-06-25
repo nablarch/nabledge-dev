@@ -103,22 +103,27 @@ class TestBuildE2ePrompt:
 
 
 SAMPLE_WORKFLOW_DETAILS = {
-    "step3": {
-        "selected_pages": [
-            {"path": "path/to/file.json", "source": "index", "reason": "relevant page"}
+    "step2": {
+        "bm25_terms": ["バッチ", "アーキテクチャ"],
+        "bm25_sections": [
+            {"file": "path/to/file.json", "section_id": "s1", "relevance": "high"}
         ],
-        "excluded_pages": [],
-        "selected_sections": [
-            {"file": "path/to/file.json", "section_id": "s1", "relevance": "high", "reason": "key section"}
-        ],
-        "excluded_sections": [],
     },
-    "step4": {"read_sections": ["path/to/file.json:s1"]},
-    "step8": {
-        "answer_sections": {
-            "used": [{"ref": "path/to/file.json:s1", "reason": "used in answer"}],
-            "unused": [],
-        }
+    "step3": {
+        "check_answerable_result": "OK",
+    },
+    "step4": {
+        "ran": False,
+        "selected_sections": [],
+    },
+    "step5": {
+        "sections_used": [
+            {"file": "path/to/file.json", "section_id": "s1"}
+        ],
+    },
+    "step6": {
+        "verify_result": "PASS",
+        "regenerated": False,
     },
 }
 
@@ -144,22 +149,24 @@ class TestParseE2eResponse:
     def test_parses_workflow_details(self):
         response = self._make_response("回答テキスト")
         result = parse_qa_response(response)
+        assert "step2" in result["workflow_details"]
         assert "step3" in result["workflow_details"]
         assert "step4" in result["workflow_details"]
-        assert "step8" in result["workflow_details"]
+        assert "step5" in result["workflow_details"]
+        assert "step6" in result["workflow_details"]
 
-    def test_parses_selected_pages(self):
+    def test_parses_bm25_sections(self):
         response = self._make_response("回答テキスト")
         result = parse_qa_response(response)
-        pages = result["workflow_details"]["step3"]["selected_pages"]
-        assert pages[0]["path"] == "path/to/file.json"
-        assert pages[0]["source"] == "index"
-
-    def test_parses_selected_sections(self):
-        response = self._make_response("回答テキスト")
-        result = parse_qa_response(response)
-        sections = result["workflow_details"]["step3"]["selected_sections"]
+        sections = result["workflow_details"]["step2"]["bm25_sections"]
         assert sections[0]["section_id"] == "s1"
+        assert sections[0]["relevance"] == "high"
+
+    def test_parses_check_answerable_result(self):
+        response = self._make_response("回答テキスト")
+        result = parse_qa_response(response)
+        check_result = result["workflow_details"]["step3"]["check_answerable_result"]
+        assert check_result == "OK"
 
     def test_raises_on_missing_workflow_details(self):
         response = "回答だけで WORKFLOW_DETAILS_JSON マーカーがない"
@@ -299,7 +306,12 @@ class TestRunE2eScenario:
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()):
                 result = run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
-            assert "step3" in result["workflow_details"]
+            wd = result["workflow_details"]
+            assert "step2" in wd
+            assert "step3" in wd
+            assert "step4" in wd
+            assert "step5" in wd
+            assert "step6" in wd
 
     def test_returns_answer(self):
         with tempfile.TemporaryDirectory() as skill_dir:
@@ -363,6 +375,7 @@ class TestRunE2eScenario:
             allowed_tools_idx = cmd.index("--allowedTools")
             allowed_tools_value = cmd[allowed_tools_idx + 1]
             assert "Bash(bash scripts/keyword-search.sh *)" in allowed_tools_value
+            assert "Bash(bash scripts/bm25-search.sh *)" in allowed_tools_value
             assert "Bash(bash scripts/read-sections.sh *)" in allowed_tools_value
             assert "Read" in allowed_tools_value
 
