@@ -1,0 +1,72 @@
+{
+  "scenario_id": "qa-20",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
+    "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "Both expected facts are clearly covered in the Actual Output. The first fact — that JaxRsResponseHandler generates error responses based on the exception type — is explicitly addressed in sections 1 and 2, where JaxRsResponseHandler is described as the central error handler that determines HTTP status codes based on exception types. The second fact — that JaxRsErrorLogWriter performs log output based on the exception type — is explicitly covered in section 1, which states that the errorLogWriter property with JaxRsErrorLogWriter handles log output, and further elaborated in the summary step 3. Both expected facts achieve 100% coverage."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were identified!"
+    },
+    "faithfulness": {
+      "score": 0.9032258064516129,
+      "reason": "The score is 0.90 because there are a few minor contradictions in the actual output: it incorrectly describes NoMoreHandlerException as being related to an 'action class' and refers to it as an 'audit log', when the retrieval context simply states it logs at INFO level and returns 404 for any unhandled request; it incorrectly implies that Result.Error logging depends on configuration or 'may' be logged, whereas the retrieval context states a FATAL level log is always output; and it inaccurately describes the GlobalErrorHandler as calling 'writeLog()' with log level depending on the implementation class, when the retrieval context specifies it calls 'ServiceError#writeLog' without mentioning implementation-dependent log levels."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-http-response-handler.json:s8",
+      "component/libraries/libraries-jaxrs-access-log.json:s1",
+      "component/handlers/handlers-http-messaging-error-handler.json:s5",
+      "component/libraries/libraries-jaxrs-access-log.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-http-messaging-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-jaxrs-access-log-handler.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 36534,
+    "duration_api_ms": 35906,
+    "num_turns": 1,
+    "total_cost_usd": 0.15101085000000003,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 1783,
+      "cache_read_input_tokens": 19197,
+      "cache_creation_input_tokens": 29281
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 8497,
+        "outputTokens": 40,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.008697,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 1783,
+        "cacheReadInputTokens": 19197,
+        "cacheCreationInputTokens": 29281,
+        "webSearchRequests": 0,
+        "costUSD": 0.14231385000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
