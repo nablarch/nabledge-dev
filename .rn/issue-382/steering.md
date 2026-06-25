@@ -122,19 +122,21 @@ incrementally — single scenario first, then path-coverage sample, then full 3-
 - [x] Insert the approved BM25 step into `.claude/skills/nabledge-6/workflows/qa.md` before the current Step 3; renumber subsequent steps if needed
 - [x] **Phase A (1 scenario)**: run `pre-01` via `run_qa --scenario-ids pre-01`; confirm exit 0, answer.md non-empty, BM25 path exercised; delete tmp dir after
 - [x] Refactor: extract BM25 step to `workflows/full-text-search.md`; qa.md Step 3 becomes a concise workflow call (mirrors semantic-search.md pattern)
-- [ ] **Path-coverage sample (3–5 scenarios)**: select scenarios that cover BM25-complete path, BM25-FAIL→fallback path, and no-hits path; run them; inspect `workflow_details.json` to confirm each path behaved as designed; fix qa.md if any path misbehaves
-- [ ] **Phase B/C full benchmark**: 3 runs × 34 scenarios per HOW-TO-RUN.md; generate per-run reports and crossrun-summary; commit each run immediately after completion
+- [x] **Path-coverage sample (3–5 scenarios)**: 8 scenarios inspected; Paths A/B/C confirmed; review-08 flagged (BM25 extracted Japanese concept words — fix needed in full-text-search.md)
+- [ ] **Pre-benchmark stabilization loop**: run 1 full run (34 scenarios); inspect workflow_details.json for each scenario; fix any misbehavior in workflows; repeat until stable (no unexpected BM25 term extraction, all paths correct, verify PASS rate acceptable); delete intermediate runs after each fix cycle
+- [ ] **Phase B/C full benchmark**: once stable, 3 runs × 34 scenarios per HOW-TO-RUN.md; generate per-run reports and crossrun-summary; commit each run immediately after completion
 - [ ] Phase E regression check: compare against baseline from #1
 - [ ] Save comparison summary to `.rn/issue-382/benchmark-result.md`
 - [ ] Software Engineer expert review (subagent)
 - [ ] User review
-- [ ] Commit and push `qa.md` change + benchmark results
+- [ ] Commit and push workflow changes + benchmark results
 
 **Completion criteria**:
 
 - `.claude/skills/nabledge-6/workflows/qa.md` contains the BM25 pre-search step
 - Phase A: single-scenario run exits 0 and BM25 path is exercised
 - Path-coverage sample: all three paths (BM25-complete, BM25-FAIL→fallback, no-hits) confirmed working
+- Pre-benchmark stabilization: all 34 scenarios behave as designed (no unexpected BM25 term extraction, verify PASS rate stable)
 - Full benchmark (3 runs): regression check CLEAN vs baseline from #1
 - Full benchmark: p50 cost per query lower than baseline p50
 - `.rn/issue-382/benchmark-result.md` documents the comparison
@@ -231,24 +233,14 @@ versions, as the workflow is superseded and confusingly named.
 
 - **Status**: paused
 - **Date**: 2026-06-25
-- **Last completed**: #2 (design). #3 in progress — workflow redesign agreed and partially implemented
-- **Next**: #3 — implement `check-answerable.md` and update qa.md to final agreed flow
+- **Last completed**: #3 in progress — workflow fully implemented and benchmark infra updated; pre-benchmark stabilization next
+- **Next**: #3 — fix full-text-search.md (Japanese concept words extracted in review-08); run 1 full benchmark run; inspect all 34 workflow_details.json; fix until stable; then proceed to 3-run benchmark
 - **Notes**: baseline = 20260612-1404-baseline-current (25/34, p50 $0.682, 118s). bm25s installed in /home/tie303177/venv. .bm25-index/ is runtime-generated (untracked, gitignored).
-  Workflow redesign status (commits up to 2f584461):
-  - hearing.md ✅ 新規
-  - full-text-search.md ✅ BM25検索のみ、selected_sections返却
-  - semantic-search.md ✅ 明示パラメータ化
-  - generate-answer.md ✅ 新規（read-sections.sh使用、{findings}で再生成）
-  - verify-answer.md ✅ ページ全体読み取り、ハルシ+脱落検証、{question}入力あり
-  - check-answerable.md ❌ 未作成（次のアクション）
-  - qa.md ❌ 最終フローに未更新
-  最終合意フロー（qa.md）:
-    Step 1: hearing.md {question} → processing_type, purpose
-    Step 2: full-text-search.md {question} → sections
-    Step 3: check-answerable.md {question}, {sections} → OK→Step5 / NG→Step4
-    Step 4: semantic-search.md {question},{processing_type},{purpose} → sections
-    Step 5: generate-answer.md {question},{processing_type},{sections} → answer_text
-    Step 6: verify-answer.md {question},{answer_text},{sections} → OK→Step7 / NG→Step5(1回のみ,{findings}付き)
-    Step 7: output
-  generate-answer.mdの{excluded_claims}は{findings}にリネーム要。
-  path-coverage sampleはwf実装完了後に実施。
+  Workflow implementation complete (all committed):
+  - check-answerable.md ✅ 新規作成
+  - qa.md ✅ 最終7ステップフロー
+  - generate-answer.md ✅ {findings}リネーム
+  - benchmark infra ✅ bm25-search.sh in allowedTools, e2e-prompt schema updated, 168 tests pass
+  Known issue from 8-scenario inspection:
+  - review-08: full-text-search.md が「DBストア」「HIDDENストア」「セッション変数」（日本語概念語）を抽出 → Do NOT extract リストに日本語概念語の明示が必要
+  Intermediate run `tools/benchmark/results/20260625-161851/` (8 scenarios, incomplete) — inspect remaining issues then delete before 1-run benchmark.
