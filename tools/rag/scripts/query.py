@@ -18,21 +18,16 @@ import sys
 from dataclasses import dataclass, field
 from typing import Any
 
-try:
-    import boto3 as _boto3_module
-except ImportError:
-    _boto3_module = None  # type: ignore[assignment]
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
-_DEFAULT_EMBED_MODEL_ID = "cohere.embed-multilingual-v3"
+DEFAULT_EMBED_MODEL_ID = "cohere.embed-multilingual-v3"
 _EMBED_REGION = "ap-northeast-1"
-_DEFAULT_TOP_K = 10
+DEFAULT_TOP_K = 10
 _COLLECTION_NAME = "nabledge-6"
-_QDRANT_HOST = "localhost"
-_QDRANT_PORT = 6333
+QDRANT_HOST = "localhost"
+QDRANT_PORT = 6333
 
 # Max characters per text for Cohere v3 models
 _MODEL_MAX_CHARS: dict[str, int] = {
@@ -47,7 +42,7 @@ _MODEL_MAX_CHARS: dict[str, int] = {
 
 def embed_query(
     text: str,
-    model_id: str = _DEFAULT_EMBED_MODEL_ID,
+    model_id: str = DEFAULT_EMBED_MODEL_ID,
     verify_ssl: bool = True,
 ) -> list[float]:
     """Embed a query text using Cohere Embed via AWS Bedrock (input_type=search_query).
@@ -216,6 +211,11 @@ def format_results(hits: list[Any], knowledge_dir: pathlib.Path) -> list[QueryRe
         payload = hit.payload or {}
         page_id: str = payload.get("page_id", "")
         section_id: str = payload.get("section_id", "")
+
+        if not page_id:
+            print(f"Warning: hit with missing page_id skipped (section_id={section_id})", file=sys.stderr)
+            continue
+
         file_path = _page_id_to_file_path(page_id)
         section_ref = f"{file_path}:{section_id}"
 
@@ -242,11 +242,12 @@ def format_results(hits: list[Any], knowledge_dir: pathlib.Path) -> list[QueryRe
 def query(
     question: str,
     *,
-    k: int = _DEFAULT_TOP_K,
+    k: int = DEFAULT_TOP_K,
     processing_type: str | None = None,
-    model_id: str = _DEFAULT_EMBED_MODEL_ID,
-    qdrant_host: str = _QDRANT_HOST,
-    qdrant_port: int = _QDRANT_PORT,
+    model_id: str = DEFAULT_EMBED_MODEL_ID,
+    qdrant_host: str = QDRANT_HOST,
+    qdrant_port: int = QDRANT_PORT,
+    qdrant_client: Any | None = None,
     knowledge_dir: pathlib.Path | None = None,
     verify_ssl: bool = True,
 ) -> list[QueryResult]:
@@ -257,8 +258,9 @@ def query(
         k: Number of top results to retrieve (default: 10).
         processing_type: Optional processing-type slug for metadata filtering.
         model_id: Bedrock Cohere Embed model ID.
-        qdrant_host: Qdrant host.
-        qdrant_port: Qdrant port.
+        qdrant_host: Qdrant host (ignored if qdrant_client is provided).
+        qdrant_port: Qdrant port (ignored if qdrant_client is provided).
+        qdrant_client: Optional pre-built QdrantClient to inject (for testing or reuse).
         knowledge_dir: Path to knowledge root (used only for result context).
         verify_ssl: Whether to verify SSL certificates.
 
@@ -273,8 +275,8 @@ def query(
     # Build optional filter
     filt = build_processing_type_filter(processing_type)
 
-    # Search Qdrant
-    client = QdrantClient(host=qdrant_host, port=qdrant_port)
+    # Search Qdrant (use injected client if provided)
+    client = qdrant_client if qdrant_client is not None else QdrantClient(host=qdrant_host, port=qdrant_port)
     hits = search_qdrant(client, vector, k=k, processing_type_filter=filt)
 
     # Format results
@@ -289,11 +291,11 @@ def query(
 def main() -> None:
     parser = argparse.ArgumentParser(description="RAG query engine: embed question → Qdrant top-k")
     parser.add_argument("--question", required=True, help="Question to answer")
-    parser.add_argument("--k", type=int, default=_DEFAULT_TOP_K, help=f"Top-k results (default: {_DEFAULT_TOP_K})")
+    parser.add_argument("--k", type=int, default=DEFAULT_TOP_K, help=f"Top-k results (default: {DEFAULT_TOP_K})")
     parser.add_argument("--processing-type", default=None, help="Filter by processing type slug (e.g. nablarch-batch)")
-    parser.add_argument("--model", default=_DEFAULT_EMBED_MODEL_ID, help="Cohere Embed model ID")
-    parser.add_argument("--qdrant-host", default=_QDRANT_HOST)
-    parser.add_argument("--qdrant-port", type=int, default=_QDRANT_PORT)
+    parser.add_argument("--model", default=DEFAULT_EMBED_MODEL_ID, help="Cohere Embed model ID")
+    parser.add_argument("--qdrant-host", default=QDRANT_HOST)
+    parser.add_argument("--qdrant-port", type=int, default=QDRANT_PORT)
     parser.add_argument("--no-verify-ssl", action="store_true", default=False)
     args = parser.parse_args()
 

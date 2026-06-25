@@ -24,14 +24,11 @@ from pathlib import Path
 
 from tools.rag.scripts.query import (
     QueryResult,
-    embed_query,
-    build_processing_type_filter,
-    search_qdrant,
-    format_results,
-    _DEFAULT_EMBED_MODEL_ID,
-    _DEFAULT_TOP_K,
-    _QDRANT_HOST,
-    _QDRANT_PORT,
+    query as rag_query,
+    DEFAULT_EMBED_MODEL_ID,
+    DEFAULT_TOP_K,
+    QDRANT_HOST,
+    QDRANT_PORT,
 )
 from tools.benchmark.scripts.evaluate import evaluate_scenario
 
@@ -195,23 +192,33 @@ def call_llm(prompt: str) -> dict:
     Raises:
         RuntimeError: If claude exits with non-zero code.
     """
-    proc = subprocess.run(
-        [
-            "claude", "-p",
-            "--model", "sonnet",
-            "--output-format", "json",
-            "--no-session-persistence",
-        ],
-        input=prompt,
-        capture_output=True,
-        text=True,
-        timeout=_TIMEOUT,
-    )
+    try:
+        proc = subprocess.run(
+            [
+                "claude", "-p",
+                "--model", "sonnet",
+                "--output-format", "json",
+                "--no-session-persistence",
+            ],
+            input=prompt,
+            capture_output=True,
+            text=True,
+            timeout=_TIMEOUT,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(
+            f"claude timed out after {_TIMEOUT}s"
+        ) from exc
     if proc.returncode != 0:
         raise RuntimeError(
             f"claude exited with code {proc.returncode}: {proc.stderr[:500]}"
         )
-    return json.loads(proc.stdout)
+    try:
+        return json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"claude output is not valid JSON: {proc.stdout[:200]!r}"
+        ) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -347,11 +354,11 @@ def save_rag_results(output_dir: Path, scenario_id: str, data: dict) -> None:
 def run_rag_scenario(
     scenario: dict,
     knowledge_dir: Path,
-    k: int = _DEFAULT_TOP_K,
-    model_id: str = _DEFAULT_EMBED_MODEL_ID,
+    k: int = DEFAULT_TOP_K,
+    model_id: str = DEFAULT_EMBED_MODEL_ID,
     use_filter: bool = True,
-    qdrant_host: str = _QDRANT_HOST,
-    qdrant_port: int = _QDRANT_PORT,
+    qdrant_host: str = QDRANT_HOST,
+    qdrant_port: int = QDRANT_PORT,
     verify_ssl: bool = True,
 ) -> dict:
     """Run a single scenario through the RAG pipeline.
@@ -386,16 +393,17 @@ def run_rag_scenario(
     # Resolve processing type slug for Qdrant filter
     processing_type_slug = resolve_processing_type_slug(hearing_answer) if use_filter else None
 
-    # Embed query
-    vector = embed_query(question, model_id=model_id, verify_ssl=verify_ssl)
-
-    # Build filter
-    filt = build_processing_type_filter(processing_type_slug)
-
-    # Search Qdrant
+    # Retrieve top-k sections via RAG query
     client = QdrantClient(host=qdrant_host, port=qdrant_port)
-    hits = search_qdrant(client, vector, k=k, processing_type_filter=filt)
-    results = format_results(hits, knowledge_dir)
+    results = rag_query(
+        question,
+        k=k,
+        processing_type=processing_type_slug,
+        model_id=model_id,
+        qdrant_client=client,
+        knowledge_dir=knowledge_dir,
+        verify_ssl=verify_ssl,
+    )
 
     # Build prompt
     prompt = build_rag_prompt(question, results, knowledge_dir)
@@ -426,11 +434,11 @@ def run_rag_all(
     knowledge_dir: str | Path,
     output_dir: Path | None = None,
     scenario_ids: list[str] | None = None,
-    k: int = _DEFAULT_TOP_K,
-    model_id: str = _DEFAULT_EMBED_MODEL_ID,
+    k: int = DEFAULT_TOP_K,
+    model_id: str = DEFAULT_EMBED_MODEL_ID,
     use_filter: bool = True,
-    qdrant_host: str = _QDRANT_HOST,
-    qdrant_port: int = _QDRANT_PORT,
+    qdrant_host: str = QDRANT_HOST,
+    qdrant_port: int = QDRANT_PORT,
     verify_ssl: bool = True,
 ) -> dict:
     """Run all (or selected) scenarios through the RAG pipeline.
@@ -544,14 +552,14 @@ def main() -> None:
     )
     parser.add_argument(
         "--model",
-        default=_DEFAULT_EMBED_MODEL_ID,
-        help=f"Cohere Embed model ID (default: {_DEFAULT_EMBED_MODEL_ID})",
+        default=DEFAULT_EMBED_MODEL_ID,
+        help=f"Cohere Embed model ID (default: {DEFAULT_EMBED_MODEL_ID})",
     )
     parser.add_argument(
         "--k",
         type=int,
-        default=_DEFAULT_TOP_K,
-        help=f"Top-k results to retrieve (default: {_DEFAULT_TOP_K})",
+        default=DEFAULT_TOP_K,
+        help=f"Top-k results to retrieve (default: {DEFAULT_TOP_K})",
     )
     parser.add_argument(
         "--output-dir",
@@ -566,14 +574,14 @@ def main() -> None:
     )
     parser.add_argument(
         "--qdrant-host",
-        default=_QDRANT_HOST,
-        help=f"Qdrant host (default: {_QDRANT_HOST})",
+        default=QDRANT_HOST,
+        help=f"Qdrant host (default: {QDRANT_HOST})",
     )
     parser.add_argument(
         "--qdrant-port",
         type=int,
-        default=_QDRANT_PORT,
-        help=f"Qdrant port (default: {_QDRANT_PORT})",
+        default=QDRANT_PORT,
+        help=f"Qdrant port (default: {QDRANT_PORT})",
     )
     parser.add_argument(
         "--no-verify-ssl",

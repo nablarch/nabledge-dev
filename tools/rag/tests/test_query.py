@@ -4,6 +4,7 @@ No Bedrock or Qdrant calls are made in these tests (all external calls are mocke
 """
 from __future__ import annotations
 
+import json
 import sys
 import pathlib
 from typing import Any
@@ -20,10 +21,14 @@ from tools.rag.scripts.query import (
     build_processing_type_filter,
     format_results,
     QueryResult,
-    _DEFAULT_EMBED_MODEL_ID,
-    _DEFAULT_TOP_K,
+    DEFAULT_EMBED_MODEL_ID,
+    DEFAULT_TOP_K,
     _COLLECTION_NAME,
 )
+
+# Backward-compat aliases used in existing tests and new truncation tests
+_DEFAULT_EMBED_MODEL_ID = DEFAULT_EMBED_MODEL_ID
+_DEFAULT_TOP_K = DEFAULT_TOP_K
 
 
 # ---------------------------------------------------------------------------
@@ -61,7 +66,6 @@ class TestEmbedQuery:
         mock_response = MagicMock()
         mock_response.__getitem__ = lambda self, key: {"body": MagicMock(read=lambda: b'{"embeddings":{"float":[[0.1]*1024]}}')}[key]  # noqa: E501
 
-        import json
         body_bytes = json.dumps({"embeddings": {"float": [fake_vector]}}).encode()
         mock_body = MagicMock()
         mock_body.read.return_value = body_bytes
@@ -77,7 +81,6 @@ class TestEmbedQuery:
     def test_uses_search_query_input_type(self) -> None:
         # Given: Bedrock mock that captures the request body
         fake_vector = [0.0] * 1024
-        import json
         body_bytes = json.dumps({"embeddings": {"float": [fake_vector]}}).encode()
         mock_body = MagicMock()
         mock_body.read.return_value = body_bytes
@@ -95,7 +98,6 @@ class TestEmbedQuery:
 
     def test_passes_text_in_texts_array(self) -> None:
         # Given
-        import json
         fake_vector = [0.0] * 1024
         body_bytes = json.dumps({"embeddings": {"float": [fake_vector]}}).encode()
         mock_body = MagicMock()
@@ -109,10 +111,7 @@ class TestEmbedQuery:
 
         # Then
         call_args = mock_client.invoke_model.call_args
-        body_arg = call_args.kwargs.get("body") or (call_args.args[1] if len(call_args.args) > 1 else None)
-        if body_arg is None:
-            # try positional
-            body_arg = call_args[1].get("body", "")
+        body_arg = call_args.kwargs["body"]
         sent_body = json.loads(body_arg)
         assert "hello world" in sent_body["texts"]
 
@@ -131,17 +130,14 @@ class TestBuildProcessingTypeFilter:
         assert result is None
 
     def test_filter_includes_given_type_and_none(self) -> None:
-        # Given
-        from qdrant_client.models import Filter, FieldCondition, MatchAny
-
         # When
         result = build_processing_type_filter("nablarch-batch")
 
         # Then: result is a Qdrant Filter that matches the type OR "none"
         assert result is not None
-        # The filter should be a Filter object (or equivalent structure)
-        # We check structure by inspecting the type
-        assert hasattr(result, "should") or hasattr(result, "must")
+        values = _extract_match_any_values(result)
+        assert "nablarch-batch" in values
+        assert "none" in values
 
     def test_filter_structure_allows_none_type(self) -> None:
         # Given: slug "nablarch-batch"
@@ -292,7 +288,7 @@ class TestFormatResults:
         results = format_results(hits, knowledge_dir)
 
         # Then: section_ref is in "path.json:sN" format
-        assert results[0].section_ref.endswith(".json:s1")
+        assert results[0].section_ref == "processing-pattern/nablarch-batch/arch.json:s1"
 
     def test_scores_preserved(self) -> None:
         # Given
@@ -322,6 +318,7 @@ class TestFormatResults:
         assert "file" in ss
         assert "section_id" in ss
         assert ss["section_id"] == "s1"
+        assert ss["file"] == "processing-pattern/nablarch-batch/nablarch-batch-architecture.json"
 
     def test_read_sections_format(self) -> None:
         # Given
@@ -334,9 +331,112 @@ class TestFormatResults:
 
         # Then: section_ref is "path/to/file.json:s2"
         ref = results[0].section_ref
-        assert ref.endswith(".json:s2"), f"Expected .json:sN format, got: {ref}"
-        assert ":" in ref
+        assert ref == "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2"
 
     def test_empty_hits_returns_empty_list(self) -> None:
         # Given / When / Then
         assert format_results([], pathlib.Path("/knowledge")) == []
+
+    def test_empty_page_id_hit_is_skipped(self) -> None:
+        # Given: a hit with no page_id in payload
+        bad_hit = MagicMock()
+        bad_hit.score = 0.5
+        bad_hit.payload = {"page_id": "", "section_id": "s1", "processing_type": "none",
+                           "category": "none", "title": "", "level": 0, "class_names": [], "linked_pages": []}
+
+        # When
+        results = format_results([bad_hit], pathlib.Path("/knowledge"))
+
+        # Then: skipped — no invalid QueryResult produced
+        assert len(results) == 0
+
+
+# ---------------------------------------------------------------------------
+# embed_query truncation tests
+# ---------------------------------------------------------------------------
+
+class TestEmbedQueryTruncation:
+    """Tests for embed_query() text truncation at model max chars boundary."""
+
+    def test_truncates_long_text_to_model_max_chars(self) -> None:
+        # Given: text longer than 2048 chars (model max for v3)
+        long_text = "あ" * 3000
+        captured_body: dict = {}
+
+        def mock_invoke(**kwargs):  # type: ignore[no-untyped-def]
+            captured_body.update(json.loads(kwargs["body"]))
+            body_bytes = json.dumps({"embeddings": {"float": [[0.0] * 1024]}}).encode()
+            mock_body = MagicMock()
+            mock_body.read.return_value = body_bytes
+            return {"body": mock_body}
+
+        mock_client = MagicMock()
+        mock_client.invoke_model.side_effect = mock_invoke
+
+        with patch("boto3.client", return_value=mock_client):
+            # When
+            embed_query(long_text, model_id=_DEFAULT_EMBED_MODEL_ID)
+
+        # Then: text was truncated to 2048 chars
+        assert len(captured_body["texts"][0]) == 2048
+
+    def test_does_not_truncate_short_text(self) -> None:
+        # Given: text shorter than 2048 chars
+        short_text = "短い質問"
+        captured_body: dict = {}
+
+        def mock_invoke(**kwargs):  # type: ignore[no-untyped-def]
+            captured_body.update(json.loads(kwargs["body"]))
+            body_bytes = json.dumps({"embeddings": {"float": [[0.0] * 1024]}}).encode()
+            mock_body = MagicMock()
+            mock_body.read.return_value = body_bytes
+            return {"body": mock_body}
+
+        mock_client = MagicMock()
+        mock_client.invoke_model.side_effect = mock_invoke
+
+        with patch("boto3.client", return_value=mock_client):
+            # When
+            embed_query(short_text, model_id=_DEFAULT_EMBED_MODEL_ID)
+
+        # Then: text is unchanged
+        assert captured_body["texts"][0] == short_text
+
+
+# ---------------------------------------------------------------------------
+# query() orchestration tests
+# ---------------------------------------------------------------------------
+
+class TestQuery:
+    """Integration test for query() — verifies wiring between embed, filter, search, format."""
+
+    def test_returns_results_for_question_with_filter(self) -> None:
+        # Given: mocked embed, Qdrant client, and a processed hit
+        fake_vector = [0.1] * 1024
+        fake_hit = _make_qdrant_hit("processing-pattern/nablarch-batch/arch", "s1", "nablarch-batch", 0.9)
+        mock_qdrant_client = MagicMock()
+        mock_response = MagicMock()
+        mock_response.points = [fake_hit]
+        mock_qdrant_client.query_points.return_value = mock_response
+
+        body_bytes = json.dumps({"embeddings": {"float": [fake_vector]}}).encode()
+        mock_body = MagicMock()
+        mock_body.read.return_value = body_bytes
+        mock_bedrock = MagicMock()
+        mock_bedrock.invoke_model.return_value = {"body": mock_body}
+
+        from tools.rag.scripts.query import query as rag_query
+
+        with patch("boto3.client", return_value=mock_bedrock):
+            # When: query() is called with filter
+            results = rag_query(
+                "Nablarchバッチの起動方法は？",
+                k=10,
+                processing_type="nablarch-batch",
+                qdrant_client=mock_qdrant_client,
+            )
+
+        # Then: returns QueryResult list with correct section_ref
+        assert len(results) == 1
+        assert results[0].section_ref.endswith(".json:s1")
+        assert results[0].processing_type == "nablarch-batch"
