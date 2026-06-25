@@ -112,7 +112,7 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - [x] QA expert review（subagent）
 - [x] language expert review（subagent）
 - [x] software-engineering expert review（subagent）
-- [ ] user review
+- [x] user review
 
 **Completion criteria**:
 
