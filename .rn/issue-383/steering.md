@@ -98,20 +98,20 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 **Steps**:
 
-- [ ] `tools/rag/scripts/query.py` を実装する
+- [x] `tools/rag/scripts/query.py` を実装する
   - `input_type=search_query` でCohere Embed v4 Bedrock呼び出し
   - Qdrant top-k検索（k=10 / k=20）
   - メタフィルタ（`processing_type` / `purpose`）
   - 結果を `selected_pages` / `read_sections`（`path.json:sN` 形式）で返す（現行 `workflow_details.json` フォーマット互換）
-- [ ] `tools/rag/tests/test_query.py` を実装する（クエリ・フィルタのユニットテスト）
-- [ ] `tools/rag/scripts/run_rag_qa.py` を実装する
+- [x] `tools/rag/tests/test_query.py` を実装する（クエリ・フィルタのユニットテスト）
+- [x] `tools/rag/scripts/run_rag_qa.py` を実装する
   - `query.py` でtop-k取得 → LLMへ渡し回答生成（現行 `e2e-prompt.md` 流用）
   - 現行 `run_qa.py` と同じ出力構造（`workflow_details.json` / `answer.md` / `metrics.json` / `evaluation.json`）
-- [ ] **1シナリオ（`pre-01`）**で実行し、出力を目視確認する
-- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-3.md`）
-- [ ] QA expert review（subagent）
-- [ ] language expert review（subagent）
-- [ ] software-engineering expert review（subagent）
+- [x] **1シナリオ（`pre-01`）**で実行し、出力を目視確認する
+- [x] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-3.md`）
+- [x] QA expert review（subagent）
+- [x] language expert review（subagent）
+- [x] software-engineering expert review（subagent）
 - [ ] user review
 
 **Completion criteria**:
