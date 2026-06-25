@@ -233,26 +233,37 @@ versions, as the workflow is superseded and confusingly named.
 
 - **Status**: paused
 - **Date**: 2026-06-25
-- **Last completed**: #3 in progress — workflow implemented; BM25 term extraction design discussion held; new design agreed
-- **Next**: #3 — redesign full-text-search.md with new term extraction approach (see Notes), then run 1-run pre-benchmark stabilization loop
+- **Last completed**: #3 in progress — full-text-search.md redesigned with page-title lookup approach (committed); 4-scenario experiment confirmed 1-shot term extraction working
+- **Next**: #3 (new sub-task) — implement fts-hints.md generation in RBKC, then run pre-benchmark stabilization loop
 - **Notes**: baseline = 20260612-1404-baseline-current (25/34, p50 $0.682, 118s). bm25s installed in /home/tie303177/venv. .bm25-index/ is runtime-generated (untracked, gitignored).
   Workflow implementation complete (all committed):
   - check-answerable.md ✅
   - qa.md ✅ 最終7ステップフロー
   - generate-answer.md ✅ {findings}リネーム
   - benchmark infra ✅ 168 tests pass
+  - full-text-search.md ✅ ページタイトルリスト埋め込み済み（ファイル名ベース、暫定）
 
-  **New term extraction design (agreed in conversation, not yet implemented):**
-  現在: 質問から具体的識別子（クラス名等）をルールベースで抽出
-  新設計: component配下のページタイトル一覧（約1,000トークン）＋質問をLLMに渡し、
-          関連しそうなページのタイトルの語をBM25タームとして使う。
-          「バリデーション」→ タイトル一覧に `libraries-bean-validation` がある → `bean-validation` をターム化。
-          言い換えはページタイトルが教えてくれる設計。
-  実験結果（4シナリオ × 10回試行）:
-  - review-08（セッションストア）: 3回目でヒット（単語分割が有効）
-  - pre-02（バリデーション）: 9回目で `InjectForm` にたどり着いた（ページタイトルがあれば1回目で引ける）
-  - pre-03（UniversalDao）: 10回目にファイル名直指定でやっと（s3は概念説明セクション、質問意図との対応要確認）
-  - oos-qa-01（WebSocket）: 10回粘って正しくgave_up
+  **fts-hints.md設計（会話で合意済み、未実装）:**
+  - 目的: index.mdから特定カテゴリのページタイトルを抽出してBM25ターム変換ヒントとして提供
+  - ファイル名: `fts-hints.md`（full-text-search hints）
+  - 生成: RBKCで `generate_index_md()` の直後に生成（scripts/create/index.py に関数追加、run.py 3箇所に呼び出し追加）
+  - 対象カテゴリ: component/*, processing-pattern/*, development-tools/*, guide/*, setup/*（約1,900トークン）
+  - フォーマット: index.md同様 `## カテゴリ` + `### ページタイトル`（path/セクション行は不要）
+  - verifyへの影響: なし（.mdファイルはJSONスキャン対象外）、設計書に除外対象として明記のみ
+  - 設計書への追記: rbkc-converter-design.md §5-4として追加
 
-  Intermediate results in `tools/benchmark/results/20260625-16*/` — delete before next benchmark run.
-  processing-pattern等はcomponent以外なので対象外かどうか未確定。
+  **full-text-search.mdの更新が必要:**
+  現在は `full-text-search.md` にファイル名ベースのリストを埋め込んでいる。
+  fts-hints.md実装後は `cat scripts/fts-hints.md` 等で動的に読み込む方式に変更し、埋め込みリストを廃止する。
+
+  **実験結果（fts-hints.md方式の効果確認済み）:**
+  - pre-02（バリデーション）: bean-validation, nablarch-validation, InjectForm → 1回目でBM25-complete PASS ✅
+  - review-08（セッションストア）: session-store, SessionStoreHandler → 1回目でBM25-complete PASS ✅
+  - pre-03（UniversalDao）: universal-dao, UniversalDao → 1回目でBM25-complete PASS ✅
+  - oos-qa-01（WebSocket）: WebSocket → NG→セマンティックfallback ✅（正しいパス）
+
+  **作業前の必須手順（ユーザー指示）:**
+  再開後に作業を始める前に、rbkcで全バージョン（v6/v5/v1.4/v1.3/v1.2）を実行してFAIL 0件・変更差分なしを確認すること。
+
+  **削除待ち:** `tools/benchmark/results/20260625-16*/`（中間結果）、`アクション**`、`ステップ`（空ファイル）
+  **.lw/nab-official/:** v1.2〜v6のシンボリックリンク作成済み（メインリポジトリの .lw/nab-official/* を指す）
