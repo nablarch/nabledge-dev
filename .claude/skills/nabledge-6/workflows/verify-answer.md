@@ -1,11 +1,11 @@
 # Verify Answer Workflow
 
-Verifies that all Nablarch-specific claims in the answer are supported by the sections.
+Verifies that all Nablarch-specific claims in the answer are supported by the source pages, and that no required content is missing from the answer.
 
 ## Input
 
 - `{answer_text}`: Generated answer string.
-- `{selected_sections}`: Array of section pointers used to generate the answer.
+- `{selected_sections}`: Array of section pointers in `{"file": "...", "section_id": "...", "relevance": "..."}` format. Used only to identify which pages to read.
 
 ## Output
 
@@ -16,14 +16,18 @@ Verifies that all Nablarch-specific claims in the answer are supported by the se
 or
 
 ```json
-{"result": "FAIL", "issues": ["claim1", "claim2"]}
+{"result": "FAIL", "issues": ["<unsupported claim or missing item description>", ...]}
 ```
 
 ---
 
-## Step 1: Verify answer
+## Step 1: Read pages
 
-Check that all Nablarch-specific claims in `{answer_text}` are supported by the content of `{selected_sections}`.
+Extract the unique `file` values from `{selected_sections}`. For each unique file path, read the full page file at `knowledge/{file}`. Save all page contents as `page_contents`.
+
+## Step 2: Verify claims
+
+Check that all Nablarch-specific claims in `{answer_text}` are supported by `page_contents`.
 
 **Extract these claim categories** (Nablarch-specific claims):
 
@@ -46,12 +50,31 @@ Check that all Nablarch-specific claims in `{answer_text}` are supported by the 
 | General web concepts | "HTTPリクエスト", "JSONレスポンス" |
 
 For each extracted claim, judge in order:
-1. Directly stated in section content → supported
-2. Direct paraphrase of section content (paraphrase/abbreviation/synonym) → supported
+1. Directly stated in page content → supported
+2. Direct paraphrase of page content (paraphrase/abbreviation/synonym) → supported
 3. Attribute/behavior/constraint not explicitly stated → unsupported
 
 Boundary rule: Inference is valid only for direct paraphrases. Attributes, behaviors, or constraints not explicitly stated are unsupported even if technically plausible.
 
-If any claim is unsupported, return `{"result": "FAIL", "issues": ["<claim1>", "<claim2>", ...]}` listing all unsupported claims.
+## Step 3: Check for missing MUST content
 
-Otherwise return `{"result": "PASS"}`.
+Check whether `page_contents` contains information that directly answers the question but is absent from `{answer_text}`.
+
+Specifically: if a page section contains a concrete implementation method, required configuration, or explicit constraint that is directly relevant to the question AND is not reflected in the answer in any form, flag it as a missing item.
+
+Do NOT flag:
+- Background or conceptual content
+- Content the answer correctly omitted as out of scope
+- Content that is present in the answer in paraphrased form
+
+## Step 4: Return result
+
+If any claim from Step 2 is unsupported OR any missing item found in Step 3:
+```json
+{"result": "FAIL", "issues": ["<unsupported claim or missing item description>", ...]}
+```
+
+Otherwise:
+```json
+{"result": "PASS"}
+```
