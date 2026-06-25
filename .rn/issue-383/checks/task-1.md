@@ -6,7 +6,7 @@
 |---|---|---|---|---|
 | docker-compose.yml exists and `docker compose up` starts Qdrant | OK | `docker compose -f tools/rag/docker/docker-compose.yml up -d` succeeded; `curl http://localhost:6333/healthz` → `healthz check passed`; container `docker-qdrant-1` Up (qdrant/qdrant:v1.13.4) | | |
 | index.py runs with --limit 10, stores points in Qdrant | OK | `python3 -m tools.rag.scripts.index --knowledge-dir .claude/skills/nabledge-6/knowledge --limit 10 --model cohere.embed-multilingual-v3 --no-verify-ssl` → 21 embeddings received → Collection 'nabledge-6' now has 21 points. | | |
-| Stored points have processing_type / category / page_id / section_id in metadata | OK | Inspected 1 point via qdrant_client: payload contains `processing_type`, `category`, `page_id` (`about-nablarch-architecture`), `section_id` (`s1`), `title`, `level`, `class_names`, `linked_pages`. | | |
+| Stored points have processing_type / category / page_id / section_id in metadata | OK | Re-ran with `--limit 30` to cover `component/` (25th file). 128 points retrieved, all 4 required fields present in every point (no assertion errors). `category: "adapters"` confirmed in 31 component/adapters points. `processing_type: "nablarch-batch"` confirmed via direct chunk build on `nablarch-batch-architecture.json` (consistent with unit tests for all 7 processing types). Vector dim: 1024 (correct for v3). | | |
 | test_index.py tests all pass | OK | `python3 -m pytest tools/rag/tests/test_index.py -v` → 36 passed in 0.16s. Added TestModelVectorSizes (4 tests) and TestEmbedTextsModelMaxChars (5 tests) covering truncation logic and vector size dict. | | |
 
 ## Notes
