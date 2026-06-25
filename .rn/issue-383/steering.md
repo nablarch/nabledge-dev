@@ -223,16 +223,12 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: paused
+- **Status**: not suspended
 - **Date**: 2026-06-25
-- **Last completed**: none（#1 実装完了・動作確認未完了）
-- **Next**: #1 完了（`--model cohere.embed-multilingual-v3` 対応を追加 → `--limit 10` で動作確認 → レビュー → 完了マーカー）
+- **Last completed**: #1 (commit e237c4d5)
+- **Next**: #2 — v6全件Indexing実行
 - **Notes**: |
-    Task #1 の実装（docker-compose.yml, index.py, test_index.py）はコミット済み（a82d40d3）。
-    ユニットテスト 27/27 パス。docker-compose.yml でQdrant起動確認済み。
-    ただし index.py が cohere.embed-v4:0 固定のため Bedrock SCP ブロックで NG。
-    決定 D-1: v3（cohere.embed-multilingual-v3）でまず動作確認し、フルベンチは v4 解除後。
-    次にやること: index.py に `--model` 引数を追加してデフォルトを v3 に変更。
-    その後 `python3 -m tools.rag.scripts.index --knowledge-dir .claude/skills/nabledge-6/knowledge --limit 10 --model cohere.embed-multilingual-v3` で動作確認。
-    check file: .rn/issue-383/checks/task-1.md（エキスパートが記入済み、コミット未）。
-    boto3 は venv に未インストール（~/.local にある）。index.py は verify=False + sys.path 追加で回避済みか要確認。
+    #1 完了。`--model cohere.embed-multilingual-v3` 追加、v3 truncation (2048chars) 追加、
+    Qdrant v1.18.0 に更新、テスト 36/36 パス、10ファイル動作確認済み（21 points格納）。
+    #2 で Qdrant ストレージをリセットして全件 Indexing を実行する。
+    Qdrant は起動中（localhost:6333）。`--no-verify-ssl` が必要（企業プロキシ）。
