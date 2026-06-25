@@ -1,14 +1,18 @@
 """Index generator for RBKC.
 
-Generates index.md from knowledge JSON files:
+Generates index.md and fts-hints.md from knowledge JSON files:
 
 - ``index.md`` — Markdown format for semantic search (Stage 1 page selection).
   Format: H2 per category → H3 per file → list of section IDs and titles.
+- ``fts-hints.md`` — BM25 term translation hints for full-text search.
+  Contains page titles from selected component categories.
+  Format: H2 per category → H3 per page title.
 
 Files with ``no_knowledge_content: true`` are excluded.
 
 Public API:
     generate_index_md(knowledge_dir, output_path) -> None
+    generate_fts_hints_md(knowledge_dir, output_path) -> None
 """
 from __future__ import annotations
 
@@ -109,6 +113,76 @@ def generate_index_md(knowledge_dir: Path, output_path: Path) -> None:
             section_lines = _build_section_lines(data.get("sections", []))
             lines.extend(section_lines)
             lines.append("")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+# Target second-level category names under ``component/`` for FTS hints.
+_FTS_HINTS_SUBCATEGORIES = frozenset([
+    "libraries",
+    "processing-pattern",
+    "development-tools",
+    "guide",
+    "setup",
+])
+
+
+def generate_fts_hints_md(knowledge_dir: Path, output_path: Path) -> None:
+    """Write ``fts-hints.md`` to *output_path* from knowledge JSON files.
+
+    Scans *knowledge_dir* for JSON files in categories that start with
+    ``component/`` and whose second path component is one of:
+    ``libraries``, ``processing-pattern``, ``development-tools``,
+    ``guide``, ``setup``.
+
+    Files with ``no_knowledge_content: true``, files under ``assets/``,
+    and files under ``javadoc/`` are excluded.
+
+    Format: H2 per category → H3 per page title (title field or file stem).
+
+    Args:
+        knowledge_dir: Root directory containing knowledge JSON files.
+        output_path: Destination path for ``fts-hints.md``.
+    """
+    files_by_category: dict[str, list[str]] = {}
+
+    for json_path in sorted(knowledge_dir.rglob("*.json")):
+        if json_path.stem.startswith("index") or json_path.stem.startswith("terms"):
+            continue
+        rel = json_path.relative_to(knowledge_dir)
+        parts = rel.parts
+        if "assets" in parts:
+            continue
+        if "javadoc" in parts:
+            continue
+        if len(parts) < 2:
+            continue
+        top_level = parts[0]
+        second_level = parts[1]
+        # Only include categories under component/ with a matching subcategory.
+        if top_level != "component":
+            continue
+        if second_level not in _FTS_HINTS_SUBCATEGORIES:
+            continue
+        category = "/".join(parts[:2])
+        try:
+            data = _load_json(json_path)
+        except (json.JSONDecodeError, OSError):
+            continue
+        if data.get("no_knowledge_content") is True:
+            continue
+        title = data.get("title", json_path.stem)
+        files_by_category.setdefault(category, []).append(title)
+
+    lines = ["# FTS Hints", ""]
+
+    for category in sorted(files_by_category.keys()):
+        lines.append(f"## {category}")
+        lines.append("")
+        for title in files_by_category[category]:
+            lines.append(f"### {title}")
+        lines.append("")
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(lines), encoding="utf-8")
