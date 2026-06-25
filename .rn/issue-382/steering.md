@@ -233,14 +233,26 @@ versions, as the workflow is superseded and confusingly named.
 
 - **Status**: paused
 - **Date**: 2026-06-25
-- **Last completed**: #3 in progress — workflow fully implemented and benchmark infra updated; pre-benchmark stabilization next
-- **Next**: #3 — fix full-text-search.md (Japanese concept words extracted in review-08); run 1 full benchmark run; inspect all 34 workflow_details.json; fix until stable; then proceed to 3-run benchmark
+- **Last completed**: #3 in progress — workflow implemented; BM25 term extraction design discussion held; new design agreed
+- **Next**: #3 — redesign full-text-search.md with new term extraction approach (see Notes), then run 1-run pre-benchmark stabilization loop
 - **Notes**: baseline = 20260612-1404-baseline-current (25/34, p50 $0.682, 118s). bm25s installed in /home/tie303177/venv. .bm25-index/ is runtime-generated (untracked, gitignored).
   Workflow implementation complete (all committed):
-  - check-answerable.md ✅ 新規作成
+  - check-answerable.md ✅
   - qa.md ✅ 最終7ステップフロー
   - generate-answer.md ✅ {findings}リネーム
-  - benchmark infra ✅ bm25-search.sh in allowedTools, e2e-prompt schema updated, 168 tests pass
-  Known issue from 8-scenario inspection:
-  - review-08: full-text-search.md が「DBストア」「HIDDENストア」「セッション変数」（日本語概念語）を抽出 → Do NOT extract リストに日本語概念語の明示が必要
-  Intermediate run `tools/benchmark/results/20260625-161851/` (8 scenarios, incomplete) — inspect remaining issues then delete before 1-run benchmark.
+  - benchmark infra ✅ 168 tests pass
+
+  **New term extraction design (agreed in conversation, not yet implemented):**
+  現在: 質問から具体的識別子（クラス名等）をルールベースで抽出
+  新設計: component配下のページタイトル一覧（約1,000トークン）＋質問をLLMに渡し、
+          関連しそうなページのタイトルの語をBM25タームとして使う。
+          「バリデーション」→ タイトル一覧に `libraries-bean-validation` がある → `bean-validation` をターム化。
+          言い換えはページタイトルが教えてくれる設計。
+  実験結果（4シナリオ × 10回試行）:
+  - review-08（セッションストア）: 3回目でヒット（単語分割が有効）
+  - pre-02（バリデーション）: 9回目で `InjectForm` にたどり着いた（ページタイトルがあれば1回目で引ける）
+  - pre-03（UniversalDao）: 10回目にファイル名直指定でやっと（s3は概念説明セクション、質問意図との対応要確認）
+  - oos-qa-01（WebSocket）: 10回粘って正しくgave_up
+
+  Intermediate results in `tools/benchmark/results/20260625-16*/` — delete before next benchmark run.
+  processing-pattern等はcomponent以外なので対象外かどうか未確定。

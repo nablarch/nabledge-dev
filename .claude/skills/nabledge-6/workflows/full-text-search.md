@@ -22,26 +22,171 @@ Empty array when no BM25 terms found, script returns no hits, or script exits no
 
 ---
 
-## Step 1: Extract BM25-effective terms
+## Step 1: Extract BM25 search terms using page title lookup
 
-From the user's question, extract terms that will **narrow the result set** in BM25 search — terms specific enough to appear in only a small number of knowledge files.
+Use the **Component page title list** below as a translation table to map the question's concepts to Nablarch-specific terms.
 
-**Criterion**: Extract a term if it is a concrete identifier (class name, annotation name, method name, configuration file name, SQL ID, component name) that appears verbatim in the Nablarch knowledge base. The test is: "Would a keyword match on this term return a small, focused set of pages?"
+**Process**:
 
-**Source rule**: Take terms **as they appear in the question** — do not infer synonyms, related terms, or paraphrases. The only permitted modification is correcting an obvious typo or misspelling (e.g. `UniversalDoa` → `UniversalDao`) so the term matches the knowledge base.
+1. Read the question and identify its topic (e.g., "バリデーション", "セッション", "DB操作", "ファイル入出力").
+2. Scan the page title list and find titles whose terms relate to that topic.
+3. From the matching titles, extract BM25 search terms:
+   - Use hyphen-separated parts of the title (e.g., `libraries-bean-validation` → `bean-validation`)
+   - Or the full filename (e.g., `handlers-SessionStoreHandler` → `SessionStoreHandler`)
+4. Also include any concrete identifiers that appear **verbatim** in the question (class name, annotation, method name, configuration file name).
 
-**Extract** (concrete identifiers, low document frequency):
-`UniversalDao`, `@InjectForm`, `batchUpdate`, `SqlPStatement`, `web-component-configuration.xml`, `SQLID`, `RoutesMapping`, `BatchAction`, etc.
+**Do NOT extract** broad words from the question:
+- Abstract concepts: `バリデーション`, `トランザクション`, `ハンドラ`, `データ変換`
+- General Java terms: `List`, `String`, `Exception`, `try-catch`
+- Natural language filler: `使い方`, `方法`, `について`, `実装`
 
-**Do NOT extract** (broad terms, high document frequency — would match too many pages and dilute scores):
-- Abstract concepts: `バリデーション`, `トランザクション`, `Handler`, `Action`
-- General Java: `List`, `String`, `try-catch`, `Exception`
-- Natural language filler: `使い方`, `方法`, `について`
-- Do NOT add synonyms, related identifiers, or guessed class names not present in the question.
+**Examples**:
+
+| Question | Matching titles | BM25 terms to use |
+|---|---|---|
+| RESTのバリデーション実装を教えて | `libraries-bean-validation`, `handlers-jaxrs-bean-validation-handler` | `bean-validation`, `jaxrs-bean-validation` |
+| セッションのストア選択基準を知りたい | `libraries-session-store`, `handlers-SessionStoreHandler` | `session-store`, `SessionStoreHandler` |
+| UniversalDaoで検索する方法 | `libraries-universal-dao` (and verbatim: `UniversalDao`) | `universal-dao`, `UniversalDao` |
+| ファイル入出力の実装方法 | `libraries-data-format`, `libraries-data-bind`, `libraries-data-io-functional-comparison` | `data-format`, `data-bind` |
+
+**Component page title list**:
+
+```
+adapters-adaptors
+adapters-doma-adaptor
+adapters-jaxrs-adaptor
+adapters-jsr310-adaptor
+adapters-lettuce-adaptor
+adapters-log-adaptor
+adapters-mail-sender-freemarker-adaptor
+adapters-mail-sender-thymeleaf-adaptor
+adapters-mail-sender-velocity-adaptor
+adapters-micrometer-adaptor
+adapters-redishealthchecker-lettuce-adaptor
+adapters-redisstore-lettuce-adaptor
+adapters-router-adaptor
+adapters-slf4j-adaptor
+adapters-web-thymeleaf-adaptor
+adapters-webspheremq-adaptor
+handlers-HttpErrorHandler
+handlers-InjectForm
+handlers-ServiceAvailabilityCheckHandler
+handlers-SessionStoreHandler
+handlers-batch
+handlers-body-convert-handler
+handlers-common
+handlers-cors-preflight-request-handler
+handlers-csrf-token-verification-handler
+handlers-data-read-handler
+handlers-database-connection-management-handler
+handlers-dbless-loop-handler
+handlers-duplicate-process-check-handler
+handlers-file-record-writer-dispose-handler
+handlers-forwarding-handler
+handlers-global-error-handler
+handlers-handlers
+handlers-health-check-endpoint-handler
+handlers-hot-deploy-handler
+handlers-http-access-log-handler
+handlers-http-character-encoding-handler
+handlers-http-messaging
+handlers-http-messaging-error-handler
+handlers-http-messaging-request-parsing-handler
+handlers-http-messaging-response-building-handler
+handlers-http-request-java-package-mapping
+handlers-http-response-handler
+handlers-http-rewrite-handler
+handlers-jaxrs-access-log-handler
+handlers-jaxrs-bean-validation-handler
+handlers-jaxrs-response-handler
+handlers-keitai-access-handler
+handlers-loop-handler
+handlers-main
+handlers-message-reply-handler
+handlers-message-resend-handler
+handlers-messaging-context-handler
+handlers-mom-messaging
+handlers-multi-thread-execution-handler
+handlers-multipart-handler
+handlers-nablarch-tag-handler
+handlers-normalize-handler
+handlers-on-double-submission
+handlers-on-error
+handlers-on-errors
+handlers-permission-check-handler
+handlers-post-resubmit-prevent-handler
+handlers-process-resident-handler
+handlers-process-stop-handler
+handlers-request-handler-entry
+handlers-request-path-java-package-mapping
+handlers-request-thread-loop-handler
+handlers-resource-mapping
+handlers-rest
+handlers-retry-handler
+handlers-secure-handler
+handlers-session-concurrent-access-handler
+handlers-standalone
+handlers-status-code-convert-handler
+handlers-thread-context-clear-handler
+handlers-thread-context-handler
+handlers-transaction-management-handler
+handlers-use-token
+handlers-web
+handlers-web-interceptor
+libraries-authorization-permission-check
+libraries-bean-util
+libraries-bean-validation
+libraries-code
+libraries-create-example
+libraries-data-bind
+libraries-data-converter
+libraries-data-format
+libraries-data-io-functional-comparison
+libraries-database
+libraries-database-functional-comparison
+libraries-database-management
+libraries-date
+libraries-db-double-submit
+libraries-exclusive-control
+libraries-failure-log
+libraries-file-path-management
+libraries-format
+libraries-format-definition
+libraries-generator
+libraries-http-access-log
+libraries-http-system-messaging
+libraries-jaxrs-access-log
+libraries-libraries
+libraries-libraries-permission-check
+libraries-log
+libraries-mail
+libraries-message
+libraries-messaging-log
+libraries-mom-system-messaging
+libraries-multi-format-example
+libraries-nablarch-validation
+libraries-performance-log
+libraries-repository
+libraries-role-check
+libraries-service-availability
+libraries-session-store
+libraries-sql-log
+libraries-stateless-web-app
+libraries-static-data-cache
+libraries-system-messaging
+libraries-tag
+libraries-tag-reference
+libraries-transaction
+libraries-universal-dao
+libraries-update-example
+libraries-utility
+libraries-validation
+libraries-validation-functional-comparison
+```
 
 Save the extracted terms as `bm25_terms` (list of strings).
 
-**If `bm25_terms` is empty** (no narrow-enough terms found), return `{"selected_sections": []}` immediately.
+**If `bm25_terms` is empty** (no relevant titles found and no verbatim identifiers in the question), return `{"selected_sections": []}` immediately.
 
 ---
 
