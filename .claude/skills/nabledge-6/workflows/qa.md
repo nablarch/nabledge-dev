@@ -129,117 +129,13 @@ Proceed to Step 3.
 
 ## Step 3: BM25 pre-search
 
-Attempt a fast BM25-ranked search before semantic search. If BM25 returns a verified answer, skip semantic search entirely.
+Execute `workflows/full-text-search.md` with:
+- `{question}` = user's question text
+- `{processing_type}` = processing_type (null if not determined)
 
-### Step 3-1: Extract BM25-effective terms
+If the returned `status` is `"complete"`: set `final_answer` to the returned `final_answer` value and skip to Step 9 (Output).
 
-From the user's question, extract terms that will **narrow the result set** in BM25 search — terms specific enough to appear in only a small number of knowledge files.
-
-**Criterion**: Extract a term if it is a concrete identifier (class name, annotation name, method name, configuration file name, SQL ID, component name) that appears verbatim in the Nablarch knowledge base. The test is: "Would a keyword match on this term return a small, focused set of pages?"
-
-**Source rule**: Take terms **as they appear in the question** — do not infer synonyms, related terms, or paraphrases. The only permitted modification is correcting an obvious typo or misspelling (e.g. `UniversalDoa` → `UniversalDao`) so the term matches the knowledge base.
-
-**Extract** (concrete identifiers, low document frequency):
-`UniversalDao`, `@InjectForm`, `batchUpdate`, `SqlPStatement`, `web-component-configuration.xml`, `SQLID`, `RoutesMapping`, `BatchAction`, etc.
-
-**Do NOT extract** (broad terms, high document frequency — would match too many pages and dilute scores):
-- Abstract concepts: `バリデーション`, `トランザクション`, `Handler`, `Action`
-- General Java: `List`, `String`, `try-catch`, `Exception`
-- Natural language filler: `使い方`, `方法`, `について`
-- Do NOT add synonyms, related identifiers, or guessed class names not present in the question.
-
-Save the extracted terms as `bm25_terms` (list of strings).
-
-**If `bm25_terms` is empty** (no narrow-enough terms found), skip immediately to Step 4 (semantic search).
-
----
-
-### Step 3-2: BM25 search
-
-Execute the BM25 search script with the extracted terms:
-
-```bash
-bash scripts/bm25-search.sh <term1> [term2] ...
-```
-
-Replace `<term1>`, `[term2]` etc. with the terms from `bm25_terms`.
-
-The script outputs a JSON array. Each element is a section hit with a BM25 score:
-
-```json
-[
-  {
-    "file": "component/libraries/universal-dao.json",
-    "section_id": "s3",
-    "section_title": "batchUpdateメソッドの使い方",
-    "score": 12.45
-  },
-  ...
-]
-```
-
-**If the output array is empty** (`[]`), set `bm25_sections = []` and skip to Step 4 (semantic search).
-
-**If the script exits non-zero** for any reason (index build failure, missing dependency, unexpected error), treat the result as empty and skip to Step 4 (semantic search).
-
-Otherwise, save the array as `bm25_raw`. Take the top 20 entries by score.
-
-Convert to the `selected_sections` format:
-
-```json
-[
-  {"file": "component/libraries/universal-dao.json", "section_id": "s3", "relevance": "high"}
-]
-```
-
-Save as `bm25_sections`.
-
----
-
-### Step 3-3: Read section content
-
-From `bm25_sections`, build the argument list: for each section, `"{file}:{section_id}"`.
-
-```bash
-bash scripts/read-sections.sh "file1.json:s1" "file2.json:s3" ...
-```
-
-Save the output as `bm25_content`.
-
-**If `bm25_content` is empty or contains only `FILE_NOT_FOUND` / `SECTION_NOT_FOUND` entries**, skip to Step 4 (semantic search).
-
----
-
-### Step 3-4: Generate answer from BM25 hits
-
-Generate the answer using **exactly the same format, constraints, and rules as Step 6** (answer generation). Substitute `bm25_content` for `sections_content`. Save as `bm25_answer_text`.
-
-- If `processing_type` is not null, focus on approaches that match that type.
-- For any gap in the sections, write "この情報は知識ファイルの対象範囲外です" — do not infer.
-
----
-
-### Step 3-5: Verify BM25 answer
-
-Apply the same verification procedure as Step 7 (hallucination check), using `bm25_answer_text` as the answer and `bm25_content` as the sections.
-
-Check that all Nablarch-specific claims in `bm25_answer_text` are supported by `bm25_content`. Use the same claim categories and boundary rules as Step 7.
-
-If any claim is unsupported, set `bm25_verify = FAIL`. Otherwise set `bm25_verify = PASS`.
-
----
-
-### Step 3-6: Handle BM25 verify result
-
-**If `bm25_verify = PASS`**:
-
-Set `final_answer = bm25_answer_text`.
-
-Skip Steps 4–8. Go directly to Step 9 (Output).
-
-**If `bm25_verify = FAIL`**:
-
-Discard `bm25_answer_text`. Proceed to Step 4 (semantic search) with no modifications.
+If the returned `status` is `"fallback"`: proceed to Step 4 (semantic search).
 
 ---
 
