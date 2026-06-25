@@ -1,9 +1,10 @@
-"""RAG Indexing pipeline: Knowledge JSON → Cohere Embed v4 → Qdrant.
+"""RAG Indexing pipeline: Knowledge JSON → Cohere Embed → Qdrant.
 
 Usage:
     python3 -m tools.rag.scripts.index \
         --knowledge-dir .claude/skills/nabledge-6/knowledge \
-        --limit 10
+        --limit 10 \
+        --model cohere.embed-multilingual-v3
 """
 from __future__ import annotations
 
@@ -14,6 +15,11 @@ import re
 import sys
 import uuid
 from typing import Any
+
+try:
+    import boto3 as _boto3_module
+except ImportError:  # allow importing without boto3 installed (unit tests)
+    _boto3_module = None  # type: ignore[assignment]
 
 # ---------------------------------------------------------------------------
 # Path-based metadata derivation
@@ -193,32 +199,57 @@ def build_chunks(
 
 
 # ---------------------------------------------------------------------------
-# Bedrock Cohere Embed v4
+# Bedrock Cohere Embed
 # ---------------------------------------------------------------------------
 
-_EMBED_MODEL_ID = "cohere.embed-v4:0"
+_DEFAULT_EMBED_MODEL_ID = "cohere.embed-multilingual-v3"
 _EMBED_REGION = "ap-northeast-1"
 _EMBED_BATCH_SIZE = 96  # Cohere max per call
 
+# Vector sizes by model
+_MODEL_VECTOR_SIZES: dict[str, int] = {
+    "cohere.embed-multilingual-v3": 1024,
+    "cohere.embed-english-v3": 1024,
+    "cohere.embed-v4:0": 1536,
+}
 
-def embed_texts(texts: list[str], verify_ssl: bool = True) -> list[list[float]]:
-    """Embed texts using Cohere Embed v4 via AWS Bedrock.
+# Max characters per text imposed by Bedrock for each model family.
+# v3 enforces a 2048-character limit per text; v4 has no such restriction.
+_MODEL_MAX_CHARS: dict[str, int] = {
+    "cohere.embed-multilingual-v3": 2048,
+    "cohere.embed-english-v3": 2048,
+}
+
+
+def embed_texts(
+    texts: list[str],
+    model_id: str = _DEFAULT_EMBED_MODEL_ID,
+    verify_ssl: bool = True,
+) -> list[list[float]]:
+    """Embed texts using a Cohere Embed model via AWS Bedrock.
 
     Args:
         texts: List of text strings to embed.
+        model_id: Bedrock model ID for the Cohere Embed model.
         verify_ssl: Whether to verify SSL certificates (set False for corporate proxies
                     with self-signed certificates).
 
     Returns:
         List of embedding vectors (one per input text).
     """
-    import boto3  # noqa: PLC0415
+    import boto3 as _boto3  # noqa: PLC0415
 
-    client = boto3.client(
+    client = _boto3.client(
         "bedrock-runtime",
         region_name=_EMBED_REGION,
         verify=verify_ssl,
     )
+
+    # Truncate texts that exceed the model's character limit.
+    max_chars = _MODEL_MAX_CHARS.get(model_id)
+    if max_chars is not None:
+        texts = [t[:max_chars] for t in texts]
+
     all_embeddings: list[list[float]] = []
 
     for i in range(0, len(texts), _EMBED_BATCH_SIZE):
@@ -231,13 +262,13 @@ def embed_texts(texts: list[str], verify_ssl: bool = True) -> list[list[float]]:
             }
         )
         response = client.invoke_model(
-            modelId=_EMBED_MODEL_ID,
+            modelId=model_id,
             body=body,
             contentType="application/json",
             accept="application/json",
         )
         result = json.loads(response["body"].read())
-        # Cohere Embed v4 returns embeddings under result["embeddings"]["float"]
+        # Cohere Embed returns embeddings under result["embeddings"]["float"]
         batch_embeddings = result["embeddings"]["float"]
         all_embeddings.extend(batch_embeddings)
 
@@ -251,7 +282,7 @@ def embed_texts(texts: list[str], verify_ssl: bool = True) -> list[list[float]]:
 _QDRANT_HOST = "localhost"
 _QDRANT_PORT = 6333
 _COLLECTION_NAME = "nabledge-6"
-_VECTOR_SIZE = 1536  # Cohere Embed v4 default
+_VECTOR_SIZE = 1024  # Cohere Embed v3 default; v4 is 1536
 
 
 def ensure_collection(client: Any, vector_size: int) -> None:
@@ -307,7 +338,7 @@ def load_json_files(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Index knowledge JSON into Qdrant via Cohere Embed v4.")
+    parser = argparse.ArgumentParser(description="Index knowledge JSON into Qdrant via Cohere Embed.")
     parser.add_argument(
         "--knowledge-dir",
         required=True,
@@ -319,6 +350,11 @@ def main() -> None:
         type=int,
         default=None,
         help="Process only the first N JSON files (smoke-test mode).",
+    )
+    parser.add_argument(
+        "--model",
+        default=_DEFAULT_EMBED_MODEL_ID,
+        help=f"Bedrock model ID for Cohere Embed (default: {_DEFAULT_EMBED_MODEL_ID}).",
     )
     parser.add_argument(
         "--qdrant-host",
@@ -364,13 +400,17 @@ def main() -> None:
 
     # Embed
     verify_ssl = not args.no_verify_ssl
-    print(f"Embedding {len(all_chunks)} chunks via Bedrock Cohere Embed v4 (verify_ssl={verify_ssl})...")
+    print(f"Embedding {len(all_chunks)} chunks via Bedrock {args.model} (verify_ssl={verify_ssl})...")
     texts = [c["text"] for c in all_chunks]
-    embeddings = embed_texts(texts, verify_ssl=verify_ssl)
+    embeddings = embed_texts(texts, model_id=args.model, verify_ssl=verify_ssl)
     print(f"  → {len(embeddings)} embeddings received.")
 
-    # Infer vector size from first embedding
-    vector_size = len(embeddings[0]) if embeddings else _VECTOR_SIZE
+    # Infer vector size from first embedding; fall back to model lookup or default
+    vector_size = (
+        len(embeddings[0])
+        if embeddings
+        else _MODEL_VECTOR_SIZES.get(args.model, _VECTOR_SIZE)
+    )
 
     # Qdrant
     print(f"Connecting to Qdrant at {args.qdrant_host}:{args.qdrant_port}...")

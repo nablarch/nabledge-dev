@@ -10,6 +10,7 @@ import textwrap
 import tempfile
 import os
 import sys
+from unittest.mock import MagicMock, patch
 import pytest
 
 # Allow importing index module without Bedrock/Qdrant being available
@@ -20,6 +21,9 @@ from tools.rag.scripts.index import (
     build_chunks,
     parse_classes_md,
     extract_linked_pages,
+    embed_texts,
+    _MODEL_VECTOR_SIZES,
+    _VECTOR_SIZE,
 )
 
 
@@ -283,3 +287,158 @@ class TestBuildChunks:
         chunks = build_chunks(page, rel_path, class_map={})
         assert chunks[0]["metadata"]["category"] == "handlers"
         assert chunks[0]["metadata"]["processing_type"] == "none"
+
+
+# ---------------------------------------------------------------------------
+# _MODEL_VECTOR_SIZES
+# ---------------------------------------------------------------------------
+
+class TestModelVectorSizes:
+    def test_v3_multilingual_size(self):
+        assert _MODEL_VECTOR_SIZES["cohere.embed-multilingual-v3"] == 1024
+
+    def test_v3_english_size(self):
+        assert _MODEL_VECTOR_SIZES["cohere.embed-english-v3"] == 1024
+
+    def test_v4_size(self):
+        assert _MODEL_VECTOR_SIZES["cohere.embed-v4:0"] == 1536
+
+    def test_unknown_model_fallback_equals_default_vector_size(self):
+        assert _MODEL_VECTOR_SIZES.get("unknown-model", _VECTOR_SIZE) == _VECTOR_SIZE
+
+
+# ---------------------------------------------------------------------------
+# embed_texts truncation logic (Bedrock mocked)
+# ---------------------------------------------------------------------------
+
+def _make_mock_boto3_client(vectors: list[list[float]]):
+    """Return a mock boto3 bedrock-runtime client that yields `vectors`."""
+    mock_response = MagicMock()
+    mock_response["body"].read.return_value = json.dumps(
+        {"embeddings": {"float": vectors}}
+    ).encode()
+    mock_client = MagicMock()
+    mock_client.invoke_model.return_value = mock_response
+    return mock_client
+
+
+class TestEmbedTextsModelMaxChars:
+    """Verify that embed_texts truncates texts for v3 models and not for v4."""
+
+    def _stub_vectors(self, n: int) -> list[list[float]]:
+        return [[0.1] * 1024 for _ in range(n)]
+
+    def test_v3_text_exceeding_limit_is_truncated(self):
+        long_text = "a" * 2049
+        captured: list[list[str]] = []
+
+        def fake_invoke_model(**kwargs):
+            body = json.loads(kwargs["body"])
+            captured.append(body["texts"])
+            vectors = self._stub_vectors(len(body["texts"]))
+            mock_resp = MagicMock()
+            mock_resp["body"].read.return_value = json.dumps(
+                {"embeddings": {"float": vectors}}
+            ).encode()
+            return mock_resp
+
+        mock_client = MagicMock()
+        mock_client.invoke_model.side_effect = fake_invoke_model
+
+        with patch("boto3.client") as mock_boto3:
+            mock_boto3.return_value = mock_client
+            embed_texts([long_text], model_id="cohere.embed-multilingual-v3")
+
+        assert len(captured[0][0]) == 2048
+
+    def test_v3_text_at_exact_limit_is_not_modified(self):
+        exact_text = "b" * 2048
+        captured: list[list[str]] = []
+
+        def fake_invoke_model(**kwargs):
+            body = json.loads(kwargs["body"])
+            captured.append(body["texts"])
+            vectors = self._stub_vectors(len(body["texts"]))
+            mock_resp = MagicMock()
+            mock_resp["body"].read.return_value = json.dumps(
+                {"embeddings": {"float": vectors}}
+            ).encode()
+            return mock_resp
+
+        mock_client = MagicMock()
+        mock_client.invoke_model.side_effect = fake_invoke_model
+
+        with patch("boto3.client") as mock_boto3:
+            mock_boto3.return_value = mock_client
+            embed_texts([exact_text], model_id="cohere.embed-multilingual-v3")
+
+        assert len(captured[0][0]) == 2048
+
+    def test_v3_text_below_limit_is_unchanged(self):
+        short_text = "c" * 100
+        captured: list[list[str]] = []
+
+        def fake_invoke_model(**kwargs):
+            body = json.loads(kwargs["body"])
+            captured.append(body["texts"])
+            vectors = self._stub_vectors(len(body["texts"]))
+            mock_resp = MagicMock()
+            mock_resp["body"].read.return_value = json.dumps(
+                {"embeddings": {"float": vectors}}
+            ).encode()
+            return mock_resp
+
+        mock_client = MagicMock()
+        mock_client.invoke_model.side_effect = fake_invoke_model
+
+        with patch("boto3.client") as mock_boto3:
+            mock_boto3.return_value = mock_client
+            embed_texts([short_text], model_id="cohere.embed-multilingual-v3")
+
+        assert len(captured[0][0]) == 100
+
+    def test_v4_text_exceeding_v3_limit_is_not_truncated(self):
+        long_text = "d" * 3000
+        captured: list[list[str]] = []
+
+        def fake_invoke_model(**kwargs):
+            body = json.loads(kwargs["body"])
+            captured.append(body["texts"])
+            vectors = [[0.1] * 1536 for _ in body["texts"]]
+            mock_resp = MagicMock()
+            mock_resp["body"].read.return_value = json.dumps(
+                {"embeddings": {"float": vectors}}
+            ).encode()
+            return mock_resp
+
+        mock_client = MagicMock()
+        mock_client.invoke_model.side_effect = fake_invoke_model
+
+        with patch("boto3.client") as mock_boto3:
+            mock_boto3.return_value = mock_client
+            embed_texts([long_text], model_id="cohere.embed-v4:0")
+
+        assert len(captured[0][0]) == 3000
+
+    def test_unknown_model_text_is_not_truncated(self):
+        long_text = "e" * 3000
+        captured: list[list[str]] = []
+
+        def fake_invoke_model(**kwargs):
+            body = json.loads(kwargs["body"])
+            captured.append(body["texts"])
+            vectors = self._stub_vectors(len(body["texts"]))
+            mock_resp = MagicMock()
+            mock_resp["body"].read.return_value = json.dumps(
+                {"embeddings": {"float": vectors}}
+            ).encode()
+            return mock_resp
+
+        mock_client = MagicMock()
+        mock_client.invoke_model.side_effect = fake_invoke_model
+
+        with patch("boto3.client") as mock_boto3:
+            mock_boto3.return_value = mock_client
+            embed_texts([long_text], model_id="some-unknown-model")
+
+        assert len(captured[0][0]) == 3000
