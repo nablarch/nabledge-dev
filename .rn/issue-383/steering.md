@@ -152,16 +152,16 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 **Steps**:
 
-- [ ] `tools/rag/scripts/select_scenarios.py` を実装する
+- [x] `tools/rag/scripts/select_scenarios.py` を実装する
   - 全935ページの全セクションについて `text = page_title + section_title + content` を計算し、2048字超のセクションを持つ `page_id` を列挙する
   - 各シナリオ定義（`tools/benchmark/scenarios/`）の期待参照ページ（`expected_pages` 等）を読み込み、切断ページを含まないシナリオIDを出力する
   - 結果を `tools/rag/v3-eligible-scenarios.json` に保存する（シナリオID一覧 + 選定理由）
-- [ ] 選定されたシナリオ全件で run-1 を実施する
-- [ ] run-1 の全シナリオに `error.json` がないこと・`(content unavailable)` がないことを確認する
-- [ ] 問題があれば根本原因を修正し、再実行して安定を確認する
-- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-5.md`）
-- [ ] QA expert review（subagent）
-- [ ] user review
+- [x] 選定されたシナリオ全件で run-1 を実施する
+- [x] run-1 の全シナリオに `error.json` がないこと・`(content unavailable)` がないことを確認する
+- [x] 問題があれば根本原因を修正し、再実行して安定を確認する
+- [x] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-5.md`）
+- [x] QA expert review（subagent）
+- [x] user review
 
 **Completion criteria**:
 
