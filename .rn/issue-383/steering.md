@@ -225,10 +225,10 @@ so only a genuinely suspended session reads `paused`.)
 
 - **Status**: not suspended
 - **Date**: 2026-06-25
-- **Last completed**: #1 (commit e237c4d5)
-- **Next**: #2 — v6全件Indexing実行
+- **Last completed**: #2 (commit acca1005)
+- **Next**: #3 — RAG版クエリエンジン実装（1シナリオ動作確認まで）
 - **Notes**: |
-    #1 完了。`--model cohere.embed-multilingual-v3` 追加、v3 truncation (2048chars) 追加、
-    Qdrant v1.18.0 に更新、テスト 36/36 パス、10ファイル動作確認済み（21 points格納）。
-    #2 で Qdrant ストレージをリセットして全件 Indexing を実行する。
-    Qdrant は起動中（localhost:6333）。`--no-verify-ssl` が必要（企業プロキシ）。
+    #2 完了。9376 points 格納済み（全935ファイル）。
+    バグ修正: upsert 1回あたり500点バッチに分割（33MB制限対処）。
+    Qdrant は起動中（localhost:6333）、9376 points。
+    次: query.py + run_rag_qa.py 実装 → pre-01 で動作確認。
