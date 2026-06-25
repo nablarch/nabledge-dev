@@ -71,7 +71,7 @@ _JSON_REF_RE = re.compile(r"[\w/.-]+\.json")
 
 
 def extract_linked_pages(content: str) -> list[str]:
-    """Extract unique page IDs (basename without .json extension) from content.
+    """Extract unique page basenames (without .json extension) from content.
 
     Args:
         content: Section content text.
@@ -84,13 +84,10 @@ def extract_linked_pages(content: str) -> list[str]:
     seen: list[str] = []
     seen_set: set[str] = set()
     for m in matches:
-        # Take basename and strip .json extension
-        basename = pathlib.PurePosixPath(m).name
-        page_id = basename[: -len(".json")]
-        # Basename only — full path is unknown from text content alone.
-        if page_id not in seen_set:
-            seen_set.add(page_id)
-            seen.append(page_id)
+        basename = pathlib.PurePosixPath(m).stem  # stem = name without .json suffix
+        if basename not in seen_set:
+            seen_set.add(basename)
+            seen.append(basename)
     return seen
 
 
