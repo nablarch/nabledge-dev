@@ -1,0 +1,72 @@
+{
+  "scenario_id": "pre-01",
+  "description": "NablarchバッチアプリケーションはJavaコマンドから直接起動するが、その基本的な起動方法を知りたい",
+  "input": "Nablarchバッチアプリケーションはどのように起動しますか？-requestPathの書き方を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する",
+    "-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.9,
+      "reason": "The actual output covers both expected facts. It explicitly mentions that the batch is launched as a standalone application via the java command (javaコマンドから起動), and it clearly explains that -requestPath is used to specify the action class name and request ID (アクションクラス名/リクエストID). Both key facts from the expected output are addressed either explicitly or with equivalent meaning."
+    },
+    "answer_relevancy": {
+      "score": 0.9166666666666666,
+      "reason": "The score is 0.92 because the response mostly provides relevant information about how to launch a Nablarch batch application and how to write -requestPath, but contains one statement about a failed retrieval of reference material that does not contribute any useful information to answering the question."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "nablarch-batch-architecture.json:s1",
+      "nablarch-batch-architecture.json:s2",
+      "nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+      "blank-project-setup-NablarchBatch.json:s13",
+      "nablarch-batch-feature-details.json:s1",
+      "nablarch-batch-architecture.json:s3",
+      "blank-project-setup-NablarchBatch.json:s9",
+      "handlers-main.json:s3",
+      "nablarch-batch-architecture.json:s8",
+      "nablarch-batch-architecture.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 22501,
+    "duration_api_ms": 21100,
+    "num_turns": 1,
+    "total_cost_usd": 0.18788799999999997,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 1940,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 41772
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1942,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002137,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 1940,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 41772,
+        "webSearchRequests": 0,
+        "costUSD": 0.18575099999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 45045,
+  "duration_api_ms": 25908,
+  "ttft_ms": 44761,
+  "ttft_stream_ms": 22972,
+  "time_to_request_ms": 20931,
+  "num_turns": 1,
+  "result": "### Answer\n\nUniversalDaoでデータベースを検索する方法は、主に以下の4パターンです。\n\n---\n\n## 1. SQLファイルを使った全件検索\n\nSQLファイルを作成し、SQL IDを指定して検索します。検索結果はBeanのプロパティ名とSELECT句の名前が一致する項目に自動マッピングされます。\n\n```java\n// User.class が sample.entity.User の場合、\n// SQLファイルのパスは sample/entity/User.sql\nEntityList<User> users = UniversalDao.findAllBySqlFile(User.class, \"FIND_ALL_USERS\");\n```\n\n## 2. 検索条件を指定した検索\n\n検索条件を持つBeanを第3引数に渡します。\n\n```java\n// 検索条件Beanを用意\nProjectSearchForm condition = context.getRequestScopedVar(\"form\");\n\n// 条件を指定して検索（複数件）\nList<Project> projects = UniversalDao.findAllBySqlFile(\n    Project.class, \"SEARCH_PROJECT\", condition);\n\n// 1件取得（該当なしの場合はNoDataExceptionがスロー）\nBook condition = new Book();\ncondition.setId(1L);\nBook book = UniversalDao.findBySqlFile(Book.class, \"FIND_BY_ID\", condition);\n```\n\n> **重要:** 検索条件はEntityではなく専用のBeanを使うことが推奨されています（単一テーブルアクセスの場合はEntityも可）。\n\n## 3. ページングを使った検索\n\n`per()`（1ページあたりの件数）と `page()`（ページ番号）を先に呼び出します。\n\n```java\nEntityList<User> users = UniversalDao.per(3).page(1)\n                            .findAllBySqlFile(User.class, \"FIND_ALL_USERS\");\n\n// ページング情報の取得\nPagination pagination = users.getPagination();\n```\n\n## 4. 大量データの遅延ロード\n\n大量データを一度にメモリに展開できない場合は `defer()` を使います。使用後は必ず `close()` が必要です。\n\n```java\ntry (DeferredEntityList<User> users\n        = (DeferredEntityList<User>) UniversalDao.defer()\n                                        .findAllBySqlFile(User.class, \"FIND_BY_NAME\")) {\n    for (User user : users) {\n        // 1件ずつ処理\n    }\n}\n```\n\n## 別のSQLファイルを参照する場合\n\nSQL IDに`#`を含めると「SQLファイルのパス#SQL ID」として解釈されます。\n\n```java\n// sample/entity/Member.sql の FIND_BY_NAME を使用\nUniversalDao.findAllBySqlFile(GoldUser.class, \"sample.entity.Member#FIND_BY_NAME\");\n```\n\n---\n\n**まとめ:** 通常は `findAllBySqlFile`（複数件）または `findBySqlFile`（1件）を使い、検索条件をBeanで渡します。大量データにはページングか遅延ロードを使い分けてください。\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_sections\": [\n      {\n        \"file\": \"component/libraries/libraries-universal-dao.json\",\n        \"section_id\": \"s7\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-universal-dao.json\",\n        \"section_id\": \"s10\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-universal-dao.json\",\n        \"section_id\": \"s12\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-universal-dao.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\",\n        \"section_id\": \"s11\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\",\n        \"section_id\": \"s13\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"guide/biz-samples/biz-samples-03.json\",\n        \"section_id\": \"s6\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-universal-dao.json\",\n        \"section_id\": \"s9\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\",\n        \"section_id\": \"s17\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\",\n        \"section_id\": \"s18\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      }\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-universal-dao.json:s7\",\n      \"component/libraries/libraries-universal-dao.json:s10\",\n      \"component/libraries/libraries-universal-dao.json:s12\",\n      \"component/libraries/libraries-universal-dao.json:s3\",\n      \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s11\",\n      \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s13\",\n      \"guide/biz-samples/biz-samples-03.json:s6\",\n      \"component/libraries/libraries-universal-dao.json:s9\",\n      \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17\",\n      \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        \"component/libraries/libraries-universal-dao.json:s7\",\n        \"component/libraries/libraries-universal-dao.json:s10\",\n        \"component/libraries/libraries-universal-dao.json:s12\",\n        \"component/libraries/libraries-universal-dao.json:s3\",\n        \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s11\",\n        \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s13\",\n        \"component/libraries/libraries-universal-dao.json:s9\"\n      ],\n      \"unused\": [\n        \"guide/biz-samples/biz-samples-03.json:s6\",\n        \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17\",\n        \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18\"\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "5ba69019-b119-4185-b758-83d232e84cdc",
+  "total_cost_usd": 0.13860830000000002,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 25820,
+    "cache_read_input_tokens": 19121,
+    "output_tokens": 2056,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 25820
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 5036,
+      "outputTokens": 33,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.005201,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 2056,
+      "cacheReadInputTokens": 19121,
+      "cacheCreationInputTokens": 25820,
+      "webSearchRequests": 0,
+      "costUSD": 0.1334073,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "940e11e7-311e-4c5f-a1f0-9625d6742124"
+}
