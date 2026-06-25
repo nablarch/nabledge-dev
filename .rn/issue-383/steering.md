@@ -177,14 +177,14 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 
 **Steps**:
 
-- [ ] run-2: 選定シナリオ全件実行 → エラー確認 → レポート生成 → コミット
-- [ ] run-3: 同上
-- [ ] フェーズC-1: crossrun-summary.md 生成・コミット（run-1〜run-3）
-- [ ] フェーズC-2: 閾値割れシナリオの裏付け調査（answer.md とナレッジの突き合わせ）
-- [ ] フェーズC-3: quality-report.md 作成・コミット（現行ベースライン `20260616-1214-fullbench-classes-v6` の同シナリオとの比較を含む）
-- [ ] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-6.md`）
-- [ ] QA expert review（subagent）
-- [ ] user review
+- [x] run-2: 選定シナリオ全件実行 → エラー確認 → レポート生成 → コミット
+- [x] run-3: 同上
+- [x] フェーズC-1: crossrun-summary.md 生成・コミット（run-1〜run-3）
+- [x] フェーズC-2: 閾値割れシナリオの裏付け調査（answer.md とナレッジの突き合わせ）
+- [x] フェーズC-3: quality-report.md 作成・コミット（現行ベースライン `20260616-1214-fullbench-classes-v6` の同シナリオとの比較を含む）
+- [x] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-6.md`）
+- [x] QA expert review（subagent）
+- [x] user review
 
 **Completion criteria**:
 
