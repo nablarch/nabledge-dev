@@ -5,6 +5,8 @@ Searches knowledge files and returns relevant sections for the question.
 ## Input
 
 - `{question}`: User's question.
+- `{processing_type}`: Processing type (one of the 7 processing types, or null).
+- `{purpose}`: Purpose category (one of the 6 purpose categories).
 
 ## Output
 
@@ -24,7 +26,7 @@ Pointer JSON:
 
 1. Read `knowledge/index.md` (relative to skill root). Save content as `index_content`.
 2. Read the question. Write one sentence: what does the user want to know?
-3. Extract constraints: if the question contains `（処理方式: X）`, note X as the processing type constraint. If it contains `（目的: X）`, note X as the purpose.
+3. Read `{processing_type}` as the processing type constraint. Read `{purpose}` as the purpose.
 4. For each page in `index_content`, apply this decision procedure and collect all candidates:
    - Does this page cover the exact feature, component, or topic the question is asking about? → **candidate**
    - Does this page cover a feature that directly solves the technical problem in the question? → **candidate**

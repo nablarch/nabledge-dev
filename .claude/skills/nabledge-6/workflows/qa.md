@@ -12,244 +12,93 @@ Answer in Japanese (Markdown)
 
 ---
 
-## Step 1: Classify question
+## Step 1
 
-From the question, determine `processing_type` and `purpose` independently.
+Execute `workflows/hearing.md`:
+- `{question}` = user's question
 
-### Determine processing_type
-
-Judge which processing type the question belongs to. Use the names and technical terms below as reference:
-
-Processing types:
-- ウェブアプリケーション
-- RESTfulウェブサービス
-- Nablarchバッチ
-- Jakartaバッチ
-- テーブルをキューとして使ったメッセージング
-- HTTPメッセージング
-- MOMメッセージング
-
-Judgment:
-- Question clearly belongs to one processing type → `processing_type = <that type>`
-- Question is cross-functional (testing framework, i18n, logging, common utilities) → `processing_type = null`
-- Otherwise → `processing_type = UNCLEAR`
-
-Note: Common concepts (transactions, validation, DB access, SQL) are NOT cross-functional if their configuration/implementation differs per processing type.
-
-### Determine purpose
-
-Judge the purpose from the question. Reference categories:
-
-Purpose categories:
-- 実装したい
-- 仕組み・動作を理解したい
-- 不具合・エラーを調査したい
-- テストを書きたい
-- バージョンアップしたい
-- セキュリティ対応したい
-
-- Purpose is clear from the question → `purpose = <that category>`
-- Cannot determine from the question → `purpose = UNCLEAR`
-
-### Result
-
-If both `processing_type` and `purpose` are determined (not UNCLEAR) → proceed to Step 3.
-
-If either is UNCLEAR → proceed to Step 2.
+Save result as `processing_type`, `purpose`.
 
 ---
 
-## Step 2: Ask user if needed
+## Step 2
 
-If both `processing_type` and `purpose` are already determined in Step 1, skip to the build step below.
+Execute `workflows/full-text-search.md`:
+- `{question}` = user's question
 
-Otherwise, ask only about what is UNCLEAR.
-
-**If both processing_type and purpose are UNCLEAR**, output both questions together in one message:
-
-```
-いくつか確認させてください。
-
-どの処理方式の質問ですか？
-1. ウェブアプリケーション
-2. RESTfulウェブサービス
-3. Nablarchバッチ
-4. Jakartaバッチ
-5. テーブルをキューとして使ったメッセージング
-6. HTTPメッセージング
-7. MOMメッセージング
-8. その他（処理方式に依存しない）
-
-質問の目的は？
-1. 実装したい
-2. 仕組み・動作を理解したい
-3. 不具合・エラーを調査したい
-4. テストを書きたい
-5. バージョンアップしたい
-6. セキュリティ対応したい
-7. その他
-```
-
-**If only processing_type is UNCLEAR**, output:
-
-```
-どの処理方式の質問ですか？
-
-1. ウェブアプリケーション
-2. RESTfulウェブサービス
-3. Nablarchバッチ
-4. Jakartaバッチ
-5. テーブルをキューとして使ったメッセージング
-6. HTTPメッセージング
-7. MOMメッセージング
-8. その他（処理方式に依存しない）
-```
-
-**If only purpose is UNCLEAR**, output:
-
-```
-質問の目的は？
-
-1. 実装したい
-2. 仕組み・動作を理解したい
-3. 不具合・エラーを調査したい
-4. テストを書きたい
-5. バージョンアップしたい
-6. セキュリティ対応したい
-7. その他
-```
-
-Wait for the user's response. Then set:
-- `processing_type`: from Step 1 or user's selection (「その他」or 8 → null)
-- `purpose`: from Step 1 or user's selection (「その他」or 8 → 実装したい)
-
-Proceed to Step 3.
+Save `selected_sections` as `bm25_sections`.
 
 ---
 
-## Step 3: BM25 pre-search
+## Step 3
 
-Execute `workflows/full-text-search.md` with:
-- `{question}` = user's question text
-- `{processing_type}` = processing_type (null if not determined)
+If `bm25_sections` is empty, skip to Step 5.
 
-If the returned `status` is `"complete"`: set `final_answer` to the returned `final_answer` value and skip to Step 9 (Output).
+Execute `workflows/generate-answer.md`:
+- `{question}` = user's question
+- `{processing_type}` = processing_type
+- `{selected_sections}` = bm25_sections
 
-If the returned `status` is `"fallback"`: proceed to Step 4 (semantic search).
+Save result as `answer_text`.
 
----
+Execute `workflows/verify-answer.md`:
+- `{answer_text}` = answer_text
+- `{selected_sections}` = bm25_sections
 
-## Step 4: Semantic search
+If result is `"PASS"`, set `final_answer = answer_text` and skip to Step 7.
 
-Execute `workflows/semantic-search.md` with:
-- `{question}` = user's question with hearing result appended:
-  - If `processing_type` is not null: `"{user's question}（処理方式: {processing_type}）（目的: {purpose}）"`
-  - If `processing_type` is null: `"{user's question}（目的: {purpose}）"`
-
-Save the returned `selected_sections` array as `selected_sections`.
+If result is `"FAIL"`, proceed to Step 4.
 
 ---
 
-## Step 5: Read section content
+## Step 4
 
-From `selected_sections`, select sections to read:
-1. All `high` sections first (body sections and Javadoc together)
-2. Then `partial` sections to fill remaining slots
-3. Maximum 20 entries total, counting body sections and Javadoc together
-
-Build the argument list: for each selected section, `"{file}:{section_id}"`.
-
-```bash
-bash scripts/read-sections.sh "file1.json:s1" "file2.json:s3" ...
-```
-
-Save the output as `sections_content`.
-
-If `selected_sections` is empty, set `sections_content = ""`.
+(BM25 verify failed — fall through to semantic search)
 
 ---
 
-## Step 6: Generate answer
+## Step 5
 
-If `sections_content` is empty, output immediately:
+Execute `workflows/semantic-search.md`:
+- `{question}` = user's question
+- `{processing_type}` = processing_type
+- `{purpose}` = purpose
+
+Save `selected_sections` as `sem_sections`.
+
+If `sem_sections` is empty, output:
 ```
 この情報は知識ファイルに含まれていません。
 ```
 and stop.
 
-Otherwise, generate a Japanese answer following the steps below.
+---
 
-1. Read all sections in `sections_content`.
-2. If `processing_type` is not null, focus on approaches that match that type.
-3. Identify the information that directly answers the question. For any gap in the sections, write "この情報は知識ファイルの対象範囲外です" — do not infer.
-4. Write the answer in the format below. Stay within 500 tokens (up to 800 for complex questions).
+## Step 6
 
-**Answer format**:
+Execute `workflows/generate-answer.md`:
+- `{question}` = user's question
+- `{processing_type}` = processing_type
+- `{selected_sections}` = sem_sections
 
-**結論**: Direct answer to the question (1–2 sentences)
-- Include specific method names, class names, and approaches
-- Do not parrot back the question
+Save result as `answer_text`.
 
-**根拠**: Code examples, configuration examples, or spec information that backs the conclusion
-- Show code/config examples in code blocks
-- Priority: implementation example > configuration example > API spec > conceptual explanation
-- If using multiple sections, organize along the implementation flow
-- Quote code examples from sections verbatim (do not modify)
+Execute `workflows/verify-answer.md`:
+- `{answer_text}` = answer_text
+- `{selected_sections}` = sem_sections
 
-**注意点**: Constraints, resource management, common mistakes
-- Omit this section if nothing applies
+If result is `"PASS"`, set `final_answer = answer_text` and proceed to Step 7.
 
-参照: Only sections actually cited in the answer (file.json:sN format, omit category path)
+If result is `"FAIL"`, execute `workflows/generate-answer.md`:
+- `{question}` = user's question
+- `{processing_type}` = processing_type
+- `{selected_sections}` = sem_sections
+- `{excluded_claims}` = verify result issues
 
-Note: General Java/programming knowledge (try-catch, Bean, getter/setter, etc.) may be used alongside knowledge sections.
-
-Save as `answer_text`.
+Set `final_answer` to the result.
 
 ---
 
-## Step 7: Verify answer
+## Step 7
 
-Check that all Nablarch-specific claims in `answer_text` are supported by `sections_content`.
-
-**Extract these claim categories** (Nablarch-specific claims):
-
-| Category | Examples |
-|----------|---------|
-| API names | "UniversalDao.deferメソッド", "@InjectForm アノテーション" |
-| Class names | "DatabaseRecordReader", "BatchAction" |
-| Configuration method | "web-component-configuration.xmlに設定", "コンポーネント定義ファイルに記述" |
-| Behavior spec | "遅延ロードはDB接続をストリーミングする", "バリデーションエラー時にステータスコード400を返す" |
-| Constraints | "closeしないとリソースリーク", "Formのプロパティは全てString型" |
-| Parameters | "-requestPathで指定", "SQLID" |
-
-**Do NOT extract** (general knowledge):
-
-| Category | Examples |
-|----------|---------|
-| General Java | "Beanクラスを作成する", "try-with-resourcesを使う" |
-| General programming | "バリデーションを実行する", "エラーメッセージを表示する" |
-| Flow description | "まず〜して、次に〜する" |
-| General web concepts | "HTTPリクエスト", "JSONレスポンス" |
-
-For each extracted claim, judge in order:
-1. Directly stated in section content → supported
-2. Direct paraphrase of section content (paraphrase/abbreviation/synonym) → supported
-3. Attribute/behavior/constraint not explicitly stated → unsupported
-
-Boundary rule: Inference is valid only for direct paraphrases. Attributes, behaviors, or constraints not explicitly stated are unsupported even if technically plausible.
-
-If any claim is unsupported, set `verify_result = FAIL` and record `issues` (list of unsupported claims). Otherwise `verify_result = PASS`.
-
----
-
-## Step 8: Handle verify result
-
-**If PASS**: Set `final_answer = answer_text`.
-
-**If FAIL**: Re-run Step 6 once with the additional constraint: do not include any of the `issues` claims in the answer. Save the result as `final_answer`.
-
----
-
-## Step 9: Output
-
-Output `final_answer` to the user.
+Output `final_answer`.
