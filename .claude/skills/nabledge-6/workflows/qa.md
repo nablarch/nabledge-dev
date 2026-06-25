@@ -38,7 +38,7 @@ Execute `workflows/check-answerable.md`:
 
 If result is `"OK"`, proceed to Step 5.
 
-If result is `"NG"`, proceed to Step 4.
+Otherwise, proceed to Step 4.
 
 ---
 

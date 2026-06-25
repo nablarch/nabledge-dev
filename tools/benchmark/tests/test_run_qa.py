@@ -213,6 +213,21 @@ class TestParseE2eResponse:
         result = parse_qa_response(response)
         assert result["answer"] == "レガシー回答テキスト"
 
+    def test_parses_step6_fail_and_regenerated(self):
+        """parse_qa_response must handle step6.verify_result=FAIL and step6.regenerated=True."""
+        fail_details = {
+            **SAMPLE_WORKFLOW_DETAILS,
+            "step6": {
+                "verify_result": "FAIL",
+                "regenerated": True,
+            },
+        }
+        response = self._make_response("再生成された回答", fail_details)
+        result = parse_qa_response(response)
+        assert result["workflow_details"]["step6"]["verify_result"] == "FAIL"
+        assert result["workflow_details"]["step6"]["regenerated"] is True
+        assert result["answer"] == "再生成された回答"
+
 
 class TestSaveE2eResults:
     def _make_data(self, **overrides):
@@ -566,6 +581,94 @@ class TestRunE2eAll:
             assert eval_path.exists()
             eval_data = json.loads(eval_path.read_text())
             assert eval_data["scenario_id"] == "pre-01"
+
+    def test_search_sections_cascade_falls_through_to_bm25_when_step5_absent(self):
+        """When step5.sections_used is absent (NG path: semantic search ran), cascade falls through
+        to step2.bm25_sections and search_sections reflects the bm25_sections count."""
+        # Simulate semantic-search path: check-answerable said NG so step5.sections_used is absent,
+        # but step2.bm25_sections is present (it was the initial BM25 result).
+        ng_path_details = {
+            "step2": {
+                "bm25_terms": ["バッチ"],
+                "bm25_sections": [
+                    {"file": "a.json", "section_id": "s1"},
+                    {"file": "b.json", "section_id": "s2"},
+                    {"file": "c.json", "section_id": "s3"},
+                ],
+            },
+            "step3": {"check_answerable_result": "NG"},
+            "step4": {"ran": True, "selected_sections": [{"file": "d.json", "section_id": "s4"}]},
+            # step5 absent: generate-answer was not reached (e.g., sem_sections was empty)
+            "step6": {"verify_result": "PASS", "regenerated": False},
+        }
+        details_json = json.dumps(ng_path_details, ensure_ascii=False)
+        valid_response = (
+            "テスト回答\n\n"
+            "<<<WORKFLOW_DETAILS_JSON>>>\n"
+            f"```json\n{details_json}\n```\n"
+            "<<<END_WORKFLOW_DETAILS>>>\n"
+        )
+        claude_out = json.dumps({
+            "result": valid_response,
+            "duration_ms": 10000, "duration_api_ms": 9000, "num_turns": 3,
+            "total_cost_usd": 0.01,
+            "usage": {"input_tokens": 5000, "output_tokens": 1000,
+                      "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+        })
+        mock_proc = type("P", (), {"returncode": 0, "stdout": claude_out, "stderr": ""})()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir)
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", return_value=mock_proc), \
+                 patch("tools.benchmark.scripts.run_qa.evaluate_scenario", return_value=self.FAKE_EVAL):
+                summary = run_qa_all(
+                    str(scenarios_path), str(skill_dir), output_dir=str(output_dir),
+                )
+
+        scenario_entry = summary["scenarios"][0]
+        # Cascade: step5 absent → falls through to step2.bm25_sections (3 items)
+        assert scenario_entry["search_sections"] == 3
+
+    def test_search_sections_zero_when_all_steps_absent_or_empty(self):
+        """When step5, step2.bm25_sections, and step4.selected_sections are all absent/empty,
+        search_sections should be 0."""
+        empty_details = {
+            "step2": {"bm25_terms": [], "bm25_sections": []},
+            "step3": {"check_answerable_result": "NG"},
+            "step4": {"ran": True, "selected_sections": []},
+            # step5 absent
+            "step6": {"verify_result": "PASS", "regenerated": False},
+        }
+        details_json = json.dumps(empty_details, ensure_ascii=False)
+        valid_response = (
+            "テスト回答\n\n"
+            "<<<WORKFLOW_DETAILS_JSON>>>\n"
+            f"```json\n{details_json}\n```\n"
+            "<<<END_WORKFLOW_DETAILS>>>\n"
+        )
+        claude_out = json.dumps({
+            "result": valid_response,
+            "duration_ms": 10000, "duration_api_ms": 9000, "num_turns": 3,
+            "total_cost_usd": 0.01,
+            "usage": {"input_tokens": 5000, "output_tokens": 1000,
+                      "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+        })
+        mock_proc = type("P", (), {"returncode": 0, "stdout": claude_out, "stderr": ""})()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir)
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", return_value=mock_proc), \
+                 patch("tools.benchmark.scripts.run_qa.evaluate_scenario", return_value=self.FAKE_EVAL):
+                summary = run_qa_all(
+                    str(scenarios_path), str(skill_dir), output_dir=str(output_dir),
+                )
+
+        scenario_entry = summary["scenarios"][0]
+        assert scenario_entry["search_sections"] == 0
 
 
 class TestRunE2eAllErrorHandling:
