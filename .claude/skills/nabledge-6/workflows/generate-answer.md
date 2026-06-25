@@ -7,7 +7,7 @@ Reads selected sections and generates a Japanese answer.
 - `{question}`: User's question (natural Japanese text).
 - `{processing_type}`: Processing type (one of the 7 processing types, or null).
 - `{selected_sections}`: Array of section pointers in `{"file": "...", "section_id": "...", "relevance": "..."}` format.
-- `{excluded_claims}`: (Optional) List of claim strings to exclude from the answer. If not provided or empty, no exclusions apply.
+- `{findings}`: (Optional) List of issues from a previous verify-answer run (unsupported claims, missing items). If provided, exclude those claims and address the missing items. If not provided or empty, no exclusions apply.
 
 ## Output
 
@@ -47,7 +47,7 @@ Otherwise, generate a Japanese answer following the steps below.
 1. Read all sections in `sections_content`.
 2. If `processing_type` is not null, focus on approaches that match that type.
 3. Identify the information that directly answers the question. For any gap in the sections, write "この情報は知識ファイルの対象範囲外です" — do not infer.
-4. If `{excluded_claims}` is provided and non-empty, do not include any of the following claims in the answer: `{excluded_claims}`.
+4. If `{findings}` is provided and non-empty, exclude any claims flagged in `{findings}` and address the missing items listed there.
 5. Write the answer in the format below. Stay within 500 tokens (up to 800 for complex questions).
 
 **Answer format**:
