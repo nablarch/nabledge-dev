@@ -136,7 +136,7 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 - [x] エラー・タイムアウトがあれば原因を調査・修正する
 - [x] self-check（OK/NG per completion criterion、記録: `.rn/issue-383/checks/task-4.md`）
 - [x] QA expert review（subagent）
-- [ ] user review
+- [x] user review
 
 **Completion criteria**:
 
