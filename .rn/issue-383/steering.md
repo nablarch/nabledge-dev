@@ -237,30 +237,4 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: paused
-- **Date**: 2026-06-25
-- **Last completed**: #5 (commit 5e2d0604)
-- **Next**: #6 — 選定シナリオ × 3 run ベンチマーク実行
-- **Notes**: |
-    #1〜#5 完了。#6 から着手。
-
-    **run-1 結果サマリー（`20260625-1711-rag-k10-filter`）**:
-    - 8シナリオ全件 error.json なし、(content unavailable) なし
-    - Correctness 平均 1.00、Faithfulness 平均 0.93、Relevancy 平均 0.97
-    - must-section hit rate: 9/10 = 90%（qa-20 のみ s4 を取りこぼし、s5 で補完されたため Correctness は 1.0）
-    - run-1 は #5 完了時に実施済み → #6 では run-2、run-3 を追加して crossrun-summary + quality-report を生成する
-
-    **#6 の作業手順**:
-    1. run-2: `PYTHONPATH=. python3 tools/rag/scripts/run_rag_qa.py --scenario-ids "review-06,impact-08,qa-09,qa-11,qa-20,qa-14,oos-impact-01,oos-qa-01" --no-verify-ssl`
-    2. run-2 結果確認（error.json なし・(content unavailable) なし）
-    3. run-3: 同上
-    4. run-3 結果確認
-    5. フェーズC-1: crossrun-summary.md 生成・コミット（run-1〜run-3）
-    6. フェーズC-2: 閾値割れシナリオの裏付け調査（answer.md とナレッジの突き合わせ）
-    7. フェーズC-3: quality-report.md 作成・コミット（現行ベースライン `20260616-1214-fullbench-classes-v6` の同シナリオとの比較を含む）
-
-    **Qdrant コンテナ**: 再起動後は `docker compose -f tools/rag/docker/docker-compose.yml up -d`
-
-    **未コミットの旧ベンチ結果**（tools/benchmark/results/20260625-{1340,1341,1353,1524,1545,1550,1710}-rag-k10-filter/）:
-    これらは #4 の動作確認中間ランで、run-1〜3 の公式ラン（1711）とは別物。#6 の作業では無視してよい。
-    コミットするなら「chore: add intermediate benchmark runs from task #4」でまとめてコミット可。
+- **Status**: not suspended
