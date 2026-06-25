@@ -77,7 +77,8 @@ def extract_linked_pages(content: str) -> list[str]:
         content: Section content text.
 
     Returns:
-        Deduplicated list of page IDs referenced in content.
+        Deduplicated list of page basenames (without .json) referenced in content.
+        Note: these are basenames only, not full relative paths like page_id metadata.
     """
     matches = _JSON_REF_RE.findall(content)
     seen: list[str] = []
@@ -86,6 +87,7 @@ def extract_linked_pages(content: str) -> list[str]:
         # Take basename and strip .json extension
         basename = pathlib.PurePosixPath(m).name
         page_id = basename[: -len(".json")]
+        # Basename only — full path is unknown from text content alone.
         if page_id not in seen_set:
             seen_set.add(page_id)
             seen.append(page_id)
@@ -103,7 +105,8 @@ def parse_classes_md(md_path: pathlib.Path) -> dict[str, list[str]]:
         md_path: Path to the classes.md file.
 
     Returns:
-        Dict mapping page_id (basename without .json) to list of class names.
+        Dict mapping page_id (relative path without .json extension, e.g.
+        "processing-pattern/nablarch-batch/nablarch-batch-architecture") to list of class names.
         Returns empty dict if the file does not exist or cannot be parsed.
     """
     if not md_path.exists():
@@ -190,7 +193,7 @@ def build_chunks(
             "title": section_title,
             "level": level,
             "class_names": class_names,
-            "linked_pages": linked_pages,
+            "linked_pages": linked_pages,  # basename-only (from content text); not resolvable as page_id
         }
 
         chunks.append({"text": text, "metadata": metadata})
