@@ -262,4 +262,24 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: not suspended
+- **Status**: paused
+- **Date**: 2026-06-25
+- **Last completed**: #6 (commit 385a782a) — v3限定8シナリオ × 3 run ベンチマーク + crossrun-summary + quality-report
+- **Next**: #7 — v4解除後の全件Indexing・全34シナリオ × 3 run ベンチマーク
+- **Notes**: |
+    #1〜#6 完了。v4 SCP解除待ち。解除連絡が来たら #7 から着手。
+
+    **#6 結果サマリー**:
+    - v3 eligible 8シナリオ × 3 run: correctness 0.979, relevancy 0.977, faithfulness 0.944
+    - コスト -83% ($0.146 vs $0.837)、速度 -84% (25s vs 160s)
+    - qa-20:s4 が全3runで構造的未到達（v3制約によるベクトルランキング問題）
+    - レポート: tools/benchmark/results/rag-k10-filter/
+
+    **#7 の作業手順**:
+    1. v4 呼び出し確認: `python3 -c "from tools.rag.scripts.query import embed; embed(['test'], 'cohere.embed-v4:0')"`
+    2. Qdrantリセット + v4で全件Indexing: `python3 tools/rag/scripts/index.py --model cohere.embed-v4:0`
+    3. point数確認（9,000件以上）
+    4. run-1〜run-3: `PYTHONPATH=. python3 tools/rag/scripts/run_rag_qa.py --no-verify-ssl`（全34シナリオ、--scenario-ids 省略で全件）
+    5. crossrun-summary.md 生成（tools/benchmark/results/rag-v4-k10-filter/ 等に配置）
+
+    **Qdrantコンテナ**: 再起動後は `docker compose -f tools/rag/docker/docker-compose.yml up -d`
