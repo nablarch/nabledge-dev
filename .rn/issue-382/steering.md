@@ -90,15 +90,15 @@ will not be used as the BM25 engine.
 
 **Steps**:
 
-- [ ] Survey candidate BM25 libraries (e.g. rank-bm25, bm25s, Whoosh): license, pip install size, Python version compatibility, maintenance status
-- [ ] Identify the user setup impact: which library to `pip install`, whether it must be added to a requirements file, whether setup scripts need updating
-- [ ] Present library comparison and recommended choice to user; get approval before proceeding
-- [ ] Draft the BM25 step as a standalone markdown block: index build, term extraction by LLM from question, BM25 query, answer generation from hits, Step-6 verifier reuse, PASS/FAIL branching into semantic-search fallback
-- [ ] Consult Software Engineer expert (subagent) to review for correctness and edge cases
-- [ ] Revise based on findings
-- [ ] Save final draft to `.rn/issue-382/bm25-step-draft.md`
-- [ ] User review — present full draft and get approval before implementation
-- [ ] Self-check: library choice approved, all branches (no hits, PASS, FAIL→fallback) specified, setup steps documented
+- [x] Survey candidate BM25 libraries (e.g. rank-bm25, bm25s, Whoosh): license, pip install size, Python version compatibility, maintenance status
+- [x] Identify the user setup impact: which library to `pip install`, whether it must be added to a requirements file, whether setup scripts need updating
+- [x] Present library comparison and recommended choice to user; get approval before proceeding
+- [x] Draft the BM25 step as a standalone markdown block: index build, term extraction by LLM from question, BM25 query, answer generation from hits, Step-6 verifier reuse, PASS/FAIL branching into semantic-search fallback
+- [x] Consult Software Engineer expert (subagent) to review for correctness and edge cases
+- [x] Revise based on findings
+- [x] Save final draft to `.rn/issue-382/bm25-step-draft.md`
+- [x] User review — present full draft and get approval before implementation
+- [x] Self-check: library choice approved, all branches (no hits, PASS, FAIL→fallback) specified, setup steps documented
 
 **Completion criteria**:
 
@@ -210,7 +210,19 @@ versions, as the workflow is superseded and confusingly named.
 
 # Decisions
 
-(none yet)
+## D-1: BM25 library — bm25s
+- **Issue**: Which Python BM25 library to use for `bm25-search.sh`
+- **Conclusion**: `bm25s` (MIT, v0.3.9, May 2026)
+- **Rationale**: Only actively maintained option; index save/load eliminates per-call rebuild cost
+- **Evidence**: rank-bm25 last released Feb 2022, ~2 QPS, no persistence; Whoosh last released Apr 2016, Python 3.12 compatibility uncertain; bm25s multiple 2026 releases, ~573 QPS, native save/load
+- **Sources**: PyPI metadata, bm25-step-draft.md Section 1
+
+## D-2: BM25 term extraction — cut from question as-is, typo-correct only
+- **Issue**: How the LLM extracts search terms for BM25 from the user's question
+- **Conclusion**: Extract concrete identifiers verbatim from the question text; correct obvious typos; do not add synonyms, related terms, or paraphrases
+- **Rationale**: BM25 scores on exact/substring match — inferred or related terms increase document frequency and dilute hit quality
+- **Evidence**: BM25 scoring degrades when query terms appear in many documents; synonyms/paraphrases are not in the question and would not match the knowledge JSON verbatim
+- **Sources**: bm25-step-draft.md Step 3-1 discussion
 
 ---
 
@@ -218,6 +230,6 @@ versions, as the workflow is superseded and confusingly named.
 
 - **Status**: not suspended
 - **Date**: 2026-06-25
-- **Last completed**: #1 Confirm existing benchmark baseline
-- **Next**: #2 Select BM25 library and design pre-search step
-- **Notes**: baseline = 20260612-1404-baseline-current; pass 25/34, p50 cost $0.682, p50 time 118s
+- **Last completed**: #2 Select BM25 library and design BM25 pre-search step
+- **Next**: #3 Implement BM25 step in v6 qa.md and verify incrementally
+- **Notes**: baseline = 20260612-1404-baseline-current (25/34, p50 $0.682, 118s); bm25s selected (D-1); term extraction: cut from question as-is, typo-correct only (D-2)
