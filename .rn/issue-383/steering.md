@@ -223,18 +223,4 @@ RAGネイティブのNabledge実装を構築し、現行エージェンティッ
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: paused
-- **Date**: 2026-06-25
-- **Last completed**: #2 (commit 98d888d6)
-- **Next**: #3 — RAG版クエリエンジン実装（1シナリオ動作確認まで）
-- **Notes**: |
-    #1・#2 完了。Qdrant に 9376 points 格納済み（全935ファイル、v3モデル、1024次元）。
-    Qdrant コンテナは localhost:6333 で起動中。再起動後は `docker compose -f tools/rag/docker/docker-compose.yml up -d` で起動する。
-    全件 Indexing 後もコレクションはリセット不要（#3 以降はそのまま使う）。
-    #3 でやること:
-      - tools/rag/scripts/query.py を実装（search_query embed → Qdrant top-k → selected_pages/read_sections 返却）
-      - tools/rag/tests/test_query.py を実装（ユニットテスト）
-      - tools/rag/scripts/run_rag_qa.py を実装（query.py → LLM → workflow_details.json/answer.md/metrics.json/evaluation.json 出力）
-      - pre-01 で実行して出力を確認
-    参照: tools/benchmark/results/ の既存 run_qa.py 出力フォーマット（互換性必要）。
-    現行 e2e-prompt.md のパス確認が必要（run_rag_qa.py で流用）。
+- **Status**: not suspended
