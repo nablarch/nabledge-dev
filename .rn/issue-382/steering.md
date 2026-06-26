@@ -232,20 +232,10 @@ versions, as the workflow is superseded and confusingly named.
 
 - **Status**: paused
 - **Date**: 2026-06-26
-- **Last completed**: #3 sub-task — fts-hints.md RBKC generation implemented and pushed (commits 722345a3, 394983c8). full-text-search.md updated to `cat scripts/fts-hints.md` dynamic loading.
-- **Next**: #3 — pre-benchmark stabilization loop (全34シナリオ実行 → 全 workflow_details.json 個別確認 → ユーザーゲート → 本実行 run-1/2/3)
+- **Last completed**: #3 sub-task — fts-hints.md RBKC generation implemented and pushed (commits 722345a3, 394983c8). full-text-search.md updated to `cat scripts/fts-hints.md` dynamic loading. Steering task steps clarified.
+- **Next**: #3 — Stabilization run (Phase A + B run-1 per HOW-TO-RUN.md)
 - **Notes**:
   - baseline = 20260612-1404-baseline-current (25/34, p50 $0.682, 118s)
   - bm25s installed in /home/tie303177/venv. .bm25-index/ is runtime-generated (untracked, gitignored).
   - RBKC run dir: `tools/rbkc/` → `/home/tie303177/venv/bin/python -m scripts.run <cmd> <ver>`
-  - 作業前の必須手順: rbkc verify 全バージョン (1.2/1.3/1.4/5/6) を実行してFAIL 0件確認。前回確認済み。
-
-  **fts-hints.md 実装済み（コミット済み）:**
-  - `tools/rbkc/scripts/create/index.py` に `generate_fts_hints_md()` 追加（ファイルステムベース）
-  - `tools/rbkc/scripts/run.py` に3箇所呼び出し追加（output_dir.parent/"scripts"/"fts-hints.md"）
-  - `.claude/skills/nabledge-6/scripts/fts-hints.md` 生成済み（ファイルステム形式、例: `### libraries-bean-validation`）
-  - `.claude/skills/nabledge-6/workflows/full-text-search.md` 更新済み（静的リスト廃止 → `cat scripts/fts-hints.md`）
-
-  **ベンチマーク実行:** `tools/benchmark/HOW-TO-RUN.md` を参照。手順はそこに書いてある。
-
-  **削除待ち:** `tools/benchmark/results/20260625-175755/`（中間結果）、`{run-label}/`（空ディレクトリ）
+  - 削除待ち: `tools/benchmark/results/20260625-175755/`（中間結果）、`{run-label}/`（空ディレクトリ）
