@@ -1,0 +1,69 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 143233,
+  "duration_api_ms": 140264,
+  "ttft_ms": 4700,
+  "ttft_stream_ms": 3812,
+  "time_to_request_ms": 2161,
+  "num_turns": 16,
+  "result": "収集した情報を元に回答を生成します。\n\n### Answer\n\n**結論**\n\nウェブアプリケーションのエラー処理は、主に **HTTPエラー制御ハンドラ**（`HttpErrorHandler`）がハンドラキュー上で例外を捕捉し、例外の種類に応じたログ出力とエラー画面へのレスポンス生成を行う仕組みになっています。エラー画面への遷移先は `@OnError` インターセプタやハンドラで定義します。\n\n---\n\n**根拠**\n\n## 1. HTTPエラー制御ハンドラによる例外処理とログ出力\n\n`HttpErrorHandler` がハンドラキューの後続で発生した例外を捕捉し、例外の種類に応じて以下のように処理します。\n\n| 例外クラス | ログレベル | HTTPステータス | 補足 |\n|---|---|---|---|\n| `NoMoreHandlerException` | INFO | 404 | 処理すべきアクションが存在しない場合 |\n| `HttpErrorResponse` | ログ出力なし | `HttpErrorResponse` のステータスコード | 業務例外（バリデーションエラーなど）のため出力しない |\n| `Result.Error` | 設定による（FATAL） | `Error#getStatusCode()` | `writeFailureLogPattern` に設定した正規表現がステータスコードにマッチした場合にFATALログ |\n| `StackOverflowError` | FATAL | 500 | データや実装バグに起因するため障害通知 |\n| 上記以外 | FATAL | 500 | 予期しない例外として障害扱い |\n\n`HttpErrorResponse` の原因例外が `ApplicationException`（バリデーションエラーなど）の場合は、ログ出力を行わず、メッセージ情報を `ErrorMessages` に変換してリクエストスコープ（デフォルトキー: `errors`）に設定します。これによりViewでエラーメッセージを表示できます。\n\n```xml\n<!-- キー名を変更したい場合のコンポーネント設定 -->\n<component name=\"webConfig\" class=\"nablarch.common.web.WebConfig\">\n  <property name=\"errorMessageRequestAttributeName\" value=\"messages\" />\n</component>\n```\n\n## 2. エラー画面への遷移先の指定方法\n\n遷移先の指定には3つの方法があります。\n\n**① アクションメソッドの `@OnError` アノテーション（個別指定）**\n\n```java\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    // 業務処理\n}\n```\n\n**② カスタムハンドラによる一括定義（システム共通のエラーページ）**\n\n全アクションに共通の遷移先を設定する場合は、個別のアノテーション指定ではなくハンドラで定義します。漏れや指定ミスを防止できます。\n\n```java\npublic class ExampleErrorForwardHandler implements Handler<Object, Object> {\n  @Override\n  public Object handle(Object data, ExecutionContext context) {\n    try {\n      return context.handleNext(data);\n    } catch (NoDataException e) {\n      throw new HttpErrorResponse(404, \"/WEB-INF/view/common/errorPages/pageNotFoundError.jsp\", e);\n    } catch (OptimisticLockException e) {\n      throw new HttpErrorResponse(400, \"/WEB-INF/view/common/errorPages/optimisticLockError.jsp\", e);\n    }\n  }\n}\n```\n\n**③ `HttpErrorHandler` のデフォルトページ設定（ステータスコード別）**\n\n```xml\n<component class=\"nablarch.fw.web.handler.HttpErrorHandler\">\n  <property name=\"defaultPages\">\n    <map>\n      <entry key=\"4..\" value=\"/USER_ERROR.jsp\" />\n      <entry key=\"404\" value=\"/NOT_FOUND.jsp\" />\n      <entry key=\"5..\" value=\"/ERROR.jsp\" />\n    </map>\n  </property>\n</component>\n```\n\n> ただし、③よりも `web.xml` の `<error-page>` 要素で設定することが推奨されています。`web.xml` に設定しない場合、エラー発生箇所によってはウェブサーバのデフォルトエラーページが表示される可能性があります。\n\n## 3. 障害ログの出力方針\n\nHTTPエラー制御ハンドラがFATALログとして出力する障害ログは、以下の方針で出力されます。\n\n| ログの種類 | ログレベル | ロガー名 | 出力先 |\n|---|---|---|---|\n| 障害通知ログ | FATAL / ERROR | MONITOR | 監視専用ファイル（monitor.log） |\n| 障害解析ログ | FATAL / ERROR | クラス名 | アプリケーションログ（app.log） |\n\n`app-log.properties` でデフォルトの障害コードとメッセージを設定します。\n\n```properties\nfailureLogFormatter.defaultFailureCode=MSG99999\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\\nInput Data :\\n$data$\n```\n\nアプリケーションから明示的に障害ログを出力する場合は `FailureLogUtil` を使用します。\n\n```java\ntry {\n    // 業務処理\n} catch (UserNotFoundException e) {\n    FailureLogUtil.logError(e, inputData, \"USER_NOT_FOUND\");\n}\n```\n\n---\n\n**注意点**\n\n- `@OnError` は1つの例外クラスに対して1つの遷移先しか指定できません。同じ例外クラスで複数の遷移先が必要な場合は、アクションメソッド内で `try-catch` を使用して `HttpErrorResponse` をスローしてください。\n- `HttpErrorHandler` のデフォルトページ設定を使う場合も、`web.xml` 側への設定が必要です（二重設定になりますが必須）。\n\n参照: handlers-HttpErrorHandler.json:s4, handlers-HttpErrorHandler.json:s5, handlers-HttpErrorHandler.json:s6, web-application-feature-details.json:s16, web-application-forward-error-page.json:s1, web-application-forward-error-page.json:s2, libraries-failure-log.json:s1, libraries-failure-log.json:s3, handlers-on-error.json:s3\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step2\": {\n    \"bm25_terms\": [\"failure-log\", \"log\", \"http-access-log\"],\n    \"bm25_sections\": [\n      {\"file\": \"component/libraries/libraries-log.json\", \"section_id\": \"s3\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-http-access-log-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-log.json\", \"section_id\": \"s10\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-log.json\", \"section_id\": \"s19\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-log.json\", \"section_id\": \"s28\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-access-log-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s4\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s3\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-log.json\", \"section_id\": \"s2\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-log.json\", \"section_id\": \"s7\", \"relevance\": \"high\"},\n      {\"file\": \"component/adapters/adapters-log-adaptor.json\", \"section_id\": \"s4\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-log.json\", \"section_id\": \"s20\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-log.json\", \"section_id\": \"s17\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s9\", \"relevance\": \"high\"},\n      {\"file\": \"processing-pattern/jakarta-batch/jakarta-batch-operator-notice-log.json\", \"section_id\": \"s2\", \"relevance\": \"high\"},\n      {\"file\": \"processing-pattern/jakarta-batch/jakarta-batch-progress-log.json\", \"section_id\": \"s2\", \"relevance\": \"high\"},\n      {\"file\": \"javadoc/javadoc-nablarch-integration-doma-NablarchJdbcLogger.json\", \"section_id\": \"s7\", \"relevance\": \"high\"}\n    ]\n  },\n  \"step3\": {\n    \"check_answerable_result\": \"NG\"\n  },\n  \"step4\": {\n    \"ran\": true,\n    \"selected_sections\": [\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s4\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s5\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s6\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s5\", \"relevance\": \"partial\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s16\", \"relevance\": \"high\"},\n      {\"file\": \"processing-pattern/web-application/web-application-forward-error-page.json\", \"section_id\": \"s1\", \"relevance\": \"high\"},\n      {\"file\": \"processing-pattern/web-application/web-application-forward-error-page.json\", \"section_id\": \"s2\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s1\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s3\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s3\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s4\", \"relevance\": \"partial\"}\n    ]\n  },\n  \"step5\": {\n    \"sections_used\": [\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s4\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s5\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s6\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s16\"},\n      {\"file\": \"processing-pattern/web-application/web-application-forward-error-page.json\", \"section_id\": \"s1\"},\n      {\"file\": \"processing-pattern/web-application/web-application-forward-error-page.json\", \"section_id\": \"s2\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s1\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s3\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s3\"}\n    ]\n  },\n  \"step6\": {\n    \"verify_result\": \"PASS\",\n    \"regenerated\": false\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "200d39e7-b08a-41a6-9826-0a6a0846600b",
+  "total_cost_usd": 0.8238074000000001,
+  "usage": {
+    "input_tokens": 17,
+    "cache_creation_input_tokens": 109022,
+    "cache_read_input_tokens": 958713,
+    "output_tokens": 8338,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 109022
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 2030,
+      "outputTokens": 42,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0022400000000000002,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 17,
+      "outputTokens": 8338,
+      "cacheReadInputTokens": 958713,
+      "cacheCreationInputTokens": 109022,
+      "webSearchRequests": 0,
+      "costUSD": 0.8215674000000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_013ng6zucgAQ6Kbacm6HHpFt",
+      "tool_input": {
+        "command": "cat /home/tie303177/work/nabledge-dev/.claude/worktrees/text-search/scripts/fts-hints.md",
+        "description": "Read FTS hints file for page title lookup"
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "a2c9ed87-38de-4271-a09c-2fe028a76cf2"
+}

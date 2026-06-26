@@ -1,0 +1,61 @@
+{
+  "scenario_id": "qa-21",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+    "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both key facts from the Expected Output checklist. First, it explicitly covers '@Valid アノテーション' triggering validation (JaxRsBeanValidationHandler executing validation, resulting in ApplicationException on error). Second, it explicitly covers creating a class that inherits 'ErrorResponseBuilder' to set error messages in the response body, including concrete code examples and component configuration. Both expected facts are clearly addressed in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, which asks about how to return error messages to users when input validation errors occur. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 111023,
+    "duration_api_ms": 108538,
+    "num_turns": 20,
+    "total_cost_usd": 0.5194834,
+    "usage": {
+      "input_tokens": 19,
+      "output_tokens": 6731,
+      "cache_read_input_tokens": 850508,
+      "cache_creation_input_tokens": 42972
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1974,
+        "outputTokens": 38,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002164,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 19,
+        "outputTokens": 6731,
+        "cacheReadInputTokens": 850508,
+        "cacheCreationInputTokens": 42972,
+        "webSearchRequests": 0,
+        "costUSD": 0.5173194,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

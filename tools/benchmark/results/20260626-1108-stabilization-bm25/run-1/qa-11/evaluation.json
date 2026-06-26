@@ -1,0 +1,60 @@
+{
+  "scenario_id": "qa-11",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers both key facts in the expected output: (1) HttpErrorHandler processes exceptions and returns responses with appropriate status codes based on exception type (clearly shown in the table mapping exception classes to HTTP status codes), and (2) ApplicationException error messages are converted to ErrorMessages and set in the request scope (explicitly stated as 'メッセージ情報をErrorMessagesに変換してリクエストスコープ（デフォルトキー: errors）に設定します'). Both expected facts are fully covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about error screen display and logging mechanisms when errors occur. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 143233,
+    "duration_api_ms": 140264,
+    "num_turns": 16,
+    "total_cost_usd": 0.8238074000000001,
+    "usage": {
+      "input_tokens": 17,
+      "output_tokens": 8338,
+      "cache_read_input_tokens": 958713,
+      "cache_creation_input_tokens": 109022
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2030,
+        "outputTokens": 42,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0022400000000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 17,
+        "outputTokens": 8338,
+        "cacheReadInputTokens": 958713,
+        "cacheCreationInputTokens": 109022,
+        "webSearchRequests": 0,
+        "costUSD": 0.8215674000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

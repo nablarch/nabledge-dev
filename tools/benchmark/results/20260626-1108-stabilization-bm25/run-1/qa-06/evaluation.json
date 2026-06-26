@@ -1,0 +1,60 @@
+{
+  "scenario_id": "qa-06",
+  "description": "Web画面で入力画面と確認画面をそれぞれ別のJSPで作っている。同じフォーム項目を2回書くのが面倒。共通化する方法があると聞いた。",
+  "input": "入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output clearly covers the expected fact: using the `n:confirmationPage` tag in the confirmation page JSP to specify the path to the input page JSP for sharing/common use. This is explicitly demonstrated both in the explanation and in the code example (`<n:confirmationPage path=\"./input.jsp\" />`). The expected output's single core fact is fully present in the actual output."
+    },
+    "answer_relevancy": {
+      "score": 0.875,
+      "reason": "The score is 0.88 because the actual output mostly addresses the question about commonizing input and confirmation screen JSPs to reduce implementation. However, it includes some irrelevant details about DB store and HIDDEN store selection, which relate to how input information is retained rather than directly addressing the JSP commonization implementation method."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 101964,
+    "duration_api_ms": 99422,
+    "num_turns": 14,
+    "total_cost_usd": 0.41480335000000007,
+    "usage": {
+      "input_tokens": 15,
+      "output_tokens": 6004,
+      "cache_read_input_tokens": 619072,
+      "cache_creation_input_tokens": 36501
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1918,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002098,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 15,
+        "outputTokens": 6004,
+        "cacheReadInputTokens": 619072,
+        "cacheCreationInputTokens": 36501,
+        "webSearchRequests": 0,
+        "costUSD": 0.41270535,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

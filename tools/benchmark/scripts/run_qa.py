@@ -189,7 +189,7 @@ def run_qa_scenario(
             "--model", "sonnet",
             "--output-format", "json",
             "--no-session-persistence",
-            "--allowedTools", "Bash(bash scripts/keyword-search.sh *) Bash(bash scripts/read-sections.sh *) Read",
+            "--allowedTools", "Bash(bash scripts/keyword-search.sh *) Bash(bash scripts/bm25-search.sh *) Bash(bash scripts/read-sections.sh *) Read",
         ],
         input=prompt,
         capture_output=True,
@@ -264,10 +264,16 @@ def run_qa_all(
                 json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8"
             )
 
-            selected = result["workflow_details"].get("step3", {}).get("selected_sections", [])
+            wd = result["workflow_details"]
+            sections_used = (
+                wd.get("step5", {}).get("sections_used")
+                or wd.get("step2", {}).get("bm25_sections")
+                or wd.get("step4", {}).get("selected_sections")
+                or []
+            )
             scenario_summaries.append({
                 "id": result["scenario_id"],
-                "search_sections": len(selected),
+                "search_sections": len(sections_used),
             })
         except Exception as exc:
             exc_type = type(exc).__name__

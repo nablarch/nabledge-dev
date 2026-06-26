@@ -1,0 +1,60 @@
+{
+  "scenario_id": "review-09",
+  "description": "セキュリティ診断でContent Security Policyを有効にしろと指摘された。NablarchのWeb画面でCSPを設定したい。",
+  "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
+  "purpose": "セキュリティ対応したい",
+  "expected_facts": [
+    "セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Expected Output states that CSP should be enabled by combining SecureHandler, ContentSecurityPolicyHeader, and the CSP custom tag. The Actual Output covers all three elements: it explains SecureHandler configuration with ContentSecurityPolicyHeader (with policy property, nonce generation, and reportOnly mode), and also mentions the `cspNonce` custom tag for JSP elements. All key facts from the Expected Output are present in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is fully relevant to the input, directly addressing how to configure Content Security Policy (CSP) in Nablarch web screens without any irrelevant statements. Great job!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 120854,
+    "duration_api_ms": 118734,
+    "num_turns": 18,
+    "total_cost_usd": 0.50743265,
+    "usage": {
+      "input_tokens": 19,
+      "output_tokens": 7861,
+      "cache_read_input_tokens": 801213,
+      "cache_creation_input_tokens": 39185
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1998,
+        "outputTokens": 31,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0021530000000000004,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 19,
+        "outputTokens": 7861,
+        "cacheReadInputTokens": 801213,
+        "cacheCreationInputTokens": 39185,
+        "webSearchRequests": 0,
+        "costUSD": 0.5052796500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 75522,
+  "duration_api_ms": 73878,
+  "ttft_ms": 4593,
+  "ttft_stream_ms": 3602,
+  "time_to_request_ms": 1904,
+  "num_turns": 15,
+  "result": "必要なセクション情報が揃いました。回答を生成します。\n\n---\n\n### Answer\n\n**結論**: テスト時にシステム日時を任意の値に切り替えるには、`SystemTimeProvider` インターフェースを実装したクラスを作成し、テスト用のコンポーネント定義でそのクラスを差し替えます。本番とテストの切り替えは「コンポーネント定義で指定するクラスを差し替えるだけ」で実現できます。\n\n**根拠**:\n\nNablarch の日付管理機能は、コンポーネント定義で指定されたクラスを通じてシステム日時・業務日付を取得する仕組みになっています。そのため、コンポーネント定義を差し替えるだけで本番とテストの動作を切り替えられます。\n\n**システム日時の切り替え手順**\n\n1. `SystemTimeProvider` インターフェースを実装したクラスを作成する（例: テスト用に固定日時を返すクラス）\n2. テスト用のコンポーネント定義で `systemTimeProvider` という名前でそのクラスを登録する\n\n本番環境では、デフォルト実装の `BasicSystemTimeProvider` を使用します:\n\n```xml\n<!-- 本番用 -->\n<component name=\"systemTimeProvider\" class=\"nablarch.core.date.BasicSystemTimeProvider\" />\n```\n\nテスト時は、このコンポーネント定義を差し替え用のクラス（任意日時を返す独自実装）に変更することで切り替えます。\n\n**業務日付を切り替えたい場合**\n\n同様に `BusinessDateProvider` インターフェースを実装したクラスを作成し、`businessDateProvider` という名前でコンポーネント定義に登録します:\n\n```xml\n<!-- 本番用 -->\n<component name=\"businessDateProvider\" class=\"nablarch.core.date.BasicBusinessDateProvider\">\n  <property name=\"tableName\" value=\"BUSINESS_DATE\" />\n  <property name=\"segmentColumnName\" value=\"SEGMENT\"/>\n  <property name=\"dateColumnName\" value=\"BIZ_DATE\"/>\n  <property name=\"defaultSegment\" value=\"00\"/>\n  <property name=\"transactionManager\" ref=\"transactionManager\" />\n</component>\n```\n\nテスト時はコンポーネント定義を差し替えることで任意の日付を返せます。\n\n**注意点**:\n- `BusinessDateProvider` を使う場合、`BasicApplicationInitializer` の `initializeList` への登録も必要です\n- 業務日付はデータベースで管理されるため、依存モジュール `nablarch-common-jdbc` が必要です\n\n参照: libraries-date.json:s2, libraries-date.json:s5, libraries-date.json:s7, libraries-date.json:s12, libraries-date.json:s13\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step2\": {\n    \"bm25_terms\": [\"date\"],\n    \"bm25_sections\": [\n      {\"file\": \"component/libraries/libraries-date.json\", \"section_id\": \"s12\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-date.json\", \"section_id\": \"s13\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-date.json\", \"section_id\": \"s5\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-date.json\", \"section_id\": \"s10\", \"relevance\": \"high\"},\n      {\"file\": \"javadoc/javadoc-nablarch-core-date-SystemTimeProvider.json\", \"section_id\": \"s2\", \"relevance\": \"high\"},\n      {\"file\": \"javadoc/javadoc-nablarch-core-date-BusinessDateProvider.json\", \"section_id\": \"s5\", \"relevance\": \"high\"},\n      {\"file\": \"javadoc/javadoc-nablarch-core-date-BasicBusinessDateProvider.json\", \"section_id\": \"s30\", \"relevance\": \"high\"},\n      {\"file\": \"javadoc/javadoc-nablarch-core-log-basic-LogContext.json\", \"section_id\": \"s8\", \"relevance\": \"high\"},\n      {\"file\": \"javadoc/javadoc-nablarch-core-util-DateUtil.json\", \"section_id\": \"s6\", \"relevance\": \"high\"}\n    ]\n  },\n  \"step3\": {\n    \"check_answerable_result\": \"OK\"\n  },\n  \"step4\": {\n    \"ran\": false,\n    \"selected_sections\": []\n  },\n  \"step5\": {\n    \"sections_used\": [\n      {\"file\": \"component/libraries/libraries-date.json\", \"section_id\": \"s2\"},\n      {\"file\": \"component/libraries/libraries-date.json\", \"section_id\": \"s5\"},\n      {\"file\": \"component/libraries/libraries-date.json\", \"section_id\": \"s7\"},\n      {\"file\": \"component/libraries/libraries-date.json\", \"section_id\": \"s12\"},\n      {\"file\": \"component/libraries/libraries-date.json\", \"section_id\": \"s13\"}\n    ]\n  },\n  \"step6\": {\n    \"verify_result\": \"PASS\",\n    \"regenerated\": false\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "769cb690-3ea3-48e3-be9c-9cfc80a8ca8d",
+  "total_cost_usd": 0.38395945,
+  "usage": {
+    "input_tokens": 16,
+    "cache_creation_input_tokens": 32237,
+    "cache_read_input_tokens": 655139,
+    "output_tokens": 4292,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 32237
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 1926,
+      "outputTokens": 35,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002101,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 16,
+      "outputTokens": 4292,
+      "cacheReadInputTokens": 655139,
+      "cacheCreationInputTokens": 32237,
+      "webSearchRequests": 0,
+      "costUSD": 0.38185844999999996,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01Vdmg7YuPuWahs4ScFJkdf7",
+      "tool_input": {
+        "command": "cat /home/tie303177/work/nabledge-dev/.claude/worktrees/text-search/scripts/fts-hints.md 2>/dev/null | head -100",
+        "description": "Read FTS hints file for page titles"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01SFjpxp4kzmziHiCwTTsYVy",
+      "tool_input": {
+        "command": "find /home/tie303177/work/nabledge-dev/.claude/worktrees/text-search -name \"fts-hints.md\" 2>/dev/null",
+        "description": "Find fts-hints.md file location"
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "d49dcd07-d66b-492b-8393-9464c8e2c675"
+}

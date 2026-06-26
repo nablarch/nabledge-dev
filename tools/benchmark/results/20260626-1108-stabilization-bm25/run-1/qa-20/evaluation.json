@@ -1,0 +1,61 @@
+{
+  "scenario_id": "qa-20",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
+    "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both key facts from the Expected Output. It explicitly mentions that JaxRsResponseHandler uses ErrorResponseBuilder for error response generation (covering the first expected fact about JaxRsResponseHandler generating error responses based on exceptions) and JaxRsErrorLogWriter for error log output (covering the second expected fact about JaxRsErrorLogWriter performing log output based on exceptions). Both facts are clearly addressed with detailed explanations and code examples."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about error handling mechanisms including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 114767,
+    "duration_api_ms": 113919,
+    "num_turns": 16,
+    "total_cost_usd": 0.4906130000000001,
+    "usage": {
+      "input_tokens": 17,
+      "output_tokens": 6676,
+      "cache_read_input_tokens": 744050,
+      "cache_creation_input_tokens": 43992
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2022,
+        "outputTokens": 43,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002237,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 17,
+        "outputTokens": 6676,
+        "cacheReadInputTokens": 744050,
+        "cacheCreationInputTokens": 43992,
+        "webSearchRequests": 0,
+        "costUSD": 0.48837600000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

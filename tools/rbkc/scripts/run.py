@@ -34,7 +34,7 @@ from scripts.common.sources import FileInfo, classify_sources, scan_sources
 from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.create.docs import generate_docs
 from scripts.create.classes import generate_classes_md
-from scripts.create.index import generate_index_md
+from scripts.create.index import generate_index_md, generate_fts_hints_md
 from scripts.create.javadoc import javadoc_generate
 from scripts.create.resolver import collect_asset_refs, copy_assets
 from scripts.common.labels import build_label_doc_map, build_label_map  # noqa: F401
@@ -264,6 +264,7 @@ def create(
 
     copy_assets(all_asset_refs, output_dir)
     generate_index_md(output_dir, output_dir / "index.md")
+    generate_fts_hints_md(output_dir, output_dir.parent / "scripts" / "fts-hints.md")
     generate_classes_md(output_dir, output_dir / "classes.md")
     generate_docs(output_dir, docs_dir, version)
 
@@ -316,6 +317,7 @@ def update(
 
     copy_assets(changed_asset_refs, output_dir)
     generate_index_md(output_dir, output_dir / "index.md")
+    generate_fts_hints_md(output_dir, output_dir.parent / "scripts" / "fts-hints.md")
     generate_classes_md(output_dir, output_dir / "classes.md")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 
@@ -359,6 +361,7 @@ def delete(
                 count += 1
 
     generate_index_md(output_dir, output_dir / "index.md")
+    generate_fts_hints_md(output_dir, output_dir.parent / "scripts" / "fts-hints.md")
     generate_classes_md(output_dir, output_dir / "classes.md")
     generate_docs(output_dir, output_dir.parent / "docs", version)
 

@@ -1,0 +1,60 @@
+{
+  "scenario_id": "qa-07",
+  "description": "バッチ処理でCSVファイルの各行をJava Beansにマッピングして読み込みたい。データバインドの使い方がわからない。",
+  "input": "CSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込みたい。どう実装する？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers the expected fact that ObjectMapperFactory#create is used to generate an ObjectMapper for reading data. The code example explicitly shows `ObjectMapperFactory.create(Person.class, inputStream)` and `mapper.read()` being used to read CSV data, which directly aligns with the single expected fact in the Expected Output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing how to read each row of a CSV file as Java Beans objects one by one. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 68282,
+    "duration_api_ms": 66203,
+    "num_turns": 11,
+    "total_cost_usd": 0.2934626,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 3989,
+      "cache_read_input_tokens": 341862,
+      "cache_creation_input_tokens": 34364
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1982,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0021769999999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 3989,
+        "cacheReadInputTokens": 341862,
+        "cacheCreationInputTokens": 34364,
+        "webSearchRequests": 0,
+        "costUSD": 0.2912856,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

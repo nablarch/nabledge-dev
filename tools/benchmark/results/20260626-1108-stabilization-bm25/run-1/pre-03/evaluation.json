@@ -1,0 +1,60 @@
+{
+  "scenario_id": "pre-03",
+  "description": "UniversalDaoを使ったデータベースアクセスを知りたい。バッチやWebで共通のコンポーネントのため、must_askほど重要ではないが、処理方式が分かれば回答の精度が上がる",
+  "input": "UniversalDaoでデータベースのデータを検索するにはどうすればいいですか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly covers the expected fact that SQL files can be used with SQL IDs specified for searching, and that results are mapped to Beans. Section ③ shows `findAllBySqlFile` with a SQL_ID like 'FIND_BY_AUTHOR' and a Bean condition object, and section ④ shows `findBySqlFile` with 'FIND_BY_ID' mapping to a `Book` bean. The text also mentions 'バインド変数はBeanのプロパティとして渡します' confirming Bean mapping. All aspects of the expected fact are covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about how to search database data using UniversalDao, with no irrelevant statements detected. Great job staying focused and on-topic!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 131876,
+    "duration_api_ms": 130141,
+    "num_turns": 16,
+    "total_cost_usd": 0.483671,
+    "usage": {
+      "input_tokens": 16,
+      "output_tokens": 8283,
+      "cache_read_input_tokens": 691875,
+      "cache_creation_input_tokens": 39970
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1758,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.001928,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16,
+        "outputTokens": 8283,
+        "cacheReadInputTokens": 691875,
+        "cacheCreationInputTokens": 39970,
+        "webSearchRequests": 0,
+        "costUSD": 0.48174300000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

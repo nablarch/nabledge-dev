@@ -103,22 +103,27 @@ class TestBuildE2ePrompt:
 
 
 SAMPLE_WORKFLOW_DETAILS = {
-    "step3": {
-        "selected_pages": [
-            {"path": "path/to/file.json", "source": "index", "reason": "relevant page"}
+    "step2": {
+        "bm25_terms": ["バッチ", "アーキテクチャ"],
+        "bm25_sections": [
+            {"file": "path/to/file.json", "section_id": "s1", "relevance": "high"}
         ],
-        "excluded_pages": [],
-        "selected_sections": [
-            {"file": "path/to/file.json", "section_id": "s1", "relevance": "high", "reason": "key section"}
-        ],
-        "excluded_sections": [],
     },
-    "step4": {"read_sections": ["path/to/file.json:s1"]},
-    "step8": {
-        "answer_sections": {
-            "used": [{"ref": "path/to/file.json:s1", "reason": "used in answer"}],
-            "unused": [],
-        }
+    "step3": {
+        "check_answerable_result": "OK",
+    },
+    "step4": {
+        "ran": False,
+        "selected_sections": [],
+    },
+    "step5": {
+        "sections_used": [
+            {"file": "path/to/file.json", "section_id": "s1"}
+        ],
+    },
+    "step6": {
+        "verify_result": "PASS",
+        "regenerated": False,
     },
 }
 
@@ -144,22 +149,24 @@ class TestParseE2eResponse:
     def test_parses_workflow_details(self):
         response = self._make_response("回答テキスト")
         result = parse_qa_response(response)
+        assert "step2" in result["workflow_details"]
         assert "step3" in result["workflow_details"]
         assert "step4" in result["workflow_details"]
-        assert "step8" in result["workflow_details"]
+        assert "step5" in result["workflow_details"]
+        assert "step6" in result["workflow_details"]
 
-    def test_parses_selected_pages(self):
+    def test_parses_bm25_sections(self):
         response = self._make_response("回答テキスト")
         result = parse_qa_response(response)
-        pages = result["workflow_details"]["step3"]["selected_pages"]
-        assert pages[0]["path"] == "path/to/file.json"
-        assert pages[0]["source"] == "index"
-
-    def test_parses_selected_sections(self):
-        response = self._make_response("回答テキスト")
-        result = parse_qa_response(response)
-        sections = result["workflow_details"]["step3"]["selected_sections"]
+        sections = result["workflow_details"]["step2"]["bm25_sections"]
         assert sections[0]["section_id"] == "s1"
+        assert sections[0]["relevance"] == "high"
+
+    def test_parses_check_answerable_result(self):
+        response = self._make_response("回答テキスト")
+        result = parse_qa_response(response)
+        check_result = result["workflow_details"]["step3"]["check_answerable_result"]
+        assert check_result == "OK"
 
     def test_raises_on_missing_workflow_details(self):
         response = "回答だけで WORKFLOW_DETAILS_JSON マーカーがない"
@@ -205,6 +212,21 @@ class TestParseE2eResponse:
         )
         result = parse_qa_response(response)
         assert result["answer"] == "レガシー回答テキスト"
+
+    def test_parses_step6_fail_and_regenerated(self):
+        """parse_qa_response must handle step6.verify_result=FAIL and step6.regenerated=True."""
+        fail_details = {
+            **SAMPLE_WORKFLOW_DETAILS,
+            "step6": {
+                "verify_result": "FAIL",
+                "regenerated": True,
+            },
+        }
+        response = self._make_response("再生成された回答", fail_details)
+        result = parse_qa_response(response)
+        assert result["workflow_details"]["step6"]["verify_result"] == "FAIL"
+        assert result["workflow_details"]["step6"]["regenerated"] is True
+        assert result["answer"] == "再生成された回答"
 
 
 class TestSaveE2eResults:
@@ -299,7 +321,12 @@ class TestRunE2eScenario:
             (Path(skill_dir, "workflows") / "qa.md").write_text("# QA", encoding="utf-8")
             with patch("subprocess.run", return_value=self._make_mock_proc()):
                 result = run_qa_scenario(SAMPLE_SCENARIO, skill_dir)
-            assert "step3" in result["workflow_details"]
+            wd = result["workflow_details"]
+            assert "step2" in wd
+            assert "step3" in wd
+            assert "step4" in wd
+            assert "step5" in wd
+            assert "step6" in wd
 
     def test_returns_answer(self):
         with tempfile.TemporaryDirectory() as skill_dir:
@@ -363,6 +390,7 @@ class TestRunE2eScenario:
             allowed_tools_idx = cmd.index("--allowedTools")
             allowed_tools_value = cmd[allowed_tools_idx + 1]
             assert "Bash(bash scripts/keyword-search.sh *)" in allowed_tools_value
+            assert "Bash(bash scripts/bm25-search.sh *)" in allowed_tools_value
             assert "Bash(bash scripts/read-sections.sh *)" in allowed_tools_value
             assert "Read" in allowed_tools_value
 
@@ -553,6 +581,94 @@ class TestRunE2eAll:
             assert eval_path.exists()
             eval_data = json.loads(eval_path.read_text())
             assert eval_data["scenario_id"] == "pre-01"
+
+    def test_search_sections_cascade_falls_through_to_bm25_when_step5_absent(self):
+        """When step5.sections_used is absent (NG path: semantic search ran), cascade falls through
+        to step2.bm25_sections and search_sections reflects the bm25_sections count."""
+        # Simulate semantic-search path: check-answerable said NG so step5.sections_used is absent,
+        # but step2.bm25_sections is present (it was the initial BM25 result).
+        ng_path_details = {
+            "step2": {
+                "bm25_terms": ["バッチ"],
+                "bm25_sections": [
+                    {"file": "a.json", "section_id": "s1"},
+                    {"file": "b.json", "section_id": "s2"},
+                    {"file": "c.json", "section_id": "s3"},
+                ],
+            },
+            "step3": {"check_answerable_result": "NG"},
+            "step4": {"ran": True, "selected_sections": [{"file": "d.json", "section_id": "s4"}]},
+            # step5 absent: generate-answer was not reached (e.g., sem_sections was empty)
+            "step6": {"verify_result": "PASS", "regenerated": False},
+        }
+        details_json = json.dumps(ng_path_details, ensure_ascii=False)
+        valid_response = (
+            "テスト回答\n\n"
+            "<<<WORKFLOW_DETAILS_JSON>>>\n"
+            f"```json\n{details_json}\n```\n"
+            "<<<END_WORKFLOW_DETAILS>>>\n"
+        )
+        claude_out = json.dumps({
+            "result": valid_response,
+            "duration_ms": 10000, "duration_api_ms": 9000, "num_turns": 3,
+            "total_cost_usd": 0.01,
+            "usage": {"input_tokens": 5000, "output_tokens": 1000,
+                      "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+        })
+        mock_proc = type("P", (), {"returncode": 0, "stdout": claude_out, "stderr": ""})()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir)
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", return_value=mock_proc), \
+                 patch("tools.benchmark.scripts.run_qa.evaluate_scenario", return_value=self.FAKE_EVAL):
+                summary = run_qa_all(
+                    str(scenarios_path), str(skill_dir), output_dir=str(output_dir),
+                )
+
+        scenario_entry = summary["scenarios"][0]
+        # Cascade: step5 absent → falls through to step2.bm25_sections (3 items)
+        assert scenario_entry["search_sections"] == 3
+
+    def test_search_sections_zero_when_all_steps_absent_or_empty(self):
+        """When step5, step2.bm25_sections, and step4.selected_sections are all absent/empty,
+        search_sections should be 0."""
+        empty_details = {
+            "step2": {"bm25_terms": [], "bm25_sections": []},
+            "step3": {"check_answerable_result": "NG"},
+            "step4": {"ran": True, "selected_sections": []},
+            # step5 absent
+            "step6": {"verify_result": "PASS", "regenerated": False},
+        }
+        details_json = json.dumps(empty_details, ensure_ascii=False)
+        valid_response = (
+            "テスト回答\n\n"
+            "<<<WORKFLOW_DETAILS_JSON>>>\n"
+            f"```json\n{details_json}\n```\n"
+            "<<<END_WORKFLOW_DETAILS>>>\n"
+        )
+        claude_out = json.dumps({
+            "result": valid_response,
+            "duration_ms": 10000, "duration_api_ms": 9000, "num_turns": 3,
+            "total_cost_usd": 0.01,
+            "usage": {"input_tokens": 5000, "output_tokens": 1000,
+                      "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+        })
+        mock_proc = type("P", (), {"returncode": 0, "stdout": claude_out, "stderr": ""})()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+            scenarios_path = self._setup_scenarios(tmpdir)
+            output_dir = Path(tmpdir) / "results"
+            with patch("subprocess.run", return_value=mock_proc), \
+                 patch("tools.benchmark.scripts.run_qa.evaluate_scenario", return_value=self.FAKE_EVAL):
+                summary = run_qa_all(
+                    str(scenarios_path), str(skill_dir), output_dir=str(output_dir),
+                )
+
+        scenario_entry = summary["scenarios"][0]
+        assert scenario_entry["search_sections"] == 0
 
 
 class TestRunE2eAllErrorHandling:
