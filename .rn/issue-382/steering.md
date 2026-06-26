@@ -123,9 +123,7 @@ incrementally — single scenario first, then path-coverage sample, then full 3-
 - [x] **Phase A (1 scenario)**: run `pre-01` via `run_qa --scenario-ids pre-01`; confirm exit 0, answer.md non-empty, BM25 path exercised; delete tmp dir after
 - [x] Refactor: extract BM25 step to `workflows/full-text-search.md`; qa.md Step 3 becomes a concise workflow call (mirrors semantic-search.md pattern)
 - [x] **Path-coverage sample (3–5 scenarios)**: 8 scenarios inspected; Paths A/B/C confirmed; review-08 flagged (BM25 extracted Japanese concept words — fix needed in full-text-search.md)
-- [ ] **Pre-benchmark stabilization loop**: run 1 full run (34 scenarios); inspect workflow_details.json for each scenario; fix any misbehavior in workflows; repeat until stable (no unexpected BM25 term extraction, all paths correct, verify PASS rate acceptable); delete intermediate runs after each fix cycle
-- [ ] **Phase B/C full benchmark**: once stable, 3 runs × 34 scenarios per HOW-TO-RUN.md; generate per-run reports and crossrun-summary; commit each run immediately after completion
-- [ ] Phase E regression check: compare against baseline from #1
+- [ ] **Phase A–E benchmark**: follow `tools/benchmark/HOW-TO-RUN.md` action by action; present results to user at each step boundary and wait for approval before proceeding
 - [ ] Save comparison summary to `.rn/issue-382/benchmark-result.md`
 - [ ] Software Engineer expert review (subagent)
 - [ ] User review
@@ -247,18 +245,6 @@ versions, as the workflow is superseded and confusingly named.
   - `.claude/skills/nabledge-6/scripts/fts-hints.md` 生成済み（ファイルステム形式、例: `### libraries-bean-validation`）
   - `.claude/skills/nabledge-6/workflows/full-text-search.md` 更新済み（静的リスト廃止 → `cat scripts/fts-hints.md`）
 
-  **ベンチマーク実行ルール（厳守）:**
-  ベンチマーク実行は `tools/benchmark/HOW-TO-RUN.md` のアクション単位で進める。
-  HOW-TO-RUN.md に存在しない手順・フェーズを自己流で追加・省略してはならない。
-  各ステップ完了後にユーザーへ報告し、次のステップへ進む前に確認を取ること。
-
-  **次の具体的な手順（HOW-TO-RUN.md に従う）:**
-  1. Phase A-1: 1シナリオ動作確認（A-1-1実行 → A-1-2受入確認をユーザーに提示 → A-1-3削除）
-  2. ユーザーゲート: Phase A 完了をユーザーに報告し、Phase B 開始の承認を得る
-  3. Phase B run-1: B-1-1実行 → B-1-2リネーム → B-1-3受入確認をユーザーに提示
-  4. B-2タイムアウト回収（エラーあれば） → B-3レポート生成 → B-4コミット・プッシュ
-  5. ユーザーゲート: run-1 結果（workflow_details.json 全件確認含む）をユーザーに提示し承認を得る
-  6. run-2, run-3 も同様に各ステップ完了後にユーザーゲート
-  7. Phase C crossrun-summary 生成 → Phase E 退行チェック → ユーザーゲート
+  **ベンチマーク実行:** `tools/benchmark/HOW-TO-RUN.md` を参照。手順はそこに書いてある。
 
   **削除待ち:** `tools/benchmark/results/20260625-175755/`（中間結果）、`{run-label}/`（空ディレクトリ）
