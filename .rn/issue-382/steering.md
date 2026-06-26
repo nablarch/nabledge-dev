@@ -123,7 +123,7 @@ incrementally — single scenario first, then path-coverage sample, then full 3-
 - [x] **Phase A (1 scenario)**: run `pre-01` via `run_qa --scenario-ids pre-01`; confirm exit 0, answer.md non-empty, BM25 path exercised; delete tmp dir after
 - [x] Refactor: extract BM25 step to `workflows/full-text-search.md`; qa.md Step 3 becomes a concise workflow call (mirrors semantic-search.md pattern)
 - [x] **Path-coverage sample (3–5 scenarios)**: 8 scenarios inspected; Paths A/B/C confirmed; review-08 flagged (BM25 extracted Japanese concept words — fix needed in full-text-search.md)
-- [ ] **Stabilization run (1 run, not the full benchmark)**: execute HOW-TO-RUN.md Phase A (A-1-1 → A-1-2 → A-1-3) then Phase B run-1 only (B-1-1 → B-1-2 → B-1-3 → B-2 → B-3 → B-4); present each step result to user and wait for approval before proceeding; after run-1 complete, present all 34 workflow_details.json to user and wait for approval that workflow behavior is stable
+- [x] **Stabilization run (1 run, not the full benchmark)**: execute HOW-TO-RUN.md Phase A (A-1-1 → A-1-2 → A-1-3) then Phase B run-1 only (B-1-1 → B-1-2 → B-1-3 → B-2 → B-3 → B-4); present each step result to user and wait for approval before proceeding; after run-1 complete, present all 34 workflow_details.json to user and wait for approval that workflow behavior is stable
 - [ ] **Full benchmark (3 runs)**: after stabilization approved, execute HOW-TO-RUN.md Phase B run-2 and run-3, then Phase C and Phase E; follow each action in order; present results to user at each step boundary and wait for approval before proceeding
 - [ ] Save comparison summary to `.rn/issue-382/benchmark-result.md`
 - [ ] Software Engineer expert review (subagent)
@@ -232,10 +232,14 @@ versions, as the workflow is superseded and confusingly named.
 
 - **Status**: paused
 - **Date**: 2026-06-26
-- **Last completed**: #3 sub-task — fts-hints.md RBKC generation implemented and pushed (commits 722345a3, 394983c8). full-text-search.md updated to `cat scripts/fts-hints.md` dynamic loading. Steering task steps clarified.
-- **Next**: #3 — Stabilization run (Phase A + B run-1 per HOW-TO-RUN.md)
+- **Last completed**: #3 sub-task — Stabilization run-1 complete. Phase A (pre-01 BM25 path confirmed), Phase B run-1 (34 scenarios, 0 errors). Results committed as `20260626-1108-stabilization-bm25/run-1`. User approval pending on workflow behavior before proceeding to full benchmark.
+- **Next**: #3 — User approval on run-1 results, then full benchmark (Phase B run-2, run-3 → Phase C → Phase E)
 - **Notes**:
   - baseline = 20260612-1404-baseline-current (25/34, p50 $0.682, 118s)
+  - run-1 results: ac=30/34, ar=27/34, faithfulness=34/34; p50 cost=$0.505 (-26% vs baseline); p50 time=111s
+  - BM25 paths: 27 Path-A (complete), 6 Path-B (FAIL→fallback), 1 Path-C (no hits: oos-qa-01 WebSocket)
+  - Failing scenarios (ac<0.99 or ar<0.95): qa-05(ac=0.00), qa-12(ac=0.60), qa-17(ac=0.30), qa-15(ac=0.90), impact-08/oos-qa-01/qa-01/qa-04/qa-06/review-08(ar<0.95)
+  - ナレッジ照合が必要: qa-05, qa-12, qa-17 — answer_correctness 大幅低下。ベースライン対比での退行か揺らぎか未確定。
   - bm25s installed in /home/tie303177/venv. .bm25-index/ is runtime-generated (untracked, gitignored).
   - RBKC run dir: `tools/rbkc/` → `/home/tie303177/venv/bin/python -m scripts.run <cmd> <ver>`
   - 削除待ち: `tools/benchmark/results/20260625-175755/`（中間結果）、`{run-label}/`（空ディレクトリ）
