@@ -1,0 +1,60 @@
+{
+  "scenario_id": "qa-12",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "エラー表示タグでリクエストスコープのエラーメッセージを表示する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.6,
+      "reason": "The Expected Output states a single fact: 'エラー表示タグでリクエストスコープのエラーメッセージを表示する' (display error messages in request scope using error display tags). The Actual Output does cover this concept — it explains using `<n:error>` custom tags in JSP to display validation error messages, which corresponds to using error display tags to show request-scoped error messages. However, the Actual Output goes far beyond this single expected fact with extensive additional detail about message properties files, BeanValidationStrategy configuration, @InjectForm/@OnError annotations, and manual exception throwing. The core expected fact is addressed, but the specific phrasing about 'リクエストスコープ' (request scope) is not explicitly mentioned in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing how to return error messages to users when input validation errors occur. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 173164,
+    "duration_api_ms": 172586,
+    "num_turns": 31,
+    "total_cost_usd": 0.8103508500000001,
+    "usage": {
+      "input_tokens": 31,
+      "output_tokens": 9602,
+      "cache_read_input_tokens": 1593007,
+      "cache_creation_input_tokens": 49645
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1982,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0021569999999999996,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 31,
+        "outputTokens": 9602,
+        "cacheReadInputTokens": 1593007,
+        "cacheCreationInputTokens": 49645,
+        "webSearchRequests": 0,
+        "costUSD": 0.8081938500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers the expected facts. The Expected Output states two key facts: (1) $if構文で可変条件を記述する — this is clearly present in the Actual Output with detailed examples of the syntax. (2) プロパティ値がnullや空文字列の場合に条件が除外される — this is explicitly stated in the Actual Output under the exclusion conditions (null or empty string for non-collection types). Both facts are present and semantically equivalent, with the Actual Output providing additional detail beyond the expected minimum."
+    },
+    "answer_relevancy": {
+      "score": 0.95,
+      "reason": "The score is 0.95 because the response is largely relevant and effectively addresses how to write dynamic SQL that conditionally includes search criteria based on user input. However, it loses a small amount of points due to one contradictory statement suggesting that dynamic SQL increases the need for multiple SQLs, which is actually the opposite of what dynamic SQL is designed to do, making that statement irrelevant and slightly misleading to the user's question."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 145180,
+    "duration_api_ms": 140571,
+    "num_turns": 25,
+    "total_cost_usd": 0.6489161000000001,
+    "usage": {
+      "input_tokens": 25,
+      "output_tokens": 7478,
+      "cache_read_input_tokens": 1189747,
+      "cache_creation_input_tokens": 47336
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2062,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002237,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 25,
+        "outputTokens": 7478,
+        "cacheReadInputTokens": 1189747,
+        "cacheCreationInputTokens": 47336,
+        "webSearchRequests": 0,
+        "costUSD": 0.6466791000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

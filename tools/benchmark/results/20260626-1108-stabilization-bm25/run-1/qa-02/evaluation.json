@@ -1,0 +1,61 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "DatabaseRecordReaderでデータベースからデータを読み込む",
+    "BatchActionを継承したアクションクラスを実装する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly covers both expected facts. It mentions `DatabaseRecordReader` as the data reader for reading records from the database (fact 1), and it implements `BatchAction<SqlRow>` as the base class for the action class (`AggregationBatchAction extends BatchAction<SqlRow>`), directly addressing fact 2. Both facts from the Expected Output checklist are clearly 'covered' in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response directly and completely addresses the question about implementing a batch process that reads data from a DB, aggregates it, and writes results to another table. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 150641,
+    "duration_api_ms": 147750,
+    "num_turns": 28,
+    "total_cost_usd": 0.67871235,
+    "usage": {
+      "input_tokens": 26,
+      "output_tokens": 8480,
+      "cache_read_input_tokens": 1219372,
+      "cache_creation_input_tokens": 48905
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2054,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.0022289999999999996,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 26,
+        "outputTokens": 8480,
+        "cacheReadInputTokens": 1219372,
+        "cacheCreationInputTokens": 48905,
+        "webSearchRequests": 0,
+        "costUSD": 0.6764833499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

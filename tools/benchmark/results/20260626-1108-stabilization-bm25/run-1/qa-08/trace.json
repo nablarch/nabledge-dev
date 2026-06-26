@@ -1,0 +1,77 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 90674,
+  "duration_api_ms": 88056,
+  "ttft_ms": 4257,
+  "ttft_stream_ms": 3214,
+  "time_to_request_ms": 1909,
+  "num_turns": 16,
+  "result": "十分な情報が揃いました。check-answerable: OK。回答を生成します。\n\n### Answer\n\nNablarchで日本語と英語を切り替える多言語化は、主に「メッセージ管理の多言語化」と「スレッドコンテキストへの言語設定」の2つの柱で実現します。\n\n---\n\n## 1. 言語別プロパティファイルの作成\n\nデフォルトのプロパティファイル（日本語）と、言語別のファイルを用意します。ファイル名は `messages_言語.properties` とします。\n\n```\nsrc/main/resources/messages.properties       # デフォルト（日本語）\n                   messages_en.properties    # 英語\n```\n\n```properties\n# messages.properties（日本語）\nlabel.user.name=ユーザ名\nerrors.required=入力してください。\n```\n\n```properties\n# messages_en.properties（英語）\nlabel.user.name=User Name\nerrors.required=This field is required.\n```\n\n> **注意:** `messages.properties` が存在しない場合はエラーになります。必ず作成してください。\n\n---\n\n## 2. PropertiesStringResourceLoader の設定\n\nコンポーネント設定ファイルで `PropertiesStringResourceLoader` にサポートする言語を設定します。**`defaultLocale` は必ず明示的に設定してください**（未設定だとOSの設定に依存し、障害の原因になります）。\n\n```xml\n<component class=\"nablarch.core.cache.BasicStaticDataCache\" name=\"messageCache\">\n  <property name=\"loader\">\n    <component class=\"nablarch.core.message.PropertiesStringResourceLoader\">\n      <!-- サポートする言語 -->\n      <property name=\"locales\">\n        <list>\n          <value>en</value>\n        </list>\n      </property>\n      <!-- デフォルトの言語（必須） -->\n      <property name=\"defaultLocale\" value=\"ja\" />\n    </component>\n  </property>\n</component>\n\n<component name=\"stringResourceHolder\" class=\"nablarch.core.message.StringResourceHolder\">\n  <property name=\"stringResourceCache\" ref=\"messageCache\" />\n</component>\n\n<component name=\"initializer\"\n           class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"messageCache\" />\n    </list>\n  </property>\n</component>\n```\n\nメッセージ取得時にどの言語を使うかは `ThreadContext#getLanguage` の値で決まります。\n\n---\n\n## 3. スレッドコンテキストへの言語設定\n\n### 基本設定（リクエスト毎に言語を初期化）\n\n`ThreadContextHandler` に `LanguageAttribute` を追加します。\n\n```xml\n<component class=\"nablarch.common.handler.threadcontext.ThreadContextHandler\">\n  <property name=\"attributes\">\n    <list>\n      <!-- 言語 -->\n      <component class=\"nablarch.common.handler.threadcontext.LanguageAttribute\">\n        <property name=\"defaultLanguage\" value=\"ja\" />\n      </component>\n      <!-- その他の属性（リクエストIDなど） -->\n    </list>\n  </property>\n</component>\n```\n\n### ユーザが言語を選択できる場合（クッキーまたはセッションで保持）\n\n言語選択をクッキーで保持する場合は `LanguageAttributeInHttpCookie` を使用します。\n\n```xml\n<!-- コンポーネント名は \"languageAttribute\" にする（LanguageAttributeInHttpUtil が使用） -->\n<component name=\"languageAttribute\"\n           class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie\">\n  <property name=\"defaultLanguage\" value=\"ja\" />\n  <property name=\"supportedLanguages\" value=\"ja,en\" />\n</component>\n```\n\n言語を切り替えるリンクをJSPで実装します。\n\n```jsp\n<n:submitLink uri=\"/action/menu/index\" name=\"switchToEnglish\">\n  English\n  <n:param paramName=\"user.language\" value=\"en\" />\n</n:submitLink>\n<n:submitLink uri=\"/action/menu/index\" name=\"switchToJapanese\">\n  日本語\n  <n:param paramName=\"user.language\" value=\"ja\" />\n</n:submitLink>\n```\n\nユーザが選択した言語をクッキーとスレッドコンテキストに保存するハンドラを実装します。\n\n```java\npublic class I18nHandler implements HttpRequestHandler {\n    public HttpResponse handle(HttpRequest request, ExecutionContext context) {\n        String language = request.getParamMap().containsKey(\"user.language\")\n            ? request.getParam(\"user.language\")[0] : null;\n        if (StringUtil.hasValue(language)) {\n            // クッキーとスレッドコンテキストに言語を設定\n            // （サポート対象外の言語が指定された場合は設定しない）\n            LanguageAttributeInHttpUtil.keepLanguage(request, context, language);\n        }\n        return context.handleNext(request);\n    }\n}\n```\n\n---\n\n## 4. 画面でメッセージ・ラベルを出力する\n\n### JSPで `<n:message>` タグを使用\n\n```jsp\n<!-- messageId を指定してメッセージを出力（スレッドコンテキストの言語が適用される） -->\n<n:message messageId=\"label.user.name\" />\n\n<!-- 特定の言語を明示的に指定したい場合 -->\n<n:message messageId=\"label.user.name\" language=\"ja\" />\n```\n\n---\n\n## 5. JSPファイル自体を言語で切り替える場合\n\nメッセージだけでなくJSPファイル全体を言語別にしたい場合は、`HttpResponseHandler` の `contentPathRule` を設定します。\n\n```xml\n<!-- ディレクトリで言語を切り替える例 -->\n<component name=\"resourcePathRule\"\n           class=\"nablarch.fw.web.i18n.DirectoryBasedResourcePathRule\" />\n\n<component class=\"nablarch.fw.web.handler.HttpResponseHandler\">\n  <property name=\"contentPathRule\" ref=\"resourcePathRule\" />\n</component>\n```\n\nディレクトリ構成例：\n```\nコンテキストルート/\n├── en/\n│   └── user/search.jsp\n└── ja/\n    └── user/search.jsp\n```\n\n---\n\n## まとめ\n\n| やりたいこと | 使うもの |\n|---|---|\n| メッセージ・ラベルを言語別に定義 | `messages.properties` / `messages_en.properties` |\n| メッセージの言語切り替え設定 | `PropertiesStringResourceLoader`（`locales`、`defaultLocale`） |\n| リクエスト毎の言語初期化 | `ThreadContextHandler` + `LanguageAttribute` |\n| ユーザによる言語選択 | `LanguageAttributeInHttpCookie` / `LanguageAttributeInHttpSession` + `LanguageAttributeInHttpUtil` |\n| JSPでのメッセージ出力 | `<n:message messageId=\"...\">` タグ |\n| JSPファイル自体の切り替え | `HttpResponseHandler` + `DirectoryBasedResourcePathRule` |\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step2\": {\n    \"bm25_terms\": [\"message\", \"lang\", \"language\", \"ThreadContext\", \"LanguageAttribute\"],\n    \"bm25_sections\": [\n      {\"file\": \"component/handlers/handlers-http-response-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s9\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s15\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s31\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s8\", \"relevance\": \"high\"},\n      {\"file\": \"javadoc/javadoc-nablarch-common-web-handler-threadcontext-HttpLanguageAttribute.json\", \"section_id\": \"s9\", \"relevance\": \"partial\"},\n      {\"file\": \"javadoc/javadoc-nablarch-common-web-handler-threadcontext-LanguageAttributeInHttpSession.json\", \"section_id\": \"s7\", \"relevance\": \"partial\"},\n      {\"file\": \"javadoc/javadoc-nablarch-common-web-handler-threadcontext-LanguageAttributeInHttpCookie.json\", \"section_id\": \"s10\", \"relevance\": \"partial\"}\n    ]\n  },\n  \"step3\": {\n    \"check_answerable_result\": \"OK\"\n  },\n  \"step4\": {\n    \"ran\": false,\n    \"selected_sections\": []\n  },\n  \"step5\": {\n    \"sections_used\": [\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s8\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s2\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s7\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s11\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s4\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s7\"},\n      {\"file\": \"component/handlers/handlers-http-response-handler.json\", \"section_id\": \"s7\"},\n      {\"file\": \"component/libraries/libraries-tag.json\", \"section_id\": \"s31\"}\n    ]\n  },\n  \"step6\": {\n    \"verify_result\": \"PASS\",\n    \"regenerated\": false\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "4ee1f7f9-0853-40b8-8dcb-5fabefb431bd",
+  "total_cost_usd": 0.44559860000000007,
+  "usage": {
+    "input_tokens": 16,
+    "cache_creation_input_tokens": 41194,
+    "cache_read_input_tokens": 684327,
+    "output_tokens": 5585,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 41194
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 1830,
+      "outputTokens": 34,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 16,
+      "outputTokens": 5585,
+      "cacheReadInputTokens": 684327,
+      "cacheCreationInputTokens": 41194,
+      "webSearchRequests": 0,
+      "costUSD": 0.44359860000000007,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01TPWC2Ws6AQ3RuXL1neK5Tn",
+      "tool_input": {
+        "command": "cat /home/tie303177/work/nabledge-dev/.claude/worktrees/text-search/scripts/fts-hints.md",
+        "description": "Read FTS hints file"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01MpyB2xnuuT5x6QAvpKu8pw",
+      "tool_input": {
+        "command": "ls /home/tie303177/work/nabledge-dev/.claude/worktrees/text-search/scripts/",
+        "description": "List scripts directory"
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "74395f46-a74c-485c-a8e1-1accab7cfe7a"
+}

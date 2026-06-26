@@ -1,0 +1,68 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 93428,
+  "duration_api_ms": 88934,
+  "ttft_ms": 5705,
+  "ttft_stream_ms": 4726,
+  "time_to_request_ms": 3281,
+  "num_turns": 14,
+  "result": "十分な情報が揃いました。回答を生成します。\n\n### Answer\n\n**結論**: ウェブアプリケーションでの入力チェック（バリデーション）は、`@InjectForm` アノテーション（InjectFormインターセプタ）を業務アクションのメソッドに設定することで実装します。Bean Validationを使用する場合は、コンポーネント設定ファイルへの `BeanValidationStrategy` の登録が必要です。\n\n---\n\n**根拠**:\n\n**① 依存モジュールの追加**\n\n```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n\n<!-- Bean Validationを使用する場合 -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-validation-ee</artifactId>\n</dependency>\n```\n\n**② コンポーネント設定ファイルに BeanValidationStrategy を登録**\n\n```xml\n<component name=\"validationStrategy\" class=\"nablarch.common.web.validator.BeanValidationStrategy\" />\n```\n\n**③ Formクラスに Bean Validation アノテーションを設定**\n\n```java\npublic class UserForm {\n  @Length(max = 10)\n  @SystemChar(charsetDef = \"全角文字\")\n  @Required\n  private String userName;\n\n  @Length(min = 8, max = 8)\n  @SystemChar(charsetDef = \"半角数字\")\n  private String birthday;\n\n  // getter、setterは省略\n}\n```\n\n**④ 業務アクションに `@InjectForm` と `@OnError` を設定**\n\n```java\n@InjectForm(form = UserForm.class, prefix = \"form\", validate = \"register\")\n@OnError(type = ApplicationException.class, path = \"forward://registerForm.jsp\")\npublic HttpResponse handle(HttpRequest req, ExecutionContext ctx) {\n\n  // リクエストスコープからバリデーション済みのフォームを取得する。\n  UserForm form = ctx.getRequestScopedVar(\"form\");\n\n  // formを元に業務処理を行う。\n}\n```\n\n- `prefix = \"form\"` を指定すると、`form.userId` のようにプレフィックスが付いたリクエストパラメータがバリデーション対象になります。\n- バリデーション成功時は、リクエストスコープにバリデーション済みフォームが格納されます。\n\n**⑤ バリデーションエラー時のメッセージ定義**\n\nデフォルトでは[メッセージ管理](../../component/libraries/libraries-message.json)を使用してエラーメッセージを構築します。アノテーションの `message` 属性にメッセージIDを `{...}` 形式で指定し、プロパティファイルにメッセージを定義します。\n\n```properties\nnablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。\nnablarch.core.validation.ee.SystemChar.message={charsetDef}を入力してください。\n```\n\n---\n\n**注意点**:\n- `@OnError` を設定していない場合、バリデーションエラーがシステムエラー扱いになるため、必ず設定すること。\n- Bean Validationのグループを使い分けたい場合は、`@InjectForm` の `validationGroup` 属性にグループクラスを指定できます（例: `validationGroup = Create.class`）。\n\n参照: `libraries-bean-validation.json:s6`, `libraries-bean-validation.json:s7`, `libraries-bean-validation.json:s16`, `handlers-InjectForm.json:s2`, `handlers-InjectForm.json:s3`, `handlers-InjectForm.json:s4`, `handlers-InjectForm.json:s5`\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step2\": {\n    \"bm25_terms\": [\"bean-validation\", \"nablarch-validation\", \"validation\"],\n    \"bm25_sections\": [\n      {\"file\": \"component/libraries/libraries-nablarch-validation.json\", \"section_id\": \"s13\", \"relevance\": \"high\"},\n      {\"file\": \"development-tools/toolbox/toolbox-NablarchOpenApiGenerator.json\", \"section_id\": \"s17\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-code.json\", \"section_id\": \"s11\", \"relevance\": \"high\"},\n      {\"file\": \"development-tools/toolbox/toolbox-NablarchOpenApiGenerator.json\", \"section_id\": \"s14\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s24\", \"relevance\": \"high\"},\n      {\"file\": \"development-tools/toolbox/toolbox-NablarchOpenApiGenerator.json\", \"section_id\": \"s10\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-nablarch-validation.json\", \"section_id\": \"s17\", \"relevance\": \"high\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s5\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s12\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-nablarch-validation.json\", \"section_id\": \"s4\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-nablarch-validation.json\", \"section_id\": \"s20\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s6\", \"relevance\": \"high\"},\n      {\"file\": \"development-tools/toolbox/toolbox-NablarchOpenApiGenerator.json\", \"section_id\": \"s18\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s7\", \"relevance\": \"high\"},\n      {\"file\": \"releases/releases/releases-nablarch6u2-releasenote-6u2 (6u1からの変更点).json\", \"section_id\": \"s11\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-nablarch-validation.json\", \"section_id\": \"s25\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-nablarch-validation.json\", \"section_id\": \"s7\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-nablarch-validation.json\", \"section_id\": \"s23\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s14\", \"relevance\": \"high\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s17\", \"relevance\": \"high\"}\n    ]\n  },\n  \"step3\": {\n    \"check_answerable_result\": \"OK\"\n  },\n  \"step4\": {\n    \"ran\": false,\n    \"selected_sections\": []\n  },\n  \"step5\": {\n    \"sections_used\": [\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s6\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s7\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s16\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s2\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s3\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s4\"},\n      {\"file\": \"component/handlers/handlers-InjectForm.json\", \"section_id\": \"s5\"}\n    ]\n  },\n  \"step6\": {\n    \"verify_result\": \"PASS\",\n    \"regenerated\": false\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "32a00ee9-86fa-4726-8e5c-688ff3e7e8eb",
+  "total_cost_usd": 0.42539090000000007,
+  "usage": {
+    "input_tokens": 13,
+    "cache_creation_input_tokens": 45858,
+    "cache_read_input_tokens": 549378,
+    "output_tokens": 5769,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 45858
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 1846,
+      "outputTokens": 38,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002036,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 13,
+      "outputTokens": 5769,
+      "cacheReadInputTokens": 549378,
+      "cacheCreationInputTokens": 45858,
+      "webSearchRequests": 0,
+      "costUSD": 0.42335490000000003,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01XfRN15XYp8fmB6Kw5CFEUt",
+      "tool_input": {
+        "command": "bash scripts/bm25-search.sh bean-validation nablarch-validation validation 2>&1 | python3 -c \"import json,sys; data=json.load(sys.stdin); print(json.dumps(data[:20], ensure_ascii=False, indent=2))\""
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "de35a5d8-8e06-4a16-aa5f-4d58a1fd32b2"
+}

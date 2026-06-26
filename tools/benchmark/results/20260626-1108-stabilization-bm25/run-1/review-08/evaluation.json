@@ -1,0 +1,60 @@
+{
+  "scenario_id": "review-08",
+  "description": "Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。",
+  "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers the key fact stated in the Expected Output: when multiple tab operations are not allowed, use DB store; when they are allowed, use HIDDEN store. This is explicitly stated in both the conclusion and the comparison table. The Actual Output goes well beyond the Expected Output with additional details about mechanisms, caveats, and references, but the core expected fact is clearly and accurately present."
+    },
+    "answer_relevancy": {
+      "score": 0.9047619047619048,
+      "reason": "The score is 0.90 because the response is largely relevant and addresses the question of how to choose between DB store and HIDDEN store for session variable retention across input, confirmation, and completion screens. However, it loses some points due to the inclusion of information about heap memory compression, which is entirely unrelated to the topic of session variable management between these screens."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 100133,
+    "duration_api_ms": 97575,
+    "num_turns": 14,
+    "total_cost_usd": 0.38167315,
+    "usage": {
+      "input_tokens": 13,
+      "output_tokens": 5733,
+      "cache_read_input_tokens": 522493,
+      "cache_creation_input_tokens": 36431
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2110,
+        "outputTokens": 33,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002275,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13,
+        "outputTokens": 5733,
+        "cacheReadInputTokens": 522493,
+        "cacheCreationInputTokens": 36431,
+        "webSearchRequests": 0,
+        "costUSD": 0.37939815,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

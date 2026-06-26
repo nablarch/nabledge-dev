@@ -1,0 +1,61 @@
+{
+  "scenario_id": "qa-01",
+  "description": "バッチで10万件のデータを読み込んで加工する処理を書いている。findAllBySqlFileで全件取得したらOutOfMemoryErrorが出た。",
+  "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "UniversalDao.deferメソッドで遅延ロードを使用する",
+    "DeferredEntityListのcloseメソッドを呼び出す必要がある"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts. It explicitly mentions using `UniversalDao.defer()` for deferred (lazy) loading, and it also explicitly states that `DeferredEntityList#close` must be called, recommending try-with-resources to ensure proper closure. Both facts from the Expected Output checklist are fully covered."
+    },
+    "answer_relevancy": {
+      "score": 0.8666666666666667,
+      "reason": "The score is 0.87 because the response mostly addresses the question about how to read large data one record at a time to avoid memory issues. However, it loses some points for including an unnecessary reference to the database vendor's manual for fetch size details, which doesn't directly help answer the question, and for including a reference citation that adds no substantive value to the answer."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 99618,
+    "duration_api_ms": 97502,
+    "num_turns": 15,
+    "total_cost_usd": 0.44383935,
+    "usage": {
+      "input_tokens": 16,
+      "output_tokens": 5978,
+      "cache_read_input_tokens": 675312,
+      "cache_creation_input_tokens": 39837
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 1934,
+        "outputTokens": 41,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.002139,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 16,
+        "outputTokens": 5978,
+        "cacheReadInputTokens": 675312,
+        "cacheCreationInputTokens": 39837,
+        "webSearchRequests": 0,
+        "costUSD": 0.44170035,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

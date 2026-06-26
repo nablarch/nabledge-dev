@@ -1,0 +1,61 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能",
+    "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both facts from the Expected Output checklist. It explicitly mentions that DBストア saves data to database tables ('データベース上のテーブル') and that sessions can be restored even when AP servers stop ('APサーバが停止した場合でもセッション変数の復元が可能'). It also explicitly states that HIDDENストア saves to client-side hidden tags ('クライアントサイドの `hidden` タグ'). Both required facts from the Expected Output are fully covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is completely relevant, directly addressing the question about session variable storage options when scaling out AP servers horizontally, and covering the characteristics of each store. Great job!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 106271,
+    "duration_api_ms": 121299,
+    "num_turns": 13,
+    "total_cost_usd": 0.40886155,
+    "usage": {
+      "input_tokens": 14,
+      "output_tokens": 7045,
+      "cache_read_input_tokens": 567711,
+      "cache_creation_input_tokens": 34803
+    },
+    "model_usage": {
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 7045,
+        "cacheReadInputTokens": 567711,
+        "cacheCreationInputTokens": 34803,
+        "webSearchRequests": 0,
+        "costUSD": 0.40654155000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 2150,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00232,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
