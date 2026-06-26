@@ -123,7 +123,8 @@ incrementally — single scenario first, then path-coverage sample, then full 3-
 - [x] **Phase A (1 scenario)**: run `pre-01` via `run_qa --scenario-ids pre-01`; confirm exit 0, answer.md non-empty, BM25 path exercised; delete tmp dir after
 - [x] Refactor: extract BM25 step to `workflows/full-text-search.md`; qa.md Step 3 becomes a concise workflow call (mirrors semantic-search.md pattern)
 - [x] **Path-coverage sample (3–5 scenarios)**: 8 scenarios inspected; Paths A/B/C confirmed; review-08 flagged (BM25 extracted Japanese concept words — fix needed in full-text-search.md)
-- [ ] **Phase A–E benchmark**: follow `tools/benchmark/HOW-TO-RUN.md` action by action; present results to user at each step boundary and wait for approval before proceeding
+- [ ] **Stabilization run (1 run, not the full benchmark)**: execute HOW-TO-RUN.md Phase A (A-1-1 → A-1-2 → A-1-3) then Phase B run-1 only (B-1-1 → B-1-2 → B-1-3 → B-2 → B-3 → B-4); present each step result to user and wait for approval before proceeding; after run-1 complete, present all 34 workflow_details.json to user and wait for approval that workflow behavior is stable
+- [ ] **Full benchmark (3 runs)**: after stabilization approved, execute HOW-TO-RUN.md Phase B run-2 and run-3, then Phase C and Phase E; follow each action in order; present results to user at each step boundary and wait for approval before proceeding
 - [ ] Save comparison summary to `.rn/issue-382/benchmark-result.md`
 - [ ] Software Engineer expert review (subagent)
 - [ ] User review
