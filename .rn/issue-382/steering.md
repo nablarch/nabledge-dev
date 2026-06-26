@@ -247,18 +247,18 @@ versions, as the workflow is superseded and confusingly named.
   - `.claude/skills/nabledge-6/scripts/fts-hints.md` 生成済み（ファイルステム形式、例: `### libraries-bean-validation`）
   - `.claude/skills/nabledge-6/workflows/full-text-search.md` 更新済み（静的リスト廃止 → `cat scripts/fts-hints.md`）
 
-  **stabilization run の反省:**
-  前回 stabilization run（削除済み）では全 workflow_details.json を個別確認せず集計のみで「安定」と判定した。
-  次回 stabilization run では全34件の workflow_details.json を個別確認し、ユーザーに提示してから本実行に進むこと。
+  **ベンチマーク実行ルール（厳守）:**
+  ベンチマーク実行は `tools/benchmark/HOW-TO-RUN.md` のアクション単位で進める。
+  HOW-TO-RUN.md に存在しない手順・フェーズを自己流で追加・省略してはならない。
+  各ステップ完了後にユーザーへ報告し、次のステップへ進む前に確認を取ること。
 
-  **pre-benchmark stabilization loop 手順:**
-  1. 全34シナリオ実行: `/home/tie303177/venv/bin/python -m tools.benchmark.scripts.run_qa --scenarios tools/benchmark/scenarios/qa.json --skill-dir .claude/skills/nabledge-6`
-  2. 全34件の workflow_details.json を確認:
-     - bm25_terms が質問に対して適切か
-     - check_answerable 判定が正しいか
-     - 予期しない BM25 term 抽出がないか
-  3. 確認結果をユーザーに提示 → ユーザーゲート待ち
-  4. 承認後に本実行（run-1/2/3）
-  5. 中間 stabilization 結果は削除
+  **次の具体的な手順（HOW-TO-RUN.md に従う）:**
+  1. Phase A-1: 1シナリオ動作確認（A-1-1実行 → A-1-2受入確認をユーザーに提示 → A-1-3削除）
+  2. ユーザーゲート: Phase A 完了をユーザーに報告し、Phase B 開始の承認を得る
+  3. Phase B run-1: B-1-1実行 → B-1-2リネーム → B-1-3受入確認をユーザーに提示
+  4. B-2タイムアウト回収（エラーあれば） → B-3レポート生成 → B-4コミット・プッシュ
+  5. ユーザーゲート: run-1 結果（workflow_details.json 全件確認含む）をユーザーに提示し承認を得る
+  6. run-2, run-3 も同様に各ステップ完了後にユーザーゲート
+  7. Phase C crossrun-summary 生成 → Phase E 退行チェック → ユーザーゲート
 
   **削除待ち:** `tools/benchmark/results/20260625-175755/`（中間結果）、`{run-label}/`（空ディレクトリ）
