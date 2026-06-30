@@ -34,11 +34,11 @@
 
 **Steps**:
 
-- [ ] DeepEvalの公式ドキュメントまたはソースコードでデフォルト閾値を確認する
-- [ ] `docs/benchmark-design.md` の「PASS/FAILしきい値」セクションを読む
-- [ ] Nablarch要件の背景説明とDeepEvalデフォルトとの比較を追記する
-- [ ] self-check（OK/NG per completion criterion、checks/task-1.md に記録）
-- [ ] QA expert review（subagent）
+- [x] DeepEvalの公式ドキュメントまたはソースコードでデフォルト閾値を確認する
+- [x] `docs/benchmark-design.md` の「PASS/FAILしきい値」セクションを読む
+- [x] Nablarch要件の背景説明とDeepEvalデフォルトとの比較を追記する
+- [x] self-check（OK/NG per completion criterion、checks/task-1.md に記録）
+- [x] QA expert review（subagent）
 - [ ] user review
 
 **Completion criteria**:
@@ -54,6 +54,6 @@
 
 - **Status**: not suspended
 - **Date**: 2026-06-30
-- **Last completed**: none
-- **Next**: #1 DeepEvalデフォルト閾値を確認して説明を追記する
-- **Notes**: /rn:on で開始。DeepEvalデフォルト閾値（0.5と仮定）を調査してから追記する。
+- **Last completed**: #1 DeepEvalデフォルト閾値を確認して説明を追記する
+- **Next**: user review 待ち（全タスク完了後）
+- **Notes**: task #1 完了。commit e95af301。QA PASS。
