@@ -52,8 +52,9 @@
 
 # State
 
-- **Status**: paused
-- **Date**: 2026-06-30
-- **Last completed**: #1 DeepEvalデフォルト閾値を確認して説明を追記する
-- **Next**: #1 user review — PR https://github.com/nablarch/nabledge-dev/pull/388 を確認してもらい、承認後にマージする
-- **Notes**: task #1 の deliverable commit e95af301 は push 済み。QA PASS（DeepEval デフォルト 0.5 をソースで確認、倍率計算正確）。ユーザーの PR レビュー承認を待っている状態でサスペンド。承認が来たら /bb または gh pr merge でマージするだけ。
+<!--
+  Status: [active | paused | done]
+  Last completed: task id and title
+  Next: task id and title, or "all done"
+  Notes: anything needed to resume
+-->
