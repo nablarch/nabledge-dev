@@ -360,6 +360,7 @@ def main():
         help="Root directory to run claude from (default: parent of skill-dir)",
     )
     parser.add_argument("--scenario-ids", help="Comma-separated scenario IDs to run")
+    parser.add_argument("--output-dir", help="Directory to save results (default: results/YYYYMMDD-HHMMSS/)")
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -384,7 +385,7 @@ def main():
         sys.exit(0)
 
     scenario_ids = args.scenario_ids.split(",") if args.scenario_ids else None
-    output_dir = default_output_dir()
+    output_dir = Path(args.output_dir) if args.output_dir else default_output_dir()
     print(f"Output dir: {output_dir}", file=sys.stderr)
 
     summary = run_code_analysis_all(
