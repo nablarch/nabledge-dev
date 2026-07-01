@@ -77,8 +77,8 @@ and `must` facts, and a format checker script.
       placeholder replacement (no `{{...}}` remaining), section presence
       (all 7 template sections exist), Mermaid syntax (`classDiagram`,
       `sequenceDiagram` present)
-- [ ] Add a code-analysis section to `tools/benchmark/HOW-TO-RUN.md` documenting
-      how to run `run_code_analysis.py` and `check_format_code_analysis.py`
+- [ ] Create `tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md` documenting how to run
+      `run_code_analysis.py` and `check_format_code_analysis.py`
       (execution commands, expected outputs, result directory structure)
 - [ ] Self-check (OK/NG per completion criterion, record in checks/task-1.md)
 - [ ] QA expert review (subagent)
@@ -95,8 +95,8 @@ and `must` facts, and a format checker script.
 - `tools/benchmark/scripts/check_format_code_analysis.py` exists and correctly
   detects at least: unreplaced placeholders, missing sections, absent Mermaid blocks
   (verified by unit tests or manual check with a crafted fixture)
-- `tools/benchmark/HOW-TO-RUN.md` contains a code-analysis section with commands
-  sufficient to run a benchmark independently without reading the source code
+- `tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md` exists with commands sufficient
+  to run a code-analysis benchmark independently without reading the source code
 
 ### #2: Capture baseline — run current workflow and record scores
 
