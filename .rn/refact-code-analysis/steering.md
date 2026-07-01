@@ -62,22 +62,24 @@ and `must` facts, and a format checker script.
 
 **Steps**:
 
-- [ ] Read `tools/benchmark/scripts/run_qa.py` and `evaluate.py` to understand the
+- [x] Read `tools/benchmark/scripts/run_qa.py` and `evaluate.py` to understand the
       existing runner/evaluator pattern
-- [ ] Identify a known Nablarch source file (e.g., from `.lw/nab-official/`) with
+- [ ] Identify a known Nablarch source file (from `.lw/nab-official/v6/`) with
       verifiable expected outputs (dependency classes, Nablarch components used)
+      **NOTE: 初回実装は `.lw` ではなく nabledge-1.4 のクラスを使っており無効。v6 のクラスに作り直す。**
 - [ ] Define ≥ 3 scenarios in `tools/benchmark/scenarios/code-analysis.json`:
       each scenario has `when.input` (target class name) and `then.must`
       (facts that must appear in the output, e.g., specific dependency names,
       Nablarch component references)
-- [ ] Implement `tools/benchmark/scripts/run_code_analysis.py` following the
+      **NOTE: 上記と同じ理由で作り直し。**
+- [x] Implement `tools/benchmark/scripts/run_code_analysis.py` following the
       `run_qa.py` pattern: invoke `claude -p` with the code-analysis workflow,
       capture output, run evaluate.py for DeepEval scoring
-- [ ] Implement `tools/benchmark/scripts/check_format_code_analysis.py`: verify
+- [x] Implement `tools/benchmark/scripts/check_format_code_analysis.py`: verify
       placeholder replacement (no `{{...}}` remaining), section presence
       (all 7 template sections exist), Mermaid syntax (`classDiagram`,
       `sequenceDiagram` present)
-- [ ] Create `tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md` documenting how to run
+- [x] Create `tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md` documenting how to run
       `run_code_analysis.py` and `check_format_code_analysis.py`
       (execution commands, expected outputs, result directory structure)
 - [ ] Self-check (OK/NG per completion criterion, record in checks/task-1.md)
@@ -110,8 +112,9 @@ Task #6 will compare against.
 
 - [ ] Run `run_code_analysis.py` against all scenarios using the current
       `code-analysis.md`
+      **NOTE: 初回実行済みだが、シナリオが無効（nabledge-1.4 クラス使用）。Task #1 のシナリオ修正後に再実行。**
 - [ ] Run `check_format_code_analysis.py` on each output
-- [ ] Save all results to `tools/benchmark/results/code-analysis-baseline/`
+- [ ] Save all results to `tools/benchmark/results/YYYYMMDD-HHMM-code-analysis-baseline/`
 - [ ] Record a summary table (scenario, DeepEval score, format check pass/fail) in
       `.rn/refact-code-analysis/baseline.md`
 - [ ] Self-check (OK/NG per completion criterion, record in checks/task-2.md)
@@ -245,8 +248,10 @@ the baseline recorded in Task #2, using the same runner, scenarios, and evaluato
 
 # State
 
-<!-- updated by /rn:up or /rn:on; do not edit manually -->
-<!-- Status: active | paused -->
-<!-- Last completed: #N title -->
-<!-- Next: #N title -->
-<!-- Notes: ... -->
+- **Status**: active
+- **Last completed**: (なし — Task #1 は部分的に完了だが、シナリオが無効のため完了扱いにしない)
+- **Next**: #1 のシナリオ修正 — `.lw/nab-official/v6/` の Java ファイルを対象にしたシナリオに作り直す
+- **Notes**: Task #1 で実装したスクリプト（run_code_analysis.py, check_format_code_analysis.py, HOW-TO-RUN-CODE-ANALYSIS.md）は有効。
+  シナリオ（code-analysis.json）と Task #2 の結果（20260701-1331-code-analysis-baseline/）は無効。
+  `--project-dir .lw/nab-official/v6` で v6 の Java ファイルが検索対象になることを確認済み。
+  対象候補: `.lw/nab-official/v6/nablarch-example-rest/src/main/java/com/nablarch/example/action/ProjectAction.java` 等。
