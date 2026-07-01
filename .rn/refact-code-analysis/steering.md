@@ -54,13 +54,40 @@ follows consistently.
 
 # Tasks
 
+### #0: Baseline — record current behavior before any changes
+
+**Purpose**: Document what the current 685-line `code-analysis.md` produces for
+representative scenarios, so Task #4 can compare before/after and confirm the rewrite
+did not regress.
+
+**Prerequisites**: none
+
+**Steps**:
+
+- [ ] Select 3 representative scenarios from the current workflow steps (e.g., target
+      not specified → ask user; dependency classification; output budget enforcement)
+- [ ] For each scenario, trace the current instructions step-by-step and record:
+      input, the instruction path followed, and the expected AI behavior
+- [ ] Note any scenarios where the current instructions are ambiguous, contradictory,
+      or require reading the entire file to locate the relevant rule
+- [ ] Self-check (OK/NG per completion criterion, record in checks/task-0.md)
+- [ ] QA expert review (subagent)
+- [ ] User review
+
+**Completion criteria**:
+
+- Baseline document exists at `.rn/refact-code-analysis/baseline.md`
+- At least 3 scenarios are documented with: input, instruction path traced, expected
+  behavior, and any ambiguity/problem found in the current file
+- Document is committed before any change to `code-analysis.md`
+
 ### #1: Audit — identify all redundancies, conflicts, and structural problems in the current file
 
 **Purpose**: Produce a written audit of `code-analysis.md` that catalogs every
 redundancy, conflict, misplaced rule, and structural issue — the evidence base for
 the rewrite.
 
-**Prerequisites**: none
+**Prerequisites**: Task #0 complete
 
 **Steps**:
 
@@ -140,21 +167,23 @@ approved design, then port it to all 5 versions.
 - No rule appears more than once in any single version
 - No two instructions in any single version contradict each other
 
-### #4: Verify — run representative test scenarios against the rewritten file
+### #4: Verify — compare rewritten instructions against the baseline
 
-**Purpose**: Confirm the AI correctly follows the rewritten instructions across at least
-3 representative scenarios drawn from the workflow steps.
+**Purpose**: Confirm the rewritten instructions produce equal or better behavior than
+the baseline recorded in Task #0 — using the same 3 scenarios so before/after is
+directly comparable.
 
 **Prerequisites**: Task #3 complete
 
 **Steps**:
 
-- [ ] Select 3 scenarios from the workflow steps (e.g., target not specified → ask user;
-      dependency classification; output budget enforcement)
-- [ ] For each scenario, state the expected AI behavior per the rewritten instructions
-- [ ] Evaluate whether the rewritten instructions unambiguously produce that behavior
-      (trace the instructions step-by-step, no live execution needed)
-- [ ] Record: scenario, expected behavior, instruction path traced, verdict (pass/fail)
+- [ ] Read the baseline from Task #0 (same 3 scenarios, same inputs)
+- [ ] For each scenario, trace the rewritten instructions step-by-step and record:
+      instruction path followed and expected AI behavior
+- [ ] Compare against the baseline: did ambiguities get resolved? did contradictions
+      disappear? can the relevant rule be found without reading the entire file?
+- [ ] Record verdict per scenario: pass (behavior preserved or improved) / fail
+      (regression)
 - [ ] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
 - [ ] QA expert review (subagent)
 - [ ] User review
@@ -162,9 +191,10 @@ approved design, then port it to all 5 versions.
 **Completion criteria**:
 
 - Verification document exists at `.rn/refact-code-analysis/verification.md`
-- At least 3 scenarios are documented
-- Each scenario states: input, expected behavior, instruction path, verdict
-- All 3 scenarios pass (verdict = pass)
+- All 3 baseline scenarios are re-traced against the rewritten file
+- Each scenario states: input, instruction path (before and after), verdict
+- All 3 scenarios pass (no regression from baseline)
+- Any problem identified in the baseline that is now resolved is explicitly noted
 - Any scenario that fails is linked to a specific line in the rewritten file
 
 # Decisions
@@ -176,5 +206,5 @@ approved design, then port it to all 5 versions.
 - **Status**: not suspended
 - **Date**: 2026-07-01
 - **Last completed**: (none)
-- **Next**: #1 Audit
+- **Next**: #0 Baseline
 - **Notes**: Branch is `worktree-refact-code-analysis`. Session PR to be created after steering is approved.
