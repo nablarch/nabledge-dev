@@ -245,18 +245,8 @@ the baseline recorded in Task #2, using the same runner, scenarios, and evaluato
 
 # State
 
-- **Status**: paused
-- **Date**: 2026-07-01
-- **Last completed**: #1 Build test harness — committed `fc8f05f6`
-- **Next**: #2 Capture baseline
-- **Notes**: Task #1 完了・動作確認済み。E2E試行（ca-01）で全指標1.0・フォーマットチェックPass確認。
-  `--output-dir` 引数の実装漏れを修正済み（fc8f05f6）。
-  Task #2 の実行コマンド（ユーザー確認待ちで止まっていた）:
-  ```
-  python3 -m tools.benchmark.scripts.run_code_analysis \
-    --scenarios tools/benchmark/scenarios/code-analysis.json \
-    --skill-dir .claude/skills/nabledge-6 \
-    --project-dir . \
-    --output-dir tools/benchmark/results/code-analysis-baseline
-  ```
-  実行後、各シナリオの evaluation.json からスコアを集計して `.rn/refact-code-analysis/baseline.md` に記録する。
+<!-- updated by /rn:up or /rn:on; do not edit manually -->
+<!-- Status: active | paused -->
+<!-- Last completed: #N title -->
+<!-- Next: #N title -->
+<!-- Notes: ... -->
