@@ -1,0 +1,75 @@
+{
+  "description": "Code analysis benchmark scenarios for nabledge code-analysis workflow evaluation. Each scenario tests the full code-analysis pipeline against a Java fixture class.",
+  "schema_version": "1.0",
+  "scenarios": [
+    {
+      "id": "ca-01",
+      "given": {
+        "description": "Webアプリケーションの登録処理アクションクラス。ユーザー登録フォームの入力を受け付け、バリデーション後にコンポーネントを呼び出してDBに登録する。二重送信防止アノテーションも使用している。"
+      },
+      "when": {
+        "workflow": "code-analysis",
+        "input": "W11AC02Action"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "W11AC02ActionはDbAccessSupportを継承している"
+          },
+          {
+            "fact": "@OnDoubleSubmissionアノテーションで二重送信を防止している"
+          },
+          {
+            "fact": "ValidationUtilを使って入力バリデーションを行っている"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ca-02",
+      "given": {
+        "description": "Webアプリケーションの一覧検索・CSVダウンロード処理アクションクラス。検索フォームのバリデーション、コード名称の取得、CSVダウンロード機能を持つ。"
+      },
+      "when": {
+        "workflow": "code-analysis",
+        "input": "W11AC01Action"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "W11AC01ActionはDbAccessSupportを継承している"
+          },
+          {
+            "fact": "DataRecordResponseを使ってCSVダウンロードを実現している"
+          },
+          {
+            "fact": "CodeUtilを使ってコード名称を取得している"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ca-03",
+      "given": {
+        "description": "ユーザー登録処理を担当するコンポーネントクラス。ユーザーIDの採番、パスワードの暗号化、複数のエンティティ登録処理を行う。"
+      },
+      "when": {
+        "workflow": "code-analysis",
+        "input": "CM311AC1Component"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "CM311AC1ComponentはDbAccessSupportを継承している"
+          },
+          {
+            "fact": "IdGeneratorUtilを使ってユーザーIDを採番している"
+          },
+          {
+            "fact": "AuthenticationUtilを使ってパスワードを暗号化している"
+          }
+        ]
+      }
+    }
+  ]
+}
