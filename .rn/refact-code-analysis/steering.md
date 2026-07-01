@@ -54,10 +54,10 @@ follows consistently.
 
 # Tasks
 
-### #0: Baseline — record current behavior before any changes
+### #1: Baseline — record current behavior before any changes
 
 **Purpose**: Document what the current 685-line `code-analysis.md` produces for
-representative scenarios, so Task #4 can compare before/after and confirm the rewrite
+representative scenarios, so Task #5 can compare before/after and confirm the rewrite
 did not regress.
 
 **Prerequisites**: none
@@ -70,7 +70,7 @@ did not regress.
       input, the instruction path followed, and the expected AI behavior
 - [ ] Note any scenarios where the current instructions are ambiguous, contradictory,
       or require reading the entire file to locate the relevant rule
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-0.md)
+- [ ] Self-check (OK/NG per completion criterion, record in checks/task-1.md)
 - [ ] QA expert review (subagent)
 - [ ] User review
 
@@ -81,13 +81,13 @@ did not regress.
   behavior, and any ambiguity/problem found in the current file
 - Document is committed before any change to `code-analysis.md`
 
-### #1: Audit — identify all redundancies, conflicts, and structural problems in the current file
+### #2: Audit — identify all redundancies, conflicts, and structural problems in the current file
 
 **Purpose**: Produce a written audit of `code-analysis.md` that catalogs every
 redundancy, conflict, misplaced rule, and structural issue — the evidence base for
 the rewrite.
 
-**Prerequisites**: Task #0 complete
+**Prerequisites**: Task #1 complete
 
 **Steps**:
 
@@ -100,7 +100,7 @@ the rewrite.
 - [ ] For each finding, record: location (line range), category (duplicate / conflict /
       misplaced / verbose), and a one-line description of the problem
 - [ ] Count total findings by category
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-1.md)
+- [ ] Self-check (OK/NG per completion criterion, record in checks/task-2.md)
 - [ ] QA expert review (subagent)
 - [ ] User review
 
@@ -112,23 +112,23 @@ the rewrite.
 - Total count per category is stated
 - No finding is stated without a line reference
 
-### #2: Design — propose the rewritten structure
+### #3: Design — propose the rewritten structure
 
 **Purpose**: Produce a structural design for the rewritten `code-analysis.md` — section
 headings, ordering rationale, and a mapping of every current rule to its target location
-— so the rewrite in Task #3 has a verified blueprint.
+— so the rewrite in Task #4 has a verified blueprint.
 
-**Prerequisites**: Task #1 complete
+**Prerequisites**: Task #2 complete
 
 **Steps**:
 
-- [ ] Read the audit from Task #1
+- [ ] Read the audit from Task #2
 - [ ] Draft a section outline (headings and 1-sentence purpose per section)
 - [ ] For each rule in the audit, map: current location → target section in the new
       structure (or "drop" if it is a pure duplicate with no unique content)
 - [ ] Identify any rules that are currently missing from the file but required by the
       workflow logic (gaps)
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-2.md)
+- [ ] Self-check (OK/NG per completion criterion, record in checks/task-3.md)
 - [ ] QA expert review (subagent)
 - [ ] User review
 
@@ -140,22 +140,22 @@ headings, ordering rationale, and a mapping of every current rule to its target 
 - Any gaps identified are listed
 - The projected line count for the rewritten file is stated and is ≤ 400
 
-### #3: Rewrite — apply the design to produce the new code-analysis.md
+### #4: Rewrite — apply the design to produce the new code-analysis.md
 
 **Purpose**: Produce the rewritten `code-analysis.md` for nabledge-6 following the
 approved design, then port it to all 5 versions.
 
-**Prerequisites**: Task #2 complete and approved by user
+**Prerequisites**: Task #3 complete and approved by user
 
 **Steps**:
 
-- [ ] Read the design from Task #2
+- [ ] Read the design from Task #3
 - [ ] Rewrite nabledge-6's `code-analysis.md` following the approved section structure
 - [ ] Verify: line count ≤ 400, no duplicate rules, no conflicting instructions
 - [ ] Port the rewrite to nabledge-1.2, 1.3, 1.4, 5 — applying only version-specific
       differences (e.g., script paths, version-specific step names)
 - [ ] Verify all 5 versions are consistent in structure
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-3.md)
+- [ ] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
 - [ ] QA expert review (subagent)
 - [ ] User review
 
@@ -167,24 +167,24 @@ approved design, then port it to all 5 versions.
 - No rule appears more than once in any single version
 - No two instructions in any single version contradict each other
 
-### #4: Verify — compare rewritten instructions against the baseline
+### #5: Verify — compare rewritten instructions against the baseline
 
 **Purpose**: Confirm the rewritten instructions produce equal or better behavior than
-the baseline recorded in Task #0 — using the same 3 scenarios so before/after is
+the baseline recorded in Task #1 — using the same 3 scenarios so before/after is
 directly comparable.
 
-**Prerequisites**: Task #3 complete
+**Prerequisites**: Task #4 complete
 
 **Steps**:
 
-- [ ] Read the baseline from Task #0 (same 3 scenarios, same inputs)
+- [ ] Read the baseline from Task #1 (same 3 scenarios, same inputs)
 - [ ] For each scenario, trace the rewritten instructions step-by-step and record:
       instruction path followed and expected AI behavior
 - [ ] Compare against the baseline: did ambiguities get resolved? did contradictions
       disappear? can the relevant rule be found without reading the entire file?
 - [ ] Record verdict per scenario: pass (behavior preserved or improved) / fail
       (regression)
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
+- [ ] Self-check (OK/NG per completion criterion, record in checks/task-5.md)
 - [ ] QA expert review (subagent)
 - [ ] User review
 
@@ -206,5 +206,5 @@ directly comparable.
 - **Status**: not suspended
 - **Date**: 2026-07-01
 - **Last completed**: (none)
-- **Next**: #0 Baseline
+- **Next**: #1 Baseline
 - **Notes**: Branch is `worktree-refact-code-analysis`. Session PR to be created after steering is approved.
