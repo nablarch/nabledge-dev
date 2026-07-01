@@ -62,14 +62,19 @@ rm -rf tools/benchmark/results/YYYYMMDD-HHMMSS
 
 ## ステップ 3: 全シナリオ実行
 
+`YYYYMMDD-HHMM` は実行日時に置き換えること（例: `20260701-1400`）。
+
 ```bash
 python3 -m tools.benchmark.scripts.run_code_analysis \
   --scenarios tools/benchmark/scenarios/code-analysis.json \
-  --skill-dir .claude/skills/nabledge-6
+  --skill-dir .claude/skills/nabledge-6 \
+  --project-dir .lw/nab-official/v6 \
+  --output-dir tools/benchmark/results/YYYYMMDD-HHMM-code-analysis-baseline
 ```
 
 **オプション引数**:
-- `--project-dir <path>`: `find-file.sh` が Java ファイルを探す起点ディレクトリ（省略時は `skill-dir` の親ディレクトリ）
+- `--project-dir <path>`: `find-file.sh` が Java ファイルを探す起点ディレクトリ（シナリオが v6 クラスを使用するため `.lw/nab-official/v6` を指定する）
+- `--output-dir <path>`: 結果の出力先ディレクトリ（省略時は `tools/benchmark/results/YYYYMMDD-HHMMSS`）
 - `--scenario-ids ca-01,ca-03`: 特定シナリオのみ再実行
 
 ---
@@ -137,7 +142,7 @@ tools/benchmark/results/
 {
   "total_scenarios": 3,
   "skill_dir": ".claude/skills/nabledge-6",
-  "project_dir": ".",
+  "project_dir": ".lw/nab-official/v6",
   "scenarios_file": "tools/benchmark/scenarios/code-analysis.json",
   "executed_at": "2026-07-01T10:00:00",
   "scenarios": [
