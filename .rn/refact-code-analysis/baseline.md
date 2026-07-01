@@ -3,7 +3,7 @@
 **Captured**: 2026-07-01  
 **Workflow**: `code-analysis.md` (current, unmodified — 685 lines)  
 **Scenarios**: `tools/benchmark/scenarios/code-analysis.json` (3 scenarios)  
-**Results dir**: `tools/benchmark/results/code-analysis-baseline/`
+**Results dir**: `tools/benchmark/results/20260701-1331-code-analysis-baseline/`
 
 ## Summary Table
 
