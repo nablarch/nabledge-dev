@@ -248,10 +248,25 @@ the baseline recorded in Task #2, using the same runner, scenarios, and evaluato
 
 # State
 
-- **Status**: active
-- **Last completed**: (なし — Task #1 は部分的に完了だが、シナリオが無効のため完了扱いにしない)
-- **Next**: #1 のシナリオ修正 — `.lw/nab-official/v6/` の Java ファイルを対象にしたシナリオに作り直す
-- **Notes**: Task #1 で実装したスクリプト（run_code_analysis.py, check_format_code_analysis.py, HOW-TO-RUN-CODE-ANALYSIS.md）は有効。
-  シナリオ（code-analysis.json）と Task #2 の結果（20260701-1331-code-analysis-baseline/）は無効。
-  `--project-dir .lw/nab-official/v6` で v6 の Java ファイルが検索対象になることを確認済み。
-  対象候補: `.lw/nab-official/v6/nablarch-example-rest/src/main/java/com/nablarch/example/action/ProjectAction.java` 等。
+- **Status**: paused
+- **Date**: 2026-07-01
+- **Last completed**: (なし)
+- **Next**: #1 のシナリオ修正を完了させ、Task #2 を再実行する
+- **Notes**: |
+    Task #1 スクリプト群（run_code_analysis.py, check_format_code_analysis.py, HOW-TO-RUN-CODE-ANALYSIS.md）は有効。
+    シナリオは v6 クラスに修正済み（ProjectAction, AuthenticationAction, ImportZipCodeFileAction）。
+
+    **未解決の問題**: `--project-dir .lw/nab-official/v6` で実行すると、
+    `find-file.sh` が v6 全サブプロジェクトを横断検索するため、同名クラスが複数存在するときに
+    意図しないファイルがヒットする。
+    例: ca-01 の ProjectAction → `nablarch-example-rest` を想定していたが
+    `nablarch-example-web` の同名クラスがヒットした。
+
+    **次のアクション**:
+    1. v6 内に同名クラスが複数存在しないか確認する
+       `find .lw/nab-official/v6 -name "ProjectAction.java"`
+    2. 重複があるなら、重複しないクラスを選ぶか、
+       シナリオに `when.project_subdir` のような限定フィールドを追加する方向で設計を見直す
+    3. シナリオ確定後、Task #2 のベースライン取得（全3シナリオ）を実行する
+    
+    partial baseline dir: `tools/benchmark/results/20260701-1736-code-analysis-baseline/` (ca-01 のみ、無効)
