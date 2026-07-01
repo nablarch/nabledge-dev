@@ -245,8 +245,15 @@ the baseline recorded in Task #2, using the same runner, scenarios, and evaluato
 
 # State
 
-- **Status**: not suspended
+- **Status**: paused
 - **Date**: 2026-07-01
-- **Last completed**: (none)
+- **Last completed**: (none — steering plan only)
 - **Next**: #1 Build test harness
-- **Notes**: Branch is `worktree-refact-code-analysis`. Session PR to be created after steering is approved.
+- **Notes**: Steering was reviewed and refined through conversation. Key decisions made:
+  (1) Task #1 builds the test harness (runner, scenarios, format checker, HOW-TO-RUN-CODE-ANALYSIS.md);
+  (2) Task #2 captures baseline using that harness before any changes to code-analysis.md;
+  (3) Task #6 re-runs the same harness after the rewrite and compares scores.
+  Evaluation approach: DeepEval for content (must facts), script for format (placeholders, sections, Mermaid).
+  HOW-TO-RUN-CODE-ANALYSIS.md is a separate file — HOW-TO-RUN.md is QA-only and must not be modified.
+  PR #390 is open at https://github.com/nablarch/nabledge-dev/pull/390.
+  User has not yet approved the steering — get approval before starting Task #1.
