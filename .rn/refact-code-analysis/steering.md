@@ -86,7 +86,7 @@ and `must` facts, and a format checker script.
 - [x] QA expert review (subagent)
 - [x] Language expert review (subagent)
 - [x] Software-engineering expert review (subagent)
-- [ ] User review
+- [x] User review
 
 **Completion criteria**:
 
@@ -248,8 +248,24 @@ the baseline recorded in Task #2, using the same runner, scenarios, and evaluato
 
 # State
 
-<!-- updated by /rn:up or /rn:on after each task -->
-<!-- Status: active | paused | done -->
-<!-- Last completed: task id or "(none)" -->
-<!-- Next: short description of the next task to execute -->
-<!-- Notes: any context needed to resume (blockers, decisions, carry-overs) -->
+- **Status**: paused
+- **Date**: 2026-07-03
+- **Last completed**: #1 — code-analysis benchmark harness (scenarios, runner, format checker, HOW-TO)
+- **Next**: #2 — ベースライン取得（全3シナリオを現行 code-analysis.md で実行し結果を保存）
+- **Notes**: |
+    Task #1 は完全完了・ユーザー承認済み。
+    steering.md の Task #1 ステップはすべてチェック済み（User review 含む）。
+
+    **Task #2 の実行コマンド**:
+    ```bash
+    python3 -m tools.benchmark.scripts.run_code_analysis \
+      --scenarios tools/benchmark/scenarios/code-analysis.json \
+      --skill-dir .claude/skills/nabledge-6 \
+      --project-dir .lw/nab-official/v6 \
+      --output-dir tools/benchmark/results/YYYYMMDD-HHMM-code-analysis-baseline
+    ```
+    - ca-01 は `project_subdir: "nablarch-example-rest"` がシナリオに設定済みなので
+      `find-file.sh` が正しいサブプロジェクトを参照する。
+    - 実行後、各シナリオの `evaluation.json` から DeepEval スコアを読み取り
+      `.rn/refact-code-analysis/baseline.md` にサマリーテーブルを作成する。
+    - ベースラインを commit/push したあとに `code-analysis.md` を変更する（順序厳守）。
