@@ -177,7 +177,7 @@ headings, ordering rationale, and a mapping of every current rule to its target 
       workflow logic (gaps)
 - [x] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
 - [x] QA expert review (subagent) — design is structural; objective mapping, no separate QA needed
-- [ ] User review
+- [x] User review
 
 **Completion criteria**:
 
@@ -196,13 +196,13 @@ approved design, then port it to all 5 versions.
 
 **Steps**:
 
-- [ ] Read the design from Task #4
-- [ ] Rewrite nabledge-6's `code-analysis.md` following the approved section structure
-- [ ] Verify: line count ≤ 400, no duplicate rules, no conflicting instructions
-- [ ] Port the rewrite to nabledge-1.2, 1.3, 1.4, 5 — applying only version-specific
+- [x] Read the design from Task #4
+- [x] Rewrite nabledge-6's `code-analysis.md` following the approved section structure
+- [x] Verify: line count ≤ 400, no duplicate rules, no conflicting instructions
+- [x] Port the rewrite to nabledge-1.2, 1.3, 1.4, 5 — applying only version-specific
       differences (e.g., script paths, version-specific step names)
-- [ ] Verify all 5 versions are consistent in structure
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-5.md)
+- [x] Verify all 5 versions are consistent in structure
+- [x] Self-check (OK/NG per completion criterion, record in checks/task-5.md)
 - [ ] QA expert review (subagent)
 - [ ] User review
 
