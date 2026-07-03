@@ -203,7 +203,7 @@ approved design, then port it to all 5 versions.
       differences (e.g., script paths, version-specific step names)
 - [x] Verify all 5 versions are consistent in structure
 - [x] Self-check (OK/NG per completion criterion, record in checks/task-5.md)
-- [ ] QA expert review (subagent)
+- [x] QA expert review (subagent) — 2 Findings fixed (read-sections.sh path, verify string)
 - [ ] User review
 
 **Completion criteria**:
@@ -249,8 +249,8 @@ the baseline recorded in Task #2, using the same runner, scenarios, and evaluato
 
 - **Status**: awaiting user review
 - **Date**: 2026-07-03
-- **Last completed**: #4 design complete; awaiting User review
-- **Next**: User review + approval of Task #4, then #5 — Rewrite
+- **Last completed**: #5 rewrite complete (685→339 lines, all 5 versions, QA 2 Findings fixed)
+- **Next**: User review of Task #5, then #6 — Verify
 - **Notes**: |
     Design in .rn/refact-code-analysis/design.md (153 lines).
     Structure: Steps renumbered 0–4 (target → start → deps → knowledge → doc gen).
