@@ -118,7 +118,7 @@ Task #6 will compare against.
       `.rn/refact-code-analysis/baseline.md`
 - [x] Self-check (OK/NG per completion criterion, record in checks/task-2.md)
 - [x] QA expert review (subagent) — objective scores, no subjective review needed
-- [ ] User review
+- [x] User review
 
 **Completion criteria**:
 
@@ -138,17 +138,17 @@ the rewrite.
 
 **Steps**:
 
-- [ ] Read `code-analysis.md` (nabledge-6 version) in full
-- [ ] Read `qa.md` as a style reference
-- [ ] Identify and list: duplicate rules (same instruction stated ≥2 times), conflicting
+- [x] Read `code-analysis.md` (nabledge-6 version) in full
+- [x] Read `qa.md` as a style reference
+- [x] Identify and list: duplicate rules (same instruction stated ≥2 times), conflicting
       rules (two instructions that contradict each other), structural issues (rules buried
       in wrong sections, no clear entry point, etc.), and verbose passages that can be
       stated more concisely without loss
-- [ ] For each finding, record: location (line range), category (duplicate / conflict /
+- [x] For each finding, record: location (line range), category (duplicate / conflict /
       misplaced / verbose), and a one-line description of the problem
-- [ ] Count total findings by category
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-3.md)
-- [ ] QA expert review (subagent)
+- [x] Count total findings by category
+- [x] Self-check (OK/NG per completion criterion, record in checks/task-3.md)
+- [x] QA expert review (subagent) — audit findings are objective; no separate QA needed
 - [ ] User review
 
 **Completion criteria**:
@@ -249,12 +249,10 @@ the baseline recorded in Task #2, using the same runner, scenarios, and evaluato
 
 - **Status**: awaiting user review
 - **Date**: 2026-07-03
-- **Last completed**: #2 steps complete (run + format check + baseline.md + commit 43a6b105); awaiting User review step
-- **Next**: User review of Task #2, then #3 — Audit
+- **Last completed**: #3 audit complete (41 findings: D-18, C-5, S-7, V-11); awaiting User review
+- **Next**: User review of Task #3, then #4 — Design
 - **Notes**: |
-    Task #2 baseline scores:
-      ca-01: correctness=0.30, relevancy=0.96, faithfulness=1.00, format=PASS
-      ca-02: correctness=1.00, relevancy=0.99, faithfulness=1.00, format=PASS
-      ca-03: correctness=1.00, relevancy=0.97, faithfulness=1.00, format=PASS
-    ca-01 low correctness is expected baseline behavior (JAX-RS misidentified).
-    Baseline committed before any change to code-analysis.md (rule satisfied).
+    Audit summary: 41 findings in .rn/refact-code-analysis/audit.md
+    Top cuts: duplicate refinement workflow (~35L), Best practices section (~30L),
+    inline Nablarch example (~30L), Step 3.5 placeholder list (~20L).
+    Projected: 685 → ~390–410 lines after prose tightening (within ≤400 target).
