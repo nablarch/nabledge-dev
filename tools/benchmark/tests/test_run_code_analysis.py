@@ -347,6 +347,15 @@ class TestRunCodeAnalysisScenarioProjectSubdir:
             "modelUsage": {},
         })
 
+    def _setup_skill_dir(self, tmpdir: str) -> Path:
+        """Create minimal skill dir with required workflow files."""
+        skill_dir = Path(tmpdir) / "skill"
+        (skill_dir / "workflows" / "code-analysis").mkdir(parents=True)
+        (skill_dir / "workflows" / "code-analysis.md").write_text("workflow")
+        (skill_dir / "workflows" / "code-analysis" / "template.md").write_text("template")
+        (skill_dir / "workflows" / "code-analysis" / "template-guide.md").write_text("guide")
+        return skill_dir
+
     def test_without_project_subdir_uses_project_dir_as_cwd(self):
         """Given no project_subdir, cwd for subprocess is project_dir."""
         scenario = {
@@ -356,11 +365,7 @@ class TestRunCodeAnalysisScenarioProjectSubdir:
             "then": {"must": [{"fact": "some fact"}]},
         }
         with tempfile.TemporaryDirectory() as tmpdir:
-            skill_dir = Path(tmpdir) / "skill"
-            (skill_dir / "workflows" / "code-analysis").mkdir(parents=True)
-            (skill_dir / "workflows" / "code-analysis.md").write_text("workflow")
-            (skill_dir / "workflows" / "code-analysis" / "template.md").write_text("template")
-            (skill_dir / "workflows" / "code-analysis" / "template-guide.md").write_text("guide")
+            skill_dir = self._setup_skill_dir(tmpdir)
 
             project_dir = Path(tmpdir) / "project"
             project_dir.mkdir()
@@ -369,7 +374,6 @@ class TestRunCodeAnalysisScenarioProjectSubdir:
 
             def fake_run(cmd, **kwargs):
                 captured_kwargs.update(kwargs)
-                import subprocess
                 result = type("R", (), {"returncode": 0, "stdout": self._make_claude_output(self._make_valid_response()), "stderr": ""})()
                 return result
 
@@ -387,11 +391,7 @@ class TestRunCodeAnalysisScenarioProjectSubdir:
             "then": {"must": [{"fact": "some fact"}]},
         }
         with tempfile.TemporaryDirectory() as tmpdir:
-            skill_dir = Path(tmpdir) / "skill"
-            (skill_dir / "workflows" / "code-analysis").mkdir(parents=True)
-            (skill_dir / "workflows" / "code-analysis.md").write_text("workflow")
-            (skill_dir / "workflows" / "code-analysis" / "template.md").write_text("template")
-            (skill_dir / "workflows" / "code-analysis" / "template-guide.md").write_text("guide")
+            skill_dir = self._setup_skill_dir(tmpdir)
 
             project_dir = Path(tmpdir) / "project"
             subdir = project_dir / "nablarch-example-rest"
@@ -401,7 +401,6 @@ class TestRunCodeAnalysisScenarioProjectSubdir:
 
             def fake_run(cmd, **kwargs):
                 captured_kwargs.update(kwargs)
-                import subprocess
                 result = type("R", (), {"returncode": 0, "stdout": self._make_claude_output(self._make_valid_response()), "stderr": ""})()
                 return result
 
@@ -419,11 +418,7 @@ class TestRunCodeAnalysisScenarioProjectSubdir:
             "then": {"must": [{"fact": "some fact"}]},
         }
         with tempfile.TemporaryDirectory() as tmpdir:
-            skill_dir = Path(tmpdir) / "skill"
-            (skill_dir / "workflows" / "code-analysis").mkdir(parents=True)
-            (skill_dir / "workflows" / "code-analysis.md").write_text("workflow")
-            (skill_dir / "workflows" / "code-analysis" / "template.md").write_text("template")
-            (skill_dir / "workflows" / "code-analysis" / "template-guide.md").write_text("guide")
+            skill_dir = self._setup_skill_dir(tmpdir)
 
             project_dir = Path(tmpdir) / "project"
             subdir = project_dir / "nablarch-example-rest"
@@ -433,7 +428,6 @@ class TestRunCodeAnalysisScenarioProjectSubdir:
 
             def fake_run(cmd, **kwargs):
                 captured_cmd.extend(cmd)
-                import subprocess
                 result = type("R", (), {"returncode": 0, "stdout": self._make_claude_output(self._make_valid_response()), "stderr": ""})()
                 return result
 
@@ -444,8 +438,26 @@ class TestRunCodeAnalysisScenarioProjectSubdir:
             allowed_tools_idx = captured_cmd.index("--allowedTools") if "--allowedTools" in captured_cmd else -1
             assert allowed_tools_idx != -1
             allowed_tools = captured_cmd[allowed_tools_idx + 1]
-            # Scripts must be referenced with absolute paths (start with /) so they resolve from subdir cwd
-            scripts_dir = str(skill_dir / "scripts")
+            # Scripts must be referenced with absolute resolved paths so they resolve from subdir cwd
+            scripts_dir = str(skill_dir.resolve() / "scripts")
             assert scripts_dir in allowed_tools, (
                 f"Expected absolute script path {scripts_dir!r} in allowedTools: {allowed_tools!r}"
             )
+
+    def test_with_nonexistent_project_subdir_raises_value_error(self):
+        """When project_subdir does not exist on disk, raise ValueError with a clear message."""
+        scenario = {
+            "id": "ca-01",
+            "given": {"description": "test"},
+            "when": {"workflow": "code-analysis", "input": "ProjectAction", "project_subdir": "nonexistent-subdir"},
+            "then": {"must": [{"fact": "some fact"}]},
+        }
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = self._setup_skill_dir(tmpdir)
+
+            project_dir = Path(tmpdir) / "project"
+            project_dir.mkdir()
+            # Note: project_dir / "nonexistent-subdir" is NOT created
+
+            with pytest.raises(ValueError, match="nonexistent-subdir"):
+                run_code_analysis_scenario(scenario, skill_dir, project_dir)

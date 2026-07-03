@@ -208,29 +208,25 @@ def run_code_analysis_scenario(
     # find-file.sh does not pick up the wrong file when the same class name
     # exists in multiple sub-projects (e.g. ProjectAction in both
     # nablarch-example-rest and nablarch-example-web).
+    # Always use absolute script paths so they resolve regardless of cwd.
+    scripts_dir = skill_dir.resolve() / "scripts"
+    allowed_tools = (
+        f"Bash(bash {scripts_dir}/find-file.sh *) "
+        f"Bash(bash {scripts_dir}/read-file.sh *) "
+        f"Bash(bash {scripts_dir}/keyword-search.sh *) "
+        f"Bash(bash {scripts_dir}/read-sections.sh *) "
+        "Read"
+    )
     project_subdir = scenario["when"].get("project_subdir")
     if project_subdir:
-        cwd = str(project_dir / project_subdir)
-        # Scripts are specified relative to cwd in the default case, but when
-        # cwd is a sub-directory the relative path ".claude/skills/..." would
-        # not resolve.  Use the absolute path derived from skill_dir instead.
-        scripts_dir = str(skill_dir.resolve() / "scripts")
-        allowed_tools = (
-            f"Bash(bash {scripts_dir}/find-file.sh *) "
-            f"Bash(bash {scripts_dir}/read-file.sh *) "
-            f"Bash(bash {scripts_dir}/keyword-search.sh *) "
-            f"Bash(bash {scripts_dir}/read-sections.sh *) "
-            "Read"
-        )
+        subdir_path = project_dir / project_subdir
+        if not subdir_path.is_dir():
+            raise ValueError(
+                f"project_subdir {project_subdir!r} does not exist under project_dir {project_dir}: {subdir_path}"
+            )
+        cwd = str(subdir_path)
     else:
         cwd = str(project_dir)
-        allowed_tools = (
-            "Bash(bash .claude/skills/nabledge-6/scripts/find-file.sh *) "
-            "Bash(bash .claude/skills/nabledge-6/scripts/read-file.sh *) "
-            "Bash(bash .claude/skills/nabledge-6/scripts/keyword-search.sh *) "
-            "Bash(bash .claude/skills/nabledge-6/scripts/read-sections.sh *) "
-            "Read"
-        )
 
     proc = subprocess.run(
         [
