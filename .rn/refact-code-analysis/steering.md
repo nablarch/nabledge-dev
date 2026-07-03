@@ -64,10 +64,10 @@ and `must` facts, and a format checker script.
 
 - [x] Read `tools/benchmark/scripts/run_qa.py` and `evaluate.py` to understand the
       existing runner/evaluator pattern
-- [ ] Identify a known Nablarch source file (from `.lw/nab-official/v6/`) with
+- [x] Identify a known Nablarch source file (from `.lw/nab-official/v6/`) with
       verifiable expected outputs (dependency classes, Nablarch components used)
       **NOTE: 初回実装は `.lw` ではなく nabledge-1.4 のクラスを使っており無効。v6 のクラスに作り直す。**
-- [ ] Define ≥ 3 scenarios in `tools/benchmark/scenarios/code-analysis.json`:
+- [x] Define ≥ 3 scenarios in `tools/benchmark/scenarios/code-analysis.json`:
       each scenario has `when.input` (target class name) and `then.must`
       (facts that must appear in the output, e.g., specific dependency names,
       Nablarch component references)
@@ -82,10 +82,10 @@ and `must` facts, and a format checker script.
 - [x] Create `tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md` documenting how to run
       `run_code_analysis.py` and `check_format_code_analysis.py`
       (execution commands, expected outputs, result directory structure)
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-1.md)
-- [ ] QA expert review (subagent)
-- [ ] Language expert review (subagent)
-- [ ] Software-engineering expert review (subagent)
+- [x] Self-check (OK/NG per completion criterion, record in checks/task-1.md)
+- [x] QA expert review (subagent)
+- [x] Language expert review (subagent)
+- [x] Software-engineering expert review (subagent)
 - [ ] User review
 
 **Completion criteria**:
