@@ -231,7 +231,7 @@ the baseline recorded in Task #2, using the same runner, scenarios, and evaluato
       baseline score, verify score, delta)
 - [x] Self-check (OK/NG per completion criterion, record in checks/task-6.md)
 - [x] QA expert review (subagent) — objective scores, no separate QA needed
-- [ ] User review
+- [x] User review
 
 **Completion criteria**:
 
@@ -247,10 +247,10 @@ the baseline recorded in Task #2, using the same runner, scenarios, and evaluato
 
 # State
 
-- **Status**: awaiting user review
+- **Status**: complete
 - **Date**: 2026-07-03
-- **Last completed**: #6 verify complete (all 3 scenarios run, 11/12 ≥ baseline, ca-03 −0.05 within variance)
-- **Next**: User review of Task #6 → then PR
+- **Last completed**: PR #390 created — https://github.com/nablarch/nabledge-dev/pull/390
+- **Next**: PR review and merge
 - **Notes**: |
     Design in .rn/refact-code-analysis/design.md (153 lines).
     Structure: Steps renumbered 0–4 (target → start → deps → knowledge → doc gen).
