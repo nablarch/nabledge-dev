@@ -196,11 +196,41 @@ def run_code_analysis_scenario(
     skill_dir = Path(skill_dir)
     if project_dir is None:
         project_dir = skill_dir.parent
+    project_dir = Path(project_dir)
 
     workflow_content = (skill_dir / WORKFLOW_FILE).read_text(encoding="utf-8")
     template_content = (skill_dir / TEMPLATE_FILE).read_text(encoding="utf-8")
     template_guide_content = (skill_dir / TEMPLATE_GUIDE_FILE).read_text(encoding="utf-8")
     prompt = build_code_analysis_prompt(scenario, workflow_content, template_content, template_guide_content)
+
+    # Determine the cwd for the claude invocation.
+    # When project_subdir is set, narrow the search root to that subdir so
+    # find-file.sh does not pick up the wrong file when the same class name
+    # exists in multiple sub-projects (e.g. ProjectAction in both
+    # nablarch-example-rest and nablarch-example-web).
+    project_subdir = scenario["when"].get("project_subdir")
+    if project_subdir:
+        cwd = str(project_dir / project_subdir)
+        # Scripts are specified relative to cwd in the default case, but when
+        # cwd is a sub-directory the relative path ".claude/skills/..." would
+        # not resolve.  Use the absolute path derived from skill_dir instead.
+        scripts_dir = str(skill_dir.resolve() / "scripts")
+        allowed_tools = (
+            f"Bash(bash {scripts_dir}/find-file.sh *) "
+            f"Bash(bash {scripts_dir}/read-file.sh *) "
+            f"Bash(bash {scripts_dir}/keyword-search.sh *) "
+            f"Bash(bash {scripts_dir}/read-sections.sh *) "
+            "Read"
+        )
+    else:
+        cwd = str(project_dir)
+        allowed_tools = (
+            "Bash(bash .claude/skills/nabledge-6/scripts/find-file.sh *) "
+            "Bash(bash .claude/skills/nabledge-6/scripts/read-file.sh *) "
+            "Bash(bash .claude/skills/nabledge-6/scripts/keyword-search.sh *) "
+            "Bash(bash .claude/skills/nabledge-6/scripts/read-sections.sh *) "
+            "Read"
+        )
 
     proc = subprocess.run(
         [
@@ -209,18 +239,12 @@ def run_code_analysis_scenario(
             "--output-format", "json",
             "--no-session-persistence",
             "--allowedTools",
-            (
-                "Bash(bash .claude/skills/nabledge-6/scripts/find-file.sh *) "
-                "Bash(bash .claude/skills/nabledge-6/scripts/read-file.sh *) "
-                "Bash(bash .claude/skills/nabledge-6/scripts/keyword-search.sh *) "
-                "Bash(bash .claude/skills/nabledge-6/scripts/read-sections.sh *) "
-                "Read"
-            ),
+            allowed_tools,
         ],
         input=prompt,
         capture_output=True,
         text=True,
-        cwd=str(project_dir),
+        cwd=cwd,
         timeout=TIMEOUT,
     )
 

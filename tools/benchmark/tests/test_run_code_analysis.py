@@ -10,6 +10,7 @@ from tools.benchmark.scripts.run_code_analysis import (
     MarkerError,
     build_code_analysis_prompt,
     parse_code_analysis_response,
+    run_code_analysis_scenario,
     save_code_analysis_results,
 )
 
@@ -317,3 +318,134 @@ class TestSaveCodeAnalysisResults:
             assert (scenario_dir / "code_analysis_details.json").exists()
             assert (scenario_dir / "metrics.json").exists()
             assert (scenario_dir / "trace.json").exists()
+
+
+class TestRunCodeAnalysisScenarioProjectSubdir:
+    """Tests for project_subdir support in run_code_analysis_scenario."""
+
+    def _make_valid_response(self):
+        details = {
+            "step1": {"target_files": ["ProjectAction.java"], "dependencies": [], "nablarch_components": []},
+            "step2": {"searched_sections": []},
+        }
+        return (
+            "### Answer\n# Code Analysis: ProjectAction\n\n"
+            "<<<CODE_ANALYSIS_DETAILS_JSON>>>\n"
+            f"```json\n{json.dumps(details)}\n```\n"
+            "<<<END_CODE_ANALYSIS_DETAILS>>>\n"
+        )
+
+    def _make_claude_output(self, response_text: str) -> str:
+        return json.dumps({
+            "result": response_text,
+            "duration_ms": 1000,
+            "duration_api_ms": 900,
+            "num_turns": 3,
+            "total_cost_usd": 0.01,
+            "usage": {"input_tokens": 100, "output_tokens": 50,
+                      "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+            "modelUsage": {},
+        })
+
+    def test_without_project_subdir_uses_project_dir_as_cwd(self):
+        """Given no project_subdir, cwd for subprocess is project_dir."""
+        scenario = {
+            "id": "ca-test",
+            "given": {"description": "test"},
+            "when": {"workflow": "code-analysis", "input": "ProjectAction"},
+            "then": {"must": [{"fact": "some fact"}]},
+        }
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = Path(tmpdir) / "skill"
+            (skill_dir / "workflows" / "code-analysis").mkdir(parents=True)
+            (skill_dir / "workflows" / "code-analysis.md").write_text("workflow")
+            (skill_dir / "workflows" / "code-analysis" / "template.md").write_text("template")
+            (skill_dir / "workflows" / "code-analysis" / "template-guide.md").write_text("guide")
+
+            project_dir = Path(tmpdir) / "project"
+            project_dir.mkdir()
+
+            captured_kwargs = {}
+
+            def fake_run(cmd, **kwargs):
+                captured_kwargs.update(kwargs)
+                import subprocess
+                result = type("R", (), {"returncode": 0, "stdout": self._make_claude_output(self._make_valid_response()), "stderr": ""})()
+                return result
+
+            with patch("tools.benchmark.scripts.run_code_analysis.subprocess.run", side_effect=fake_run):
+                run_code_analysis_scenario(scenario, skill_dir, project_dir)
+
+            assert captured_kwargs["cwd"] == str(project_dir)
+
+    def test_with_project_subdir_uses_subdir_as_cwd(self):
+        """Given project_subdir in when, cwd for subprocess is project_dir/project_subdir."""
+        scenario = {
+            "id": "ca-01",
+            "given": {"description": "test"},
+            "when": {"workflow": "code-analysis", "input": "ProjectAction", "project_subdir": "nablarch-example-rest"},
+            "then": {"must": [{"fact": "some fact"}]},
+        }
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = Path(tmpdir) / "skill"
+            (skill_dir / "workflows" / "code-analysis").mkdir(parents=True)
+            (skill_dir / "workflows" / "code-analysis.md").write_text("workflow")
+            (skill_dir / "workflows" / "code-analysis" / "template.md").write_text("template")
+            (skill_dir / "workflows" / "code-analysis" / "template-guide.md").write_text("guide")
+
+            project_dir = Path(tmpdir) / "project"
+            subdir = project_dir / "nablarch-example-rest"
+            subdir.mkdir(parents=True)
+
+            captured_kwargs = {}
+
+            def fake_run(cmd, **kwargs):
+                captured_kwargs.update(kwargs)
+                import subprocess
+                result = type("R", (), {"returncode": 0, "stdout": self._make_claude_output(self._make_valid_response()), "stderr": ""})()
+                return result
+
+            with patch("tools.benchmark.scripts.run_code_analysis.subprocess.run", side_effect=fake_run):
+                run_code_analysis_scenario(scenario, skill_dir, project_dir)
+
+            assert captured_kwargs["cwd"] == str(subdir)
+
+    def test_with_project_subdir_uses_absolute_paths_in_allowed_tools(self):
+        """When project_subdir is set, --allowedTools uses absolute paths for scripts."""
+        scenario = {
+            "id": "ca-01",
+            "given": {"description": "test"},
+            "when": {"workflow": "code-analysis", "input": "ProjectAction", "project_subdir": "nablarch-example-rest"},
+            "then": {"must": [{"fact": "some fact"}]},
+        }
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_dir = Path(tmpdir) / "skill"
+            (skill_dir / "workflows" / "code-analysis").mkdir(parents=True)
+            (skill_dir / "workflows" / "code-analysis.md").write_text("workflow")
+            (skill_dir / "workflows" / "code-analysis" / "template.md").write_text("template")
+            (skill_dir / "workflows" / "code-analysis" / "template-guide.md").write_text("guide")
+
+            project_dir = Path(tmpdir) / "project"
+            subdir = project_dir / "nablarch-example-rest"
+            subdir.mkdir(parents=True)
+
+            captured_cmd = []
+
+            def fake_run(cmd, **kwargs):
+                captured_cmd.extend(cmd)
+                import subprocess
+                result = type("R", (), {"returncode": 0, "stdout": self._make_claude_output(self._make_valid_response()), "stderr": ""})()
+                return result
+
+            with patch("tools.benchmark.scripts.run_code_analysis.subprocess.run", side_effect=fake_run):
+                run_code_analysis_scenario(scenario, skill_dir, project_dir)
+
+            # Find the --allowedTools value in the command
+            allowed_tools_idx = captured_cmd.index("--allowedTools") if "--allowedTools" in captured_cmd else -1
+            assert allowed_tools_idx != -1
+            allowed_tools = captured_cmd[allowed_tools_idx + 1]
+            # Scripts must be referenced with absolute paths (start with /) so they resolve from subdir cwd
+            scripts_dir = str(skill_dir / "scripts")
+            assert scripts_dir in allowed_tools, (
+                f"Expected absolute script path {scripts_dir!r} in allowedTools: {allowed_tools!r}"
+            )

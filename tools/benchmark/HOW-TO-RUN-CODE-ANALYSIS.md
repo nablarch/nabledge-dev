@@ -77,6 +77,20 @@ python3 -m tools.benchmark.scripts.run_code_analysis \
 - `--output-dir <path>`: 結果の出力先ディレクトリ（省略時は `tools/benchmark/results/YYYYMMDD-HHMMSS`）
 - `--scenario-ids ca-01,ca-03`: 特定シナリオのみ再実行
 
+**シナリオスキーマ — `when.project_subdir`（任意）**:
+
+`when` ブロックに `"project_subdir": "nablarch-example-rest"` のように指定すると、`claude` の実行ディレクトリ（cwd）を `{project_dir}/{project_subdir}` に絞り込む。同名クラスが複数サブプロジェクトに存在する場合（例: `ProjectAction.java` が `nablarch-example-rest` と `nablarch-example-web` の両方にある）に使用する。`project_subdir` を指定すると、スクリプトへの参照は自動的に絶対パスに切り替わるため、cwd がサブディレクトリになっても `find-file.sh` などが正しく解決される。
+
+```json
+{
+  "when": {
+    "workflow": "code-analysis",
+    "input": "ProjectAction",
+    "project_subdir": "nablarch-example-rest"
+  }
+}
+```
+
 ---
 
 ## ステップ 4: 出力フォーマットの確認
