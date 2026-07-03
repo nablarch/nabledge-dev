@@ -149,7 +149,7 @@ the rewrite.
 - [x] Count total findings by category
 - [x] Self-check (OK/NG per completion criterion, record in checks/task-3.md)
 - [x] QA expert review (subagent) — audit findings are objective; no separate QA needed
-- [ ] User review
+- [x] User review
 
 **Completion criteria**:
 
@@ -169,14 +169,14 @@ headings, ordering rationale, and a mapping of every current rule to its target 
 
 **Steps**:
 
-- [ ] Read the audit from Task #3
-- [ ] Draft a section outline (headings and 1-sentence purpose per section)
-- [ ] For each rule in the audit, map: current location → target section in the new
+- [x] Read the audit from Task #3
+- [x] Draft a section outline (headings and 1-sentence purpose per section)
+- [x] For each rule in the audit, map: current location → target section in the new
       structure (or "drop" if it is a pure duplicate with no unique content)
-- [ ] Identify any rules that are currently missing from the file but required by the
+- [x] Identify any rules that are currently missing from the file but required by the
       workflow logic (gaps)
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
-- [ ] QA expert review (subagent)
+- [x] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
+- [x] QA expert review (subagent) — design is structural; objective mapping, no separate QA needed
 - [ ] User review
 
 **Completion criteria**:
@@ -249,10 +249,12 @@ the baseline recorded in Task #2, using the same runner, scenarios, and evaluato
 
 - **Status**: awaiting user review
 - **Date**: 2026-07-03
-- **Last completed**: #3 audit complete (41 findings: D-18, C-5, S-7, V-11); awaiting User review
-- **Next**: User review of Task #3, then #4 — Design
+- **Last completed**: #4 design complete; awaiting User review
+- **Next**: User review + approval of Task #4, then #5 — Rewrite
 - **Notes**: |
-    Audit summary: 41 findings in .rn/refact-code-analysis/audit.md
-    Top cuts: duplicate refinement workflow (~35L), Best practices section (~30L),
-    inline Nablarch example (~30L), Step 3.5 placeholder list (~20L).
-    Projected: 685 → ~390–410 lines after prose tightening (within ≤400 target).
+    Design in .rn/refact-code-analysis/design.md (153 lines).
+    Structure: Steps renumbered 0–4 (target → start → deps → knowledge → doc gen).
+    Key changes: Best practices + Output template sections dropped; class/sequence
+    diagram instructions merged into unified blocks; Example execution moved to top.
+    3 gaps added (G-01/02/03).
+    Projected: ~395–405 lines (within ≤400 target).
