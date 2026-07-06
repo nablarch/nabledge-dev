@@ -1,0 +1,63 @@
+{
+  "scenario_id": "ca-03",
+  "description": "Nablarchバッチサンプルの郵便番号ファイルインポートアクションクラス。CSVファイルから郵便番号データを読み込んでDBに登録するバッチ処理を実装している。",
+  "input": "ImportZipCodeFileAction",
+  "purpose": "",
+  "expected_facts": [
+    "ImportZipCodeFileActionはBatchAction<ZipCodeForm>を継承している",
+    "UniversalDao.insert()を使ってZipCodeエンティティをDBに登録している",
+    "@ValidateDataインターセプターでバリデーションを適用している",
+    "createReader()メソッドでZipCodeFileReaderを生成して返している"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers all four expected facts: (1) ImportZipCodeFileAction inherits BatchAction<ZipCodeForm> is explicitly stated multiple times; (2) UniversalDao.insert() is used to register ZipCodeData entities to DB; (3) @ValidateData interceptor is used for validation; (4) createReader() method creates and returns a ZipCodeFileReader instance. All expected facts are present and accurately represented without contradiction."
+    },
+    "answer_relevancy": {
+      "score": 0.968,
+      "reason": "The score is 0.97 because the actual output is highly relevant to explaining ImportZipCodeFileAction, with only minor irrelevant metadata included such as document generation details, benchmark mode, output file path, and the nabledge skill workflow information. These small inclusions of metadata prevent the score from reaching a perfect 1.0, but the core content addressing ImportZipCodeFileAction remains strongly on-topic."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 199788,
+    "duration_api_ms": 199520,
+    "num_turns": 30,
+    "total_cost_usd": 0.8864940000000001,
+    "usage": {
+      "input_tokens": 26,
+      "output_tokens": 13855,
+      "cache_read_input_tokens": 1488170,
+      "cache_creation_input_tokens": 58648
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 12080,
+        "outputTokens": 26,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.01221,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 26,
+        "outputTokens": 13855,
+        "cacheReadInputTokens": 1488170,
+        "cacheCreationInputTokens": 58648,
+        "webSearchRequests": 0,
+        "costUSD": 0.8742840000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

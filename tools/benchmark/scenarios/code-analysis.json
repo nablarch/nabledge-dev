@@ -1,0 +1,85 @@
+{
+  "description": "Code analysis benchmark scenarios for nabledge code-analysis workflow evaluation. Each scenario tests the full code-analysis pipeline against a Java class from Nablarch v6 example projects.",
+  "schema_version": "1.0",
+  "scenarios": [
+    {
+      "id": "ca-01",
+      "given": {
+        "description": "Nablarch REST APIサンプルの案件管理アクションクラス。JAX-RSを使った案件の検索・登録・更新・部分更新のREST APIエンドポイントを提供する。"
+      },
+      "when": {
+        "workflow": "code-analysis",
+        "input": "ProjectAction",
+        "project_subdir": "nablarch-example-rest"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "ProjectActionは@Path(\"/projects\")アノテーションが付いたJAX-RSリソースクラスである"
+          },
+          {
+            "fact": "UniversalDaoを使ってDB操作（検索・登録・更新）を行っている"
+          },
+          {
+            "fact": "BeanUtilを使ってFormとEntityの間でBean変換を行っている"
+          },
+          {
+            "fact": "ValidatorUtil.validate()でバリデーションを実行している"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ca-02",
+      "given": {
+        "description": "Nablarch Webアプリケーションサンプルの認証アクションクラス。ログイン・ログアウト処理を担当し、セッション管理と認証処理を行う。"
+      },
+      "when": {
+        "workflow": "code-analysis",
+        "input": "AuthenticationAction"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "AuthenticationUtil.authenticate()を使って認証処理を行っている"
+          },
+          {
+            "fact": "SessionUtil.changeId()でセッションIDを変更している"
+          },
+          {
+            "fact": "UniversalDao.findBySqlFile()を使ってDBからユーザー情報を検索している"
+          },
+          {
+            "fact": "@OnErrorアノテーションでエラー時の遷移先を制御している"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ca-03",
+      "given": {
+        "description": "Nablarchバッチサンプルの郵便番号ファイルインポートアクションクラス。CSVファイルから郵便番号データを読み込んでDBに登録するバッチ処理を実装している。"
+      },
+      "when": {
+        "workflow": "code-analysis",
+        "input": "ImportZipCodeFileAction"
+      },
+      "then": {
+        "must": [
+          {
+            "fact": "ImportZipCodeFileActionはBatchAction<ZipCodeForm>を継承している"
+          },
+          {
+            "fact": "UniversalDao.insert()を使ってZipCodeエンティティをDBに登録している"
+          },
+          {
+            "fact": "@ValidateDataインターセプターでバリデーションを適用している"
+          },
+          {
+            "fact": "createReader()メソッドでZipCodeFileReaderを生成して返している"
+          }
+        ]
+      }
+    }
+  ]
+}

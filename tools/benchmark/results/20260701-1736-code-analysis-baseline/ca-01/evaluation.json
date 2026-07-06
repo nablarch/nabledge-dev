@@ -1,0 +1,63 @@
+{
+  "scenario_id": "ca-01",
+  "description": "Nablarch REST APIサンプルの案件管理アクションクラス。JAX-RSを使った案件の検索・登録・更新・部分更新のREST APIエンドポイントを提供する。",
+  "input": "ProjectAction",
+  "purpose": "",
+  "expected_facts": [
+    "ProjectActionは@Path(\"/projects\")アノテーションが付いたJAX-RSリソースクラスである",
+    "UniversalDaoを使ってDB操作（検索・登録・更新）を行っている",
+    "BeanUtilを使ってFormとEntityの間でBean変換を行っている",
+    "ValidatorUtil.validate()でバリデーションを実行している"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.3,
+      "reason": "The Expected Output contains four distinct facts: (1) ProjectAction is a JAX-RS resource class annotated with @Path('/projects'), (2) UniversalDao is used for DB operations, (3) BeanUtil is used for Bean conversion between Form and Entity, and (4) ValidatorUtil.validate() is used for validation. The Actual Output covers fact 2 (UniversalDao usage) and fact 3 (BeanUtil for Form-Entity conversion) thoroughly. However, fact 1 is contradicted — the Actual Output describes ProjectAction as a Nablarch Web framework action class, not a JAX-RS resource class with @Path('/projects'). Fact 4 (ValidatorUtil.validate()) is entirely absent; the Actual Output mentions @InjectForm interceptor for validation instead. Only 2 out of 4 expected facts are covered."
+    },
+    "answer_relevancy": {
+      "score": 0.96,
+      "reason": "The score is 0.96 because the response is largely relevant and provides a strong explanation of ProjectAction's functionality. However, it loses a few points for including metadata details such as the generation timestamp, analysis duration, output file path, and workflow description, which are all artifacts of the document itself rather than substantive information about ProjectAction."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 189099,
+    "duration_api_ms": 189372,
+    "num_turns": 31,
+    "total_cost_usd": 0.8707142999999999,
+    "usage": {
+      "input_tokens": 20,
+      "output_tokens": 11453,
+      "cache_read_input_tokens": 1229781,
+      "cache_creation_input_tokens": 84732
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 12060,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.01218,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 20,
+        "outputTokens": 11453,
+        "cacheReadInputTokens": 1229781,
+        "cacheCreationInputTokens": 84732,
+        "webSearchRequests": 0,
+        "costUSD": 0.8585343,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
