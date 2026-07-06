@@ -177,6 +177,81 @@ tools/benchmark/results/
 
 ---
 
+## ステップ 5: レポート作成
+
+各ベンチラン完了後、QA ベンチと同様に 2 つのレポートファイルを手動で作成する。
+
+### crossrun-summary.md
+
+スコアの一覧表。`evaluation.json` の `scores` と `metrics` から転記する。
+
+```markdown
+# シナリオ別スコアサマリー（{ラベル}）
+
+run数: 1 / シナリオ数: 3
+
+## スコアサマリー
+
+| 指標 | 平均 | ベースライン比（ベースラインのみ省略） |
+|---|---|---|
+| answer_correctness | X.XXX | ±X.XXX |
+| answer_relevancy   | X.XXX | ±X.XXX |
+| faithfulness       | X.XXX | ±X.XXX |
+
+## シナリオ別スコア
+
+| scenario | input | correctness | relevancy | faithfulness |
+|---|---|---|---|---|
+| ca-01 | {クラス名} | X.XXX | X.XXX | X.XXX |
+| ca-02 | {クラス名} | X.XXX | X.XXX | X.XXX |
+| ca-03 | {クラス名} | X.XXX | X.XXX | X.XXX |
+
+## ベースラインとの差分（verify ランのみ）
+
+| scenario | correctness Δ | relevancy Δ | faithfulness Δ |
+|---|---|---|---|
+...
+
+## パフォーマンス集約
+
+| メトリクス | 平均 | P50 | 最大 |
+|---|---|---|---|
+| 実行時間 | Xs | Xs | Xs |
+| コスト   | $X.XXX | $X.XXX | $X.XXX |
+```
+
+### quality-report.md
+
+ナラティブ形式の評価レポート。crossrun-summary.md をもとに所見を記述する。
+
+```markdown
+# nabledge-6 コード分析 品質評価レポート
+
+**対象**: {ラベル}
+**前版**: {ベースラインディレクトリ名 or "なし（これが基準版）"}
+**測定条件**: 3シナリオ × 1回 = 3評価
+...
+
+## 総合評価: {合格 / 注意あり}
+
+{1〜3行の概要}
+
+## 合否判定
+
+### ① 正しい知識を選定し回答できているか → {PASS / FAIL}
+### ② 推測や捏造が含まれていないか → {PASS / FAIL}
+
+## ベースラインとの比較（verify ランのみ）
+
+## 計測
+
+## ベンチからの見解
+```
+
+**作成後、results ディレクトリごとコミット・プッシュする。**
+
+---
+
 ## テストの実行
 
 ユニットテストを実行して実装の正常動作を確認する:
