@@ -21,13 +21,22 @@
 
 ### 現行ベンチマーク設定
 
-**DeepEval** を使って LLM の回答品質を自動評価している。以下の 3 指標でスコアを算出し、閾値を下回った場合に NG（失敗）と判定する。本レポートで検証するのは、この指標・閾値の組み合わせによる判定精度である。
+**DeepEval** の RAG 評価メトリクスを使って回答品質を自動評価している。各シナリオで以下の 4 つを `LLMTestCase` に渡し、3 指標を測定する。
 
-| 指標 | 測定内容 | 合格閾値 |
-|------|----------|----------|
-| answer_correctness | 回答が期待される事実を含んでいるか | スコア ≥ 0.99 |
-| answer_relevancy | 回答が質問に関連しているか | スコア ≥ 0.95 |
-| faithfulness | 回答がナレッジと矛盾しないか | スコア ≥ 0.99 |
+| `LLMTestCase` のフィールド | 内容 |
+|---|---|
+| `input` | ユーザーの質問文 |
+| `actual_output` | nabledge-6 が生成した回答 |
+| `expected_output` | シナリオに定義された期待事実（1〜数件） |
+| `retrieval_context` | nabledge-6 が参照したナレッジセクションの本文 |
+
+使用する DeepEval メトリクスと閾値は以下の通り。スコアが閾値を下回ると NG（失敗）と判定する。本レポートで検証するのは、この指標・閾値・インプット構成の組み合わせによる判定精度である。
+
+| 指標 | DeepEval メトリクス | 測定内容 | 合格閾値 |
+|------|---------------------|----------|----------|
+| answer_correctness | `GEval` | `actual_output` が `expected_output` の全事実を含んでいるか | スコア ≥ 0.99 |
+| answer_relevancy | `AnswerRelevancyMetric` | `actual_output` が `input` に関連しているか | スコア ≥ 0.95 |
+| faithfulness | `FaithfulnessMetric` | `actual_output` が `retrieval_context` と矛盾しないか | スコア ≥ 0.99 |
 
 ### 検証方法
 
