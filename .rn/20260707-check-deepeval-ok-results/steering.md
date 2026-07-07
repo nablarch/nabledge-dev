@@ -102,6 +102,6 @@ so only a genuinely suspended session reads `paused`.)
 
 - **Status**: paused
 - **Date**: 2026-07-07
-- **Last completed**: #4 step 1 — result.md をユーザーに提示済み
+- **Last completed**: #4 step 1 — result.md をユーザーに提示・改訂済み
 - **Next**: #4 step 2 — `/rn:ty` または `/rn:gm` でユーザー承認を受ける
-- **Notes**: result.md の内容はユーザーに提示済み。承認待ち。
+- **Notes**: result.md 改訂多数（テクニカルライティング改善）。承認待ち。
