@@ -100,8 +100,4 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: paused
-- **Date**: 2026-07-07
-- **Last completed**: #4 step 1 — result.md をユーザーに提示・改訂済み
-- **Next**: #4 step 2 — `/rn:ty` または `/rn:gm` でユーザー承認を受ける
-- **Notes**: result.md 改訂多数（テクニカルライティング改善）。承認待ち。
+- **Status**: not suspended
