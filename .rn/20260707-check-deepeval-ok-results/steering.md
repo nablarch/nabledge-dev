@@ -100,8 +100,4 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: paused
-- **Date**: 2026-07-07
-- **Last completed**: #1 確認ファイル生成スクリプト作成・実行
-- **Next**: #2 102件の判定記入 — 1エージェント=1ファイル、3並列で処理
-- **Notes**: 1エージェント102件一括処理を中断・破棄済み（精度リスク）。チェックファイルはblank状態にリセット済み。次回: /rn:up で再開、#2の3並列実行から。
+- **Status**: not suspended
