@@ -100,8 +100,8 @@ public HttpResponse handle(HttpRequest req, ExecutionContext ctx) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「エラー表示タグでリクエストスコープのエラーメッセージを表示する」は回答の注意点「JSPを使う場合はカスタムタグ（`<n:errors>` 等）でも表示できる」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答全体が「入力チェックエラー時にエラーメッセージをユーザーに返す方法」という質問に直接答えており、バリデーション設定・Formクラス・@InjectForm/@OnError・テンプレートでのエラー表示まで体系的に説明している。質問と無関係な情報は含まれていない。 |
+| faithfulness | OK | 回答の注意点「変更したい場合は `WebConfig` の `errorMessageRequestAttributeName` で設定する」は、ナレッジ（handlers-HttpErrorHandler.md）の設定例 `<component name="webConfig" class="nablarch.common.web.WebConfig"><property name="errorMessageRequestAttributeName" value="messages" /></component>` と一致しており矛盾しない。DeepEvalが「コンポーネント設定ファイルで変更できる」vs「WebConfigで変更できる」という差を問題視したが、ナレッジ自体がWebConfigクラスのコンポーネントで設定することを示しているため、回答の記述はナレッジと整合している。 |
 
 ### 参照事実（expected_facts）
 

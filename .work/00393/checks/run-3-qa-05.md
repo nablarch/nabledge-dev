@@ -98,8 +98,8 @@ RESTEasy環境の場合は `ResteasyJaxRsHandlerListFactory` を使用する。
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「Formクラスでクライアントから送信された値を受け付ける」は回答の「ProjectFormクラスの作成とコード例」に含まれている。参照事実「プロパティは全てString型で宣言する」は回答の「- プロパティは全てString型で宣言する。」および「注意点」セクションに明示されている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答全体がJSON受け取りとDB登録という質問に直接答えており、Formクラス作成・アクションメソッド実装・コンポーネント設定・注意点のすべてが質問の目的に沿った内容である。質問と無関係な情報は含まれていない。 |
+| faithfulness | OK | 回答の「プロパティは全てString型で宣言すること（Bean Validationの要件）」について、ナレッジには「プロパティは全てString型で宣言する。詳細はバリデーションルールの設定方法を参照。」とあり、理由としてBean Validationのドキュメントへのリンクが明示されている。Bean Validationの要件として紐付けることはナレッジの記述と矛盾しない。その他のアクションメソッド実装・コンポーネント設定・ステータスコードなどもナレッジの内容と一致している。 |
 
 ### 参照事実（expected_facts）
 

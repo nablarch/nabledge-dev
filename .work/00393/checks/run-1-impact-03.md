@@ -64,8 +64,8 @@ throw new ApplicationException(
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する」は回答の「DB重複チェックは業務アクション側で、Bean Validationが完了した後に実装すること」に含まれている。参照事実「Bean Validation実行中のオブジェクトの値は安全である保証がない」は回答の「Bean Validation実行中のオブジェクトの値は「安全である保証がない」」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はBean ValidationのカスタムバリデータでDBアクセスして重複チェックすることの是非という質問に直接答えており、NGの結論・理由・正しい実装方針を提示している。末尾の「参照: libraries-bean-validation.json:s12...」という引用情報は出典メタデータであり的外れとは言えない。回答全体として質問者が知りたい内容に正面から答えている。 |
+| faithfulness | OK | ナレッジ(s12)には「データベースとの相関バリデーションは業務アクション側で実装すること」「Bean Validation実行中のオブジェクトの値は安全である保証がない」「SQLインジェクションなどの脆弱性の原因となるため、さけるべき実装」と明記されており、回答の説明はこれと一致している。ValidationUtil.createMessageForPropertyの使い方もs13のナレッジ内容と一致しており、矛盾は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

@@ -120,8 +120,8 @@ EntityList<Person> persons = findPersonsTransaction.getPersons();
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SimpleDbTransactionManagerを使って個別トランザクションを定義する」は回答の「`SimpleDbTransactionManager` を使って業務トランザクションとは独立した別トランザクションでSQLを実行できます」および根拠セクションのコンポーネント設定例・実装例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問（業務トランザクションとは別のトランザクションでSQLを実行し、ロールバックされても更新を残す方法）に直接答えている。JDBCラッパー用のSimpleDbTransactionExecutorとユニバーサルDAO用のUniversalDao.Transactionの両方を説明しており、質問の意図に沿っている。末尾の参照元記載は回答の本質とは無関係だが、的外れな情報ではなく全体として適切に質問に答えている。 |
+| faithfulness | OK | 回答のXML設定例（SimpleDbTransactionManagerのcomponent定義）とJava実装例（SimpleDbTransactionExecutorおよびUniversalDao.Transaction継承クラス）はいずれもナレッジMD（libraries-database.md、libraries-universal-dao.md）の記述と一致している。Domaアダプタに関する注意点もadapters-doma-adaptor.mdのs8から参照されており、ナレッジと矛盾する記述は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

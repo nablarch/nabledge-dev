@@ -122,8 +122,8 @@ mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main \
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「DatabaseRecordReaderでデータベースからデータを読み込む」は回答の表「データリーダ: `DatabaseRecordReader`（DBからレコードを1件ずつ読み込む）」およびコード例の`createReader`メソッドに含まれている。参照事実「BatchActionを継承したアクションクラスを実装する」は回答の表「アクションクラス: `BatchAction`を継承して`handle`メソッドに業務ロジックを実装」およびコード例`AggregationBatchAction extends BatchAction<InputEntity>`に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はDBからデータを読み込んで集計し別テーブルへ書き込む定期処理の構成という質問に直接答えており、DB to DBパターンの説明・ハンドラ構成・アクションクラス実装・起動方法・注意点（遅延ロード、集計設計、コミット間隔）はいずれも質問に関連する内容である。的外れな情報は含まれていない。 |
+| faithfulness | OK | DB to DBパターンの特徴（入力はSELECT文の結果セット、同一トランザクション下で障害時に不整合なし）はnablarch-patterns-Nablarchバッチ処理パターン.mdの記述と一致。都度起動バッチ（DB接続有り）の最小ハンドラ構成No.1〜9の並びと役割はnablarch-batch-architecture.mdの表と完全一致。DatabaseRecordReader・BatchAction継承・-requestPath起動方式もナレッジに記載があり矛盾は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

@@ -36,8 +36,8 @@ Nablarchのウェブアプリケーションアーキテクチャは、リクエ
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchにはWebSocketのサポートがないと回答している」は回答の「NablarchにはWebSocketのサポート機能は提供されていません」に明確に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はWebSocketを使う方法という質問に対して直接答えており（サポートなし、その根拠、代替手段）、的外れな内容は含まれていない。DeepEvalが参照記法の文字列が本文に残っている点を減点してNGとしたが、内容面では質問に対して有益な情報のみで構成されている。 |
+| faithfulness | OK | ナレッジファイルの「NablarchではServlet APIの使用を前提としている」「ハンドラキューに委譲する設計」という記述と回答の根拠部分は一致している。テーブルキュー+ポーリング方式の言及はナレッジに明記されていないが矛盾もなく、WebSocketサポートがないという主張もナレッジに記載がない事実で裏付けられる。 |
 
 ### 参照事実（expected_facts）
 

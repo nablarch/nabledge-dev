@@ -71,8 +71,8 @@ java nablarch.fw.launcher.Main \
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する」は回答の「`nablarch.fw.launcher.Main` クラスを `java` コマンドで直接起動します」に含まれている。参照事実「-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する」は回答の「`-requestPath` には「実行するアクションのクラス名/リクエストID」という書式で指定します」に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | NG | 質問は「起動方法」と「-requestPathの書き方」を問うているが、回答の「起動後の処理の流れ」セクション（DataReaderによる1件ずつの読み込み、DispatchHandlerによるアクション特定、アクションクラスによる業務ロジック実行、ループと終了コード変換）は内部動作の説明であり、質問が求めた起動コマンドと-requestPathの書式を超えた範囲の情報が含まれている。 |
+| faithfulness | OK | 回答の全記述がナレッジと一致している。起動コマンド形式・必須オプション3つ・欠けた場合の終了コード127はhandlers-main.mdと一致、-requestPathの書式「アクションのクラス名/リクエストID」とリクエストIDの識別子としての説明はnablarch-batch-architecture.mdと一致、処理の流れの各ステップもnablarch-batch-architecture.mdの記述と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

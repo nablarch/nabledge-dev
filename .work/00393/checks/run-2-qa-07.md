@@ -132,8 +132,8 @@ try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inpu
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む」は回答の「`ObjectMapperFactory.create()` が生成した `ObjectMapper` の `read()` を呼び出す」および②のコード例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はCSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込む方法に直接答えており、FormクラスへのアノテーションとDataReader実装とBatchAction実装という実装手順、及びObjectMapperを直接使う場合の例も示している。質問と無関係な情報は含まれていない。 |
+| faithfulness | OK | 回答の主要な記述はナレッジの内容と一致している。①ObjectMapperFactory.create()でObjectMapperを生成しread()を呼び出す点（ナレッジs7「データをJava Beansオブジェクトとして読み込む」）、②@Csv/@CsvFormatアノテーションでフォーマットを指定する点（ナレッジs15「CSVファイルのフォーマットを指定する」）、③外部から受け付けたデータのプロパティは全String型にする点（ナレッジs2のImportantノート）、④try-with-resourcesでリソース解放する点（ナレッジのImportantノート）はいずれもナレッジの記述と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

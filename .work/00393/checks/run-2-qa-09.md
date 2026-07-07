@@ -115,8 +115,8 @@ provider.setDate(segment, date);
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「BusinessDateUtilを使用して業務日付を取得する」は回答の「BusinessDateUtil.getDate()」に含まれている。参照事実「業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要」は回答の「業務日付はデータベースのテーブルで管理します」およびBasicBusinessDateProviderのXML設定例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問（OS日時と業務日付を分けて管理する方法）に直接答えており、BusinessDateUtilによる業務日付取得、SystemTimeUtilによるOS日時取得、BasicBusinessDateProviderの設定、締め処理後の業務日付更新まで、質問者が知りたい内容を網羅している。的外れな情報は含まれていない。 |
+| faithfulness | OK | 回答のXML設定例はナレッジのBasicBusinessDateProvider設定と一致している。業務日付更新のJavaコード（setDate）もナレッジと一致。システムプロパティによる日付上書き（-DBasicBusinessDateProvider.batch=20160317）もナレッジの例と一致。「ウェブアプリケーションのように1プロセスで全機能が動く場合はデータベースのレコードを直接更新する」という記述もナレッジのTipと矛盾しない。ナレッジの内容と矛盾する記述は確認されなかった。 |
 
 ### 参照事実（expected_facts）
 

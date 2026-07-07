@@ -121,8 +121,8 @@ LanguageAttributeInHttpUtil.keepLanguage(request, context, language);
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する」は回答の「①プロパティファイルの準備」でmessages.properties / messages_en.propertiesを用意し、「②コンポーネント定義」でPropertiesStringResourceLoaderのlocalesプロパティにenを設定する例として明示されている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「メッセージやラベルを日本語と英語で切り替えたい」という質問に対して、プロパティファイルの準備・コンポーネント定義・言語切り替え設定・JSPでのメッセージ出力と、多言語化に必要な手順を直接説明しており、質問と無関係な内容は含まれていない。 |
+| faithfulness | OK | DeepEvalは「defaultLocaleは任意設定なのに必須として誤記」としてNGとしたが、ナレッジ（libraries-message.md）には「必ずデフォルトの言語を設定すること」と明記されており、回答の「defaultLocaleは必ず明示的に設定すること」はナレッジの記述と完全に一致する。ナレッジとの矛盾はなく、DeepEvalの判定は誤りである。 |
 
 ### 参照事実（expected_facts）
 

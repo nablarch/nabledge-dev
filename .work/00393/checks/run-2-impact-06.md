@@ -126,8 +126,8 @@ nablarch.lettuce.clientType=simple   # simple / masterReplica / cluster
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能」は回答の「保存先: データベース上のテーブル」「ローリングメンテナンス等でサーバが停止しても復元可能」に含まれている。参照事実「HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する」は回答の「保存先: クライアントサイド（hiddenタグで画面間引き回し）」に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はAPサーバのスケールアウト時のセッションストア選択という質問に直接答えており、各ストア（DBストア・HIDDENストア・HTTPセッションストア・Redisストア）の特徴と選択基準を網羅的に説明している。的外れな情報は含まれていない。 |
+| faithfulness | NG | ナレッジ（libraries-session-store.md）の選択基準表では「認証情報の保持」の推奨ストアは「DBストア または HTTPセッションストア」と明記されている（415行目）。しかし回答の「選択基準まとめ」表では「認証情報の保持」の推奨を「DBストア または Redisストア」と記載しており、HTTPセッションストアをRedisストアに置き換えている点がナレッジの記述と矛盾する。 |
 
 ### 参照事実（expected_facts）
 

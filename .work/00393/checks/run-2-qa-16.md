@@ -60,8 +60,8 @@ SQL IDは、エンティティクラスのFQCNからパスを導出します。`
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「exists(Class, String)メソッドがある」は回答の「boolean result = UniversalDao.exists(User.class, "FIND_BY_NAME");」に含まれており、参照事実「exists(Class, String, Object)メソッドがある」は回答の「boolean result = UniversalDao.exists(User.class, "FIND_BY_NAME", condition);」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問（UniversalDao.existsでSQL_IDを指定してデータ存在チェックをする方法）に直接答えており、2種類のオーバーロード、コード例、引数説明、SQLファイルパスの導出方法、#区切り指定、内部変換の注意点まで、すべて質問に関連する内容のみで構成されている。的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答の各主要事実はナレッジMDと一致している。2種類のオーバーロード（exists(Class,String)とexists(Class,String,Object)）はJavadocに記載済み。SQLファイルパスの導出ルール（sample.entity.User → sample/entity/User.sql）はlibraries-universal-dao.md 117-118行と一致。#区切り指定の説明もlibraries-universal-dao.md 119-126行と一致。「検索用のSQLを内部で変換して件数チェックを行う」はJavadoc 337行「検索用のSQLを変換して使用する」と一致。ナレッジとの矛盾は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

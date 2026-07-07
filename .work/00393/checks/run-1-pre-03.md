@@ -111,8 +111,8 @@ public HttpResponse list(HttpRequest request, ExecutionContext context) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる」は回答の「SQLファイル（例: Project.sql）にSQL IDを定義し」「findAllBySqlFile(Project.class, "SEARCH_PROJECT", condition)」「Project.class, User.classへのマッピング」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | NG | 回答の注意点に「batchUpdateでは楽観的ロックは使用できない」という記述が含まれているが、これは検索に関する質問と無関係な更新操作に関する内容であり、質問者が知りたい検索方法への回答として的外れである。 |
+| faithfulness | OK | findAllBySqlFileの使い方、遅延ロード（defer()とtry-with-resources）、ページング（page()とper()）、DeferredEntityList#closeの必要性など、回答の全ての内容がナレッジMDの記述と一致しており、矛盾は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

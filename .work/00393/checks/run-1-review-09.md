@@ -128,8 +128,8 @@ Nablarchのカスタムタグは一部でJavaScriptを出力するため、nonce
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする」は回答の「CSPはセキュアハンドラ（SecureHandler）にContentSecurityPolicyHeaderを追加して設定します。JSPカスタムタグを使用している場合は、nonceを生成するnonce方式が推奨パターン」および各セクションの詳細説明に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はCSPを有効にする方法（固定ヘッダ・nonce方式・report-onlyモード）を網羅的に説明しており、質問「NablarchのWeb画面でCSPを設定するにはどうすればいい？」に直接答えている。的外れな情報は含まれていない。 |
+| faithfulness | OK | 回答の注意点「セキュアハンドラが設定したレスポンスヘッダをHTTPレスポンスハンドラがServlet APIに書き込む順序のため」は、ナレッジの「本ハンドラで設定したレスポンスヘッダを、HTTPレスポンスハンドラがServlet APIのレスポンスオブジェクトに設定するため」と同じ方向性を説明しており矛盾しない。DeepEvalが「方向が逆」と指摘したのは誤りで、回答全体を通じてナレッジと矛盾する記述は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

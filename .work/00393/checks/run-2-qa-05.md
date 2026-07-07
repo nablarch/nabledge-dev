@@ -102,8 +102,8 @@ JSONのボディ変換には `Jackson2BodyConverter` が必要です。Jersey環
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「Formクラスでクライアントから送信された値を受け付ける」は回答の「クライアントから受け取るJSONをマッピングするフォームを作成します」およびProjectFormコード例に含まれている。参照事実「プロパティは全てString型で宣言する」は回答の注意点「フォームのプロパティは全て `String` 型で宣言すること」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答全体が「REST APIでJSONを受け取りDBに登録する」という質問に直接答えており、フォームクラス作成・アクション実装・コンポーネント設定・DAO設定・注意点いずれも質問の目的に沿った情報。DeepEvalが「minor irrelevant」と指摘したString型プロパティの制約もNablarch固有の必須要件であり、質問に答える上で必要な情報。的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答の主要な主張はすべてナレッジMDと一致している。`@Consumes(MediaType.APPLICATION_JSON)`・`@Valid`・`UniversalDao.insert(BeanUtil.createAndCopy(...))`・ステータスコード201はrestful-web-service-getting-started-create.mdと完全一致。Content-TypeがConsumes設定と異なる場合に415を返す点はhandlers-body-convert-handler.mdと一致。プロパティはString型で宣言するという注意点もナレッジに記載あり。矛盾する記述はない。 |
 
 ### 参照事実（expected_facts）
 

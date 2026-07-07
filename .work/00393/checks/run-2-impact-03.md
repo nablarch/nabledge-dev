@@ -56,8 +56,8 @@ public HttpResponse create(JaxRsHttpRequest request, ExecutionContext context) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する」は回答の「DB検索による重複チェックは**業務アクション側**で実装してください」に含まれている。参照事実「Bean Validation実行中のオブジェクトの値は安全である保証がない」は回答の引用部分「Bean Validation実行中のオブジェクトの値は、安全である保証がない。」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はBean Validationのカスタムバリデータ内でのDB重複チェックについての質問に直接答えており、推奨しない理由・推奨する実装パターン・コード例をすべて質問に関連した内容で構成している。的外れな情報は含まれていない。 |
+| faithfulness | OK | 回答が引用するナレッジの内容「データベースとの相関バリデーションは業務アクション側で実装すること」「Bean Validation実行中のオブジェクトの値は安全である保証がない」「SQLインジェクションなどの脆弱性の原因となる」はすべてlibaries-bean-validation.md(s12)の記述と一致している。また`ValidationUtil#createMessageForProperty`と`ApplicationException`の使用例もs13の記述と一致しており、矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

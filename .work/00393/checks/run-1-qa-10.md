@@ -102,8 +102,8 @@ SqlResultSet result = statement.retrieve(entity);
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される」は回答の「$if(プロパティ名) {SQL条件}」構文説明および除外条件テーブル「String: null または空文字列」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問「入力がある項目だけ条件に含める方法」に直接答えており、$if構文の説明・除外条件テーブル・制約・実装例はすべて質問に関連する内容で構成されている。的外れな情報は含まれていない。 |
+| faithfulness | OK | DeepEvalはStringの空文字列除外条件が省略されているとしてNGと判定したが、回答の除外条件テーブルには「String: null または空文字列」と明記されており、ナレッジの「上記以外の型の場合は、プロパティ値がnullや空文字列(Stringオブジェクトの場合)」と一致している。回答内容はナレッジと矛盾しておらず、DeepEvalのNG判定は誤りである。 |
 
 ### 参照事実（expected_facts）
 

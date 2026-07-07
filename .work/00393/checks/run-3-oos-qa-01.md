@@ -37,8 +37,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchにはWebSocketのサポートがないと回答している」は回答の「NablarchにはWebSocketのサポートは提供されていません」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「NablarchでWebSocketを使う方法はあるか」という質問に対して直接答えており、OSSを使用しない方針からWebSocketサポートがない旨を説明している。DeepEvalがNG判定した「参照: about/about-nablarch/about-nablarch-policy.json:s6」はnabledgeワークフロー上の出典表記であり、回答の主旨とは無関係な情報ではない。注意点として代替手段（HTTPポーリング、SSE）に言及しているが、これはWebSocketが使えない場合の文脈に沿った補足であり的外れではない。回答全体として質問に直接答えており、的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答が引用しているOSS方針「Nablarchのプロダクションコードは…OSSを使用していない。OSSを使用することでメリットがあるものは、アダプタとしてOSSを使用できるコンポーネントを提供している」はナレッジMD（about-nablarch-policy.md #OSSは使用しない）の記述と完全に一致している。WebSocket用アダプタが存在しないという主張もナレッジの記述と矛盾しない。代替手段についての言及は「知識ファイルの対象範囲外」と明示されており、ナレッジに存在しない情報を事実として提示していない。矛盾は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

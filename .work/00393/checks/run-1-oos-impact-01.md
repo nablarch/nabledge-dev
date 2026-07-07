@@ -94,8 +94,8 @@ public void login(ExecutionContext context, LoginRequestForm form) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している」は回答の「NablarchにはOAuth2/OpenID Connectの認証機構は組み込まれていない」に明確に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問（NablarchにOAuth2/OIDC認証の組み込み機能があるか）に直接答えており、「組み込まれていない」という結論を明示した上で、代替として提供されているOIDCサンプルの実装手順を説明している。質問者はOIDC認証の実装方法を知りたいため、サンプルの詳細（依存ライブラリ、コンポーネント定義、実装コード）も質問の意図に沿っており、的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答の全内容がナレッジと一致している。「フレームワークとしては提供していない」はweb-application-feature-details.md s13の記述と一致。OIDCサンプルの概要（Cognito/ADB2C対応）はbiz-samples-12.md s2と一致。依存ライブラリ（java-jwt 4.4.0, jwks-rsa 0.22.1）はs11と一致。コンポーネント定義XMLはs13と一致。ログインJavaコードはs16と一致。「2024年9月時点の仕様に基づく」注記はナレッジのTipと一致。バージョン管理対象ファイルへの秘匿情報記載回避の推奨はs12のTipと一致。CSRF対策の注記はs16のTipと一致。矛盾は一切見当たらない。 |
 
 ### 参照事実（expected_facts）
 

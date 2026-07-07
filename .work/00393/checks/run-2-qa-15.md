@@ -65,8 +65,8 @@ SecureHandlerがデフォルトで設定するXSS関連ヘッダ：`X-XSS-Protec
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能」は回答の結論「カスタムタグを一貫して使用する限りXSSの根本的解決策『全要素エスケープ（IPA 5-(i)）』に対応できます」に明確に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「XSSの対策はNablarchでどこまで対応できるか」「カスタムタグを使えばサニタイジングされるのか」という質問の両方に直接答えており、IPA XSSチェックリスト10項目に対するNablarchの対応可否を網羅的に示している。的外れな内容は含まれていない。 |
+| faithfulness | OK | カスタムタグのHTMLエスケープ機能・変換内容・EL式の非エスケープ・JavaScriptエスケープ未提供・SecureHandlerのデフォルトヘッダ・CSP対応の各記述が、libraries-tag.mdおよびhandlers-secure-handler.mdの記述と一致しており、矛盾する内容は確認されない。 |
 
 ### 参照事実（expected_facts）
 

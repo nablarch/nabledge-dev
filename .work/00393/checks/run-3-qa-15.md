@@ -86,8 +86,8 @@ NablarchはJSPで使用を許可する構文・タグを規定し、カスタム
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能」は回答冒頭の「NablarchのカスタムタグはHTMLエスケープ（サニタイジング）を自動で行うため、XSS対策の根本的解決（IPA基準 5-(i)）が可能です」に明確に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はXSS対策のNablarchでのカバー範囲とカスタムタグのサニタイジングについて直接答えており、HTMLエスケープ範囲、カバー外の範囲（JavaScriptエスケープ等）、IPA対策番号別対応表、JSP静的解析ツール、CSP対応のすべてが質問に関連する内容である。的外れな情報は含まれていない。 |
+| faithfulness | OK | 回答で「rawWriteタグ・prettyPrintタグ: エスケープせずに出力します」とまとめているが、ナレッジのlibraries-tag.mdでは両タグとも「HTMLエスケープせずに値を出力する」セクションに記載されており、prettyPrintも「装飾系のHTMLタグをエスケープせずに出力するカスタムタグ」と説明されている。両者をまとめて「エスケープせずに出力」と表現することはナレッジの記述と矛盾しない。DeepEvalのNG判定（スコア0.94）は「prettyPrintとrawWriteを同一視するのは部分的な誤表現」としているが、ナレッジ上の記述を確認するとこれは誤検知（FP）である。 |
 
 ### 参照事実（expected_facts）
 

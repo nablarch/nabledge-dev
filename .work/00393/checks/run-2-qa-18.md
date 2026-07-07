@@ -63,8 +63,8 @@ public static Object getProperty(Object bean, String propertyName, Class<?> type
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「getProperty(Object bean, String propertyName)でJavaBeansオブジェクトまたはレコードから指定したプロパティの値を取得する」は回答の「`BeanUtil.getProperty(user, "id")` のコード例」および「BeanUtil.getProperty はレコードクラスにも対応しています」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「BeanUtilのgetPropertyでBeanのプロパティ値を取得する方法」という質問に直接答えており、基本的な使い方・型変換版・ネスト不可の注意点・例外・レコード対応はすべて質問に関連している。的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答の全内容がナレッジと一致している。getter経由での取得・戻り値Object型はlibraries-bean-util.mdのコード例と一致。トップレベルのみ指定可能でネストした指定が動作しない点・BeansExceptionがスローされる点・第3引数で型変換できる点はjavadoc-nablarch-core-beans-BeanUtil.mdのgetPropertyメソッド記述と一致。レコードクラスにも対応している点も「指定したJavaBeansオブジェクトもしくはレコードから」という記述と一致する。矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

@@ -113,8 +113,8 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する」は回答の「後続ハンドラ（アクションクラスなど）で例外が発生した際に、エラーレスポンスとログを処理する中心的なハンドラ」および「errorResponseBuilder プロパティに設定された ErrorResponseBuilder が生成を担当する」に含まれている。参照事実「JaxRsErrorLogWriterが例外に応じたログ出力を行う」は回答の「errorLogWriter プロパティに設定された JaxRsErrorLogWriter がログ出力を担当する」に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はエラー発生時のエラーレスポンス生成とログ出力の仕組みという質問に直接答えており、JaxRsResponseHandler・GlobalErrorHandler・ErrorResponseBuilder・JaxRsErrorLogWriterの役割分担を説明している。質問と無関係な内容は含まれていない。 |
+| faithfulness | OK | 回答のVirtualMachineErrorテーブルはStackOverflowError/OutOfMemoryErrorを別行として分離しており、VirtualMachineError行はそれら以外のサブクラス（FATAL＋リスロー）を指す構造になっている。これはナレッジのTip「StackOverflowError及びOutOfMemoryError以外が対象となる」と整合している。その他のJaxRsResponseHandlerおよびGlobalErrorHandlerの記述もナレッジの内容と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

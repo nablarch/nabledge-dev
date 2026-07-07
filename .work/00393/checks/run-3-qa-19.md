@@ -105,8 +105,8 @@ public class ProjectAction {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「JSONのボディ変換はJackson2BodyConverterが担当する」は回答の「Jerseyの場合、`JerseyJaxRsHandlerListFactory` を使うことで `Jackson2BodyConverter` が自動的に設定される」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はJSON受信からDB登録までの全工程（Formクラス定義、アクションメソッド実装、ハンドラ構成、DAO設定）を直接説明しており、質問に対して的外れな内容は含まれていない。RESTEasyについての注記も同種の実装選択肢として適切な補足情報である。 |
+| faithfulness | OK | 回答の主要な内容（ProjectFormのString型プロパティ、@Consumes/@Validアノテーション、UniversalDao.insert+BeanUtil.createAndCopy、最小ハンドラ構成のNo.3〜7、JerseyJaxRsHandlerListFactoryによるJackson2BodyConverterの自動設定）はすべてナレッジMD（s1: restful-web-service-getting-started-create.md、s4: restful-web-service-architecture.md）の記述と一致しており、矛盾は見られない。 |
 
 ### 参照事実（expected_facts）
 

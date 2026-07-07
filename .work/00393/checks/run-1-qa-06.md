@@ -87,8 +87,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する」は回答の「確認画面のJSP（これだけで実装完了）: `<n:confirmationPage path="./input.jsp" />`」およびタグ説明表の `n:confirmationPage` 行に明確に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問「入力画面と確認画面のJSPを共通化して実装を減らす方法」に直接答えており、n:confirmationPage、n:forInputPage、n:forConfirmationPageの3タグによる共通化手法をコード例・表形式で説明している。的外れな内容は含まれていない。 |
+| faithfulness | OK | DeepEvalは「ignoreConfirmationタグが省略されている」としてNGを付けたが、回答の表（「各タグの役割」セクション）にn:ignoreConfirmationが4行目として明示されており、説明も「特定部分で確認画面向け表示を無効化したい場合に使用（例：確認画面でもチェック欄を表示したいとき）」とナレッジの記述と一致している。回答はナレッジの内容と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

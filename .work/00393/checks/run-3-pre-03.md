@@ -98,8 +98,8 @@ try (DeferredEntityList<User> users
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | NG | 参照事実「検索結果はBeanにマッピングされる」が回答に明示的に含まれていない。回答②〜⑤はSQLファイル・SQL ID指定の検索を説明しており、コード例で `List<Project>` や `EntityList<Project>` 等の型付き変数に結果を代入しているが、「検索結果をBean（Entity、Form、DTO）にマッピングして取得できる」という事実を文章として明示していない。ナレッジ s3 には「ユニバーサルDAOでは、検索結果をBean（Entity、Form、DTO）にマッピングして取得できる」と明記されているが、その内容が回答本文から欠落している。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | NG | 回答の注意点の最後の箇条書き「UniversalDAOは簡易O/Rマッパーであり、主キー以外の条件での更新・削除は対応していません（その場合はデータベースアクセス（JDBCラッパー）を使用）」は、検索方法を聞く質問に対して更新・削除の制限を述べており、質問と無関係な情報が含まれている。 |
+| faithfulness | OK | 回答の全内容がナレッジMDと一致している。主キー検索・SQLファイル検索・条件付き検索・ページング・遅延ロード・トランザクション警告・更新削除制限の注記、いずれもナレッジに記載された内容と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

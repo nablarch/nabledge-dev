@@ -106,8 +106,8 @@ DomaConfig.singleton()
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SimpleDbTransactionManagerを使って個別トランザクションを定義する」は回答の「コンポーネント設定ファイルに `SimpleDbTransactionManager` を定義します」および結論文に明示されており、XMLコード例も付随している |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「業務トランザクションとは別のトランザクションでSQLを実行する方法」という質問に直接答えており、JDBCラッパー・ユニバーサルDAO・Domaアダプタの3つの方法を具体的なコード例とともに説明している。質問と無関係な情報は含まれていない。 |
+| faithfulness | OK | JDBCラッパーのXML設定例・Javaコード例はlibraries-database.mdのs29セクションと一致。ユニバーサルDAOの実装例（FindPersonsTransactionクラス）はlibraries-universal-dao.mdのs20セクションと一致。注意点の「execute()メソッドが正常終了するとコミット、例外やエラーが送出された場合はロールバック」もナレッジの記述と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

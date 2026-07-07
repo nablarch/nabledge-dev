@@ -113,8 +113,8 @@ java nablarch.fw.launcher.Main \
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「DatabaseRecordReaderでデータベースからデータを読み込む」は回答の全体構成表・コード例（`createReader`メソッド）・注意点に含まれている。参照事実「BatchActionを継承したアクションクラスを実装する」は回答の全体構成表・コード例（`AggregationBatchAction extends BatchAction<SqlRow>`）に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はDBからデータを読み込んで集計し別テーブルに書き込む定期処理という質問に直接答えており、都度起動バッチの選択理由・ハンドラ構成・業務アクション実装例・起動方法がすべて質問に関連する内容である。的外れな情報は含まれていない。 |
+| faithfulness | OK | 回答のハンドラ構成（1〜9番）はナレッジの「都度起動バッチ（DB接続有り）の最小ハンドラ構成」テーブルと一致している。DatabaseRecordReaderはナレッジの「使用するデータリーダ」セクションに記載されており、BatchActionは「使用するアクション」セクションに記載されている。ナレッジと矛盾する記述は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

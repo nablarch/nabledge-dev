@@ -65,8 +65,8 @@ public static Object getProperty(Object bean, String propertyName, Class<?> type
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | NG | 参照事実「getProperty(Object bean, String propertyName)でJavaBeansオブジェクトまたはレコードから指定したプロパティの値を取得する」のうち「レコードからも取得可能」という点が回答に含まれていない。回答はBeanのプロパティ取得のみ説明し、getPropertyがレコードにも対応していることを言及していない |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | NG | 回答の注意点セクションに「BeanUtil.setProperty や BeanUtil.copy の引数にレコードを渡した場合は実行時例外が発生する」という記述が含まれているが、質問は getProperty の使用方法についてであり、setProperty や copy メソッドの挙動は質問と無関係な情報である。 |
+| faithfulness | OK | 回答にある「BeanUtil.setProperty や BeanUtil.copy の引数にレコードを渡した場合は実行時例外が発生する」という記述は、libraries-bean-util.md の「BeanUtilでレコードを使用する」セクションに「BeanUtil.setProperty や BeanUtil.copy といったメソッドの引数に、変更対象のオブジェクトとしてレコードを渡した場合は実行時例外が発生する」と明記されており、ナレッジの内容と一致している。DeepEvalの faithfulness NG 判定は誤りで、ナレッジとの矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

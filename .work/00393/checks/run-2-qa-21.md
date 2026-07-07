@@ -110,8 +110,8 @@ nablarch.core.validation.ee.Required.message=入力してください。
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる」は回答の「リソースクラスのメソッドに `@Valid` アノテーションを付与することで、ハンドラが自動的にBean Validationを実行します。エラー時は `ApplicationException` が送出されます。」に含まれており、参照事実「ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する」は回答の②節および `SampleErrorResponseBuilder` のコード例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問（入力チェックエラー時にエラーメッセージをユーザーに返す方法）に直接答えており、@Validアノテーション、ErrorResponseBuilder継承実装、エラーメッセージのプロパティ定義という3つの要素はすべて質問の回答に必要な内容です。「FormクラスのプロパティはすべてString型として定義すること」という注意点はやや間接的ですが、全体として的外れな内容はなく高い関連性を保っています。 |
+| faithfulness | OK | 回答のコード例・設定例はナレッジと完全一致しています。@Validアノテーションの使い方はhandlers-jaxrs-bean-validation-handler.mdのコード例と一致、SampleErrorResponseBuilderの実装例はhandlers-jaxrs-response-handler.mdのコード例と一致、XML設定例も一致、「BodyConvertHandlerより後ろに設定すること」はナレッジの制約セクションと一致、「ErrorResponseBuilderで例外が発生するとWARNログを出してステータス500を返す」はナレッジのImportantノートと一致しており、矛盾する内容はありません。 |
 
 ### 参照事実（expected_facts）
 

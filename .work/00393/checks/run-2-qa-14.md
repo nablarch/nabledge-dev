@@ -182,8 +182,8 @@ JBeretと関連ライブラリの更新が複雑：
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある」は回答の「Jakarta EE 10に対応したアプリケーションサーバでなければ動作しない」に含まれている。参照事実「Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている」は回答のセクション3・5・11で詳細に説明されている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「Nablarch 5→6のJakarta EE 10対応でアプリケーションに影響がある変更」という質問に直接答えており、BOM変更・依存関係の置き換え・名前空間変更・XMLスキーマ変更・タグライブラリ変更・Java 17移行・テスト環境変更など、移行時に必要な変更点を網羅的に説明している。的外れな情報は含まれていない。 |
+| faithfulness | OK | 回答の各セクションはナレッジMD（migration-migration.md）の内容と一致している。BOMバージョン変更（6u2）、Jakarta EE BOMの読み込み推奨、依存関係の具体的な変更例（javax.servlet → jakarta.servlet 等）、Bean Validationのバージョン（5.3.6.Final → 8.0.0.Final）、javax名前空間の変更手順、XMLスキーマの変更例、JSPタグライブラリのネームスペース変更例など、いずれもナレッジの記述と矛盾しない。「6u3以降へのバージョンアップでは追加手順が必要」という注意点もナレッジのImportantブロックと一致している。 |
 
 ### 参照事実（expected_facts）
 

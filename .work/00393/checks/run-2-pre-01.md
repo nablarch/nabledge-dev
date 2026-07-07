@@ -66,8 +66,8 @@ java nablarch.fw.launcher.Main \
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する」は回答の「Javaの`main`クラス（`nablarch.fw.launcher.Main`）を`java`コマンドで直接起動します」に含まれている。参照事実「-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する」は回答の「-requestPath の書式」節および具体例に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問（バッチアプリケーションの起動方法と-requestPathの書き方）に直接答えている。DeepEvalがNG理由として挙げた「-userIdのセッションコンテキスト変数詳細」と「終了コード127」は、知識ドキュメントの「アプリケーションを起動する」セクションに含まれる起動説明の一部であり、必須オプションを説明する文脈で書かれているため質問と無関係ではない。的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答の全ての事実がナレッジと一致している。nablarch.fw.launcher.Mainクラス名、javaコマンド直接起動、3つの必須オプション（-diConfig/-requestPath/-userId）、コマンド例、-requestPathの書式（「アクションのクラス名/リクエストID」）と具体例、-userIdのセッションコンテキスト変数user.id、欠落時の終了コード127 — すべてhandlers-main.mdおよびnablarch-batch-architecture.mdの記述と矛盾なく一致している。 |
 
 ### 参照事実（expected_facts）
 

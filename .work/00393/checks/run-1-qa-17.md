@@ -58,8 +58,8 @@ Component2 component2 = SystemRepository.get("component.component2");
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | NG | 参照事実「get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する」が回答に含まれていない。回答はコンポーネント名の指定方法やネスト取得を説明しているが、型パラメータ・型安全取得については一切言及がない |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「SystemRepositoryから登録済みコンポーネントを取得する方法」という質問に直接答えており、SystemRepository.get()の使い方、コード例、シングルトンに関する注意点、ネストしたコンポーネントの取得方法がすべて質問に関連する内容である。無関係な情報は含まれていない。 |
+| faithfulness | OK | 回答のXML・Javaコード例はナレッジ(s25, lines 1010-1027)と完全に一致する。シングルトンに関する注意点はナレッジのシングルトン説明と一致し、DIコンテナ設定はServletContextListenerや独立型アプリ起動クラスが自動的に行う旨もナレッジ(lines 991-997)と一致する。ネストコンポーネントを「親名.子名」形式で取得できる記述もナレッジのTip(lines 167-169)と一致する。矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

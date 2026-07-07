@@ -41,8 +41,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchにはWebSocketのサポートがないと回答している」は回答の「NablarchにはWebSocketをサポートする専用のハンドラ・アダプタは提供されておらず」および「WebSocket専用のアダプタは現時点で提供されていません」に明確に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答全体がWebSocketをNablarchで使えるかという質問に直接答えており、的外れな内容は含まれていない。非同期処理パターンの説明はWebSocketの代替手段としての文脈で述べられており、OSSポリシーの言及もWebSocket専用アダプタが提供されない理由の根拠として示されている。いずれも質問への回答に必要な情報である。 |
+| faithfulness | OK | 回答は「プロダクションコードはOSSを使用しない」と述べつつ「アダプタとしてOSSコンポーネントは利用可能」と両面を正しく記述しており、ナレッジ（about-nablarch-policy.md）の記述「Nablarchのプロダクションコードは...OSSを使用していない」かつ「アダプタとしてOSSを使用できるコンポーネントを提供している」と矛盾しない。DeepEvalがNGとした理由（OSSポリシーを一面的に表現している）は、回答がアダプタによるOSS利用可能の旨を明示しているため根拠を欠いており、FPと判断する。 |
 
 ### 参照事実（expected_facts）
 

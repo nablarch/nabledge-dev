@@ -103,8 +103,8 @@ input.nablarch_error, select.nablarch_error {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「エラー表示タグでリクエストスコープのエラーメッセージを表示する」は、回答のStep 2「フレームワークがエラーメッセージをリクエストスコープに設定する」およびStep 3のJSPカスタムタグ（`<n:error>`、`<n:errors>`）・Thymeleaf（`${errors.getMessage(...)}`等）での表示例に含まれている。DeepEvalがNGとした根拠（回答が包括的すぎる）は事実の欠如を意味せず、判定は誤り。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「入力チェックエラー時にエラーメッセージをユーザーに返す方法」という質問に対して、@InjectForm/@OnErrorの設定、フレームワークによるリクエストスコープへの格納、ThymeleafとJSPでの表示方法をすべて直接説明しており、的外れな内容は含まれていない。 |
+| faithfulness | OK | 参照ナレッジセクションが「（なし）」であり、比較すべきナレッジMDが存在しない。DeepEvalも1.0（OK）と判定しており、回答内容に矛盾を示す根拠がない。 |
 
 ### 参照事実（expected_facts）
 

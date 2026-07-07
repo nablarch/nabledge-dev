@@ -125,8 +125,8 @@ java nablarch.fw.launcher.Main \
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「DatabaseRecordReaderでデータベースからデータを読み込む」は回答の「DatabaseRecordReader を使うと、指定したSQLの結果を1件ずつ BatchAction に渡せます」および createReader メソッドのコード例に含まれている。参照事実「BatchActionを継承したアクションクラスを実装する」は「BatchAction を継承し、handle メソッドに集計ロジックと結果テーブルへの書き込みを実装します」および `SummaryBatchAction extends BatchAction<SummaryInput>` のコード例に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理の構成」という質問に直接答えており、都度起動バッチ＋DB to DBパターン、DatabaseRecordReader、BatchAction、UniversalDaoの使い方、起動コマンド例まで一貫して質問の意図に沿った情報のみを提供している。的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答の主要な主張はすべてナレッジMDの記述と一致している。DB to DBパターンの説明（入力はSELECT結果セット、1レコードの処理中の更新は全て同一トランザクション下）はnablarch-patterns-Nablarchバッチ処理パターン.mdと一致。UniversalDao.defer()使用時のカーソルクローズの注意点（「カーソルオープン中にトランザクション制御が行われるとカーソルがクローズされる」）はlibraries-universal-dao.mdと一致。batchUpdateでは排他制御が行われないという注意点も「batchUpdate を使用した、一括更新処理では排他制御処理を行わない」というナレッジの記述と一致している。 |
 
 ### 参照事実（expected_facts）
 

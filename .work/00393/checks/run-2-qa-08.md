@@ -138,8 +138,8 @@ public class I18nHandler implements HttpRequestHandler {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する」は回答のセクション1「メッセージプロパティファイルの多言語化」にて、messages_en.properties等の言語別ファイル作成とPropertiesStringResourceLoaderのlocalesプロパティへのサポート言語設定として明確に説明されている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「メッセージやラベルを日本語と英語で切り替えたい」という質問に直接答えており、(1)言語別プロパティファイルの作成、(2)ThreadContextへの言語設定、(3)クッキーを使ったユーザ言語切り替えという3段階で多言語化の方法を説明している。質問と無関係な内容は含まれていない。 |
+| faithfulness | OK | 回答が「defaultLocaleを必ず設定してください」と述べているのはナレッジMDの記述と一致している。ナレッジ（libraries-message.md 127行目）には「Locale.getDefault().getLanguage()の値はOSの設定によって変化するため...障害の原因になる可能性がある。必ずデフォルトの言語を設定すること。」と明記されており、回答はこれを忠実に反映している。DeepEvalが「設定はoptionalなのにmustと書いている」とNGにしたのはナレッジの読み取り誤りであり、実際にはナレッジ自体が「必ず設定すること」と強制的な表現を使っている。矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

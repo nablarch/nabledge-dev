@@ -51,8 +51,8 @@ try (DeferredEntityList<User> users
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「UniversalDao.deferメソッドで遅延ロードを使用する」は回答の「`UniversalDao.defer()` メソッドを使用して遅延ロードを有効にする」に含まれている。参照事実「DeferredEntityListのcloseメソッドを呼び出す必要がある」は回答の「`DeferredEntityList#close()` を必ず呼び出すこと」に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | NG | 回答の末尾に「参照: libraries-universal-dao.json:s9」というシステム内部のメタデータ参照が含まれており、これはユーザーの質問（大量データを1件ずつ読み込む方法）に対して無関係な内部情報である。実質的な説明内容（UniversalDao.defer()の使い方、DeferredEntityList、注意点）はすべて質問に直接回答しているが、この内部参照タグが不要な情報として混入している。 |
+| faithfulness | OK | ナレッジMD（libraries-universal-dao.md）の「検索結果を遅延ロードする」セクションと照合すると、(1)UniversalDao.defer()を検索直前に呼び出す、(2)内部でサーバサイドカーソルを使用、(3)DeferredEntityList#close()を必ず呼び出す、(4)try-with-resourcesの使用例、(5)トランザクション制御中のカーソルクローズへの注意、いずれも回答の内容がナレッジの記述と一致しており矛盾はない。コードサンプルもナレッジのものと同一である。 |
 
 ### 参照事実（expected_facts）
 

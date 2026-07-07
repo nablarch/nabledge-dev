@@ -142,8 +142,8 @@ Bean Validationを使う場合は `validationTestStrategy` に `BeanValidationTe
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「EntityTestSupportを継承してテストクラスを作成する」は回答の`public class UserRegistrationFormTest extends EntityTestSupport`（コード例）および「nablarch.test.core.db.EntityTestSupportを継承する」に含まれている。参照事実「テストデータはExcelファイルに記述する」は回答の「テストデータはExcelファイルで定義する」に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はテストクラスの作り方とテストデータの準備方法という質問の両部分に直接答えており、テストクラス構造・Excelデータ形式・コンポーネント設定のいずれも質問に対して必要な内容である。質問と無関係な情報は含まれていない。 |
+| faithfulness | OK | 回答の主要な主張はすべてナレッジMDと一致している。テストクラスの3条件（同パッケージ・クラス名・EntityTestSupport継承）、4つのスーパークラスメソッド、Excelファイルの配置ルール（同ディレクトリ・同名・拡張子のみ異なる）、Excelカラム構成、XMLコンポーネント設定例、静的マスタデータを個別定義しない旨、BeanValidationTestStrategyを固定指定する旨、いずれもナレッジの記述と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

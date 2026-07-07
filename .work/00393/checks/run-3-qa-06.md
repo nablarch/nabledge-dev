@@ -82,8 +82,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する」は回答の「confirmationPageタグを確認画面のJSPに1行記述するだけで入力画面のJSPを確認画面として流用でき」および `<n:confirmationPage path="./input.jsp" />` のコード例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「入力画面と確認画面のJSPを共通化する方法」という質問に直接答えており、confirmationPageタグの使い方、コード例、関連タグ一覧表、注意点の全てが質問に関連する内容である。DeepEvalが指摘した「参照: libraries-tag.json:s23, libraries-tag.json:s3」という末尾の内部参照メモは回答の本質を損なうものではなく、的外れな内容とは言えない。 |
+| faithfulness | OK | confirmationPageタグの説明、forInputPage/forConfirmationPageタグの説明、ignoreConfirmationタグの説明、plainHiddenタグとhiddenStoreタグが入力・確認画面ともに出力される旨は全てナレッジ(libraries-tag.md)の記述と一致している。「入力項目タグは確認画面では自動的に読み取り専用表示に切り替わる」という記述も、ナレッジが「確認画面向けを出力できる」かつignoreConfirmationタグが「確認画面向けの表示を無効化」するために存在することと矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

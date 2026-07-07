@@ -79,8 +79,8 @@ SessionUtil.delete(ctx, "project");
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う」は回答の結論「許容しない場合はDBストア、許容する場合はHIDDENストアを使用します」に明示されている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「複数タブでの画面操作を許容するか否か」という使い分け基準を明示し、各ストアの特徴・JSP実装例・Java実装例・FormよりEntityを格納すべき理由まで説明している。質問は「DBストアとHIDDENストアの使い分け」を問うており、回答の全内容が直接その疑問に答えている。的外れな情報は含まれていない。 |
+| faithfulness | OK | DBストアの「サーバ停止時もセッション復元可能」「複数スレッド処理時は後勝ち」、HIDDENストアの「クライアントサイドのhiddenタグで引き回す」「複数タブ許容」「各スレッドに紐付けて保存」は、いずれもlibraries-session-store.mdの記述と一致している。JSPコード例・FormよりEntityを格納する推奨とその理由もナレッジの記述と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

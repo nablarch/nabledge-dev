@@ -69,8 +69,8 @@ private void checkDuplicate(Person person) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する」は回答の「DB重複チェックは、Bean Validation完了後に業務アクション側で実装してください」に含まれている。参照事実「Bean Validation実行中のオブジェクトの値は安全である保証がない」は回答の「Bean Validation実行中はオブジェクトの値が安全である保証がないためです」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「Bean Validationのカスタムバリデータ内でDB検索（重複チェック）を行う実装でよいか」という質問に直接答えている。禁止の根拠、正しい実装手順（Bean Validation完了後に業務アクション側でチェック）、コード例まで提示しており、的外れな内容は含まれていない。 |
+| faithfulness | OK | ナレッジ（libraries-bean-validation.md「データベースとの相関バリデーションを行う」節）では「データベースとの相関バリデーションは…業務アクション側で実装すること」「Bean Validation実行中のオブジェクトの値は、安全である保証がない」「SQLインジェクションなどの脆弱性の原因」と記述されており、回答の主張と一致している。ValidationUtil#createMessageForPropertyの使い方も「特定の項目に紐づくバリデーションエラーのメッセージを作りたい」節の記述と一致している。回答が「禁止」と強い表現を使っている点はナレッジの「さけるべき実装」より強調されているが、内容的な矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

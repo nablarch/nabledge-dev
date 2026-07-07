@@ -111,8 +111,8 @@ java -DBasicBusinessDateProvider.batch=20160317 Main
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「BusinessDateUtilを使用して業務日付を取得する」は回答の「`BusinessDateUtil.getDate()`」コード例に含まれており、「業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要」は回答の「業務日付はデータベーステーブルで管理します。`BasicBusinessDateProvider`をコンポーネント定義に追加し」および詳細なXML設定例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「OS日時ではなく業務上の日付を取得する方法」と「締め処理でのシステム日時と業務日付の分離管理」という質問に直接答えており、BusinessDateUtilの使い方・BasicBusinessDateProviderの設定・業務日付の更新・バッチ再実行時の上書きまで一貫して質問の意図に沿った内容のみが含まれている。的外れな情報は見当たらない。 |
+| faithfulness | OK | 回答のXML設定例・テーブルレイアウト（区分(PK)と日付、文字列型、yyyyMMdd形式）・BusinessDateUtil.getDate()の使い方・setDateのコード例・システムプロパティによる上書き例（-DBasicBusinessDateProvider.batch=20160317）は、すべてナレッジMD（libraries-date.md）の記述と完全に一致している。cacheEnabledやIllegalArgumentExceptionに関する注意点はjavadoc参照からの情報だが、ナレッジMDと矛盾する内容はない。 |
 
 ### 参照事実（expected_facts）
 

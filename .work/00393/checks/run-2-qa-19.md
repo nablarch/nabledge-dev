@@ -108,8 +108,8 @@ public class ProjectAction {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「JSONのボディ変換はJackson2BodyConverterが担当する」は回答の「JerseyJaxRsHandlerListFactory を使用すると、JSONのコンバータとして Jackson2BodyConverter が自動的に設定される」（セクション4）に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「REST APIでJSONを受け取ってDBに登録する処理を作りたい」という質問に直接答えており、フォームクラスの作成、アクションメソッドの実装、ハンドラキューの処理の流れ、JSONコンバータの設定、ユニバーサルDAOの設定という必要な要素をすべて網羅している。的外れな情報は含まれていない。 |
+| faithfulness | OK | フォームクラスのコード（ProjectForm with @Required, @Domain, String型プロパティ）、アクションメソッド（@Consumes(MediaType.APPLICATION_JSON), @Valid, UniversalDao.insert, BeanUtil.createAndCopy, 201ステータス）、ハンドラキュー構成（No.3〜7の順序と内容）、JerseyJaxRsHandlerListFactory設定XMLはすべてナレッジファイルの記述と一致している。矛盾する内容は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

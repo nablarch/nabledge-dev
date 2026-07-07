@@ -57,8 +57,8 @@ boolean exists = UniversalDao.exists(User.class, "CHECK_USER_EXISTS", condition)
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「exists(Class, String)メソッドがある」は回答の「バインド変数なしの `exists(entityClass, sqlId)`」および `UniversalDao.exists(User.class, "CHECK_USER_EXISTS")` のコード例に含まれている。参照事実「exists(Class, String, Object)メソッドがある」は回答の「バインド変数ありの `exists(entityClass, sqlId, params)`」および `UniversalDao.exists(User.class, "CHECK_USER_EXISTS", condition)` のコード例に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問（UniversalDao.existsでSQL_IDを指定してデータ存在チェックをする方法）に直接答えており、2つのオーバーロード（バインド変数なし・あり）のコード例、SQLファイルのパス解決ルール、内部動作の注意点のすべてが質問の範囲内の情報である。的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答の主要な記述はすべてナレッジと一致している。「exists(entityClass, sqlId)」と「exists(entityClass, sqlId, params)」の2オーバーロードはjavadoc(s17/s18)に明記されている。「検索用のSQLを変換して使用する」という内部動作の説明はjavadoc s18の「検索用のSQLを変換して使用する」と一致する。SQLファイルパス解決ルール（クラスパス導出、「#」構文）はlibraries-universal-dao.mdのfindAllBySqlFileの説明と一致する。矛盾する記述は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

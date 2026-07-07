@@ -129,8 +129,8 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する」は回答の「① レスポンス生成: `ErrorResponseBuilder`」（`errorResponseBuilder` プロパティに設定された `ErrorResponseBuilder` によりレスポンスが生成される）に含まれており、参照事実「JaxRsErrorLogWriterが例外に応じたログ出力を行う」は回答の「② ログ出力: `JaxRsErrorLogWriter`」（`errorLogWriter` プロパティに設定された `JaxRsErrorLogWriter` によりログが出力される）に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「エラー発生時のエラー画面表示とログ出力の仕組み」という質問に直接答えており、JaxRsResponseHandler（ErrorResponseBuilder/JaxRsErrorLogWriter）とGlobalErrorHandlerの2段構成を説明している。的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答のGlobalErrorHandlerテーブル（ServiceError→writeLog、Result.Error→FATAL、その他→FATAL+InternalError）はナレッジの記述と完全一致する。ErrorResponseBuilderとJaxRsErrorLogWriterへの委譲も「以下の2つの委譲先クラスが処理を行う」と正しく記述されており、ナレッジとの矛盾はない。DeepEvalのNG判定は誤りで、回答はナレッジを正しく反映している。 |
 
 ### 参照事実（expected_facts）
 

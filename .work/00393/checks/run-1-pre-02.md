@@ -105,8 +105,8 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う」は回答の結論「ウェブアプリケーションの入力チェックは `@InjectForm` インターセプタとBean Validationを組み合わせて実装する」および手順3「業務アクションへの`@InjectForm`設定」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「入力チェック（バリデーション）の実装方法」という質問に直接答えており、コンポーネント設定・Formクラス実装・ドメインバリデーション設定・@InjectForm設定・注意点すべてがバリデーション実装に関連する内容のみで構成されている。質問と無関係な内容は含まれていない。 |
+| faithfulness | OK | 回答内の主要な記述はすべてナレッジと一致している。「BeanValidationStrategyをvalidationStrategyという名前で登録」「プロパティは必ずString型」「@RequiredはドメインBeanでなくFormクラス側に設定」「@OnError未設定時はシステムエラー扱い」「DBとの相関バリデーションは業務アクション側で実装（SQLインジェクションリスク）」の各記述が、それぞれlibaries-bean-validation.mdおよびhandlers-InjectForm.mdの記述と矛盾なく対応している。 |
 
 ### 参照事実（expected_facts）
 

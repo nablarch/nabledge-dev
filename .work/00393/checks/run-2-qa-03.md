@@ -98,8 +98,8 @@ public class SampleForm {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「Jakarta Bean Validationの@AssertTrueを使って相関バリデーションを行う」は回答の `@AssertTrue(message = "{compareMailAddress}")` を付与したgetterメソッドの実装例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はメールアドレスと確認用メールアドレスの相関バリデーションという質問に直接答えており、Bean ValidationとNablarch Validationの両方の実装例を示している。質問と無関係な内容は含まれていない。 |
+| faithfulness | OK | 回答で「@ValidateFor アノテーション付きのstaticメソッドで実装する」と述べているが、libraries-nablarch-validation.md の380〜381行目に「バリデーションを行うためのstaticメソッドを実装する。このメソッドには、@ValidateFor アノテーションを設定し」と明記されており、コード例（411行、533行等）も public static void validate(...) を示している。DeepEvalが「staticメソッドの要件はナレッジに記載がない」と判定したのは誤りであり、回答の内容はナレッジと矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

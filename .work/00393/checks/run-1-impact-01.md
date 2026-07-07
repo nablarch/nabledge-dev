@@ -88,8 +88,8 @@ new MyTransaction();
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SimpleDbTransactionManagerを使って個別トランザクションを定義する」は回答の「コンポーネント設定ファイルに `SimpleDbTransactionManager` を定義する」およびXML設定例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「業務トランザクションとは別のトランザクションでSQLを実行する方法」という質問に直接答えており、SimpleDbTransactionManager/SimpleDbTransactionExecutor（JDBCラッパー）とUniversalDao.Transaction（UniversalDAO）の両方の手順を説明している。末尾の「参照: libraries-database.json:s29, ...」はナレッジ参照マーカーであり、ユーザー向けの内容ではないため、回答の関連性を損なわない。全ての内容が質問に対して直接関連している。 |
+| faithfulness | OK | 回答の内容はナレッジの記述と一致している。(1) SimpleDbTransactionExecutorを使うという注意点はlibaries-database.mdの「SimpleDbTransactionManagerを直接使うのではなく...SimpleDbTransactionExecutorを使用すること」と一致。(2) 「インスタンス化すると自動的に別トランザクションで実行される」はlibaries-universal-dao.mdの「生成すると別のトランザクションで実行される」と一致。DeepEvalが指摘した「コンストラクタがSimpleDbTransactionManagerオブジェクトも受け付けることを省略している」は情報の省略であり矛盾ではない。回答はナレッジの内容に対して矛盾する記述を含んでいない。 |
 
 ### 参照事実（expected_facts）
 

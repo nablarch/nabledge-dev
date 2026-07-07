@@ -60,8 +60,8 @@ UniversalDao.exists(User.class, "sample.entity.Member#CHECK_EXISTS", condition);
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SQL_IDを指定してバインド変数なしでデータ存在チェックを行うexists(Class, String)メソッドがある」は回答の「① バインド変数なし（全件チェック）: `boolean result = UniversalDao.exists(User.class, "CHECK_EXISTS");`」に含まれている。参照事実「SQL_IDとバインド変数を指定してデータ存在チェックを行うexists(Class, String, Object)メソッドがある」は回答の「② バインド変数あり（条件付きチェック）: `boolean result = UniversalDao.exists(User.class, "CHECK_EXISTS", condition);`」に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問（UniversalDao.exists で SQL_ID を指定したデータ存在チェックの方法）に直接答えており、バインド変数なし・ありの2つのオーバーロード、SQLファイルパスの導出規則、`#` 記法による別SQLファイル参照まで網羅している。的外れな内容は含まれていない。 |
+| faithfulness | OK | DeepEval は回答コード例の `CHECK_EXISTS` を誤りとして NG 判定したが、これは false positive である。ナレッジ（libraries-universal-dao.md）の `#` 記法説明例では `FIND_BY_NAME` を SQL ID として使っているが、回答は独立したサンプルとして `CHECK_EXISTS` を使っており、SQL ID 名が異なるだけで仕様の説明（`#` の左がファイルパス・右が SQL ID）は一致している。回答の内容はナレッジの記述と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

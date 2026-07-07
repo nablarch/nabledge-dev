@@ -110,8 +110,8 @@ nablarch.core.validation.ee.SystemChar.message={charsetDef}を入力してくだ
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う」は回答の結論「`@InjectForm` インターセプタを業務アクションのメソッドに付与し」およびStep 3のコード例に明確に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問「入力チェック（バリデーション）の実装方法を教えてください」に直接答えており、BeanValidationStrategyの設定・Formクラスの設定・@InjectForm/@OnErrorの付与・エラーメッセージ定義という各ステップはすべて質問に関連する内容である。DB相関バリデーションの注意点も実装方法の一部として妥当。的外れな内容は含まれていない。 |
+| faithfulness | OK | DeepEvalはFormプロパティをString型にすることが回答では「必ず（mandatory）」とされているがナレッジでは「推奨」に過ぎないとしてNGとしたが、ナレッジ（libraries-bean-validation.md）の該当箇所には「プロパティは必ず String とすること」と明記されており、回答の「必ず `String` 型で宣言すること」はナレッジと一致する。SQLインジェクションをDB相関バリデーションをBeanValidation内で行わない理由とする記述も「これは、SQLインジェクションなどの脆弱性の原因となるため」というナレッジの記述と一致する。@OnErrorなしはシステムエラー扱いになるという記述もナレッジ（handlers-InjectForm.md）と一致。回答全体でナレッジとの矛盾は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

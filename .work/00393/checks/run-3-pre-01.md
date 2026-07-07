@@ -64,8 +64,8 @@ java nablarch.fw.launcher.Main \
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する」は回答の「NablarchバッチアプリケーションはJavaコマンドで`nablarch.fw.launcher.Main`クラスを起動する」に含まれている。参照事実「-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する」は回答の「-requestPathの書式」セクションで明記されている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | NG | 回答は質問（起動方法と-requestPathの書き方）に概ね適切に答えているが、「-userIdの値はセッションコンテキスト変数`user.id`に格納される」という詳細情報が含まれている。これは-requestPathの書き方を知りたい質問者には直接必要のない情報であり、DeepEvalが指摘する通り若干の余分な内容が含まれている。 |
+| faithfulness | OK | 回答の内容はナレッジMD（handlers-main.md、nablarch-batch-architecture.md）の記述と完全に一致している。起動コマンドの実行例、3つの必須オプション（-diConfig、-requestPath、-userId）の説明、-requestPathの書式（アクションのクラス名/リクエストID）、終了コード127の条件など、すべてナレッジに記載された内容を正しく反映しており矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

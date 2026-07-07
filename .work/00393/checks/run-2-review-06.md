@@ -160,8 +160,8 @@ public class UserSearchForm {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る」は回答の「URLとアクションとのマッピング時にパスパラメータ部に任意の名前を設定する」および「`getPathParam("パラメータ名")` で値を取得する」に含まれている。参照事実「クエリーパラメータはJaxRsHttpRequestから取得する」は回答の「`JaxRsHttpRequest#getParamMap()` でパラメータを取得し」に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 質問はパスパラメータ・クエリーパラメータの取得方法とルーティング設定の3点を問うており、回答はすべての点に直接答えている。的外れな情報は含まれていない。 |
+| faithfulness | OK | getPathParam()によるパスパラメータ取得、BeanUtil.createAndCopy()によるクエリーパラメータのForm変換、@PathParam/@QueryParamは使用不可という注意点、JBoss/WildFlyでは@Pathアノテーション方式が使用不可という制約、RoutesMapping/PathOptionsProviderRoutesMappingの設定例、{パラメータ名:正規表現}の記法、いずれもナレッジの記述と一致しており矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

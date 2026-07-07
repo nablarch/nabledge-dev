@@ -93,8 +93,8 @@ SessionUtil.delete(ctx, "project");
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う」は回答の結論「複数タブでの画面操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使用する」および表に明確に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答全体が質問「DBストアとHIDDENストアの使い分け」に直接答えており、無関係な情報は含まれていない。結論・比較表・各ストアの特長・JSPコード・SessionUtil実装例・注意点はすべて質問に関連する内容である。 |
+| faithfulness | OK | 回答の主要な主張はすべてナレッジMDの記述と一致している。「複数タブ不可→DBストア、許容→HIDDENストア」の選択基準（ナレッジ選択基準表）、各ストアの特長（後勝ち、ヒープ非圧迫、スレッド別保存）、JSPのhiddenStoreタグ使用方法、FormでなくEntityを格納すべき注意点、冗長化時の暗号化キー設定の注意点など、いずれもナレッジの記述を正確に反映しており矛盾は見られない。 |
 
 ### 参照事実（expected_facts）
 

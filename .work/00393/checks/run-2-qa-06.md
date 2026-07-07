@@ -88,8 +88,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する」は回答の「確認画面の JSP（これだけで完結）`<n:confirmationPage path="./input.jsp" />`」および「`n:confirmationPage` | 確認画面JSPから入力画面JSPをインクルードし、確認画面モードで描画」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答のすべての内容（confirmationPageタグ、forInputPage/forConfirmationPageタグ、ignoreConfirmationタグ、plainHidden/hiddenStoreの例外動作）が「入力画面と確認画面のJSP共通化」という質問に直接答えており、的外れな情報は含まれていない。 |
+| faithfulness | OK | 回答のJSPコード例はナレッジのlibaries-tag.md（行1585-1629）とほぼ同一。タグの役割説明もナレッジと一致。「入力・確認画面で共通化できるのは入力系のカスタムタグが対象」はナレッジの「入力・確認画面の表示制御は入力系のタグが対象」と一致。plainHidden/hiddenStoreが「確認画面でも出力される」という記述もナレッジのTip（「入力・確認画面ともに出力する」）と一致しており、矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

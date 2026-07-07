@@ -84,8 +84,8 @@ public class ProjectAction {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する」は回答の「クライアントから送信された値を受け付けるFormを作成します」「@Valid アノテーションを付けることで…バリデーションを実行する」「UniversalDao.insert(entity) でDB登録する」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | NG | 回答の注意点に「RESTfulウェブサービスでは ETag / If-Match を使った楽観的ロックには対応していないため、楽観的ロックが必要な場合はリクエストボディにバージョン番号を含めること」という記述が含まれているが、質問は「フォームからDBに登録する処理の実装パターン」であり、楽観的ロックの話題は問われていない範囲の情報であるため。 |
+| faithfulness | OK | 回答のFormクラス作成（String型プロパティ）・@Validによるバリデーション・BeanUtil.createAndCopy()でEntityに変換・UniversalDao.insert()でDB登録・ステータスコード201のHttpResponse返却・コンポーネント定義（BasicDaoContextFactory）はすべてナレッジの記述と一致しており、矛盾は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

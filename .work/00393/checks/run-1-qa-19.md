@@ -129,8 +129,8 @@ public class ProjectForm implements Serializable {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「JSONのボディ変換はJackson2BodyConverterが担当する」は回答の「JSONの場合、`Jackson2BodyConverter`が使用される。」（JSON変換の仕組みセクション）に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「REST APIでJSONを受け取ってDBに登録する処理」という質問に対して、処理の流れ・最小ハンドラ構成・JSON変換の仕組み・アクションクラスの実装例・フォームクラスの実装例・UniversalDAOの設定をすべて提示しており、的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答の内容はナレッジファイルと一致している。処理フローはrestful-web-service-architecture.mdの記述と一致し、最小ハンドラ構成表（7ハンドラの順序・役割）も同ファイルの表と一致する。アクションクラスの実装例（@Path、@POST、@Consumes、@Valid、BeanUtil.createAndCopy、UniversalDao.insert、HttpResponse(201)）はrestful-web-service-getting-started-create.mdのコード例と一致する。フォームクラスの実装例も同様に一致しており、ナレッジの内容と矛盾する記述は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

@@ -143,8 +143,8 @@ try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inpu
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む」は回答の「ObjectMapperFactory.create(ZipCodeForm.class, new FileInputStream(csvFile))」および「ObjectMapperFactory.create(Person.class, inputStream)」に明示されている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答全体はCSVの各行をJava Beansとして読み込む実装（フォームクラス、DataReader、BatchAction）を直接説明しており、質問に対して的外れな部分はない。UniversalDao.insertはBatchActionの具体的な使用例として示されており、「どう実装する？」という質問の文脈でNablarchバッチの完全な実装パターンを示す自然な流れとなっている。DBへの挿入はわずか1行のみで回答全体の主旨を損なわない。 |
+| faithfulness | OK | 回答が示す2つのパターンはいずれもナレッジと一致する。①DataReader + ObjectMapperIteratorパターンは nablarch-batch-getting-started-nablarch-batch.md のZipCodeFileReaderの実装例と一致する。②「直接ObjectMapperを使う場合」は libraries-data-bind.md s7の「while ((person = mapper.read()) != null)」の実装例そのものであり、矛盾しない。DeepEvalが指摘した「mapper.read()をDataReader不要のシンプルな代替として誤って提案」については、回答では「DataReader不要のシンプルなケース」と明記しており、DataReader実装の代替ではなくDataReader自体が不要な場面として正しく区別されている。ナレッジと矛盾する記述は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

@@ -119,8 +119,8 @@ nonce有効時のJSPカスタムタグの動作変化:
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする」は回答の結論「SecureHandlerのコンポーネント定義にContentSecurityPolicyHeaderを追加することでCSPヘッダを設定できる。JSPカスタムタグを使用している場合はnonceを利用した対応が必要」およびパターン1〜2の詳細説明に含まれている。DeepEvalのNGはスコア計算の誤りであり、実際には全要素が網羅されている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 質問「NablarchのWeb画面でCSPを設定するにはどうすればいい？」に対して、回答はパターン1（固定ヘッダ）・パターン2（nonce生成）・パターン3（report-onlyモード）という3つの設定パターンを具体的なXML例とともに説明しており、質問に直接答えている。的外れな情報は含まれていない。 |
+| faithfulness | OK | handlers-secure-handler.md の内容と照合した結果、パターン1・2・3のXML設定例と説明内容がナレッジと一致している。nonceのリクエストスコープへの格納、$cspNonceSource$プレースホルダーの置換動作、report-onlyモードでのContent-Security-Policy-Report-Onlyヘッダ出力もナレッジの記述と矛盾しない。JSPカスタムタグの動作変化（formタグのJavaScriptをscript要素にまとめてnonce設定、scriptタグのnonce設定）もナレッジの「script要素を生成するカスタムタグの場合、生成したnonceを自動でnonce属性に設定する」「onclick属性にサブミット用の関数呼び出しを設定するカスタムタグは、その内容をscript要素に出力するように変更する」と対応している。 |
 
 ### 参照事実（expected_facts）
 

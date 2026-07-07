@@ -54,8 +54,8 @@ try (DeferredEntityList<User> users
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「UniversalDao.deferメソッドで遅延ロードを使用する」は回答の「UniversalDao.defer().findAllBySqlFile(...)」および「遅延ロードは、検索時に `UniversalDao#defer` メソッドを先に呼び出すだけで使用できます」に含まれている。参照事実「DeferredEntityListのcloseメソッドを呼び出す必要がある」は回答の「`DeferredEntityList#close` メソッドを呼び出してリソースを解放する必要があります」に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「大量データで1件ずつ読み込む方法」という質問に直接答えており、遅延ロードの使い方・コード例・リソース解放・注意点がすべて質問の主旨に沿っている。DeepEvalが「やや余談」と指摘したJDBCフェッチサイズの言及は、ナレッジ（libraries-universal-dao.md 147〜148行目）に「JDBCのフェッチサイズによってメモリの使用量が変わる。フェッチサイズの詳細は、データベースベンダー提供のマニュアルを参照」と明記されており、メモリ問題を質問したユーザーへの重要な補足情報として的外れではない。 |
+| faithfulness | OK | 回答の全内容がナレッジ（libraries-universal-dao.md の「検索結果を遅延ロードする」セクション）と一致している。遅延ロードはUniversalDao#deferを先に呼び出すだけ、内部でサーバサイドカーソルを使用、DeferredEntityList#closeでリソース解放が必要、トランザクション制御中のカーソルクローズリスクへの警告、フェッチサイズはベンダーマニュアル参照——これらすべてがナレッジに記載されており矛盾は存在しない。 |
 
 ### 参照事実（expected_facts）
 

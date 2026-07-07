@@ -168,8 +168,8 @@ Step 6 でベリファイします。
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する」は回答のStep 1「言語ごとのファイルを作成します」およびStep 2「`<property name="locales">`」の設定例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問（メッセージ・ラベルの日英切り替え・多言語化方法）に対して直接答えており、プロパティファイルの準備、PropertiesStringResourceLoaderの設定、ThreadContextHandlerの設定、言語選択画面の実装、JSPコンテンツパスの切り替えという各ステップがすべて多言語化の実現に直結している。的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答の主要クレームはすべてナレッジMD（libraries-message.md）の記述と一致している。「言語ごとのプロパティファイルを用意しlocalesに設定する」「defaultLocaleを設定しないとOSの言語設定が使われ障害の原因になる」「ファイル名はmessages_言語.properties」「messages.propertiesが存在しない場合はエラー」はすべてナレッジに明示されており、矛盾する記述はない。 |
 
 ### 参照事実（expected_facts）
 

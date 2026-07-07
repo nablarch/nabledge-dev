@@ -127,8 +127,8 @@ public class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む」は回答の「`ObjectMapperFactory.create`で`ObjectMapper`を生成してCSVを1行ずつ提供する」および`iterator = new ObjectMapperIterator<>(ObjectMapperFactory.create(ZipCodeForm.class, new FileInputStream(csvFile))))`のコード例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はCSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込む実装方法に直接答えており、フォームクラスの作成・DataReaderの実装・BatchActionの作成という3ステップで構成されている。handleメソッド内のBeanUtil.createAndCopyやUniversalDao.insertは純粋なCSV読み込みの範囲をわずかに超えるが、バッチ処理の完全な動作例として文脈上適切であり、的外れな内容とは言えない。 |
+| faithfulness | OK | 回答の内容はナレッジMDの記述と矛盾していない。ObjectMapperFactory#createでObjectMapperを生成してデータを読み込む方法（s7）、@Csvと@CsvFormatアノテーションによるフォーマット指定（s15）、全データ読み込み後のObjectMapper#closeによるリソース解放、try-with-resourcesの推奨、外部から受け付けるデータの場合にプロパティを全てString型で定義する必要性（ナレッジのImportantノート）、いずれもナレッジの内容と一致している。ObjectMapperIteratorはナレッジに明示されていないが、ナレッジの記述と矛盾するものではない。 |
 
 ### 参照事実（expected_facts）
 

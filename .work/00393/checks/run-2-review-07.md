@@ -74,8 +74,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う」は回答の「`CsrfTokenVerificationHandler` をハンドラキューに追加することで、POSTなどのリクエストに対してCSRFトークンの検証が自動実行されます」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「外部サイトからの不正POSTを防ぐCSRF対策の仕組みと設定方法」という質問に直接答えており、ハンドラの設定例・デフォルト動作・配置制約・テスト時の注意・ログイン時のトークン再生成すべてがCSRF対策の実装に必要な情報である。質問と無関係な内容は含まれていない。 |
+| faithfulness | OK | 回答の各記述がナレッジMDと一致している。XMLの設定例・セッションストア名(nablarch_csrf-token)・UUIDv4CsrfTokenGenerator・検証対象外メソッド(GET/HEAD/TRACE/OPTIONS)・HTTPヘッダ名(X-CSRF-TOKEN)/パラメータ名(csrf-token)・BadRequest(400)返却・SessionStoreHandlerより後ろに配置・NablarchTagHandlerより後ろに配置・ログイン時にセッションIDのみ再生成する場合はCsrfTokenUtil.regenerateCsrfTokenが必要・テスト時NopHandlerへの差し替え、すべてナレッジの記述と一致しており矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

@@ -104,8 +104,8 @@ public class ProjectAction {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「Formクラスでクライアントから送信された値を受け付ける」は回答の「クライアントから受け取るJSONのフィールドに対応したFormクラスを作成する」に含まれている。参照事実「プロパティは全てString型で宣言する」は回答の「プロパティは全てString型で宣言する」に明示されている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はREST APIでJSONを受け取りDBに登録する処理という質問に直接答えており、Formクラスの作成・アクションメソッドの実装・Jersey設定・UniversalDAO設定という必要な手順を網羅している。的外れな情報は含まれていない。 |
+| faithfulness | OK | 回答の主要な内容（ProjectFormクラス、@Consumes/@Valid/@Path/@POSTアノテーション、BeanUtil.createAndCopy、UniversalDao.insert、HttpResponse.Status.CREATED）はすべてナレッジファイル(restful-web-service-getting-started-create.md)の記述と一致している。矛盾する記述は確認されなかった。 |
 
 ### 参照事実（expected_facts）
 

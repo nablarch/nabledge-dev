@@ -92,8 +92,8 @@ JSPにNablarchカスタムタグ（`n:form`等）を使用している場合、C
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う」は回答の「CsrfTokenVerificationHandler をハンドラ構成に追加するだけで有効になる」および詳細説明に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問「外部サイトからの不正POSTを防ぐCSRF対策の仕組みと設定方法」に直接答えており、CsrfTokenVerificationHandlerの設定方法・デフォルト動作・カスタマイズ・注意点を網羅している。質問と無関係な情報は含まれていない。 |
+| faithfulness | OK | 回答のすべての主要な記述がナレッジMDと一致している。セッション変数保存ハンドラより後ろに配置する制約、UUIDv4によるトークン生成、GET/HEAD/TRACE/OPTIONSが検証対象外、X-CSRF-TOKENヘッダまたはcsrf-tokenパラメータからの取得、BadRequest(400)の返却、WebConfigでのカスタマイズ、CsrfTokenUtil.regenerateCsrfTokenの再生成条件、テスト時のNopHandler差し替えの方法はいずれもナレッジの記述と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

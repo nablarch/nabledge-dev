@@ -157,8 +157,8 @@ try {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返す」は回答のセクション1の例外クラス×HTTPステータスコード対応表に含まれている。参照事実「ApplicationExceptionのエラーメッセージをリクエストスコープに設定する」は回答の「HttpErrorResponse の原因例外が ApplicationException の場合は、エラーメッセージを ErrorMessages に変換してリクエストスコープの errors キーに自動設定する」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答の全5セクション（HttpErrorHandler、GlobalErrorHandler、OnErrorインターセプタ、カスタムハンドラ、障害ログ）はすべて「エラー発生時のエラー画面表示とログ出力の仕組み」という質問に直接答える内容であり、的外れな情報は含まれていない。 |
+| faithfulness | OK | DeepEvalはResult.ErrorのFATALログが「無条件」とナレッジに書かれているのに回答が「条件付き」と示していると指摘したが、ナレッジ（handlers-HttpErrorHandler.md の「nablarch.fw.Result.Errorのログ出力について」セクション）には「writeFailureLogPatternに設定した正規表現がError#getStatusCode()とマッチした場合にFATALレベルのログを出力する」と明記されており、ログ出力は条件付きである。回答の表（「writeFailureLogPattern に一致すれば FATAL」）はナレッジの記述を正確に反映しており矛盾はない。DeepEvalのNG判定は誤り（FN）。 |
 
 ### 参照事実（expected_facts）
 

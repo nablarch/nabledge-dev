@@ -103,8 +103,8 @@ public HttpResponse handle(HttpRequest req, ExecutionContext ctx) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う」は回答の結論部「ウェブアプリケーションのバリデーションは @InjectForm インターセプタを業務アクションメソッドに設定することで実装する」およびコード例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「入力チェック（バリデーション）の実装方法」という質問に直接答えており、BeanValidationStrategyの設定、Formクラスの作成、@InjectFormと@OnErrorの設定、注意点すべてがバリデーション実装に関連している。的外れな内容は含まれていない。 |
+| faithfulness | OK | DeepEvalはFormプロパティをString型にすることが推奨にすぎないと判定したが、ナレッジMD（libraries-bean-validation.md）の「バリデーションルールの設定方法」セクションにはTipブロック内で「プロパティは必ず String とすること。」と「必ず」という強制的な表現が使われており、回答の「Formのプロパティは必ず `String` 型にすること」はナレッジの記述と一致している。矛盾はない。 |
 
 ### 参照事実（expected_facts）
 

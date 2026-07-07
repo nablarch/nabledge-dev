@@ -98,8 +98,8 @@ try (DeferredEntityList<User> users
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる」は回答の「SQLファイルを作成し、SQL IDを指定して検索します: UniversalDao.findAllBySqlFile(User.class, "FIND_BY_NAME")」および「検索結果をマッピングするBeanのプロパティ名はSELECT句の列名と一致させる必要があります」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | NG | 質問は「検索方法」を問うものだが、回答の注意点セクションに「主キー以外の条件による更新/削除はユニバーサルDAOでは行えないため、データベースアクセス(JDBCラッパー)を使用します」という更新・削除操作の制限に関する情報が含まれており、検索方法の質問には直接関係しない内容が含まれている。 |
+| faithfulness | OK | 回答の全内容がナレッジと一致している。主キー検索(s2)、findAllBySqlFileとSQLファイルパス自動導出(s7)、条件指定検索(s10)、ページング(s12)、遅延ロードとclose必須(s9)、BasicDaoContextFactory設定(s6)、更新/削除制限の注意点もすべてナレッジの記述と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

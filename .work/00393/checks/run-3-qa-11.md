@@ -158,8 +158,8 @@ try {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返す」は回答のセクション1の表（NoMoreHandlerException→404、StackOverflowError→500等）に含まれており、「ApplicationExceptionのエラーメッセージをリクエストスコープに設定する」は「ErrorMessages に変換してリクエストスコープのキー名 `errors` にセットする」として含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答はエラー画面の表示とログ出力の仕組みに直接答えており、HttpErrorHandler・GlobalErrorHandler・@OnError/@OnErrors・障害ログ出力方針の4つの観点はいずれも質問者が知りたい内容に該当する。的外れな情報は含まれていない。 |
+| faithfulness | NG | 回答のセクション2（グローバルエラーハンドラ）の表で「ThreadDeath / VirtualMachineError（StackOverflow/OOM以外）→ ログ出力後にリスロー」とまとめているが、ナレッジ（handlers-global-error-handler.md）では ThreadDeath は「INFOレベルのログ出力→リスロー」、VirtualMachineError は「FATALレベルのログ出力→リスロー」と明確に異なるログレベルが記載されている。回答がこの違いを省略して同一の扱いとして記述している点がナレッジの記述と矛盾する。 |
 
 ### 参照事実（expected_facts）
 

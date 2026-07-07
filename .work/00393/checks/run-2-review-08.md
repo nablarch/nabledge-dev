@@ -101,8 +101,8 @@ SessionUtil.delete(ctx, "project");
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う」は回答の結論「複数タブでの画面操作を許容しない場合は DBストア、複数タブを許容する場合は HIDDENストア を使用します」および表に明示されている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は質問（DBストアとHIDDENストアの使い分け）に直接答えており、選択基準・各ストアの特長・JSP実装例・Java実装例・注意点すべてが質問に関連した内容で構成されている。的外れな情報は含まれていない。 |
+| faithfulness | OK | 回答の全内容がナレッジ（libraries-session-store.md）と一致している。使い分け基準（複数タブ許容しない→DBストア、許容する→HIDDENストア）、各ストアの特長、JSP実装コード、注意点（FormではなくEntityを格納、AES暗号化、冗長化時のキー設定、USER_SESSIONテーブル作成と期限切れセッション削除）のすべてがナレッジの記述と矛盾しない。 |
 
 ### 参照事実（expected_facts）
 

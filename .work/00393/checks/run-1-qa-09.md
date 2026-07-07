@@ -111,8 +111,8 @@ provider.setDate(segment, date);
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「BusinessDateUtilを使用して業務日付を取得する」は回答の `String bizDate = BusinessDateUtil.getDate();` に含まれている。参照事実「業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要」は回答の「業務日付はDBテーブル（区分＋日付の2カラム構成）で管理します」および BasicBusinessDateProvider の XML 設定例に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「OS日時と業務日付を分けて管理したい」という質問に直接答えており、システム日時（BasicSystemTimeProvider/SystemTimeUtil）と業務日付（BasicBusinessDateProvider/BusinessDateUtil）の設定・取得・更新・上書きをすべてカバーしている。的外れな内容は含まれていない。 |
+| faithfulness | OK | 回答のXML設定・Javaコード・システムプロパティ形式はすべてnabledge-6/docs/component/libraries/libraries-date.mdの記述と一致している。BasicBusinessDateProviderのコンポーネント定義（tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManager）、initializer登録必須、システムプロパティ形式（-DBasicBusinessDateProvider.batch=20160317）、setDate更新コードもナレッジの内容を正確に反映しており、矛盾は見当たらない。 |
 
 ### 参照事実（expected_facts）
 

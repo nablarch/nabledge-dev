@@ -118,8 +118,8 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる」は回答の「リソースクラスのメソッドに `@Valid` を付けると、`JaxRsBeanValidationHandler` がバリデーションを実行し、エラー時は `ApplicationException` がスローされます」に含まれている。参照事実「ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する」は回答の「`ErrorResponseBuilder` を継承してエラーメッセージをレスポンスボディに含める実装を追加します」およびコード例に含まれている。 |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「入力チェックでエラーがあったときにエラーメッセージをユーザーに返す方法」という質問に直接答えており、@Validアノテーションによるバリデーション実行、プロパティファイルでのエラーメッセージ定義、ErrorResponseBuilderの継承によるレスポンスボディへのメッセージ設定という3つの要素すべてが質問に関連している。的外れな内容は含まれていない。 |
+| faithfulness | NG | 回答の注意点に「ErrorResponseBuilderの処理中に例外が発生するとクライアントにレスポンスを返せなくなるため」と記載されているが、ナレッジ（handlers-jaxrs-response-handler.md）には「ErrorResponseBuilderの処理中に例外が発生した場合、フレームワークはWARNレベルでログ出力を行い、ステータスコード500のレスポンスを生成し、後続処理を継続する」と記載されており、例外発生時もフレームワークが500レスポンスを生成してクライアントに返すことができる。「クライアントにレスポンスを返せなくなる」という記述はナレッジと矛盾している。 |
 
 ### 参照事実（expected_facts）
 

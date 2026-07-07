@@ -148,8 +148,8 @@ Nablarchのカスタムタグを使えば**HTML文脈での出力のサニタイ
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能」は回答まとめ「Nablarchのカスタムタグを使えばHTML文脈での出力のサニタイジングは自動的に対応されます（根本的解決）」および5-(i)節「NablarchのカスタムタグはデフォルトでHTMLエスケープを行います」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | NG | 回答の「Step 6: Verify」セクションに、内部ナレッジソースへの参照検証ノート（例: 「カスタムタグはデフォルトでHTMLエスケープする → libraries-tag.json:s2 に明記」など10項目）が含まれており、これらはXSS対策に関するユーザーの質問への回答ではなく、ワークフロー内部の品質確認メタデータである。DeepEvalが「11 irrelevant statements」と指摘した点は妥当で、Step 6の検証ノートが回答の関連性スコアを下げている。 |
+| faithfulness | OK | 参照ナレッジセクションは「（なし）」であるが、Step 6のVerifyセクションで回答内の全10主張（カスタムタグのHTMLエスケープ、JavaScriptエスケープ非対応、EL式の非エスケープ、セキュアハンドラのヘッダ一覧、各チェック項目の対応状況等）がナレッジソースに基づいて検証されており、「Result: PASS」と確認されている。DeepEvalも1.0（OK）と判定しており、回答内容とナレッジの矛盾は認められない。 |
 
 ### 参照事実（expected_facts）
 

@@ -136,8 +136,8 @@ public class ExampleErrorForwardHandler implements Handler<Object, Object> {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返す」は回答の例外種別テーブル（NoMoreHandlerException→404、StackOverflowError→500等）に含まれている。「ApplicationExceptionのエラーメッセージをリクエストスコープに設定する」は回答の「HttpErrorResponseの原因例外がApplicationExceptionの場合は、エラーメッセージをErrorMessagesに変換してリクエストスコープ（デフォルトキー: errors）に設定する」に含まれている |
-| answer_relevancy | — | —
-| faithfulness | — | —
+| answer_relevancy | OK | 回答は「エラー画面表示とログ出力の仕組み」という質問に対し、HttpErrorHandler（エラー画面遷移・HTTPレスポンス生成）、GlobalErrorHandler（未捕捉例外のログ出力）、@OnErrorアノテーション、障害ログ出力方針をすべて直接的に説明しており、的外れな情報は含まれていない。 |
+| faithfulness | NG | 回答のHttpErrorHandlerテーブルで「上記以外の例外・エラー → FATAL, 500」としているが、ナレッジ（handlers-HttpErrorHandler.md）には「java.lang.ThreadDeath と java.lang.VirtualMachineError（StackOverflowError以外）は本ハンドラでは何もせず上位のハンドラに処理を任せる（エラーを再送出する）」と明記されており、これらはFATALログもステータス500も生成しない。回答の「上記以外の例外・エラー」行がこれらを包含する形になっているため、ナレッジの記述と矛盾する。 |
 
 ### 参照事実（expected_facts）
 
