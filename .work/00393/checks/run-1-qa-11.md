@@ -157,8 +157,8 @@ try {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返す」は回答のセクション1の例外クラス×HTTPステータスコード対応表に含まれている。参照事実「ApplicationExceptionのエラーメッセージをリクエストスコープに設定する」は回答の「HttpErrorResponse の原因例外が ApplicationException の場合は、エラーメッセージを ErrorMessages に変換してリクエストスコープの errors キーに自動設定する」に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: handlers-HttpErrorHandler.json:s4, handlers-HttpErrorHandler.json:s5, ...」という内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし。回答の「writeFailureLogPattern に一致すれば FATAL」は、ナレッジ（handlers-HttpErrorHandler.md「nablarch.fw.Result.Errorのログ出力について」）の「その正規表現が Error#getStatusCode() とマッチした場合に FATAL レベルのログを出力する」と一致しており、DeepEvalのNG判定は誤り（false positive） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

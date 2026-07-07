@@ -123,8 +123,8 @@ IDトークン検証失敗時は `HttpErrorResponse` でHTTP 401を返す。
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している」は回答の「NablarchはOAuth2/OIDC認証を組み込みとして持っていない」に含まれている |
-| answer_relevancy | NG | 「参照: guide/biz-samples/biz-samples-12.json:s2, s11, s12, s13, s14, s16, processing-pattern/web-application/web-application-feature-details.json:s13」など内部参照記法がユーザー向け回答の末尾に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（組み込み認証なし・OIDCサンプルの構成・対応IDP・ライブラリバージョン・環境変数・コンポーネントXML・ログイン処理コード・注意事項すべてbiz-samples-12.mdおよびweb-application-feature-details.md s13と一致） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

@@ -127,8 +127,8 @@ public class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む」は回答の「`ObjectMapperFactory.create`で`ObjectMapper`を生成してCSVを1行ずつ提供する」および`iterator = new ObjectMapperIterator<>(ObjectMapperFactory.create(ZipCodeForm.class, new FileInputStream(csvFile))))`のコード例に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: `component/libraries/libraries-data-bind.json:s7`, `component/libraries/libraries-data-bind.json:s15`, ...」という内部JSONファイル参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（ObjectMapperFactory#createによる読み込み、@Csv/@CsvFormatアノテーション、ObjectMapper#closeでのリソース解放、外部ファイルはString型で定義する旨、いずれもnabledge-6/docs/component/libraries/libraries-data-bind.mdの記述と一致している） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

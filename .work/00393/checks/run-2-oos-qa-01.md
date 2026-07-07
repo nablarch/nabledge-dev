@@ -41,8 +41,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchにはWebSocketのサポートがないと回答している」は回答の「NablarchにはWebSocketをサポートする専用のハンドラ・アダプタは提供されておらず」および「WebSocket専用のアダプタは現時点で提供されていません」に明確に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json, about/about-nablarch/about-nablarch-policy.json:s6」という内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | 回答の「プロダクションコードはOSSを使用しない」「アダプタとしてOSSコンポーネントは利用可能」はナレッジ「OSSは使用しない」節（「プロダクションコードはOSSを使用していない」「アダプタとしてOSSを使用できるコンポーネントを提供している」）と矛盾なし |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

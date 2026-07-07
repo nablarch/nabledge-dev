@@ -129,8 +129,8 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する」は回答の「① レスポンス生成: `ErrorResponseBuilder`」（`errorResponseBuilder` プロパティに設定された `ErrorResponseBuilder` によりレスポンスが生成される）に含まれており、参照事実「JaxRsErrorLogWriterが例外に応じたログ出力を行う」は回答の「② ログ出力: `JaxRsErrorLogWriter`」（`errorLogWriter` プロパティに設定された `JaxRsErrorLogWriter` によりログが出力される）に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: handlers-jaxrs-response-handler.json:s4, handlers-jaxrs-response-handler.json:s5, handlers-jaxrs-response-handler.json:s7, handlers-jaxrs-response-handler.json:s8, handlers-global-error-handler.json:s4, handlers-global-error-handler.json:s5, restful-web-service-architecture.json:s3, restful-web-service-architecture.json:s4」という内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし。DeepEvalはGlobalErrorHandlerの動作（ServiceError#writeLog、Result.Error→FATAL、その他例外→FATALかつInternalError返却）をJaxRsErrorLogWriterに誤帰属させたと指摘したが、handlers-global-error-handler.mdの「例外及びエラーに応じた処理内容」を確認すると回答のGlobalErrorHandlerテーブルはナレッジの内容と一致しており、矛盾は存在しない |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

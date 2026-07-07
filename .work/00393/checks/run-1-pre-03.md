@@ -111,8 +111,8 @@ public HttpResponse list(HttpRequest request, ExecutionContext context) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる」は回答の「SQLファイル（例: Project.sql）にSQL IDを定義し」「findAllBySqlFile(Project.class, "SEARCH_PROJECT", condition)」「Project.class, User.classへのマッピング」に含まれている |
-| answer_relevancy | NG | 「参照: libraries-universal-dao.json:s7, libraries-universal-dao.json:s10, ...」など内部参照記法がユーザー向け回答に含まれており不適切。また注意点として「batchUpdate では楽観的ロックは使用できない」が記載されているが、これは検索方法の質問と無関係な情報 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（findAllBySqlFile の引数順・遅延ロード・ページング・batchUpdate の楽観的ロック不可の記述はすべてナレッジと一致） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

@@ -158,8 +158,8 @@ try {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返す」は回答のセクション1の表（NoMoreHandlerException→404、StackOverflowError→500等）に含まれており、「ApplicationExceptionのエラーメッセージをリクエストスコープに設定する」は「ErrorMessages に変換してリクエストスコープのキー名 `errors` にセットする」として含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: handlers-HttpErrorHandler.json:s4, handlers-HttpErrorHandler.json:s5, ...」など内部JSONファイル参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | writeFailureLogPatternの説明（正規表現がError#getStatusCode()とマッチした場合にFATALログ出力）はナレッジの記述と一致しており、ThreadDeath/VirtualMachineErrorをまとめて「ログ出力後にリスロー」と記述している点は不完全（ログレベルの違いを省略）だが、ナレッジとの矛盾はなく虚偽の記述はない |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

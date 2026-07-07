@@ -69,8 +69,8 @@ private void checkDuplicate(Person person) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する」は回答の「DB重複チェックは、Bean Validation完了後に業務アクション側で実装してください」に含まれている。参照事実「Bean Validation実行中のオブジェクトの値は安全である保証がない」は回答の「Bean Validation実行中はオブジェクトの値が安全である保証がないためです」に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: libraries-bean-validation.json:s12, libraries-bean-validation.json:s13, handlers-jaxrs-bean-validation-handler.json:s4」という内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ「データベースとの相関バリデーションを行う」（s12）の「業務アクション側で実装すること」「Bean Validation実行中のオブジェクトの値は、安全である保証がない」「SQLインジェクションなどの脆弱性の原因となる」との矛盾なし。「禁止」という表現はナレッジの「さけるべき実装」より強いが、「業務アクション側で実装すること」という明示的な指示と矛盾しない |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

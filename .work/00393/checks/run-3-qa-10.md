@@ -90,8 +90,8 @@ $if (userKbn) {user_kbn IN (:userKbn[])}
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される」は回答の「`$if(プロパティ名) {条件}` 構文を使うことで…」および「`String` 型の場合: null または空文字列で除外」に含まれている |
-| answer_relevancy | NG | 「参照: libraries-database.json:s21, libraries-database.json:s22, web-application-getting-started-project-search.json:s1」という内部参照記法がユーザー向け回答の末尾に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（$if構文のルール・除外条件・where句のみ使用可・ネスト不可・安易な共通化禁止の注意点はすべてlibraries-database.mdの記述と一致） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

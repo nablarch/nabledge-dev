@@ -67,8 +67,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる」は回答の「コンポーネント定義で指定するクラスを差し替えるだけで取得方法が切り替わる」に含まれている |
-| answer_relevancy | NG | 「参照: component/libraries/libraries-date.json:s2, s5, s6, s12, s13」という内部参照記法がユーザー向け回答の末尾に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（SystemTimeProviderの実装・systemTimeProviderコンポーネント名・BasicSystemTimeProvider・BusinessDateProvider・BasicBusinessDateProviderのDB参照すべてナレッジと一致） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

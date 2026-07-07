@@ -60,8 +60,8 @@ SQL IDは、エンティティクラスのFQCNからパスを導出します。`
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「exists(Class, String)メソッドがある」は回答の「boolean result = UniversalDao.exists(User.class, "FIND_BY_NAME");」に含まれており、参照事実「exists(Class, String, Object)メソッドがある」は回答の「boolean result = UniversalDao.exists(User.class, "FIND_BY_NAME", condition);」に含まれている |
-| answer_relevancy | NG | 「参照: javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17, javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18, component/libraries/libraries-universal-dao.json:s7」など内部参照記法がユーザー向け回答の末尾に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（両オーバーロードの仕様、SQLファイルパスの導出方法、exists内部でのSQL変換による件数チェックはすべてナレッジ記述と一致） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

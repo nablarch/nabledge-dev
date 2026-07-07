@@ -56,8 +56,8 @@ public HttpResponse create(JaxRsHttpRequest request, ExecutionContext context) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「データベースとの相関バリデーションはBean Validationではなく業務アクション側で実装する」は回答の「DB検索による重複チェックは**業務アクション側**で実装してください」に含まれている。参照事実「Bean Validation実行中のオブジェクトの値は安全である保証がない」は回答の引用部分「Bean Validation実行中のオブジェクトの値は、安全である保証がない。」に含まれている |
-| answer_relevancy | NG | 「参照: libraries-bean-validation.json:s12, libraries-bean-validation.json:s13」という内部参照記法がユーザー向け回答の末尾に含まれており、ユーザーには不要な内部情報が露出している |
-| faithfulness | OK | ナレッジ(s12)の「データベースとの相関バリデーションは業務アクション側で実装すること」「Bean Validation実行中のオブジェクトの値は安全である保証がない」「SQLインジェクションなどの脆弱性の原因となる」という記述と回答の内容は矛盾なし |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

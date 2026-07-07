@@ -37,8 +37,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchにはWebSocketのサポートがないと回答している」は回答の「NablarchにはWebSocketのサポートは提供されていません」に含まれている |
-| answer_relevancy | NG | 「参照: about/about-nablarch/about-nablarch-policy.json:s6」など内部JSONファイル参照記法がユーザー向け回答末尾に含まれており不適切 |
-| faithfulness | OK | ナレッジ「OSSは使用しない」節の記述（OSSを使用しない方針、アダプタとして提供）と矛盾なし |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

@@ -143,8 +143,8 @@ try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inpu
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む」は回答の「ObjectMapperFactory.create(ZipCodeForm.class, new FileInputStream(csvFile))」および「ObjectMapperFactory.create(Person.class, inputStream)」に明示されている |
-| answer_relevancy | NG | 回答末尾に「参照: nablarch-batch-getting-started-nablarch-batch.json:s2, nablarch-batch-getting-started-nablarch-batch.json:s3, libraries-data-bind.json:s7, libraries-data-bind.json:s15, libraries-data-bind.json:s2」という内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | 回答の「直接ObjectMapperを使う場合」セクションで示す `while ((person = mapper.read()) != null)` パターンはナレッジ s7（データをJava Beansオブジェクトとして読み込む）に明示されており矛盾なし。DataReader実装ではObjectMapperIteratorを正しく使用しており、ナレッジのTip（ObjectMapperはhasNextを持たないためイテレータ推奨）とも整合している |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

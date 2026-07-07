@@ -100,4 +100,8 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: not suspended
+- **Status**: paused
+- **Date**: 2026-07-07
+- **Last completed**: #3 集計レポート作成
+- **Next**: #2 やり直し — answer_relevancy・faithfulness のみ再評価。102件の `—` リセット済み（未コミット）。Workflowプロンプト修正: 参照ナレッジページのパスを渡してRead、関連性=「的外れな内容があるか」、忠実性=「ナレッジと矛盾するか」のみ判断。
+- **Notes**: 再開後すぐWorkflow実行。answer_correctnessは触らない。

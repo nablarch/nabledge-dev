@@ -125,8 +125,8 @@ java nablarch.fw.launcher.Main \
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「DatabaseRecordReaderでデータベースからデータを読み込む」は回答の「DatabaseRecordReader を使うと、指定したSQLの結果を1件ずつ BatchAction に渡せます」および createReader メソッドのコード例に含まれている。参照事実「BatchActionを継承したアクションクラスを実装する」は「BatchAction を継承し、handle メソッドに集計ロジックと結果テーブルへの書き込みを実装します」および `SummaryBatchAction extends BatchAction<SummaryInput>` のコード例に含まれている。 |
-| answer_relevancy | NG | 回答末尾の「参照: nablarch-patterns-Nablarchバッチ処理パターン.json:s2, nablarch-patterns-Nablarchバッチ処理パターン.json:s4, ...」という内部JSON参照記法がユーザー向け回答に含まれており、ユーザーには無意味な内部実装詳細が露出している。 |
-| faithfulness | OK | DB to DBパターンの「1レコードの処理中の更新は全て同一トランザクション下で実行されるため、障害発生時でも不整合が発生しません」はナレッジのDB to DB節と一致。batchUpdate排他制御なしの注意点もナレッジ「batchUpdate を使用した、一括更新処理では排他制御処理を行わない」「排他制御が必要となる更新処理では、一括更新ではなく1レコード毎の更新処理を呼び出すこと」と一致。ナレッジ内容と矛盾なし。 |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

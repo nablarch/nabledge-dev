@@ -120,8 +120,8 @@ EntityList<Person> persons = findPersonsTransaction.getPersons();
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SimpleDbTransactionManagerを使って個別トランザクションを定義する」は回答の「`SimpleDbTransactionManager` を使って業務トランザクションとは独立した別トランザクションでSQLを実行できます」および根拠セクションのコンポーネント設定例・実装例に含まれている |
-| answer_relevancy | NG | 回答末尾の「参照: libraries-database.json:s29, libraries-universal-dao.json:s20, adapters-doma-adaptor.json:s8」は内部JSON参照記法であり、ユーザー向け回答に含まれるべき情報ではなく不適切 |
-| faithfulness | OK | ナレッジ内容（libraries-database.md s29）のSimpleDbTransactionManagerの設定例・SimpleDbTransactionExecutorの使用方法と回答内容は一致しており矛盾なし |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

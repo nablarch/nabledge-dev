@@ -83,8 +83,8 @@ public class ProjectAction {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する」は回答の「Formクラスの作成」「@Valid アノテーションを付けると JaxRsBeanValidationHandler がFormに対してBean Validationを自動実行する」「UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project))」にそれぞれ含まれている |
-| answer_relevancy | NG | 回答末尾の「参照: processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1, component/handlers/handlers-jaxrs-bean-validation-handler.json:s4, ...」など内部参照記法（JSONファイル名・セクション番号）がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ（restful-web-service-getting-started-create.md）の「プロジェクト情報を登録する」セクションの内容（Formクラス定義、@Validアノテーション、UniversalDao.insert、BeanUtil.createAndCopy、HttpResponse 201返却）と回答の記述は矛盾なし |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

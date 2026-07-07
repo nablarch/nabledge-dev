@@ -132,8 +132,8 @@ try (ObjectMapper<Person> mapper = ObjectMapperFactory.create(Person.class, inpu
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「ObjectMapperFactory#createで生成したObjectMapperを使用してデータを読み込む」は回答の「`ObjectMapperFactory.create()` が生成した `ObjectMapper` の `read()` を呼び出す」および②のコード例に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: libraries-data-bind.json:s7, libraries-data-bind.json:s15, libraries-data-bind.json:s2, nablarch-batch-getting-started-nablarch-batch.json:s2, nablarch-batch-getting-started-nablarch-batch.json:s3」という内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（ObjectMapperFactory#create使用・try-with-resources推奨・外部データはString型のルールがいずれもナレッジに一致） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

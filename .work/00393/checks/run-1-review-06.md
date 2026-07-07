@@ -164,8 +164,8 @@ public class UserSearchForm {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る」は回答の「routes.xmlで`:id`を定義し`getPathParam("id")`で取得」および「`@Path("/foo/{param}")`で定義し`getPathParam("param")`で取得」に含まれている。参照事実「クエリーパラメータはJaxRsHttpRequestから取得する」は回答の「`JaxRsHttpRequest`を引数に定義し、`getParamMap()`で取得後、`BeanUtil.createAndCopy`でFormクラスにマッピング」に含まれている。 |
-| answer_relevancy | NG | 回答末尾に「参照: restful-web-service-resource-signature.json:s2, restful-web-service-resource-signature.json:s3, adapters-router-adaptor.json:s3, adapters-router-adaptor.json:s4, adapters-router-adaptor.json:s7, adapters-router-adaptor.json:s8, adapters-router-adaptor.json:s9, restful-web-service-resource-signature.json:s1」という内部参照記法がユーザー向け回答に含まれており不適切。 |
-| faithfulness | OK | ナレッジ内容と矛盾なし。`@PathParam`・`@QueryParam`不使用の注意、JBoss/WildFlyでの`@Path`方式不可、`getPathParam()`によるパスパラメータ取得、`getParamMap()`によるクエリーパラメータ取得、いずれもナレッジ（restful-web-service-resource-signature.md・adapters-router-adaptor.md）の記述と一致している。 |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

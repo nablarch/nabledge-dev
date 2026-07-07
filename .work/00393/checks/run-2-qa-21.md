@@ -110,8 +110,8 @@ nablarch.core.validation.ee.Required.message=入力してください。
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる」は回答の「リソースクラスのメソッドに `@Valid` アノテーションを付与することで、ハンドラが自動的にBean Validationを実行します。エラー時は `ApplicationException` が送出されます。」に含まれており、参照事実「ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する」は回答の②節および `SampleErrorResponseBuilder` のコード例に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: handlers-jaxrs-bean-validation-handler.json:s4, handlers-jaxrs-response-handler.json:s7, handlers-jaxrs-response-handler.json:s4, libraries-bean-validation.json:s7, libraries-bean-validation.json:s17」という内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | @Validアノテーションの動作・ApplicationException送出・SampleErrorResponseBuilderのコード・コンポーネント設定XMLはすべてナレッジ（handlers-jaxrs-bean-validation-handler.md、handlers-jaxrs-response-handler.md）の記述と一致しており矛盾なし |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

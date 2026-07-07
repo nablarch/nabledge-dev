@@ -106,8 +106,8 @@ DomaConfig.singleton()
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SimpleDbTransactionManagerを使って個別トランザクションを定義する」は回答の「コンポーネント設定ファイルに `SimpleDbTransactionManager` を定義します」および結論文に明示されており、XMLコード例も付随している |
-| answer_relevancy | NG | 回答末尾に「参照: libraries-database.json:s29, libraries-universal-dao.json:s20, adapters-doma-adaptor.json:s8」という内部JSONファイル参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（SimpleDbTransactionManagerのXML定義例、SimpleDbTransactionExecutorの実装例ともにlibraries-database.mdの記述と一致している） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

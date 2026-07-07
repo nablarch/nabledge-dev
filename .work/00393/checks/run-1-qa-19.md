@@ -129,8 +129,8 @@ public class ProjectForm implements Serializable {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「JSONのボディ変換はJackson2BodyConverterが担当する」は回答の「JSONの場合、`Jackson2BodyConverter`が使用される。」（JSON変換の仕組みセクション）に含まれている |
-| answer_relevancy | NG | 「参照: restful-web-service-getting-started-create.json:s1, restful-web-service-architecture.json:s2, ...」など内部参照記法がユーザー向け回答の末尾に含まれており不適切 |
-| faithfulness | OK | ハンドラ構成・処理フロー・アクションクラス実装・415ステータスコード注意点いずれもナレッジ内容（restful-web-service-architecture.md、restful-web-service-getting-started-create.md、handlers-body-convert-handler.md）と矛盾なし |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

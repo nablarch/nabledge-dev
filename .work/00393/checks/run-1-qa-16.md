@@ -60,8 +60,8 @@ UniversalDao.exists(User.class, "sample.entity.Member#CHECK_EXISTS", condition);
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SQL_IDを指定してバインド変数なしでデータ存在チェックを行うexists(Class, String)メソッドがある」は回答の「① バインド変数なし（全件チェック）: `boolean result = UniversalDao.exists(User.class, "CHECK_EXISTS");`」に含まれている。参照事実「SQL_IDとバインド変数を指定してデータ存在チェックを行うexists(Class, String, Object)メソッドがある」は回答の「② バインド変数あり（条件付きチェック）: `boolean result = UniversalDao.exists(User.class, "CHECK_EXISTS", condition);`」に含まれている。 |
-| answer_relevancy | NG | 回答末尾に「参照: javadoc-nablarch-common-dao-UniversalDao.json:s17, javadoc-nablarch-common-dao-UniversalDao.json:s18, libraries-universal-dao.json:s7」という内部ナレッジファイル参照記法がユーザー向け回答に含まれており不適切。 |
-| faithfulness | OK | ナレッジ内容と矛盾なし。DeepEvalが「CHECK_EXISTSはFIND_BY_NAMEであるべき」と指摘したが、これはナレッジ側のコード例で使われているSQL ID名が異なるだけであり、`#`記法のルール（「SQLファイルのパス#SQL ID」と解釈する）は回答・ナレッジともに一致している。SQL ID名自体はユーザーが任意に定めるものであり、矛盾ではない。 |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

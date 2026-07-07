@@ -113,8 +113,8 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する」は回答の「後続ハンドラ（アクションクラスなど）で例外が発生した際に、エラーレスポンスとログを処理する中心的なハンドラ」および「errorResponseBuilder プロパティに設定された ErrorResponseBuilder が生成を担当する」に含まれている。参照事実「JaxRsErrorLogWriterが例外に応じたログ出力を行う」は回答の「errorLogWriter プロパティに設定された JaxRsErrorLogWriter がログ出力を担当する」に含まれている。 |
-| answer_relevancy | NG | 「参照: handlers-jaxrs-response-handler.json:s4, handlers-jaxrs-response-handler.json:s5, ...」などの内部参照記法がユーザー向け回答末尾に含まれており不適切。 |
-| faithfulness | OK | ナレッジ内容と矛盾なし。DeepEvalは「全VirtualMachineErrorがリスローされると主張している」と判定したが、回答はStackOverflowError/OutOfMemoryErrorを別行に分離しており（「FATAL」のみで「リスロー」とは記載していない）、知識ファイルの記述（StackOverflowError・OutOfMemoryErrorはInternalErrorを返す）と矛盾しない。 |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

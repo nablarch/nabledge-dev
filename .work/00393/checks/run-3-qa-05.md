@@ -98,8 +98,8 @@ RESTEasy環境の場合は `ResteasyJaxRsHandlerListFactory` を使用する。
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「Formクラスでクライアントから送信された値を受け付ける」は回答の「ProjectFormクラスの作成とコード例」に含まれている。参照事実「プロパティは全てString型で宣言する」は回答の「- プロパティは全てString型で宣言する。」および「注意点」セクションに明示されている。 |
-| answer_relevancy | NG | 回答末尾に「参照: restful-web-service-getting-started-create.json:s1, handlers-body-convert-handler.json:s4, handlers-body-convert-handler.json:s5, adapters-jaxrs-adaptor.json:s2」という内部参照記法がユーザー向け回答に含まれており不適切。 |
-| faithfulness | OK | ナレッジ（restful-web-service-getting-started-create.md）では「プロパティは全てString型で宣言する。詳細は バリデーションルールの設定方法 を参照。」とBean Validationルールへのリンクで理由を示しており、回答の「Bean Validationの要件」という説明はナレッジの記述と矛盾しない。その他の実装ポイント（@Consumes、@Valid、BeanUtil、UniversalDao、ステータスコード201）もナレッジ内容と一致している。 |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

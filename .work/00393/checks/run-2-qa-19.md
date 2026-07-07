@@ -108,8 +108,8 @@ public class ProjectAction {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「JSONのボディ変換はJackson2BodyConverterが担当する」は回答の「JerseyJaxRsHandlerListFactory を使用すると、JSONのコンバータとして Jackson2BodyConverter が自動的に設定される」（セクション4）に含まれている |
-| answer_relevancy | NG | 回答末尾の「参照: restful-web-service-getting-started-create.json:s1, restful-web-service-architecture.json:s2, ...」などの内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（フォームのプロパティは全てString型、@Consumes/@Valid の使用、UniversalDao.insert()、Jackson2BodyConverterの自動設定いずれもナレッジの記述と一致する） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

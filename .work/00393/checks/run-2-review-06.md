@@ -160,8 +160,8 @@ public class UserSearchForm {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る」は回答の「URLとアクションとのマッピング時にパスパラメータ部に任意の名前を設定する」および「`getPathParam("パラメータ名")` で値を取得する」に含まれている。参照事実「クエリーパラメータはJaxRsHttpRequestから取得する」は回答の「`JaxRsHttpRequest#getParamMap()` でパラメータを取得し」に含まれている。 |
-| answer_relevancy | NG | 回答末尾に「参照: restful-web-service-resource-signature.json:s2, restful-web-service-resource-signature.json:s3, adapters-router-adaptor.json:s9, ...」という内部参照記法がユーザー向け回答に含まれており不適切。 |
-| faithfulness | OK | ナレッジ内容と矛盾なし。XML方式・@Path方式のルーティング設定、JaxRsHttpRequest#getPathParam()によるパスパラメータ取得、BeanUtil.createAndCopy()によるクエリーパラメータのFormマッピング、JBoss/WildFlyでの@Path方式使用不可、@PathParam/@QueryParam使用不可の注意点はいずれもナレッジの記述と一致している。 |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

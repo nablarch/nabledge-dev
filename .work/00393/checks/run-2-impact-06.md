@@ -126,8 +126,8 @@ nablarch.lettuce.clientType=simple   # simple / masterReplica / cluster
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能」は回答の「保存先: データベース上のテーブル」「ローリングメンテナンス等でサーバが停止しても復元可能」に含まれている。参照事実「HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する」は回答の「保存先: クライアントサイド（hiddenタグで画面間引き回し）」に含まれている。 |
-| answer_relevancy | NG | 回答末尾に「参照: component/libraries/libraries-session-store.json:s16, component/libraries/libraries-session-store.json:s2, ...」など内部JSONファイル参照記法がユーザー向け回答に含まれており不適切。 |
-| faithfulness | NG | 回答の「選択基準まとめ」表で「認証情報の保持 → DBストア または Redisストア」と記載しているが、ナレッジ（s16: セッションストアの特長と選択基準）の選択基準表では「認証情報の保持 → DBストア または HTTPセッションストア」と明記されており矛盾する。 |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

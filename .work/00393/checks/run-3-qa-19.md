@@ -105,8 +105,8 @@ public class ProjectAction {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「JSONのボディ変換はJackson2BodyConverterが担当する」は回答の「Jerseyの場合、`JerseyJaxRsHandlerListFactory` を使うことで `Jackson2BodyConverter` が自動的に設定される」に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: `processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1`, ...」など内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（adapters-jaxrs-adaptor.md でJersey環境時にJackson2BodyConverterが設定されることが確認でき、コード例・ハンドラ構成も一致する） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

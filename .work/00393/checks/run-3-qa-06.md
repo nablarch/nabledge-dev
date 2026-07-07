@@ -82,8 +82,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する」は回答の「confirmationPageタグを確認画面のJSPに1行記述するだけで入力画面のJSPを確認画面として流用でき」および `<n:confirmationPage path="./input.jsp" />` のコード例に含まれている |
-| answer_relevancy | NG | 回答末尾の「参照: libraries-tag.json:s23, libraries-tag.json:s3」という内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（confirmationPageタグの用途・forInputPage/forConfirmationPageタグの動作・plainHidden/hiddenStoreタグが入力・確認画面両方で出力される点・ignoreConfirmationタグの用途がすべてナレッジの記述と一致している） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

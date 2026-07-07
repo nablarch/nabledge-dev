@@ -100,8 +100,8 @@ public HttpResponse handle(HttpRequest req, ExecutionContext ctx) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「エラー表示タグでリクエストスコープのエラーメッセージを表示する」は回答の注意点「JSPを使う場合はカスタムタグ（`<n:errors>` 等）でも表示できる」に含まれている |
-| answer_relevancy | NG | 「参照: handlers-InjectForm.json:s3, handlers-InjectForm.json:s4, handlers-HttpErrorHandler.json:s4, libraries-bean-validation.json:s16, libraries-bean-validation.json:s7, web-application-error-message.json」など内部参照記法がユーザー向け回答の末尾に含まれており不適切 |
-| faithfulness | OK | 回答の「`WebConfig` の `errorMessageRequestAttributeName` で設定する」はナレッジ（handlers-HttpErrorHandler.md）の「キー名はコンポーネント設定ファイルで変更できる」＋`<component name="webConfig" class="nablarch.common.web.WebConfig">`の`errorMessageRequestAttributeName`プロパティ設定と矛盾しない |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

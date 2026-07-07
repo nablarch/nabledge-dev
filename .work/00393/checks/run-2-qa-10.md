@@ -74,8 +74,8 @@ SqlResultSet result = statement.retrieve(entity);
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される」は回答の「`$if (プロパティ名) {条件}` と記述する。プロパティ値が null または空文字列（String の場合）のとき、その条件ブロックは SQL から除外される」に含まれている |
-| answer_relevancy | NG | 「参照: libraries-database.json:s21, libraries-database.json:s16, libraries-database.json:s22」という内部参照記法がユーザー向け回答末尾に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容（libraries-database.md s21: 可変条件の記述ルール、$if構文、除外条件、where句限定・ネスト不可制約）と矛盾なし |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

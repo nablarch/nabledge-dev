@@ -136,8 +136,8 @@ public class ExampleErrorForwardHandler implements Handler<Object, Object> {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返す」は回答の例外種別テーブル（NoMoreHandlerException→404、StackOverflowError→500等）に含まれている。「ApplicationExceptionのエラーメッセージをリクエストスコープに設定する」は回答の「HttpErrorResponseの原因例外がApplicationExceptionの場合は、エラーメッセージをErrorMessagesに変換してリクエストスコープ（デフォルトキー: errors）に設定する」に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: handlers-HttpErrorHandler.json:s4」等の内部JSON参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | NG | 回答の「上記以外の例外・エラー → FATAL, 500」はナレッジの「java.lang.ThreadDeath と java.lang.VirtualMachineError（StackOverflowError 以外）は本ハンドラでは何もせず上位のハンドラに処理を任せる（エラーを再送出する）」と矛盾する |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

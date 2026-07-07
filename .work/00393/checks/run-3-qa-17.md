@@ -68,8 +68,8 @@ public static <T> T get(String name) throws ClassCastException
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | NG | 参照事実「get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する」について、回答はシグネチャ `public static <T> T get(String name)` を示し ClassCastException の説明も記述しているが、「型パラメータを利用した型安全な取得」という核心の事実が明示的に述べられていない（シグネチャのメタ情報として掲示されているにとどまり、これが型安全取得の主要な仕組みであるとは記述されていない） |
-| answer_relevancy | NG | 回答末尾に「参照: libraries-repository.json:s25, libraries-repository.json:s24, javadoc-nablarch-core-repository-SystemRepository.json:s11」という内部参照記法がユーザー向け回答に含まれており、ユーザーには不適切な情報である |
-| faithfulness | OK | ナレッジ内容と矛盾なし（XMLおよびJavaコード例はs25と完全一致、シグネチャ・ClassCastException・null返却はjavadoc s11と一致、シングルトン記述はナレッジの「構築されるオブジェクトはシングルトンとなる」と一致、ServletContextListener自動設定はs24と一致） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

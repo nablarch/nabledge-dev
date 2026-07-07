@@ -168,8 +168,8 @@ Step 6 でベリファイします。
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する」は回答のStep 1「言語ごとのファイルを作成します」およびStep 2「`<property name="locales">`」の設定例に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: libraries-message.json:s8, handlers-thread-context-handler.json:s7, ...」などの内部参照記法、「Step 6 でベリファイします。」という内部プロセス注記、「クレーム抽出:」セクションと「verify_result = PASS」がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（defaultLocale未設定時にOS言語設定が使われ障害の原因になる旨、ファイル名はmessages_言語.propertiesとする旨など、回答の主要クレームはlibraries-message.md s8の記述と一致） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

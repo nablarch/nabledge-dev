@@ -87,8 +87,8 @@
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する」は回答の「確認画面のJSP（これだけで実装完了）: `<n:confirmationPage path="./input.jsp" />`」およびタグ説明表の `n:confirmationPage` 行に明確に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: libraries-tag.json:s3, libraries-tag.json:s23, libraries-tag-reference.json:s64, libraries-tag-reference.json:s65, libraries-tag-reference.json:s66, libraries-tag-reference.json:s67」という内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | DeepEvalは `ignoreConfirmation` タグが省略されたと判定したが、回答のタグ説明表（「特定部分で確認画面向け表示を無効化したい場合に使用（例：確認画面でもチェック欄を表示したいとき）」）に明記されており、ナレッジ内容（libraries-tag.md 1562-1565行）と矛盾なし |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

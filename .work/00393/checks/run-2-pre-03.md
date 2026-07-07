@@ -98,8 +98,8 @@ try (DeferredEntityList<User> users
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SQLファイルを作成してSQL IDを指定した検索ができ、検索結果はBeanにマッピングされる」は回答の「SQLファイルを作成し、SQL IDを指定して検索します: UniversalDao.findAllBySqlFile(User.class, "FIND_BY_NAME")」および「検索結果をマッピングするBeanのプロパティ名はSELECT句の列名と一致させる必要があります」に含まれている |
-| answer_relevancy | NG | 回答末尾の「参照: libraries-universal-dao.json:s7, libraries-universal-dao.json:s10, libraries-universal-dao.json:s12, libraries-universal-dao.json:s9, libraries-universal-dao.json:s6, web-application-getting-started-project-search.json:s1」など内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし（findAllBySqlFileの使い方・SQLファイルパス導出・Bean マッピング・遅延ロード・ページング・設定・主キー以外の更新削除制約、いずれもナレッジの記述と一致） |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

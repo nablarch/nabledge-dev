@@ -119,8 +119,8 @@ nonce有効時のJSPカスタムタグの動作変化:
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする」は回答の結論「SecureHandlerのコンポーネント定義にContentSecurityPolicyHeaderを追加することでCSPヘッダを設定できる。JSPカスタムタグを使用している場合はnonceを利用した対応が必要」およびパターン1〜2の詳細説明に含まれている。DeepEvalのNGはスコア計算の誤りであり、実際には全要素が網羅されている。 |
-| answer_relevancy | NG | 回答末尾に「参照: component/handlers/handlers-secure-handler.json:s6, component/handlers/handlers-secure-handler.json:s7, ...」という内部参照記法がユーザー向け回答に含まれており、質問への回答として不適切な内容が混入している。 |
-| faithfulness | OK | ナレッジ（handlers-secure-handler.md）の記述と矛盾なし。generateCspNonce=trueでnonceをリクエストごとに生成・リクエストスコープに格納、$cspNonceSource$がnonce-[値]に置換、reportOnly=trueでContent-Security-Policy-Report-Onlyヘッダを出力、という回答の主張はすべてナレッジの内容と一致する。 |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

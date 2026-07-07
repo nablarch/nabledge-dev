@@ -88,8 +88,8 @@ new MyTransaction();
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「SimpleDbTransactionManagerを使って個別トランザクションを定義する」は回答の「コンポーネント設定ファイルに `SimpleDbTransactionManager` を定義する」およびXML設定例に含まれている |
-| answer_relevancy | NG | 回答末尾の「参照: libraries-database.json:s29, libraries-universal-dao.json:s20」という内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし。コンストラクタでSimpleDbTransactionManagerオブジェクトも指定できる旨の言及省略は不完全だが矛盾ではなく、「インスタンス化すると自動的に別トランザクションで実行される」はナレッジの`new FindPersonsTransaction()`呼び出しパターンと整合している |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

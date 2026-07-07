@@ -113,8 +113,8 @@ java nablarch.fw.launcher.Main \
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「DatabaseRecordReaderでデータベースからデータを読み込む」は回答の全体構成表・コード例（`createReader`メソッド）・注意点に含まれている。参照事実「BatchActionを継承したアクションクラスを実装する」は回答の全体構成表・コード例（`AggregationBatchAction extends BatchAction<SqlRow>`）に含まれている。 |
-| answer_relevancy | NG | 回答末尾に「参照: nablarch-batch-architecture.json:s3, nablarch-batch-architecture.json:s5, nablarch-batch-architecture.json:s7, nablarch-batch-architecture.json:s8, nablarch-patterns-Nablarchバッチ処理パターン.json:s2, nablarch-patterns-Nablarchバッチ処理パターン.json:s4, nablarch-batch-getting-started-nablarch-batch.json:s3」という内部参照記法がユーザー向け回答に含まれており不適切。 |
-| faithfulness | OK | ハンドラ構成（メインスレッド6段・サブスレッド3段）、DatabaseRecordReaderによるDB読み込み、BatchAction継承、トランザクションループ制御ハンドラによるコミット間隔制御の記述はいずれもナレッジ（nablarch-batch-architecture.md の都度起動バッチDB接続有り最小ハンドラ構成表）と矛盾なし。 |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

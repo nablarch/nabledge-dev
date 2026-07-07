@@ -94,8 +94,8 @@ public void login(ExecutionContext context, LoginRequestForm form) {
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している」は回答の「NablarchにはOAuth2/OpenID Connectの認証機構は組み込まれていない」に明確に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: guide/biz-samples/biz-samples-12.json:s2, guide/biz-samples/biz-samples-12.json:s11, ...」など内部JSON参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ内容と矛盾なし。web-application-feature-details.mdの「認証については、プロジェクト要件により仕様が異なるため、フレームワークとしては提供していない」およびbiz-samples-12.mdのOIDCサンプル内容（Amazon Cognito・Azure AD B2C対応、依存ライブラリ、コンポーネント定義、ログインアクションコード）はすべて回答内容と一致する |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 

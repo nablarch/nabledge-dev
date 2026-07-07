@@ -110,8 +110,8 @@ nablarch.core.validation.ee.SystemChar.message={charsetDef}を入力してくだ
 | 指標 | 判定 | 根拠 |
 |---|---|---|
 | answer_correctness | OK | 参照事実「WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う」は回答の結論「`@InjectForm` インターセプタを業務アクションのメソッドに付与し」およびStep 3のコード例に明確に含まれている |
-| answer_relevancy | NG | 回答末尾に「参照: libraries-bean-validation.json:s8, libraries-bean-validation.json:s16, ...」などの内部参照記法がユーザー向け回答に含まれており不適切 |
-| faithfulness | OK | ナレッジ（バリデーションルールの設定方法 Tipブロック）は「プロパティは必ず String とすること」と明記しており、回答の「必ず `String` 型で宣言すること」と矛盾しない。DeepEvalが「推奨にすぎない」と判断したのは誤り |
+| answer_relevancy | — | —
+| faithfulness | — | —
 
 ### 参照事実（expected_facts）
 
