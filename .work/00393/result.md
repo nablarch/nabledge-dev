@@ -40,13 +40,13 @@
 
 #### 入出力の例（代表 5 件）
 
-| input（質問） | actual_output（回答冒頭） |
+| 質問（input） | 期待事実（expected_output） |
 |---|---|
-| 大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？ | `UniversalDao.defer()` メソッドを使用して遅延ロードを有効にする。これにより内部でサーバサイドカーソルが使われ、1件ずつ読み込むことができる。 |
-| 業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい | `SimpleDbTransactionManager` と `SimpleDbTransactionExecutor` を使用することで、業務トランザクションとは独立した別トランザクションでSQLを実行できます。 |
-| 入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？ | `n:confirmationPage`、`n:forInputPage`、`n:forConfirmationPage` の3タグを使うことで、入力画面と確認画面のJSPを共通化できます。 |
-| バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？ | NablarchにはWebSocketのサポート機能は提供されていません。（スコープ外質問に対する回答例） |
-| REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい | パスパラメータ・クエリーパラメータともに `JaxRsHttpRequest` を使って取得する。ルーティングは `routes.xml` か `@Path` アノテーションの2方式で設定できる。 |
+| 大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？ | UniversalDao.deferメソッドで遅延ロードを使用する / DeferredEntityListのcloseメソッドを呼び出す必要がある |
+| 業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい | SimpleDbTransactionManagerを使って個別トランザクションを定義する |
+| 入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？ | confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する |
+| バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？ | NablarchにはWebSocketのサポートがないと回答している |
+| REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい | パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る / クエリーパラメータはJaxRsHttpRequestから取得する |
 
 ### 検証方法
 
