@@ -61,7 +61,7 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 - 102件全ての確認ファイルに3指標×判定・根拠が記入されている
 - 未記入（空欄）のファイルが0件である
 
-### #3: 集計レポートを作成する
+### #3: 集計レポートを作成する ✅
 
 **Purpose**: false-positive率・false-negative率を指標ごとに算出し `.work/00393/result.md` にまとめる。
 
@@ -69,10 +69,10 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 
 **Steps**:
 
-- [ ] 102件の判定結果を集計し、指標ごとのfalse-positive数・false-negative数・率を算出する
-- [ ] `.work/00393/result.md` を作成する
-- [ ] コミット・プッシュ
-- [ ] self-check (OK/NG per completion criterion, record in checks-meta/t3.md)
+- [x] 102件の判定結果を集計し、指標ごとのfalse-positive数・false-negative数・率を算出する
+- [x] `.work/00393/result.md` を作成する
+- [x] コミット・プッシュ
+- [x] self-check (OK/NG per completion criterion, record in checks-meta/t3.md)
 
 **Completion criteria**:
 
