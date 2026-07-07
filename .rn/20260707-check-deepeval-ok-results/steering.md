@@ -43,7 +43,7 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 - 各ファイルに質問文・回答文・ナレッジセクションへのリンク・3指標のスコア表（判定欄は空欄）が含まれている
 - スクリプトがエラーなく完走する
 
-### #2: 102件の判定を記入する
+### #2: 102件の判定を記入する ✅
 
 **Purpose**: 各確認ファイルにAIが判定と根拠を記入する（1エージェント=1ファイル、3並列で102件を処理）。
 
@@ -51,10 +51,10 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 
 **Steps**:
 
-- [ ] 102ファイルを3並列（1エージェント=1ファイル）で処理する
-- [ ] コミット・プッシュ
-- [ ] self-check (OK/NG per completion criterion, record in checks-meta/t2.md)
-- [ ] QA expert review (subagent)
+- [x] 102ファイルを3並列（1エージェント=1ファイル）で処理する
+- [x] コミット・プッシュ
+- [x] self-check (OK/NG per completion criterion, record in checks-meta/t2.md)
+- [x] QA expert review (subagent)
 
 **Completion criteria**:
 
