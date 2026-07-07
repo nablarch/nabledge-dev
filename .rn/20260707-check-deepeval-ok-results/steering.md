@@ -87,7 +87,7 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 
 **Steps**:
 
-- [ ] `.work/00393/result.md` の内容をユーザーに提示する
+- [x] `.work/00393/result.md` の内容をユーザーに提示する
 - [ ] `/rn:ty` または `/rn:gm` でユーザーの承認を受ける
 
 **Completion criteria**:
@@ -100,8 +100,8 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: not suspended
+- **Status**: paused
 - **Date**: 2026-07-07
-- **Last completed**: #2 redo + #3 redo — relevancy/faithfulness 再評価・result.md 更新
-- **Next**: #4 Evaluation sign-off
-- **Notes**: 
+- **Last completed**: #4 step 1 — result.md をユーザーに提示済み
+- **Next**: #4 step 2 — `/rn:ty` または `/rn:gm` でユーザー承認を受ける
+- **Notes**: result.md の内容はユーザーに提示済み。承認待ち。
