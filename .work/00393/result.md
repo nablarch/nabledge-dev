@@ -34,25 +34,19 @@ FP事例（根拠ファイル）:
 
 | 区分 | 件数 | 率 |
 |------|------|----|
-| DeepEval=OK, 人手=OK（合意・正常） | 1 | — |
-| DeepEval=NG, 人手=NG（合意・問題あり） | 22 | — |
-| DeepEval=NG, 人手=OK（false-positive / 誤検知） | 1 | 4.3% (1/23) |
-| **DeepEval=OK, 人手=NG（false-negative / 見逃し）** | **78** | **98.7%** (78/79) |
+| DeepEval=OK, 人手=OK（合意・正常） | 79 | — |
+| DeepEval=NG, 人手=NG（合意・問題あり） | 9 | — |
+| **DeepEval=NG, 人手=OK（false-positive / 誤検知）** | **14** | **60.9%** (14/23) |
+| DeepEval=OK, 人手=NG（false-negative / 見逃し） | 0 | 0.0% (0/79) |
 
-**false-positive率: 4.3%** — ほぼ誤検知なし。  
-**false-negative率: 98.7%** — DeepEvalがOKとした79件のうち78件は人手評価ではNG。
+**false-positive率: 60.9%** — DeepEvalがNGとした23件のうち14件は人手評価ではOK。  
+**false-negative率: 0.0%** — 見逃しなし。
 
-**false-negative 主因**: nabledgeの回答末尾に `参照: xxx.json:sN` という内部JSON参照記法（例: `参照: libraries-universal-dao.json:s9`）が含まれており、これはユーザーには無意味な内部実装詳細の露出である。DeepEvalはこの不適切コンテンツを見逃している。
+**false-positive 主因**: DeepEvalが回答末尾の `参照: xxx.json:sN` 形式の内部ナレッジ参照記法を「無関係なコンテンツ」と判定している。人手評価では、回答本体の内容は質問に直接関連しており問題なしと判断。
 
-この問題は**全102件のほぼ全てで共通して発生**しており、answer_relevancyの閾値（0.95）をほとんどの場合でわずかに下回る（スコア0.91〜0.94程度）。DeepEvalの閾値は内部参照を検知できていない。
-
-FP事例:
-- [run-2-qa-01.md](.work/00393/checks/run-2-qa-01.md) — DeepEvalがNGとした（内部参照を検知）が、人手では回答本体の関連性が高いためOK
-
-FN事例（代表）:
-- [run-1-qa-02.md](.work/00393/checks/run-1-qa-02.md) — DeepEval=OK(1.0)だがJSONファイル参照記法が混入
-- [run-1-pre-02.md](.work/00393/checks/run-1-pre-02.md) — 同上
-- 他74件（[全FNリストはchecksディレクトリを参照](.work/00393/checks/)）
+FP事例（代表）:
+- [run-1-impact-01.md](.work/00393/checks/run-1-impact-01.md) — 参照記法を理由にNGだが回答本体は質問に直接関連
+- [run-1-qa-01.md](.work/00393/checks/run-1-qa-01.md) — 同上（他12件も同様のパターン）
 
 ---
 
@@ -61,18 +55,18 @@ FN事例（代表）:
 | 区分 | 件数 | 率 |
 |------|------|----|
 | DeepEval=OK, 人手=OK（合意・正常） | 66 | — |
-| DeepEval=NG, 人手=NG（合意・問題あり） | 8 | — |
-| **DeepEval=NG, 人手=OK（false-positive / 誤検知）** | **27** | **77.1%** (27/35) |
+| DeepEval=NG, 人手=NG（合意・問題あり） | 9 | — |
+| **DeepEval=NG, 人手=OK（false-positive / 誤検知）** | **26** | **74.3%** (26/35) |
 | DeepEval=OK, 人手=NG（false-negative / 見逃し） | 1 | 1.5% (1/67) |
 
-**false-positive率: 77.1%** — DeepEvalがNGとした35件のうち27件は人手評価ではOK。  
+**false-positive率: 74.3%** — DeepEvalがNGとした35件のうち26件は人手評価ではOK。  
 **false-negative率: 1.5%** — 見逃しはほぼなし。
 
 **false-positive 主因**: DeepEvalが「回答がナレッジの一部を省略している」「コンストラクタの引数パターンが完全でない」などを矛盾と解釈しているが、人手評価では省略は矛盾ではなく、記述内容自体はナレッジと整合している。
 
 FP事例（代表）:
 - [run-1-impact-01.md](.work/00393/checks/run-1-impact-01.md) — `UniversalDao.Transaction` コンストラクタの説明が一部省略されているとDeepEvalが判定したが、記述内容はナレッジと矛盾なし
-- [run-2-oos-qa-01.md](.work/00393/checks/run-2-oos-qa-01.md) — 他26件（[全FPリスト](.work/00393/checks/)）
+- 他25件（[全FPリスト](.work/00393/checks/)）
 
 FN事例:
 - [run-2-qa-11.md](.work/00393/checks/run-2-qa-11.md) — DeepEval=OKだが回答がナレッジに存在しない記述を含む
@@ -84,16 +78,18 @@ FN事例:
 | 指標 | false-positive率 | false-negative率 | 評価 |
 |------|------------------|------------------|------|
 | answer_correctness | **44.4%** (4/9) | 0.0% (0/93) | 誤検知が多い・見逃しなし |
-| answer_relevancy | 4.3% (1/23) | **98.7%** (78/79) | 見逃しが極めて多い |
-| faithfulness | **77.1%** (27/35) | 1.5% (1/67) | 誤検知が非常に多い・見逃しは少ない |
+| answer_relevancy | **60.9%** (14/23) | 0.0% (0/79) | 誤検知が多い・見逃しなし |
+| faithfulness | **74.3%** (26/35) | 1.5% (1/67) | 誤検知が非常に多い・見逃しは少ない |
 
 ## 解釈
 
-**answer_relevancy の大規模false-negative (98.7%)** は単一の系統的問題に起因する: nabledge回答末尾の内部JSON参照記法（`参照: xxx.json:sN`）がDeepEvalの関連性評価をすり抜けている。これはDeepEvalの評価観点がユーザー体験上の不適切コンテンツを直接検知できないことを示す。
+**全指標で false-positive（誤検知）が高く、false-negative（見逃し）はほぼゼロ** という一貫した傾向がある。DeepEvalは「問題あり」方向に厳しすぎる判定をしており、実際には問題のない回答を誤ってNGとすることが多い。
 
-**faithfulness の高false-positive (77.1%)** は、DeepEvalが「省略」を「矛盾」と過剰解釈することを示す。faithfulnessの判定には人手によるfact-checkが不可欠。
+**answer_relevancy の高 false-positive (60.9%)** は主に回答末尾の内部ナレッジ参照記法（`参照: xxx.json:sN`）をDeepEvalが「無関係なコンテンツ」と解釈することに起因する。この記法は回答の関連性を本質的に損なわないが、DeepEvalのスコアを閾値（0.95）直下に押し下げるケースが多い。
 
-**answer_correctness の中程度false-positive (44.4%)** は、参照事実が少数（1〜2件）のシナリオでDeepEvalが表現差異や補足情報の多さをNGと判定するケースに限定されており、影響範囲は小さい（9件中4件）。
+**faithfulness の高 false-positive (74.3%)** は、DeepEvalが「省略」を「矛盾」と過剰解釈することを示す。ナレッジの全情報を回答に含めることは求められておらず、含まれている情報がナレッジと矛盾しなければ faithful と判断すべきだが、DeepEvalはこの区別ができていない。
+
+**answer_correctness の中程度 false-positive (44.4%)** は、参照事実が少数（1〜2件）のシナリオでDeepEvalが表現差異や補足情報の多さをNGと判定するケースに限定されており、影響範囲は小さい（9件中4件）。
 
 ## 確認ファイル
 
