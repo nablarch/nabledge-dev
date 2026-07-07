@@ -45,13 +45,13 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 
 ### #2: 102件の判定を記入する
 
-**Purpose**: 各確認ファイルにAIが判定と根拠を記入する（1件ずつ照合）。
+**Purpose**: 各確認ファイルにAIが判定と根拠を記入する（34シナリオを3並列×1件ずつ処理）。
 
 **Prerequisites**: #1
 
 **Steps**:
 
-- [ ] 102件のMDファイルに対し、answer.mdとナレッジを照合して判定・根拠を記入する
+- [ ] 34シナリオを3エージェント並列で処理する（各エージェントが1シナリオを担当し、run-1〜run-3の3ファイルを処理）
 - [ ] コミット・プッシュ
 - [ ] self-check (OK/NG per completion criterion, record in checks-meta/t2.md)
 - [ ] QA expert review (subagent)
@@ -100,8 +100,8 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: not suspended
-- **Date**: YYYY-MM-DD
-- **Last completed**: —
-- **Next**: #1 確認ファイル生成スクリプト作成・実行
-- **Notes**: 対象: 20260616-1214-fullbench-classes-v6/run-1〜run-3。閾値: correctness≥0.99/relevancy≥0.95/faithfulness≥0.99。ナレッジMD: .claude/skills/nabledge-6/docs/
+- **Status**: paused
+- **Date**: 2026-07-07
+- **Last completed**: #1 確認ファイル生成スクリプト作成・実行
+- **Next**: #2 102件の判定記入 — 34シナリオ×3エージェント並列、1エージェント=1シナリオ(run-1〜run-3の3ファイル)で処理
+- **Notes**: 1エージェント102件一括処理を中断・破棄済み（精度リスク）。チェックファイルはblank状態にリセット済み。次回: /rn:up で再開、#2の並列実行から。
