@@ -92,9 +92,9 @@ SessionUtil.delete(ctx, "project");
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う」は回答の結論「複数タブでの画面操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使用する」および表に明確に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: libraries-session-store.json:s9, libraries-session-store.json:s16, libraries-session-store.json:s2, libraries-session-store.json:s12, libraries-create-example.json:s1, libraries-create-example.json:s2, libraries-create-example.json:s3, libraries-create-example.json:s4」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ内容と矛盾なし（ストア選択基準の表、各ストアの特長、hiddenStoreタグのJSP例、冗長化時の暗号化キー設定注意、Entity格納推奨はすべてlibraries-session-store.mdの記述と一致している） |
 
 ### 参照事実（expected_facts）
 

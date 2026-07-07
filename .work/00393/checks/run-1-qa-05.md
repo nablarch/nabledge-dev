@@ -103,9 +103,9 @@ public class ProjectAction {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「Formクラスでクライアントから送信された値を受け付ける」は回答の「クライアントから受け取るJSONのフィールドに対応したFormクラスを作成する」に含まれている。参照事実「プロパティは全てString型で宣言する」は回答の「プロパティは全てString型で宣言する」に明示されている。 |
+| answer_relevancy | NG | 回答末尾の「参照: restful-web-service-getting-started-create.json:s1, handlers-body-convert-handler.json:s4, ...」など内部JSONファイル参照記法がユーザー向け回答に含まれており不適切。 |
+| faithfulness | OK | ナレッジ（restful-web-service-getting-started-create.md）の内容と矛盾なし。FormクラスのコードサンプルやアクションメソッドのAnnotation、BeanUtil/UniversalDao使用方法は全てナレッジの記述と一致している。 |
 
 ### 参照事実（expected_facts）
 

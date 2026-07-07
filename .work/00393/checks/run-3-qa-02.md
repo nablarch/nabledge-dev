@@ -121,9 +121,9 @@ mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main \
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「DatabaseRecordReaderでデータベースからデータを読み込む」は回答の表「データリーダ: `DatabaseRecordReader`（DBからレコードを1件ずつ読み込む）」およびコード例の`createReader`メソッドに含まれている。参照事実「BatchActionを継承したアクションクラスを実装する」は回答の表「アクションクラス: `BatchAction`を継承して`handle`メソッドに業務ロジックを実装」およびコード例`AggregationBatchAction extends BatchAction<InputEntity>`に含まれている。 |
+| answer_relevancy | NG | 回答末尾に「参照: nablarch-batch-architecture.json:s3, nablarch-batch-architecture.json:s5, ...」という内部JSON参照記法がユーザー向け回答に含まれており、エンドユーザーには不要かつ不適切なコンテンツである。 |
+| faithfulness | OK | ナレッジ「DB to DB」節の「入力はSELECT文の結果セットの各レコード」「1レコードの処理中に行われる更新は同一トランザクション下で実行されるため障害発生時でも不整合が発生しない」と回答の記述が一致しており、矛盾なし。 |
 
 ### 参照事実（expected_facts）
 

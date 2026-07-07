@@ -57,9 +57,9 @@ Component2 component2 = SystemRepository.get("component.component2");
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | NG | 参照事実「get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する」が回答に含まれていない。回答はコンポーネント名の指定方法やネスト取得を説明しているが、型パラメータ・型安全取得については一切言及がない |
+| answer_relevancy | NG | 回答末尾に「参照: libraries-repository.json:s25, libraries-repository.json:s24」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ内容（s25：システムリポジトリからオブジェクトを取得する、s24：DIコンテナの情報をシステムリポジトリに設定する）と矛盾なし。XMLコード例・Javaコード例・シングルトン説明・ネストコンポーネント取得方法はすべてナレッジ記述と一致する |
 
 ### 参照事実（expected_facts）
 

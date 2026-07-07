@@ -74,9 +74,9 @@ Maven プロファイルを使い、環境別ディレクトリ (`src/env/dev/`,
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる」は回答の「コンポーネント定義で指定するクラスを差し替えるだけで、日時の取得方法を切り替えられます。」に含まれている |
+| answer_relevancy | NG | 「参照: libraries-date.json:s2, libraries-date.json:s5, libraries-date.json:s6, libraries-date.json:s12, testing-framework-03-Tips.json:s11, testing-framework-03-Tips.json:s12」など内部参照記法がユーザー向け回答の末尾に含まれており不適切 |
+| faithfulness | NG | 回答の `<property name="fixedDate" value="20100914123456" />` はナレッジ（testing-framework-03-Tips.md s11）の記述 `value="20100913123456"` と矛盾している |
 
 ### 参照事実（expected_facts）
 

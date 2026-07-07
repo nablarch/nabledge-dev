@@ -91,9 +91,9 @@ JSPにNablarchカスタムタグ（`n:form`等）を使用している場合、C
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う」は回答の「CsrfTokenVerificationHandler をハンドラ構成に追加するだけで有効になる」および詳細説明に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: handlers-csrf-token-verification-handler.json:s4, handlers-csrf-token-verification-handler.json:s3, handlers-csrf-token-verification-handler.json:s5, security-check-2.チェックリスト.json:s6」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ内容と矛盾なし（ハンドラ配置順、UUIDv4生成、検証対象外メソッド、トークン送信方法、BadRequest(400)、NopHandler、CsrfTokenUtil.regenerateCsrfTokenすべてナレッジと一致；DeepEvalが指摘したハンドラ順序の問題もナレッジと整合しており矛盾なし） |
 
 ### 参照事実（expected_facts）
 

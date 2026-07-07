@@ -74,9 +74,9 @@
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う」は回答の結論「このハンドラをハンドラ構成に追加するだけで、CSRFトークンの生成と検証が自動的に行われます」に含まれている |
+| answer_relevancy | NG | 回答末尾の「参照: handlers-csrf-token-verification-handler.json:s4, handlers-csrf-token-verification-handler.json:s3, handlers-csrf-token-verification-handler.json:s5, security-check-2.チェックリスト.json:s6」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ内容と矛盾なし（UUID v4生成・検証対象外メソッド・トークン取得箇所・400応答・ハンドラ配置順・ログイン時再生成・テスト時NopHandler差し替えすべてナレッジ記述と一致） |
 
 ### 参照事実（expected_facts）
 

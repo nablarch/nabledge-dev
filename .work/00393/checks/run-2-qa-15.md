@@ -64,9 +64,9 @@ SecureHandlerがデフォルトで設定するXSS関連ヘッダ：`X-XSS-Protec
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能」は回答の結論「カスタムタグを一貫して使用する限りXSSの根本的解決策『全要素エスケープ（IPA 5-(i)）』に対応できます」に明確に含まれている |
+| answer_relevancy | NG | 回答末尾の参照セクションに `check/security-check/security-check-2.チェックリスト.json#クロスサイトスクリプティング` や `component/libraries/libraries-tag.json#htmlエスケープ漏れを防げる` など内部JSONファイルパスがユーザー向け回答に表示されており不適切 |
+| faithfulness | OK | 参照ナレッジが（なし）のため矛盾する取得コンテキストは存在しない。実際のナレッジファイル（libraries-tag.md）を確認したところ、回答が述べるHTMLエスケープ変換内容（`&`→`&amp;`等）およびEL式の非エスケープ挙動はナレッジ内容と完全に一致しており矛盾なし |
 
 ### 参照事実（expected_facts）
 

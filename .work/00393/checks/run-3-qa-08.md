@@ -120,9 +120,9 @@ LanguageAttributeInHttpUtil.keepLanguage(request, context, language);
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する」は回答の「①プロパティファイルの準備」でmessages.properties / messages_en.propertiesを用意し、「②コンポーネント定義」でPropertiesStringResourceLoaderのlocalesプロパティにenを設定する例として明示されている |
+| answer_relevancy | NG | 回答末尾の「参照: libraries-message.json:s8, handlers-thread-context-handler.json:s7, handlers-thread-context-handler.json:s4」はシステム内部のJSON参照記法であり、ユーザー向け回答に含めるべき情報ではない |
+| faithfulness | OK | DeepEvalはdefaultLocaleを「任意設定」と誤判定しているが、ナレッジ（libraries-message.md「多言語化対応」節）には「必ずデフォルトの言語を設定すること」と明記されており、回答の「defaultLocaleは必ず明示的に設定すること」はナレッジと完全に一致する。矛盾なし |
 
 ### 参照事実（expected_facts）
 

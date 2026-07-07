@@ -77,9 +77,9 @@ public class ProjectAction {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する」は、回答の「ProjectFormクラスの実装」「@Validアノテーションの説明」「UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project))」にすべて含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: restful-web-service-getting-started-create.json:s1, handlers-jaxrs-bean-validation-handler.json:s4, ...」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | NG | 回答の「Jersey/RESTEasyアダプタ（`JerseyJaxRsHandlerListFactory` 等）を使用している場合は自動的に正しい順序で設定される」は、ナレッジ（adapters-jaxrs-adaptor.md）の記述「JerseyJaxRsHandlerListFactoryはJersey用のアダプタに対するファクトリクラス」と矛盾する（RESTEasyアダプタにJerseyJaxRsHandlerListFactoryは使用されない） |
 
 ### 参照事実（expected_facts）
 

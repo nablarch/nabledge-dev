@@ -50,9 +50,9 @@ try (DeferredEntityList<User> users
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「UniversalDao.deferメソッドで遅延ロードを使用する」は回答の「`UniversalDao.defer()` メソッドを使用して遅延ロードを有効にする」に含まれている。参照事実「DeferredEntityListのcloseメソッドを呼び出す必要がある」は回答の「`DeferredEntityList#close()` を必ず呼び出すこと」に含まれている。 |
+| answer_relevancy | NG | 「参照: libraries-universal-dao.json:s9」という内部参照記法がユーザー向け回答の末尾に含まれており、ユーザーへの回答として不適切なコンテンツが混入している。 |
+| faithfulness | OK | ナレッジ（libraries-universal-dao.md s9「検索結果を遅延ロードする」）の記述と矛盾なし。`UniversalDao#defer`でサーバサイドカーソルを使用すること、`DeferredEntityList#close`の呼び出しが必要なこと、try-with-resourcesの使用推奨、トランザクション制御によるカーソルクローズの注意点、いずれも知識と一致している。 |
 
 ### 参照事実（expected_facts）
 

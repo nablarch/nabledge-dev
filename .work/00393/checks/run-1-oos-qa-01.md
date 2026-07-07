@@ -35,9 +35,9 @@ Nablarchのウェブアプリケーションアーキテクチャは、リクエ
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「NablarchにはWebSocketのサポートがないと回答している」は回答の「NablarchにはWebSocketのサポート機能は提供されていません」に明確に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: processing-pattern/web-application/web-application-architecture.json:s1」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ（web-application-architecture.md s1）は「ServletAPIの使用を前提としている」「ハンドラキューで処理する設計」と記述しており、回答の「Servlet APIを前提とした構成」「WebSocketはフレームワーク機能として提供されている範囲外」という内容と矛盾なし |
 
 ### 参照事実（expected_facts）
 

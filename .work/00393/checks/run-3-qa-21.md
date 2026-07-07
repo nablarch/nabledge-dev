@@ -117,9 +117,9 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる」は回答の「リソースクラスのメソッドに `@Valid` を付けると、`JaxRsBeanValidationHandler` がバリデーションを実行し、エラー時は `ApplicationException` がスローされます」に含まれている。参照事実「ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する」は回答の「`ErrorResponseBuilder` を継承してエラーメッセージをレスポンスボディに含める実装を追加します」およびコード例に含まれている。 |
+| answer_relevancy | NG | 回答末尾に「参照: handlers-jaxrs-bean-validation-handler.json:s4, handlers-jaxrs-response-handler.json:s4, handlers-jaxrs-response-handler.json:s7, libraries-bean-validation.json:s7, libraries-bean-validation.json:s17」という内部参照記法がユーザー向け回答に含まれており不適切。 |
+| faithfulness | NG | 回答の注意点「ErrorResponseBuilder の処理中に例外が発生するとクライアントにレスポンスを返せなくなる」はナレッジ（handlers-jaxrs-response-handler.md）の記述「ErrorResponseBuilderの処理中に例外が発生した場合、フレームワークはErrorResponseBuilderの処理中に発生した例外をWARNレベルでログ出力を行い、ステータスコード500のレスポンスを生成し、後続処理を継続する」と矛盾する（実際にはクライアントに500レスポンスが返される）。 |
 
 ### 参照事実（expected_facts）
 

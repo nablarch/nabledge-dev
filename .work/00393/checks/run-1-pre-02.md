@@ -104,9 +104,9 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う」は回答の結論「ウェブアプリケーションの入力チェックは `@InjectForm` インターセプタとBean Validationを組み合わせて実装する」および手順3「業務アクションへの`@InjectForm`設定」に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: libraries-bean-validation.json:s8, libraries-bean-validation.json:s16, libraries-bean-validation.json:s9, handlers-InjectForm.json:s3, handlers-InjectForm.json:s4」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ内容と矛盾なし（Formプロパティ全String型・@OnError未設定時システムエラー・@RequiredはFormクラス側に設定など主要記述はいずれもlibraries-bean-validation.mdおよびhandlers-InjectForm.mdの記述と一致） |
 
 ### 参照事実（expected_facts）
 

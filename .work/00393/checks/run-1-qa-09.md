@@ -110,9 +110,9 @@ provider.setDate(segment, date);
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「BusinessDateUtilを使用して業務日付を取得する」は回答の `String bizDate = BusinessDateUtil.getDate();` に含まれている。参照事実「業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要」は回答の「業務日付はDBテーブル（区分＋日付の2カラム構成）で管理します」および BasicBusinessDateProvider の XML 設定例に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: libraries-date.json:s5, libraries-date.json:s6, libraries-date.json:s7, libraries-date.json:s8, libraries-date.json:s9, libraries-date.json:s10, javadoc-nablarch-core-date-BusinessDateUtil.json:s6, javadoc-nablarch-core-date-BusinessDateUtil.json:s7, javadoc-nablarch-core-date-SystemTimeUtil.json:s9, javadoc-nablarch-core-date-SystemTimeUtil.json:s12」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ内容と矛盾なし（コンポーネント名 systemTimeProvider・businessDateProvider、DBテーブルの区分＋日付2カラム構成、setDate による更新方法、システムプロパティ上書き形式 -DBasicBusinessDateProvider.batch=20160317 はすべてナレッジと一致） |
 
 ### 参照事実（expected_facts）
 

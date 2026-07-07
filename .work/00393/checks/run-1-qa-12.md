@@ -102,9 +102,9 @@ input.nablarch_error, select.nablarch_error {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「エラー表示タグでリクエストスコープのエラーメッセージを表示する」は、回答のStep 2「フレームワークがエラーメッセージをリクエストスコープに設定する」およびStep 3のJSPカスタムタグ（`<n:error>`、`<n:errors>`）・Thymeleaf（`${errors.getMessage(...)}`等）での表示例に含まれている。DeepEvalがNGとした根拠（回答が包括的すぎる）は事実の欠如を意味せず、判定は誤り。 |
+| answer_relevancy | OK | 回答は「バリデーションエラー時にエラーメッセージをユーザーに返す方法」に直接回答しており、末尾の参照セクションも人間可読なラベル付きマークダウンリンク形式（`xxx.json:sN`形式ではない）であるため、余分なコンテンツは最小限。 |
+| faithfulness | OK | ナレッジファイル `web-application-error-message.md` の記述（HTTPエラー制御ハンドラがリクエストスコープに格納、`${errors}`でアクセス、`hasError`/`getMessage`/`globalMessages`/`allMessages`の使用例）と回答の内容が一致しており矛盾なし。 |
 
 ### 参照事実（expected_facts）
 

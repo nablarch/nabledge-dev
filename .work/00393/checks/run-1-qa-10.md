@@ -101,9 +101,9 @@ SqlResultSet result = statement.retrieve(entity);
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される」は回答の「$if(プロパティ名) {SQL条件}」構文説明および除外条件テーブル「String: null または空文字列」に含まれている |
+| answer_relevancy | NG | 回答末尾の「参照: component/libraries/libraries-database.json:s21, processing-pattern/web-application/web-application-getting-started-project-search.json:s1, component/libraries/libraries-database.json:s22」など内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ（s21）の「配列やjava.util.Collectionの場合はnullやサイズ0、上記以外の型はnullや空文字列(Stringオブジェクトの場合)」と回答の除外条件テーブルの記述が一致しており矛盾なし。DeepEvalがNG判定の根拠とした「String空文字列の記述省略」は誤り——回答テーブルに「String: null または空文字列」が明示されている |
 
 ### 参照事実（expected_facts）
 

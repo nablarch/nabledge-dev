@@ -53,9 +53,9 @@ try (DeferredEntityList<User> users
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「UniversalDao.deferメソッドで遅延ロードを使用する」は回答の「UniversalDao.defer().findAllBySqlFile(...)」および「遅延ロードは、検索時に `UniversalDao#defer` メソッドを先に呼び出すだけで使用できます」に含まれている。参照事実「DeferredEntityListのcloseメソッドを呼び出す必要がある」は回答の「`DeferredEntityList#close` メソッドを呼び出してリソースを解放する必要があります」に含まれている。 |
+| answer_relevancy | NG | 回答末尾の「参照: libraries-universal-dao.json:s9, javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s27」という内部参照記法がユーザー向け回答に含まれており不適切。 |
+| faithfulness | OK | ナレッジ（libraries-universal-dao.md#検索結果を遅延ロードする）の記述と矛盾なし。コード例・サーバサイドカーソルの説明・closeメソッドの必要性・JDBCフェッチサイズへの言及・トランザクション制御時の注意点はすべてナレッジ内容と一致している。 |
 
 ### 参照事実（expected_facts）
 

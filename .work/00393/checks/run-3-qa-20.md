@@ -104,9 +104,9 @@ public class SampleErrorResponseBuilder extends ErrorResponseBuilder {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する」は回答の「① Jakarta RESTful Web Servicesレスポンスハンドラ（`JaxRsResponseHandler`）」セクションの「エラーレスポンスの生成とログ出力を行う」に含まれており、参照事実「JaxRsErrorLogWriterが例外に応じたログ出力を行う」は「`errorLogWriter` プロパティに設定された `JaxRsErrorLogWriter` が担う」に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: handlers-jaxrs-response-handler.json:s4, handlers-jaxrs-response-handler.json:s5, ...」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | NG | 回答の「それ以外の例外: デフォルト実装の `ErrorResponseBuilder` が使用される」はナレッジ「設定を省略した場合は、デフォルト実装の `ErrorResponseBuilder` が使用される」の記述と矛盾する。ナレッジではデフォルト実装が使われるのは「設定省略時」であり、HttpErrorResponse以外の例外すべてにデフォルトが適用されるという記述ではない。カスタム実装を設定した場合はそちらが使われる |
 
 ### 参照事実（expected_facts）
 

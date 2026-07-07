@@ -101,9 +101,9 @@ JSONのボディ変換には `Jackson2BodyConverter` が必要です。Jersey環
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「Formクラスでクライアントから送信された値を受け付ける」は回答の「クライアントから受け取るJSONをマッピングするフォームを作成します」およびProjectFormコード例に含まれている。参照事実「プロパティは全てString型で宣言する」は回答の注意点「フォームのプロパティは全て `String` 型で宣言すること」に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: restful-web-service-getting-started-create.json:s1, handlers-body-convert-handler.json:s4, ...」という内部JSON参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ（restful-web-service-getting-started-create.md）の記述と矛盾なし。@Consumes(MediaType.APPLICATION_JSON)、@Valid、BeanUtil.createAndCopy()、UniversalDao.insert()、ステータスコード201、String型プロパティすべてナレッジに記載の通り |
 
 ### 参照事実（expected_facts）
 

@@ -119,9 +119,9 @@ NablarchのJSPカスタムタグはJavaScriptを生成するため、nonceを使
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする」は回答の結論「SecureHandlerにContentSecurityPolicyHeaderを設定してレスポンスヘッダを出力し、nonceを使う場合はgenerateCspNonceプロパティをtrueにした上でJSPにn:cspNonceタグを組み合わせる」および方法1〜3の説明に含まれている |
+| answer_relevancy | NG | 回答末尾の「参照: handlers-secure-handler.json:s6, handlers-secure-handler.json:s7, handlers-secure-handler.json:s8, handlers-secure-handler.json:s9, libraries-tag.json:s38, libraries-tag.json:s39」など内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ内容と矛盾なし。DeepEvalが「reportOnlyをContentSecurityPolicyHeaderではなくSecureHandlerに設定すべき」と主張したが、ナレッジ（s9）のXML例ではreportOnlyはContentSecurityPolicyHeaderに設定されており、回答の記述はナレッジと一致している |
 
 ### 参照事実（expected_facts）
 

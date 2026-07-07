@@ -85,9 +85,9 @@ NablarchはJSPで使用を許可する構文・タグを規定し、カスタム
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能」は回答冒頭の「NablarchのカスタムタグはHTMLエスケープ（サニタイジング）を自動で行うため、XSS対策の根本的解決（IPA基準 5-(i)）が可能です」に明確に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: security-check-2.チェックリスト.json:s5, libraries-tag.json:s2, libraries-tag.json:s50, ...」という内部JSON参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | prettyPrintとrawWriteを「エスケープせずに出力する」とまとめた点はナレッジ記述（両タグとも「HTMLエスケープせずに値を出力する」セクションに属する）と矛盾しない。XSSリスクの直接原因をrawWriteに帰属させた点もナレッジの「直接の要因となる」と一致しており、全体として矛盾なし |
 
 ### 参照事実（expected_facts）
 

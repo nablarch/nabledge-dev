@@ -137,9 +137,9 @@ public class I18nHandler implements HttpRequestHandler {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する」は回答のセクション1「メッセージプロパティファイルの多言語化」にて、messages_en.properties等の言語別ファイル作成とPropertiesStringResourceLoaderのlocalesプロパティへのサポート言語設定として明確に説明されている |
+| answer_relevancy | NG | 回答末尾に「参照: libraries-message.json:s8, handlers-thread-context-handler.json:s7, handlers-thread-context-handler.json:s4」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ（libraries-message.md #多言語化対応）には「必ずデフォルトの言語を設定すること」と明記されており、回答の「defaultLocale を必ず設定してください」はナレッジ内容と矛盾しない。DeepEvalの「defaultLocaleは任意」という解釈はナレッジの記述と相違する |
 
 ### 参照事実（expected_facts）
 

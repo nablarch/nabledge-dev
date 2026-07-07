@@ -181,9 +181,9 @@ JBeretと関連ライブラリの更新が複雑：
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある」は回答の「Jakarta EE 10に対応したアプリケーションサーバでなければ動作しない」に含まれている。参照事実「Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている」は回答のセクション3・5・11で詳細に説明されている。 |
+| answer_relevancy | NG | 回答末尾に「参照: migration-migration.json:s2, s3, s5, s7, s9, s16, s26, s27, s28, s29」などの内部JSON参照記法がユーザー向け回答に含まれており不適切。 |
+| faithfulness | OK | ナレッジ内容と矛盾なし。「Jakarta EE 10に対応したアプリケーションサーバでなければ動作しない」「Java 17でコンパイルされているため17以上が必要」「BOMバージョン6u2」「jakarta.jakartaee-bom 10.0.0」など主要な記述がmigration-migration.mdの内容と一致している。 |
 
 ### 参照事実（expected_facts）
 

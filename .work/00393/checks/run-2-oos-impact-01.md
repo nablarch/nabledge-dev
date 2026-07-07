@@ -100,9 +100,9 @@ public void login(ExecutionContext context, LoginRequestForm form) {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している」は回答の「NablarchにはOAuth2やOpenID Connect（OIDC）の認証機能は組み込まれていない」に明示されている |
+| answer_relevancy | NG | 回答末尾に「参照: biz-samples-12.json:s2, biz-samples-12.json:s11, biz-samples-12.json:s13, biz-samples-12.json:s14, biz-samples-12.json:s16, web-application-feature-details.json:s13」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ内容と矛盾なし（「フレームワークとしては提供していない」の引用、ライブラリバージョン、コンポーネント定義のXML、対応サービス（Cognito/ADB2C）、サンプルの対象範囲などすべてナレッジ記載と一致） |
 
 ### 参照事実（expected_facts）
 

@@ -87,9 +87,9 @@
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する」は回答の「確認画面の JSP（これだけで完結）`<n:confirmationPage path="./input.jsp" />`」および「`n:confirmationPage` | 確認画面JSPから入力画面JSPをインクルードし、確認画面モードで描画」に含まれている |
+| answer_relevancy | NG | 回答末尾の「参照: libraries-tag.json:s3, libraries-tag.json:s23, libraries-tag-reference.json:s64, libraries-tag-reference.json:s65, libraries-tag-reference.json:s66, libraries-tag-reference.json:s67」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ内容と矛盾なし（JSP実装例・各タグの説明・plainHidden/hiddenStoreが入力・確認画面ともに出力される旨、すべてlibraries-tag.md s23の記述と一致） |
 
 ### 参照事実（expected_facts）
 

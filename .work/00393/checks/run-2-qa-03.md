@@ -97,9 +97,9 @@ public class SampleForm {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「Jakarta Bean Validationの@AssertTrueを使って相関バリデーションを行う」は回答の `@AssertTrue(message = "{compareMailAddress}")` を付与したgetterメソッドの実装例に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: component/libraries/libraries-bean-validation.json:s11, component/libraries/libraries-nablarch-validation.json:s14, component/libraries/libraries-bean-validation.json:s16」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ内容と矛盾なし。「@ValidateForをstaticメソッドに設定する」はlibraries-nablarch-validation.mdの「バリデーション対象のBeanにバリデーションを行うためのstaticメソッドを実装する」およびコード例（`public static void validate(...)`）と一致しており、DeepEvalのNG判定は誤り（false positive） |
 
 ### 参照事実（expected_facts）
 

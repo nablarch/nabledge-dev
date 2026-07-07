@@ -102,9 +102,9 @@ public HttpResponse handle(HttpRequest req, ExecutionContext ctx) {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「WebアプリケーションではInjectFormインターセプタを使用してバリデーションを行う」は回答の結論部「ウェブアプリケーションのバリデーションは @InjectForm インターセプタを業務アクションメソッドに設定することで実装する」およびコード例に含まれている |
+| answer_relevancy | NG | 回答末尾の「参照: component/libraries/libraries-bean-validation.json:s6, s7, s8, s9, s16 / component/handlers/handlers-InjectForm.json:s3, s4」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | ナレッジ（libraries-bean-validation.md）には「プロパティは必ず String とすること」（必ずを使用）と明記されており、回答の「必ず `String` 型にすること」はナレッジと矛盾しない。DeepEvealの「推奨にすぎない」という判定根拠は誤り |
 
 ### 参照事実（expected_facts）
 

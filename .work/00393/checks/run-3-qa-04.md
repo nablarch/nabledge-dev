@@ -141,9 +141,9 @@ Bean Validationを使う場合は `validationTestStrategy` に `BeanValidationTe
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「EntityTestSupportを継承してテストクラスを作成する」は回答の`public class UserRegistrationFormTest extends EntityTestSupport`（コード例）および「nablarch.test.core.db.EntityTestSupportを継承する」に含まれている。参照事実「テストデータはExcelファイルに記述する」は回答の「テストデータはExcelファイルで定義する」に含まれている。 |
+| answer_relevancy | NG | 回答末尾に「参照: testing-framework-01-entityUnitTestWithBeanValidation.json:s2, s3, s4, s5, s6, s7, s9, s10, s12, s16, s17 / libraries-bean-validation.json:s8」という内部参照記法がユーザー向け回答に含まれており不適切。 |
+| faithfulness | OK | ナレッジ内容と矛盾なし。テストクラスが`nablarch.test.core.db.EntityTestSupport`を継承すること、テスト対象と同一パッケージにすること、Excelファイルをテストソースコードのディレクトリへ同名で配置することはいずれもナレッジ記述と一致している。 |
 
 ### 参照事実（expected_facts）
 

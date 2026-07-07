@@ -127,9 +127,9 @@ Nablarchのカスタムタグは一部でJavaScriptを出力するため、nonce
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする」は回答の「CSPはセキュアハンドラ（SecureHandler）にContentSecurityPolicyHeaderを追加して設定します。JSPカスタムタグを使用している場合は、nonceを生成するnonce方式が推奨パターン」および各セクションの詳細説明に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: handlers-secure-handler.json:s6, handlers-secure-handler.json:s7, handlers-secure-handler.json:s8, handlers-secure-handler.json:s9, handlers-secure-handler.json:s3, libraries-tag.json:s38, libraries-tag.json:s39」という内部JSONファイル参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | 回答の「セキュアハンドラが設定したレスポンスヘッダをHTTPレスポンスハンドラがServlet APIに書き込む順序のため」はナレッジの「本ハンドラで設定したレスポンスヘッダを、HTTPレスポンスハンドラがServlet APIのレスポンスオブジェクトに設定するため」と一致しており矛盾なし。DeepEvalの「関係を逆転している」という判定は誤り |
 
 ### 参照事実（expected_facts）
 

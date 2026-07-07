@@ -66,9 +66,9 @@ Component2 component2 = SystemRepository.get("component.component2");
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する」は回答の「型パラメータ `<T>` で返却型を指定する」「型引数 `<T>` がリポジトリに登録されたコンポーネントの型と一致しない場合は `ClassCastException` がスローされる」に含まれている |
+| answer_relevancy | NG | 回答末尾に「参照: `libraries-repository.json:s25`, `javadoc-nablarch-core-repository-SystemRepository.json:s11`」という内部参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | NG | 回答の「スレッドセーフな設計が必要です」はナレッジ（libraries-repository.md s7）の記述「意図的にアプリケーション全体でコンポーネントの状態を変更、共有する場合は、そのコンポーネントはスレッドセーフでなければならない」と矛盾する（ナレッジは条件付きだが、回答は無条件の要件として述べている） |
 
 ### 参照事実（expected_facts）
 

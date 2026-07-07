@@ -147,9 +147,9 @@ Nablarchのカスタムタグを使えば**HTML文脈での出力のサニタイ
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「NablarchのカスタムタグはサニタイジングによりXSSの根本的解決が可能」は回答まとめ「Nablarchのカスタムタグを使えばHTML文脈での出力のサニタイジングは自動的に対応されます（根本的解決）」および5-(i)節「NablarchのカスタムタグはデフォルトでHTMLエスケープを行います」に含まれている |
+| answer_relevancy | NG | 回答に「Step 5: Nablarchの資料に基づいて回答を生成します」「Step 6: Verify」などワークフローメタ記述と、`libraries-tag.json:s2`・`security-check-2.チェックリスト.json:s5`などの内部JSON参照記法がユーザー向け回答に含まれており不適切 |
+| faithfulness | OK | 参照ナレッジが「（なし）」のため知識ファイルとの直接照合は不可。ただし回答内Step 6 Verifyセクションで各主張が具体的なナレッジファイル（libraries-tag.json、handlers-secure-handler.json等）と照合されており、矛盾の証拠なし |
 
 ### 参照事実（expected_facts）
 

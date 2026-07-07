@@ -65,9 +65,9 @@ java nablarch.fw.launcher.Main \
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「javaコマンドから直接起動するスタンドアロンアプリケーションとして実行する」は回答の「Javaの`main`クラス（`nablarch.fw.launcher.Main`）を`java`コマンドで直接起動します」に含まれている。参照事実「-requestPathコマンドライン引数でアクションのクラス名とリクエストIDを指定する」は回答の「-requestPath の書式」節および具体例に含まれている。 |
+| answer_relevancy | NG | 回答末尾に「参照: nablarch-batch-architecture.json:s2, handlers-main.json:s3」という内部参照記法がユーザー向け回答に含まれており不適切。 |
+| faithfulness | OK | ナレッジ内容と矛盾なし。-requestPath書式・実行例・終了コード127・-userIdのuser.id格納はいずれもhandlers-main.mdおよびnablarch-batch-architecture.mdの記述と一致する。 |
 
 ### 参照事実（expected_facts）
 

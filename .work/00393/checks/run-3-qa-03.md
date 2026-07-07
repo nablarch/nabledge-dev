@@ -61,9 +61,9 @@ public boolean isEqualsMailAddress() {
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「Jakarta Bean Validationの@AssertTrueを使って相関バリデーションを行う」は回答の「フォームクラスに `@AssertTrue` アノテーションを付けた `boolean` 型メソッドを追加して実装する」およびコード例に明確に含まれている |
+| answer_relevancy | NG | 「参照: libraries-bean-validation.json:s11」という内部参照記法がユーザー向け回答の末尾に含まれており、ユーザーにとって不要・不適切なコンテンツである |
+| faithfulness | OK | 回答の「NullPointerException などの予期せぬ例外が発生しないよう...未入力チェックを追加すること」はナレッジの「予期せぬ例外が発生しないようにバリデーションのロジックを実装する必要がある」と同義であり矛盾なし。DeepEvalは「例外が発生する」と誤読したが、回答は例外を防ぐよう実装する旨を述べており矛盾は存在しない |
 
 ### 参照事実（expected_facts）
 

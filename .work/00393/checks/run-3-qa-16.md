@@ -56,9 +56,9 @@ boolean exists = UniversalDao.exists(User.class, "CHECK_USER_EXISTS", condition)
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | — | — |
-| answer_relevancy | — | — |
-| faithfulness | — | — |
+| answer_correctness | OK | 参照事実「exists(Class, String)メソッドがある」は回答の「バインド変数なしの `exists(entityClass, sqlId)`」および `UniversalDao.exists(User.class, "CHECK_USER_EXISTS")` のコード例に含まれている。参照事実「exists(Class, String, Object)メソッドがある」は回答の「バインド変数ありの `exists(entityClass, sqlId, params)`」および `UniversalDao.exists(User.class, "CHECK_USER_EXISTS", condition)` のコード例に含まれている。 |
+| answer_relevancy | NG | 回答末尾に「参照: javadoc-nablarch-common-dao-UniversalDao.json:s17, javadoc-nablarch-common-dao-UniversalDao.json:s18, libraries-universal-dao.json:s7」という内部参照記法がユーザー向け回答に含まれており不適切。 |
+| faithfulness | OK | ナレッジ内容と矛盾なし。javadoc の s17（exists(Class, String)）・s18（exists(Class, String, Object)）の記述と回答内容が一致しており、hallucination は確認されない。 |
 
 ### 参照事実（expected_facts）
 
