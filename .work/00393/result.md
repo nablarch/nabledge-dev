@@ -38,6 +38,16 @@
 | answer_relevancy | `AnswerRelevancyMetric` | `actual_output` が `input` に関連しているか | スコア ≥ 0.95 |
 | faithfulness | `FaithfulnessMetric` | `actual_output` が `retrieval_context` と矛盾しないか | スコア ≥ 0.99 |
 
+#### 入出力の例（代表 5 件）
+
+| input（質問） | actual_output（回答冒頭） |
+|---|---|
+| 大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？ | `UniversalDao.defer()` メソッドを使用して遅延ロードを有効にする。これにより内部でサーバサイドカーソルが使われ、1件ずつ読み込むことができる。 |
+| 業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい | `SimpleDbTransactionManager` と `SimpleDbTransactionExecutor` を使用することで、業務トランザクションとは独立した別トランザクションでSQLを実行できます。 |
+| 入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？ | `n:confirmationPage`、`n:forInputPage`、`n:forConfirmationPage` の3タグを使うことで、入力画面と確認画面のJSPを共通化できます。 |
+| バッチ処理の進捗状況をWebSocketでリアルタイムにブラウザへ通知したい。NablarchでWebSocketを使う方法はあるか？ | NablarchにはWebSocketのサポート機能は提供されていません。（スコープ外質問に対する回答例） |
+| REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい | パスパラメータ・クエリーパラメータともに `JaxRsHttpRequest` を使って取得する。ルーティングは `routes.xml` か `@Path` アノテーションの2方式で設定できる。 |
+
 ### 検証方法
 
 現行ベンチマークの判定精度を調べるため、別の AI エージェント（以下「**AI 照合**」）が各回答とナレッジを独立に読んで合否を判定した。AI 照合はベンチマークのスコアを参照せず、回答とナレッジのみを根拠とした。この AI 照合の結果をグラウンドトゥルース（正解）として、ベンチマークの判定と照らし合わせた。
