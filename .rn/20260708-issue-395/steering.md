@@ -54,12 +54,12 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Steps**:
 
-- [ ] Identify exact line(s) to change in `.claude/skills/nabledge-6/workflows/qa.md`
-- [ ] Draft the new instruction text (anchor algorithm, link format, where section title comes from)
-- [ ] Apply change to nabledge-6/workflows/qa.md
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-2.md)
-- [ ] Prompt Engineer expert review (subagent)
-- [ ] Verification expert review (subagent)
+- [x] Identify exact line(s) to change in `.claude/skills/nabledge-6/workflows/qa.md`
+- [x] Draft the new instruction text (anchor algorithm, link format, where section title comes from)
+- [x] Apply change to nabledge-6/workflows/qa.md
+- [x] Self-check (OK/NG per completion criterion, record in checks/task-2.md)
+- [x] Prompt Engineer expert review (subagent)
+- [x] Verification expert review (subagent)
 
 **Completion criteria**:
 
@@ -75,12 +75,12 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Steps**:
 
-- [ ] Identify exact line(s) to change in code-analysis.md (Step 3 read-section tracking) and template-guide.md (詳細 format)
-- [ ] Draft the new instruction: Step 3 reads sections → workflow carries `{file, section_id, title}` forward to Step 4 → 詳細 link uses that info
-- [ ] Apply change to nabledge-6 code-analysis.md and template-guide.md
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-3.md)
-- [ ] Prompt Engineer expert review (subagent)
-- [ ] Verification expert review (subagent)
+- [x] Identify exact line(s) to change in code-analysis.md (Step 3 read-section tracking) and template-guide.md (詳細 format)
+- [x] Draft the new instruction: Step 3 reads sections → workflow carries `{file, section_id, title}` forward to Step 4 → 詳細 link uses that info
+- [x] Apply change to nabledge-6 code-analysis.md and template-guide.md
+- [x] Self-check (OK/NG per completion criterion, record in checks/task-3.md)
+- [x] Prompt Engineer expert review (subagent)
+- [x] Verification expert review (subagent)
 
 **Completion criteria**:
 
@@ -164,6 +164,6 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 - **Status**: not suspended
 - **Date**: 2026-07-08
-- **Last completed**: #1 Design sign-off
-- **Next**: #2 QA v6 / #3 code-analysis v6 (parallel)
-- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. Design approved: no anchors; QA uses plain path + indented section title; code-analysis uses Markdown link + indented section title. #2 and #3 can proceed in parallel.
+- **Last completed**: #3 code-analysis v6
+- **Next**: #4 v6 QA run1 stability check
+- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. #2 and #3 complete (all reviews PASS). #4 requires user to run QA benchmark run1 and confirm output format.
