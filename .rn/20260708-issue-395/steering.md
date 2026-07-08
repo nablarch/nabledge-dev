@@ -96,9 +96,8 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Steps**:
 
-- [x] Run QA benchmark Phase A pre-01 (1-scenario smoke test — passes, new 参照 format confirmed)
-- [ ] Run QA benchmark Phase B run-1 (full scenario run per HOW-TO-RUN.md)
-- [ ] Confirm run-1 passes stably (no errors, expected output format)
+- [ ] Run QA benchmark run1: follow the QA benchmark procedure (run1 only)
+- [ ] Confirm run1 passes stably (no errors, expected output format)
 - [ ] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
 
 **Completion criteria**:
@@ -166,5 +165,5 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 - **Status**: paused
 - **Date**: 2026-07-08
 - **Last completed**: #3 code-analysis v6
-- **Next**: #4 QA run-1 (Phase B run-1 per HOW-TO-RUN.md) — Phase A pre-01 smoke test passed, but run-1 not yet executed
-- **Notes**: Phase A pre-01 confirmed new 参照 format. #4 requires Phase B run-1 (full scenario run). Use run label `20260708-HHMM-section-links-v6`.
+- **Next**: #4 v6 QA run1 stability check
+- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. pre-01 smoke test passed: new 参照 format confirmed. #4 requires Phase B run-1 (full scenario run per HOW-TO-RUN.md).
