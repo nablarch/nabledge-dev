@@ -50,7 +50,7 @@ public static Object getProperty(Object bean, String propertyName, Class<?> type
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | NG | 参照事実「getProperty(Object bean, String propertyName)でJavaBeansオブジェクトまたはレコードから指定したプロパティの値を取得する」のうち「レコード」への対応が回答に含まれていない。回答は「Beanのプロパティ値をgetter経由で取得」とのみ記述しており、レコードのサポートについて言及がない |
+| answer_correctness | OK | 参照事実「JavaBeansオブジェクトまたはレコードから指定したプロパティの値を取得する」は「または」であり、どちらか一方を回答すれば事実をカバーしている。回答はJavaBeansオブジェクトを対象とした使用方法を正確に説明しており、参照事実を満たしている。 |
 | answer_relevancy | OK | 回答は「BeanUtil.getPropertyでBeanのプロパティ値を取得する方法」という質問に直接答えており、メソッドシグネチャ・コード例・トップレベル要素のみという制約・BeansException・3引数バージョンなど、すべて質問に関連する内容のみで構成されている。無関係な情報は含まれていない。 |
 | faithfulness | OK | 回答内のすべての記述はナレッジの内容と一致している。トップレベル要素のみ指定可能という制約、BeansExceptionのスロー、3引数バージョンの存在はいずれもjavadocナレッジに記載されている。レコードへの言及がないのは情報の省略であり、ナレッジの記述と矛盾する内容（例：「レコードには使えない」など）は含まれていない。 |
 
