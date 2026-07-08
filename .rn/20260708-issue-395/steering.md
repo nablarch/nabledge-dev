@@ -15,10 +15,10 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 # Assumptions
 
-- GitHub Markdown anchor generation rule: lowercase the heading text, remove `[^\w -]` characters (keeping CJK, alphanumeric, hyphens, underscores, spaces), replace runs of spaces with single hyphens — verified empirically against existing docs
 - Section titles in JSON match the heading text in the corresponding MD file exactly — confirmed for sampled files
-- QA output is rendered in GitHub Markdown (Claude Code chat) where `[text](path.md#anchor)` links are clickable
-- code-analysis output is written to `.nabledge/YYYYMMDD/` — relative path prefix `../../` is already used for file-level links; section links use the same prefix + `#anchor`
+- VS Code integrated terminal auto-detects bare `.md` paths as clickable; `path.md#anchor` breaks detection — anchors are not used (confirmed by user testing)
+- VS Code editor does not scroll to `#anchor` from a preview link — anchors give no functional benefit
+- code-analysis output is written to `.nabledge/YYYYMMDD/` — relative path prefix `../../` is already used for file-level links; same prefix applies here
 - All 5 versions share identical `qa.md` structure (processing-type list differs but citation format is the same); `code-analysis.md` differs only in version-specific path names
 
 # Rules
@@ -38,8 +38,8 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Steps**:
 
-- [ ] Present `design.md` to the user (including output sample images)
-- [ ] Take verdict via `/rn:ty` (approve) or `/rn:gm` (revise)
+- [x] Present `design.md` to the user (including output sample images)
+- [x] Take verdict via `/rn:ty` (approve) or `/rn:gm` (revise)
 
 **Completion criteria**:
 
@@ -162,4 +162,8 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 # State
 
-<!-- template placeholder -->
+- **Status**: not suspended
+- **Date**: 2026-07-08
+- **Last completed**: #1 Design sign-off
+- **Next**: #2 QA v6 / #3 code-analysis v6 (parallel)
+- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. Design approved: no anchors; QA uses plain path + indented section title; code-analysis uses Markdown link + indented section title. #2 and #3 can proceed in parallel.
