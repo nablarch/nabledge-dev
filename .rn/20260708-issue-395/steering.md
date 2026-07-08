@@ -96,9 +96,9 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Steps**:
 
-- [ ] Run QA benchmark run1: follow the QA benchmark procedure (run1 only)
-- [ ] Confirm run1 passes stably (no errors, expected output format)
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
+- [x] Run QA benchmark run1: follow the QA benchmark procedure (run1 only)
+- [x] Confirm run1 passes stably (no errors, expected output format)
+- [x] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
 
 **Completion criteria**:
 
@@ -164,6 +164,6 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 - **Status**: not suspended
 - **Date**: 2026-07-08
-- **Last completed**: #3 code-analysis v6
-- **Next**: #4 v6 QA run1 stability check
-- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. #2 and #3 complete (all reviews PASS). #4 requires user to run QA benchmark run1 and confirm output format.
+- **Last completed**: #4 v6 QA run1 stability check
+- **Next**: #5 full QA benchmark (3 runs) + code-analysis benchmark
+- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. pre-01 passed: new 参照 format confirmed. Full bench requires user to run tools/benchmark/HOW-TO-RUN.md Phase B→C and HOW-TO-RUN-CODE-ANALYSIS.md.
