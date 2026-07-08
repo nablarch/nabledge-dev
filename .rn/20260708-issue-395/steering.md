@@ -96,9 +96,10 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Steps**:
 
-- [x] Run QA benchmark run1: follow the QA benchmark procedure (run1 only)
-- [x] Confirm run1 passes stably (no errors, expected output format)
-- [x] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
+- [x] Run QA benchmark Phase A pre-01 (1-scenario smoke test — passes, new 参照 format confirmed)
+- [ ] Run QA benchmark Phase B run-1 (full scenario run per HOW-TO-RUN.md)
+- [ ] Confirm run-1 passes stably (no errors, expected output format)
+- [ ] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
 
 **Completion criteria**:
 
@@ -164,6 +165,6 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 - **Status**: paused
 - **Date**: 2026-07-08
-- **Last completed**: #4 v6 QA run1 stability check
-- **Next**: #5 full QA benchmark (Phase B 3 runs → Phase C) then code-analysis benchmark
-- **Notes**: pre-01 passed with new 参照 format. Run HOW-TO-RUN.md Phase B→C, then HOW-TO-RUN-CODE-ANALYSIS.md; use run label `20260708-HHMM-section-links-v6`.
+- **Last completed**: #3 code-analysis v6
+- **Next**: #4 QA run-1 (Phase B run-1 per HOW-TO-RUN.md) — Phase A pre-01 smoke test passed, but run-1 not yet executed
+- **Notes**: Phase A pre-01 confirmed new 参照 format. #4 requires Phase B run-1 (full scenario run). Use run label `20260708-HHMM-section-links-v6`.
