@@ -165,6 +165,6 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 - **Status**: paused
 - **Date**: 2026-07-08
-- **Last completed**: #3 code-analysis v6
-- **Next**: #4 v6 QA run1 stability check
-- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. pre-01 smoke test passed: new 参照 format confirmed. #4 requires Phase B run-1 (full scenario run per HOW-TO-RUN.md).
+- **Last completed**: #3 code-analysis v6 (ただし #2・#3 の実行確認ステップが未完了)
+- **Next**: #2 と #3 の実行確認（pre-01 で `参照:` 出力確認、code-analysis サンプル実行で `**詳細**:` 出力確認）→ #4 Phase B run-1
+- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. 完了条件をゼロベースで書き直し済み。#2 step「Run pre-01 and confirm output format」と #3 step「code-analysis を実行しサンプル出力で format を確認」が未チェック。
