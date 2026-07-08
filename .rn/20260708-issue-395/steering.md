@@ -59,7 +59,7 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 - [x] Self-check (OK/NG per completion criterion, record in checks/task-2.md)
 - [x] Prompt Engineer expert review (subagent)
 - [x] Verification expert review (subagent)
-- [ ] Run pre-01 and confirm output format
+- [x] Run pre-01 and confirm output format
 
 **Completion criteria**:
 
@@ -81,7 +81,7 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 - [x] Self-check (OK/NG per completion criterion, record in checks/task-3.md)
 - [x] Prompt Engineer expert review (subagent)
 - [x] Verification expert review (subagent)
-- [ ] code-analysis を実行しサンプル出力で format を確認
+- [x] code-analysis を実行しサンプル出力で format を確認
 
 **Completion criteria**:
 
