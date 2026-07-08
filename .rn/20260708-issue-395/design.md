@@ -126,6 +126,48 @@ The workflow extracts from the `# Page > Section` header: file path, section ID,
 
 **Breach detection**: Same as §4.2 — broken path or anchor means the link does not reach the target section.
 
+## 4.4 Output sample images
+
+### QA workflow — `参照:` line
+
+**Before:**
+```
+参照: component/libraries/libraries-database.json:s29, component/libraries/libraries-universal-dao.json:s20
+```
+
+**After:**
+```
+参照: [現在のトランザクションとは異なるトランザクションでSQLを実行する](.claude/skills/nabledge-6/docs/component/libraries/libraries-database.md#現在のトランザクションとは異なるトランザクションでsqlを実行する), [現在のトランザクションとは異なるトランザクションで実行する](.claude/skills/nabledge-6/docs/component/libraries/libraries-universal-dao.md#現在のトランザクションとは異なるトランザクションで実行する)
+```
+
+Path derivation:
+- Input: `component/libraries/libraries-database.json:s29`
+- File path: `.claude/skills/nabledge-6/docs/component/libraries/libraries-database.md`
+- Section title (from `sections_content`): `現在のトランザクションとは異なるトランザクションでSQLを実行する`
+- Anchor: `現在のトランザクションとは異なるトランザクションでsqlを実行する`
+  (lowercase: SQL → sql; `[^\w -]` stripped: none here; spaces→hyphens: none here)
+
+### code-analysis workflow — `**詳細**:` field in Nablarch usage
+
+**Before:**
+```markdown
+**詳細**: [データバインド知識ベース](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-data-bind.md)
+```
+
+**After:**
+```markdown
+**詳細**: [データバインド](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-data-bind.md) > [Java Beansオブジェクトの内容をデータファイルに書き込む](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-data-bind.md#java-beansオブジェクトの内容をデータファイルに書き込む)
+```
+
+Path derivation (from `sections_metadata` built after Step 3):
+- Input from `read-sections.sh` header: `=== component/libraries/libraries-data-bind.json : s8 ===`
+- Header line: `# データバインド > Java Beansオブジェクトの内容をデータファイルに書き込む`
+- File path: `../../.claude/skills/nabledge-6/docs/component/libraries/libraries-data-bind.md`
+- Page title (before `>`): `データバインド`
+- Section title (after `>`): `Java Beansオブジェクトの内容をデータファイルに書き込む`
+- Anchor: `java-beansオブジェクトの内容をデータファイルに書き込む`
+  (lowercase: Java → java, Beans → beans; `(`, `)` removed; spaces→hyphens)
+
 ## 5. Alternatives considered
 
 ### 5.1 Why this shape, and not another?
