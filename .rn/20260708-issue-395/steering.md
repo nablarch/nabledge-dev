@@ -116,10 +116,10 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 **Steps**:
 
 - [x] Run full QA benchmark for v6 per the benchmark procedure
-- [ ] Run full code-analysis benchmark for v6 per the benchmark procedure
+- [x] Run full code-analysis benchmark for v6 per the benchmark procedure
 - [x] Compare scores vs pre-change baseline (from `docs/metrics.md`)
 - [x] Confirm no regression (QA: 退行なし、実害 0 件)
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-5.md)
+- [x] Self-check (OK/NG per completion criterion, record in checks/task-5.md)
 
 **Completion criteria**:
 
@@ -162,9 +162,3 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 - Acceptance criteria の各項目が、実際の実行結果（benchmark レポート・スキル出力）に基づいて満たされていることをユーザーが確認し `/rn:ty` で承認している
 
 # State
-
-- **Status**: paused
-- **Date**: 2026-07-08
-- **Last completed**: #5 QA フルベンチ完了（run-1〜3、crossrun、regression check、quality-report コミット済み）— 退行なし、実害 0 件
-- **Next**: #5 code-analysis ベンチ — `.lw/nab-official/v6` がワーキングツリーに存在せず全件エラー。セットアップ後に `python3 -m tools.benchmark.scripts.run_code_analysis --scenarios tools/benchmark/scenarios/code-analysis.json --skill-dir .claude/skills/nabledge-6 --project-dir .lw/nab-official/v6 --output-dir tools/benchmark/results/20260708-HHMM-code-analysis-section-links-v6` を実行
-- **Notes**: `tools/benchmark/results/20260708-1835-code-analysis-section-links-v6/` (全件エラーの空ディレクトリ) が untracked — ユーザー判断待ち（削除推奨）
