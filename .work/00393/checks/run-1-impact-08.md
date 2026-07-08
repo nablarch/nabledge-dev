@@ -76,7 +76,7 @@ Maven プロファイルを使い、環境別ディレクトリ (`src/env/dev/`,
 |---|---|---|
 | answer_correctness | OK | 参照事実「コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる」は回答の「コンポーネント定義で指定するクラスを差し替えるだけで、日時の取得方法を切り替えられます。」に含まれている |
 | answer_relevancy | OK | 回答はテスト時のシステム日時の差し替え方法と本番/テストの切り替え方法という質問に直接答えている。SystemTimeProviderの仕組み、本番用設定（BasicSystemTimeProvider）、テスト用設定（FixedSystemTimeProvider）、Mavenプロファイルを使った切り替え方法、注意点まですべて質問に関連する内容であり、的外れな情報は含まれていない。 |
-| faithfulness | NG | 回答のfixedDate設定値が`value="20100914123456"`（9月14日）であるのに対し、参照ナレッジ（testing-framework-03-Tips.md）では`value="20100913123456"`（9月13日）と記述されており、回答がナレッジの具体的な値と矛盾している。 |
+| faithfulness | OK | サンプルのfixedDate値（`20100914123456`）はナレッジの例（`20100913123456`）と日付が1日異なるが、この値は形式例（`yyyyMMddHHmmss`）であり特定の日付に意味はない。回答のSystemTimeProvider設定・使用方法はナレッジと矛盾しない。 |
 
 ### 参照事実（expected_facts）
 
