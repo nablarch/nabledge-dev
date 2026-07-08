@@ -163,8 +163,8 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 # State
 
-- **Status**: not suspended
-- **Date**: YYYY-MM-DD
-- **Last completed**: #N description
-- **Next**: #N description
-- **Notes**: bounded forward pointer — branch/PR, next concrete action, open blockers, user-deferred paths, open questions / pending decisions not yet captured in `design.md`; not a re-narration of the session (that lives in `git log`)
+- **Status**: paused
+- **Date**: 2026-07-08
+- **Last completed**: #3 code-analysis 詳細 format v6 (complete task #2 and #3 marker: 79c4130b)
+- **Next**: #4 QA run-1 — benchmark was launched in background (tools/benchmark/results/20260708-115333/), still running at suspend time; resume by waiting for completion, then rename dir to run-label, generate report, commit
+- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. Untracked: 20260708-113655 (ca-02 format-check, deletable), 20260708-114158 (ca-03 timeout, deletable), 20260708-115333 (run-1 in progress, keep).
