@@ -168,8 +168,8 @@ For each Nablarch component, include:
 4. **重要ポイント**: Critical points (why use, gotchas, performance)
 5. **このコードでの使い方**: How it's used in analyzed code
 6. **詳細**: Markdown link to the knowledge docs file (using `sections_metadata`), followed by indented section title(s) on the next line(s). Format:
-   `[page_title](docs_path)`
-   `  section_title`
+   [page_title](docs_path)
+     section_title
    If multiple sections from the same file, list all section titles indented.
 
 **Example**:

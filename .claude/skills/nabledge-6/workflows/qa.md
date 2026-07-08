@@ -189,7 +189,7 @@ Otherwise, generate a Japanese answer following the steps below.
 
 参照: One entry per cited file, in this format:
 - Page title (text before ` > ` in the `# Page > Section` header from `sections_content`)
-  .claude/skills/nabledge-6/docs/{json-path-with-.md-extension}
+  .claude/skills/nabledge-6/docs/<derived path with .md extension>
   Section title (text after ` > ` in the header)
   Additional section title (repeat for each further section cited from the same file)
 
