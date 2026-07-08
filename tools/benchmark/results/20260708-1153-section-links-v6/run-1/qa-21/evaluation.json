@@ -1,0 +1,71 @@
+{
+  "scenario_id": "qa-21",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+    "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both key facts from the Expected Output. First, it explains that the @Valid annotation triggers validation (via JaxRsBeanValidationHandler) which automatically produces an ApplicationException leading to an error response — directly matching the first expected fact. Second, it explicitly describes creating a custom class inheriting from ErrorResponseBuilder to set error messages in the response body (with code examples and configuration details) — matching the second expected fact. Both expected facts are fully covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, addressing exactly how to return error messages to users when input validation errors occur. No irrelevant statements were made!"
+    },
+    "faithfulness": {
+      "score": 0.9285714285714286,
+      "reason": "The score is 0.93 because the actual output incorrectly states that omitting the configuration generates a response without any message, while the retrieval context indicates that the default ErrorResponseBuilder implementation is used and messages are built using message management by default."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2",
+      "component/libraries/libraries-bean-validation.json:s6",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 143219,
+    "duration_api_ms": 141542,
+    "num_turns": 10,
+    "total_cost_usd": 0.8639192499999998,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 10072,
+      "cache_read_input_tokens": 735175,
+      "cache_creation_input_tokens": 130193
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3816,
+        "outputTokens": 44,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.004036,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 10072,
+        "cacheReadInputTokens": 735175,
+        "cacheCreationInputTokens": 130193,
+        "webSearchRequests": 0,
+        "costUSD": 0.8598832499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers the key facts in the Expected Output: it explains the $if syntax for variable conditions, and explicitly states that when a Bean property is null or empty string, the condition is excluded. The Actual Output goes well beyond the Expected Output with additional details, but all expected facts are clearly present."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, addressing exactly how to write dynamic SQL queries that include conditions only for fields with user input. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-database.json:s6",
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-database.json:s16",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 149048,
+    "duration_api_ms": 147857,
+    "num_turns": 13,
+    "total_cost_usd": 0.62972375,
+    "usage": {
+      "input_tokens": 14,
+      "output_tokens": 8283,
+      "cache_read_input_tokens": 739750,
+      "cache_creation_input_tokens": 74537
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3838,
+        "outputTokens": 32,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 8283,
+        "cacheReadInputTokens": 739750,
+        "cacheCreationInputTokens": 74537,
+        "webSearchRequests": 0,
+        "costUSD": 0.62572575,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

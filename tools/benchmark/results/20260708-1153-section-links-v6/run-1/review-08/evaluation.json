@@ -1,0 +1,68 @@
+{
+  "scenario_id": "review-08",
+  "description": "Web画面の入力→確認→完了遷移でセッションストアを使って入力情報を保持している。HIDDENストアを使用する実装にしている。",
+  "input": "入力→確認→完了画面間でセッション変数を保持するとき、DBストアとHIDDENストアの使い分けはどうすればいい？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "複数タブ操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly covers the key fact from the Expected Output: '複数タブでの操作を許容しない場合はDBストア、許容する場合はHIDDENストアを使用する'. This is stated both in the conclusion section and in the comparison table. The Actual Output fully covers the single expected fact with additional supporting details."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly relevant to the input question about how to differentiate between DB store and HIDDEN store when maintaining session variables across input, confirmation, and completion screens. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-create-example.json:s2",
+      "component/libraries/libraries-create-example.json:s3",
+      "component/libraries/libraries-create-example.json:s4",
+      "component/libraries/libraries-create-example.json:s1",
+      "component/libraries/libraries-session-store.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 128740,
+    "duration_api_ms": 127549,
+    "num_turns": 7,
+    "total_cost_usd": 0.7365896500000001,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 7696,
+      "cache_read_input_tokens": 604623,
+      "cache_creation_input_tokens": 116193
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3850,
+        "outputTokens": 33,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.004015,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 7696,
+        "cacheReadInputTokens": 604623,
+        "cacheCreationInputTokens": 116193,
+        "webSearchRequests": 0,
+        "costUSD": 0.73257465,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "scenario_id": "qa-06",
+  "description": "Web画面で入力画面と確認画面をそれぞれ別のJSPで作っている。同じフォーム項目を2回書くのが面倒。共通化する方法があると聞いた。",
+  "input": "入力画面と確認画面のJSPを共通化して実装を減らす方法はあるか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "confirmationPageタグで確認画面のJSPに入力画面のJSPへのパスを指定して共通化する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly contains the core fact from the Expected Output: using the confirmationPage tag in the confirmation page JSP to specify the path to the input page JSP for sharing/commonizing the JSP. This is explicitly shown with the code example `<n:confirmationPage path=\"/WEB-INF/view/register/input.jsp\" />` and the accompanying explanation. The expected fact is fully covered."
+    },
+    "answer_relevancy": {
+      "score": 0.45,
+      "reason": "The score is 0.45 because while the response likely touches on some aspects of sharing JSPs between input and confirmation screens, a large portion of the actual output is filled with irrelevant information about session management, SessionUtil usage, BeanUtil conversions, hiddenStore tags, and session store type selection. These topics do not directly address the core question of how to share JSPs between input and confirmation screens to reduce implementation overhead, which significantly drags the relevancy score down."
+    },
+    "faithfulness": {
+      "score": 0.9333333333333333,
+      "reason": "The score is 0.93 because the actual output incorrectly states that the input screen JSP can be used 'as-is' without any additions for the confirmation screen, whereas the retrieval context specifies that only the differences need to be additionally implemented — implying some additional implementation is still required beyond simply reusing the input screen JSP."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-tag.json:s3",
+      "component/libraries/libraries-tag.json:s23",
+      "component/libraries/libraries-tag-reference.json:s64",
+      "component/libraries/libraries-tag-reference.json:s65",
+      "component/libraries/libraries-tag-reference.json:s66",
+      "component/libraries/libraries-tag-reference.json:s67",
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-create-example.json:s1",
+      "component/libraries/libraries-create-example.json:s2",
+      "component/libraries/libraries-create-example.json:s3",
+      "component/libraries/libraries-create-example.json:s4",
+      "component/libraries/libraries-tag.json:s11"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 214619,
+    "duration_api_ms": 213786,
+    "num_turns": 9,
+    "total_cost_usd": 1.2876510999999997,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 10074,
+      "cache_read_input_tokens": 755627,
+      "cache_creation_input_tokens": 91613
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3802,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003981999999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 18,
+        "outputTokens": 14862,
+        "cacheReadInputTokens": 1149117,
+        "cacheCreationInputTokens": 190920,
+        "webSearchRequests": 0,
+        "costUSD": 1.2836690999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

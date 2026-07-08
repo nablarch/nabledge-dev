@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 151518,
+  "duration_api_ms": 150019,
+  "ttft_ms": 5434,
+  "ttft_stream_ms": 2556,
+  "time_to_request_ms": 411,
+  "num_turns": 7,
+  "result": "### Answer\n\n**結論**: `UniversalDao.exists(entityClass, sqlId)` または `UniversalDao.exists(entityClass, sqlId, params)` メソッドを使用する。第1引数にエンティティクラス、第2引数にSQL_IDを指定すると、そのSQLでデータが存在するかどうかを `boolean` で取得できる。\n\n**根拠**:\n\nバインド変数なしの場合:\n```java\nboolean result = UniversalDao.exists(User.class, \"FIND_BY_NAME\");\n```\n\nバインド変数ありの場合:\n```java\n// 検索条件を設定したBeanを渡す\nUser condition = new User();\ncondition.setName(\"山田太郎\");\nboolean result = UniversalDao.exists(User.class, \"FIND_BY_NAME\", condition);\n```\n\nSQL_IDは `findAllBySqlFile` 等と同じ形式で指定する。SQLファイルはエンティティクラスのパッケージ・クラス名から導出される（`sample.entity.User` → `sample/entity/User.sql`）。異なるSQLファイルを参照したい場合は `#` を使う。\n\n```java\n// 別クラスのSQLファイルを参照する場合\nboolean result = UniversalDao.exists(User.class, \"sample.entity.Member#CHECK_EXISTS\", condition);\n```\n\nメソッドの内部では、検索用のSQLを変換して存在チェックに使用する。\n\n**注意点**:\n- `exists` の第3引数（`params`）には、SQLファイル内のバインド変数に対応するBeanを渡す\n- `exists` は存在すれば `true`、0件なら `false` を返す（例外は送出しない）\n\n参照:\n- ユニバーサルDAO\n  .claude/skills/nabledge-6/docs/component/libraries/libraries-universal-dao.md\n  任意のSQL(SQLファイル)で検索する\n- class UniversalDao\n  .claude/skills/nabledge-6/docs/javadoc/javadoc-nablarch-common-dao-UniversalDao.md\n  exists\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-universal-dao.json\", \"source\": \"both\", \"reason\": \"質問が UniversalDao.exists の使い方を直接問うており、このページがユニバーサルDAOのAPI仕様を網羅している\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-database.json\", \"reason\": \"JDBCラッパーの直接利用に関するページであり、UniversalDao.exists の使い方の質問には直接該当しない\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"ウェブアプリケーションのアーキテクチャ概要であり UniversalDao.exists の具体的な使い方には関係しない\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"SQLファイルとSQL IDを指定して UniversalDao を使う具体的な方法を説明しており、exists でも同じSQL ID指定パターンが使われる\"},\n      {\"file\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\", \"section_id\": \"s17\", \"relevance\": \"high\", \"reason\": \"exists(Class, String) メソッドのシグネチャとパラメータ・戻り値を直接定義している\"},\n      {\"file\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\", \"section_id\": \"s18\", \"relevance\": \"high\", \"reason\": \"exists(Class, String, Object) メソッドのバインド変数付きオーバーロードを定義しており、条件指定の存在チェックに必須\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"SQL IDを指定した検索の背景説明として、SQLファイルとSQL IDの関係を補足する\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s6\", \"relevance\": \"partial\", \"reason\": \"ユニバーサルDAOを使用するための設定（BasicDaoContextFactory）を説明しており、実装に必要な前提情報を提供する\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s9\", \"reason\": \"遅延ロードの説明であり、exists による存在チェックとは無関係\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s10\", \"reason\": \"findAllBySqlFile による条件検索の説明であり、exists とは別のメソッド\"},\n      {\"file\": \"component/libraries/libraries-universal-dao.json\", \"section_id\": \"s12\", \"reason\": \"ページング機能の説明であり今回の質問には該当しない\"},\n      {\"file\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\", \"section_id\": \"s11\", \"reason\": \"findAllBySqlFile メソッドの説明であり exists とは別\"},\n      {\"file\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\", \"section_id\": \"s15\", \"reason\": \"countBySqlFile メソッドの説明であり exists とは別\"},\n      {\"file\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json\", \"section_id\": \"s16\", \"reason\": \"countBySqlFile(params あり) の説明であり今回の質問には直接関係しない\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-universal-dao.json:s7\",\n      \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17\",\n      \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18\",\n      \"component/libraries/libraries-universal-dao.json:s3\",\n      \"component/libraries/libraries-universal-dao.json:s6\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17\", \"reason\": \"exists(Class, String) のシグネチャ・パラメータ・戻り値を直接回答の根拠として使用した\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18\", \"reason\": \"exists(Class, String, Object) のバインド変数付きオーバーロードと「検索用のSQLを変換して使用する」説明を根拠として使用した\"},\n        {\"ref\": \"component/libraries/libraries-universal-dao.json:s7\", \"reason\": \"SQL IDの指定方法（#を使った別ファイル参照を含む）をコード例として使用した\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"component/libraries/libraries-universal-dao.json:s3\", \"reason\": \"SQL IDの背景説明は s7 で十分カバーされており、回答の冗長化を避けるため使用しなかった\"},\n        {\"ref\": \"component/libraries/libraries-universal-dao.json:s6\", \"reason\": \"セットアップ設定は今回の「使い方」の質問の直接回答には不要であるため使用しなかった\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "cb07c6c6-afab-4470-8e3d-de8793bfbeec",
+  "total_cost_usd": 0.51276115,
+  "usage": {
+    "input_tokens": 8,
+    "cache_creation_input_tokens": 42279,
+    "cache_read_input_tokens": 710443,
+    "output_tokens": 9139,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 42279
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3768,
+      "outputTokens": 41,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003973,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 8,
+      "outputTokens": 9139,
+      "cacheReadInputTokens": 710443,
+      "cacheCreationInputTokens": 42279,
+      "webSearchRequests": 0,
+      "costUSD": 0.50878815,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "598828e5-1deb-4133-a1c7-63b9d3b29376"
+}

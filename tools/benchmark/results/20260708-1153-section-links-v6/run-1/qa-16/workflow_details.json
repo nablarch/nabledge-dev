@@ -1,0 +1,122 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "both",
+        "reason": "質問が UniversalDao.exists の使い方を直接問うており、このページがユニバーサルDAOのAPI仕様を網羅している"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "JDBCラッパーの直接利用に関するページであり、UniversalDao.exists の使い方の質問には直接該当しない"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリケーションのアーキテクチャ概要であり UniversalDao.exists の具体的な使い方には関係しない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "SQLファイルとSQL IDを指定して UniversalDao を使う具体的な方法を説明しており、exists でも同じSQL ID指定パターンが使われる"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "exists(Class, String) メソッドのシグネチャとパラメータ・戻り値を直接定義している"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s18",
+        "relevance": "high",
+        "reason": "exists(Class, String, Object) メソッドのバインド変数付きオーバーロードを定義しており、条件指定の存在チェックに必須"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "SQL IDを指定した検索の背景説明として、SQLファイルとSQL IDの関係を補足する"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "ユニバーサルDAOを使用するための設定（BasicDaoContextFactory）を説明しており、実装に必要な前提情報を提供する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "reason": "遅延ロードの説明であり、exists による存在チェックとは無関係"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "reason": "findAllBySqlFile による条件検索の説明であり、exists とは別のメソッド"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s12",
+        "reason": "ページング機能の説明であり今回の質問には該当しない"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s11",
+        "reason": "findAllBySqlFile メソッドの説明であり exists とは別"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s15",
+        "reason": "countBySqlFile メソッドの説明であり exists とは別"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s16",
+        "reason": "countBySqlFile(params あり) の説明であり今回の質問には直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-universal-dao.json:s7",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18",
+      "component/libraries/libraries-universal-dao.json:s3",
+      "component/libraries/libraries-universal-dao.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17",
+          "reason": "exists(Class, String) のシグネチャ・パラメータ・戻り値を直接回答の根拠として使用した"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18",
+          "reason": "exists(Class, String, Object) のバインド変数付きオーバーロードと「検索用のSQLを変換して使用する」説明を根拠として使用した"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s7",
+          "reason": "SQL IDの指定方法（#を使った別ファイル参照を含む）をコード例として使用した"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s3",
+          "reason": "SQL IDの背景説明は s7 で十分カバーされており、回答の冗長化を避けるため使用しなかった"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s6",
+          "reason": "セットアップ設定は今回の「使い方」の質問の直接回答には不要であるため使用しなかった"
+        }
+      ]
+    }
+  }
+}

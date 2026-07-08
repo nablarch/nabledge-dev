@@ -1,0 +1,71 @@
+{
+  "scenario_id": "qa-19",
+  "description": "REST APIで登録処理を実装したい。クライアントからJSONを受け取ってDBに登録する基本的な流れを知りたい。",
+  "input": "REST APIでJSONを受け取ってDBに登録する処理を作りたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "JSONのボディ変換はJackson2BodyConverterが担当する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.7,
+      "reason": "The Expected Output contains a single specific fact: that JSON body conversion is handled by Jackson2BodyConverter. The Actual Output does mention 'Jackson2BodyConverter' in section ⑥, stating 'JSONコンバータ（Jackson2BodyConverter）とBean Validationハンドラが自動的に設定される'. This covers the expected fact, though it appears as a parenthetical detail rather than a primary focus. The expected fact is present in the actual output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, directly addressing the request to create a process for receiving JSON via REST API and registering it to a DB. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.8571428571428571,
+      "reason": "The score is 0.86 because while most of the actual output aligns with the retrieval context, there are a few contradictions: the actual output refers to a 'Routing Adapter' instead of the correct 'Request URI and Action Binding Handler' as stated in the context, mentions a 'methodBinderFactory of the Routing Adapter' which is not referenced anywhere in the retrieval context, and makes claims about a RESTEasy adapter that cannot be verified as the retrieval context does not mention RESTEasy at all. Additionally, the specific ordering of handlers (placing JaxRsResponseHandler second) cannot be confirmed from the context."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s4",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s2",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 188180,
+    "duration_api_ms": 187628,
+    "num_turns": 16,
+    "total_cost_usd": 1.1490905,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 15566,
+      "cache_read_input_tokens": 265350,
+      "cache_creation_input_tokens": 221870
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3800,
+        "outputTokens": 33,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003965,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 6,
+        "outputTokens": 15566,
+        "cacheReadInputTokens": 265350,
+        "cacheCreationInputTokens": 221870,
+        "webSearchRequests": 0,
+        "costUSD": 1.1451255,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "source": "both",
+        "reason": "RESTfulウェブサービスでの登録機能実装を直接説明するページ"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスのDB access・バリデーション等の機能詳細を参照先としてまとめるページ"
+      },
+      {
+        "path": "component/handlers/handlers-body-convert-handler.json",
+        "source": "both",
+        "reason": "JSONリクエストボディをFormに変換する処理を担うハンドラ"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "source": "both",
+        "reason": "RESTfulウェブサービスでのBean Validationを実行するハンドラ"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "both",
+        "reason": "DBへの登録（insert）処理を提供するライブラリ"
+      },
+      {
+        "path": "component/adapters/adapters-jaxrs-adaptor.json",
+        "source": "both",
+        "reason": "Jersey環境でのJackson2BodyConverter設定を含むJAX-RSアダプタ"
+      },
+      {
+        "path": "component/adapters/adapters-router-adaptor.json",
+        "source": "both",
+        "reason": "URLとアクションクラスのマッピング定義（@Pathアノテーション）を説明するページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "バリデーション設定の詳細はBean Validationハンドラで十分カバーされるため"
+      },
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "BeanUtilの使用方法は登録機能の作成ページに記載のコード例で十分"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "アーキテクチャ概要のみで実装詳細を含まない"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-resource-signature.json",
+        "reason": "パスパラメータ等の詳細は今回の質問スコープ外"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "JSONを受け取ってDBに登録するアクションメソッドの完全な実装例を提供"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "@ConsumesとBodyConverterによるJSONリクエストボディのForm変換を説明"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "@Validアノテーションによるバリデーション実行方法を説明"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "bodyConvertersプロパティへのコンバータ設定方法を提供"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "BasicDaoContextFactoryの設定方法を提供"
+      },
+      {
+        "file": "component/adapters/adapters-jaxrs-adaptor.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "JerseyJaxRsHandlerListFactoryによるJackson2BodyConverter自動設定を説明"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "@PathアノテーションによるURLマッピング実装例を提供"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s3",
+        "reason": "他ページへの参照リンクのみで実装詳細を含まない"
+      },
+      {
+        "file": "component/adapters/adapters-router-adaptor.json",
+        "section_id": "s6",
+        "reason": "JBoss/Wildfly等での制約説明のみで実装例はs8で十分"
+      },
+      {
+        "file": "component/handlers/handlers-body-convert-handler.json",
+        "section_id": "s6",
+        "reason": "レスポンスボディ変換（Produces）は今回の登録機能では不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-body-convert-handler.json:s4",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-universal-dao.json:s6",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2",
+      "component/adapters/adapters-router-adaptor.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+          "reason": "Form作成・アクションメソッド実装・URLマッピングの完全なコード例として使用"
+        },
+        {
+          "ref": "component/handlers/handlers-body-convert-handler.json:s5",
+          "reason": "@ConsumesによるJSONボディ変換の仕組みとContent-Type不一致時の415応答を説明に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "@ValidによるBean Validationの実行方法を説明に使用"
+        },
+        {
+          "ref": "component/adapters/adapters-jaxrs-adaptor.json:s2",
+          "reason": "JerseyJaxRsHandlerListFactoryとJackson2BodyConverterの自動設定を説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s6",
+          "reason": "BasicDaoContextFactoryの設定をコンポーネント定義例として使用"
+        },
+        {
+          "ref": "component/handlers/handlers-body-convert-handler.json:s4",
+          "reason": "bodyConvertersの設定方法とMIME不一致時の415をNote説明に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/adapters/adapters-router-adaptor.json:s8",
+          "reason": "@PathアノテーションのURLマッピングはgetting-started-createのコード例で既にカバーされているため独立した説明は不要"
+        }
+      ]
+    }
+  }
+}

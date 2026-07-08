@@ -1,0 +1,67 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output clearly covers the key fact from the expected output: that system date/time retrieval can be switched by replacing the class specified in the component definition. The actual output explicitly explains that by replacing the implementation class registered as 'systemTimeProvider', the behavior can be switched, and provides concrete examples showing BasicSystemTimeProvider for production and FixedSystemTimeProvider for testing. The core concept of 'switching by replacing the class in component definition' is fully covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about how to replace the system date/time with an arbitrary date during testing and switch between production and test environments. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.8461538461538461,
+      "reason": "The score is 0.85 because the actual output contains two contradictions: it incorrectly states that the fixedDate property accepts strings of 14 or 17 digits, whereas the retrieval context specifies 12 digits ('yyyyMMddHHmmss') or 15 digits ('yyyyMMddHHmmssSSS'). Additionally, the actual output incorrectly associates the example value '20100913123456' with September 14, 2010, when it actually represents September 13, 2010."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s12",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s11",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s12",
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s13"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 123375,
+    "duration_api_ms": 121872,
+    "num_turns": 8,
+    "total_cost_usd": 0.7650833499999999,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 7316,
+      "cache_read_input_tokens": 723412,
+      "cache_creation_input_tokens": 115817
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3804,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003979,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 7316,
+        "cacheReadInputTokens": 723412,
+        "cacheCreationInputTokens": 115817,
+        "webSearchRequests": 0,
+        "costUSD": 0.76110435,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

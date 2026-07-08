@@ -1,0 +1,69 @@
+{
+  "scenario_id": "qa-12",
+  "description": "Webアプリケーションでバリデーションエラー時のレスポンス。エラーメッセージをリクエストスコープに設定して入力画面に戻す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "エラー表示タグでリクエストスコープのエラーメッセージを表示する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.5,
+      "reason": "The Expected Output states a single concise fact: error display tags are used to show request-scope error messages. The Actual Output does cover this concept — it explains that ErrorMessages objects in the request scope are referenced in templates (Thymeleaf/JSP) to display error messages, and shows examples using Thymeleaf expressions and mentions the JSP custom tag `<n:errors>`. However, the Actual Output is far more detailed than needed and the core fact about 'error display tags' (specifically the JSP `<n:errors>` tag approach) is mentioned only as a side note in the 'Notes' section, while the main focus is on direct ErrorMessages object usage. The expected fact is partially present but not the primary focus, and the Thymeleaf approach (not tag-based) is emphasized instead."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, addressing exactly how to return error messages to users when input validation errors occur. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.8888888888888888,
+      "reason": "The score is 0.89 because the actual output contains two minor contradictions: it incorrectly implies that @OnError must always be set together with @InjectForm when it is actually optional, and it incorrectly associates ApplicationException being treated as a system error when OnError is not set, whereas the retrieval context only mentions validation errors being treated as system errors in that scenario — these are separate concepts."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/web-application/web-application-error-message.json:root",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/handlers/handlers-InjectForm.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 185977,
+    "duration_api_ms": 183869,
+    "num_turns": 13,
+    "total_cost_usd": 1.1025422,
+    "usage": {
+      "input_tokens": 14,
+      "output_tokens": 12465,
+      "cache_read_input_tokens": 1383999,
+      "cache_creation_input_tokens": 132354
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3818,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 12465,
+        "cacheReadInputTokens": 1383999,
+        "cacheCreationInputTokens": 132354,
+        "webSearchRequests": 0,
+        "costUSD": 1.0985442,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

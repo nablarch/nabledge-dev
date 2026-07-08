@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 196932,
+  "duration_api_ms": 195850,
+  "ttft_ms": 4216,
+  "ttft_stream_ms": 2423,
+  "time_to_request_ms": 652,
+  "num_turns": 9,
+  "result": "読み込んだセクションの内容をもとに回答を生成します。\n\n### Answer\n\n**結論:** メッセージ・ラベルの多言語化は、言語ごとのプロパティファイル（`messages_ja.properties`、`messages_en.properties` など）を作成し、`PropertiesStringResourceLoader` にサポート言語を設定することで実現できる。ユーザが実行時に言語を切り替える場合は `LanguageAttributeInHttpCookie`（または `InHttpSession`）と `LanguageAttributeInHttpUtil.keepLanguage()` を組み合わせる。\n\n**根拠:**\n\n**1. 言語ごとのプロパティファイルを作成する**\n\nファイル名は `messages_言語.properties` とする。デフォルト言語は言語なしの `messages.properties`。\n\n```\nmain/resources/messages.properties       # デフォルト（例：ja）\n               messages_en.properties    # 英語用\n```\n\n`messages.properties` が存在しない場合はエラーになるため必須。\n\n**2. PropertiesStringResourceLoader にサポート言語を設定する**\n\n```xml\n<component class=\"nablarch.core.cache.BasicStaticDataCache\" name=\"messageCache\">\n  <property name=\"loader\">\n    <component class=\"nablarch.core.message.PropertiesStringResourceLoader\">\n      <!-- サポートする言語（デフォルト言語は不要） -->\n      <property name=\"locales\">\n        <list>\n          <value>en</value>\n        </list>\n      </property>\n      <!-- デフォルトの言語（必須） -->\n      <property name=\"defaultLocale\" value=\"ja\" />\n    </component>\n  </property>\n</component>\n\n<component name=\"stringResourceHolder\" class=\"nablarch.core.message.StringResourceHolder\">\n  <property name=\"stringResourceCache\" ref=\"messageCache\" />\n</component>\n```\n\nメッセージ取得時の言語は `ThreadContext#getLanguage` の返すロケールで決定される。\n\n**3. ユーザが言語を選択できる画面を作る**\n\nクッキーに言語を保持する場合（コンポーネント名を `languageAttribute` にすること）：\n\n```xml\n<component name=\"languageAttribute\"\n           class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie\">\n  <property name=\"defaultLanguage\" value=\"ja\" />\n  <property name=\"supportedLanguages\" value=\"ja,en\" />\n</component>\n```\n\nハンドラで `LanguageAttributeInHttpUtil.keepLanguage()` を呼び出し、選択した言語をクッキーとスレッドコンテキストに保存する：\n\n```java\npublic class I18nHandler implements HttpRequestHandler {\n    public HttpResponse handle(HttpRequest request, ExecutionContext context) {\n        String language = request.getParam(\"user.language\")[0];\n        if (StringUtil.hasValue(language)) {\n            // サポート対象外の言語は無視される\n            LanguageAttributeInHttpUtil.keepLanguage(request, context, language);\n        }\n        return context.handleNext(request);\n    }\n}\n```\n\n**4. JSP（コンテンツパス）を言語ごとに切り替える場合**\n\n`HttpResponseHandler` の `contentPathRule` に `DirectoryBasedResourcePathRule`（ディレクトリ方式）または `FilenameBasedResourcePathRule`（ファイル名サフィックス方式）を設定する：\n\n```xml\n<component name=\"resourcePathRule\"\n           class=\"nablarch.fw.web.i18n.DirectoryBasedResourcePathRule\" />\n\n<component class=\"nablarch.fw.web.handler.HttpResponseHandler\">\n  <property name=\"contentPathRule\" ref=\"resourcePathRule\" />\n</component>\n```\n\nディレクトリ方式のJSP配置例：\n```\nコンテキストルート/en/management/user/search.jsp\nコンテキストルート/ja/management/user/search.jsp\n```\n\n**5. コード名称（プルダウン等のラベル）を多言語化する場合**\n\nコード名称テーブルに言語ごとのデータを登録する：\n\n| ID | VALUE | LANG | SORT_ORDER | NAME | SHORT_NAME |\n|---|---|---|---|---|---|\n| GENDER | MALE | ja | 1 | 男性 | 男 |\n| GENDER | MALE | en | 1 | Male | M |\n\n`CodeUtil` で言語指定して取得できる：\n```java\nCodeUtil.getName(\"GENDER\", \"MALE\", Locale.ENGLISH);  // -> Male\n```\n\n**注意点:**\n- `defaultLocale` は必ず設定すること。未設定の場合は `Locale.getDefault().getLanguage()` が使われ、OS依存の値となり障害の原因になる。\n- `LanguageAttributeInHttpUtil.keepLanguage()` に指定された言語が `supportedLanguages` に含まれない場合は、クッキー・スレッドコンテキストへの設定は行われない。\n- カスタムレスポンスライター（Thymeleafなど）使用時はコンテンツパス切り替え機能は使用できない（テンプレートエンジン側の多言語機能を使うこと）。\n\n参照:\n- メッセージ管理\n  .claude/skills/nabledge-6/docs/component/libraries/libraries-message.md\n  多言語化対応\n  プロパティファイルにメッセージを定義する\n- スレッドコンテキスト変数管理ハンドラ\n  .claude/skills/nabledge-6/docs/component/handlers/handlers-thread-context-handler.md\n  ユーザが言語を選択する画面を作る\n  リクエスト毎にスレッドコンテキストの初期化を行う\n- HTTPレスポンスハンドラ\n  .claude/skills/nabledge-6/docs/component/handlers/handlers-http-response-handler.md\n  言語毎のコンテンツパスの切り替え\n- コード管理\n  .claude/skills/nabledge-6/docs/component/libraries/libraries-code.md\n  名称の多言語化対応\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-message.json\", \"source\": \"index\", \"reason\": \"メッセージ管理ページにs8「多言語化対応」セクションがあり、質問に直接回答できる\"},\n      {\"path\": \"component/handlers/handlers-thread-context-handler.json\", \"source\": \"index\", \"reason\": \"s7「ユーザが言語を選択する画面を作る」セクションがあり、言語切り替えの実装方法を説明する\"},\n      {\"path\": \"component/handlers/handlers-http-response-handler.json\", \"source\": \"index\", \"reason\": \"s7「言語毎のコンテンツパスの切り替え」セクションがあり、JSPの多言語切り替えに対応する\"},\n      {\"path\": \"component/libraries/libraries-code.json\", \"source\": \"index\", \"reason\": \"s8「名称の多言語化対応」セクションがあり、コードラベル（プルダウン等）の多言語化を説明する\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"source\": \"index\", \"reason\": \"s12「国際化対応」セクションが多言語化の全体概要を提供する\"},\n      {\"path\": \"component/libraries/libraries-tag.json\", \"source\": \"index\", \"reason\": \"s31「メッセージを出力する」とs32「言語毎にリソースパスを切り替える」が多言語化の画面実装に関連する\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"about/about-nablarch/about-nablarch-about-nablarch.json\", \"reason\": \"概要ページで多言語化実装の具体的情報がない\"},\n      {\"path\": \"component/libraries/libraries-bean-validation.json\", \"reason\": \"バリデーション機能であり多言語化とは直接関係しない\"},\n      {\"path\": \"component/handlers/handlers-http-character-encoding-handler.json\", \"reason\": \"文字エンコーディング制御であり言語切り替えとは異なる\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s8\", \"relevance\": \"high\", \"reason\": \"多言語化対応の主要セクションで、プロパティファイル作成とPropertiesStringResourceLoader設定を詳しく説明する\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"ユーザが言語を選択する画面の実装例（LanguageAttributeInHttpCookie＋LanguageAttributeInHttpUtil）を提供する\"},\n      {\"file\": \"component/handlers/handlers-http-response-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"言語ごとのJSPコンテンツパス切り替え（DirectoryBasedResourcePathRule等）を説明する\"},\n      {\"file\": \"component/libraries/libraries-code.json\", \"section_id\": \"s8\", \"relevance\": \"high\", \"reason\": \"コード名称テーブルへの言語別データ登録とCodeUtilによる取得方法を説明する\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s7\", \"relevance\": \"partial\", \"reason\": \"プロパティファイルの記述形式の背景情報を提供する\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s4\", \"relevance\": \"partial\", \"reason\": \"LanguageAttributeをThreadContextHandlerに設定する方法の背景を提供する\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s12\", \"relevance\": \"partial\", \"reason\": \"国際化対応の全体像を示すが個別詳細は他ページに委ねている\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s9\", \"reason\": \"業務例外送出の説明であり多言語化の主要な問いとは直接関係しない\"},\n      {\"file\": \"component/libraries/libraries-message.json\", \"section_id\": \"s11\", \"reason\": \"画面固定文言表示の一般説明で、多言語化のメカニズム説明としてs8と重複する\"},\n      {\"file\": \"component/handlers/handlers-thread-context-handler.json\", \"section_id\": \"s8\", \"reason\": \"タイムゾーン選択の説明であり言語切り替えとは別の関心事\"},\n      {\"file\": \"component/libraries/libraries-code.json\", \"section_id\": \"s6\", \"reason\": \"コード管理の初期設定でテーブル作成が中心であり多言語化の実装手順からは外れる\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-message.json:s8\",\n      \"component/libraries/libraries-message.json:s7\",\n      \"component/handlers/handlers-thread-context-handler.json:s7\",\n      \"component/handlers/handlers-thread-context-handler.json:s4\",\n      \"component/handlers/handlers-http-response-handler.json:s7\",\n      \"component/libraries/libraries-code.json:s8\",\n      \"processing-pattern/web-application/web-application-feature-details.json:s12\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/libraries/libraries-message.json:s8\", \"reason\": \"言語ごとのプロパティファイル名規則・PropertiesStringResourceLoader設定例・defaultLocale必須の根拠として使用\"},\n        {\"ref\": \"component/handlers/handlers-thread-context-handler.json:s7\", \"reason\": \"LanguageAttributeInHttpCookieの設定例とLanguageAttributeInHttpUtil.keepLanguage()のハンドラ実装例として使用\"},\n        {\"ref\": \"component/handlers/handlers-http-response-handler.json:s7\", \"reason\": \"DirectoryBasedResourcePathRule設定例とJSPディレクトリ構成の説明として使用\"},\n        {\"ref\": \"component/libraries/libraries-code.json:s8\", \"reason\": \"コード名称テーブルへの言語別データ登録とCodeUtil使用例として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"component/libraries/libraries-message.json:s7\", \"reason\": \"プロパティファイルの一般的な記述形式はs8の説明で十分カバーされるため割愛\"},\n        {\"ref\": \"component/handlers/handlers-thread-context-handler.json:s4\", \"reason\": \"LanguageAttributeの設定配置はs7の設定例で示されるため重複を避けて割愛\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-feature-details.json:s12\", \"reason\": \"国際化対応の概要リンクのみでs8/s7の具体実装が回答の主体となるため割愛\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "d02190a3-344d-4a91-8ced-e9e274863447",
+  "total_cost_usd": 0.8842508499999999,
+  "usage": {
+    "input_tokens": 8,
+    "cache_creation_input_tokens": 131869,
+    "cache_read_input_tokens": 611877,
+    "output_tokens": 13480,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 131869
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3780,
+      "outputTokens": 35,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003955,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 8,
+      "outputTokens": 13480,
+      "cacheReadInputTokens": 611877,
+      "cacheCreationInputTokens": 131869,
+      "webSearchRequests": 0,
+      "costUSD": 0.88029585,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "566a3b1d-1944-4cec-b56d-c8472dbad47a"
+}
