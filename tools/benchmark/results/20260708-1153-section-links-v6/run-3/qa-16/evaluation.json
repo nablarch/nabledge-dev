@@ -1,0 +1,66 @@
+{
+  "scenario_id": "qa-16",
+  "description": "UniversalDaoでSQLファイルを使ったデータ存在チェックを実装したい。exists メソッドの使い方を知りたい。",
+  "input": "UniversalDao.exists で SQL_ID を指定してデータ存在チェックをする方法を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "SQL_IDを指定してバインド変数なしでデータ存在チェックを行うexists(Class, String)メソッドがある",
+    "SQL_IDとバインド変数を指定してデータ存在チェックを行うexists(Class, String, Object)メソッドがある"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output explicitly covers both expected facts. It mentions the `exists(Class, String)` method (bind variable-free version) and the `exists(Class, String, Object)` method (with bind variables), both used for data existence checks with SQL IDs. Both facts from the Expected Output checklist are clearly 'covered' with code examples and explanations."
+    },
+    "answer_relevancy": {
+      "score": 0.9444444444444444,
+      "reason": "The score is 0.94 because the response effectively explains how to use UniversalDao.exists with SQL_ID for data existence checking, but slightly loses relevance by including an internal file path reference to documentation, which does not contribute to answering the question."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s5"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 106268,
+    "duration_api_ms": 104818,
+    "num_turns": 8,
+    "total_cost_usd": 0.7949037999999999,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 5583,
+      "cache_read_input_tokens": 763721,
+      "cache_creation_input_tokens": 127478
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3768,
+        "outputTokens": 41,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003973,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 5583,
+        "cacheReadInputTokens": 763721,
+        "cacheCreationInputTokens": 127478,
+        "webSearchRequests": 0,
+        "costUSD": 0.7909307999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

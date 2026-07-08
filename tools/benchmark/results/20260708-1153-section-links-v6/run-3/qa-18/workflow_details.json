@@ -1,0 +1,136 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "source": "both",
+        "reason": "index.mdで「BeanUtil」として直接記載されており、classes.mdでも`BeanUtil`クラスが属するページとして一致する。目的「実装したい」の優先カテゴリ`component/libraries`に該当。"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "BeanのプロパティとSQLバインド変数に関するページであり、getPropertyの実装方法という質問の中心には直接答えない。"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "ユニバーサルDAOはDB検索結果をBeanにマッピングする機能を扱うが、BeanUtil.getPropertyの使い方を直接説明しない。"
+      },
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "reason": "Bean Validationはバリデーションの機能を扱い、BeanUtilのgetPropertyとは別のトピック。"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "BeanUtil.getPropertyの具体的な使用例コードを含み、「値はgetter経由で取得される」という仕様を直接説明している。"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "getProperty(Object bean, String propertyName)のJavadocで、トップレベル要素のみ指定可能という制約とBeansException条件を明示している。"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json",
+        "section_id": "s15",
+        "relevance": "partial",
+        "reason": "型変換付きgetPropertyのシグネチャを文書化しており、型変換して値を取得したい場合の補完情報となる。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "型変換ルールの説明であり、getPropertyで型変換を利用する際の背景知識となる。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s9",
+        "relevance": "partial",
+        "reason": "レコードに対するgetPropertyの制約（setProperty等でレコードを渡すと実行時例外）を説明している。"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s1",
+        "reason": "モジュール一覧（依存定義）のみで実装方法の情報を含まない。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s4",
+        "reason": "型変換ルールを追加する拡張例で、getPropertyの基本的な使い方とは直接関係しない。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s5",
+        "reason": "許容フォーマット指定の概要で、getPropertyには直接関係しない（copyやcreateAndCopyに関連）。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s6",
+        "reason": "デフォルトフォーマット設定で、getPropertyには直接関係しない。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s7",
+        "reason": "プロパティ単位のフォーマット設定で、getPropertyには直接関係しない。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s8",
+        "reason": "BeanUtil呼び出し時のCopyOptions設定で、createAndCopyに関連しgetPropertyには直接関係しない。"
+      },
+      {
+        "file": "component/libraries/libraries-bean-util.json",
+        "section_id": "s10",
+        "reason": "レコードの使用方法は「Java Beansに対する操作に準ずる」という参照のみで独自情報が少ない。"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json",
+        "section_id": "s28",
+        "reason": "setPropertyのJavadocであり、getPropertyの質問には関係しない。"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-util.json:s2",
+      "component/libraries/libraries-bean-util.json:s3",
+      "component/libraries/libraries-bean-util.json:s9",
+      "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s14",
+      "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s15"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-bean-util.json:s2",
+          "reason": "getPropertyのコード例（final Long id = (Long) BeanUtil.getProperty(user, \"id\")）と「値はgetter経由で取得される」の仕様を直接引用した。"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s14",
+          "reason": "propertyNameはトップレベル要素のみという制約、ネストしたプロパティが動作しないコード例、BeansExceptionの条件を注意点として引用した。"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s15",
+          "reason": "型変換付きgetPropertyのシグネチャを根拠として引用した。"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-util.json:s9",
+          "reason": "レコードへのsetProperty/copyの注意点を注意点セクションで引用した。"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-bean-util.json:s3",
+          "reason": "型変換ルールの説明は今回の質問（getPropertyの使い方）には直接必要ではなく、回答の焦点を絞るために使用しなかった。"
+        }
+      ]
+    }
+  }
+}

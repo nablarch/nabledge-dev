@@ -1,0 +1,70 @@
+{
+  "scenario_id": "qa-21",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+    "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both key facts from the Expected Output: (1) using @Valid annotation to automatically trigger validation and generate error responses via JaxRsBeanValidationHandler, and (2) creating a subclass of ErrorResponseBuilder to set error messages in the response body. Both facts are not only present but elaborated with concrete implementation steps, code examples, and configuration details. The Actual Output fully aligns with the Expected Output's core requirements."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, which asks about how to return error messages to users when input validation errors occur. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.8666666666666667,
+      "reason": "The score is 0.87 because the actual output contains minor inaccuracies regarding NablarchMessageInterpolator. Specifically, it incorrectly states that NablarchMessageInterpolator uses message management 'by default', when in fact it only uses message management when the annotation's message attribute value is enclosed in curly braces { }. Additionally, the actual output implies that message attributes 'must' be enclosed in curly braces, whereas the retrieval context clarifies this is merely the condition for triggering message management, not a strict requirement for all message attributes."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11",
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 173480,
+    "duration_api_ms": 171910,
+    "num_turns": 9,
+    "total_cost_usd": 0.8533712999999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 11964,
+      "cache_read_input_tokens": 617721,
+      "cache_creation_input_tokens": 129216
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3816,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.004011,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 11964,
+        "cacheReadInputTokens": 617721,
+        "cacheCreationInputTokens": 129216,
+        "webSearchRequests": 0,
+        "costUSD": 0.8493603,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
