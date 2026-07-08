@@ -7,11 +7,10 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 # Acceptance criteria
 
-- QA (SC and QA mode) answer `参照:` lines are rendered as `[セクションタイトル](docs/path.md#anchor)` links pointing to the exact section
-- code-analysis Nablarch usage `**詳細**:` fields include a section-level link for each knowledge section read during Step 3
-- Linked anchors are reachable: following a link opens the correct section in the knowledge MD (anchor matches GitHub Markdown heading anchor for that section's title)
-- Benchmark scores do not degrade: QA run1 passes stably, then full benchmark shows no regression vs baseline
-- Change is applied to all 5 skill versions (nabledge-1.2, 1.3, 1.4, 5, 6)
+- QA スキル出力の `参照:` ブロックが、ページタイトル・plain docs パス（VS Code がクリッカブルと認識する形式）・インデントしたセクションタイトルを含む形式で出力される（bare `file.json:sN` が残っていない）
+- code-analysis スキル出力の `**詳細**:` フィールドが、docs ファイルへの Markdown リンク＋インデントしたセクションタイトルを含む形式で出力される
+- ベンチマークスコアが退行しない：QA run-1 が安定して通過し、フルベンチマークでベースライン比の退行がない
+- 変更が全 5 バージョン（nabledge-1.2, 1.3, 1.4, 5, 6）に適用されている
 
 # Assumptions
 
@@ -48,7 +47,7 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 ### #2: Implement QA section links — v6 only
 
-**Purpose**: Update `qa.md` in nabledge-6 only so the `参照:` line emits `[セクションタイトル](docs/path.md#anchor)` links instead of bare `file.json:sN` citations.
+**Purpose**: Update `qa.md` in nabledge-6 only so the `参照:` block emits page title + plain docs path + indented section title(s) instead of bare `file.json:sN` citations.
 
 **Prerequisites**: #1 approved
 
@@ -60,16 +59,17 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 - [x] Self-check (OK/NG per completion criterion, record in checks/task-2.md)
 - [x] Prompt Engineer expert review (subagent)
 - [x] Verification expert review (subagent)
+- [ ] Run pre-01 and confirm output format
 
 **Completion criteria**:
 
-- `参照:` instruction in `nabledge-6/workflows/qa.md` specifies Markdown link format `[title](path#anchor)` for each cited section
-- Anchor algorithm matches GitHub Markdown spec (lowercase, strip non-word except hyphens/spaces, spaces→hyphens)
-- No existing QA instruction content removed or altered beyond the citation format change
+- nabledge-6 QA スキルを pre-01 シナリオで実行したとき、`answer.md` の `参照:` ブロックがページタイトル・plain docs パス（`.claude/skills/nabledge-6/docs/` プレフィックス）・インデントしたセクションタイトルの形式で出力される（bare `file.json:sN` が残っていない）
+- `参照:` ブロックに `#anchor` が含まれない
+- `nabledge-6/workflows/qa.md` の変更が `参照:` 指示ブロック以外に及んでいない
 
 ### #3: Implement code-analysis section links — v6 only
 
-**Purpose**: Update `code-analysis.md` and `code-analysis/template-guide.md` in nabledge-6 only so `**詳細**:` in Nablarch usage includes a section-level link to each knowledge section read in Step 3.
+**Purpose**: Update `code-analysis.md` and `code-analysis/template-guide.md` in nabledge-6 only so `**詳細**:` in Nablarch usage includes a Markdown link to the docs file + indented section title(s) instead of a file-level link only.
 
 **Prerequisites**: #1 approved
 
@@ -81,12 +81,13 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 - [x] Self-check (OK/NG per completion criterion, record in checks/task-3.md)
 - [x] Prompt Engineer expert review (subagent)
 - [x] Verification expert review (subagent)
+- [ ] code-analysis を実行しサンプル出力で format を確認
 
 **Completion criteria**:
 
-- `**詳細**:` instruction in `nabledge-6` specifies section-level link format `[file title](docs/path.md) > [section title](docs/path.md#anchor)` (or equivalent)
-- Workflow instruction explains how to carry section-id metadata from Step 3 to Step 4 for link generation
-- No existing code-analysis instruction content removed or altered beyond the link format change
+- nabledge-6 code-analysis スキルを実行したとき、出力ファイルの `**詳細**:` フィールドがページタイトルの Markdown リンク（`[ページタイトル](../../.claude/skills/nabledge-6/docs/...md)`）＋インデントしたセクションタイトルの形式で出力される（ファイルレベルリンクのみの旧形式が残っていない）
+- `**詳細**:` リンクに `#anchor` が含まれない
+- `code-analysis.md` と `template-guide.md` の変更が `sections_metadata` ビルド手順と `**詳細**:` 指示以外に及んでいない
 
 ### #4: v6 benchmark — QA run1 stability check
 
@@ -102,9 +103,9 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Completion criteria**:
 
-- QA benchmark run1 completes without errors
-- Output includes `参照:` links in Markdown link format (not bare file.json:sN)
-- Links are well-formed (path and anchor present)
+- QA benchmark run-1（全シナリオ）が終了コード 0 で完了する
+- run-1 の全シナリオ `answer.md` に bare `file.json:sN` 形式の `参照:` が残っていない（新フォーマットで出力されている）
+- run-1 の全シナリオ `answer.md` に `#anchor` が含まれない
 
 ### #5: v6 benchmark — full QA and code-analysis
 
@@ -122,9 +123,9 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Completion criteria**:
 
-- Full QA benchmark pass rate ≥ baseline
-- Full code-analysis benchmark pass rate ≥ baseline
-- Any difference is explainable (format improvement) or within noise
+- v6 QA フルベンチマーク（3 run）の `crossrun-summary.md` の全シナリオ pass rate が、`tools/benchmark/results/20260612-1404-baseline-current/baseline.json` の各シナリオ `pass_rate` を下回っていない（flaky シナリオは CLEAN 扱い）
+- v6 code-analysis フルベンチマークの結果に、変更前の `tools/benchmark/results/20260701-1736-code-analysis-baseline/` と比べて新たな REGRESSION DETECTED がない
+- QA フルベンチ `quality-report.md` の確定判定（ナレッジ照合ベース）で実害ありの閾値割れシナリオが 0 件
 
 ### #6: Apply to remaining versions (nabledge-5, 1.4, 1.3, 1.2)
 
@@ -141,8 +142,9 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Completion criteria**:
 
-- All 5 versions have the same citation format instruction (processing-type lists may differ)
-- The 4 newly updated files differ from v6 only in version-specific path names
+- nabledge-5, 1.4, 1.3, 1.2 の各バージョンで QA pre-01 相当シナリオを実行したとき、`参照:` ブロックが v6 と同じ形式（ページタイトル・plain docs パス・インデントセクションタイトル）で出力される
+- 各バージョンの code-analysis を実行したとき、`**詳細**:` フィールドが v6 と同じ形式（Markdown リンク＋インデントセクションタイトル）で出力される
+- `qa.md` の変更差分が v6 との差はバージョン固有のパス名のみで、指示内容は同一である
 
 ### #7: Evaluation sign-off
 
@@ -157,8 +159,7 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Completion criteria**:
 
-- All Acceptance criteria verified as met
-- User approves the changes via `/rn:ty`
+- Acceptance criteria の各項目が、実際の実行結果（benchmark レポート・スキル出力）に基づいて満たされていることをユーザーが確認し `/rn:ty` で承認している
 
 # State
 
