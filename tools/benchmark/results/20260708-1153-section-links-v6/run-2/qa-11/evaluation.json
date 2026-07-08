@@ -1,0 +1,74 @@
+{
+  "scenario_id": "qa-11",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers both key facts from the expected output. First, it explicitly describes HttpErrorHandler returning responses with appropriate status codes based on exception types (table showing NoMoreHandlerException→404, StackOverflowError→500, etc.). Second, it addresses ApplicationException error messages being set in request scope under key 'errors' in section 3, stating that when HttpErrorResponse's cause is ApplicationException, error messages are automatically converted to ErrorMessages and stored in request scope. Both expected facts are clearly covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is completely relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9166666666666666,
+      "reason": "The score is 0.92 because there are two minor contradictions in the actual output: (1) it incorrectly associates writeFailureLogPattern with Result.Error and status codes, when in reality writeFailureLogPattern only determines FATAL level log output based on a regular expression, while Result.Error unconditionally triggers FATAL level logs; and (2) it incorrectly claims 'duplicate settings' are required in web.xml when using the default page feature, whereas the retrieval context only recommends configuring default error pages in web.xml instead of using the handler's default page feature."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s6",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s5",
+      "component/handlers/handlers-on-error.json:s3",
+      "component/handlers/handlers-on-error.json:s4",
+      "component/handlers/handlers-on-error.json:s5",
+      "processing-pattern/web-application/web-application-feature-details.json:s16",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s1",
+      "processing-pattern/web-application/web-application-forward-error-page.json:s2",
+      "component/libraries/libraries-failure-log.json:s1",
+      "component/libraries/libraries-failure-log.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 242452,
+    "duration_api_ms": 241094,
+    "num_turns": 17,
+    "total_cost_usd": 1.3814035499999997,
+    "usage": {
+      "input_tokens": 18,
+      "output_tokens": 16591,
+      "cache_read_input_tokens": 1869611,
+      "cache_creation_input_tokens": 151347
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3830,
+        "outputTokens": 44,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00405,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 18,
+        "outputTokens": 16591,
+        "cacheReadInputTokens": 1869611,
+        "cacheCreationInputTokens": 151347,
+        "webSearchRequests": 0,
+        "costUSD": 1.3773535499999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

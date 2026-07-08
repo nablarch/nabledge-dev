@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 99535,
+  "duration_api_ms": 99013,
+  "ttft_ms": 3662,
+  "ttft_stream_ms": 2767,
+  "time_to_request_ms": 465,
+  "num_turns": 8,
+  "result": "Phase Dの分析が完了しました。WebSocketに直接関連するセクションが見当たりません。`read-sections.sh`の実行は不要（selected_sections = []）です。\n\n### Answer\n\nこの情報は知識ファイルに含まれていません。\n\nNablarchはWebSocketをフレームワークとしてネイティブサポートしていないため、知識ファイルにもWebSocketに関する記載がありません。\n\nなお、バッチの進捗をブラウザへリアルタイム通知したい場合のNablarch的なアプローチとして、知識ファイルには「テーブルをキューとして使ったメッセージング」を使った非同期処理パターンの記述はありますが、これはバックエンド間の非同期処理であり、ブラウザへのプッシュ通知（WebSocket / SSE）については対象範囲外です。\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"source\": \"index\", \"reason\": \"処理方式がウェブアプリケーションであり、ウェブアプリの機能詳細を網羅するページとして候補\"},\n      {\"path\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json\", \"source\": \"index\", \"reason\": \"リアルタイム通知・非同期処理に関連するパターンとして候補\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/nablarch-batch/*\", \"reason\": \"バッチアーキテクチャの内部処理であり、WebSocketやブラウザ通知には無関係\"},\n      {\"path\": \"processing-pattern/jakarta-batch/*\", \"reason\": \"同上\"},\n      {\"path\": \"component/handlers/*\", \"reason\": \"HTTPハンドラはWebSocketプロトコルを扱わない\"},\n      {\"path\": \"component/adapters/*\", \"reason\": \"既存アダプタにWebSocket関連のものは存在しない\"}\n    ],\n    \"selected_sections\": [],\n    \"excluded_sections\": [\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s1-s21\", \"reason\": \"全セクションを確認したが、WebSocketに関する記述は一切なく、回答に必要な情報を提供しない\"},\n      {\"file\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json\", \"section_id\": \"s1\", \"reason\": \"非同期処理パターンとしてテーブルキューメッセージングを説明するが、WebSocketやブラウザへのプッシュ通知は対象外\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": []\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [],\n      \"unused\": []\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "14ec1b85-151e-44f4-8d4d-0c5d44860a6a",
+  "total_cost_usd": 0.63847355,
+  "usage": {
+    "input_tokens": 7,
+    "cache_creation_input_tokens": 108807,
+    "cache_read_input_tokens": 464621,
+    "output_tokens": 5800,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 108807
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3840,
+      "outputTokens": 40,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00404,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 7,
+      "outputTokens": 5800,
+      "cacheReadInputTokens": 464621,
+      "cacheCreationInputTokens": 108807,
+      "webSearchRequests": 0,
+      "costUSD": 0.63443355,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "6cd695bb-0962-4b63-94b9-edc2065748f5"
+}

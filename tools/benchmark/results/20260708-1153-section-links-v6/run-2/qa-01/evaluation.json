@@ -1,0 +1,66 @@
+{
+  "scenario_id": "qa-01",
+  "description": "バッチで10万件のデータを読み込んで加工する処理を書いている。findAllBySqlFileで全件取得したらOutOfMemoryErrorが出た。",
+  "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "UniversalDao.deferメソッドで遅延ロードを使用する",
+    "DeferredEntityListのcloseメソッドを呼び出す必要がある"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts explicitly. It mentions 'UniversalDao.defer()' method for deferred loading, which corresponds to the first expected fact about 'UniversalDao.deferメソッドで遅延ロードを使用する'. It also explicitly states that 'DeferredEntityList#close の呼び出しが必須' and demonstrates this with try-with-resources, covering the second expected fact about 'DeferredEntityListのcloseメソッドを呼び出す必要がある'. Both facts from the Expected Output checklist are fully covered."
+    },
+    "answer_relevancy": {
+      "score": 0.9230769230769231,
+      "reason": "The score is 0.92 because the response largely addresses the question about reading data one record at a time to avoid memory issues with large dataset searches. However, it loses a few points for including a suggestion to refer to the database vendor's manual, which does not directly contribute to answering the specific question asked."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s27",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 208153,
+    "duration_api_ms": 206074,
+    "num_turns": 21,
+    "total_cost_usd": 1.4651430999999997,
+    "usage": {
+      "input_tokens": 20,
+      "output_tokens": 12813,
+      "cache_read_input_tokens": 2493657,
+      "cache_creation_input_tokens": 138876
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3806,
+        "outputTokens": 40,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.004006,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 20,
+        "outputTokens": 12813,
+        "cacheReadInputTokens": 2493657,
+        "cacheCreationInputTokens": 138876,
+        "webSearchRequests": 0,
+        "costUSD": 1.4611370999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

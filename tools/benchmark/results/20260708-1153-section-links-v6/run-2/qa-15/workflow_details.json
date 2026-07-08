@@ -1,0 +1,146 @@
+{
+  "question": "クロスサイト・スクリプティング（XSS）の対策はNablarchでどこまで対応できるか？カスタムタグを使えばサニタイジングされるのか？",
+  "hearing": {
+    "processing_type": "ウェブアプリケーション",
+    "purpose": "セキュリティ対応したい"
+  },
+  "semantic_search": {
+    "phase_a": {
+      "candidates": [
+        {
+          "page": "check/security-check/security-check-2.チェックリスト.json",
+          "reason": "XSSチェックリスト(No.5)を直接含む。Nablarchの対応状況が一覧で確認できる。",
+          "source": "index"
+        },
+        {
+          "page": "component/libraries/libraries-tag.json",
+          "reason": "カスタムタグのHTMLエスケープ機能を説明。「カスタムタグを使えばサニタイジングされるか」に直接回答する。",
+          "source": "index"
+        },
+        {
+          "page": "component/handlers/handlers-secure-handler.json",
+          "reason": "X-XSS-Protectionヘッダ等セキュリティレスポンスヘッダを設定するハンドラ。XSS 5-(x)対応。",
+          "source": "index"
+        },
+        {
+          "page": "component/handlers/handlers-http-character-encoding-handler.json",
+          "reason": "Content-Type charset設定担当。XSS 5-(viii)対応。",
+          "source": "index"
+        },
+        {
+          "page": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+          "reason": "JSP静的解析ツール。カスタムタグ以外のタグ使用によるエスケープ漏れを検出できる。セキュリティチェックリストで言及されている。",
+          "source": "index"
+        }
+      ]
+    },
+    "phase_b": {
+      "candidates": [],
+      "reason": "Phase Aで選定済みページのクラス（SecureHandler, XssProtectionHeader, CustomTagConfig, HttpCharacterEncodingHandler）はすべて既選定ページに含まれる。新規追加なし。"
+    },
+    "phase_c": {
+      "merged_pages": [
+        {
+          "page": "check/security-check/security-check-2.チェックリスト.json",
+          "source": "index"
+        },
+        {
+          "page": "component/libraries/libraries-tag.json",
+          "source": "index"
+        },
+        {
+          "page": "component/handlers/handlers-secure-handler.json",
+          "source": "index"
+        },
+        {
+          "page": "component/handlers/handlers-http-character-encoding-handler.json",
+          "source": "index"
+        },
+        {
+          "page": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+          "source": "index"
+        }
+      ]
+    },
+    "phase_d": {
+      "selected_sections": [
+        {
+          "file": "check/security-check/security-check-2.チェックリスト.json",
+          "section_id": "s5",
+          "relevance": "high",
+          "reason": "XSS全10項目のNablarch対応状況を直接列挙。回答の中核。"
+        },
+        {
+          "file": "component/libraries/libraries-tag.json",
+          "section_id": "s2",
+          "relevance": "high",
+          "reason": "カスタムタグのHTMLエスケープ動作とJavaScriptエスケープ非対応を説明。質問への直接回答。"
+        },
+        {
+          "file": "component/handlers/handlers-secure-handler.json",
+          "section_id": "s4",
+          "relevance": "partial",
+          "reason": "デフォルトセキュリティヘッダ（X-XSS-Protection等）の設定方法。5-(x)の実装詳細。"
+        },
+        {
+          "file": "component/handlers/handlers-http-character-encoding-handler.json",
+          "section_id": "s4",
+          "relevance": "partial",
+          "reason": "Content-Type charset設定の具体例。5-(viii)の実装詳細。"
+        },
+        {
+          "file": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+          "section_id": "s1",
+          "relevance": "partial",
+          "reason": "JSP静的解析ツールがサニタイジング漏れを検出することを説明。カスタムタグ対策の補完手段。"
+        }
+      ]
+    },
+    "phase_e": {
+      "javadoc_links_found": [],
+      "note": "選定セクション内に../javadoc/javadoc-*.jsonリンクなし。Javadoc追加なし。"
+    }
+  },
+  "read_sections": [
+    "check/security-check/security-check-2.チェックリスト.json:s5",
+    "component/libraries/libraries-tag.json:s2",
+    "component/handlers/handlers-secure-handler.json:s4",
+    "component/handlers/handlers-http-character-encoding-handler.json:s4",
+    "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json:s1"
+  ],
+  "verify": {
+    "result": "PASS",
+    "checks": [
+      {
+        "claim": "カスタムタグはデフォルトでHTMLエスケープ",
+        "source": "libraries-tag.json#s2",
+        "status": "confirmed"
+      },
+      {
+        "claim": "JavaScriptエスケープは提供していない",
+        "source": "libraries-tag.json#s2",
+        "status": "confirmed"
+      },
+      {
+        "claim": "5-(i)カスタムタグで対応〇、5-(ii)〜(iv)(vi)(vii)(ix)は×",
+        "source": "security-check-2.json#s5",
+        "status": "confirmed"
+      },
+      {
+        "claim": "5-(v)入力値チェック〇、5-(viii)HTTP文字エンコード制御ハンドラ〇、5-(x)セキュアハンドラ〇",
+        "source": "security-check-2.json#s5",
+        "status": "confirmed"
+      },
+      {
+        "claim": "セキュアハンドラはX-XSS-Protectionヘッダ等をデフォルト設定",
+        "source": "handlers-secure-handler.json (前セッション読み込み済)",
+        "status": "confirmed"
+      },
+      {
+        "claim": "JSP静的解析ツールでサニタイジング漏れ検出可能",
+        "source": "toolbox-01-JspStaticAnalysis.json#s1",
+        "status": "confirmed"
+      }
+    ]
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "both",
+        "reason": "機能概要にある「実行時のBeanオブジェクトの状態を元にSQL文を動的に構築できる」およびs21「可変条件を持つSQLを実行する」が質問に直接対応する"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "both",
+        "reason": "ウェブアプリケーション検索で推奨されるUniversalDao.findAllBySqlFileがs10で説明されており、条件指定検索の実装方法として関連する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションの検索機能の実装例として$if構文を使った具体的なSQL・Javaコードが含まれる"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "データベースアクセスはライブラリ詳細へのポインタのみで$if構文の説明はない"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "reason": "DomaアダプタはNablarchの$if構文とは別のアプローチであり、質問はNablarchの組み込み機能を想定している"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "$if構文の記述ルールと実装例を直接説明するセクション"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "partial",
+        "reason": "in句が可変になる場合の$if活用例として補足情報を提供する"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "Beanオブジェクトを入力とするSQL実行の基本パターンを説明し、$if構文の前提知識として必要"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "動的SQL構築機能の概要説明セクション"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーション検索でのUniversalDao使用例として補足情報"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "findAllBySqlFileによるSQL指定検索の基本説明"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ウェブアプリの検索機能として$if構文を使ったSQL・Bean・ActionのE2E実装例が含まれる"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s23",
+        "reason": "order byのソート項目動的切り替えは質問の可変条件とは別のトピック"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s12",
+        "reason": "ページング処理の説明であり、可変条件とは直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-database.json:s16",
+      "component/libraries/libraries-database.json:s6",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s21",
+          "reason": "$if構文のルールと実装例を回答の根拠として直接使用"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s22",
+          "reason": "in句の可変条件（:property[]構文）を注意点として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s16",
+          "reason": "ParameterizedSqlPStatementを使ったJDBCラッパー実装例の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s10",
+          "reason": "UniversalDao.findAllBySqlFileを使った実装例の根拠として使用"
+        },
+        {
+          "ref": "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+          "reason": "ウェブアプリの検索SQLとBeanUtil+UniversalDaoの組み合わせパターンの実装例として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-database.json:s6",
+          "reason": "機能概要のみで実装詳細がなく、s21で代替できるため回答には直接引用せず"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s7",
+          "reason": "SQL IDの指定方法の説明はs10および検索例で既にカバーされているため省略"
+        }
+      ]
+    }
+  }
+}

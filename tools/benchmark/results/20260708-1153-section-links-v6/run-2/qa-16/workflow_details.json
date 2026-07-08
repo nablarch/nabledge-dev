@@ -1,0 +1,111 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index",
+        "reason": "UniversalDao.existsメソッドとSQL_IDを使ったデータ存在チェックに直接対応するページ"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "index",
+        "reason": "SQLをファイルで管理する機能（SQL_IDの使い方）に関連するページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-database-management.json",
+        "reason": "概要ページであり具体的な実装情報が含まれないためスキップ"
+      },
+      {
+        "path": "component/libraries/libraries-database-functional-comparison.json",
+        "reason": "機能比較表であり実装方法の情報がないためスキップ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "existsメソッド（バインド変数なし）のシグネチャと動作説明を含む"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s18",
+        "relevance": "high",
+        "reason": "existsメソッド（バインド変数あり）のシグネチャと動作説明を含む"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "SQLファイルの配置ルールとSQL_IDの指定方法を説明しており、existsに必須の知識"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "使用方法セクションへの入口としてJavadocへの参照を含む"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s1",
+        "reason": "機能概要の見出しのみで内容が空のためスキップ"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s2",
+        "reason": "CRUDの一般概要であり、existsの使い方に直接関係しないためスキップ"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s3",
+        "reason": "SQLファイル検索の概要説明でs7で詳細が得られるためスキップ"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "reason": "条件指定のfindAllBySqlFileの例であり、existsとは異なるメソッドのためスキップ"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s12",
+        "reason": "SQLをファイルで管理する詳細はs7でUniversalDAO向けに説明されているため不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s5"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s17",
+          "reason": "existsメソッド（バインド変数なし）のシグネチャと戻り値の仕様を回答に使用"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s18",
+          "reason": "existsメソッド（バインド変数あり）のシグネチャと内部動作の説明を回答に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s7",
+          "reason": "SQLファイルの配置ルールとSQL_ID指定方法を回答に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s5",
+          "reason": "Javadocへの参照のみでexistsの具体的な情報を含まず、直接回答に引用しなかった"
+        }
+      ]
+    }
+  }
+}

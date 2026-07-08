@@ -1,0 +1,82 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 210214,
+  "duration_api_ms": 209012,
+  "ttft_ms": 4399,
+  "ttft_stream_ms": 3078,
+  "time_to_request_ms": 453,
+  "num_turns": 13,
+  "result": "Step 4〜8を実行します。必要なセクション情報はファイル読み込みで取得済みです。\n\n### Answer\n\n**結論**: RESTfulウェブサービスでバリデーションエラー時にエラーメッセージをユーザーに返すには、リソースクラスのメソッドに `@Valid` アノテーションを付与してバリデーションを実行し、`ErrorResponseBuilder` を継承してエラーレスポンスのボディにメッセージを設定する。\n\n**根拠**:\n\n**1. バリデーションの実行**\n\nリソースクラスのメソッドに `@Valid` アノテーションを設定する。`JaxRsBeanValidationHandler` がバリデーションを実行し、エラー時は `ApplicationException` を送出する。\n\n```java\n@POST\n@Consumes(MediaType.APPLICATION_JSON)\n@Valid\npublic HttpResponse save(Person person) {\n    UniversalDao.insert(person);\n    return new HttpResponse();\n}\n```\n\n**2. エラーメッセージのレスポンス設定**\n\n`ErrorResponseBuilder` を継承したクラスを作成し、`ApplicationException` を受け取ってレスポンスボディにメッセージを設定する。\n\n```java\npublic class SampleErrorResponseBuilder extends ErrorResponseBuilder {\n\n    private final ObjectMapper objectMapper = new ObjectMapper();\n\n    @Override\n    public HttpResponse build(final HttpRequest request,\n            final ExecutionContext context, final Throwable throwable) {\n        if (throwable instanceof ApplicationException) {\n            return createResponseBody((ApplicationException) throwable);\n        } else {\n            return super.build(request, context, throwable);\n        }\n    }\n\n    private HttpResponse createResponseBody(final ApplicationException ae) {\n        final HttpResponse response = new HttpResponse(400);\n        response.setContentType(MediaType.APPLICATION_JSON);\n\n        // エラーメッセージの生成処理は省略\n\n        try {\n            response.write(objectMapper.writeValueAsString(errorMessages));\n        } catch (JsonProcessingException ignored) {\n            return new HttpResponse(500);\n        }\n        return response;\n    }\n}\n```\n\n作成したクラスを `JaxRsResponseHandler` の `errorResponseBuilder` プロパティに設定する。\n\n```xml\n<component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n  <property name=\"errorResponseBuilder\">\n    <component class=\"sample.SampleErrorResponseBuilder\" />\n  </property>\n</component>\n```\n\n**3. エラーメッセージの定義**\n\nデフォルトでは `NablarchMessageInterpolator` がメッセージ管理機能（プロパティファイル）からメッセージを構築する。アノテーションの `message` 属性に `{` `}` で囲んだメッセージIDを指定し、プロパティファイルに定義する。\n\n```properties\nnablarch.core.validation.ee.Required.message=入力してください。\nnablarch.core.validation.ee.Length.max.message={max}文字以内で入力してください。\n```\n\n**注意点**:\n- `JaxRsBeanValidationHandler` は `BodyConvertHandler`（リクエストボディ変換ハンドラ）より後ろに設定すること（Formへの変換後にバリデーションを行うため）\n- `ErrorResponseBuilder` の処理中に例外が発生した場合、フレームワークはWARNレベルでログを出力しステータスコード500のレスポンスを返す\n\n参照:\n- Jakarta RESTful Web Servcies Bean Validationハンドラ\n  .claude/skills/nabledge-6/docs/component/handlers/handlers-jaxrs-bean-validation-handler.md\n  リソース(アクション)で受け取るForm(Bean)に対してバリデーションを実行する\n  制約\n- Jakarta RESTful Web Servicesレスポンスハンドラ\n  .claude/skills/nabledge-6/docs/component/handlers/handlers-jaxrs-response-handler.md\n  エラー時のレスポンスにメッセージを設定する\n  例外及びエラーに応じたレスポンスの生成\n- Bean Validation\n  .claude/skills/nabledge-6/docs/component/libraries/libraries-bean-validation.md\n  RESTfulウェブサービスのユーザ入力値のチェックを行う\n  バリデーションエラー時のエラーメッセージを定義する\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"source\": \"index\", \"reason\": \"RESTfulウェブサービスの機能詳細ページで、入力値チェックとエラー時レスポンスのセクションを含む\"},\n      {\"path\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json\", \"source\": \"both\", \"reason\": \"RESTfulウェブサービスのBean Validationハンドラで、@Validアノテーションによるバリデーション実行を説明している\"},\n      {\"path\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"source\": \"both\", \"reason\": \"エラー時のレスポンス生成と、ErrorResponseBuilderによるエラーメッセージのレスポンス設定を説明している\"},\n      {\"path\": \"component/libraries/libraries-bean-validation.json\", \"source\": \"both\", \"reason\": \"Bean Validationの設定方法とエラーメッセージ定義、RESTfulウェブサービスでの使い方を説明している\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-architecture.json\", \"reason\": \"アーキテクチャ概要のみで、バリデーションエラーメッセージ返却の実装詳細がない\"},\n      {\"path\": \"component/libraries/libraries-nablarch-validation.json\", \"reason\": \"Nablarch Validationは旧バリデーション機能でRESTfulウェブサービスには対応していない\"},\n      {\"path\": \"processing-pattern/restful-web-service/restful-web-service-getting-started-create.json\", \"reason\": \"登録機能のサンプルで、バリデーションエラーメッセージ返却の詳細説明がない\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"@Validアノテーションを使ったバリデーション実行の具体的なコード例を提供している\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"バリデーションエラー時にJSON形式のエラーメッセージをレスポンスに設定する実装例を提供している\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s17\", \"relevance\": \"high\", \"reason\": \"RESTfulウェブサービスでのBean Validation使用方法を説明し、@Validアノテーション設定に誘導している\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"バリデーションエラー時のエラーメッセージをプロパティファイルで定義する方法を説明している\"},\n      {\"file\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json\", \"section_id\": \"s11\", \"relevance\": \"partial\", \"reason\": \"エラー時に返却するレスポンスの参照先を示している\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s4\", \"relevance\": \"partial\", \"reason\": \"ErrorResponseBuilderの設定方法と、処理中例外発生時の振る舞いを説明している\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-response-handler.json\", \"section_id\": \"s8\", \"relevance\": \"partial\", \"reason\": \"特定の例外に応じた個別エラーレスポンスの返却方法を補足説明している\"},\n      {\"file\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"BodyConvertHandlerより後ろに配置する制約を説明している\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json\", \"section_id\": \"s5\", \"reason\": \"Bean Validationのグループ指定は今回の質問の主題ではない\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s16\", \"reason\": \"ウェブアプリケーション用のInjectFormインターセプタの説明でRESTfulには関係ない\"},\n      {\"file\": \"component/libraries/libraries-bean-validation.json\", \"section_id\": \"s6\", \"reason\": \"設定の概要のみで、RESTful固有の実装詳細を含まない\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\",\n      \"component/handlers/handlers-jaxrs-response-handler.json:s7\",\n      \"component/libraries/libraries-bean-validation.json:s17\",\n      \"component/libraries/libraries-bean-validation.json:s7\",\n      \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\",\n      \"component/handlers/handlers-jaxrs-response-handler.json:s4\",\n      \"component/handlers/handlers-jaxrs-response-handler.json:s8\",\n      \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s3\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\", \"reason\": \"@Validアノテーションによるバリデーション実行のコード例として使用\"},\n        {\"ref\": \"component/handlers/handlers-jaxrs-response-handler.json:s7\", \"reason\": \"ErrorResponseBuilderを継承してエラーメッセージをレスポンスに設定する実装例として使用\"},\n        {\"ref\": \"component/handlers/handlers-jaxrs-response-handler.json:s4\", \"reason\": \"errorResponseBuilderプロパティのXML設定例と、例外発生時の振る舞い説明として使用\"},\n        {\"ref\": \"component/libraries/libraries-bean-validation.json:s7\", \"reason\": \"NablarchMessageInterpolatorとプロパティファイルによるエラーメッセージ定義の説明として使用\"},\n        {\"ref\": \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s3\", \"reason\": \"BodyConvertHandlerより後ろに配置する制約の注意点として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"component/libraries/libraries-bean-validation.json:s17\", \"reason\": \"s4(handlers-jaxrs-bean-validation-handler)で詳細を説明したため、ポインタのみのこのセクションは使用しなかった\"},\n        {\"ref\": \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\", \"reason\": \"ポインタのみのセクションで、参照先をすでに使用済みのため不要\"},\n        {\"ref\": \"component/handlers/handlers-jaxrs-response-handler.json:s8\", \"reason\": \"404エラー対応のサンプルでバリデーションエラーとは別ケースのため本回答では使用しなかった\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "2831dee5-eb9d-4547-be8c-7723ade3018f",
+  "total_cost_usd": 1.02634215,
+  "usage": {
+    "input_tokens": 11,
+    "cache_creation_input_tokens": 127879,
+    "cache_read_input_tokens": 1026773,
+    "output_tokens": 15646,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 127879
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3816,
+      "outputTokens": 45,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.004041,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 11,
+      "outputTokens": 15646,
+      "cacheReadInputTokens": 1026773,
+      "cacheCreationInputTokens": 127879,
+      "webSearchRequests": 0,
+      "costUSD": 1.0223011499999999,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01P78m4viMg1bXSRX7fxj4Gu",
+      "tool_input": {
+        "command": "cd /home/tie303177/work/nabledge-dev/.claude/worktrees/395-add-md-section-links/.claude/skills/nabledge-6/knowledge && ls processing-pattern/restful-web-service/ component/handlers/ component/libraries/libraries-bean-validation.json component/libraries/libraries-message.json component/libraries/libraries-nablarch-validation.json 2>/dev/null | head -30"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01NHyxBScXSqKtHie5V7wN7x",
+      "tool_input": {
+        "command": "cd /home/tie303177/work/nabledge-dev/.claude/worktrees/395-add-md-section-links && bash .claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/handlers/handlers-jaxrs-response-handler.json:s7\" \\\n  \"component/handlers/handlers-jaxrs-response-handler.json:s4\" \\\n  \"component/libraries/libraries-bean-validation.json:s17\" \\\n  \"component/libraries/libraries-bean-validation.json:s7\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\" \\\n  \"component/handlers/handlers-jaxrs-response-handler.json:s8\""
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01HSHwWJruHbiELnztpyDXcH",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge-dev/.claude/worktrees/395-add-md-section-links/.claude/skills/nabledge-6/scripts/read-sections.sh \\\n  \"component/handlers/handlers-jaxrs-bean-validation-handler.json:s4\" \\\n  \"component/handlers/handlers-jaxrs-response-handler.json:s7\" \\\n  \"component/handlers/handlers-jaxrs-response-handler.json:s4\" \\\n  \"component/libraries/libraries-bean-validation.json:s17\" \\\n  \"component/libraries/libraries-bean-validation.json:s7\" \\\n  \"processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11\" \\\n  \"component/handlers/handlers-jaxrs-response-handler.json:s8\""
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "ed0dd0f4-bb13-4572-8a66-c94b707288ee"
+}

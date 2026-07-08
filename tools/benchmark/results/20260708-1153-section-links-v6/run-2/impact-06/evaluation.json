@@ -1,0 +1,76 @@
+{
+  "scenario_id": "impact-06",
+  "description": "本番環境でAPサーバを複数台並べて負荷分散する予定。セッション変数をサーバ間で共有する必要がある。",
+  "input": "APサーバを複数台にスケールアウトするとき、セッション変数の保存先はどれを選ぶべき？各ストアの特徴を知りたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "DBストアはデータベース上のテーブルに保存し、APサーバ停止時もセッション変数の復元が可能",
+    "HIDDENストアはクライアントサイドにhiddenタグで引き回して実現する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts. It explicitly states that the DB store saves to a database table and that sessions can be restored even after server stops ('ローリングメンテナンス等でサーバ停止後もセッション変数の復元が可能'). It also clearly describes the HIDDEN store as saving to the client side via hidden tags ('クライアントサイド（hiddenタグ経由）'). Both key facts from the Expected Output are fully addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly relevant to the input, which asks about where to store session variables when scaling out AP servers to multiple instances and the characteristics of each store. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/libraries/libraries-stateless-web-app.json:s1",
+      "component/libraries/libraries-stateless-web-app.json:s2",
+      "component/handlers/handlers-SessionStoreHandler.json:s9",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s15",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s5",
+      "component/libraries/libraries-session-store.json:s12",
+      "component/libraries/libraries-session-store.json:s17",
+      "component/adapters/adapters-redisstore-lettuce-adaptor.json:s6",
+      "component/libraries/libraries-stateless-web-app.json:s3",
+      "component/libraries/libraries-stateless-web-app.json:s4",
+      "component/libraries/libraries-session-store.json:s9",
+      "processing-pattern/web-application/web-application-feature-details.json:s18"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 266569,
+    "duration_api_ms": 265754,
+    "num_turns": 9,
+    "total_cost_usd": 0.93153235,
+    "usage": {
+      "input_tokens": 7,
+      "output_tokens": 18626,
+      "cache_read_input_tokens": 500267,
+      "cache_creation_input_tokens": 132799
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3860,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.004045,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 7,
+        "outputTokens": 18626,
+        "cacheReadInputTokens": 500267,
+        "cacheCreationInputTokens": 132799,
+        "webSearchRequests": 0,
+        "costUSD": 0.9274873499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "scenario_id": "qa-02",
+  "description": "検索条件に合致するレコードを取得して別テーブルに集計結果を書き込む月次の定期処理を作りたい。DBからDBへのパターン。",
+  "input": "DBからデータを読み込んで集計し、結果を別テーブルに書き込む定期処理を作りたい。どういう構成で実装すればいい？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "DatabaseRecordReaderでデータベースからデータを読み込む",
+    "BatchActionを継承したアクションクラスを実装する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers both facts from the Expected Output. It explicitly mentions `DatabaseRecordReader` being used to read data from the database (fact 1) and describes implementing an action class that inherits from `BatchAction` (fact 2), including a concrete code example showing `AggregationBatchAction extends BatchAction<SqlRow>`. Both expected facts are fully addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about how to implement a batch process that reads data from a DB, aggregates it, and writes the results to another table. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9615384615384616,
+      "reason": "The score is 0.96 because the actual output incorrectly states that an error will occur when transaction control is performed while a cursor is open, whereas the retrieval context only indicates that the cursor *may be closed* depending on the RDBMS, without guaranteeing an error."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s2",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s4",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s5",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8",
+      "processing-pattern/nablarch-batch/nablarch-batch-application-design.json:s1",
+      "component/libraries/libraries-universal-dao.json:s7",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/libraries/libraries-universal-dao.json:s14"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 191442,
+    "duration_api_ms": 190101,
+    "num_turns": 11,
+    "total_cost_usd": 0.89110625,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 12391,
+      "cache_read_input_tokens": 626650,
+      "cache_creation_input_tokens": 136855
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3836,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.004016,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 12391,
+        "cacheReadInputTokens": 626650,
+        "cacheCreationInputTokens": 136855,
+        "webSearchRequests": 0,
+        "costUSD": 0.88709025,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

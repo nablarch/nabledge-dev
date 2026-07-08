@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 152673,
+  "duration_api_ms": 151312,
+  "ttft_ms": 5370,
+  "ttft_stream_ms": 2983,
+  "time_to_request_ms": 430,
+  "num_turns": 9,
+  "result": "### Answer\n\n**結論**: NablarchバッチでCSVファイルの各行をJava Beansとして読み込むには、データバインド機能を使い、①`@Csv`/`@CsvFormat`アノテーション付きのフォームクラス、②`DataReader<T>`実装のリーダークラス、③`BatchAction<T>`を継承したアクションクラスの3つを実装します。\n\n**根拠**:\n\n**①フォームクラス（CSVフォーマット定義）**\n\nJava Beansクラスに `@Csv` と `@CsvFormat` を付与してCSVのフォーマットを指定します。バリデーション用アノテーションも付与できます。外部から受け付けるデータはプロパティをすべて `String` 型で定義してください。\n\n```java\n@Csv(type = Csv.CsvType.DEFAULT, properties = {\"code\", \"name\"}, headers = {\"コード\", \"名前\"})\npublic class MyDataForm {\n    @Required\n    private String code;\n    private String name;\n\n    // getter/setter は省略\n}\n```\n\nカスタムフォーマット（文字コード・区切り文字など）が必要な場合は `@CsvFormat` を追加します：\n\n```java\n@Csv(type = Csv.CsvType.CUSTOM, properties = {\"code\", \"name\"})\n@CsvFormat(charset = \"UTF-8\", fieldSeparator = ',',\n        ignoreEmptyLine = true, lineSeparator = \"\\r\\n\", quote = '\"',\n        quoteMode = QuoteMode.NORMAL, requiredHeader = false, emptyToNull = true)\npublic class MyDataForm { ... }\n```\n\n**②データリーダークラス**\n\n`DataReader<T>` を実装し、`ObjectMapperFactory.create()` で生成した `ObjectMapper` を使って1行ずつ読み込みます。\n\n```java\npublic class MyDataReader implements DataReader<MyDataForm> {\n\n    private ObjectMapperIterator<MyDataForm> iterator;\n\n    @Override\n    public MyDataForm read(ExecutionContext ctx) {\n        if (iterator == null) initialize();\n        return iterator.next();\n    }\n\n    @Override\n    public boolean hasNext(ExecutionContext ctx) {\n        if (iterator == null) initialize();\n        return iterator.hasNext();\n    }\n\n    @Override\n    public void close(ExecutionContext ctx) {\n        iterator.close();  // リソース解放を必ず行う\n    }\n\n    private void initialize() {\n        File file = FilePathSetting.getInstance()\n                        .getFileWithoutCreate(\"csv-input\", \"myDataFile\");\n        try {\n            iterator = new ObjectMapperIterator<>(\n                ObjectMapperFactory.create(MyDataForm.class,\n                    new FileInputStream(file)));\n        } catch (FileNotFoundException e) {\n            throw new IllegalStateException(e);\n        }\n    }\n}\n```\n\n**③アクションクラス**\n\n`BatchAction<T>` を継承し、`createReader()` でリーダーを返し、`handle()` で1行分のデータを処理します。\n\n```java\npublic class MyBatchAction extends BatchAction<MyDataForm> {\n\n    @Override\n    public Result handle(MyDataForm inputData, ExecutionContext ctx) {\n        // 1行分のデータに対する処理\n        MyEntity entity = BeanUtil.createAndCopy(MyEntity.class, inputData);\n        UniversalDao.insert(entity);\n        return new Result.Success();\n    }\n\n    @Override\n    public DataReader<MyDataForm> createReader(ExecutionContext ctx) {\n        return new MyDataReader();\n    }\n}\n```\n\n**注意点**:\n- `ObjectMapper#close()` を必ず呼び出してリソースを解放すること（`try-with-resources` 推奨）\n- 外部から受け付けるデータのフォームプロパティはすべて `String` 型で定義すること（型変換失敗による異常終了を防ぐため）\n- `ObjectMapper` はスレッドアンセーフのため、複数スレッドで共有しないこと\n\n参照:\n- ファイルをDBに登録するバッチの作成\n  .claude/skills/nabledge-6/docs/processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.md\n  入力データソースからデータを読み込む\n  業務ロジックを実行する\n- データバインド\n  .claude/skills/nabledge-6/docs/component/libraries/libraries-data-bind.md\n  データをJava Beansオブジェクトとして扱うことができる\n  データをJava Beansオブジェクトとして読み込む\n  CSVファイルのフォーマットを指定する\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json\", \"source\": \"both\", \"reason\": \"Nablarchバッチでのファイル読み込み→DB登録の具体的な実装例（DataReader、BatchAction）を直接説明している\"},\n      {\"path\": \"component/libraries/libraries-data-bind.json\", \"source\": \"both\", \"reason\": \"CSVをJava Beansとして読み込むデータバインド機能（@Csv、@CsvFormat、ObjectMapper）を直接説明している\"},\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json\", \"source\": \"both\", \"reason\": \"Nablarchバッチのファイル入出力機能詳細（FileDataReader等）を説明しているが、データバインド中心の質問には直接的ではない\"},\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\", \"source\": \"both\", \"reason\": \"利用可能なデータリーダ一覧（FileDataReader、ValidatableFileDataReader等）のアーキテクチャ説明\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-data-format.json\", \"reason\": \"汎用データフォーマット機能はフォーマット定義ファイル方式であり、Java Beansへのアノテーションバインドとは別の方式のため\"},\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.json\", \"reason\": \"エラー処理の説明であり、CSVのJava Beans読み込み実装とは直接関係ない\"},\n      {\"path\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json\", \"reason\": \"処理パターンの分類説明であり、CSVのJava Beans読み込みの実装方法とは直接関係ない\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json\", \"section_id\": \"s2\", \"relevance\": \"high\", \"reason\": \"CSVをJava Beansとして読み込むDataReaderの実装例（ObjectMapperIterator使用）が完全に示されている\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"BatchActionを継承したアクションクラス（createReader+handle）の実装例が示されている\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s7\", \"relevance\": \"high\", \"reason\": \"ObjectMapperFactory.createとObjectMapper.readによるJava Beans読み込みの基本実装例\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s15\", \"relevance\": \"high\", \"reason\": \"@Csvと@CsvFormatアノテーションによるCSVフォーマット指定方法の詳細説明\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s2\", \"relevance\": \"partial\", \"reason\": \"Java Beans読み込み時のプロパティ型（String型推奨）という重要な制約事項を説明している\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s8\", \"reason\": \"書き込みの説明であり、読み込みが主目的の質問には不要\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s9\", \"reason\": \"MapオブジェクトとしてのCSV読み込みであり、Java Beans読み込みとは別のアプローチ\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s16\", \"reason\": \"固定長ファイルのフォーマット指定であり、CSVに関する質問には不要\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s11\", \"reason\": \"行番号取得は補助機能であり、基本実装とは切り離せる\"},\n      {\"file\": \"component/libraries/libraries-data-bind.json\", \"section_id\": \"s12\", \"reason\": \"バリデーション機能はアクション側で実施するため、データ読み込みの説明には不要\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3\",\n      \"component/libraries/libraries-data-bind.json:s7\",\n      \"component/libraries/libraries-data-bind.json:s15\",\n      \"component/libraries/libraries-data-bind.json:s2\",\n      \"javadoc/javadoc-nablarch-common-databind-csv-Csv.json\",\n      \"javadoc/javadoc-nablarch-common-databind-csv-CsvFormat.json\",\n      \"javadoc/javadoc-nablarch-common-databind-LineNumber.json\",\n      \"javadoc/javadoc-nablarch-fw-DataReader.json\",\n      \"javadoc/javadoc-nablarch-common-databind-ObjectMapper.json\",\n      \"javadoc/javadoc-nablarch-common-databind-ObjectMapperFactory.json\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2\", \"reason\": \"DataReaderの実装例（ObjectMapperIterator使用）を根拠のコード例として使用\"},\n        {\"ref\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3\", \"reason\": \"BatchActionのhandle/createReader実装例を根拠のコード例として使用\"},\n        {\"ref\": \"component/libraries/libraries-data-bind.json:s7\", \"reason\": \"ObjectMapperによるJava Beans読み込みとclose処理の必要性の説明に使用\"},\n        {\"ref\": \"component/libraries/libraries-data-bind.json:s15\", \"reason\": \"@Csv/@CsvFormatアノテーションのフォーマット指定方法の説明に使用\"},\n        {\"ref\": \"component/libraries/libraries-data-bind.json:s2\", \"reason\": \"外部データのプロパティはすべてString型という制約事項の説明に使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"javadoc/javadoc-nablarch-common-databind-csv-Csv.json\", \"reason\": \"パッケージ情報のみでアノテーション詳細はs15で十分説明済み\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-common-databind-csv-CsvFormat.json\", \"reason\": \"アノテーション名情報のみでs15のコード例で十分\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-common-databind-LineNumber.json\", \"reason\": \"行番号取得機能は今回の質問のコアではない\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-fw-DataReader.json\", \"reason\": \"SECTION_NOT_FOUNDのためコンテンツなし\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-common-databind-ObjectMapper.json\", \"reason\": \"SECTION_NOT_FOUNDのためコンテンツなし\"},\n        {\"ref\": \"javadoc/javadoc-nablarch-common-databind-ObjectMapperFactory.json\", \"reason\": \"SECTION_NOT_FOUNDのためコンテンツなし\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "15f6ec5f-7f51-4426-b0a0-3fea67023084",
+  "total_cost_usd": 0.8557469000000001,
+  "usage": {
+    "input_tokens": 9,
+    "cache_creation_input_tokens": 125958,
+    "cache_read_input_tokens": 743498,
+    "output_tokens": 10422,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 125958
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3818,
+      "outputTokens": 36,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003998,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 9,
+      "outputTokens": 10422,
+      "cacheReadInputTokens": 743498,
+      "cacheCreationInputTokens": 125958,
+      "webSearchRequests": 0,
+      "costUSD": 0.8517489,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "3c151379-7b74-4799-b926-c958d0084d1b"
+}

@@ -1,0 +1,120 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "source": "index",
+        "reason": "セッションストアページは質問のトピック（DBストア・HIDDENストアの使い分け）を直接カバーしており、「入力～確認～完了画面間で入力情報を保持する」セクションが含まれる"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "source": "both",
+        "reason": "セッション変数保存ハンドラのページで、セッションストアの動作とHIDDENストア使用時のハンドラ配置制約が記載されている"
+      },
+      {
+        "path": "component/adapters/adapters-redisstore-lettuce-adaptor.json",
+        "source": "index",
+        "reason": "セッションストアの保存先候補として記載されているため候補に含めたが、今回の質問の焦点（DBストアとHIDDENストアの使い分け）とは直接関係しないためフィルタ対象"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "source": "index",
+        "reason": "hiddenStoreタグなどHIDDENストア使用時のJSP実装に関する情報が含まれる"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-stateless-web-app.json",
+        "reason": "ステートレス化の説明であり、セッションストアの使い分け選択基準の説明ではないためスキップ"
+      },
+      {
+        "path": "component/libraries/libraries-tag-reference.json",
+        "reason": "タグリファレンスの詳細であり、hiddenStoreタグの属性詳細は今回の質問の焦点ではないためスキップ"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "入力データ保持(s9)へのリンクが含まれるが、ライブラリページで十分な情報が得られるためスキップ"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "入力～確認～完了画面間での使い分け（複数タブ許容か否かでDBストアかHIDDENストアを選ぶ）を直接説明しており、質問に完全に答えるセクション"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s16",
+        "relevance": "high",
+        "reason": "各ストアの特長と選択基準の一覧表が含まれており、DBストアとHIDDENストアの特性の違いを理解するために必須"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "HIDDENストア使用時のハンドラ配置制約（マルチパートリクエストハンドラより後ろ、内部フォーワードハンドラより前）を説明する背景情報"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "DBストアの設定方法とUSER_SESSIONテーブルの定義など、DBストアを使う際の設定背景を提供する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s2",
+        "reason": "保存先の種類の概要で、s16で十分にカバーされているためスキップ"
+      },
+      {
+        "file": "component/libraries/libraries-session-store.json",
+        "section_id": "s12",
+        "reason": "HIDDENストアの暗号化設定のカスタマイズで、使い分けの判断基準の説明には直接関係しない"
+      },
+      {
+        "file": "component/handlers/handlers-SessionStoreHandler.json",
+        "section_id": "s4",
+        "reason": "SessionStoreHandlerの設定方法で、使い分けの判断基準の説明には直接関係しない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-session-store.json:s9",
+      "component/libraries/libraries-session-store.json:s16",
+      "component/libraries/libraries-session-store.json:s2",
+      "component/handlers/handlers-SessionStoreHandler.json:s3",
+      "component/libraries/libraries-session-store.json:s8"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-session-store.json:s9",
+          "reason": "複数タブ許容か否かによるDBストアとHIDDENストアの使い分けを説明するために使用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s16",
+          "reason": "DBストアとHIDDENストアそれぞれの特長と選択基準の一覧表を提供するために使用"
+        },
+        {
+          "ref": "component/handlers/handlers-SessionStoreHandler.json:s3",
+          "reason": "HIDDENストア使用時の注意点（ハンドラ配置制約）を説明するために使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-session-store.json:s2",
+          "reason": "s16で十分カバーされており、追加情報がないためアンサーに未使用"
+        },
+        {
+          "ref": "component/libraries/libraries-session-store.json:s8",
+          "reason": "DBストアの設定詳細は今回の質問（仕組み・動作理解）では不要のためアンサーに未使用"
+        }
+      ]
+    }
+  }
+}

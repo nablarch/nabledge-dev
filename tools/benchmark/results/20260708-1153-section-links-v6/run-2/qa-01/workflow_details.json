@@ -1,0 +1,124 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index",
+        "reason": "「検索結果を遅延ロードする」セクションを持ち、大量データのメモリ問題を直接解決する機能を提供している"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "source": "both",
+        "reason": "Nablarchバッチの処理方式に属し、DatabaseRecordReaderなどデータリーダの一覧を提供している"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "source": "index",
+        "reason": "Nablarchバッチのデータベースアクセス機能詳細を説明しており、処理方式に合致する"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "index",
+        "reason": "データベースアクセス(JDBCラッパー)の検索範囲指定など、大量データ処理に関連する機能を持つ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.json",
+        "reason": "エラー処理に関する内容でメモリ節約とは無関係"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-functional-comparison.json",
+        "reason": "Jakarta Batchとの機能比較であり質問の解決に不要"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-database-reader.json",
+        "reason": "処理方式がJakartaバッチであり、指定されたNablarchバッチとは異なる"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "ユニバーサルDAOのセクションで十分な情報が得られたため最終的に不要と判断"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "「検索結果を遅延ロードする」セクションで、UniversalDao.defer()によるメモリ節約の実装方法とコード例を直接説明している"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json",
+        "section_id": "s27",
+        "relevance": "high",
+        "reason": "UniversalDao#deferメソッドのJavadocで、大量データのヒープ圧迫防止の仕様を説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "Nablarchバッチで使用するデータリーダ一覧（DatabaseRecordReaderなど）の背景情報として有用"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "NablarchバッチのDBアクセス方法としてDatabaseRecordReaderへのリンクを提供している"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s12",
+        "reason": "ページングは注意点で言及するが、遅延ロードの代替手段であり主な回答には不要"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "reason": "任意SQLでの検索方法であり、遅延ロードの本質とは別の内容"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s3",
+        "reason": "バッチの処理フロー概要であり、大量データ読み込みの実装方法には直接関係しない"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-DeferredEntityList.json",
+        "section_id": "s1",
+        "reason": "フィールド詳細のみで内容が空であり有用な情報を含まない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s27"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s9",
+          "reason": "遅延ロードの使用方法、コード例、DeferredEntityList#closeの必要性、トランザクション制御の注意点を直接引用した"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s27",
+          "reason": "defer()メソッドが大量データでのヒープ圧迫を防ぐ機能であることを裏付けた"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+          "reason": "データリーダ一覧の参考情報として読んだが、遅延ロードの実装方法が中心の回答では使用しなかった"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+          "reason": "DatabaseRecordReaderへの参照のみで、遅延ロードに関する具体的な情報を含まなかった"
+        }
+      ]
+    }
+  }
+}
