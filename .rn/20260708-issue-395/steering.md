@@ -135,10 +135,10 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Steps**:
 
-- [ ] Apply QA `参照:` change to nabledge-5, 1.4, 1.3, 1.2 (verify diff identical to v6 except version-specific parts)
-- [ ] Apply code-analysis `**詳細**:` change to nabledge-5, 1.4, 1.3, 1.2
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-6.md)
-- [ ] Prompt Engineer expert review (subagent)
+- [x] Apply QA `参照:` change to nabledge-5, 1.4, 1.3, 1.2 (verify diff identical to v6 except version-specific parts)
+- [x] Apply code-analysis `**詳細**:` change to nabledge-5, 1.4, 1.3, 1.2
+- [x] Self-check (OK/NG per completion criterion, record in checks/task-6.md)
+- [x] Prompt Engineer expert review (subagent)
 
 **Completion criteria**:
 
