@@ -193,16 +193,16 @@ Otherwise, generate a Japanese answer following the steps below.
   Section title (text after ` > ` in the header)
   Additional section title (repeat for each further section cited from the same file)
 
-Path derivation: take the JSON path from the `=== file : sN ===` delimiter (e.g. `features/libraries/data-bind.json`), prepend `.claude/skills/nabledge-5/docs/`, replace `.json` with `.md`.
+Path derivation: take the JSON path from the `=== file : sN ===` delimiter (e.g. `component/libraries/libraries-data-bind.json`), prepend `.claude/skills/nabledge-5/docs/`, replace `.json` with `.md`.
 
 Example:
 参照:
 - データバインド
-  .claude/skills/nabledge-5/docs/features/libraries/data-bind.md
-  Java Beansオブジェクトの内容をデータファイルに書き込む
+  .claude/skills/nabledge-5/docs/component/libraries/libraries-data-bind.md
+  使用方法
 - ユニバーサルDAO
-  .claude/skills/nabledge-5/docs/features/libraries/universal-dao.md
-  条件を指定して検索する
+  .claude/skills/nabledge-5/docs/component/libraries/libraries-universal-dao.md
+  使用方法
 
 Only include sections actually cited in the answer.
 
