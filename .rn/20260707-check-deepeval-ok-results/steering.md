@@ -100,4 +100,8 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
 so only a genuinely suspended session reads `paused`.)
 
-- **Status**: not suspended
+- **Status**: paused
+- **Date**: 2026-07-08
+- **Last completed**: #4 Evaluation sign-off — all 17 PR review threads addressed, result.md updated with revised statistics (answer_correctness 88.9%, faithfulness 94.3%), step 2 marked complete, score meaning column added to metrics table. PR #394 open.
+- **Next**: Session complete — all 4 tasks done. Resume to explore conclusions further.
+- **Notes**: 再開後に結論を掘り下げたい (deepen conclusions after resume)
