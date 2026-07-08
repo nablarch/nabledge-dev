@@ -79,7 +79,7 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 - `.work/00393/result.md` に3指標×false-positive率・false-negative率が数値で記載されている
 - 根拠となる確認ファイルへのリンクが含まれている
 
-### #4: Evaluation sign-off
+### #4: Evaluation sign-off ✅
 
 **Purpose**: 成果物をユーザーに提示し、承認を得る。
 
@@ -88,7 +88,7 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 **Steps**:
 
 - [x] `.work/00393/result.md` の内容をユーザーに提示する
-- [ ] `/rn:ty` または `/rn:gm` でユーザーの承認を受ける（Issue #395 も作成済み）
+- [x] `/rn:gm` でユーザーのレビューコメントに対応し、判定を修正した（Issue #395 も作成済み）
 
 **Completion criteria**:
 
