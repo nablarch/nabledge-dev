@@ -163,8 +163,8 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 # State
 
-- **Status**: paused
-- **Date**: 2026-07-08
-- **Last completed**: #3 code-analysis v6 (ただし #2・#3 の実行確認ステップが未完了)
-- **Next**: #2 と #3 の実行確認（pre-01 で `参照:` 出力確認、code-analysis サンプル実行で `**詳細**:` 出力確認）→ #4 Phase B run-1
-- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. 完了条件をゼロベースで書き直し済み。#2 step「Run pre-01 and confirm output format」と #3 step「code-analysis を実行しサンプル出力で format を確認」が未チェック。
+- **Status**: not suspended
+- **Date**: YYYY-MM-DD
+- **Last completed**: #N description
+- **Next**: #N description
+- **Notes**: bounded forward pointer — branch/PR, next concrete action, open blockers, user-deferred paths, open questions / pending decisions not yet captured in `design.md`; not a re-narration of the session (that lives in `git log`)
