@@ -162,8 +162,8 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 # State
 
-- **Status**: not suspended
+- **Status**: paused
 - **Date**: 2026-07-08
-- **Last completed**: (none)
+- **Last completed**: (none — #1 design gate in progress, not yet approved)
 - **Next**: #1 Design sign-off
-- **Notes**: Branch is `worktree-395-add-md-section-links`. After #1 approved, #2 and #3 can proceed in parallel. Benchmark sequence is fixed: run1 → full QA → full code-analysis (per user requirement).
+- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. Design open question: VS Code integrated terminal auto-detects file paths as clickable links (confirmed via nabledge/nabledge#18 — bare path clicks open VS Code quick-open). Open question: does `path.md#anchor` work (VS Code opens file and jumps to section), or does `#anchor` break the path detection? User is testing in VS Code with CC. On resume: immediately output the two test paths below so user can click and report behavior. Test paths: `.claude/skills/nabledge-6/docs/component/libraries/libraries-database.md#現在のトランザクションとは異なるトランザクションでsqlを実行する` and `.claude/skills/nabledge-6/docs/component/libraries/libraries-database.md` — compare which form is clickable.
