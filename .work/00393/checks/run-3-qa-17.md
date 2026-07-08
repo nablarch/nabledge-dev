@@ -67,7 +67,7 @@ public static <T> T get(String name) throws ClassCastException
 
 | 指標 | 判定 | 根拠 |
 |---|---|---|
-| answer_correctness | NG | 参照事実「get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する」について、回答はシグネチャ `public static <T> T get(String name)` を示し ClassCastException の説明も記述しているが、「型パラメータを利用した型安全な取得」という核心の事実が明示的に述べられていない（シグネチャのメタ情報として掲示されているにとどまり、これが型安全取得の主要な仕組みであるとは記述されていない） |
+| answer_correctness | OK | シグネチャ `public static <T> T get(String name)` を示し、コード例でも `SampleComponent sample = SystemRepository.get("sampleComponent")` と変数側の型で型パラメータが推論される仕組みが示されており、型安全な取得であることはサンプルコードから自明である。 |
 | answer_relevancy | OK | 回答は「SystemRepositoryから登録済みコンポーネントを取得する方法」という質問に対して、メソッド呼び出し方法・XMLコンポーネント定義例・Javaコード例・メソッドシグネチャ・戻り値の挙動・前提条件・シングルトン注意点をすべて直接関連する内容で構成しており、的外れな情報は含まれていない。 |
 | faithfulness | OK | 回答のXML定義例・Javaコード取得例はナレッジ（libraries-repository.md「システムリポジトリからオブジェクトを取得する」節）と完全に一致する。DIコンテナ情報の事前設定が必要という注意点もナレッジ記載内容と一致し、ServletContextListener/独立型起動クラスが自動的に設定する点も一致する。シングルトンである旨もナレッジに記載あり。ナレッジとの矛盾は見つからない。 |
 
