@@ -126,7 +126,7 @@ Output directory: .nabledge/20260210
 4. **Build sections_metadata** for Step 4.4 `**詳細**:` links:
    - For each section in the `read-sections.sh` output, parse the `# Page > Section` header line
    - Extract: `file` (JSON path, e.g. `component/libraries/libraries-universal-dao.json`), `page_title` (text before ` > `), `section_title` (text after ` > `)
-   - Compute `docs_path`: replace `knowledge/` with `docs/` in file path, `.json` → `.md`, prepend `../../.claude/skills/nabledge-6/`
+   - Compute `docs_path`: take the JSON path (e.g. `component/libraries/libraries-universal-dao.json`), prepend `../../.claude/skills/nabledge-6/docs/`, replace `.json` with `.md` → e.g. `../../.claude/skills/nabledge-6/docs/component/libraries/libraries-universal-dao.md`
    - Save as `sections_metadata`: list of `{file, page_title, section_title, docs_path}`
 
 **Output**: Knowledge file basenames for Step 4.2, knowledge content for documentation, `sections_metadata` for Step 4.4
