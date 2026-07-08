@@ -191,7 +191,7 @@ Otherwise, generate a Japanese answer following the steps below.
 - Page title (text before ` > ` in the `# Page > Section` header from `sections_content`)
   .claude/skills/nabledge-6/docs/{json-path-with-.md-extension}
   Section title (text after ` > ` in the header)
-  Additional section title (if multiple sections cited from the same file)
+  Additional section title (repeat for each further section cited from the same file)
 
 Path derivation: take the JSON path from the `=== file : sN ===` delimiter (e.g. `component/libraries/libraries-database.json`), prepend `.claude/skills/nabledge-6/docs/`, replace `.json` with `.md`.
 

@@ -203,6 +203,13 @@ mapper.close();
   Java Beansオブジェクトの内容をデータファイルに書き込む
 ```
 
+Multiple sections from the same file:
+```markdown
+**詳細**: [ユニバーサルDAO](../../.claude/skills/nabledge-6/docs/component/libraries/libraries-universal-dao.md)
+  楽観的ロックを行う
+  現在のトランザクションとは異なるトランザクションで実行する
+```
+
 ### {{knowledge_base_links}}
 
 ```markdown
