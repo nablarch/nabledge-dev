@@ -2,82 +2,121 @@ Rn version: 0.8.0
 
 # Goal
 
-Issue #392: #394 の全量手動検証結果（`docs/reports/20260707-deepeval-accuracy/result.md`）を実証データとして、DeepEval ベースの評価方法論をエキスパートがレビューし、評価設計の妥当性・改善点・継続的改善アクションを文書化した再利用可能な評価レポートを作成する。
+Issue #392: 現行の DeepEval ベースのベンチマーク設計と再検証結果（#394）をエキスパートと照らし合わせ、2本の成果物を作る。
+
+1. **現行ベンチマーク評価レポート** — 実証データをエキスパートと認識合わせした結果。現状・ギャップ・改善アクションを記録。
+2. **AI 精度評価設計ガイド** — #1 を素材に、他のエージェント開発でも使える「あるべき姿」の知見文書。
 
 # Acceptance criteria
 
-- エキスパートが以下の観点を検討し、結果が文書化されている:
-  - 期待事実 (ground truth) の定義アプローチ
-  - DeepEval の信頼性（OK 判定の見逃しリスクを含む）
-  - 閾値設定とその根拠
-  - 現アプローチが最適かどうか
-- ベストプラクティスが存在する領域: ギャップと改善アクションが特定されている
-- ベストプラクティスが不明確な領域: 継続的改善のためのアクション（実験・検証計画等）が文書化されている
-- #394 の全量手動検証結果が実証データとして組み込まれている
-- 他の AI 品質評価イニシアチブへの入力として再利用可能な構造になっている
-- レポートが `docs/reports/` 以下に配置されている
+- 現行ベンチマーク評価レポートが作成されている
+  - 実証データ（result.md）はリンクで参照（二重メンテなし）
+  - エキスパートとの認識合わせ結果が反映されている
+  - 改善アクションが具体的に記載されている
+- AI 精度評価設計ガイドが作成されている
+  - 他のエージェント開発者が自分のプロジェクトに当てはめられる構造になっている
+  - 現行ベンチマーク評価レポートを素材として導出されている
 - PR 本文に `Closes #392` が含まれている
 
 # Assumptions
 
-- #394 の result.md は確定値（2026-07-08 ステップ2完了済み）である
-- エキスパートは AI エージェントとして実行する（`.claude/rules/expert-review.md` に従う）
-- レポートは日本語で作成する（エンドユーザー向けドキュメントとして機能させる場合も含め、開発者向け分析レポートのため英語でも可 — ユーザー確認不要、benchmark-design.md が日本語なので日本語に合わせる）
-- `docs/reports/20260707-deepeval-accuracy/` ディレクトリはすでに存在し、result.md が含まれる
+- エキスパートへのヒアリングはユーザーが実施する
+- エキスパートは RAG・大企業社内向け AI チャット開発の責任者レベル
+- 成果物は `docs/reports/20260707-deepeval-accuracy/` に配置する
+- 各タスクはユーザーからの指示を受けて開始する
 
 # Rules
 
 - commit and push every change; one completion marker per task
-- レポートは `docs/reports/20260707-deepeval-accuracy/` に配置する
-- `.work/00392/` に作業ログを記録する
 - PR 本文には必ず `Closes #392` を含める
+- 実証データは result.md へのリンクで参照し、内容を転記しない
 
 # Tasks
 
-### #1: エキスパートレビューの実施とレポート作成
+### #1: 2本の成果物のアウトライン作成
 
-**Purpose**: AI エキスパート（QA Engineer）が評価方法論を検討し、評価レポートを作成する
+**Purpose**: エキスパートへの相談と最終成果物の方向性をユーザーと合意する
 
 **Prerequisites**: none
 
 **Steps**:
 
-- [ ] `.work/00392/` ディレクトリを作成し、`tasks.md` と `notes.md` を作成
-- [ ] `docs/reports/20260707-deepeval-accuracy/result.md` の全文を読み込む
-- [ ] `docs/benchmark-design.md` の DeepEval セクションを読み込む
-- [ ] QA Engineer / AI Quality Expert エキスパートとして評価方法論をレビュー（subagent）
-- [ ] レビュー結果に基づき評価レポートを `docs/reports/20260707-deepeval-accuracy/eval-methodology-report.md` に作成
-- [ ] self-check: Success Criteria と照合（checks/01.md に記録）
-- [ ] Technical Writer expert review（subagent）
-- [ ] フィードバック反映
+- [ ] 現行ベンチマーク評価レポートのアウトライン作成
+- [ ] AI 精度評価設計ガイドのアウトライン作成
+- [ ] ユーザー確認
 
 **Completion criteria**:
 
-- `docs/reports/20260707-deepeval-accuracy/eval-methodology-report.md` が存在し、Success Criteria の全項目を満たしている
-- レポートが他の AI 品質評価イニシアチブへの入力として読める独立した構造になっている（読者が #394 の詳細を参照しなくても概要を把握できる）
-- 誤った評価設計の根拠が示されている箇所がない（主観的推測ではなく実証データに基づく記述になっている）
+- 2本のアウトラインについてユーザーが承認している
+- アウトラインからエキスパートへの相談事項が導ける構造になっている
 
-### #2: PR 作成
+### #2: エキスパートへの相談インプット準備
 
-**Purpose**: レビュー用 PR を作成し、`Closes #392` を含む PR 本文で提出する
+**Purpose**: ユーザーがエキスパートにヒアリングするための材料を作る
 
 **Prerequisites**: #1
 
 **Steps**:
 
-- [ ] `Skill(skill: "pr", args: "create")` で PR 作成
-- [ ] PR 本文に `Closes #392` が含まれることを確認
+- [ ] 相談インプット文書の作成（背景・実証データ要約・相談事項）
+- [ ] ユーザー確認
 
 **Completion criteria**:
 
-- PR が作成されており、`Closes #392` が PR 本文に含まれている
-- PR の Expert Review セクションに #1 のレビュー結果へのリンクが含まれている
+- エキスパートに渡す文書が1本にまとまっている
+- 相談事項がアウトラインの空白部分と対応している
 
-### #3: Evaluation sign-off
+### #3: 現行ベンチマーク評価レポート作成
 
-**Purpose**: Acceptance criteria の達成を確認し、ユーザーの最終承認を得る
+**Purpose**: エキスパートとの認識合わせ結果を反映して1本目を完成させる
 
-**Prerequisites**: #2
+**Prerequisites**: #2 + ユーザーからヒアリング結果の共有
+
+**Steps**:
+
+- [ ] ヒアリング結果を受け取る
+- [ ] レポート本文を作成
+- [ ] ユーザー確認
+
+**Completion criteria**:
+
+- Acceptance criteria の現行ベンチマーク評価レポート項目を満たしている
+
+### #4: AI 精度評価設計ガイド作成
+
+**Purpose**: #3 を素材に2本目を完成させる
+
+**Prerequisites**: #3
+
+**Steps**:
+
+- [ ] ガイド本文を作成
+- [ ] ユーザー確認
+
+**Completion criteria**:
+
+- Acceptance criteria の AI 精度評価設計ガイド項目を満たしている
+
+### #5: PR 作成
+
+**Purpose**: レビュー用 PR を作成する
+
+**Prerequisites**: #4
+
+**Steps**:
+
+- [ ] `Skill(skill: "pr", args: "create")` で PR 作成
+- [ ] `Closes #392` が PR 本文に含まれることを確認
+
+**Completion criteria**:
+
+- PR が作成されており `Closes #392` が含まれている
+
+### #6: Evaluation sign-off
+
+**Purpose**: Acceptance criteria の達成を確認しユーザーの最終承認を得る
+
+**Prerequisites**: #5
 
 **Steps**:
 
@@ -87,12 +126,11 @@ Issue #392: #394 の全量手動検証結果（`docs/reports/20260707-deepeval-a
 **Completion criteria**:
 
 - ユーザーが `/rn:ty` で承認している
-- Acceptance criteria の全項目が充足されている
 
 # State
 
 - **Status**: not suspended
 - **Date**: 2026-07-08
 - **Last completed**: (none)
-- **Next**: #1 エキスパートレビューの実施とレポート作成
-- **Notes**: worktree: ai-quality、ブランチ: 392-deepeval-eval-report（作成予定）。result.md は GitHub 上に存在（`docs/reports/20260707-deepeval-accuracy/result.md`）。このワークツリーには未同期のため、ブランチ作成後に確認が必要。
+- **Next**: #1 アウトライン作成（ユーザー指示待ち）
+- **Notes**: branch: 392-deepeval-eval-report、PR: #397（draft）
