@@ -97,9 +97,9 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Steps**:
 
-- [ ] Run QA benchmark run1: follow the QA benchmark procedure (run1 only)
-- [ ] Confirm run1 passes stably (no errors, expected output format)
-- [ ] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
+- [x] Run QA benchmark run1: follow the QA benchmark procedure (run1 only)
+- [x] Confirm run1 passes stably (no errors, expected output format)
+- [x] Self-check (OK/NG per completion criterion, record in checks/task-4.md)
 
 **Completion criteria**:
 
@@ -165,6 +165,6 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 - **Status**: paused
 - **Date**: 2026-07-08
-- **Last completed**: #3 code-analysis 詳細 format v6 (complete task #2 and #3 marker: 79c4130b)
-- **Next**: #4 QA run-1 — benchmark was launched in background (tools/benchmark/results/20260708-115333/), still running at suspend time; resume by waiting for completion, then rename dir to run-label, generate report, commit
-- **Notes**: Branch `worktree-395-add-md-section-links`, PR #396. Untracked: 20260708-113655 (ca-02 format-check, deletable), 20260708-114158 (ca-03 timeout, deletable), 20260708-115333 (run-1 in progress, keep).
+- **Last completed**: #4 QA run-1 stability check — run label `20260708-1153-section-links-v6`, 34/34 scenarios OK, no bare citations, no anchors (commit: 2e2927d9)
+- **Next**: #5 — run full QA benchmark (run-2, run-3) then full code-analysis benchmark, compare vs baseline
+- **Notes**: Untracked residue: 20260708-115333, 20260708-133100, 20260708-133116, 20260708-133427, 20260708-134537 (all raw batch dirs, superseded by run-1; ask user to delete or gitignore).
