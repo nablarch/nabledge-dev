@@ -79,7 +79,7 @@ public class ProjectAction {
 |---|---|---|
 | answer_correctness | OK | 参照事実「REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する」は、回答の「ProjectFormクラスの実装」「@Validアノテーションの説明」「UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project))」にすべて含まれている |
 | answer_relevancy | OK | 回答はフォームデータをDBに登録する実装パターンという質問に直接答えており、Formクラスの実装・アクションクラスの実装・各アノテーションの役割・注意点すべてが質問に関連する内容で構成されている。的外れな内容は含まれていない。 |
-| faithfulness | NG | 回答の注意点に「Jersey/RESTEasyアダプタ（`JerseyJaxRsHandlerListFactory` 等）を使用している場合は自動的に正しい順序で設定される」と記述されているが、`JerseyJaxRsHandlerListFactory`はJersey固有のクラス名であり、RESTEasyアダプタと関連付けるのはナレッジの記述と矛盾する。また、handlers-jaxrs-bean-validation-handler.mdの制約セクションには「BodyConvertHandlerより後ろに設定すること」という記述のみで、特定アダプタが自動的に正しい順序で設定するという記述はナレッジに存在しない。 |
+| faithfulness | OK | 回答の「Jersey/RESTEasyアダプタ（`JerseyJaxRsHandlerListFactory` 等）を使用している場合は自動的に正しい順序で設定される」という記述は、adapters-jaxrs-adaptor.mdにJerseyおよびRESTEasyアダプタがJakarta RESTful Web Services Bean Validationハンドラを含むハンドラ構成を自動的に設定する旨が記載されており、「等」という表現で両アダプタを指していると読める。ナレッジと矛盾しない。 |
 
 ### 参照事実（expected_facts）
 
