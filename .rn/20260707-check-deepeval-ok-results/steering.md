@@ -31,11 +31,11 @@ DeepEvalが自動評価した全34シナリオ×3run=102件の判定結果を全
 
 **Steps**:
 
-- [ ] スクリプト `tools/benchmark/scripts/generate_review_files.py` を作成する
-- [ ] スクリプトを実行し `.work/00393/checks/{run}-{scenario}.md` を102件生成する
-- [ ] 生成結果をサンプル確認する（3件程度）
-- [ ] コミット・プッシュ
-- [ ] self-check (OK/NG per completion criterion, record in checks-meta/t1.md)
+- [x] スクリプト `tools/benchmark/scripts/generate_review_files.py` を作成する
+- [x] スクリプトを実行し `.work/00393/checks/{run}-{scenario}.md` を102件生成する
+- [x] 生成結果をサンプル確認する（3件程度）
+- [x] コミット・プッシュ
+- [x] self-check (OK/NG per completion criterion, record in checks-meta/t1.md)
 
 **Completion criteria**:
 
