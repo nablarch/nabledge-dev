@@ -163,8 +163,4 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 # State
 
-- **Status**: paused
-- **Date**: 2026-07-08
-- **Last completed**: #4 QA run-1 stability check — run label `20260708-1153-section-links-v6`, 34/34 scenarios OK, no bare citations, no anchors (commit: 2e2927d9)
-- **Next**: #5 — run full QA benchmark (run-2, run-3) then full code-analysis benchmark, compare vs baseline
-- **Notes**: Untracked residue: 20260708-115333, 20260708-133100, 20260708-133116, 20260708-133427, 20260708-134537 (all raw batch dirs, superseded by run-1; ask user to delete or gitignore).
+<!-- rn: replace this block on resume -->
