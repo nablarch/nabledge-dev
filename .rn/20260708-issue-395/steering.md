@@ -154,6 +154,8 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Steps**:
 
+- [ ] C-2 照合：全 28 件（3 指標 × crossrun mean 閾値割れ）をナレッジ照合して実害有無を判定
+- [ ] quality-report.md を C-2 照合結果で更新してコミット
 - [ ] Present Acceptance criteria run result to the user
 - [ ] Take verdict via `/rn:ty` (approve) or `/rn:gm` (revise)
 
@@ -162,3 +164,9 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 - Acceptance criteria の各項目が、実際の実行結果（benchmark レポート・スキル出力）に基づいて満たされていることをユーザーが確認し `/rn:ty` で承認している
 
 # State
+
+- **Status**: paused
+- **Date**: 2026-07-09
+- **Last completed**: #6 完了（全5バージョン適用、Prompt Engineer review 0 Findings）。HOW-TO-RUN.md C-2 の3指標全件対象化を修正してコミット済み
+- **Next**: #7 の前提として C-2 照合を全件やり直す。対象は crossrun mean 閾値割れ28件（correctness/faithfulness<0.99, relevancy<0.95）。手順: `tools/benchmark/HOW-TO-RUN.md` C-2 のコマンドで対象列挙 → 全件ナレッジ照合 → quality-report.md 更新 → #7 sign-off
+- **Notes**: impact-08(faith★毎回): fixedDate桁数誤り（14桁→正しくは12桁、ナレッジと不一致）—実害あり。qa-17(corr★毎回): 型パラメータ記述がナレッジ未収録—実害あり。qa-19 run-3(corr★): JaxbBodyConverter誤回答—実害あり。その他20件は未照合
