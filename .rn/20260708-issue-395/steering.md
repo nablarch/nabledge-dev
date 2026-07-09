@@ -159,7 +159,7 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 - [x] C-2 照合：全 28 件（3 指標 × crossrun mean 閾値割れ）をナレッジ照合して実害有無を判定
 - [x] quality-report.md を C-2 照合結果で更新してコミット
 - [x] 28件全件 WF詳細込みで再照合（ユーザーレビューにより複数件を再判定）
-- [ ] Present Acceptance criteria run result to the user
+- [x] Present Acceptance criteria run result to the user
 - [ ] Take verdict via `/rn:ty` (approve) or `/rn:gm` (revise)
 
 **Completion criteria**:
@@ -170,6 +170,6 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 - **Status**: paused
 - **Date**: 2026-07-09
-- **Last completed**: #7 step「28件全件WF詳細込みで再照合」まで完了。実害あり1件（qa-19/run-3）確定。残り件数のWF詳細調査は中途半端で中断。
-- **Next**: #7 継続。再開後は全量WF詳細を詳細に調査して本当に実害ないのか確認してから sign-off 報告すること（ユーザー指示）。対象：qa-14/corr/run-1、oos-qa-01/faith/run-1、その他15件（qa-04,qa-13,qa-20,qa-07,qa-08,qa-11,impact-06,pre-01,oos-impact-01,review-07,review-08,qa-01,qa-05,qa-16,qa-18,review-09）
-- **Notes**: 実害あり1件確定: qa-19/corr run-3（アダプタセクション未取得→JaxbBodyConverter誤提示）。impact-08のナレッジ誤記（yyyyMMddHHmmssを12桁と記載）は別Issue要。qa-14/run-1はs2を読んでいたが回答生成時にAPサーバ要件を落とした（生成ミスの可能性）。oos-qa-01/run-1はセクション2件のみ取得、run-2/3は0件で回答という構造差あり。
+- **Last completed**: #7 全56件WF詳細照合＋回答文コンテキスト再判定完了。quality-report.md 最終版コミット済み。Acceptance criteria 報告済み。
+- **Next**: #7 残り — ユーザーが `/rn:ty` または `/rn:gm` で verdict を返す。
+- **Notes**: 実害あり1件確定: qa-19/run-3（JaxbBodyConverter誤提示、AIのゆらぎ・単発、今回変更と無関係）。qa-21/run-1 は「デフォルトErrorResponseBuilderはメッセージなし」がナレッジs7から推論できる事実のため実害なし。
