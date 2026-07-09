@@ -154,8 +154,8 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 **Steps**:
 
-- [ ] C-2 照合：全 28 件（3 指標 × crossrun mean 閾値割れ）をナレッジ照合して実害有無を判定
-- [ ] quality-report.md を C-2 照合結果で更新してコミット
+- [x] C-2 照合：全 28 件（3 指標 × crossrun mean 閾値割れ）をナレッジ照合して実害有無を判定
+- [x] quality-report.md を C-2 照合結果で更新してコミット
 - [ ] Present Acceptance criteria run result to the user
 - [ ] Take verdict via `/rn:ty` (approve) or `/rn:gm` (revise)
 
@@ -167,6 +167,6 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 - **Status**: paused
 - **Date**: 2026-07-09
-- **Last completed**: #6 完了（全5バージョン適用、Prompt Engineer review 0 Findings）。HOW-TO-RUN.md C-2 の3指標全件対象化を修正してコミット済み
-- **Next**: #7 の前提として C-2 照合を全件やり直す。対象は crossrun mean 閾値割れ28件（correctness/faithfulness<0.99, relevancy<0.95）。手順: `tools/benchmark/HOW-TO-RUN.md` C-2 のコマンドで対象列挙 → 全件ナレッジ照合 → quality-report.md 更新 → #7 sign-off
-- **Notes**: impact-08(faith★毎回): fixedDate桁数誤り（14桁→正しくは12桁、ナレッジと不一致）—実害あり。qa-17(corr★毎回): 型パラメータ記述がナレッジ未収録—実害あり。qa-19 run-3(corr★): JaxbBodyConverter誤回答—実害あり。その他20件は未照合
+- **Last completed**: C-2 全28件ナレッジ照合完了、quality-report.md 更新・コミット済み（7d477b37）
+- **Next**: #7 sign-off。ユーザーへの報告フォーマット指示あり：再開後に閾値割れ28件を1件ずつ「質問文・DeepEvalスコアと理由・再判定結果と根拠」形式で報告し、1件ごとに承認を取ること
+- **Notes**: 実害あり5件（いずれも既存問題・今回変更と無関係）: impact-08/faith全run（fixedDate桁数誤り）、qa-17/corr全run（型パラメータ未収録）、qa-12/corr全run（n:errorsが主軸でない）、qa-19/corr run-3（JaxbBodyConverter誤り）、qa-02/faith run-1（batchInsert排他制御誤転写）。minor1件: qa-13/faith run-1。残り22件は評価器の揺らぎ・評価基準の問題（実害なし）
