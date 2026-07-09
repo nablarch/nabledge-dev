@@ -169,4 +169,4 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 - **Date**: 2026-07-09
 - **Last completed**: C-2 全28件ナレッジ照合完了、quality-report.md 更新・コミット済み（7d477b37）
 - **Next**: #7 sign-off。ユーザーへの報告フォーマット指示あり：再開後に閾値割れ28件を1件ずつ「質問文・DeepEvalスコアと理由・再判定結果と根拠」形式で報告し、1件ごとに承認を取ること
-- **Notes**: 実害あり2件（今回変更と無関係）: qa-19/corr run-3（JaxbBodyConverter誤り・単発）、qa-02/faith run-1（batchInsert排他制御誤転写・単発）。minor1件: qa-13/faith run-1。qa-12・qa-17・impact-08は評価器の問題またはナレッジ誤記（実害なし）。残り25件は評価器の揺らぎ（実害なし）。impact-08のナレッジ誤記（yyyyMMddHHmmssを12桁と記載）は別Issue要
+- **Notes**: 実害あり1件（今回変更と無関係）: qa-19/corr run-3（JaxbBodyConverter誤り・単発）。minor1件: qa-13/faith run-1。qa-02・qa-12・qa-17・impact-08は評価器の誤読またはナレッジ誤記（実害なし）。残り26件は評価器の揺らぎ（実害なし）。impact-08のナレッジ誤記（yyyyMMddHHmmssを12桁と記載）は別Issue要
