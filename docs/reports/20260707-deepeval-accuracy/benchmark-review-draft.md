@@ -15,14 +15,14 @@ nabledge-6 は Nablarch 6 フレームワークに関する質問に回答する
 
 ## 評価対象のベンチマーク設計
 
-[ベンチマーク設計書 §DeepEval RAGメトリクス](../../benchmark-design.md#deepeval-ragメトリクス) で定義されたベンチマーク設計を評価対象とする。主要要素は以下の通り。
+[ベンチマーク設計書 ＞DeepEval RAGメトリクス](../../benchmark-design.md#deepeval-ragメトリクス) で定義されたベンチマーク設計を評価対象とする。主要要素は以下の通り。
 
 - **評価指標**: DeepEval の3指標（answer_correctness / answer_relevancy / faithfulness）
 - **評価方式**: LLM-as-Judge（ジャッジ LLM: Amazon Bedrock 上の Claude Sonnet 4.6）
 - **閾値**: answer_correctness = 0.99、answer_relevancy = 0.95、faithfulness = 0.99
 - **規模**: 34 シナリオ × 3 run = 102 件
 - **シナリオ設計**: 質問・期待事実（`must.facts`）・参照セクションを宣言的に定義
-- **シナリオ定義**: [ベンチマークシナリオ](../../../tools/benchmark/scenarios/qa.json)（[ベンチマーク設計書 §シナリオ定義](../../benchmark-design.md#シナリオ定義)）
+- **シナリオ定義**: [ベンチマークシナリオ](../../../tools/benchmark/scenarios/qa.json)（[ベンチマーク設計書 ＞シナリオ定義](../../benchmark-design.md#シナリオ定義)）
 - **ベンチマーク結果**: [ベンチマーク精度検証レポート](result.md)
 
 指標選定は nabledge-6 の目的（Nablarch 実装支援）とエキスパートへの相談をもとに決定した。
