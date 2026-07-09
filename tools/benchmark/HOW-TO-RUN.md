@@ -185,6 +185,34 @@ git push
 
 閾値割れが出たシナリオは、DeepEval の reason **だけ**で判定せず、必ず回答とナレッジを突き合わせて事実確認する。
 
+**対象は answer_correctness・answer_relevancy・faithfulness の 3 指標すべての閾値割れ**（crossrun mean で correctness/faithfulness < 0.99、relevancy < 0.95）。指標を絞らず全件照合すること。
+
+まず以下のコマンドで閾値割れシナリオを列挙し、照合対象を確定する:
+
+```bash
+python3 -c "
+import json, statistics
+data = {}
+for r in ['run-1','run-2','run-3']:
+    s = json.load(open('tools/benchmark/results/{run-label}/%s/summary.json' % r))
+    for sc in s['scenarios']:
+        sid = sc['id']
+        if sid not in data: data[sid] = {'corr':[], 'rel':[], 'faith':[]}
+        import pathlib
+        p = pathlib.Path('tools/benchmark/results/{run-label}/%s/%s/evaluation.json' % (r, sid))
+        if p.exists():
+            e = json.loads(p.read_text())
+            data[sid]['corr'].append(e['scores']['answer_correctness']['score'])
+            data[sid]['rel'].append(e['scores']['answer_relevancy']['score'])
+            data[sid]['faith'].append(e['scores']['faithfulness']['score'])
+print('%-20s %-12s  run-1  run-2  run-3  mean' % ('scenario', 'metric'))
+for sid, v in sorted(data.items()):
+    for metric, vals, thr in [('correctness',v['corr'],0.99),('relevancy',v['rel'],0.95),('faithfulness',v['faith'],0.99)]:
+        if vals and statistics.mean(vals) < thr:
+            print('%-20s %-12s  %5.3f  %5.3f  %5.3f  %5.3f' % (sid, metric, vals[0], vals[1], vals[2], statistics.mean(vals)))
+"
+```
+
 ### アクション C-2-1: 各閾値割れシナリオを照合
 
 各シナリオについて:
