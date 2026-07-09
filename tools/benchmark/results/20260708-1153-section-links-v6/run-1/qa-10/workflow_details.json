@@ -1,0 +1,111 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "index",
+        "reason": "機能概要に「実行時のBeanオブジェクトの状態を元にSQL文を動的に構築できる」「可変条件を持つSQLを実行する」「in句の条件数が可変となるSQLを実行する」があり、質問のメイン機能に直接対応する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "source": "index",
+        "reason": "ウェブアプリケーション処理方式の検索機能の実装例で、$if構文を使った可変条件の実践例が含まれる"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index",
+        "reason": "ユニバーサルDAOはSQL実行に使えるが、可変条件の記法は$if構文(JDBCラッパーのlibrary-database.jsonが担当)であり、secondary候補のため枠を他に割り当てた"
+      },
+      {
+        "path": "component/libraries/libraries-database-management.json",
+        "source": "index",
+        "reason": "データベースアクセスの管理ページで、可変条件の具体的な実装方法は含まれない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "「実行時のBeanオブジェクトの状態を元にSQL文を動的に構築できる」で、可変条件・in句・order byの動的構築を概説する導入セクション"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "「可変条件を持つSQLを実行する」で$if構文の記法・除外ルール・実装例を詳細に解説する、質問への直接回答となるセクション"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "relevance": "high",
+        "reason": "「in句の条件数が可変となるSQLを実行する」でin句の動的構築(:prop[])の記法と注意点を解説し、検索条件の典型パターンの一つ"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "「Beanオブジェクトを入力としてSQLを実行する」で、$if構文の前提となるBeanバインドの仕組みを解説する"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "ウェブアプリケーション検索機能の実装例で$if・$sort・in句([])を組み合わせた実践的なSQL全体例とUniversalDao呼び出し方法を示す"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s23",
+        "relevance": "partial",
+        "reason": "$sort構文は質問（入力条件の動的変更）の主旨ではないため除外"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s19",
+        "relevance": "partial",
+        "reason": "like検索のエスケープは補足的知識だが、質問の中心ではないため除外"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s6",
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-database.json:s16",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s21",
+          "reason": "$if構文の記法・除外ルール・実装例を根拠として使用した"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s22",
+          "reason": "in句の可変条件(:prop[])の記法の根拠として使用した"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s6",
+          "reason": "動的SQL構築機能の概要説明の根拠として使用した"
+        },
+        {
+          "ref": "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+          "reason": "ウェブアプリでの実践的なSQL例とUniversalDaoでの呼び出し方法の根拠として使用した"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-database.json:s16",
+          "reason": "Beanバインドの基本説明は$if構文の解説内(s21)に含まれており重複するため、答えには直接引用しなかった"
+        }
+      ]
+    }
+  }
+}

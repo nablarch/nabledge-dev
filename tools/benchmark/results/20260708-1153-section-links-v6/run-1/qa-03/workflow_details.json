@@ -1,0 +1,136 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "index",
+        "reason": "相関バリデーションを行う(s11)、ウェブアプリケーションのユーザ入力値のチェック(s16)など、質問に直接対応するセクションを含む"
+      },
+      {
+        "path": "component/libraries/libraries-nablarch-validation.json",
+        "source": "index",
+        "reason": "相関バリデーションを行う(s14)セクションを含み、Nablarch Validationでの実装方法を提供する"
+      },
+      {
+        "path": "component/handlers/handlers-InjectForm.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションのバリデーション実行に使用するInjectFormインターセプタの使用方法を提供する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "ウェブアプリケーション処理方式における入力値チェック(s2)の概要を提供する"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-validation.json",
+        "reason": "概要ページのみで具体的な実装内容がない"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービス処理方式であり、質問の処理方式（ウェブアプリケーション）と異なる"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "reason": "RESTfulウェブサービス用のBean Validationハンドラであり、ウェブアプリケーションの質問と処理方式が異なる"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "high",
+        "reason": "メールアドレスの一致チェックのコード例を含む相関バリデーションの実装方法を直接説明している"
+      },
+      {
+        "file": "component/libraries/libraries-nablarch-validation.json",
+        "section_id": "s14",
+        "relevance": "high",
+        "reason": "Nablarch Validationでの相関バリデーション実装方法をmailAddressとconfirmMailAddressの例で説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでBean Validationを使用するための設定（InjectFormとの連携）を説明している"
+      },
+      {
+        "file": "component/handlers/handlers-InjectForm.json",
+        "section_id": "s3",
+        "relevance": "partial",
+        "reason": "ウェブアプリケーションでバリデーションを実行するInjectFormインターセプタの使用方法を説明している"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s8",
+        "relevance": "partial",
+        "reason": "Formプロパティは全てString型とする制約など、バリデーションルール設定の注意点を説明している"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s5",
+        "reason": "使用方法の親セクションで内容が空のため情報量がない"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s7",
+        "reason": "エラーメッセージの定義方法であり、相関バリデーション実装の本質には関係しない"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックの概要のみでlibaries-bean-validationへの参照に留まり、直接的な実装情報がない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s11",
+      "component/libraries/libraries-bean-validation.json:s5",
+      "component/libraries/libraries-bean-validation.json:s16",
+      "component/handlers/handlers-InjectForm.json:s3",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "component/libraries/libraries-bean-validation.json:s8",
+      "component/libraries/libraries-nablarch-validation.json:s14"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s11",
+          "reason": "@AssertTrueを使った相関バリデーションのコード例と実行順序の注意点を回答の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-nablarch-validation.json:s14",
+          "reason": "@ValidateForを使ったNablarch Validationでの相関バリデーション実装例を回答の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s8",
+          "reason": "Formプロパティの型(String)に関する注意点の根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s5",
+          "reason": "内容が空のセクションのため使用しなかった"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s16",
+          "reason": "InjectFormの設定方法であり、今回の相関バリデーション実装方法の説明では直接引用不要だった"
+        },
+        {
+          "ref": "component/handlers/handlers-InjectForm.json:s3",
+          "reason": "InjectFormの一般的な使用方法であり、相関バリデーションの実装方法には直接関係しないため未使用"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s7",
+          "reason": "エラーメッセージ定義の詳細であり、回答の本質的内容から外れるため未使用"
+        }
+      ]
+    }
+  }
+}

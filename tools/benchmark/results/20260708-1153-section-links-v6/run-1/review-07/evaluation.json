@@ -1,0 +1,65 @@
+{
+  "scenario_id": "review-07",
+  "description": "Web画面で外部サイトからの不正なPOSTリクエストを防ぐ必要がある。CSRF対策をNablarchの仕組みで実装したい。",
+  "input": "外部サイトから不正にPOSTされるのを防ぎたい。NablarchにCSRF対策の仕組みはある？どう設定する？",
+  "purpose": "セキュリティ対応したい",
+  "expected_facts": [
+    "CSRFトークン検証ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers the single expected fact: that adding the CSRF token verification handler to the handler configuration enables automatic CSRF token generation and verification. The Actual Output explicitly states 'CsrfTokenVerificationHandler が用意されており、ハンドラ構成に追加するだけでCSRFトークンの生成と検証が自動的に行われます' which directly matches the expected fact. No contradictions are present, and the coverage is complete."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about CSRF protection in Nablarch and how to configure it. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+      "check/security-check/security-check-2.チェックリスト.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 119256,
+    "duration_api_ms": 118614,
+    "num_turns": 10,
+    "total_cost_usd": 0.8112036499999999,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 7532,
+      "cache_read_input_tokens": 802218,
+      "cache_creation_input_tokens": 120947
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3842,
+        "outputTokens": 27,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003977,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 7532,
+        "cacheReadInputTokens": 802218,
+        "cacheCreationInputTokens": 120947,
+        "webSearchRequests": 0,
+        "costUSD": 0.8072266499999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

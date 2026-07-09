@@ -1,0 +1,115 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "both",
+        "reason": "「検索結果を遅延ロードする」セクションが質問の「1件ずつ読み込む方法」に直接対応し、DeferredEntityList/UniversalDaoクラスも含む"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "source": "both",
+        "reason": "Nablarchバッチの処理方式ページであり、DatabaseRecordReaderなど標準データリーダを列挙している"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "source": "index",
+        "reason": "Nablarchバッチの機能詳細でデータベースアクセスの実装方法を示している"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "JDBCラッパーの低レベルAPIであり、ユニバーサルDAOで解決できる問題には優先度が低い"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "selected_pagesに含まれている（除外対象ではない）"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "アンチパターン集であり実装方法の直接回答ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "「大量の検索結果」「メモリが足らなくなる」「1件ずつロード」という質問内容と完全に一致し、UniversalDao.defer()の実装例を含む"
+      },
+      {
+        "file": "javadoc/javadoc-nablarch-common-dao-DeferredEntityList.json",
+        "section_id": "s1",
+        "relevance": "high",
+        "reason": "s9で参照されているDeferredEntityListのJavadocであり、高relevanceのセクションから参照されているため自動追加"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "partial",
+        "reason": "Nablarchバッチで使用するデータリーダ一覧を示す背景情報として有用"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "Nablarchバッチのデータベースアクセス方法の概要を示す背景情報"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで実装詳細がない"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s12",
+        "reason": "ページング機能の説明であり、1件ずつ読み込む方法には直接関係しない"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s1",
+        "reason": "Nablarchバッチの全体構成の概要であり、メモリ問題の解決策を含まない"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s5",
+        "reason": "ハンドラ構成の説明であり、データ読み込み方法の直接回答ではない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "javadoc/javadoc-nablarch-common-dao-DeferredEntityList.json:s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s9",
+          "reason": "遅延ロードの実装方法、UniversalDao.defer()の使い方、DeferredEntityListのclose必須、トランザクション制御の注意点すべてを含むため回答の主要根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-DeferredEntityList.json:s1",
+          "reason": "フィールド詳細セクションで内容が空のため使用しなかった"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+          "reason": "データリーダ一覧の参照のみであり、s9の遅延ロード説明で十分回答できたため使用しなかった"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+          "reason": "データベースアクセスのリンク集のみで実装詳細がなく、s9で十分回答できたため使用しなかった"
+        }
+      ]
+    }
+  }
+}

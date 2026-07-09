@@ -1,0 +1,83 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "both",
+        "reason": "index.md の s29「現在のトランザクションとは異なるトランザクションでSQLを実行する」が質問に直接対応し、classes.md にも SimpleDbTransactionManager / SimpleDbTransactionExecutor が記載されている"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "both",
+        "reason": "index.md の s20「現在のトランザクションとは異なるトランザクションで実行する」が質問に直接対応し、classes.md にも UniversalDao.Transaction / SimpleDbTransactionManager が記載されている"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "source": "index",
+        "reason": "index.md の s8「別トランザクションで実行する」が質問に関連するが、Doma アダプタ固有のため今回は選択しない"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/handlers/handlers-database-connection-management-handler.json",
+        "reason": "複数のデータベース接続設定に関する内容で背景説明にはなるが、別トランザクション実行の具体的実装には不要"
+      },
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "複数トランザクションの設定に関する内容だが、SimpleDbTransactionManager の説明で十分"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "「現在のトランザクションとは異なるトランザクションでSQLを実行する」というタイトルが質問の核心に直接対応し、SimpleDbTransactionManager と SimpleDbTransactionExecutor の使い方を具体的に説明している"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "ユニバーサルDAO版の別トランザクション実行方法（UniversalDao.Transaction）を具体的なコード例付きで説明している"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s10",
+        "reason": "データベース接続設定の概要説明で、別トランザクション実行の直接的な実装情報ではない"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s13",
+        "reason": "SQLID指定のSQL実行方法であり、別トランザクションに特化した内容ではない"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s6",
+        "reason": "ユニバーサルDAO基本設定の説明で、別トランザクション実行の具体的内容ではない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManager のコンポーネント設定例と SimpleDbTransactionExecutor を使った実装例をそのまま回答に引用した"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s20",
+          "reason": "UniversalDao.Transaction を継承したクラスの実装例と呼び出し方をそのまま回答に引用した"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

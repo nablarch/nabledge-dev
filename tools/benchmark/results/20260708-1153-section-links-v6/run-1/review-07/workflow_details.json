@@ -1,0 +1,114 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "source": "both",
+        "reason": "CSRFトークンの生成・検証ハンドラそのものであり、質問の中心機能を直接扱うページ"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "source": "index",
+        "reason": "セキュリティチェックリストにCSRF対策のNablarch対応状況が記載されており、セキュリティ対応したい目的と合致"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションの機能詳細ページにCSRF対策セクション(s19)が存在し、処理方式がウェブアプリケーションと一致"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "処理方式がRESTfulウェブサービスであり、今回はウェブアプリケーションが対象"
+      },
+      {
+        "path": "component/handlers/handlers-SessionStoreHandler.json",
+        "reason": "セッションストアは前提条件として関連するが、CSRF対策の主要な説明はCSRFハンドラのページで完結する"
+      },
+      {
+        "path": "component/libraries/libraries-session-store.json",
+        "reason": "セッションストアは補助的な前提であり、CSRF対策の設定手順の直接的な説明ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "CSRFトークンの生成・検証の設定例と動作仕様が詳細に記載されており、質問への直接的な回答となる"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "ハンドラの配置順序という必須の制約情報であり、設定に不可欠"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s5",
+        "relevance": "partial",
+        "reason": "ログイン時のCSRFトークン再生成という重要な運用上の注意点を提供する"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "CSRFのNablarch対応状況と推奨アプローチの概要を提供し、文脈の補強となる"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみでJavadocリンクだけのセクションであり、s4で十分"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s2",
+        "reason": "モジュール一覧のみであり、回答の本質的な情報ではない"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s1",
+        "reason": "SQLインジェクションのチェックリストであり、今回の質問と無関係"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s19",
+        "reason": "ページは候補として選んだが、セクション内容は概要のみでCSRFハンドラページの詳細情報で十分カバーされる"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+      "check/security-check/security-check-2.チェックリスト.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+          "reason": "ハンドラの設定例、デフォルト動作（UUIDv4生成・検証対象HTTPメソッド・トークン名・400応答）を回答の根拠として使用"
+        },
+        {
+          "ref": "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+          "reason": "セッション変数保存ハンドラ・Nablarchカスタムタグ制御ハンドラの後に配置する制約を回答に使用"
+        },
+        {
+          "ref": "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+          "reason": "ログイン時のCsrfTokenUtil.regenerateCsrfToken使用に関する注意点を回答に使用"
+        },
+        {
+          "ref": "check/security-check/security-check-2.チェックリスト.json:s6",
+          "reason": "CSRF対策機能の概要説明とデータベース二重サブミット防止機能との使い分けの注意点を補足として使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

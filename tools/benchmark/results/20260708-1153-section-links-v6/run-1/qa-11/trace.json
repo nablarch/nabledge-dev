@@ -1,0 +1,75 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 229596,
+  "duration_api_ms": 228020,
+  "ttft_ms": 3277,
+  "ttft_stream_ms": 2194,
+  "time_to_request_ms": 718,
+  "num_turns": 16,
+  "result": "情報が揃いましたので、回答を生成します。\n\n### Answer\n\n**結論**: ウェブアプリケーションのエラー処理は「HTTPエラー制御ハンドラ（HttpErrorHandler）」が中心となり、例外の種類に応じてログ出力とHTTPレスポンス（エラー画面）を生成する。エラー画面への遷移先はハンドラまたはアクションの `@OnError` アノテーションで設定する。\n\n**根拠**:\n\n**1. HTTPエラー制御ハンドラによるログ出力とレスポンス生成**\n\n後続ハンドラで発生した例外を捕捉し、以下のように処理する：\n\n| 例外の種類 | ログレベル | HTTPステータス |\n|---|---|---|\n| `NoMoreHandlerException`（アクションなし） | INFO | 404 |\n| `HttpErrorResponse`（業務エラー） | ログなし | `HttpErrorResponse#getResponse()` の値 |\n| `StackOverflowError` | FATAL | 500 |\n| 上記以外の例外・エラー | FATAL | 500 |\n\n`HttpErrorResponse` の原因例外が `ApplicationException`（バリデーションエラーなど）の場合は、メッセージ情報を `ErrorMessages` に変換してリクエストスコープ（キー名: `errors`）に設定するため、JSPでエラーメッセージを表示できる。\n\n**2. デフォルトエラーページの設定**\n\n`defaultPages` でHTTPステータスコードに対応するページを設定できる：\n\n```xml\n<component class=\"nablarch.fw.web.handler.HttpErrorHandler\">\n  <property name=\"defaultPages\">\n    <map>\n      <entry key=\"4..\" value=\"/USER_ERROR.jsp\" />\n      <entry key=\"404\" value=\"/NOT_FOUND.jsp\" />\n      <entry key=\"5..\" value=\"/ERROR.jsp\" />\n    </map>\n  </property>\n</component>\n```\n\n**3. エラー画面への遷移先指定方法**\n\n機能詳細（エラー時の画面遷移とステータスコード）では以下の方法が提供されている：\n\n- **ステータスコード対応のデフォルトページ**: `HttpErrorHandler` の `defaultPages` で設定\n- **ハンドラで共通制御**: 例外種別を捕捉するカスタムハンドラを作成\n\n  ```java\n  public class ExampleErrorForwardHandler implements Handler<Object, Object> {\n    public Object handle(Object data, ExecutionContext context) {\n      try {\n        return context.handleNext(data);\n      } catch (NoDataException e) {\n        throw new HttpErrorResponse(404, \"/WEB-INF/view/common/errorPages/pageNotFoundError.jsp\", e);\n      }\n    }\n  }\n  ```\n\n- **アクション単位で指定**: `@OnError` アノテーション\n\n  ```java\n  @OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\n  public HttpResponse handle(HttpRequest request, ExecutionContext context) { ... }\n  ```\n\n**4. 障害ログの出力方針**\n\n障害ログは2種類に分かれており、ロガー名で出力先を分離する：\n\n| ログの種類 | ログレベル | ロガー名 |\n|---|---|---|\n| 障害通知ログ（監視ツール用） | FATAL、ERROR | `MONITOR` |\n| 障害解析ログ（アプリケーションログ） | FATAL、ERROR | クラス名 |\n\n参照:\n- HTTPエラー制御ハンドラ\n  .claude/skills/nabledge-6/docs/component/handlers/handlers-HttpErrorHandler.md\n  例外の種類に応じた処理とレスポンスの生成\n  nablarch.fw.Result.Errorのログ出力について\n  デフォルトページの設定\n- グローバルエラーハンドラ\n  .claude/skills/nabledge-6/docs/component/handlers/handlers-global-error-handler.md\n  例外及びエラーに応じた処理内容\n- OnErrorインターセプタ\n  .claude/skills/nabledge-6/docs/component/handlers/handlers-on-error.md\n  OnErrorを使用する\n- 機能詳細\n  .claude/skills/nabledge-6/docs/processing-pattern/web-application/web-application-feature-details.md\n  エラー時の画面遷移とステータスコード\n- エラー時の遷移先の指定方法\n  .claude/skills/nabledge-6/docs/processing-pattern/web-application/web-application-forward-error-page.md\n  ハンドラで共通の振る舞いを定義する\n- 障害ログの出力\n  .claude/skills/nabledge-6/docs/component/libraries/libraries-failure-log.md\n  障害ログの出力方針\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/handlers/handlers-HttpErrorHandler.json\", \"source\": \"index\", \"reason\": \"ウェブアプリケーションでのエラー処理・ログ出力・エラー画面生成を担うHTTPエラー制御ハンドラのページ\"},\n      {\"path\": \"component/handlers/handlers-global-error-handler.json\", \"source\": \"index\", \"reason\": \"未捕捉例外を捕捉してログ出力と結果返却を行うグローバルエラーハンドラのページ\"},\n      {\"path\": \"component/handlers/handlers-on-error.json\", \"source\": \"index\", \"reason\": \"業務アクションでの例外発生時にエラー画面への遷移先を指定するOnErrorインターセプタのページ\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"source\": \"index\", \"reason\": \"ウェブアプリケーションのエラー時画面遷移・ステータスコードの機能詳細をまとめたページ\"},\n      {\"path\": \"processing-pattern/web-application/web-application-forward-error-page.json\", \"source\": \"index\", \"reason\": \"ウェブアプリケーションのエラー時遷移先指定方法（ハンドラ・アクション別）を解説するページ\"},\n      {\"path\": \"component/libraries/libraries-failure-log.json\", \"source\": \"index\", \"reason\": \"障害ログの出力方針と設定方法を解説するページ（エラー時のログ出力仕組みの理解に必須）\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/handlers/handlers-on-errors.json\", \"reason\": \"OnErrorsインターセプタはOnErrorと同様の機能であり、OnErrorで代表的な説明が可能なため省略\"},\n      {\"path\": \"component/libraries/libraries-log.json\", \"reason\": \"汎用的なログ出力機能で、エラー処理に特化した仕組みの説明には直接不要\"},\n      {\"path\": \"component/libraries/libraries-http-access-log.json\", \"reason\": \"HTTPアクセスログはエラーログではなくアクセス記録であり、エラー仕組みの理解には不要\"},\n      {\"path\": \"about/about-nablarch/about-nablarch-architecture.json\", \"reason\": \"アーキテクチャ概要は仕組み理解の補助にはなるが、エラー処理の具体的な仕組みを説明するページが優先\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"例外種別に応じたログレベルとHTTPステータスコードの対応表が記載されており、エラー処理の核心\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s5\", \"relevance\": \"high\", \"reason\": \"Result.Errorのログ出力設定（writeFailureLogPattern）の仕組みを説明\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s6\", \"relevance\": \"high\", \"reason\": \"デフォルトエラーページのXML設定例があり、エラー画面表示設定の具体的方法\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s4\", \"relevance\": \"high\", \"reason\": \"全例外・エラークラスへの処理内容テーブルで、ログ出力の仕組みを網羅的に説明\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s5\", \"relevance\": \"partial\", \"reason\": \"カスタムハンドラへの切り替え方法を補足情報として提供\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"@OnErrorアノテーションの使用例でアクション単位エラー遷移の実装方法\"},\n      {\"file\": \"component/handlers/handlers-on-error.json\", \"section_id\": \"s4\", \"relevance\": \"partial\", \"reason\": \"エラー時遷移先での表示データ取得の実装パターン（補足情報）\"},\n      {\"file\": \"processing-pattern/web-application/web-application-feature-details.json\", \"section_id\": \"s16\", \"relevance\": \"high\", \"reason\": \"エラー時画面遷移の全アプローチ（デフォルトページ・ハンドラ・アクション）を一覧化\"},\n      {\"file\": \"processing-pattern/web-application/web-application-forward-error-page.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"ハンドラで共通エラーページを制御する実装例でシステム共通対応の仕組みを説明\"},\n      {\"file\": \"processing-pattern/web-application/web-application-forward-error-page.json\", \"section_id\": \"s2\", \"relevance\": \"partial\", \"reason\": \"1つの例外に対して複数遷移先を定義する実装例（補足情報）\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"障害ログの出力方針（障害通知ログと障害解析ログの分離、ロガー名）と設定例\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"FailureLogUtilによる障害ログ出力の実装方法（補足情報）\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s1\", \"reason\": \"ハンドラクラス名のみでJavadocリンクのみ、内容情報なし\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s2\", \"reason\": \"モジュール依存関係の記述のみで仕組み理解に不要\"},\n      {\"file\": \"component/handlers/handlers-HttpErrorHandler.json\", \"section_id\": \"s3\", \"reason\": \"ハンドラの配置制約（他ハンドラとの順序）で仕組み理解の核心ではない\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s1\", \"reason\": \"ハンドラクラス名のみ\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s2\", \"reason\": \"モジュール依存関係の記述のみ\"},\n      {\"file\": \"component/handlers/handlers-global-error-handler.json\", \"section_id\": \"s3\", \"reason\": \"ハンドラの配置位置に関する制約で仕組み理解に不要\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s2\", \"reason\": \"セクション「使用方法」の見出しのみで内容なし\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s4\", \"reason\": \"障害ログのプロパティ設定詳細は仕組み理解より設定作業向け\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s5\", \"reason\": \"連絡先情報の追加機能は仕組み理解の今回の質問には不要\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s6\", \"reason\": \"フレームワーク障害コードの変更方法は今回の質問範囲外\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s7\", \"reason\": \"派生元実行時情報の出力は今回の質問範囲外\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s8\", \"reason\": \"プレースホルダのカスタマイズは今回の質問範囲外\"},\n      {\"file\": \"component/libraries/libraries-failure-log.json\", \"section_id\": \"s9\", \"reason\": \"JSON形式の障害ログは今回の質問範囲外\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/handlers/handlers-HttpErrorHandler.json:s4\",\n      \"component/handlers/handlers-HttpErrorHandler.json:s5\",\n      \"component/handlers/handlers-HttpErrorHandler.json:s6\",\n      \"component/handlers/handlers-global-error-handler.json:s4\",\n      \"component/handlers/handlers-global-error-handler.json:s5\",\n      \"component/handlers/handlers-on-error.json:s3\",\n      \"component/handlers/handlers-on-error.json:s4\",\n      \"processing-pattern/web-application/web-application-feature-details.json:s16\",\n      \"processing-pattern/web-application/web-application-forward-error-page.json:s1\",\n      \"processing-pattern/web-application/web-application-forward-error-page.json:s2\",\n      \"component/libraries/libraries-failure-log.json:s1\",\n      \"component/libraries/libraries-failure-log.json:s3\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/handlers/handlers-HttpErrorHandler.json:s4\", \"reason\": \"例外種別とログレベル・HTTPステータスの対応表として回答の核心部分に使用\"},\n        {\"ref\": \"component/handlers/handlers-HttpErrorHandler.json:s5\", \"reason\": \"Result.Error時のログ出力設定の仕組みの説明に使用\"},\n        {\"ref\": \"component/handlers/handlers-HttpErrorHandler.json:s6\", \"reason\": \"デフォルトエラーページのXML設定例として使用\"},\n        {\"ref\": \"component/handlers/handlers-global-error-handler.json:s4\", \"reason\": \"グローバルエラーハンドラの例外・エラー種別テーブル（ただしウェブアプリではHTTPエラー制御ハンドラが主体のため補足扱い）\"},\n        {\"ref\": \"component/handlers/handlers-on-error.json:s3\", \"reason\": \"@OnErrorアノテーションの使用例として回答に含めた\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-feature-details.json:s16\", \"reason\": \"エラー画面遷移方法の全体像の整理に使用\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-forward-error-page.json:s1\", \"reason\": \"ハンドラで共通エラー制御する実装例として使用\"},\n        {\"ref\": \"component/libraries/libraries-failure-log.json:s1\", \"reason\": \"障害ログの出力方針テーブル（FATAL/ERROR、MONITORロガー）として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"component/handlers/handlers-global-error-handler.json:s5\", \"reason\": \"カスタムハンドラ推奨の補足情報で、仕組み理解の回答には不要と判断\"},\n        {\"ref\": \"component/handlers/handlers-on-error.json:s4\", \"reason\": \"エラー時の表示データ取得は詳細な実装パターンで、仕組み理解の回答範囲を超えると判断\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-forward-error-page.json:s2\", \"reason\": \"1例外・複数遷移先の実装詳細は回答の核心ではないため省略\"},\n        {\"ref\": \"component/libraries/libraries-failure-log.json:s3\", \"reason\": \"FailureLogUtilの使い方はアプリ側の実装詳細で、仕組み理解の回答では不要\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "87d14034-9600-4987-88e4-99192f3becbe",
+  "total_cost_usd": 1.2915801,
+  "usage": {
+    "input_tokens": 17,
+    "cache_creation_input_tokens": 137846,
+    "cache_read_input_tokens": 1801222,
+    "output_tokens": 15346,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 137846
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3830,
+      "outputTokens": 44,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00405,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 17,
+      "outputTokens": 15346,
+      "cacheReadInputTokens": 1801222,
+      "cacheCreationInputTokens": 137846,
+      "webSearchRequests": 0,
+      "costUSD": 1.2875301,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01CVZMoKaGryj3SzETBnLfNo",
+      "tool_input": {
+        "command": "cat /home/tie303177/work/nabledge-dev/.claude/worktrees/395-add-md-section-links/.claude/skills/nabledge-6/knowledge/processing-pattern/web-application/web-application-feature-details.json | python3 -c \"import json,sys; d=json.load(sys.stdin); [print(s['id'], s['title']) for s in d['sections']]\""
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_018jBDq13ceP1sDmoCchAeEi",
+      "tool_input": {
+        "command": "python3 -c \"\nimport json\nwith open('processing-pattern/web-application/web-application-feature-details.json') as f:\n    d = json.load(f)\nfor s in d['sections']:\n    if s['id'] in ['s16']:\n        print(s['id'], s['title'])\n        print(s['content'][:3000])\n\""
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "517fe9d4-b62b-43e7-90a4-07e8ca714be4"
+}

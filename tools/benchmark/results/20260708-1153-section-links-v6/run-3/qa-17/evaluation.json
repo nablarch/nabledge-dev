@@ -1,0 +1,64 @@
+{
+  "scenario_id": "qa-17",
+  "description": "アプリケーションコードからSystemRepositoryを使ってコンポーネントを取得したい。名前指定と型指定の取得方法を知りたい。",
+  "input": "SystemRepository から登録済みコンポーネントを取得する方法を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.1,
+      "reason": "The Expected Output specifically mentions that `get(String name)` uses type parameters to retrieve components from the repository in a type-safe manner. The Actual Output does not mention type parameters or type safety at all. While the Actual Output does cover `SystemRepository.get()` usage with component names, it completely omits the key fact about type parameter usage for type-safe retrieval, which is the sole expected fact in the checklist."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about how to retrieve registered components from SystemRepository, with no irrelevant statements found. Great job staying right on topic!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-repository.json:s25",
+      "component/libraries/libraries-repository.json:s24",
+      "component/libraries/libraries-repository.json:s7"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 100687,
+    "duration_api_ms": 99517,
+    "num_turns": 8,
+    "total_cost_usd": 0.77311275,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 5214,
+      "cache_read_input_tokens": 766565,
+      "cache_creation_input_tokens": 122923
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3754,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003939,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 5214,
+        "cacheReadInputTokens": 766565,
+        "cacheCreationInputTokens": 122923,
+        "webSearchRequests": 0,
+        "costUSD": 0.76917375,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

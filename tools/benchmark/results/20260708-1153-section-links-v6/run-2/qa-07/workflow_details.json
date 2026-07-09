@@ -1,0 +1,166 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "source": "both",
+        "reason": "Nablarchバッチでのファイル読み込み→DB登録の具体的な実装例（DataReader、BatchAction）を直接説明している"
+      },
+      {
+        "path": "component/libraries/libraries-data-bind.json",
+        "source": "both",
+        "reason": "CSVをJava Beansとして読み込むデータバインド機能（@Csv、@CsvFormat、ObjectMapper）を直接説明している"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "source": "both",
+        "reason": "Nablarchバッチのファイル入出力機能詳細（FileDataReader等）を説明しているが、データバインド中心の質問には直接的ではない"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "source": "both",
+        "reason": "利用可能なデータリーダ一覧（FileDataReader、ValidatableFileDataReader等）のアーキテクチャ説明"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-data-format.json",
+        "reason": "汎用データフォーマット機能はフォーマット定義ファイル方式であり、Java Beansへのアノテーションバインドとは別の方式のため"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.json",
+        "reason": "エラー処理の説明であり、CSVのJava Beans読み込み実装とは直接関係ない"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json",
+        "reason": "処理パターンの分類説明であり、CSVのJava Beans読み込みの実装方法とは直接関係ない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "CSVをJava Beansとして読み込むDataReaderの実装例（ObjectMapperIterator使用）が完全に示されている"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "BatchActionを継承したアクションクラス（createReader+handle）の実装例が示されている"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "ObjectMapperFactory.createとObjectMapper.readによるJava Beans読み込みの基本実装例"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s15",
+        "relevance": "high",
+        "reason": "@Csvと@CsvFormatアノテーションによるCSVフォーマット指定方法の詳細説明"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s2",
+        "relevance": "partial",
+        "reason": "Java Beans読み込み時のプロパティ型（String型推奨）という重要な制約事項を説明している"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s8",
+        "reason": "書き込みの説明であり、読み込みが主目的の質問には不要"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s9",
+        "reason": "MapオブジェクトとしてのCSV読み込みであり、Java Beans読み込みとは別のアプローチ"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s16",
+        "reason": "固定長ファイルのフォーマット指定であり、CSVに関する質問には不要"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s11",
+        "reason": "行番号取得は補助機能であり、基本実装とは切り離せる"
+      },
+      {
+        "file": "component/libraries/libraries-data-bind.json",
+        "section_id": "s12",
+        "reason": "バリデーション機能はアクション側で実施するため、データ読み込みの説明には不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+      "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+      "component/libraries/libraries-data-bind.json:s7",
+      "component/libraries/libraries-data-bind.json:s15",
+      "component/libraries/libraries-data-bind.json:s2",
+      "javadoc/javadoc-nablarch-common-databind-csv-Csv.json",
+      "javadoc/javadoc-nablarch-common-databind-csv-CsvFormat.json",
+      "javadoc/javadoc-nablarch-common-databind-LineNumber.json",
+      "javadoc/javadoc-nablarch-fw-DataReader.json",
+      "javadoc/javadoc-nablarch-common-databind-ObjectMapper.json",
+      "javadoc/javadoc-nablarch-common-databind-ObjectMapperFactory.json"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s2",
+          "reason": "DataReaderの実装例（ObjectMapperIterator使用）を根拠のコード例として使用"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-getting-started-nablarch-batch.json:s3",
+          "reason": "BatchActionのhandle/createReader実装例を根拠のコード例として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s7",
+          "reason": "ObjectMapperによるJava Beans読み込みとclose処理の必要性の説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s15",
+          "reason": "@Csv/@CsvFormatアノテーションのフォーマット指定方法の説明に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-data-bind.json:s2",
+          "reason": "外部データのプロパティはすべてString型という制約事項の説明に使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "javadoc/javadoc-nablarch-common-databind-csv-Csv.json",
+          "reason": "パッケージ情報のみでアノテーション詳細はs15で十分説明済み"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-databind-csv-CsvFormat.json",
+          "reason": "アノテーション名情報のみでs15のコード例で十分"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-databind-LineNumber.json",
+          "reason": "行番号取得機能は今回の質問のコアではない"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-fw-DataReader.json",
+          "reason": "SECTION_NOT_FOUNDのためコンテンツなし"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-databind-ObjectMapper.json",
+          "reason": "SECTION_NOT_FOUNDのためコンテンツなし"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-databind-ObjectMapperFactory.json",
+          "reason": "SECTION_NOT_FOUNDのためコンテンツなし"
+        }
+      ]
+    }
+  }
+}

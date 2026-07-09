@@ -1,0 +1,68 @@
+{
+  "scenario_id": "qa-08",
+  "description": "エラーメッセージや画面ラベルを多言語対応したい。日本語と英語で切り替えられるようにしたい。",
+  "input": "メッセージやラベルを日本語と英語で切り替えたい。多言語化の方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "言語ごとのプロパティファイルを用意しサポートする言語をlocalesに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers the key fact from the Expected Output: preparing property files for each language and setting supported languages in 'locales'. The response explicitly shows property files per language (messages.properties, messages_en.properties, messages_zh.properties) and demonstrates configuring the 'locales' property in PropertiesStringResourceLoader with 'en' and 'zh' values. All facts in the Expected Output checklist are addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is completely relevant to the input, which asks about how to switch messages and labels between Japanese and English for multilingual support. No irrelevant statements were found - nice work!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-message.json:s8",
+      "component/handlers/handlers-thread-context-handler.json:s7",
+      "component/handlers/handlers-http-response-handler.json:s7",
+      "component/libraries/libraries-message.json:s7",
+      "component/libraries/libraries-message.json:s6",
+      "component/handlers/handlers-thread-context-handler.json:s4",
+      "component/libraries/libraries-code.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 140321,
+    "duration_api_ms": 139114,
+    "num_turns": 11,
+    "total_cost_usd": 0.9197713,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 8932,
+      "cache_read_input_tokens": 1000361,
+      "cache_creation_input_tokens": 128452
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3780,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003955,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 8932,
+        "cacheReadInputTokens": 1000361,
+        "cacheCreationInputTokens": 128452,
+        "webSearchRequests": 0,
+        "costUSD": 0.9158163,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -185,6 +185,34 @@ git push
 
 閾値割れが出たシナリオは、DeepEval の reason **だけ**で判定せず、必ず回答とナレッジを突き合わせて事実確認する。
 
+**対象は answer_correctness・answer_relevancy・faithfulness の 3 指標すべての閾値割れ**（crossrun mean で correctness/faithfulness < 0.99、relevancy < 0.95）。指標を絞らず全件照合すること。
+
+まず以下のコマンドで閾値割れシナリオを列挙し、照合対象を確定する:
+
+```bash
+python3 -c "
+import json, statistics
+data = {}
+for r in ['run-1','run-2','run-3']:
+    s = json.load(open('tools/benchmark/results/{run-label}/%s/summary.json' % r))
+    for sc in s['scenarios']:
+        sid = sc['id']
+        if sid not in data: data[sid] = {'corr':[], 'rel':[], 'faith':[]}
+        import pathlib
+        p = pathlib.Path('tools/benchmark/results/{run-label}/%s/%s/evaluation.json' % (r, sid))
+        if p.exists():
+            e = json.loads(p.read_text())
+            data[sid]['corr'].append(e['scores']['answer_correctness']['score'])
+            data[sid]['rel'].append(e['scores']['answer_relevancy']['score'])
+            data[sid]['faith'].append(e['scores']['faithfulness']['score'])
+print('%-20s %-12s  run-1  run-2  run-3  mean' % ('scenario', 'metric'))
+for sid, v in sorted(data.items()):
+    for metric, vals, thr in [('correctness',v['corr'],0.99),('relevancy',v['rel'],0.95),('faithfulness',v['faith'],0.99)]:
+        if vals and statistics.mean(vals) < thr:
+            print('%-20s %-12s  %5.3f  %5.3f  %5.3f  %5.3f' % (sid, metric, vals[0], vals[1], vals[2], statistics.mean(vals)))
+"
+```
+
 ### アクション C-2-1: 各閾値割れシナリオを照合
 
 各シナリオについて:
@@ -213,13 +241,14 @@ git push
 
 1. `tools/benchmark/templates/quality-report-template.md` を
    `tools/benchmark/results/{run-label}/quality-report.md` にコピー。
-2. 素材を転記:
-   - ①②の一次件数・③④の計測値 → crossrun-summary.md から
-   - 退行（前版対比）→ 前版の crossrun-summary.md と対比
+2. 素材を転記（今版の crossrun-summary.md と前版の crossrun-summary.md を並べて参照）:
+   - ①②③の一次スコア・通過件数 → crossrun-summary.md の「スコアサマリー」行（`answer_correctness` / `faithfulness` / `answer_relevancy`）
+   - ④⑤の計測値（コスト・時間）→ 同じく crossrun-summary.md の「パフォーマンス横断集約」行
+   - 退行テーブル → **前版と今版の値を「前版」「今版」の2列に分けて**記入する（スコア平均と通過数/総数をセットで）。前版に relevancy の記録がない場合は「未測定」と記入。
 3. 確定判定（人手照合）:
    - 基準未満の各シナリオについて、answer.md とナレッジを突き合わせ、実害か採点の厳しさかを判定し「確定」欄に記入。
    - 自動採点のスコアだけで PASS/FAIL を決めない（誤審を除外した実害ベースで判定）。
-4. ③④コストは合否を出さず、増減理由と見解を記入。
+4. ④⑤コストは合否を出さず、増減理由と見解を記入。
 
 ### アクション C-3-2: コミット
 
@@ -327,7 +356,7 @@ git push
 |---|---|---|
 | `run-N/report.md` | B-3 | run別スコア＋cost/time分布 |
 | `crossrun-summary.md` | C-1 | 3run横断集約 |
-| `quality-report.md` | C-3 | 品質評価（合否①②＋計測③④＋退行） |
+| `quality-report.md` | C-3 | 品質評価（合否①②③＋計測④⑤＋退行） |
 | `baseline.json` | D-1 | 退行検出の基準 |
 | `run-N/regression-check.md` | E-1 | ベースライン差分 |
 

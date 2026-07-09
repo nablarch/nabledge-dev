@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 90928,
+  "duration_api_ms": 90042,
+  "ttft_ms": 3897,
+  "ttft_stream_ms": 2044,
+  "time_to_request_ms": 424,
+  "num_turns": 8,
+  "result": "Step 5: 回答を生成します。\n\n### Answer\n\n**結論**: NablarchバッチアプリケーションはJavaコマンドで`nablarch.fw.launcher.Main`クラスを指定して起動します。`-requestPath`オプションに「アクションクラス名/リクエストID」の書式で実行するアクションとリクエストIDを指定します。\n\n**根拠**:\n\n起動には以下の3つのオプションが必須です。いずれかが欠けると終了コード127で即座に異常終了します。\n\n```bash\njava nablarch.fw.launcher.Main \\\n  -diConfig file:./batch-config.xml \\\n  -requestPath admin.DataUnloadBatchAction/BC0012 \\\n  -userId testUser\n```\n\n**各オプションの意味**:\n\n| オプション | 説明 |\n|---|---|\n| `-diConfig` | システムリポジトリの設定ファイルのパスを指定する |\n| `-requestPath` | 実行するアクションとリクエストIDを指定する |\n| `-userId` | ユーザIDを指定する（`user.id`としてセッションコンテキスト変数に格納） |\n\n**`-requestPath`の書式**:\n\n```bash\n# 書式\n-requestPath=アクションのクラス名/リクエストID\n\n# 指定例\n-requestPath=com.sample.SampleBatchAction/BATCH0001\n```\n\nリクエストIDは各バッチプロセスの識別子として用いられます。同一の業務アクションクラスを複数プロセスで実行する場合などに、このリクエストIDが識別子となります。\n\n**処理の流れ**:\n\n1. `Main`クラスがハンドラキューを実行する\n2. `DataReader`が入力データを読み込みレコードを1件ずつ提供する\n3. `DispatchHandler`が`-requestPath`で指定したリクエストパスを元にアクションクラスを特定する\n4. アクションクラスがデータレコード1件ごとの業務ロジックを実行する\n5. 処理対象データがなくなるまで2〜4を繰り返す\n\n**注意点**: `-diConfig`, `-requestPath`, `-userId`のいずれかが欠けていると終了コード127で即座に異常終了します。\n\n参照:\n- アーキテクチャ概要\n  .claude/skills/nabledge-6/docs/processing-pattern/nablarch-batch/nablarch-batch-architecture.md\n  Nablarchバッチアプリケーションの構成\n  リクエストパスによるアクションとリクエストIDの指定\n  Nablarchバッチアプリケーションの処理の流れ\n- 共通起動ランチャ\n  .claude/skills/nabledge-6/docs/component/handlers/handlers-main.md\n  アプリケーションを起動する\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\", \"source\": \"index\", \"reason\": \"Nablarchバッチの起動方法・-requestPathを含むアーキテクチャ概要ページ\"},\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json\", \"source\": \"index\", \"reason\": \"バッチアプリケーションの起動方法セクションを含む機能詳細ページ\"},\n      {\"path\": \"component/handlers/handlers-main.json\", \"source\": \"both\", \"reason\": \"共通起動ランチャ(Main)の具体的な起動手順・オプション仕様を記載したページ\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-getting-started.json\", \"reason\": \"Getting Startedページはセクション情報なく一般的な概要のため除外\"},\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-batch.json\", \"reason\": \"バッチアプリケーション一般ページでセクション詳細なし\"},\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-nablarch-batch-error-process.json\", \"reason\": \"エラー処理の内容で起動方法と無関係\"},\n      {\"path\": \"processing-pattern/nablarch-batch/nablarch-batch-application-design.json\", \"reason\": \"責務配置ページで起動方法に直接関係なし\"},\n      {\"path\": \"component/handlers/handlers-request-path-java-package-mapping.json\", \"reason\": \"リクエストディスパッチハンドラの設定詳細でありメインの起動コマンド書き方には不要\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\", \"section_id\": \"s2\", \"relevance\": \"high\", \"reason\": \"-requestPathの書式と指定例が直接記載されているため\"},\n      {\"file\": \"component/handlers/handlers-main.json\", \"section_id\": \"s3\", \"relevance\": \"high\", \"reason\": \"javaコマンドによる起動の実行例と全必須オプションの説明があるため\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"Mainクラスがスタンドアロン起動の起点であることを説明するため\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"DispatchHandlerが-requestPathを利用してアクションを特定する処理の流れを示すため\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json\", \"section_id\": \"s1\", \"relevance\": \"partial\", \"reason\": \"起動方法への参照リンクを含むが詳細はhandlers-mainにある\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\", \"section_id\": \"s4\", \"reason\": \"ハンドラ一覧の説明で起動方法の回答に不要\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\", \"section_id\": \"s5\", \"reason\": \"最小ハンドラ構成の詳細テーブルで起動コマンドの質問に不要\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\", \"section_id\": \"s6\", \"reason\": \"常駐バッチの最小ハンドラ構成で起動コマンド書き方には不要\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\", \"section_id\": \"s7\", \"reason\": \"データリーダ一覧でありメインの質問と無関係\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\", \"section_id\": \"s8\", \"reason\": \"アクションクラス一覧でありメインの質問と無関係\"},\n      {\"file\": \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json\", \"section_id\": \"s2\", \"reason\": \"システムリポジトリ初期化の内容で起動コマンドの質問に不要\"},\n      {\"file\": \"component/handlers/handlers-main.json\", \"section_id\": \"s4\", \"reason\": \"任意オプション設定の内容で必須の-requestPathの質問に不要\"},\n      {\"file\": \"component/handlers/handlers-main.json\", \"section_id\": \"s5\", \"reason\": \"例外・エラー処理の内容で起動コマンドの質問に不要\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s1\",\n      \"component/handlers/handlers-main.json:s3\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1\", \"reason\": \"Mainクラスがスタンドアロン起動の起点であることを説明するために使用\"},\n        {\"ref\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2\", \"reason\": \"-requestPathの書式と指定例を回答の根拠として使用\"},\n        {\"ref\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3\", \"reason\": \"DispatchHandlerが-requestPathでアクションを特定する処理の流れを説明するために使用\"},\n        {\"ref\": \"component/handlers/handlers-main.json:s3\", \"reason\": \"javaコマンドの実行例と3つの必須オプション説明を回答の根拠として使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s1\", \"reason\": \"handlers-main.jsonへの参照リンクのみで内容はhandlers-main:s3に含まれるため不使用\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "f11edf25-833b-462f-b1f5-102aa20e99c1",
+  "total_cost_usd": 0.7030057,
+  "usage": {
+    "input_tokens": 7,
+    "cache_creation_input_tokens": 124550,
+    "cache_read_input_tokens": 470604,
+    "output_tokens": 6048,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 124550
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3806,
+      "outputTokens": 43,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.004021,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 7,
+      "outputTokens": 6048,
+      "cacheReadInputTokens": 470604,
+      "cacheCreationInputTokens": 124550,
+      "webSearchRequests": 0,
+      "costUSD": 0.6989846999999999,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "46bfdb20-ac30-4d75-8c2f-156e425f1b39"
+}

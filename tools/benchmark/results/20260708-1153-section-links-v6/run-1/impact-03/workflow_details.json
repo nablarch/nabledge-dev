@@ -1,0 +1,119 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "both",
+        "reason": "Bean Validationのドキュメントであり、DBとの相関バリデーションの実装方法を直接扱っているため"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "source": "both",
+        "reason": "RESTfulウェブサービスでのBean Validationハンドラの使用方法を扱っているため"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスの機能詳細として入力値チェックの全体像を参照するため"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "DBアクセス方法の詳細は今回の質問の主要論点ではなく、バリデーション設計の指針が主要トピックのため"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "ユニバーサルDAOの詳細は今回の質問の主要論点ではないため"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json",
+        "reason": "実装例は参考になるが、バリデーション設計の主要情報はbean-validationファイルに集中しているため"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "reason": "セキュリティチェックリストは今回の実装方針の根拠として役立つが、直接の実装指針はbean-validationファイルに存在するため"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "DBとの相関バリデーションを行う際の指針を直接説明し、カスタムバリデータでのDB検索を避けるべき理由が明記されているため"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "業務アクション側でDBバリデーションを行った場合のエラーメッセージ作成方法を説明しているため"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスでのBean Validationの使用方法（@Validアノテーション）を説明しているため"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスで@ValidアノテーションによるBean Validationの実行方法を具体的なコード例と共に説明しているため"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "reason": "相関バリデーションの一般的な説明で、DB検索には直接関係しないため"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s24",
+        "reason": "カスタムバリデータの追加方法だが、今回は「しない」という回答が主論点のため"
+      },
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックへの参照リンクのみで、具体的な情報は他のファイルに集約されているため"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s5",
+        "reason": "グループ指定は今回の質問（重複チェック）とは無関係のため"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s12",
+          "reason": "カスタムバリデータでのDB検索を避けるべき理由（SQLインジェクション脆弱性）と業務アクション側での実装という指針の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s13",
+          "reason": "業務アクション側でバリデーションエラーを特定項目に紐づける方法としてValidationUtil#createMessageForPropertyの使用例として引用"
+        },
+        {
+          "ref": "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "RESTfulウェブサービスでの@Validアノテーションの使用方法のコード例として引用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s17",
+          "reason": "s4で同等の情報が得られたため、重複して使用しなかった"
+        }
+      ]
+    }
+  }
+}

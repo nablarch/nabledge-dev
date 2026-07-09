@@ -1,0 +1,141 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "both",
+        "reason": "ユニバーサルDAOの遅延ロード(s9)が大量データを1件ずつ読み込む直接の解決策"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "source": "index",
+        "reason": "Nablarchバッチの処理方式でデータリーダ一覧(s7)を含む"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "source": "index",
+        "reason": "Nablarchバッチのデータベースアクセス詳細(s4)を含む"
+      },
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "index",
+        "reason": "JDBCラッパーの検索範囲指定(s15)が関連する可能性がある"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "source": "index",
+        "reason": "DomaアダプタのJakarta Batch向け遅延ロード(s10)が関連する"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-database-reader.json",
+        "reason": "処理方式がNablarchバッチ指定のためJakartaバッチは優先度低"
+      },
+      {
+        "path": "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json",
+        "reason": "アンチパターンの説明であり実装方法ではない"
+      },
+      {
+        "path": "component/handlers/handlers-data-read-handler.json",
+        "reason": "データリードハンドラの設定であり直接の解決策ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s9",
+        "relevance": "high",
+        "reason": "大量データのメモリ不足に対して遅延ロードを使う方法を直接説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json",
+        "section_id": "s7",
+        "relevance": "high",
+        "reason": "Nablarchバッチで使用できる標準データリーダ一覧を説明している"
+      },
+      {
+        "file": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "バッチでのデータベースアクセス方法を示す参照情報"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s15",
+        "relevance": "partial",
+        "reason": "検索範囲指定(ページング)が大量データ回避の代替手段として言及されている"
+      },
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "Jakarta Batchでの遅延ロード実装例を提供しているが、処理方式はNablarchバッチ指定のため補足情報"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s12",
+        "reason": "ページングは1件ずつ読み込みではなく大量データ回避の代替手段"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "reason": "SQLファイル検索の基本説明であり遅延ロードの本題ではない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-universal-dao.json:s9",
+      "component/libraries/libraries-database.json:s15",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+      "component/adapters/adapters-doma-adaptor.json:s10",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+      "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s1",
+      "javadoc/javadoc-nablarch-common-dao-DeferredEntityList.json:s1",
+      "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json:s1"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s9",
+          "reason": "遅延ロードの仕組みとコード例を回答の核として使用"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7",
+          "reason": "DatabaseRecordReaderの紹介に使用"
+        },
+        {
+          "ref": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s4",
+          "reason": "バッチのDBアクセス参照として補足使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-database.json:s15",
+          "reason": "ページング(検索範囲指定)はs9の注意点で言及済みで独立したセクションとして使うには不要"
+        },
+        {
+          "ref": "component/adapters/adapters-doma-adaptor.json:s10",
+          "reason": "Domaアダプタ/Jakarta Batchの例はNablarchバッチの質問に対して直接的でないため省略"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-UniversalDao.json:s1",
+          "reason": "Javadocのフィールド詳細で実装に役立つ情報なし"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-common-dao-DeferredEntityList.json:s1",
+          "reason": "Javadocのフィールド詳細で実装に役立つ情報なし"
+        },
+        {
+          "ref": "javadoc/javadoc-nablarch-fw-reader-DatabaseRecordReader.json:s1",
+          "reason": "Javadocのフィールド詳細で実装に役立つ情報なし"
+        }
+      ]
+    }
+  }
+}

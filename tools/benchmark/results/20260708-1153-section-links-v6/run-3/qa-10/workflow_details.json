@@ -1,0 +1,129 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "index",
+        "reason": "s6・s21で動的SQL構築($if構文)を直接説明しており、質問に最も直接的に回答するページ"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "index",
+        "reason": "s10「条件を指定して検索する」でウェブアプリの検索条件の渡し方を説明しており、実装したい目的に合致"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションの検索機能実装例として処理方式に合致する"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "ウェブアプリのデータベースアクセス(s3)を扱い、処理方式に合致"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "バッチ処理方式のため、ウェブアプリケーションの質問には対象外"
+      },
+      {
+        "path": "processing-pattern/jakarta-batch/jakarta-batch-feature-details.json",
+        "reason": "Jakartaバッチ処理方式のため対象外"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "reason": "RESTfulウェブサービス処理方式のため対象外"
+      },
+      {
+        "path": "component/libraries/libraries-bean-util.json",
+        "reason": "BeanUtilはデータバインドの補助であり、可変条件SQLの直接実装方法ではない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s21",
+        "relevance": "high",
+        "reason": "$if特殊構文による可変条件SQLを直接説明しており、質問に完全に回答する"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s16",
+        "relevance": "partial",
+        "reason": "Beanオブジェクトを入力としたSQL実行の前提知識で、s21の$if構文の理解に必要"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s10",
+        "relevance": "partial",
+        "reason": "ユニバーサルDAOでの検索条件の渡し方を示し、代替実装方法の背景として有用"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "動的SQL構築機能の概要を示し、s21の機能紹介として背景情報を提供する"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s22",
+        "reason": "in句の可変条件は質問の主旨ではなく、$ifの基本説明で十分"
+      },
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s23",
+        "reason": "order byの動的切り替えは質問に無関係"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s7",
+        "reason": "SQLファイルの基本的な使い方はs10の補足であり、直接回答には不要"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-getting-started-project-search.json",
+        "section_id": "s1",
+        "reason": "検索機能の全体像はあるが、$if構文の詳細はlibraries-database.jsonで十分カバーされている"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s16",
+      "component/libraries/libraries-database.json:s6",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "component/libraries/libraries-universal-dao.json:s7"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s21",
+          "reason": "$if構文による可変条件の記述ルール・SQLサンプル・Javaサンプルが回答の核心"
+        },
+        {
+          "ref": "component/libraries/libraries-database.json:s16",
+          "reason": "Beanオブジェクトを入力としたSQL実行方法の説明が$if構文の前提として必要"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s10",
+          "reason": "ユニバーサルDAOでの検索条件指定方法として代替実装の参照情報を提供"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-database.json:s6",
+          "reason": "概要説明のみでs21に内容が包含されるため不要"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s7",
+          "reason": "SQLファイルの基本使い方でs10の前提だが回答で直接言及せず"
+        }
+      ]
+    }
+  }
+}

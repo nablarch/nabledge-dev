@@ -1,0 +1,63 @@
+{
+  "scenario_id": "impact-01",
+  "description": "バッチ処理で業務エラー時にエラーログだけは別トランザクションで必ずDBに書き込みたい。業務トランザクションがロールバックされてもログは残したい。",
+  "input": "業務トランザクションとは別のトランザクションでSQLを実行する方法はあるか？ロールバックされても別トランザクションの更新は残したい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "SimpleDbTransactionManagerを使って個別トランザクションを定義する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly covers the expected fact that SimpleDbTransactionManager is used to define individual (separate) transactions. The response explicitly includes XML configuration for SimpleDbTransactionManager, explains its use for executing SQL in a separate transaction from the business transaction, and provides detailed implementation examples for both JDBC wrapper and Universal DAO approaches. The core expected fact is not only present but thoroughly explained."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, which asks about executing SQL in a separate transaction from the business transaction and retaining updates even if a rollback occurs. No irrelevant statements were identified!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 186450,
+    "duration_api_ms": 185391,
+    "num_turns": 11,
+    "total_cost_usd": 0.9609965,
+    "usage": {
+      "input_tokens": 9,
+      "output_tokens": 12403,
+      "cache_read_input_tokens": 808170,
+      "cache_creation_input_tokens": 140926
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3836,
+        "outputTokens": 33,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.004001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 9,
+        "outputTokens": 12403,
+        "cacheReadInputTokens": 808170,
+        "cacheCreationInputTokens": 140926,
+        "webSearchRequests": 0,
+        "costUSD": 0.9569954999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

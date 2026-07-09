@@ -1,0 +1,121 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "source": "both",
+        "reason": "CSRFトークンの生成と検証を行うハンドラで、質問のCSRF対策に直接対応するページ"
+      },
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "source": "index",
+        "reason": "CSRF（s6）を含むセキュリティチェックリストで、Nablarchの対応状況を記載"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "source": "index",
+        "reason": "ウェブアプリケーションのCSRF対策(s19)を含む機能詳細ページ"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "CSRFの具体的な設定方法ではなくセキュリティチェックの概要のみで回答に必要な情報がない"
+      },
+      {
+        "path": "check/security-check/security-check-3.PCIDSS対応表.json",
+        "reason": "PCI DSS対応表であり、CSRF設定には関係しない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "CSRFトークンの設定方法・動作・設定XMLを詳細に説明しており、回答の核心"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s3",
+        "relevance": "high",
+        "reason": "ハンドラの配置制約（セッションストアハンドラより後）を説明しており必須の注意点"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "ログイン時のCSRFトークン再生成の必要性と方法を説明しており重要な注意点"
+      },
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s6",
+        "relevance": "high",
+        "reason": "NablarchのCSRF対策機能の推奨理由と二重サブミット防止機能との違いを説明"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s19",
+        "relevance": "partial",
+        "reason": "ウェブアプリでのCSRF対策はCSRFトークン検証ハンドラへの参照リンクのみで情報が薄い"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s1",
+        "reason": "Nablarchの初期化の話でCSRFとは無関係"
+      },
+      {
+        "file": "processing-pattern/web-application/web-application-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックの話でCSRFとは無関係"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s1",
+        "reason": "ハンドラクラス名のみで実質的な情報がない"
+      },
+      {
+        "file": "component/handlers/handlers-csrf-token-verification-handler.json",
+        "section_id": "s2",
+        "reason": "モジュール依存関係のみで設定方法の情報がない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+      "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+      "check/security-check/security-check-2.チェックリスト.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/handlers/handlers-csrf-token-verification-handler.json:s4",
+          "reason": "CSRFトークンの設定XMLと動作説明（デフォルト動作、検証対象メソッド、トークン名）の根拠として使用"
+        },
+        {
+          "ref": "component/handlers/handlers-csrf-token-verification-handler.json:s3",
+          "reason": "ハンドラの配置制約（セッションストアハンドラ・カスタムタグハンドラより後ろ）の根拠として使用"
+        },
+        {
+          "ref": "component/handlers/handlers-csrf-token-verification-handler.json:s5",
+          "reason": "ログイン時のCSRFトークン再生成の必要性とCsrfTokenUtil.regenerateCsrfTokenの使い方の根拠として使用"
+        },
+        {
+          "ref": "check/security-check/security-check-2.チェックリスト.json:s6",
+          "reason": "CSRF対策機能の推奨理由（二重サブミット防止機能との違い）の根拠として参照したが、回答ではs4/s3/s5に集約"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "processing-pattern/web-application/web-application-feature-details.json:s19",
+          "reason": "CSRFトークン検証ハンドラへの参照リンクのみで、s4で十分カバーされるため使用せず"
+        }
+      ]
+    }
+  }
+}

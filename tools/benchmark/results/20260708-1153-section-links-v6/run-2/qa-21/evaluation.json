@@ -1,0 +1,70 @@
+{
+  "scenario_id": "qa-21",
+  "description": "REST APIでバリデーションエラー時のレスポンス。エラー情報をJSONレスポンスとして返す。",
+  "input": "入力チェックでエラーがあったときに、エラーメッセージをユーザーに返す方法を教えてほしい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "@Validアノテーションによりバリデーションエラーが自動的にエラーレスポンスになる",
+    "ErrorResponseBuilderの継承クラスでエラーメッセージをレスポンスボディに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers both key facts from the expected output. First, it explicitly explains that the @Valid annotation triggers validation and results in error responses (via JaxRsBeanValidationHandler throwing ApplicationException). Second, it provides detailed explanation and code examples of how to inherit ErrorResponseBuilder to set error messages in the response body. Both expected facts are thoroughly addressed, with the actual output going beyond the expected output in depth and detail."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about how to return error messages to users when input validation errors occur. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9166666666666666,
+      "reason": "The score is 0.92 because the actual output uses the term 'JaxRsBeanValidationHandler' instead of 'BeanValidation handler' as referenced in the retrieval context, and refers to 'BodyConvertHandler' instead of the 'request body conversion handler', introducing slight terminological inconsistencies that may not accurately reflect the components described in the source material."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s7",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/libraries/libraries-bean-validation.json:s7",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s11",
+      "component/handlers/handlers-jaxrs-response-handler.json:s4",
+      "component/handlers/handlers-jaxrs-response-handler.json:s8",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 210214,
+    "duration_api_ms": 209012,
+    "num_turns": 13,
+    "total_cost_usd": 1.02634215,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 15646,
+      "cache_read_input_tokens": 1026773,
+      "cache_creation_input_tokens": 127879
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3816,
+        "outputTokens": 45,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.004041,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 15646,
+        "cacheReadInputTokens": 1026773,
+        "cacheCreationInputTokens": 127879,
+        "webSearchRequests": 0,
+        "costUSD": 1.0223011499999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "scenario_id": "qa-09",
+  "description": "締め処理で業務日付を使いたい。OS日時ではなく業務上の日付を取得する方法がわからない。",
+  "input": "OS日時ではなく業務上の日付を取得する方法はあるか？締め処理でシステム日時と業務日付を分けて管理したい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "BusinessDateUtilを使用して業務日付を取得する",
+    "業務日付管理機能はデータベースで複数の業務日付を管理し、BasicBusinessDateProviderの設定が必要"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both facts from the Expected Output checklist. It explicitly demonstrates BusinessDateUtil usage with code examples (BusinessDateUtil.getDate(), BusinessDateUtil.getDate(\"batch\"), BusinessDateUtil.getAllDate()), and it clearly explains that the business date management feature manages multiple business dates in a database using BasicBusinessDateProvider with XML configuration examples. Both expected facts are fully addressed and not contradicted."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about obtaining business dates separately from OS system dates and managing them distinctly during closing processes. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9333333333333333,
+      "reason": "The score is 0.93 because the actual output incorrectly references `BusinessDateProvider.setDate()` for updating business dates, when the retrieval context specifies that `BasicBusinessDateProvider` is the correct class to use via the `setDate` method."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-date.json:s5",
+      "component/libraries/libraries-date.json:s6",
+      "component/libraries/libraries-date.json:s7",
+      "component/libraries/libraries-date.json:s8",
+      "component/libraries/libraries-date.json:s9",
+      "component/libraries/libraries-date.json:s10",
+      "component/libraries/libraries-date.json:s2",
+      "component/libraries/libraries-date.json:s3",
+      "javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json:s9",
+      "javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json:s10",
+      "javadoc/javadoc-nablarch-core-date-SystemTimeUtil.json:s11",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s6",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s7",
+      "javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s8"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 168507,
+    "duration_api_ms": 168456,
+    "num_turns": 12,
+    "total_cost_usd": 0.9573409,
+    "usage": {
+      "input_tokens": 13,
+      "output_tokens": 10968,
+      "cache_read_input_tokens": 1241148,
+      "cache_creation_input_tokens": 111058
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3800,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00397,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 13,
+        "outputTokens": 10968,
+        "cacheReadInputTokens": 1241148,
+        "cacheCreationInputTokens": 111058,
+        "webSearchRequests": 0,
+        "costUSD": 0.9533709,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

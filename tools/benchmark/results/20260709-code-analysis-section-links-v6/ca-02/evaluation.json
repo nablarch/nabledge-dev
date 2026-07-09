@@ -1,0 +1,63 @@
+{
+  "scenario_id": "ca-02",
+  "description": "Nablarch Webアプリケーションサンプルの認証アクションクラス。ログイン・ログアウト処理を担当し、セッション管理と認証処理を行う。",
+  "input": "AuthenticationAction",
+  "purpose": "",
+  "expected_facts": [
+    "AuthenticationUtil.authenticate()を使って認証処理を行っている",
+    "SessionUtil.changeId()でセッションIDを変更している",
+    "UniversalDao.findBySqlFile()を使ってDBからユーザー情報を検索している",
+    "@OnErrorアノテーションでエラー時の遷移先を制御している"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers all four expected facts. (1) AuthenticationUtil.authenticate() usage is explicitly described in the login flow and component sections. (2) SessionUtil.changeId() for session ID change is documented in detail, including the security rationale. (3) UniversalDao.findBySqlFile() for DB user lookup is shown in code examples and flow descriptions. (4) @OnError annotation for error transition control is explained with the specific annotation syntax and behavior. All four expected facts are fully covered."
+    },
+    "answer_relevancy": {
+      "score": 0.9693877551020408,
+      "reason": "The score is 0.97 because the response is largely relevant and informative about AuthenticationAction, but it includes minor irrelevant details such as benchmark mode analysis duration, output file path metadata, and workflow/skill generation information, which don't contribute to understanding AuthenticationAction itself."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": []
+  },
+  "metrics": {
+    "duration_ms": 189855,
+    "duration_api_ms": 189291,
+    "num_turns": 26,
+    "total_cost_usd": 0.7694487500000001,
+    "usage": {
+      "input_tokens": 27,
+      "output_tokens": 11770,
+      "cache_read_input_tokens": 1378965,
+      "cache_creation_input_tokens": 45515
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 8327,
+        "outputTokens": 24,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.008447,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 27,
+        "outputTokens": 11770,
+        "cacheReadInputTokens": 1378965,
+        "cacheCreationInputTokens": 45515,
+        "webSearchRequests": 0,
+        "costUSD": 0.7610017500000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

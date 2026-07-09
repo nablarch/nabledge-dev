@@ -1,0 +1,77 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "source": "both",
+        "reason": "「現在のトランザクションとは異なるトランザクションでSQLを実行する」というセクション(s29)が質問に直接対応する"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "source": "both",
+        "reason": "「現在のトランザクションとは異なるトランザクションで実行する」(s20)があり、ユニバーサルDAOでの別トランザクション実行方法を説明している"
+      },
+      {
+        "path": "component/adapters/adapters-doma-adaptor.json",
+        "source": "both",
+        "reason": "「別トランザクションで実行する」(s8)があり、Domaアダプタでの別トランザクション実行方法を説明している"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/handlers/handlers-transaction-management-handler.json",
+        "reason": "トランザクション制御ハンドラの設定に関するページで、別トランザクション実行の具体的な方法は記載されていない"
+      },
+      {
+        "path": "component/libraries/libraries-transaction.json",
+        "reason": "トランザクション管理の設定に関するページで、別トランザクション実行の具体的な実装例は記載されていない"
+      },
+      {
+        "path": "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json",
+        "reason": "Nablarchバッチの機能詳細ページで、別トランザクション実行については直接言及していない"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-database.json",
+        "section_id": "s29",
+        "relevance": "high",
+        "reason": "質問の要件「業務トランザクションとは別のトランザクションでSQLを実行」に直接対応する実装方法とコード例を含む"
+      },
+      {
+        "file": "component/libraries/libraries-universal-dao.json",
+        "section_id": "s20",
+        "relevance": "high",
+        "reason": "ユニバーサルDAOを使った別トランザクション実行方法のコード例を含む"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/adapters/adapters-doma-adaptor.json",
+        "section_id": "s8",
+        "reason": "Domaアダプタ固有の方法であり、質問はNablarchバッチでの標準的な実装を尋ねているため、今回の質問への主要な回答には含めない"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-database.json:s29",
+      "component/libraries/libraries-universal-dao.json:s20"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-database.json:s29",
+          "reason": "SimpleDbTransactionManagerの定義方法とSimpleDbTransactionExecutorを使った実装例を回答に使用"
+        },
+        {
+          "ref": "component/libraries/libraries-universal-dao.json:s20",
+          "reason": "UniversalDao.Transactionを使ったユニバーサルDAO向けの別トランザクション実行例を回答に使用"
+        }
+      ],
+      "unused": []
+    }
+  }
+}

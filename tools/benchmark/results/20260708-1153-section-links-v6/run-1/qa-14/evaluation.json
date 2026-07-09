@@ -1,0 +1,83 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "purpose": "バージョンアップしたい",
+  "expected_facts": [
+    "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある",
+    "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.5,
+      "reason": "The Expected Output contains two distinct facts: (1) Nablarch 6 supports Jakarta EE 10 and requires a Jakarta EE 10-compatible application server, and (2) Java EE specification names and package names have been changed to Jakarta EE ones. The Actual Output clearly covers fact (2) in extensive detail, including namespace changes from javax.* to jakarta.*, dependency updates, and XML schema changes. However, fact (1) — specifically that the application must run on a Jakarta EE 10-compatible application server — is not explicitly mentioned in the Actual Output. The Actual Output focuses on migration steps rather than the runtime requirement of a Jakarta EE 10 application server. Thus one of the two expected facts is missing."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about changes affecting applications when upgrading from Nablarch 5 to Nablarch 6 in the context of Jakarta EE 10 compatibility. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9666666666666667,
+      "reason": "The score is 0.97 because the actual output is largely faithful to the retrieval context, with only one minor contradiction: the actual output claims the web-app version changes from 3.1 to 6.0, which cannot be verified from the retrieval context. While the new namespace https://jakarta.ee/xml/ns/jakartaee is correctly stated, the specific version 6.0 for web-app is not confirmed by the retrieval context."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "about/migration/migration-migration.json:s2",
+      "about/migration/migration-migration.json:s3",
+      "about/migration/migration-migration.json:s5",
+      "about/migration/migration-migration.json:s9",
+      "about/migration/migration-migration.json:s10",
+      "about/migration/migration-migration.json:s13",
+      "about/migration/migration-migration.json:s14",
+      "about/migration/migration-migration.json:s16",
+      "about/migration/migration-migration.json:s17",
+      "about/migration/migration-migration.json:s18",
+      "about/migration/migration-migration.json:s19",
+      "about/migration/migration-migration.json:s20",
+      "about/migration/migration-migration.json:s24",
+      "about/migration/migration-migration.json:s25",
+      "about/migration/migration-migration.json:s26",
+      "about/migration/migration-migration.json:s27",
+      "about/migration/migration-migration.json:s28",
+      "about/migration/migration-migration.json:s29",
+      "about/migration/migration-migration.json:s31",
+      "releases/releases/releases-nablarch6-releasenote-6.json:s2",
+      "releases/releases/releases-nablarch6-releasenote-6.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 146753,
+    "duration_api_ms": 145669,
+    "num_turns": 9,
+    "total_cost_usd": 0.7427435,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 10432,
+      "cache_read_input_tokens": 606195,
+      "cache_creation_input_tokens": 106768
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3810,
+        "outputTokens": 37,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003995,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 10432,
+        "cacheReadInputTokens": 606195,
+        "cacheCreationInputTokens": 106768,
+        "webSearchRequests": 0,
+        "costUSD": 0.7387485,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

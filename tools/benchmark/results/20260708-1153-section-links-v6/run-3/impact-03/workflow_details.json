@@ -1,0 +1,121 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "component/libraries/libraries-bean-validation.json",
+        "source": "index",
+        "reason": "Bean Validationの機能ページで、DBとの相関バリデーション(s12)が直接質問に答える"
+      },
+      {
+        "path": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスでのBean Validationハンドラで、@Validアノテーションの使い方を説明している"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "source": "index",
+        "reason": "RESTfulウェブサービスの機能詳細で、入力値チェックの方針が記載されている"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "component/libraries/libraries-database.json",
+        "reason": "DB操作自体の方法は質問の焦点ではなく、バリデーション設計の問いへの回答にはならない"
+      },
+      {
+        "path": "component/libraries/libraries-universal-dao.json",
+        "reason": "DBアクセス方法の詳細はバリデーション設計の回答に不要"
+      },
+      {
+        "path": "processing-pattern/restful-web-service/restful-web-service-architecture.json",
+        "reason": "アーキテクチャ概要は実装方法の回答に不要"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s12",
+        "relevance": "high",
+        "reason": "DBとの相関バリデーションを業務アクション側で実装すべき理由を直接述べており、質問の核心に答える"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s13",
+        "relevance": "high",
+        "reason": "アクションでのバリデーションエラーを特定項目に紐づける方法（ValidationUtil.createMessageForProperty）を示す"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s4",
+        "relevance": "high",
+        "reason": "RESTfulウェブサービスで@ValidアノテーションによるBean Validationの実行方法を示す"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s17",
+        "relevance": "partial",
+        "reason": "RESTfulウェブサービスの入力値チェック方法への参照を示す"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s11",
+        "relevance": "partial",
+        "reason": "相関バリデーションの一般的な実装パターンの参考として"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "processing-pattern/restful-web-service/restful-web-service-feature-details.json",
+        "section_id": "s2",
+        "reason": "入力値チェックの概要だけで具体的な実装情報がなく他セクションで補える"
+      },
+      {
+        "file": "component/libraries/libraries-bean-validation.json",
+        "section_id": "s24",
+        "reason": "カスタムバリデータの追加方法だが、質問の方針（DB検索をBVに入れるべきか）への答えはs12にある"
+      },
+      {
+        "file": "component/handlers/handlers-jaxrs-bean-validation-handler.json",
+        "section_id": "s5",
+        "reason": "グループ指定は今回の質問に不要"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "component/libraries/libraries-bean-validation.json:s12",
+      "component/libraries/libraries-bean-validation.json:s13",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s11"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s12",
+          "reason": "DBとの相関バリデーションをBV内でやってはいけない理由（脆弱性リスク）を直接引用した"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s13",
+          "reason": "アクション側でエラーを特定項目に紐づける実装例を引用した"
+        },
+        {
+          "ref": "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+          "reason": "@Validアノテーションの使用例を引用した"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s17",
+          "reason": "s4で十分にカバーされているため不要"
+        },
+        {
+          "ref": "component/libraries/libraries-bean-validation.json:s11",
+          "reason": "相関バリデーションの一般説明は今回不要で回答の焦点はDB相関のみ"
+        }
+      ]
+    }
+  }
+}

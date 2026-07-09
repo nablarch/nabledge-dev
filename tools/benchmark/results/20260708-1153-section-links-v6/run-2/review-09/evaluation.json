@@ -1,0 +1,69 @@
+{
+  "scenario_id": "review-09",
+  "description": "セキュリティ診断でContent Security Policyを有効にしろと指摘された。NablarchのWeb画面でCSPを設定したい。",
+  "input": "Content Security Policyを有効にしたい。NablarchのWeb画面でCSPを設定するにはどうすればいい？",
+  "purpose": "セキュリティ対応したい",
+  "expected_facts": [
+    "セキュアハンドラとContentSecurityPolicyHeaderとカスタムタグのCSP対応を組み合わせてCSPを有効にする"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The expected output contains a single high-level fact: that CSP can be enabled by combining SecureHandler with ContentSecurityPolicyHeader and custom tag CSP support. The actual output explicitly covers all three components mentioned — SecureHandler configuration with ContentSecurityPolicyHeader, nonce generation via generateCspNonce, and JSP custom tag CSP features (n:form, n:script, n:cspNonce). The actual output fully addresses and expands upon the expected fact with detailed implementation patterns, making the core fact clearly present and well-supported."
+    },
+    "answer_relevancy": {
+      "score": 0.9130434782608695,
+      "reason": "The score is 0.91 because the actual output is largely relevant and provides useful information about configuring CSP in Nablarch's Web UI. However, it loses some points for including two internal file path references that do not contribute substantive information to answering the question about CSP configuration."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-secure-handler.json:s6",
+      "component/handlers/handlers-secure-handler.json:s7",
+      "component/handlers/handlers-secure-handler.json:s8",
+      "component/handlers/handlers-secure-handler.json:s9",
+      "component/handlers/handlers-secure-handler.json:s3",
+      "component/libraries/libraries-tag.json:s38",
+      "component/libraries/libraries-tag.json:s39",
+      "processing-pattern/web-application/web-application-feature-details.json:s21"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 135046,
+    "duration_api_ms": 134115,
+    "num_turns": 10,
+    "total_cost_usd": 0.8481545,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 8217,
+      "cache_read_input_tokens": 879725,
+      "cache_creation_input_tokens": 121860
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3822,
+        "outputTokens": 31,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003977,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 10,
+        "outputTokens": 8217,
+        "cacheReadInputTokens": 879725,
+        "cacheCreationInputTokens": 121860,
+        "webSearchRequests": 0,
+        "costUSD": 0.8441775,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

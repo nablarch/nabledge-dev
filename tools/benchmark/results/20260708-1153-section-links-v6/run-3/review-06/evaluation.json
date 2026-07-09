@@ -1,0 +1,73 @@
+{
+  "scenario_id": "review-06",
+  "description": "REST APIのリソースクラスでJaxRsHttpRequestからクエリーパラメータを取得する処理を書いている。URLパスの一部をパスパラメータとして使う箇所もある。",
+  "input": "REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る",
+    "クエリーパラメータはJaxRsHttpRequestから取得する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts comprehensively. It explicitly explains that path parameters are defined in routing configuration (routes.xml with path variables like ':id' or '@Path' annotations with '{param}') and received in resource classes via JaxRsHttpRequest#getPathParam(). It also clearly shows that query parameters are obtained from JaxRsHttpRequest via getParamMap(). Both key facts from the Expected Output are fully addressed with detailed code examples."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is fully relevant to the input, addressing REST API URL path parameter handling, query parameter passing, and routing configuration without any irrelevant statements. Great job!"
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s1",
+      "component/adapters/adapters-router-adaptor.json:s3",
+      "component/adapters/adapters-router-adaptor.json:s4",
+      "component/adapters/adapters-router-adaptor.json:s6",
+      "component/adapters/adapters-router-adaptor.json:s7",
+      "component/adapters/adapters-router-adaptor.json:s8",
+      "component/adapters/adapters-router-adaptor.json:s9",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 154542,
+    "duration_api_ms": 153720,
+    "num_turns": 10,
+    "total_cost_usd": 0.8677926999999999,
+    "usage": {
+      "input_tokens": 11,
+      "output_tokens": 11119,
+      "cache_read_input_tokens": 784929,
+      "cache_creation_input_tokens": 123052
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3856,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.004051,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 11,
+        "outputTokens": 11119,
+        "cacheReadInputTokens": 784929,
+        "cacheCreationInputTokens": 123052,
+        "webSearchRequests": 0,
+        "costUSD": 0.8637416999999998,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

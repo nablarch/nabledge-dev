@@ -1,0 +1,66 @@
+{
+  "scenario_id": "qa-18",
+  "description": "BeanUtilを使ってJava BeansオブジェクトのプロパティをAPIで取得したい。getPropertyメソッドの使い方を知りたい。",
+  "input": "BeanUtil の getProperty で Bean のプロパティ値を取得する方法を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "getProperty(Object bean, String propertyName)でJavaBeansオブジェクトまたはレコードから指定したプロパティの値を取得する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output fully covers the core fact from the Expected Output: using `getProperty(Object bean, String propertyName)` to retrieve a property value from a JavaBeans object or record. It explicitly mentions the method signature, its use with JavaBeans, and notes that records are also supported. The Actual Output goes well beyond the Expected Output with additional details about type conversion, nested properties, and exceptions, but all expected facts are clearly addressed."
+    },
+    "answer_relevancy": {
+      "score": 0.9230769230769231,
+      "reason": "The score is 0.92 because the response is largely relevant and addresses how to use BeanUtil's getProperty to retrieve Bean property values. However, it loses some points for including an irrelevant statement about setProperty and copy operations on records, which was not asked about in the question."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-bean-util.json:s2",
+      "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s14",
+      "javadoc/javadoc-nablarch-core-beans-BeanUtil.json:s15",
+      "component/libraries/libraries-bean-util.json:s3",
+      "component/libraries/libraries-bean-util.json:s9"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 111442,
+    "duration_api_ms": 110390,
+    "num_turns": 11,
+    "total_cost_usd": 0.828832,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 6398,
+      "cache_read_input_tokens": 990060,
+      "cache_creation_input_tokens": 115168
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3758,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003928,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 12,
+        "outputTokens": 6398,
+        "cacheReadInputTokens": 990060,
+        "cacheCreationInputTokens": 115168,
+        "webSearchRequests": 0,
+        "costUSD": 0.8249040000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

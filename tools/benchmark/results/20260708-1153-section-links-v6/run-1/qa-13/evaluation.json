@@ -1,0 +1,67 @@
+{
+  "scenario_id": "qa-13",
+  "description": "REST APIでフォームから受け取ったデータをDBに登録する処理を実装したい。",
+  "input": "フォームから受け取ったデータをDBに登録する処理の実装パターンを知りたい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "REST APIではFormクラスで値を受け付け、@Validでバリデーション後にUniversalDao.insertで登録する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers all key facts present in the Expected Output: (1) using a Form class to receive values, (2) using @Valid for validation, and (3) using UniversalDao.insert for registration. The Actual Output goes into significantly more detail but does not omit or contradict any of the expected facts. All three core concepts are clearly present and accurately described."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about implementation patterns for registering form data into a database, with no irrelevant statements found. Great job staying focused and on-topic!"
+    },
+    "faithfulness": {
+      "score": 0.9166666666666666,
+      "reason": "The score is 0.92 because the actual output overstates the risk of using non-String properties in form classes, claiming they will cause unexpected exceptions in all cases, whereas the retrieval context only states that the Bean conversion process 'may fail' when an invalid value is sent — making it a conditional risk rather than an absolute rule."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "processing-pattern/restful-web-service/restful-web-service-getting-started-create.json:s1",
+      "component/handlers/handlers-jaxrs-bean-validation-handler.json:s4",
+      "component/libraries/libraries-bean-validation.json:s17",
+      "component/libraries/libraries-bean-validation.json:s8",
+      "component/handlers/handlers-body-convert-handler.json:s5",
+      "component/adapters/adapters-jaxrs-adaptor.json:s2"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 200488,
+    "duration_api_ms": 198616,
+    "num_turns": 13,
+    "total_cost_usd": 1.1788029999999998,
+    "usage": {
+      "input_tokens": 14,
+      "output_tokens": 12681,
+      "cache_read_input_tokens": 1461210,
+      "cache_creation_input_tokens": 145652
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3798,
+        "outputTokens": 38,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003988,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 14,
+        "outputTokens": 12681,
+        "cacheReadInputTokens": 1461210,
+        "cacheCreationInputTokens": 145652,
+        "webSearchRequests": 0,
+        "costUSD": 1.1748149999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

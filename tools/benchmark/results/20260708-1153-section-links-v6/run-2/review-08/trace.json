@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 162839,
+  "duration_api_ms": 162126,
+  "ttft_ms": 3739,
+  "ttft_stream_ms": 2015,
+  "time_to_request_ms": 408,
+  "num_turns": 7,
+  "result": "### Answer\n\n**結論**: 複数タブでの画面操作を**許容しない**場合はDBストアを、**許容する**場合はHIDDENストアを使用する。\n\n**根拠**:\n\n選択基準の一覧を以下に示す。\n\n| 用途 | セッションストア |\n|---|---|\n| 入力～確認～完了画面間で入力情報の保持（複数タブを許容しない） | DBストア |\n| 入力～確認～完了画面間で入力情報の保持（複数タブを許容する） | HIDDENストア |\n\n**DBストアの特長**:\n- 保存先: データベース上のテーブル\n- アプリケーションサーバが停止した場合でもセッション変数の復元が可能\n- 同一セッションの処理が複数スレッドで実行された場合、後勝ちとなる（先に保存されたデータは消失する）\n\n**HIDDENストアの特長**:\n- 保存先: クライアントサイド（`hidden` タグを使用して画面間でセッション変数を引き回して実現）\n- 複数タブでの画面操作を許容できる\n- 同一セッションの処理が複数スレッドで実行された場合、セッションのデータはそれぞれのスレッドに紐付けて保存される\n\nHIDDENストアを使用する場合、入力・確認画面のJSPに `hiddenStoreタグ` を使用する。\n\n```jsp\n<n:form>\n  <!--\n    name属性にはコンポーネント設定ファイルに定義した、\n    HiddenStoreのparameterNameプロパティの値を設定\n  -->\n  <n:hiddenStore name=\"nablarch_hiddenStore\" />\n  <!-- その他のタグは省略 -->\n</n:form>\n```\n\n**注意点**:\n- セッションストアには、FormではなくEntity（業務ロジックを実行するためのオブジェクト）を格納すること。Formを格納すると密結合なソースが生まれる可能性があり、バリデーション前の信頼できない値を保持するセキュリティリスクもある。\n- DBストアはアプリケーションサーバの冗長構成時も安定して動作するが、ブラウザが閉じられた場合にテーブル上にセッション情報が残ることがあるため、期限切れの情報を定期的に削除する必要がある。\n- HIDDENストア使用時、セッション変数保存ハンドラはマルチパートリクエストハンドラより後ろ、かつ内部フォーワードハンドラより前に配置すること。\n\n参照:\n- セッションストア\n  .claude/skills/nabledge-6/docs/component/libraries/libraries-session-store.md\n  入力～確認～完了画面間で入力情報を保持する\n  セッションストアの特長と選択基準\n- セッション変数保存ハンドラ\n  .claude/skills/nabledge-6/docs/component/handlers/handlers-SessionStoreHandler.md\n  制約\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-session-store.json\", \"source\": \"index\", \"reason\": \"セッションストアページは質問のトピック（DBストア・HIDDENストアの使い分け）を直接カバーしており、「入力～確認～完了画面間で入力情報を保持する」セクションが含まれる\"},\n      {\"path\": \"component/handlers/handlers-SessionStoreHandler.json\", \"source\": \"both\", \"reason\": \"セッション変数保存ハンドラのページで、セッションストアの動作とHIDDENストア使用時のハンドラ配置制約が記載されている\"},\n      {\"path\": \"component/adapters/adapters-redisstore-lettuce-adaptor.json\", \"source\": \"index\", \"reason\": \"セッションストアの保存先候補として記載されているため候補に含めたが、今回の質問の焦点（DBストアとHIDDENストアの使い分け）とは直接関係しないためフィルタ対象\"},\n      {\"path\": \"component/libraries/libraries-tag.json\", \"source\": \"index\", \"reason\": \"hiddenStoreタグなどHIDDENストア使用時のJSP実装に関する情報が含まれる\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-stateless-web-app.json\", \"reason\": \"ステートレス化の説明であり、セッションストアの使い分け選択基準の説明ではないためスキップ\"},\n      {\"path\": \"component/libraries/libraries-tag-reference.json\", \"reason\": \"タグリファレンスの詳細であり、hiddenStoreタグの属性詳細は今回の質問の焦点ではないためスキップ\"},\n      {\"path\": \"processing-pattern/web-application/web-application-feature-details.json\", \"reason\": \"入力データ保持(s9)へのリンクが含まれるが、ライブラリページで十分な情報が得られるためスキップ\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s9\", \"relevance\": \"high\", \"reason\": \"入力～確認～完了画面間での使い分け（複数タブ許容か否かでDBストアかHIDDENストアを選ぶ）を直接説明しており、質問に完全に答えるセクション\"},\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s16\", \"relevance\": \"high\", \"reason\": \"各ストアの特長と選択基準の一覧表が含まれており、DBストアとHIDDENストアの特性の違いを理解するために必須\"},\n      {\"file\": \"component/handlers/handlers-SessionStoreHandler.json\", \"section_id\": \"s3\", \"relevance\": \"partial\", \"reason\": \"HIDDENストア使用時のハンドラ配置制約（マルチパートリクエストハンドラより後ろ、内部フォーワードハンドラより前）を説明する背景情報\"},\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s8\", \"relevance\": \"partial\", \"reason\": \"DBストアの設定方法とUSER_SESSIONテーブルの定義など、DBストアを使う際の設定背景を提供する\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s2\", \"reason\": \"保存先の種類の概要で、s16で十分にカバーされているためスキップ\"},\n      {\"file\": \"component/libraries/libraries-session-store.json\", \"section_id\": \"s12\", \"reason\": \"HIDDENストアの暗号化設定のカスタマイズで、使い分けの判断基準の説明には直接関係しない\"},\n      {\"file\": \"component/handlers/handlers-SessionStoreHandler.json\", \"section_id\": \"s4\", \"reason\": \"SessionStoreHandlerの設定方法で、使い分けの判断基準の説明には直接関係しない\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-session-store.json:s9\",\n      \"component/libraries/libraries-session-store.json:s16\",\n      \"component/libraries/libraries-session-store.json:s2\",\n      \"component/handlers/handlers-SessionStoreHandler.json:s3\",\n      \"component/libraries/libraries-session-store.json:s8\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/libraries/libraries-session-store.json:s9\", \"reason\": \"複数タブ許容か否かによるDBストアとHIDDENストアの使い分けを説明するために使用\"},\n        {\"ref\": \"component/libraries/libraries-session-store.json:s16\", \"reason\": \"DBストアとHIDDENストアそれぞれの特長と選択基準の一覧表を提供するために使用\"},\n        {\"ref\": \"component/handlers/handlers-SessionStoreHandler.json:s3\", \"reason\": \"HIDDENストア使用時の注意点（ハンドラ配置制約）を説明するために使用\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"component/libraries/libraries-session-store.json:s2\", \"reason\": \"s16で十分カバーされており、追加情報がないためアンサーに未使用\"},\n        {\"ref\": \"component/libraries/libraries-session-store.json:s8\", \"reason\": \"DBストアの設定詳細は今回の質問（仕組み・動作理解）では不要のためアンサーに未使用\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "a8a4168b-84a9-4424-8f1a-e8040e47053c",
+  "total_cost_usd": 0.75411505,
+  "usage": {
+    "input_tokens": 7,
+    "cache_creation_input_tokens": 120775,
+    "cache_read_input_tokens": 477926,
+    "output_tokens": 10253,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 120775
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3850,
+      "outputTokens": 33,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.004015,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 7,
+      "outputTokens": 10253,
+      "cacheReadInputTokens": 477926,
+      "cacheCreationInputTokens": 120775,
+      "webSearchRequests": 0,
+      "costUSD": 0.7501000499999999,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "694fcf57-b9f4-43b1-a88c-f172cb76bead"
+}

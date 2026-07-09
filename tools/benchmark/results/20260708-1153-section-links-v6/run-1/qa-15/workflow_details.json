@@ -1,0 +1,126 @@
+{
+  "step3": {
+    "selected_pages": [
+      {
+        "path": "check/security-check/security-check-2.チェックリスト.json",
+        "source": "index",
+        "reason": "s5にXSSのチェックリストが含まれており、セキュリティ対応したいという目的に直接対応する"
+      },
+      {
+        "path": "component/libraries/libraries-tag.json",
+        "source": "index",
+        "reason": "カスタムタグのHTMLエスケープ（サニタイジング）機能に関する詳細情報を含む"
+      },
+      {
+        "path": "component/handlers/handlers-secure-handler.json",
+        "source": "index",
+        "reason": "セキュアハンドラはXSS対策の保険的対策として記載されており、レスポンスヘッダ設定情報を含む"
+      },
+      {
+        "path": "component/libraries/libraries-tag-reference.json",
+        "source": "index",
+        "reason": "タグリファレンスにrawWriteタグなど個別タグの詳細が含まれる可能性がある"
+      }
+    ],
+    "excluded_pages": [
+      {
+        "path": "about/about-nablarch/about-nablarch-about-nablarch.json",
+        "reason": "一般的な概要のみで、XSS対策の具体的情報なし"
+      },
+      {
+        "path": "check/security-check/security-check-1.概要.json",
+        "reason": "概要のみでチェックリストの詳細はない"
+      },
+      {
+        "path": "processing-pattern/web-application/web-application-feature-details.json",
+        "reason": "ウェブアプリ全般の機能詳細であり、XSS固有の情報はチェックリストで網羅される"
+      },
+      {
+        "path": "development-tools/toolbox/toolbox-01-JspStaticAnalysis.json",
+        "source": "index",
+        "reason": "JSP静的解析ツールの詳細を含むが、主要なXSS対策情報はセキュリティチェックリストと同ページに既にある"
+      }
+    ],
+    "selected_sections": [
+      {
+        "file": "check/security-check/security-check-2.チェックリスト.json",
+        "section_id": "s5",
+        "relevance": "high",
+        "reason": "クロスサイト・スクリプティングの全対策項目とNablarchの対応状況が直接記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s2",
+        "relevance": "high",
+        "reason": "カスタムタグのHTMLエスケープ漏れを防ぐ機能の概要とJavaScript部分の制限が記載されている"
+      },
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s50",
+        "relevance": "high",
+        "reason": "HTMLエスケープの具体的な変換内容とEL式の使用禁止が記載されている"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s4",
+        "relevance": "partial",
+        "reason": "SecureHandlerのデフォルトヘッダ設定の変更方法と各クラス名を確認するため"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s6",
+        "relevance": "partial",
+        "reason": "CSP対応の仕組みを補足する情報として有用"
+      }
+    ],
+    "excluded_sections": [
+      {
+        "file": "component/libraries/libraries-tag.json",
+        "section_id": "s1",
+        "reason": "機能概要のみで、個別のHTMLエスケープ詳細はs2で網羅される"
+      },
+      {
+        "file": "component/handlers/handlers-secure-handler.json",
+        "section_id": "s5",
+        "reason": "デフォルト以外のレスポンスヘッダ設定であり、XSS主対策からは外れる"
+      }
+    ]
+  },
+  "step4": {
+    "read_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s5",
+      "component/libraries/libraries-tag.json:s2",
+      "component/libraries/libraries-tag.json:s50",
+      "component/handlers/handlers-secure-handler.json:s4",
+      "component/handlers/handlers-secure-handler.json:s6"
+    ]
+  },
+  "step8": {
+    "answer_sections": {
+      "used": [
+        {
+          "ref": "check/security-check/security-check-2.チェックリスト.json:s5",
+          "reason": "XSS対策の全項目とNablarchの対応状況（カスタムタグ、セキュアハンドラ、入力値チェック等）の根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s2",
+          "reason": "カスタムタグのHTMLエスケープ機能とJavaScript部分の制限に関する根拠として使用"
+        },
+        {
+          "ref": "component/libraries/libraries-tag.json:s50",
+          "reason": "HTMLエスケープの具体的変換内容とEL式使用禁止の根拠として使用"
+        },
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s6",
+          "reason": "CSP対応の根拠として使用"
+        }
+      ],
+      "unused": [
+        {
+          "ref": "component/handlers/handlers-secure-handler.json:s4",
+          "reason": "SecureHandlerのヘッダ変更設定詳細は回答の範囲で不要であったため省略"
+        }
+      ]
+    }
+  }
+}

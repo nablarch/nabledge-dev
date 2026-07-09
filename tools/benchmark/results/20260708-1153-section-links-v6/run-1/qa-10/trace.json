@@ -1,0 +1,85 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 149048,
+  "duration_api_ms": 147857,
+  "ttft_ms": 4421,
+  "ttft_stream_ms": 2858,
+  "time_to_request_ms": 788,
+  "num_turns": 13,
+  "result": "必要なセクションを確認できました。回答を生成します。\n\n### Answer\n\n**結論**: JDBCラッパーの `$if` 構文を使い、SQLファイルに可変条件を記述する。Beanプロパティがnull/空文字列の場合にその条件が自動的に除外される。\n\n**根拠**:\n\nSQLファイルに以下の記法で可変条件を定義する。\n\n```sql\nSEARCH_PROJECT =\nSELECT\n    PROJECT_ID,\n    PROJECT_NAME,\n    PROJECT_TYPE,\n    PROJECT_CLASS,\n    PROJECT_START_DATE\nFROM\n    PROJECT\nWHERE\n    USER_ID = :userId\n    AND $if(projectName) {PROJECT_NAME LIKE :%projectName%}\n    AND $if(projectType) {PROJECT_TYPE = :projectType}\n    AND $if(projectClass) {PROJECT_CLASS IN (:projectClass[])}\n    AND $if(projectStartDateBegin) {PROJECT_START_DATE >= :projectStartDateBegin}\n```\n\n`$if (プロパティ名) {SQL条件}` の意味:\n- 対応するBeanプロパティが **null** または **空文字列**（String型の場合）→ 条件除外\n- 配列・Collectionの場合は **null** または **サイズ0** → 条件除外\n- それ以外（値あり）→ 条件に含める\n\n実装側では、Beanを条件として `prepareParameterizedSqlStatementBySqlId` の第二引数に渡す。\n\n```java\n// beanを生成しプロパティに値を設定（入力のなかった項目はnullのまま）\nUserSearchCondition condition = new UserSearchCondition();\ncondition.setUserName(\"なまえ\"); // このプロパティのみ値あり\n\nAppDbConnection connection = DbConnectionContext.getConnection();\n\n// 第二引数にBeanを渡すことでSQLの可変条件が組み立てられる\nParameterizedSqlPStatement statement = connection.prepareParameterizedSqlStatementBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#searchUser\", condition);\n\nSqlResultSet result = statement.retrieve(condition);\n```\n\nユニバーサルDAOで検索する場合も同様のSQL（SQLIDで指定）が使える。\n\n```java\nreturn UniversalDao\n        .page(searchCondition.getPageNumber())\n        .per(20L)\n        .findAllBySqlFile(Project.class, \"SEARCH_PROJECT\", searchCondition);\n```\n\nin句を可変にする場合は `:プロパティ名[]` と `$if` を組み合わせる。\n\n```sql\nAND $if(projectClass) {PROJECT_CLASS IN (:projectClass[])}\n```\n\nBeanの該当プロパティは配列か `java.util.Collection` 型で定義する。\n\n**注意点**:\n- `$if` 構文は **where句のみ** で使用可能。`$if` 内に `$if` をネストできない。\n- この機能は検索画面のような「ユーザ入力内容によって条件が変わる」用途向け。条件だけが異なる複数のSQLを1つに共通化する目的での使用は推奨されない（変更時に意図しない影響が発生するリスクがある）。\n\n参照:\n- データベースアクセス(JDBCラッパー)\n  .claude/skills/nabledge-6/docs/component/libraries/libraries-database.md\n  実行時のBeanオブジェクトの状態を元にSQL文を動的に構築できる\n  可変条件を持つSQLを実行する\n  in句の条件数が可変となるSQLを実行する\n- 検索機能の作成\n  .claude/skills/nabledge-6/docs/processing-pattern/web-application/web-application-getting-started-project-search.md\n  検索する\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_pages\": [\n      {\"path\": \"component/libraries/libraries-database.json\", \"source\": \"index\", \"reason\": \"機能概要に「実行時のBeanオブジェクトの状態を元にSQL文を動的に構築できる」「可変条件を持つSQLを実行する」「in句の条件数が可変となるSQLを実行する」があり、質問のメイン機能に直接対応する\"},\n      {\"path\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"source\": \"index\", \"reason\": \"ウェブアプリケーション処理方式の検索機能の実装例で、$if構文を使った可変条件の実践例が含まれる\"}\n    ],\n    \"excluded_pages\": [\n      {\"path\": \"component/libraries/libraries-universal-dao.json\", \"source\": \"index\", \"reason\": \"ユニバーサルDAOはSQL実行に使えるが、可変条件の記法は$if構文(JDBCラッパーのlibrary-database.jsonが担当)であり、secondary候補のため枠を他に割り当てた\"},\n      {\"path\": \"component/libraries/libraries-database-management.json\", \"source\": \"index\", \"reason\": \"データベースアクセスの管理ページで、可変条件の具体的な実装方法は含まれない\"}\n    ],\n    \"selected_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s6\", \"relevance\": \"high\", \"reason\": \"「実行時のBeanオブジェクトの状態を元にSQL文を動的に構築できる」で、可変条件・in句・order byの動的構築を概説する導入セクション\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s21\", \"relevance\": \"high\", \"reason\": \"「可変条件を持つSQLを実行する」で$if構文の記法・除外ルール・実装例を詳細に解説する、質問への直接回答となるセクション\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s22\", \"relevance\": \"high\", \"reason\": \"「in句の条件数が可変となるSQLを実行する」でin句の動的構築(:prop[])の記法と注意点を解説し、検索条件の典型パターンの一つ\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s16\", \"relevance\": \"partial\", \"reason\": \"「Beanオブジェクトを入力としてSQLを実行する」で、$if構文の前提となるBeanバインドの仕組みを解説する\"},\n      {\"file\": \"processing-pattern/web-application/web-application-getting-started-project-search.json\", \"section_id\": \"s1\", \"relevance\": \"high\", \"reason\": \"ウェブアプリケーション検索機能の実装例で$if・$sort・in句([])を組み合わせた実践的なSQL全体例とUniversalDao呼び出し方法を示す\"}\n    ],\n    \"excluded_sections\": [\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s23\", \"relevance\": \"partial\", \"reason\": \"$sort構文は質問（入力条件の動的変更）の主旨ではないため除外\"},\n      {\"file\": \"component/libraries/libraries-database.json\", \"section_id\": \"s19\", \"relevance\": \"partial\", \"reason\": \"like検索のエスケープは補足的知識だが、質問の中心ではないため除外\"}\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-database.json:s6\",\n      \"component/libraries/libraries-database.json:s21\",\n      \"component/libraries/libraries-database.json:s22\",\n      \"component/libraries/libraries-database.json:s16\",\n      \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        {\"ref\": \"component/libraries/libraries-database.json:s21\", \"reason\": \"$if構文の記法・除外ルール・実装例を根拠として使用した\"},\n        {\"ref\": \"component/libraries/libraries-database.json:s22\", \"reason\": \"in句の可変条件(:prop[])の記法の根拠として使用した\"},\n        {\"ref\": \"component/libraries/libraries-database.json:s6\", \"reason\": \"動的SQL構築機能の概要説明の根拠として使用した\"},\n        {\"ref\": \"processing-pattern/web-application/web-application-getting-started-project-search.json:s1\", \"reason\": \"ウェブアプリでの実践的なSQL例とUniversalDaoでの呼び出し方法の根拠として使用した\"}\n      ],\n      \"unused\": [\n        {\"ref\": \"component/libraries/libraries-database.json:s16\", \"reason\": \"Beanバインドの基本説明は$if構文の解説内(s21)に含まれており重複するため、答えには直接引用しなかった\"}\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "f29c8962-1d05-47b6-97a3-c47b22f7c4b9",
+  "total_cost_usd": 0.62972375,
+  "usage": {
+    "input_tokens": 14,
+    "cache_creation_input_tokens": 74537,
+    "cache_read_input_tokens": 739750,
+    "output_tokens": 8283,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 74537
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3838,
+      "outputTokens": 32,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003998,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 14,
+      "outputTokens": 8283,
+      "cacheReadInputTokens": 739750,
+      "cacheCreationInputTokens": 74537,
+      "webSearchRequests": 0,
+      "costUSD": 0.62572575,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01XMCmFyoHsQdKqPUBU3cCAB",
+      "tool_input": {
+        "command": "cat /home/tie303177/work/nabledge-dev/.claude/worktrees/395-add-md-section-links/.claude/skills/nabledge-6/knowledge/component/libraries/libraries-database.json | python3 -c \"\nimport json, sys\ndata = json.load(sys.stdin)\nfor s in data.get('sections', []):\n    sid = s.get('id')\n    title = s.get('title', '')\n    # Print sections related to dynamic SQL, variable conditions\n    if any(k in title for k in ['可変', '動的', 'in句', 'IN', 'SQL', '概要', '使用方法', 'like', 'order']):\n        content_preview = s.get('content', '')[:200]\n        print(f'=== {sid}: {title} ===')\n        print(content_preview)\n        print()\n\"\n",
+        "description": "Read libraries-database.json sections for dynamic SQL"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01B5kpKYvYmgXJ3Ls7L1vF9T",
+      "tool_input": {
+        "command": "cd /home/tie303177/work/nabledge-dev/.claude/worktrees/395-add-md-section-links/.claude/skills/nabledge-6/knowledge/component/libraries && python3 -c \"\nimport json\nwith open('libraries-database.json') as f:\n    data = json.load(f)\nfor s in data.get('sections', []):\n    sid = s.get('id')\n    title = s.get('title', '')\n    keywords = ['可変', '動的', 'in句', 'IN句', '概要', 'like', 'order by', 'SQL', '機能概要']\n    if any(k in title for k in keywords):\n        content = s.get('content', '')[:300]\n        print(f'=== {sid}: {title} ===')\n        print(content)\n        print()\n\"\n",
+        "description": "Read database.json sections for dynamic SQL"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_bdrk_01WQSNyziLvfygByEavDtCzv",
+      "tool_input": {
+        "command": "bash /home/tie303177/work/nabledge-dev/.claude/worktrees/395-add-md-section-links/.claude/skills/nabledge-6/scripts/read-sections.sh \"component/libraries/libraries-database.json:s1\" \"component/libraries/libraries-database.json:s21\" \"component/libraries/libraries-database.json:s22\" \"component/libraries/libraries-database.json:s6\" \"component/libraries/libraries-database.json:s16\"",
+        "description": "Read relevant sections from libraries-database.json"
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "babd0e5f-07ec-4eec-ac0b-8048afe0ff9f"
+}

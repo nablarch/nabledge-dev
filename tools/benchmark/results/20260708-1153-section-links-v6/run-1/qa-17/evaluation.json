@@ -1,0 +1,64 @@
+{
+  "scenario_id": "qa-17",
+  "description": "アプリケーションコードからSystemRepositoryを使ってコンポーネントを取得したい。名前指定と型指定の取得方法を知りたい。",
+  "input": "SystemRepository から登録済みコンポーネントを取得する方法を教えてください",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "get(String name)で型パラメータを利用してリポジトリからコンポーネントを型安全に取得する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.2,
+      "reason": "The expected output specifies a single key fact: using `get(String name)` with a type parameter to retrieve components from the repository in a type-safe manner. The actual output does describe using `SystemRepository.get()` to retrieve components, but it does not mention type parameters or type-safe retrieval at all. The core concept of type safety and generic type parameters — which is the essential fact in the expected output — is completely absent from the actual output."
+    },
+    "answer_relevancy": {
+      "score": 0.9090909090909091,
+      "reason": "The score is 0.91 because the actual output contains a statement about not individually implementing DI container initialization, which is not directly relevant to the question of how to retrieve registered components from SystemRepository. The rest of the response appropriately addresses the component retrieval method, which is why the score remains high at 0.91."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-repository.json:s25",
+      "component/libraries/libraries-repository.json:s24",
+      "component/libraries/libraries-repository.json:s7"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 81778,
+    "duration_api_ms": 80508,
+    "num_turns": 7,
+    "total_cost_usd": 0.7531189999999999,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 4885,
+      "cache_read_input_tokens": 618370,
+      "cache_creation_input_tokens": 130768
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 3754,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.003929,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 8,
+        "outputTokens": 4885,
+        "cacheReadInputTokens": 618370,
+        "cacheCreationInputTokens": 130768,
+        "webSearchRequests": 0,
+        "costUSD": 0.7491899999999999,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
