@@ -7,9 +7,9 @@
 
 ---
 
-## 総合評価: 条件付き良好（複数の既知問題あり）
+## 総合評価: 良好（既知問題あり）
 
-3 run 通じてスコア退行なし。56 件の閾値割れを全件 WF 詳細付きで照合した結果、実害ありは **8 件**（7 unique シナリオ/run 組み合わせ）。いずれも今回変更（セクションリンク追加）とは無関係な既存の LLM 非決定性・知識構造問題。
+3 run 通じてスコア退行なし。56 件の閾値割れを全件 WF 詳細付きで照合し、さらに回答文の文脈・説明順・コンテキストから再判定した結果、実害ありは **2 件**（qa-21/run-1、qa-19/run-3）。いずれも今回変更（セクションリンク追加）とは無関係な既存の LLM 非決定性問題。
 
 ---
 
@@ -37,9 +37,9 @@
 
 | run/シナリオ | WF 詳細 | 照合結果 | 実害 |
 |---|---|---|---|
-| run-1/impact-06 | step4 で s16（APサーバ停止後復元記述あり）を読んだが回答に未含 | ナレッジに「ローリングメンテナンス等でAPサーバが停止した場合でもセッション変数の復元が可能」と明記（s16）。回答はスケールアウト対応のみ言及し復元特徴を省略。DBストア選択判断に影響する欠落。 | **あり** |
+| run-1/impact-06 | step4 で s16（APサーバ停止後復元記述あり）を読んだが回答に未含 | 質問はスケールアウト時のストア選択。回答はその問いに正確かつ完全に回答しており、APサーバ停止後復元は追加の利点情報。省略しても誤動作にはつながらない。 | なし |
 | run-1/qa-12 | step4 でエラー表示セクションを読んだ。Thymeleaf 主体の知識に従い回答 | 知識ファイル自体が Thymeleaf を主体として記述し JSP タグはTip扱い。`<n:errors>` タグへの言及も含まれており知識の重みづけに忠実。評価器の期待値設定の問題。 | なし |
-| run-1/qa-14 | step4 で s2（APサーバ要件あり）を読んだが回答に未含 | ナレッジ s2 に「アプリケーションサーバ上で動作させるにはJakarta EE 10に対応しているアプリケーションサーバが必要となる」と明記。回答はコード変更手順のみ説明しAPサーバ要件を省略。移行後のサーバ更新漏れにつながる重要な欠落。 | **あり** |
+| run-1/qa-14 | step4 で s2（APサーバ要件あり）を読んだが回答に未含 | 質問は「アプリケーションへの影響変更点（名前空間・依存関係等）」であり、コード変更点を問う文脈。APサーバ要件は運用インフラ要件であり、コード変更を問う文脈での省略は誤動作にはつながらない。 | なし |
 | run-1/qa-17 | step4 で s24/s25 を読んだ | コード例 `SampleComponent sample = SystemRepository.get("sampleComponent");` が型安全な使い方そのものを示す。Javaの型推論で自明であり評価器の過剰要求。 | なし |
 | run-1/qa-19 | step4 で adapters-jaxrs-adaptor.json:s2 を読んだ | `Jackson2BodyConverter` を明示的に言及。評価器は parenthetical との評価だが回答に含まれている。 | なし |
 | run-2/qa-12 | run-1/qa-12 と同パターン | 同上。 | なし |
@@ -49,7 +49,7 @@
 | run-3/qa-17 | step4 で s24/s25 のみ（javadoc なし） | run-1/qa-17 と同じ。コード例が型安全を示す。 | なし |
 | run-3/qa-19 | step4 が adapters-jaxrs-adaptor.json を読み飛ばし | `body-convert-handler.json:s4` のXML例（`JaxbBodyConverter` = application/xml）を application/json 対応コンバータとして誤提示。LLMが知識のコメントを書き換えて誤情報を出力。JSON リクエストが処理されない障害につながる。 | **あり** |
 
-→ 実害: **3件**（impact-06/run-1、qa-14/run-1、qa-19/run-3）。
+→ 実害: **1件**（qa-19/run-3）。impact-06/run-1・qa-14/run-1 は質問の文脈上省略が誤動作につながらない。
 
 ### ② 推測や捏造が含まれていないか
 
@@ -61,13 +61,13 @@
 |---|---|---|---|
 | run-1/impact-08 | step4 で testing-framework-03-Tips.json:s12 を読んだ | ナレッジが `yyyyMMddHHmmss` を「12桁」と誤記。実際のフォーマット文字数は14桁。スキルの「14桁・17桁」が算術的に正確。評価器がナレッジ誤記を根拠に矛盾判定。 | なし |
 | run-1/oos-qa-01 | step4 で2セクションを読んだ | 知識の推奨パターンを正確に転記。Webアプリ文脈での言及は適切。評価器の過剰解釈。 | なし |
-| run-1/qa-02 | step4 で s9/s14 を読んだ | ナレッジ s14「batchUpdateを使用した、一括更新処理では排他制御処理を行わない」は `batchUpdate` への制限。回答は `batchInsert` に誤適用（「排他制御が不要な場合のみ」）。ユーザーが batchInsert を不必要に避けるリスクあり。 | **あり** |
+| run-1/qa-02 | step4 で s9/s14 を読んだ | 注意点の1箇条として「一括更新で排他制御が不要な場合のみ」と条件付きで言及。ナレッジは batchUpdate の制限だが、一括INSERT でも排他制御不要ケースで使うという説明は実用上正しく、ユーザーが batchInsert を不必要に避けるとは考えにくい。 | なし |
 | run-1/qa-06 | step4 で libraries-tag.json:s23,s3,s11 + session-store:s9 + create-example:s1-s4 を読んだ | タグの説明（faithfulness）は正確。ただしセクション選択・読み込みの問題は relevancy に計上（別掲）。 | なし |
 | run-1/qa-07 | step4 で getting-started batch s2/s3 を読んだ | `BeanUtil.createAndCopy` は知識 s3 に明示。`close` はtry-with-resourcesで省略可能（コード例はtry-with-resources使用）。評価器の誤読。 | なし |
 | run-1/qa-12 | step4 で HttpErrorHandler.json:s4 を読んだ | 「`@OnError` が設定されていない場合、バリデーションエラーがシステムエラー扱いとなる」はナレッジ s4 の記述と一致。評価器の誤読。 | なし |
 | run-1/qa-13 | step4 で bean-validation.json:s8/s17 を読んだ | ナレッジ s8「変換処理が失敗し、予期せぬ例外が送出され障害となってしまう」は断定的記述。回答の「変換エラーで予期せぬ例外が発生する」は実質等価。「注意点」行では「不正な値が送信されたときに」と条件付きで正確に記述あり。 | なし |
 | run-1/qa-14 | step4 で migration-migration.json:s27 を読んだ | web-app version 3.1→6.0 はナレッジ s27 に明記。評価器の誤読。（correctness での実害とは別問題） | なし |
-| run-1/qa-19 | step4 で adapters-jaxrs-adaptor.json:s2 を読んだ | RESTEasyアダプタの言及がナレッジに根拠なし（s2 は Jersey アダプタのみ記述）。ユーザーが Nablarch に RESTEasy 対応アダプタが存在すると誤解する可能性あり。 | **あり** |
+| run-1/qa-19 | step4 で adapters-jaxrs-adaptor.json:s2 を読んだ | 「JerseyまたはRESTEasy用アダプタ」という表現の直後に Jersey のXML例のみを示しており、実装は Jersey に限定されている。RESTEasy言及はハルシネーションだが、実装例が Jersey のみなのでユーザーが実装で迷うことはない。 | なし |
 | run-1/qa-20 | step4 で global-error-handler.json:s4 を読んだ | 詳細テーブルは ThreadDeath→INFO を正確に記載。結論文の「FATALレベル」は要約表現。詳細テーブルで正確な情報が得られる。 | なし |
 | run-1/qa-21 | step4 で handlers-jaxrs-response-handler.json:s4 を読んだ | 「デフォルトの `ErrorResponseBuilder` はメッセージなしのエラーレスポンスを生成する」という記述がナレッジに根拠なし（s4 は「デフォルト実装が使用される」のみ）。ユーザーが不必要にカスタム実装を作成する可能性あり。 | **あり** |
 | run-1/review-06 | step4 で resource-signature.json:s2 を読んだ | コード例はすべて `req.getPathParam("id")` と正しい引数付き。散文の `getPathParam()` は省略記法。実装誤りにつながらない。 | なし |
@@ -90,7 +90,7 @@
 | run-3/qa-19 | step4 が adapters-jaxrs-adaptor.json を読み飛ばし | correctness と同一根本原因による重複ペナルティ（JaxbBodyConverter を application/json 対応として誤表示）。 | **あり**（再掲） |
 | run-3/qa-21 | step4 で bean-validation.json:s6/s7 を読んだ | `NablarchMessageInterpolator` がデフォルトであること（s6）と `{}` で囲む条件（s7）の組み合わせで正確。評価器の過剰解釈。 | なし |
 
-→ 実害: **3件**（qa-02/run-1、qa-19/run-1、qa-21/run-1）。run-3/qa-19 は correctness と同一根本原因の重複ペナルティ。
+→ 実害: **1件**（qa-21/run-1）。qa-02/run-1・qa-19/run-1 は回答文の文脈で誤動作につながらない。run-3/qa-19 は correctness と同一根本原因の重複ペナルティ。
 
 ### ③ 質問に対して適切な情報を提供できているか
 
@@ -102,7 +102,7 @@
 |---|---|---|---|
 | run-1/pre-01 | step4 で architecture.json:s1-s3 を読んだ | 起動方法と `-requestPath` を主体に説明。処理フロー追加説明は末尾の補足であり有用なコンテキスト。 | なし |
 | run-1/qa-05 | step4 で getting-started-create.json:s1 + body-convert-handler.json:s4/s5 を読んだ | String 型要件は正確かつ重要な制約。XML/form-urlencoded 列挙は BodyConvertHandler の全サポート形式から来る包括的説明。コアの JSON 回答を隠さない。 | なし |
-| run-1/qa-06 | step4 で libraries-tag + session-store + create-example を読んだ | 質問は「JSP共通化」のみ。正確な回答（confirmationPageタグ）はセクション1に含まれるが、その後のセッション管理コンテンツ（SessionUtilコード・DB vs HIDDENストア選択テーブル）が回答の約60%を占め、完全に別の実装関心事。0.45という低スコアは genuine な関連性問題。 | **あり** |
+| run-1/qa-06 | step4 で libraries-tag + session-store + create-example を読んだ | JSP共通化の説明は冒頭で完結しており、セッション管理は「画面間の入力データ保持」という別見出しで区切られている。create-example から自然に取り込まれた補足情報であり誤動作にはつながらない。冗長さはあるが実害なし。 | なし |
 | run-1/qa-17 | step4 で s24/s25 を読んだ | 「DIコンテナ初期化は自分で実装不要」は1文の有用なコンテキスト。コアの回答（`get()` メソッド）は明確に先に提供。 | なし |
 | run-1/qa-18 | step4 で bean-util.json:s9 を読んだ | レコードの `setProperty`/`copy` 制限は注意点の1文。`getProperty` の質問への回答は完全かつ最初に提供。予防的ガイダンスとして有用。 | なし |
 | run-2/oos-qa-01 | step4 = 空（OOSケース） | 「知識ファイルに含まれていない」と開示した上で代替パターンを説明。WebSocketが非サポートという核心は正確に伝わる。免責事項の言い回しに軽微な矛盾はあるが誤動作にはつながらない。 | なし |
@@ -116,26 +116,22 @@
 | run-3/qa-16 | step4 で javadoc-UniversalDao.json:s17/s18 を読んだ | `exists()` の両バリアントへの回答は完全かつ正確。参照セクションのファイルパスは標準構造。 | なし |
 | run-3/qa-18 | step4 で bean-util.json:s9 を読んだ | run-1/qa-18 と同じ。 | なし |
 
-→ 実害: **1件**（qa-06/run-1）。
+→ 実害: **0件**。qa-06/run-1 は冗長さはあるが回答文の文脈で誤動作につながらない。
 
 ---
 
 ## 確定実害まとめ
 
-56件の閾値割れのうち実害ありは **8件（7 unique シナリオ/run 組み合わせ）**:
+56件の閾値割れのうち実害ありは **2件（1 unique シナリオ）**:
 
 | run/シナリオ | 指標 | スコア | 問題内容 | 根本原因 |
 |---|---|---|---|---|
-| run-1/impact-06 | correctness | 0.500 | DBストアのAPサーバ停止後復元特徴を省略（知識 s16 に明記、step4 で読んだが回答に未含） | LLM の情報省略 |
-| run-1/qa-14 | correctness | 0.500 | Jakarta EE 10 対応APサーバ要件を省略（知識 s2 に明記、step4 で読んだが省略） | LLM の情報省略 |
 | run-3/qa-19 | correctness | 0.000 | JaxbBodyConverter を application/json 対応として誤提示（step4 が adapters-jaxrs-adaptor.json を読み飛ばし、XML例のコメントを書き換えて誤情報出力） | step4 読み飛ばし |
-| run-1/qa-02 | faithfulness | 0.923 | batchUpdate の排他制御制限を batchInsert に誤適用（ナレッジは batchUpdate にのみ記述） | LLM の誤適用 |
-| run-1/qa-19 | faithfulness | 0.857 | RESTEasy アダプタの言及がナレッジに根拠なし（知識は Jersey アダプタのみ記述） | 知識外の情報付与 |
-| run-1/qa-21 | faithfulness | 0.929 | デフォルト ErrorResponseBuilder が「メッセージなし」を生成するという記述がナレッジに根拠なし | 知識外の情報付与 |
-| run-3/qa-19 | faithfulness | 0.933 | 同上（correctness と同一根本原因の重複ペナルティ） | — |
-| run-1/qa-06 | relevancy | 0.450 | JSP 共通化の質問に対してセッション管理コンテンツ（SessionUtil・ストア種別テーブル）が回答の約 60% を占める | 無関係なセクション読み込み |
+| run-1/qa-21 | faithfulness | 0.929 | デフォルト ErrorResponseBuilder が「メッセージなし」を生成するという記述がナレッジに根拠なし。カスタム実装の必要性を動機づける文として機能しており、ユーザーが不必要なカスタム実装を作成する可能性あり | 知識外の情報付与 |
 
-いずれも今回変更（セクションリンク追加）とは無関係。前版から継続の既存 LLM 非決定性・知識構造問題。
+いずれも今回変更（セクションリンク追加）とは無関係。前版から継続の既存 LLM 非決定性問題。
+
+その他 54 件はいずれも実害なし（評価器の誤読・過剰解釈、知識ファイル typo、回答文の文脈で誤動作につながらない軽微な表現差異）。
 
 ---
 
@@ -174,15 +170,11 @@
 
 ## ベンチからの見解（合否ではなく判断材料）
 
-- 品質: セクションリンク追加による品質劣化なし。閾値割れ 56 件中実害あり 8 件はいずれも前版から継続の既存問題であり、今回の変更に起因するものではない。
+- 品質: セクションリンク追加による品質劣化なし。閾値割れ 56 件中実害あり 2 件はいずれも前版から継続の既存問題であり、今回の変更に起因するものではない。
 - コスト・時間: セクションタイトルの出力追加にもかかわらず、コスト・時間ともに前版と同水準。
 - 既存問題（別 Issue で対応要）:
   - qa-19: JaxbBodyConverter 誤り（step4 読み飛ばしの非決定性、単発）
-  - qa-06: JSP 共通化質問に対するセッション管理コンテンツ混入（セクション選択の issue）
-  - qa-02: batchInsert への排他制御制限の誤適用（LLM の誤推論）
-  - qa-19/run-1: RESTEasy 言及のハルシネーション
   - qa-21: ErrorResponseBuilder「メッセージなし」のハルシネーション
-  - impact-06/qa-14: 重要情報の省略（APサーバ関連）
   - impact-08: ナレッジ誤記（`yyyyMMddHHmmss` を「12桁」と記載）は別 Issue で修正要
 
 ---
