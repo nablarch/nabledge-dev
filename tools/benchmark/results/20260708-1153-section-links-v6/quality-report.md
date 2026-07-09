@@ -35,7 +35,7 @@
 |---|---|---|
 | qa-12 | Thymeleaf 主体で回答し `<n:errors>` タグも補足言及。Thymeleaf は CSS 親和性から推奨アプローチであり、この優先順位は正しい。評価器の期待値が旧方式（tag-based）を主軸として設定されていた問題。 | なし（評価器の問題） |
 | qa-17 | コード例（`SampleComponent sample = SystemRepository.get("sampleComponent")`）で型安全な取得を示している。Java の型推論で自明であり、評価器が「型パラメータを明示的に説明していない」と過剰要求している問題。 | なし（評価器の問題） |
-| qa-19 | run-3 のみ JaxbBodyConverter を application/json に誤関連付け。run-1/2 は正答（1.0/0.7）。ナレッジには application/xml と明記。 | あり（単発） |
+| qa-19 | run-1/2: `adapters-jaxrs-adaptor.json:s2` を取得し Jackson2BodyConverter を正しく言及（正答、評価器の減点のみ）。run-3: step3 セクション選定でアダプタページを選択したが全セクションがスルーされ未読 → `body-convert-handler.json:s4` のXML例（JaxbBodyConverter = application/xml）のみ使用し、コメントを application/json 向けに書き換えて誤提示。LLM の非決定性による単発判断ミス。 | あり（単発） |
 | impact-06 | run-1 のみ DBストアのサーバ停止後復元の言及が薄い（run-2/3 は正答 1.0）。単発の評価器判定ブレ。 | なし |
 | qa-14 | run-1 が 0.5（内容は正確）。run-2/3 は 1.0。評価器の揺らぎ。 | なし |
 
@@ -58,7 +58,7 @@
 | qa-06 runs 1-2 | ignoreConfirmation タグは回答内に含まれており評価器の誤読。 | なし |
 | qa-09 run-3 | BusinessDateProvider.setDate — ナレッジと同一コードが存在し評価器の問題。 | なし |
 | qa-14 run-1 | web-app version 3.1→6.0 — ナレッジに同記述あり評価器の問題。 | なし |
-| qa-19 runs 1/3 | run-1: ルーティングアダプタ呼称 — ナレッジ内の正式名称。run-3: JaxbBodyConverter誤り（correctness で計上済み）。 | なし / あり（再掲） |
+| qa-19 runs 1/3 | run-1: ルーティングアダプタ呼称 — ナレッジ内の正式名称（評価器の誤読）。run-3: JaxbBodyConverter誤り（correctness で計上済み）。 | なし / あり（再掲） |
 | qa-20 run-1 | FATAL ログ — 詳細テーブルは正確、要約文の誤読。 | なし |
 | pre-01 / oos-impact-01 / oos-qa-01 / review-06 / review-07 / qa-07 / qa-08 / qa-11 | 全件評価器の揺らぎ（他 run は 1.0）。 | なし |
 | review-08 run-2 | DBストア vs HIDDENストアの補足情報を不適切と判定した評価器の過剰解釈。 | なし |
