@@ -15,7 +15,7 @@ nabledge-6 は Nablarch 6 フレームワークに関する質問に回答する
 
 ## 評価対象のベンチマーク設計
 
-[ベンチマーク設計書](../../benchmark-design.md) の DeepEval セクションで定義されたベンチマーク設計を評価対象とする。主要要素は以下の通り。
+[ベンチマーク設計書 §DeepEval RAGメトリクス](../../benchmark-design.md#deepeval-ragメトリクス) で定義されたベンチマーク設計を評価対象とする。主要要素は以下の通り。
 
 - **評価指標**: DeepEval の3指標（answer_correctness / answer_relevancy / faithfulness）
 - **評価方式**: LLM-as-Judge（ジャッジ LLM: Amazon Bedrock 上の Claude Sonnet 4.6）

@@ -1,6 +1,6 @@
 # ベンチマーク精度検証レポート
 
-評価対象のベンチマーク設計: [ベンチマーク設計書](../../benchmark-design.md)
+評価対象のベンチマーク設計: [ベンチマーク設計書 §DeepEval RAGメトリクス](../../benchmark-design.md#deepeval-ragメトリクス)
 
 ## 論点
 
