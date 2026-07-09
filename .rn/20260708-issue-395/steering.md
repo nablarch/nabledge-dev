@@ -156,6 +156,9 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 - [x] C-2 照合：全 28 件（3 指標 × crossrun mean 閾値割れ）をナレッジ照合して実害有無を判定
 - [x] quality-report.md を C-2 照合結果で更新してコミット
+- [x] C-2 照合：全 28 件（3 指標 × crossrun mean 閾値割れ）をナレッジ照合して実害有無を判定
+- [x] quality-report.md を C-2 照合結果で更新してコミット
+- [x] 28件全件 WF詳細込みで再照合（ユーザーレビューにより複数件を再判定）
 - [ ] Present Acceptance criteria run result to the user
 - [ ] Take verdict via `/rn:ty` (approve) or `/rn:gm` (revise)
 
@@ -167,6 +170,6 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 
 - **Status**: paused
 - **Date**: 2026-07-09
-- **Last completed**: C-2 全28件ナレッジ照合完了、quality-report.md 更新・コミット済み（7d477b37）
-- **Next**: #7 sign-off。ユーザーへの報告フォーマット指示あり：再開後に閾値割れ28件を1件ずつ「質問文・DeepEvalスコアと理由・再判定結果と根拠」形式で報告し、1件ごとに承認を取ること
-- **Notes**: 実害あり1件（今回変更と無関係）: qa-19/corr run-3（JaxbBodyConverter誤り・単発）。minor1件: qa-13/faith run-1。qa-02・qa-12・qa-17・impact-08は評価器の誤読またはナレッジ誤記（実害なし）。残り26件は評価器の揺らぎ（実害なし）。impact-08のナレッジ誤記（yyyyMMddHHmmssを12桁と記載）は別Issue要
+- **Last completed**: #7 step「28件全件WF詳細込みで再照合」まで完了。実害あり1件（qa-19/run-3）確定。残り件数のWF詳細調査は中途半端で中断。
+- **Next**: #7 継続。再開後は全量WF詳細を詳細に調査して本当に実害ないのか確認してから sign-off 報告すること（ユーザー指示）。対象：qa-14/corr/run-1、oos-qa-01/faith/run-1、その他15件（qa-04,qa-13,qa-20,qa-07,qa-08,qa-11,impact-06,pre-01,oos-impact-01,review-07,review-08,qa-01,qa-05,qa-16,qa-18,review-09）
+- **Notes**: 実害あり1件確定: qa-19/corr run-3（アダプタセクション未取得→JaxbBodyConverter誤提示）。impact-08のナレッジ誤記（yyyyMMddHHmmssを12桁と記載）は別Issue要。qa-14/run-1はs2を読んでいたが回答生成時にAPサーバ要件を落とした（生成ミスの可能性）。oos-qa-01/run-1はセクション2件のみ取得、run-2/3は0件で回答という構造差あり。
