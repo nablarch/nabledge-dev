@@ -22,7 +22,7 @@ nabledge-6 は Nablarch 6 フレームワークに関する質問に回答する
 - **閾値**: answer_correctness = 0.99、answer_relevancy = 0.95、faithfulness = 0.99
 - **規模**: 34 シナリオ × 3 run = 102 件
 - **シナリオ設計**: 質問・期待事実（`must.facts`）・参照セクションを宣言的に定義
-- **シナリオ定義**: `tools/benchmark/scenarios/qa.json`（[ベンチマーク設計書 §シナリオ定義](../../benchmark-design.md#シナリオ定義)）
+- **シナリオ定義**: [ベンチマーク設計書 §シナリオ定義](../../benchmark-design.md#シナリオ定義)
 - **ベンチマーク結果**: [ベンチマーク精度検証レポート](result.md)
 
 指標選定は nabledge-6 の目的（Nablarch 実装支援）とエキスパートへの相談をもとに決定した。
