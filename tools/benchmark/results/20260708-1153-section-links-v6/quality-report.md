@@ -9,7 +9,7 @@
 
 ## 総合評価: 良好（既知問題あり）
 
-3 run 通じてスコア退行なし。56 件の閾値割れを全件 WF 詳細付きで照合し、さらに回答文の文脈・説明順・コンテキストから再判定した結果、実害ありは **2 件**（qa-21/run-1、qa-19/run-3）。いずれも今回変更（セクションリンク追加）とは無関係な既存の LLM 非決定性問題。
+3 run 通じてスコア退行なし。56 件の閾値割れを全件 WF 詳細付きで照合し、さらに回答文の文脈・説明順・コンテキストから再判定した結果、実害ありは **1 件**（qa-19/run-3）。今回変更（セクションリンク追加）とは無関係な既存の LLM 非決定性問題（単発）。
 
 ---
 
@@ -69,7 +69,7 @@
 | run-1/qa-14 | step4 で migration-migration.json:s27 を読んだ | web-app version 3.1→6.0 はナレッジ s27 に明記。評価器の誤読。（correctness での実害とは別問題） | なし |
 | run-1/qa-19 | step4 で adapters-jaxrs-adaptor.json:s2 を読んだ | 「JerseyまたはRESTEasy用アダプタ」という表現の直後に Jersey のXML例のみを示しており、実装は Jersey に限定されている。RESTEasy言及はハルシネーションだが、実装例が Jersey のみなのでユーザーが実装で迷うことはない。 | なし |
 | run-1/qa-20 | step4 で global-error-handler.json:s4 を読んだ | 詳細テーブルは ThreadDeath→INFO を正確に記載。結論文の「FATALレベル」は要約表現。詳細テーブルで正確な情報が得られる。 | なし |
-| run-1/qa-21 | step4 で handlers-jaxrs-response-handler.json:s4 を読んだ | 「デフォルトの `ErrorResponseBuilder` はメッセージなしのエラーレスポンスを生成する」という記述がナレッジに根拠なし（s4 は「デフォルト実装が使用される」のみ）。ユーザーが不必要にカスタム実装を作成する可能性あり。 | **あり** |
+| run-1/qa-21 | step4 で handlers-jaxrs-response-handler.json:s4 を読んだ | 「デフォルトはメッセージなし」はナレッジ s4 に直接記述はないが、s7 のカスタム実装例（ApplicationException を捕まえてボディを書く）の存在意義から合理的に推論できる事実。実害なし。 | なし |
 | run-1/review-06 | step4 で resource-signature.json:s2 を読んだ | コード例はすべて `req.getPathParam("id")` と正しい引数付き。散文の `getPathParam()` は省略記法。実装誤りにつながらない。 | なし |
 | run-2/impact-08 | step4 で Tips.json:s12 を読んだ | run-1/impact-08 と同じ。ナレッジ typo が原因。 | なし |
 | run-2/qa-02 | step4 で universal-dao.json:s7/s9 を読んだ | 「RDBMSによっては...エラーとなる可能性がある」という条件付き表現を使用。ナレッジと一致。評価器の細かすぎる区別。 | なし |
@@ -90,7 +90,7 @@
 | run-3/qa-19 | step4 が adapters-jaxrs-adaptor.json を読み飛ばし | correctness と同一根本原因による重複ペナルティ（JaxbBodyConverter を application/json 対応として誤表示）。 | **あり**（再掲） |
 | run-3/qa-21 | step4 で bean-validation.json:s6/s7 を読んだ | `NablarchMessageInterpolator` がデフォルトであること（s6）と `{}` で囲む条件（s7）の組み合わせで正確。評価器の過剰解釈。 | なし |
 
-→ 実害: **1件**（qa-21/run-1）。qa-02/run-1・qa-19/run-1 は回答文の文脈で誤動作につながらない。run-3/qa-19 は correctness と同一根本原因の重複ペナルティ。
+→ 実害: **0件**。qa-21/run-1 は「デフォルトはメッセージなし」がナレッジ s7 のカスタム実装例から合理的に推論できる事実であり実害なし。run-3/qa-19 は correctness と同一根本原因の重複ペナルティ。
 
 ### ③ 質問に対して適切な情報を提供できているか
 
@@ -122,16 +122,15 @@
 
 ## 確定実害まとめ
 
-56件の閾値割れのうち実害ありは **2件（1 unique シナリオ）**:
+56件の閾値割れのうち実害ありは **1件**:
 
 | run/シナリオ | 指標 | スコア | 問題内容 | 根本原因 |
 |---|---|---|---|---|
-| run-3/qa-19 | correctness | 0.000 | JaxbBodyConverter を application/json 対応として誤提示（step4 が adapters-jaxrs-adaptor.json を読み飛ばし、XML例のコメントを書き換えて誤情報出力） | step4 読み飛ばし |
-| run-1/qa-21 | faithfulness | 0.929 | デフォルト ErrorResponseBuilder が「メッセージなし」を生成するという記述がナレッジに根拠なし。カスタム実装の必要性を動機づける文として機能しており、ユーザーが不必要なカスタム実装を作成する可能性あり | 知識外の情報付与 |
+| run-3/qa-19 | correctness | 0.000 | JaxbBodyConverter を application/json 対応として誤提示（step4 が adapters-jaxrs-adaptor.json を読み飛ばし、XML例のコメントを書き換えて誤情報出力）。run-1/2 は正答。LLM の非決定性による単発ミス。 | LLM 非決定性（step4 読み飛ばし） |
 
-いずれも今回変更（セクションリンク追加）とは無関係。前版から継続の既存 LLM 非決定性問題。
+今回変更（セクションリンク追加）とは無関係。前版から継続の既存問題。
 
-その他 54 件はいずれも実害なし（評価器の誤読・過剰解釈、知識ファイル typo、回答文の文脈で誤動作につながらない軽微な表現差異）。
+その他 55 件はいずれも実害なし（評価器の誤読・過剰解釈、知識ファイル typo、回答文の文脈で誤動作につながらない表現差異）。
 
 ---
 
@@ -174,7 +173,6 @@
 - コスト・時間: セクションタイトルの出力追加にもかかわらず、コスト・時間ともに前版と同水準。
 - 既存問題（別 Issue で対応要）:
   - qa-19: JaxbBodyConverter 誤り（step4 読み飛ばしの非決定性、単発）
-  - qa-21: ErrorResponseBuilder「メッセージなし」のハルシネーション
   - impact-08: ナレッジ誤記（`yyyyMMddHHmmss` を「12桁」と記載）は別 Issue で修正要
 
 ---
