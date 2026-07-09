@@ -160,16 +160,10 @@ Add section-level links to cited knowledge MD files in skill output. Currently Q
 - [x] quality-report.md を C-2 照合結果で更新してコミット
 - [x] 28件全件 WF詳細込みで再照合（ユーザーレビューにより複数件を再判定）
 - [x] Present Acceptance criteria run result to the user
-- [ ] Take verdict via `/rn:ty` (approve) or `/rn:gm` (revise)
+- [x] Take verdict via `/rn:ty` (approve) or `/rn:gm` (revise)
 
 **Completion criteria**:
 
 - Acceptance criteria の各項目が、実際の実行結果（benchmark レポート・スキル出力）に基づいて満たされていることをユーザーが確認し `/rn:ty` で承認している
 
 # State
-
-- **Status**: paused
-- **Date**: 2026-07-09
-- **Last completed**: #7 全56件WF詳細照合＋回答文コンテキスト再判定完了。quality-report.md 最終版コミット済み。Acceptance criteria 報告済み。
-- **Next**: #7 残り — ユーザーが `/rn:ty` または `/rn:gm` で verdict を返す。
-- **Notes**: 実害あり1件確定: qa-19/run-3（JaxbBodyConverter誤提示、AIのゆらぎ・単発、今回変更と無関係）。qa-21/run-1 は「デフォルトErrorResponseBuilderはメッセージなし」がナレッジs7から推論できる事実のため実害なし。
