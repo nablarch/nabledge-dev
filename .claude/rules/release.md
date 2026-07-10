@@ -46,10 +46,16 @@ Example: nabledge-6 v0.6 + nabledge-5 v0.1 released together → marketplace v0.
 
 ### Step 1: Analyze Commits Since Last Release
 
-Get all commits since the previous version tag:
+First, sync with the remote to avoid missing commits merged after the local branch was created:
 
 ```bash
-git log --oneline --since="{last release date}"
+git fetch origin main
+```
+
+Then list all commits since the previous release commit (use the remote ref to ensure completeness):
+
+```bash
+git log --oneline {last_release_sha}..origin/main
 ```
 
 For each commit, determine user impact by checking whether changed files fall under deployed content (per `.github/workflows/sync-to-nabledge/sync-manifest.txt`):
@@ -58,10 +64,9 @@ For each commit, determine user impact by checking whether changed files fall un
 - `.claude/skills/nabledge-6/` — skill content, knowledge files, workflows
 - `.claude/skills/nabledge-5/` — skill content, knowledge files, workflows
 - `.claude/marketplace/` — marketplace metadata
-- `.claude/commands/n6.md`, `.claude/commands/n5.md`
-- `.github/prompts/n6.prompt.md`, `.github/prompts/n5.prompt.md`
-- `tools/setup/setup-6-cc.sh`, `tools/setup/setup-6-ghc.sh`
-- `tools/setup/setup-5-cc.sh`, `tools/setup/setup-5-ghc.sh`
+- `.claude/commands/n6.md`, `.claude/commands/n5.md`, `.claude/commands/n1.4.md`, `.claude/commands/n1.3.md`, `.claude/commands/n1.2.md`
+- `.github/prompts/n6.prompt.md`, `.github/prompts/n5.prompt.md`, `.github/prompts/n1.4.prompt.md`, `.github/prompts/n1.3.prompt.md`, `.github/prompts/n1.2.prompt.md`
+- `tools/setup/setup-cc.sh`, `tools/setup/setup-ghc.sh`
 
 **Not deployed (no user impact):**
 - `.github/workflows/`, `.github/scripts/` — CI/CD infra
