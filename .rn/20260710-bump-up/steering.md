@@ -7,7 +7,7 @@ Release the latest nabledge improvements that have been merged to main since mar
 # Acceptance criteria
 
 - Nablarch developers using nabledge can access all improvements merged since marketplace 0.10
-- The release artifacts comply with `.claude/rules/release.md` (CHANGELOG entries, version files, PR)
+- The release artifacts are consistent: CHANGELOG entries, version files, and PR all reflect the same release scope and version numbers
 
 # Assumptions
 
@@ -16,7 +16,6 @@ Release the latest nabledge improvements that have been merged to main since mar
 # Rules
 
 - commit and push every change; one completion marker per task
-- Stage files individually, never `git add -A`
 
 # Tasks
 
@@ -29,7 +28,7 @@ Release the latest nabledge improvements that have been merged to main since mar
 **Steps**:
 
 - [ ] For each commit since `a9f05000`, check whether changed files fall under deployed content (per sync-manifest.txt)
-- [ ] For each deployed-content commit, identify the full user impact (not just file names — read the actual diff to understand what changed for the user)
+- [ ] For each deployed-content commit, read the actual diff to understand the full user impact
 - [ ] Propose CHANGELOG entry text for each affected plugin, following `.claude/rules/changelog.md` writing guidelines
 - [ ] Propose version numbers for affected plugins and marketplace per `.claude/rules/release.md` version scheme
 - [ ] Self-check: no deployed-content commit left unaccounted for; CHANGELOG entries describe user impact, not implementation details
@@ -38,7 +37,7 @@ Release the latest nabledge improvements that have been merged to main since mar
 **Completion criteria**:
 
 - Every commit since 0.10 is classified as deployed-content or dev-only, with evidence (which files changed)
-- User has approved the proposed CHANGELOG entries and version numbers via `/rn:ty`
+- The proposed CHANGELOG entries and version numbers are approved
 
 ### #2: Update release files
 
@@ -52,24 +51,24 @@ Release the latest nabledge improvements that have been merged to main since mar
 - [ ] Update each affected plugin's plugin.json: bump to approved version
 - [ ] Update marketplace.json: bump to approved version
 - [ ] Update marketplace/CHANGELOG.md: add row for new marketplace version
-- [ ] Verify against previous release PR file set per `.claude/rules/release.md` step 4
+- [ ] Compare changed file set against the previous release PR to confirm no required file is missing
 - [ ] Self-check (OK/NG per completion criterion, record in checks/task-2.md)
 
 **Completion criteria**:
 
 - All affected plugin CHANGELOGs and plugin.json files reflect the approved versions and entries
 - marketplace.json and marketplace/CHANGELOG.md are updated consistently
-- Verified against previous release PR: no required file is missing
+- No required file is missing compared to the previous release PR
 
 ### #3: Create feature branch, commit, and open PR
 
-**Purpose**: Commit the release files on a feature branch and open a PR per `.claude/rules/pr.md`.
+**Purpose**: Commit the release files on a feature branch and open a PR.
 
 **Prerequisites**: #2 complete
 
 **Steps**:
 
-- [ ] Create feature branch `399-release-marketplace-0.10.1` from `worktree-bump-up`
+- [ ] Create feature branch from `worktree-bump-up` using the approved version as slug
 - [ ] Stage and commit release files (individual `git add`)
 - [ ] Push branch
 - [ ] Create work log files (tasks.md, notes.md) in `.work/00399/`
@@ -96,7 +95,7 @@ Release the latest nabledge improvements that have been merged to main since mar
 **Completion criteria**:
 
 - All acceptance criteria are met with evidence
-- User has approved via `/rn:ty`
+- User has signed off via `/rn:ty`
 
 # State
 
