@@ -39,7 +39,7 @@ Release the latest nabledge improvements that have been merged to main since mar
 - The release scope is unambiguous: it is clear what is included, what is excluded, and why
 - The CHANGELOG entries describe what the user can now do or what problem was fixed — not what files changed
 
-### #2: Update release files
+### ~~#2: Update release files~~
 
 **Purpose**: Apply the approved CHANGELOG entries and version bumps to all required files per `.claude/rules/release.md` step 3.
 
