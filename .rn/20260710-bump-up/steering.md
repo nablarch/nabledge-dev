@@ -2,7 +2,7 @@ Rn version: 0.8.0
 
 # Goal
 
-Release the improvements merged to main since marketplace 0.10 (2026-06-18): specifically the `code-analysis.md` rewrite across all 5 versions (`c1a37ad7`). The release follows `.claude/rules/release.md` step by step.
+Release the latest nabledge improvements that have been merged to main since marketplace 0.10 (2026-06-18).
 
 # Acceptance criteria
 
