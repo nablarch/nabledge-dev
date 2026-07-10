@@ -97,8 +97,8 @@ Release the latest nabledge improvements that have been merged to main since mar
 
 # State
 
-- **Status**: not suspended
+- **Status**: paused
 - **Date**: 2026-07-10
-- **Last completed**: (none)
+- **Last completed**: (none — plan gate not yet approved)
 - **Next**: #1 — analyze commits since 0.10 and propose release content
-- **Notes**: worktree branch is `worktree-bump-up`. Feature branch created at task #3.
+- **Notes**: Plan gate pending. Branch `worktree-bump-up`, PR #400 (draft). Feature branch to be created at task #3.
