@@ -19,7 +19,7 @@ Release the latest nabledge improvements that have been merged to main since mar
 
 # Tasks
 
-### #1: Analyze commits since 0.10 and propose release content
+### ~~#1: Analyze commits since 0.10 and propose release content~~
 
 **Purpose**: Determine the release scope and content — what changed for the user and how to describe it.
 
