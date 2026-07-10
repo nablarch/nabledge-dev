@@ -6,8 +6,8 @@ Release the latest nabledge improvements that have been merged to main since mar
 
 # Acceptance criteria
 
-- Nablarch developers using nabledge can access all improvements merged since marketplace 0.10
-- The release artifacts are consistent: CHANGELOG entries, version files, and PR all reflect the same release scope and version numbers
+- A Nablarch developer who installs the new version can use all improvements merged since marketplace 0.10
+- The CHANGELOG accurately describes what changed and why it matters to the user
 
 # Assumptions
 
@@ -21,7 +21,7 @@ Release the latest nabledge improvements that have been merged to main since mar
 
 ### #1: Analyze commits since 0.10 and propose release content
 
-**Purpose**: Determine which commits have user-facing impact, propose CHANGELOG entries and version numbers, and get user approval before touching any files.
+**Purpose**: Determine the release scope and content — what changed for the user and how to describe it.
 
 **Prerequisites**: none
 
@@ -36,8 +36,8 @@ Release the latest nabledge improvements that have been merged to main since mar
 
 **Completion criteria**:
 
-- Every commit since 0.10 is classified as deployed-content or dev-only, with evidence (which files changed)
-- The proposed CHANGELOG entries and version numbers are approved
+- The release scope is unambiguous: it is clear what is included, what is excluded, and why
+- The CHANGELOG entries describe what the user can now do or what problem was fixed — not what files changed
 
 ### #2: Update release files
 
@@ -56,13 +56,12 @@ Release the latest nabledge improvements that have been merged to main since mar
 
 **Completion criteria**:
 
-- All affected plugin CHANGELOGs and plugin.json files reflect the approved versions and entries
-- marketplace.json and marketplace/CHANGELOG.md are updated consistently
-- No required file is missing compared to the previous release PR
+- A user reading the CHANGELOG would understand what improved and how it affects their work
+- No improvement is silently omitted; no file required for distribution is missing
 
 ### #3: Create feature branch, commit, and open PR
 
-**Purpose**: Commit the release files on a feature branch and open a PR.
+**Purpose**: Make the release reviewable and mergeable.
 
 **Prerequisites**: #2 complete
 
@@ -77,8 +76,7 @@ Release the latest nabledge improvements that have been merged to main since mar
 
 **Completion criteria**:
 
-- Feature branch is pushed and PR is open against `main`
-- PR title and body follow `.claude/rules/pr.md`
+- A reviewer can understand the release scope and verify its correctness without asking the author for context
 
 ### #4: Evaluation sign-off
 
