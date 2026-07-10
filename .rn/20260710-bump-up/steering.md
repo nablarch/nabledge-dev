@@ -78,7 +78,7 @@ Release the latest nabledge improvements that have been merged to main since mar
 
 - A reviewer can understand the release scope and verify its correctness without asking the author for context
 
-### #4: Evaluation sign-off
+### ~~#4: Evaluation sign-off~~
 
 **Purpose**: Confirm all acceptance criteria are met and take user sign-off.
 
