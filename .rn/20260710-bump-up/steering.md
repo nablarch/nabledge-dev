@@ -59,7 +59,7 @@ Release the latest nabledge improvements that have been merged to main since mar
 - A user reading the CHANGELOG would understand what improved and how it affects their work
 - No improvement is silently omitted; no file required for distribution is missing
 
-### #3: Create feature branch, commit, and open PR
+### ~~#3: Create feature branch, commit, and open PR~~
 
 **Purpose**: Make the release reviewable and mergeable.
 
