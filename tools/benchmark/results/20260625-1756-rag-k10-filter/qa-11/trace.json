@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 30564,
+  "duration_api_ms": 28444,
+  "ttft_ms": 6817,
+  "ttft_stream_ms": 6124,
+  "time_to_request_ms": 3821,
+  "num_turns": 1,
+  "result": "### Answer\n\nNablarchのウェブアプリケーションにおけるエラー処理の仕組みは、主に **HttpErrorHandler** と **HttpResponseHandler** の2つのハンドラが連携して動作します。\n\n---\n\n## エラーハンドリングの全体構造\n\n### 1. HttpErrorHandler — 例外の種類に応じたログ出力とレスポンス生成\n\n後続ハンドラ（アクションクラスなど）で発生した例外を捕捉し、種類に応じて以下のように処理します。\n\n| 例外/エラー | ログレベル | HTTPステータス | 備考 |\n|---|---|---|---|\n| `NoMoreHandlerException` | INFO | 404 | 処理すべきアクションが存在しない。証跡ログとして記録 |\n| `HttpErrorResponse` | ログなし | レスポンス内容による | バリデーション等の業務例外。ログ不要 |\n| `HttpErrorResponse`（原因が`ApplicationException`） | ログなし | レスポンス内容による | エラーメッセージをリクエストスコープ（キー名`errors`）にセットし、Viewで参照可能にする |\n| `Result.Error` | 設定による（FATAL） | ステータスコードによる | `writeFailureLogPattern`の正規表現がステータスコードにマッチした場合のみFATAL出力 |\n| `StackOverflowError` | FATAL | 500 | データや実装バグに起因する可能性があるため障害扱い |\n| 上記以外の例外/エラー | FATAL | 500 | 予期しない例外はすべて障害扱い |\n\n`ApplicationException`のエラーメッセージをViewに渡す際のキー名はコンポーネント設定で変更可能です。\n\n```xml\n<component name=\"webConfig\" class=\"nablarch.common.web.WebConfig\">\n  <!-- デフォルト \"errors\" を \"messages\" に変更する例 -->\n  <property name=\"errorMessageRequestAttributeName\" value=\"messages\" />\n</component>\n```\n\n---\n\n### 2. HttpResponseHandler — エラー画面のフォワード\n\nHttpErrorHandlerが生成したエラーレスポンス（404や500など）を受け取り、対応するエラー画面（JSPなど）にサーブレットフォワードします。\n\nただし、このハンドラ自身の処理中に以下が発生した場合は、フォワードも不可能と判断し、**固定のHTMLをステータス500で返します**（設定変更不可）。\n\n- サーブレットフォワード時に`ServletException`が発生\n- `RuntimeException`またはそのサブクラス\n- `Error`またはそのサブクラス\n\nこの固定HTMLが返るのは極めてレアなケースです。どんな状況でもこのレスポンスを出してはいけないシステムでは、本ハンドラを参考に独自ハンドラの作成が推奨されます。\n\n---\n\n### 3. ログレベルの体系\n\nフレームワーク全体のログ出力方針は以下の通りです。\n\n| ログレベル | 用途 |\n|---|---|\n| FATAL/ERROR | 障害ログ。障害監視の対象。原則1件の障害につき1件出力 |\n| WARN | 障害に連鎖して発生した例外（例：業務処理とトランザクション終了処理の両方で例外発生した場合の後者） |\n| INFO | URLパラメータ改竄エラーや認可チェックエラーなど、アプリケーション実行状況に関するエラー |\n| DEBUG | アプリケーション開発時のデバッグ情報 |\n| TRACE | フレームワーク開発時のデバッグ情報 |\n\n---\n\n### 4. 処理フローのまとめ\n\n```\nリクエスト\n  ↓\nHttpErrorHandler（例外をキャッチしログ出力 + エラーレスポンス生成）\n  ↓\nHttpResponseHandler（エラー画面へフォワード or 固定HTML返却）\n  ↓\nエラー画面（JSP等）表示\n```\n\nエラー画面でのメッセージ表示は、`ApplicationException`の場合はリクエストスコープの`errors`（または設定したキー名）からエラーメッセージを取得して描画します。",
+  "stop_reason": "end_turn",
+  "session_id": "3e2b8a40-e492-4b3d-8572-959f8d0c0211",
+  "total_cost_usd": 0.1460701,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 29712,
+    "cache_read_input_tokens": 19187,
+    "output_tokens": 1315,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 29712
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 8928,
+      "outputTokens": 47,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.009163000000000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1315,
+      "cacheReadInputTokens": 19187,
+      "cacheCreationInputTokens": 29712,
+      "webSearchRequests": 0,
+      "costUSD": 0.1369071,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "d171f4b8-0070-463e-ae13-61a898459cbc"
+}

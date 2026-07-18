@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 19771,
+  "duration_api_ms": 19105,
+  "ttft_ms": 19723,
+  "ttft_stream_ms": 4291,
+  "time_to_request_ms": 2027,
+  "num_turns": 1,
+  "result": "### Answer\n\nNablarchにはOAuth2やOpenID Connect（OIDC）の認証機能は標準では組み込まれていません。ただし、**ビジネスサンプル（biz-sample）**として実装例が提供されています。\n\n---\n\n## Nablarchの認証サポート状況\n\n**標準機能としての認証:** Nablarchは認証チェック機能を標準では提供していません。認証機能はプロジェクトで独自に実装する必要があります（セキュリティチェックリスト No.11）。\n\n**認可チェック:** 認可チェック機能は標準提供されています（`認可チェックハンドラ`）。\n\n---\n\n## OpenID Connect（OIDC）のサンプル実装\n\nOIDCによる認証については、**nablarch-biz-sample-all**にサンプルが提供されています。\n\n- **ソースコード:** `https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-oidc`\n- **提供パッケージ:** `please.change.me.common.oidc.verification`\n\n### 対応しているIDプロバイダー\n\n| プロバイダー | パッケージ |\n|---|---|\n| Amazon Cognito ユーザープール | `...oidc.verification.cognito` |\n| Azure Active Directory B2C | `...oidc.verification.adb2c` |\n\n### サンプルの構成・想定\n\n- NablarchのRESTful Webサービスをバックエンドとして稼働\n- IDトークンはフロントエンド（SPA、モバイルアプリ等）で取得し、バックエンドに送信\n- 認証成功後にログインセッションを確立し、ステートフルなセッション管理を実施\n- 認証処理は**業務アクション**で実装\n\n> **注意:** サンプルは2024年9月時点の仕様に基づいているため、利用するサービスの最新仕様を確認の上、適宜カスタマイズしてください。\n\n---\n\n## ウェブアプリケーションでの関連ハンドラ\n\nセキュリティ対応の観点では、OIDCと組み合わせて以下のハンドラも活用できます。\n\n- **セッションストア / セッション変数保存ハンドラ:** セッションIDの管理（UUID使用、URLパラメータ格納なし）\n- **認可チェックハンドラ:** ログイン後のアクセス制御\n- **セキュアハンドラ:** X-Frame-Options等のセキュリティヘッダ自動付与\n- **CSRFトークン検証ハンドラ:** CSRF対策\n\n---\n\n## まとめ\n\n| 項目 | 状況 |\n|---|---|\n| OIDC認証（標準機能） | なし（プロジェクト実装が必要） |\n| OIDCサンプル（Cognito/ADB2C） | ビジネスサンプルとして提供あり |\n| 認可チェック | 標準機能あり |\n| セッション管理 | 標準機能あり |\n\nOIDCを導入する場合は、上記ビジネスサンプルをベースにプロジェクト要件に合わせてカスタマイズする形が推奨されます。",
+  "stop_reason": "end_turn",
+  "session_id": "3941ef18-2315-4e80-887d-99e4ae29f50a",
+  "total_cost_usd": 0.1416831,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 29932,
+    "cache_read_input_tokens": 19197,
+    "output_tokens": 957,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 29932
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 9148,
+      "outputTokens": 34,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.009318,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 957,
+      "cacheReadInputTokens": 19197,
+      "cacheCreationInputTokens": 29932,
+      "webSearchRequests": 0,
+      "costUSD": 0.1323651,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "33cfefc3-d5cd-4af2-a018-fdc5d74a3a42"
+}

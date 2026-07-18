@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 39527,
+  "duration_api_ms": 21625,
+  "ttft_ms": 39367,
+  "ttft_stream_ms": 22089,
+  "time_to_request_ms": 19367,
+  "num_turns": 1,
+  "result": "### Answer\n\nBean ValidationのFormクラス単体テストは、以下の手順で作成します。\n\n---\n\n## 1. テストクラスの作成\n\n以下の条件を満たすテストクラスを作成します。\n\n- **パッケージ**: テスト対象のForm/Entityと同じパッケージ\n- **クラス名**: `<Form/Entityクラス名>Test`\n- **継承**: `nablarch.test.core.db.EntityTestSupport` を継承\n\n```java\npackage com.nablarch.example.app.web.form; // テスト対象と同じパッケージ\n\nimport nablarch.test.core.db.EntityTestSupport;\nimport org.junit.Test;\n\npublic class UserRegistrationFormTest extends EntityTestSupport {\n\n    private static final Class<?> TARGET_CLASS = UserRegistrationForm.class;\n\n    // テストメソッドはここに記述\n}\n```\n\n---\n\n## 2. テストデータ（Excel）の準備\n\nテストデータはExcelファイルで管理します。\n\n- **配置場所**: テストソースコードと同じディレクトリ\n- **ファイル名**: テストクラスと同じ名前（拡張子のみ `.xlsx`）\n  - 例: `UserRegistrationFormTest.java` → `UserRegistrationFormTest.xlsx`\n- 各テスト種別が1シートずつ使用します\n\n---\n\n## 3. テストメソッドの種類と書き方\n\n### (1) 文字種・文字列長の単項目精査\n\n`testValidateCharsetAndLength()` を使用します。\n\n```java\n@Test\npublic void testCharsetAndLength() {\n    String sheetName = \"testCharsetAndLength\";\n    String id = \"charsetAndLength\";\n    testValidateCharsetAndLength(TARGET_CLASS, sheetName, id);\n}\n```\n\n**Excelシートのカラム構成:**\n\n| カラム名 | 内容 |\n|---|---|\n| `propertyName` | テスト対象のプロパティ名 |\n| `allowEmpty` | 未入力を許容するか |\n| `group` | Bean Validationのグループ（省略可） |\n| `min` / `max` | 最小・最大文字列長（省略可） |\n| `messageIdWhenEmptyInput` | 未入力時の期待メッセージ（省略可） |\n| `messageIdWhenInvalidLength` | 文字列長不適合時の期待メッセージ（省略可） |\n| `messageIdWhenNotApplicable` | 文字種不適合時の期待メッセージ |\n| `半角英字`, `半角数字`, ... | 各文字種を許容するか（`o` or `x`） |\n\n### (2) その他の単項目精査（日付フォーマット等）\n\n`testSingleValidation()` を使用します。\n\n```java\n@Test\npublic void testSingleValidation() {\n    String sheetName = \"testSingleValidation\";\n    String id = \"singleValidation\";\n    testSingleValidation(TARGET_CLASS, sheetName, id);\n}\n```\n\n**Excelシートのカラム構成:**\n\n| カラム名 | 内容 |\n|---|---|\n| `propertyName` | テスト対象のプロパティ名 |\n| `case` | テストケースの説明 |\n| `group` | Bean Validationのグループ（省略可） |\n| `input1` | 入力値 |\n| `messageId` | 期待するメッセージID（エラーなしの場合は空欄） |\n| `interpolateKey_n` / `interpolateValue_n` | 埋め込み文字（省略可） |\n\n> **注意**: プロパティとして別のFormを保持するFormには使用できません。その場合は独自実装が必要です。\n\n### (3) 項目間精査（Bean Validationのクラスレベル制約）\n\n`testBeanValidation()` を使用します。\n\n```java\n@Test\npublic void testWholeFormValidation() {\n    String sheetName = \"testWholeFormValidation\";\n    testBeanValidation(TARGET_CLASS, sheetName);\n}\n```\n\n---\n\n## まとめ\n\n| テスト種別 | スーパークラスのメソッド | 主な用途 |\n|---|---|---|\n| 文字種・文字列長 | `testValidateCharsetAndLength` | 入力許容文字種と長さの検証 |\n| その他の単項目精査 | `testSingleValidation` | 日付フォーマット等の個別精査 |\n| 項目間精査 | `testBeanValidation` | クラスレベルの相関チェック |\n\nサンプルファイルは `UserRegistrationFormTest.java` / `UserRegistrationFormTest.xlsx` / `UserRegistrationForm.java` が参照例として提供されています。",
+  "stop_reason": "end_turn",
+  "session_id": "73110e46-f9bf-4425-9db9-91c218a48178",
+  "total_cost_usd": 0.13862750000000001,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 28092,
+    "cache_read_input_tokens": 19145,
+    "output_tokens": 1337,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 28092
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 7308,
+      "outputTokens": 34,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.007478,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1337,
+      "cacheReadInputTokens": 19145,
+      "cacheCreationInputTokens": 28092,
+      "webSearchRequests": 0,
+      "costUSD": 0.1311495,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "9a974d94-973e-4db4-bc21-f063892d5151"
+}

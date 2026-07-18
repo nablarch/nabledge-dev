@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 36660,
+  "duration_api_ms": 36036,
+  "ttft_ms": 4714,
+  "ttft_stream_ms": 4024,
+  "time_to_request_ms": 2172,
+  "num_turns": 1,
+  "result": "### Answer\n\nNablarchのウェブアプリケーションにおけるエラー処理とログ出力の仕組みは、主に**HttpErrorHandler**と**ログレベルポリシー**の組み合わせで実現されています。\n\n---\n\n## エラー処理の全体像\n\n例外の種類に応じて、`HttpErrorHandler`（またはHTTPメッセージングの場合は`HttpMessagingErrorHandler`）が以下のように処理を振り分けます。\n\n| 発生した例外・エラー | ログレベル | HTTPレスポンス | 備考 |\n|---|---|---|---|\n| `NoMoreHandlerException` | INFO | 404 | 処理すべきActionが存在しない場合。証跡ログとして記録 |\n| `HttpErrorResponse` | ログなし | `getResponse()`の結果 | バリデーション等の業務例外によるエラーレスポンスのため出力不要 |\n| `Result.Error` | 設定次第 | `getStatusCode()`の結果 | `writeFailureLogPattern`の正規表現がステータスコードにマッチした場合のみFATAL出力 |\n| `StackOverflowError` | FATAL | 500 | データ/実装バグに起因する可能性があるため障害扱い |\n| 上記以外の例外・エラー | FATAL | 500 | 予期しない例外はすべて障害扱い |\n\n---\n\n## ログレベルの使い分け\n\nフレームワークのログ出力方針として、以下のように明確に定義されています。\n\n| ログレベル | 用途 |\n|---|---|\n| **FATAL/ERROR** | 障害監視の対象。原則として1件の障害に対して1件の障害ログを出力する。実行制御基盤では単一の例外ハンドラで障害通知ログを出力する |\n| **WARN** | 障害発生時に連鎖して発生した例外（例：業務処理とトランザクション終了処理の両方で例外が発生した場合、後者をWARNで出力） |\n| **INFO** | URLパラメータの改ざんエラーや認可チェックエラーなど、アプリケーション実行状況に関連するエラー |\n| **DEBUG** | アプリケーション開発時のデバッグ情報 |\n\n---\n\n## HttpErrorHandlerの`ApplicationException`に対する特別処理\n\n`HttpErrorResponse`の原因例外が`ApplicationException`（バリデーションエラー等）の場合は、ログ出力はしませんが、**エラー画面表示のために**以下の処理を行います。\n\n1. `ApplicationException`が保持するメッセージ情報を`ErrorMessages`オブジェクトに変換する\n2. `ErrorMessages`をリクエストスコープに設定する（デフォルトキー名：`errors`）\n3. Viewはリクエストスコープからエラーメッセージを取得して画面に表示する\n\n---\n\n## 致命的エラー時のフォールバック画面\n\n`HttpResponseHandler`（レスポンスを実際に返すハンドラ）の内部でさらに例外が発生した場合（サーブレットフォワード失敗、RuntimeException、Errorなど）は、設定変更不可の固定HTMLが返されます。これは極めてレアなケースのみを想定した最終手段です。\n\n---\n\n## グローバルエラーハンドラの動作（バッチ等の共通処理）\n\n`GlobalErrorHandler`では、エラーの種類に応じてより細かく動作が分岐します。\n\n- **`ServiceError`系**：`writeLog()`を呼び出し（ログレベルはサブクラス依存）、そのまま結果として返却\n- **`ThreadDeath`**：INFOでログ出力後、リスロー（JVMの正常な動作のため）\n- **`OutOfMemoryError`**：FATAL出力に失敗する可能性があるため、**先に標準エラー出力へ書き込んでからFATAL**ログを出力\n- **上記以外**：FATALログ出力後、`InternalError`として返却\n\n---\n\n## まとめ\n\nNablarchのエラー処理は「**1障害につき1つのFATAL/ERRORログ**」という原則のもと設計されています。ハンドラチェーンの単一の例外ハンドラが障害通知ログを担当し、連鎖例外はWARNに、業務エラーはINFOに分離することで、ログの監視・一次切り分けが容易になっています。\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_sections\": [\n      {\n        \"file\": \"component/libraries/libraries-log.json\",\n        \"section_id\": \"s27\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/handlers/handlers-HttpErrorHandler.json\",\n        \"section_id\": \"s4\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/handlers/handlers-http-messaging-error-handler.json\",\n        \"section_id\": \"s5\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/handlers/handlers-HttpErrorHandler.json\",\n        \"section_id\": \"s5\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/handlers/handlers-http-response-handler.json\",\n        \"section_id\": \"s8\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-failure-log.json\",\n        \"section_id\": \"s7\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/handlers/handlers-global-error-handler.json\",\n        \"section_id\": \"s4\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/handlers/handlers-http-messaging-error-handler.json\",\n        \"section_id\": \"s4\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-failure-log.json\",\n        \"section_id\": \"s9\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-log.json\",\n        \"section_id\": \"s26\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      }\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-log.json:s27\",\n      \"component/handlers/handlers-HttpErrorHandler.json:s4\",\n      \"component/handlers/handlers-http-messaging-error-handler.json:s5\",\n      \"component/handlers/handlers-HttpErrorHandler.json:s5\",\n      \"component/handlers/handlers-http-response-handler.json:s8\",\n      \"component/libraries/libraries-failure-log.json:s7\",\n      \"component/handlers/handlers-global-error-handler.json:s4\",\n      \"component/handlers/handlers-http-messaging-error-handler.json:s4\",\n      \"component/libraries/libraries-failure-log.json:s9\",\n      \"component/libraries/libraries-log.json:s26\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        \"component/libraries/libraries-log.json:s27\",\n        \"component/handlers/handlers-HttpErrorHandler.json:s4\",\n        \"component/handlers/handlers-HttpErrorHandler.json:s5\",\n        \"component/handlers/handlers-http-response-handler.json:s8\",\n        \"component/handlers/handlers-global-error-handler.json:s4\",\n        \"component/libraries/libraries-log.json:s26\"\n      ],\n      \"unused\": [\n        \"component/handlers/handlers-http-messaging-error-handler.json:s5\",\n        \"component/handlers/handlers-http-messaging-error-handler.json:s4\",\n        \"component/libraries/libraries-failure-log.json:s7\",\n        \"component/libraries/libraries-failure-log.json:s9\"\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "2bba76f7-f384-4646-9837-135b7ba1ff6d",
+  "total_cost_usd": 0.1631062,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 29712,
+    "cache_read_input_tokens": 19224,
+    "output_tokens": 2450,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 29712
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 8928,
+      "outputTokens": 47,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.009163000000000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 2450,
+      "cacheReadInputTokens": 19224,
+      "cacheCreationInputTokens": 29712,
+      "webSearchRequests": 0,
+      "costUSD": 0.1539432,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "537b385d-c9cd-4817-b1dd-ba1a54b44d2f"
+}

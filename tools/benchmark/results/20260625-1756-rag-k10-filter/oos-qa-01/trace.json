@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 22414,
+  "duration_api_ms": 21434,
+  "ttft_ms": 13769,
+  "ttft_stream_ms": 4395,
+  "time_to_request_ms": 2363,
+  "num_turns": 1,
+  "result": "### Answer\n\n参照セクションには **NablarchでWebSocketを直接サポートする方法に関する記載はありません**。NablarchはサーブレットベースのWebフロントコントローラアーキテクチャを採用しており（`processing-pattern/web-application`）、提供されているドキュメントはWebSocket機能を前提としていません。\n\n---\n\n**代替アプローチ（参照セクションの情報に基づく）**\n\nバッチ進捗をブラウザへリアルタイム通知するには、Nablarchの非同期処理パターンと組み合わせた以下の構成が現実的です。\n\n1. **テーブルをキューとして使ったメッセージング** でバッチ処理を非同期実行し、進捗状態をDBテーブルに書き込む\n2. ブラウザ側からは **WebフロントコントローラのHTTPエンドポイントへポーリング（Ajax）** で進捗を取得する\n\nWebSocketそのものについては、NablarchのWebアプリケーションはJakarta EE準拠のサーブレットコンテナ（Jetty等）上で動作するため、**Jakarta WebSocket（JSR 356 / `jakarta.websocket`）をサーブレットコンテナの機能として直接利用することは可能**ですが、これはNablarchフレームワーク自体の機能ではなくコンテナ機能です。その場合、Nablarchのハンドラキューを経由しないため、スレッドセーフ保証（`about-nablarch-policy:s8`で述べられているNablarchのスレッドセーフ設計）の対象外となる点に注意が必要です。\n\n---\n\n**推奨確認事項**\n\nWebSocketの具体的な実装方法については、参照セクションの範囲外のため、Nablarch公式ドキュメントを直接参照することをお勧めします。公式に対応状況が記載されていない場合は、Jakarta WebSocketをコンテナレベルで利用する構成か、SSE（Server-Sent Events）やポーリングによる代替実装を検討してください。",
+  "stop_reason": "end_turn",
+  "session_id": "1f8867af-5453-4bf3-90b0-967daf8229ca",
+  "total_cost_usd": 0.12680635,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 26667,
+    "cache_read_input_tokens": 19187,
+    "output_tokens": 998,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 26667
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 5883,
+      "outputTokens": 38,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.006073,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 998,
+      "cacheReadInputTokens": 19187,
+      "cacheCreationInputTokens": 26667,
+      "webSearchRequests": 0,
+      "costUSD": 0.12073335,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "b115d822-ab15-4cf2-9cd2-e14cccc9d3fb"
+}

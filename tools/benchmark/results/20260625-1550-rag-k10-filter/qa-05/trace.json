@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 34305,
+  "duration_api_ms": 21436,
+  "ttft_ms": 34158,
+  "ttft_stream_ms": 18035,
+  "time_to_request_ms": 14735,
+  "num_turns": 1,
+  "result": "### Answer\n\nNablarchのRESTfulウェブサービスでJSONを受け取ってDBに登録する実装手順を説明します。\n\n---\n\n## 1. フォームクラスの作成\n\nクライアントから送信されたJSONを受け付けるフォームクラスを作成します。プロパティは**全てString型**で宣言します。\n\n```java\npublic class ProjectForm implements Serializable {\n\n    @Required\n    @Domain(\"projectName\")\n    private String projectName;\n\n    // ゲッタ及びセッタ\n}\n```\n\n---\n\n## 2. アクションクラスの実装\n\n`@Consumes(MediaType.APPLICATION_JSON)` でJSON受付を宣言し、`@Valid` でバリデーションを行います。DBへの登録は `UniversalDao.insert()` を使います。\n\n```java\n@Path(\"/projects\")\npublic class ProjectAction {\n\n    @POST\n    @Consumes(MediaType.APPLICATION_JSON)\n    @Valid\n    public HttpResponse save(ProjectForm project) {\n        UniversalDao.insert(BeanUtil.createAndCopy(Project.class, project));\n        return new HttpResponse(HttpResponse.Status.CREATED.getStatusCode());\n    }\n}\n```\n\n**ポイント：**\n- `@Path` + `@POST` でPOSTリクエストのURLマッピングを定義\n- `BeanUtil.createAndCopy()` でフォームをエンティティに変換\n- 登録成功時はステータスコード `201` を返却\n\n---\n\n## 3. アダプタの設定（コンポーネント設定）\n\n使用するアプリサーバに応じてアダプタを選択します。ブランクプロジェクトには**Jersey用アダプタ**が組み込まれています。\n\n**Jersey環境の場合：**\n```xml\n<component name=\"packageMapping\" class=\"nablarch.integration.router.RoutesMapping\">\n  <property name=\"methodBinderFactory\">\n    <component class=\"nablarch.fw.jaxrs.JaxRsMethodBinderFactory\">\n      <property name=\"handlerList\">\n        <component class=\"nablarch.integration.jaxrs.jersey.JerseyJaxRsHandlerListFactory\"/>\n      </property>\n    </component>\n  </property>\n</component>\n```\n\n**RESTEasy環境の場合：** `JerseyJaxRsHandlerListFactory` の代わりに `ResteasyJaxRsHandlerListFactory` を使用します。\n\nいずれのアダプタを使用しても、以下のハンドラが自動設定されます：\n- **リクエストボディ変換ハンドラ**（JSONコンバータ: `Jackson2BodyConverter`）\n- **Jakarta RESTful Web Services Bean Validationハンドラ**\n\n---\n\n## 4. 処理の流れ\n\n1. WebフロントコントローラがリクエストをHTTPで受信\n2. ハンドラキューがリクエストを処理（BodyConvertHandlerがJSONをフォームに変換）\n3. アクションクラスがバリデーション後にDBへ登録\n4. `HttpResponse(201)` をクライアントに返却\n\n---\n\n## 補足\n\n- アプリサーバにJacksonがバンドルされていない場合は、Jacksonモジュールをアプリケーションと一緒にデプロイしてください\n- ルーティングアダプタを使ったURLマッピングには `@Path` アノテーションを使用します",
+  "stop_reason": "end_turn",
+  "session_id": "d2d810a5-77a4-430d-a4f1-c735c9c2639c",
+  "total_cost_usd": 0.14137,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 29882,
+    "cache_read_input_tokens": 19145,
+    "output_tokens": 953,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 29882
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 9098,
+      "outputTokens": 34,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.009268,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 953,
+      "cacheReadInputTokens": 19145,
+      "cacheCreationInputTokens": 29882,
+      "webSearchRequests": 0,
+      "costUSD": 0.132102,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "4bb372ee-fa44-4a36-b49f-574eaec23683"
+}

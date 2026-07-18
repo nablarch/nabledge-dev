@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 26423,
+  "duration_api_ms": 18585,
+  "ttft_ms": 26329,
+  "ttft_stream_ms": 11784,
+  "time_to_request_ms": 10083,
+  "num_turns": 1,
+  "result": "### Answer\n\nNablarchバッチでCSVファイルの各行をJava Beansオブジェクトとして1件ずつ読み込む実装は、以下の2ステップで行います。\n\n---\n\n## 1. フォームクラスの作成\n\nCSVをバインドするJava Beansクラスに `@Csv` / `@CsvFormat` アノテーションでフォーマットを指定します。\n\n```java\n@Csv(\n    properties = {\"age\", \"name\"},\n    headers = {\"年齢\", \"氏名\"},\n    type = Csv.CsvType.DEFAULT\n)\npublic class PersonForm {\n    private String age;   // 外部入力はすべてString型で定義すること\n    private String name;\n\n    // getter / setter 省略\n\n    private Long lineNumber;\n\n    @LineNumber  // 行番号を自動設定したい場合に付与\n    public Long getLineNumber() {\n        return lineNumber;\n    }\n}\n```\n\n**ポイント:**\n- アップロードファイル等の外部入力データは、型変換エラーを業務エラーとして扱えるよう、プロパティは**すべて `String` 型**で定義すること\n- `@LineNumber` をgetterに付与することで、何行目のデータかを自動取得できる\n\nフォーマットが標準セット以外の場合は `type = Csv.CsvType.CUSTOM` と `@CsvFormat` を組み合わせて個別指定します（文字コード、区切り文字、改行コード等）。\n\n---\n\n## 2. DataReaderの作成\n\n`DataReader<PersonForm>` を実装し、`ObjectMapperFactory` で生成した `ObjectMapper` を使って1行ずつ読み込みます。\n\n```java\npublic class PersonFileReader implements DataReader<PersonForm> {\n\n    private ObjectMapperIterator<PersonForm> iterator;\n\n    @Override\n    public PersonForm read(ExecutionContext ctx) {\n        if (iterator == null) initialize();\n        return iterator.next();\n    }\n\n    @Override\n    public boolean hasNext(ExecutionContext ctx) {\n        if (iterator == null) initialize();\n        return iterator.hasNext();\n    }\n\n    @Override\n    public void close(ExecutionContext ctx) {\n        iterator.close();\n    }\n\n    private void initialize() {\n        File file = FilePathSetting.getInstance()\n                        .getFileWithoutCreate(\"csv-input\", \"importPerson\");\n        try {\n            iterator = new ObjectMapperIterator<>(\n                ObjectMapperFactory.create(PersonForm.class, new FileInputStream(file))\n            );\n        } catch (FileNotFoundException e) {\n            throw new IllegalStateException(e);\n        }\n    }\n}\n```\n\n**ポイント:**\n- `read()` が返したデータが業務アクションハンドラへ1件ずつ引き渡される\n- `hasNext()` が `false` を返すと読み込み処理が終了する\n- `close()` で `ObjectMapperIterator#close()` を呼び出してリソースを解放する\n- `ObjectMapper` は `try-with-resources` でも使用可能（直接ループする場合）\n\n---\n\n## 直接ループする場合（参考）\n\nDataReaderを使わず直接ループ処理する場合はこちら：\n\n```java\ntry (ObjectMapper<PersonForm> mapper =\n        ObjectMapperFactory.create(PersonForm.class, inputStream)) {\n    PersonForm person;\n    while ((person = mapper.read()) != null) {\n        // 1件ずつ処理\n    }\n} catch (InvalidDataFormatException e) {\n    // フォーマット不正時の処理\n}\n```",
+  "stop_reason": "end_turn",
+  "session_id": "8fdf9de3-db9a-44fa-961d-5b7f35d60116",
+  "total_cost_usd": 0.13824499999999998,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 29122,
+    "cache_read_input_tokens": 19145,
+    "output_tokens": 983,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 29122
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 8338,
+      "outputTokens": 41,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.008543,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 983,
+      "cacheReadInputTokens": 19145,
+      "cacheCreationInputTokens": 29122,
+      "webSearchRequests": 0,
+      "costUSD": 0.12970199999999998,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "99516333-1994-4c30-bf04-d90d7c89b594"
+}

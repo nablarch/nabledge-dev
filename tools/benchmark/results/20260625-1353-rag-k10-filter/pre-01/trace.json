@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 26532,
+  "duration_api_ms": 25075,
+  "ttft_ms": 12418,
+  "ttft_stream_ms": 3897,
+  "time_to_request_ms": 2513,
+  "num_turns": 1,
+  "result": "### Answer\n\n参照セクションのコンテンツが取得できなかったため、Nablarchの一般的な知識に基づいて回答します。\n\n---\n\n## Nablarchバッチアプリケーションの起動方法と `-requestPath` の書き方\n\n### 起動コマンドの基本形\n\nNablarchバッチ（都度起動バッチ）は、以下のように `java` コマンドで起動します。\n\n```bash\njava -cp <クラスパス> nablarch.fw.launcher.Main \\\n  -diConfig <DIコンフィグファイル> \\\n  -requestPath <アクションクラス>/<リクエストID> \\\n  -userId <ユーザーID>\n```\n\n### `-requestPath` の書き方\n\n```\n-requestPath=<アクションクラスのFQCN>/<リクエストID>\n```\n\n| 部分 | 内容 |\n|------|------|\n| アクションクラスのFQCN | 実行するアクションクラスの完全修飾クラス名 |\n| リクエストID | そのバッチを識別するID（任意の文字列） |\n\n**例:**\n\n```bash\n-requestPath=com.example.batch.SampleBatchAction/SAMPLE_BATCH_001\n```\n\nまたは（クラス名のみの場合）:\n\n```bash\n-requestPath=SampleBatchAction/SAMPLE_BATCH_001\n```\n\n### 具体的な起動コマンド例\n\n```bash\njava -cp \"target/classes:target/dependency/*\" \\\n  nablarch.fw.launcher.Main \\\n  -diConfig classpath:batch-boot.xml \\\n  -requestPath com.example.batch.SampleBatchAction/SAMPLE_BATCH \\\n  -userId batch_user\n```\n\n### Mavenプロジェクトでの起動（ブランクプロジェクト標準）\n\n```bash\nmvn exec:java \\\n  -Dexec.mainClass=nablarch.fw.launcher.Main \\\n  -Dexec.args=\"-diConfig classpath:batch-boot.xml -requestPath com.example.SampleBatchAction/SAMPLE -userId batch\"\n```\n\n### アクションクラスの実装イメージ\n\n```java\npublic class SampleBatchAction extends BatchAction<SqlRow> {\n    @Override\n    public Result handle(SqlRow inputData, ExecutionContext ctx) {\n        // バッチ処理本体\n        return new Result.Success();\n    }\n}\n```\n\n---\n\n> **注意**: 参照ナレッジセクション（`nablarch-batch-architecture.json` 等）のコンテンツが取得できなかったため、上記はNablarchの一般知識に基づく回答です。プロジェクトの実際の設定と照合してご確認ください。\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_sections\": [\n      {\n        \"file\": \"nablarch-batch-architecture.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-batch-architecture.json\",\n        \"section_id\": \"s2\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-patterns-Nablarchバッチ処理パターン.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"blank-project-setup-NablarchBatch.json\",\n        \"section_id\": \"s13\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-batch-feature-details.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-batch-architecture.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"blank-project-setup-NablarchBatch.json\",\n        \"section_id\": \"s9\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"handlers-main.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-batch-architecture.json\",\n        \"section_id\": \"s8\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-batch-architecture.json\",\n        \"section_id\": \"s4\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      }\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"nablarch-batch-architecture.json:s1\",\n      \"nablarch-batch-architecture.json:s2\",\n      \"nablarch-patterns-Nablarchバッチ処理パターン.json:s1\",\n      \"blank-project-setup-NablarchBatch.json:s13\",\n      \"nablarch-batch-feature-details.json:s1\",\n      \"nablarch-batch-architecture.json:s3\",\n      \"blank-project-setup-NablarchBatch.json:s9\",\n      \"handlers-main.json:s3\",\n      \"nablarch-batch-architecture.json:s8\",\n      \"nablarch-batch-architecture.json:s4\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [],\n      \"unused\": [\n        \"nablarch-batch-architecture.json:s1\",\n        \"nablarch-batch-architecture.json:s2\",\n        \"nablarch-patterns-Nablarchバッチ処理パターン.json:s1\",\n        \"blank-project-setup-NablarchBatch.json:s13\",\n        \"nablarch-batch-feature-details.json:s1\",\n        \"nablarch-batch-architecture.json:s3\",\n        \"blank-project-setup-NablarchBatch.json:s9\",\n        \"handlers-main.json:s3\",\n        \"nablarch-batch-architecture.json:s8\",\n        \"nablarch-batch-architecture.json:s4\"\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "b312a05a-af57-45d3-bebc-81526157438e",
+  "total_cost_usd": 0.19230425,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 41827,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 2220,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 41827
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 1942,
+      "outputTokens": 41,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002147,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 2220,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 41827,
+      "webSearchRequests": 0,
+      "costUSD": 0.19015725,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "00f19d48-03b1-492d-8be4-f549784d27b9"
+}

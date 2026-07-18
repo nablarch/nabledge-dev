@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 33009,
+  "duration_api_ms": 20269,
+  "ttft_ms": 17014,
+  "ttft_stream_ms": 15706,
+  "time_to_request_ms": 14183,
+  "num_turns": 1,
+  "result": "### Answer\n\nDBから読み込んで別テーブルに書き込む定期集計処理は、**都度起動バッチ × DB to DB パターン**で実装するのが適切です。\n\n---\n\n**構成の選択根拠**\n\n- **起動方式：都度起動バッチ**\n  - 日次・月次などの定期実行には都度起動バッチを使います。プロセスをその都度起動して処理を完結させます。\n  - 常駐バッチはDBを監視して非同期処理する用途向けであり、定期集計には不要です。\n\n- **入出力パターン：DB to DB**\n  - 入力はSELECT文の結果セットの各レコードです（`createReader` で発行）。\n  - `handleメソッド` で1レコード分のデータを受け取り、集計結果テーブルをINSERT/UPDATEします。\n  - 1レコードの処理中に行われる更新はすべて同一トランザクション下で実行されるため、障害発生時も不整合が発生しません。\n\n---\n\n**実装上の注意点**\n\n**N+1問題を避ける（重要）**\n\n集計に必要な関連データを `handleメソッド` 内で都度SELECTすると、処理件数Nに対してN+1回のSQLが発行され深刻な性能劣化が起きます。`createReader` で発行するSQLにJOINを含め、1回で必要なデータをすべて取得するようにしてください。\n\n**処理の流れ（アーキテクチャ）**\n\n1. 共通起動ランチャ（Main）がハンドラキューを実行\n2. DataReader が集計対象レコードを1件ずつ提供（SELECT）\n3. DispatchHandler がリクエストパスからアクションクラスを特定\n4. アクションクラスの `handleメソッド` で集計ロジックを実行し、結果テーブルへINSERT/UPDATE\n5. 処理対象データがなくなるまで2〜4を繰り返す\n\n**ファイルを扱う場合**\n\n今回はDB to DBなので不要ですが、もし将来ファイル出力が加わる場合（DB to FILE）は、ファイル移動・コピー処理をバッチ本体に含めず別出しにしてください。再実行しやすさとテスタビリティが向上します。\n\n---\n\n**まとめ**\n\n| 項目 | 選択 |\n|------|------|\n| 起動方式 | 都度起動バッチ |\n| 入出力パターン | DB to DB |\n| 入力 | `createReader` でSELECT（JOINで必要データを一括取得） |\n| 出力 | `handleメソッド` で集計結果テーブルへINSERT/UPDATE |\n| トランザクション | 1レコード処理ごとに同一トランザクション内で完結 |",
+  "stop_reason": "end_turn",
+  "session_id": "1500ab1e-353a-4ada-a624-c50e1b3a94dc",
+  "total_cost_usd": 0.14437335,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 32311,
+    "cache_read_input_tokens": 12757,
+    "output_tokens": 938,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 32311
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 5139,
+      "outputTokens": 33,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0053040000000000006,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 938,
+      "cacheReadInputTokens": 12757,
+      "cacheCreationInputTokens": 32311,
+      "webSearchRequests": 0,
+      "costUSD": 0.13906935,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "41a3cf25-684e-43a6-b0d4-10f81d251c1a"
+}

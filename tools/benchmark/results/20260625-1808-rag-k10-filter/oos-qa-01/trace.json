@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 28314,
+  "duration_api_ms": 27887,
+  "ttft_ms": 10376,
+  "ttft_stream_ms": 3764,
+  "time_to_request_ms": 2034,
+  "num_turns": 1,
+  "result": "### Answer\n\n提供されたセクションの中に、NablarchがWebSocketを直接サポートするという記述はありません。\n\n**参照セクションから分かること：**\n\nNablarchのバッチ進捗をブラウザへリアルタイム通知する場合、参照セクションが示す方式を組み合わせるのが現実的なアプローチです。\n\n1. **非同期処理方式**（`nablarch-patterns-Nablarchでの非同期処理.json:s1`）：  \n   オンライン処理で処理要求を受け付け、**テーブルをキューとして使ったメッセージング**でバッチを非同期実行するパターンが推奨されています。進捗状態もDBテーブルで管理できます。\n\n2. **WebSocketについて**：  \n   Nablarchのウェブアプリケーション（`web-application-feature-details.json:s1`）はサーブレットベースのアーキテクチャを採用していますが、WebSocketのサポートに関する記述は参照セクションには含まれていません。\n\n**代替アプローチ（参照セクションの範囲内）：**\n\n- バッチの進捗状態をDBテーブルに書き込み、ブラウザ側からHTTP **ポーリング**で取得する方式が、Nablarchの設計思想（ハンドラキューベースのリクエスト処理）と整合します。\n- WebSocketが必須の場合は、Nablarchの範囲外となるため、Jakarta EE 10のWebSocket API（`jakarta.websocket`）を直接実装するか、専用のWebSocketライブラリを併用することになります。\n\n**結論：** NablarchにはWebSocketを提供する組み込み機能は確認されていません。進捗通知の実現にはDBベースのポーリング方式が最もNablarchのアーキテクチャと合致します。WebSocketが必要な場合は、Jakarta EEのWebSocket APIをNablarchと並用する構成を検討してください。詳細はNablarchの公式ドキュメントまたはサポートチャネルでご確認ください。\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_sections\": [\n      {\n        \"file\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"about/about-nablarch/about-nablarch-policy.json\",\n        \"section_id\": \"s8\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json\",\n        \"section_id\": \"s13\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"setup/cloud-native/cloud-native-containerize.json\",\n        \"section_id\": \"s5\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"about/migration/migration-migration.json\",\n        \"section_id\": \"s24\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"setup/blank-project/blank-project-setup-NablarchBatch.json\",\n        \"section_id\": \"s9\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json\",\n        \"section_id\": \"s6\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"setup/blank-project/blank-project-setup-Web.json\",\n        \"section_id\": \"s7\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"processing-pattern/web-application/web-application-feature-details.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      }\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1\",\n      \"guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1\",\n      \"about/about-nablarch/about-nablarch-policy.json:s8\",\n      \"guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s13\",\n      \"setup/cloud-native/cloud-native-containerize.json:s5\",\n      \"about/migration/migration-migration.json:s24\",\n      \"setup/blank-project/blank-project-setup-NablarchBatch.json:s9\",\n      \"guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s6\",\n      \"setup/blank-project/blank-project-setup-Web.json:s7\",\n      \"processing-pattern/web-application/web-application-feature-details.json:s1\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        \"guide/nablarch-patterns/nablarch-patterns-Nablarchでの非同期処理.json:s1\",\n        \"guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1\",\n        \"processing-pattern/web-application/web-application-feature-details.json:s1\"\n      ],\n      \"unused\": [\n        \"about/about-nablarch/about-nablarch-policy.json:s8\",\n        \"guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s13\",\n        \"setup/cloud-native/cloud-native-containerize.json:s5\",\n        \"about/migration/migration-migration.json:s24\",\n        \"setup/blank-project/blank-project-setup-NablarchBatch.json:s9\",\n        \"guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s6\",\n        \"setup/blank-project/blank-project-setup-Web.json:s7\"\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "65c35bb7-94cb-491c-89c3-cb63de52b9db",
+  "total_cost_usd": 0.14502435,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 26667,
+    "cache_read_input_tokens": 19197,
+    "output_tokens": 2212,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 26667
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 5883,
+      "outputTokens": 39,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.006078,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 2212,
+      "cacheReadInputTokens": 19197,
+      "cacheCreationInputTokens": 26667,
+      "webSearchRequests": 0,
+      "costUSD": 0.13894635,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "5f2ef887-af02-482a-ac77-fed825007a2d"
+}

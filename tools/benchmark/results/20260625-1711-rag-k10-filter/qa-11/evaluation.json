@@ -1,0 +1,71 @@
+{
+  "scenario_id": "qa-11",
+  "description": "Webアプリケーションのエラーハンドリング。HttpErrorHandler + OnError でエラー画面に遷移する仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "HttpErrorHandlerが例外種別に応じたステータスコードのレスポンスを返し、ApplicationExceptionのエラーメッセージをリクエストスコープに設定する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output covers both key facts from the expected output: (1) HttpErrorHandler returning responses with status codes based on exception type (shown in the detailed table mapping exceptions to HTTP responses), and (2) ApplicationException error messages being set to request scope (explicitly described in the 'HttpErrorHandlerのApplicationExceptionに対する特別処理' section, mentioning ErrorMessages being set to request scope with default key 'errors'). Both facts from the expected output checklist are fully present and accurately addressed."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response directly and completely addresses the question about the error handling mechanism, including how error screens are displayed and logs are output when errors occur. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9375,
+      "reason": "The score is 0.94 because there are two minor contradictions: the actual output incorrectly describes NoMoreHandlerException as meaning 'there was no handler to process the Action' and mentions it being recorded as an audit log (証跡ログ), while the retrieval context states it means 'there was no handler to process the request' with no mention of audit logging. Additionally, the actual output misapplies the writeFailureLogPattern regex matching for FATAL log output, associating it with Result.Error in general, whereas the retrieval context specifies this pattern applies to the context of Error#getStatusCode() matching, not Result.Error broadly."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-log.json:s27",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-http-messaging-error-handler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-http-response-handler.json:s8",
+      "component/libraries/libraries-failure-log.json:s7",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-http-messaging-error-handler.json:s4",
+      "component/libraries/libraries-failure-log.json:s9",
+      "component/libraries/libraries-log.json:s26"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 36660,
+    "duration_api_ms": 36036,
+    "num_turns": 1,
+    "total_cost_usd": 0.1631062,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 2450,
+      "cache_read_input_tokens": 19224,
+      "cache_creation_input_tokens": 29712
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 8928,
+        "outputTokens": 47,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.009163000000000001,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 2450,
+        "cacheReadInputTokens": 19224,
+        "cacheCreationInputTokens": 29712,
+        "webSearchRequests": 0,
+        "costUSD": 0.1539432,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "scenario_id": "impact-08",
+  "description": "テスト時にシステム日時を固定して日付依存のロジックを検証したい。本番ではOS日時を使うが、テスト時だけ差し替えたい。",
+  "input": "テスト時だけシステム日時を任意の日付に差し替える方法はあるか？本番とテストで切り替えたい",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "コンポーネント定義で指定するクラスを差し替えることでシステム日時の取得方法を切り替えられる"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Expected Output contains one key fact: that the system date/time acquisition method can be switched by replacing the class specified in the component definition. The Actual Output explicitly covers this fact, stating that by replacing the implementation class in the component definition, the system date/time acquisition can be switched between production and test environments. This is directly and equivalently stated in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant, directly addressing the question about how to replace the system date/time with an arbitrary date during testing and how to switch between production and test environments. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.875,
+      "reason": "The score is 0.88 because the actual output contains two contradictions: it incorrectly states the fixedDate value should be '20100914123456' (September 14) when the retrieval context specifies '20100913123456' (September 13), and it incorrectly describes the supported formats as 14-digit and 17-digit, when the retrieval context actually specifies 12-digit ('yyyyMMddHHmmss') and 15-digit ('yyyyMMddHHmmssSSS') formats."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-date.json:s12",
+      "component/libraries/libraries-date.json:s2",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s11",
+      "development-tools/testing-framework/testing-framework-03-Tips.json:s12",
+      "component/libraries/libraries-date.json:s13",
+      "component/libraries/libraries-date.json:s9",
+      "development-tools/testing-framework/testing-framework-01-Abstract.json:s15",
+      "component/libraries/libraries-date.json:s5",
+      "development-tools/testing-framework/testing-framework-01-Abstract.json:s18",
+      "releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s6"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 23104,
+    "duration_api_ms": 22245,
+    "num_turns": 1,
+    "total_cost_usd": 0.15640735000000003,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 1896,
+      "cache_read_input_tokens": 12757,
+      "cache_creation_input_tokens": 31827
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 4613,
+        "outputTokens": 34,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.004783,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 1896,
+        "cacheReadInputTokens": 12757,
+        "cacheCreationInputTokens": 31827,
+        "webSearchRequests": 0,
+        "costUSD": 0.15162435000000002,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}
