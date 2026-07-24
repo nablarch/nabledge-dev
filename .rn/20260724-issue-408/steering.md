@@ -37,7 +37,7 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 # Tasks
 
-### #1: Analyze commits since last release (release.md Step 1)
+### #1: Analyze commits since last release (release.md Step 1) — DONE
 
 **Purpose**: 前回リリース（0.11）以降のコミットをデプロイ対象スコープで分類し、ユーザー影響を `.work/00408/notes.md` に記録してユーザーに確認してもらう。
 
@@ -141,6 +141,6 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 - **Status**: not suspended
 - **Date**: 2026-07-24
-- **Last completed**: (none)
-- **Next**: #1 Analyze commits since last release
+- **Last completed**: #1 Analyze commits since last release
+- **Next**: #2 Update all plugin.json and CHANGELOG files to version 1.0
 - **Notes**: branch: worktree-issue-408. Draft PR: https://github.com/nablarch/nabledge-dev/pull/409
