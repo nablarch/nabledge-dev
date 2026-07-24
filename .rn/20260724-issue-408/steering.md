@@ -57,7 +57,7 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 - `.work/00408/notes.md` に前回リリース以降の全コミットのユーザー影響分類が記録されている
 - ユーザーが内容を確認している
 
-### #2: Update all plugin.json and CHANGELOG files to version 1.0 (release.md Steps 2–3)
+### #2: Update all plugin.json and CHANGELOG files to version 1.0 (release.md Steps 2–3) — DONE
 
 **Purpose**: [Unreleased] セクションを確認（今回は空）したうえで、全6ファイルのバージョンを 1.0 に更新し、全5プラグインの CHANGELOG に [1.0] 安定版宣言セクションとタグリンクを追加し、marketplace CHANGELOG の対応表を更新する。
 
@@ -141,6 +141,6 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 - **Status**: not suspended
 - **Date**: 2026-07-24
-- **Last completed**: #1 Analyze commits since last release
-- **Next**: #2 Update all plugin.json and CHANGELOG files to version 1.0
+- **Last completed**: #2 Update all plugin.json and CHANGELOG files to version 1.0
+- **Next**: #3 Verify against previous release PR
 - **Notes**: branch: worktree-issue-408. Draft PR: https://github.com/nablarch/nabledge-dev/pull/409
