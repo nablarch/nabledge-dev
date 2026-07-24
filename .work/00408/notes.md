@@ -17,3 +17,39 @@ Previous release commit: 3c08678f — docs: release marketplace 0.11 — QA/code
 | 989db060 | docs: add release commit analysis for marketplace 1.0 | NO | Changes only in `.work/00408/` — dev-only work log |
 
 **Summary**: 7 commits total, 0 with user impact, 7 dev-only
+
+### Verification against previous release PR
+
+Previous release PR: #400 — docs: release marketplace 0.11 — QA/code-analysis output improvements (#399)
+
+**Previous release files (release-essential only)**:
+- `.claude/marketplace/.claude-plugin/marketplace.json`
+- `.claude/marketplace/CHANGELOG.md`
+- `.claude/skills/nabledge-1.2/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-1.2/plugin/plugin.json`
+- `.claude/skills/nabledge-1.3/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-1.3/plugin/plugin.json`
+- `.claude/skills/nabledge-1.4/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-1.4/plugin/plugin.json`
+- `.claude/skills/nabledge-5/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-5/plugin/plugin.json`
+- `.claude/skills/nabledge-6/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-6/plugin/plugin.json`
+
+(Non-release-essential excluded: `.claude/rules/release.md`, `.rn/`, `.work/00399/`)
+
+**Current release files (release-essential)**:
+- `.claude/marketplace/.claude-plugin/marketplace.json`
+- `.claude/marketplace/CHANGELOG.md`
+- `.claude/skills/nabledge-1.2/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-1.2/plugin/plugin.json`
+- `.claude/skills/nabledge-1.3/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-1.3/plugin/plugin.json`
+- `.claude/skills/nabledge-1.4/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-1.4/plugin/plugin.json`
+- `.claude/skills/nabledge-5/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-5/plugin/plugin.json`
+- `.claude/skills/nabledge-6/plugin/CHANGELOG.md`
+- `.claude/skills/nabledge-6/plugin/plugin.json`
+
+**Comparison**: All required files present — exact match with previous release PR's release-essential set.
