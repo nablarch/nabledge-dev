@@ -37,14 +37,35 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 # Tasks
 
-### #1: Update all plugin.json and CHANGELOG files to version 1.0
+### #1: Analyze commits since last release (release.md Step 1)
 
-**Purpose**: 全6ファイル（5プラグイン plugin.json + marketplace.json）のバージョンを 1.0 に更新し、全5プラグインの CHANGELOG に [1.0] 安定版宣言セクションを追加し、marketplace CHANGELOG の対応表を更新する。
+**Purpose**: 前回リリース（0.11）以降のコミットをデプロイ対象スコープで分類し、ユーザー影響を `.work/00408/notes.md` に記録してユーザーに確認してもらう。
 
 **Prerequisites**: none
 
 **Steps**:
 
+- [ ] `git fetch origin main`
+- [ ] 前回リリースコミット SHA を特定（`git log --oneline origin/main | grep "release marketplace 0.11"`）
+- [ ] `git log --oneline {sha}..origin/main` でコミット一覧を取得
+- [ ] 各コミットについてデプロイ対象スコープ（release.md Step 1 の表）でユーザー影響を分類
+- [ ] 結果を `.work/00408/notes.md` に記録
+- [ ] ユーザーに提示して確認を取る
+
+**Completion criteria**:
+
+- `.work/00408/notes.md` に前回リリース以降の全コミットのユーザー影響分類が記録されている
+- ユーザーが内容を確認している
+
+### #2: Update all plugin.json and CHANGELOG files to version 1.0 (release.md Steps 2–3)
+
+**Purpose**: [Unreleased] セクションを確認（今回は空）したうえで、全6ファイルのバージョンを 1.0 に更新し、全5プラグインの CHANGELOG に [1.0] 安定版宣言セクションとタグリンクを追加し、marketplace CHANGELOG の対応表を更新する。
+
+**Prerequisites**: #1
+
+**Steps**:
+
+- [ ] 各プラグインの CHANGELOG の [Unreleased] セクションを確認（空であることを確認）
 - [ ] nabledge-6/plugin/plugin.json: `"version": "1.0"` に更新
 - [ ] nabledge-5/plugin/plugin.json: `"version": "1.0"` に更新
 - [ ] nabledge-1.4/plugin/plugin.json: `"version": "1.0"` に更新
@@ -57,7 +78,7 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 - [ ] nabledge-1.3/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
 - [ ] nabledge-1.2/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
 - [ ] marketplace/CHANGELOG.md: 対応表に `1.0` 行を追加
-- [ ] self-check (OK/NG per completion criterion, record in checks/task-1.md)
+- [ ] self-check (OK/NG per completion criterion, record in checks/task-2.md)
 
 **Completion criteria**:
 
@@ -66,13 +87,29 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 - 全5プラグインの `CHANGELOG.md` に `## [1.0] - 2026-07-24` セクションが存在し、安定版宣言の文言を含む
 - 全5プラグインの `CHANGELOG.md` の末尾に `[1.0]: https://github.com/nablarch/nabledge/releases/tag/1.0` タグリンクが存在する
 - marketplace `CHANGELOG.md` の対応表に `1.0` 行があり、全5プラグインのリンクが含まれている
-- Keep a Changelog フォーマット違反がない（新しいバージョン番号は既存の最新バージョンより上にある）
+- Keep a Changelog フォーマット違反がない
 
-### #2: Create PR
+### #3: Verify against previous release PR (release.md Step 4)
+
+**Purpose**: 直前リリースPR（0.11）と変更ファイルを比較して漏れがないか確認し、結果を `.work/00408/notes.md` に記録する。
+
+**Prerequisites**: #2
+
+**Steps**:
+
+- [ ] 直前リリースPR の変更ファイルを `gh pr list` / `gh pr view` で確認
+- [ ] 今回の変更ファイルと比較してリリース必須ファイルの過不足を確認
+- [ ] 結果を `.work/00408/notes.md` に追記
+
+**Completion criteria**:
+
+- `.work/00408/notes.md` にファイル比較結果が記録されており、リリース必須ファイルの漏れがない
+
+### #4: Create PR (release.md Step 5)
 
 **Purpose**: 変更内容をコミット・プッシュし、issue #408 を閉じる PR を作成する。
 
-**Prerequisites**: #1
+**Prerequisites**: #3
 
 **Steps**:
 
@@ -85,11 +122,11 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 - PR が draft でない状態で開かれており、タイトルに `feat:` が含まれ issue #408 を参照している
 - PR body に `Closes #408` が含まれている
 
-### #3: Evaluation sign-off
+### #5: Evaluation sign-off
 
 **Purpose**: Acceptance criteria の全項目が満たされていることをユーザーに確認してもらい、セッションを完了する。
 
-**Prerequisites**: #2
+**Prerequisites**: #4
 
 **Steps**:
 
@@ -105,5 +142,5 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 - **Status**: not suspended
 - **Date**: 2026-07-24
 - **Last completed**: (none)
-- **Next**: #1 Update all plugin.json and CHANGELOG files to version 1.0
-- **Notes**: branch: worktree-issue-408. No functional changes — version bump + stable release declaration only.
+- **Next**: #1 Analyze commits since last release
+- **Notes**: branch: worktree-issue-408. Draft PR: https://github.com/nablarch/nabledge-dev/pull/409
