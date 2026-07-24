@@ -89,7 +89,7 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 - marketplace `CHANGELOG.md` の対応表に `1.0` 行があり、全5プラグインのリンクが含まれている
 - Keep a Changelog フォーマット違反がない
 
-### #3: Verify against previous release PR (release.md Step 4)
+### #3: Verify against previous release PR (release.md Step 4) — DONE
 
 **Purpose**: 直前リリースPR（0.11）と変更ファイルを比較して漏れがないか確認し、結果を `.work/00408/notes.md` に記録する。
 
@@ -141,6 +141,6 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 - **Status**: not suspended
 - **Date**: 2026-07-24
-- **Last completed**: #2 Update all plugin.json and CHANGELOG files to version 1.0
-- **Next**: #3 Verify against previous release PR
+- **Last completed**: #3 Verify against previous release PR
+- **Next**: #4 Create PR
 - **Notes**: branch: worktree-issue-408. Draft PR: https://github.com/nablarch/nabledge-dev/pull/409
