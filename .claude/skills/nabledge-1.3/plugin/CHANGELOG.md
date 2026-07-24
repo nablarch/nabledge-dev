@@ -4,6 +4,12 @@ nabledge-1.3プラグインの主な変更内容を記録しています。
 
 フォーマットは [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) に基づいています。
 
+## [1.0] - 2026-07-24
+
+### 変更
+
+- バージョン1.0として安定版リリースしました。全Nablarchバージョン（6、5、1.4、1.3、1.2）に対応し、知識生成パイプラインはルールベースで動作します。コア機能（Q&A、コード分析）が揃い、本番環境での利用に適した品質水準に達したことを宣言します。
+
 ## [0.4] - 2026-07-10
 
 ### 変更
@@ -38,6 +44,7 @@ nabledge-1.3プラグインの主な変更内容を記録しています。
 
 - Nablarch 1.3の全ドキュメントをカバーする知識ファイルを追加しました。
 
+[1.0]: https://github.com/nablarch/nabledge/releases/tag/1.0
 [0.4]: https://github.com/nablarch/nabledge/releases/tag/0.11
 [0.3]: https://github.com/nablarch/nabledge/releases/tag/0.10
 [0.2]: https://github.com/nablarch/nabledge/releases/tag/0.9
