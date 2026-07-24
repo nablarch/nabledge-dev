@@ -139,8 +139,8 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 # State
 
-- **Status**: not suspended
+- **Status**: paused
 - **Date**: 2026-07-24
 - **Last completed**: #4 Create PR
 - **Next**: #5 Evaluation sign-off
-- **Notes**: branch: worktree-issue-408. Draft PR: https://github.com/nablarch/nabledge-dev/pull/409
+- **Notes**: branch: worktree-issue-408. PR #410 open (Closes #408). Blocker: release.md Step 1 and Step 2 required user confirmation before proceeding, but the session skipped those gates — user never saw the commit analysis or the CHANGELOG content before files were written. Resume after user has reviewed PR #410 content on GitHub and confirmed it is acceptable, or after correcting the content.
