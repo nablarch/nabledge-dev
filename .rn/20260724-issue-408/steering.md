@@ -105,7 +105,7 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 - `.work/00408/notes.md` にファイル比較結果が記録されており、リリース必須ファイルの漏れがない
 
-### #4: Create PR (release.md Step 5)
+### #4: Create PR (release.md Step 5) — DONE
 
 **Purpose**: 変更内容をコミット・プッシュし、issue #408 を閉じる PR を作成する。
 
@@ -141,6 +141,6 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 - **Status**: not suspended
 - **Date**: 2026-07-24
-- **Last completed**: #3 Verify against previous release PR
-- **Next**: #4 Create PR
+- **Last completed**: #4 Create PR
+- **Next**: #5 Evaluation sign-off
 - **Notes**: branch: worktree-issue-408. Draft PR: https://github.com/nablarch/nabledge-dev/pull/409
