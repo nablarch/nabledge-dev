@@ -139,4 +139,8 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 # State
 
-<!-- placeholder -->
+- **Status**: paused
+- **Date**: 2026-07-27
+- **Last completed**: #4 Create PR (release date corrected to 2026-07-28 and pushed)
+- **Next**: #5 Evaluation sign-off
+- **Notes**: PR #410 open (Closes #408). All Acceptance criteria verified OK. Awaiting /rn:ty from user.
