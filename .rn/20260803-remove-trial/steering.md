@@ -59,8 +59,8 @@ Rn version: 0.8.0
 
 **Steps**:
 
-- [ ] Acceptance criteria 全項目の充足を確認
-- [ ] 結果をユーザーに提示し `/rn:ty` または `/rn:gm` で承認を得る
+- [x] Acceptance criteria 全項目の充足を確認
+- [x] 結果をユーザーに提示し `/rn:ty` または `/rn:gm` で承認を得る
 
 **Completion criteria**:
 
