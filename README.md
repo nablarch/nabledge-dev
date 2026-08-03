@@ -1,6 +1,6 @@
 # nabledge-dev
 
-[Nabledge](https://github.com/nablarch/nabledge) の開発リポジトリ
+[Nabledge](https://github.com/nablarch/nabledge) スキルの開発リポジトリです。
 
 ## ドキュメント
 
@@ -42,6 +42,8 @@ claude
 
 ## 開発
 
+プルリクエスト経由で **main** ブランチに変更をマージします。変更は [nablarch/nabledge:develop](https://github.com/nablarch/nabledge/tree/develop) に自動同期されます。
+
 ### フロー
 
 ```mermaid
@@ -61,61 +63,32 @@ flowchart LR
 
 ### 手順
 
-#### カスタムスラッシュコマンド
+作業は `/hi <issue_number>` で開始します。ブランチ作成・実装・PR 作成まで一通り実行されます。
 
-このリポジトリには開発ワークフローを効率化するカスタムスラッシュコマンドが用意されています：
+| コマンド | 用途 |
+|---|---|
+| `/hi <number>` | イシューから PR 作成まで一通り実行 |
+| `/fb <number>` | レビューフィードバックへの対応 |
+| `/bb <number>` | PR のマージとブランチ削除 |
 
-##### /hi - フル開発ワークフロー
-イシュー起票から PR レビュー依頼まで一通りのワークフローを実行します：
-```
-/hi 123        # イシュー #123 の作業を開始
-/hi 456        # イシュー/PR #456 の作業を再開
-/hi            # インタラクティブ選択
-```
-ブランチの作成・変更の実装・テストの実行・PR の作成まで自動で行います。
+**ナレッジファイルの再生成（RBKC）**
 
-##### /fb - レビューフィードバック対応
-PR レビューのフィードバックに対応します：
-```
-/fb 456        # PR #456 のレビューに対応
-/fb            # 現在のブランチから自動検出
-```
-コメントを取得し、修正を実装してコミット後、レビュアーに返信します。
-
-##### /bb - マージとクリーンアップ
-PR の承認・マージとブランチの後片付けを行います：
-```
-/bb 456        # PR #456 をマージしてブランチを削除
-/bb            # 現在のブランチから自動検出
-```
-PR を承認してマージし、HEAD を main に切り替えてブランチを削除します。
-
-#### スキルの改善・バグ修正
-
-イシューを起票して `/hi <issue_number>` でフル開発ワークフローを開始します。
-
-スキルの改善によってナレッジファイルの再生成が必要な場合は RBKC を実行します（`<v>` は `6`, `5`, `1.4`, `1.3`, `1.2` のいずれか）：
+スキルの改善によってナレッジファイルの再生成が必要な場合：
 
 ```bash
-bash tools/rbkc/rbkc.sh create <v>
+bash tools/rbkc/rbkc.sh create <v>   # v = 6 / 5 / 1.4 / 1.3 / 1.2
 bash tools/rbkc/rbkc.sh verify <v>
 ```
 
-RBKC コード自体を変更した場合は、**5 バージョン全て**に対して実行する必要があります。詳細は `.claude/rules/rbkc.md` を参照してください。
+RBKC コード自体を変更した場合は 5 バージョン全てに対して実行します（詳細: `.claude/rules/rbkc.md`）。
 
-#### Nablarch ソース更新
+**Nablarch ソース更新**
 
-`.lw/nab-official/` に格納された Nablarch 公式ドキュメントを最新化するには `setup.sh` を実行します（Git リポジトリは `git pull`、SVN リポジトリは `svn update` で更新されます）：
+`.lw/nab-official/` の Nablarch 公式ドキュメントを最新化する場合は `./setup.sh` を再実行し、その後 RBKC を再実行します。
 
-```bash
-SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup.sh
-```
+**ベンチマーク**
 
-ソースを更新したら、RBKC を再実行してナレッジファイルを再生成してください（上記コマンドを参照）。
-
-#### ベンチマーク
-
-スキルの回答精度・品質をシナリオベースで定量評価します。スキルの回答品質に影響する変更（プロンプト・ワークフロー・ナレッジファイル）を PR に含む場合に実行し、改善効果または退行がないことを確認します。実行手順は [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md) を参照してください。
+プロンプト・ワークフロー・ナレッジファイルに影響する変更は、PR 前にベンチマークを実行して改善効果または退行がないことを確認します（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)）。
 
 ## リリース
 
@@ -124,7 +97,7 @@ SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup.s
 ```mermaid
 flowchart LR
     DEV["nablarch/nabledge<br/>develop"]
-    TEST["開発バージョンの<br/>テスト"]
+    TEST["セットアップ検証"]
     RB["nablarch/nabledge<br/>release/{version}"]
     RELEASE["nablarch/nabledge<br/>main（リリース）"]
 
@@ -135,34 +108,13 @@ flowchart LR
 
 ### 手順
 
-バージョンファイルと CHANGELOG の更新はこのリポジトリ（nabledge-dev）で行います。その後、[nablarch/nabledge](https://github.com/nablarch/nabledge) リポジトリでリリース作業を行います。
+バージョンファイルと CHANGELOG の更新はこのリポジトリ（nabledge-dev）で行います（詳細: `.claude/rules/release.md`）。その後、[nablarch/nabledge](https://github.com/nablarch/nabledge) リポジトリで以下を実施します：
 
-詳細なリリースワークフローは `.claude/rules/release.md` を参照してください。
-
-#### 開発バージョンのテスト
-
-nablarch/nabledge:develop での動作確認手順は [test-setup.sh — セットアップテスト手順](tools/tests/README.md) を参照してください。
-
-#### リリース前セットアップ検証
-
-nablarch/nabledge でのリリース作業を開始する前に、セットアップスクリプトが正常動作することを確認します。
-
-```bash
-bash tools/tests/test-setup.sh
-```
-
-全バージョン（v6 / v5 / v1.4 / v1.3 / v1.2）のセットアップを検証し、すべて PASS / WARN になることを確認してください。詳細な手順と結果の見方は [test-setup.sh — セットアップテスト手順](tools/tests/README.md) を参照してください。
-
-#### nablarch/nabledge リポジトリでの手順
-
-1. **リリースブランチを作成** - `develop` から `release/{version}` ブランチを作成
-2. **差分確認用 PR を作成** - `release/{version}` から `main` へ PR を作成し、変更内容をレビュー
-3. **PR をマージ** - リリース OK になったら PR を承認してマージ
+1. **セットアップ検証** — `bash tools/tests/test-setup.sh` を実行し、全バージョンが PASS / WARN になることを確認（詳細: [test-setup.sh — セットアップテスト手順](tools/tests/README.md)）
+2. **リリースブランチを作成** — `develop` から `release/{version}` ブランチを作成
+3. **PR を作成・マージ** — `release/{version}` から `main` へ PR を作成し、承認後マージ
 
 ## フィードバック
 
-### 公開済みの nabledge スキルについて
-[nablarch/nabledge Issues](https://github.com/nablarch/nabledge/issues) にイシューを登録するか、機能リクエストをお送りください。他のユーザーも検索・参照しやすくなります。
-
-### 未リリースの開発作業について
-[nablarch/nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues) にイシューを登録するか、変更内容について議論してください。
+- 公開済みのスキルについて: [nablarch/nabledge Issues](https://github.com/nablarch/nabledge/issues)
+- 開発中の作業について: [nablarch/nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues)
