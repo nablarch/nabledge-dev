@@ -51,6 +51,17 @@ Apply labels to all Issues and PRs when creating them:
 
 **Why labels matter**: `bug` label feeds into DORA Change Failure Rate and MTTR metrics. Mislabeled PRs will skew these metrics.
 
+## Updating Issues
+
+When revising an issue in response to feedback, **edit the existing issue** — do not close it and create a new one. Closing and recreating leaves stale issues in the tracker.
+
+```bash
+gh issue edit <number> --title "..." --body "$(cat <<'EOF'
+...body...
+EOF
+)"
+```
+
 ## Markdown in gh CLI Commands
 
 When creating or editing issues/PRs via `gh issue create` / `gh issue edit`, use a single-quoted heredoc:
