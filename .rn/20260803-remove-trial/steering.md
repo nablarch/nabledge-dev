@@ -68,8 +68,5 @@ Rn version: 0.8.0
 
 # State
 
-- **Status**: not suspended
-- **Date**: 2026-08-03
-- **Last completed**: (none)
-- **Next**: #1 5つのプラグイン README から評価版ブロックを削除する
-- **Notes**: ブランチ `worktree-remove-trial`、タスクは単純削除のみで設計判断なし
+<!-- rn:state -->
+<!-- rn:end -->
