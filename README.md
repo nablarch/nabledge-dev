@@ -50,16 +50,20 @@ claude
 flowchart LR
     MAIN["nabledge-dev<br/>main"]
     WB["nabledge-dev<br/>ワーキングブランチ"]
+    BM["ベンチマーク<br/>（影響ある場合）"]
     GHA["GitHub Actions<br/>（自動同期）"]
     DEV["nablarch/nabledge<br/>develop"]
+    TEST["開発バージョンの<br/>テスト"]
     RB["nablarch/nabledge<br/>release/{version}"]
     RELEASE["nablarch/nabledge<br/>main（リリース）"]
 
     MAIN -->|"ブランチ作成"| WB
+    WB -.->|"任意"| BM
     WB -->|"PR マージ"| MAIN
     MAIN -->|"push"| GHA
     GHA -->|"自動同期"| DEV
-    DEV -->|"ブランチ作成"| RB
+    DEV --> TEST
+    TEST -->|"ブランチ作成"| RB
     RB -->|"PR マージ"| RELEASE
 ```
 
