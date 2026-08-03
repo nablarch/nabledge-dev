@@ -77,7 +77,7 @@ flowchart LR
 2. **差分確認用 PR を作成** - `release/{version}` から `main` へ PR を作成し、変更内容をレビュー
 3. **PR をマージ** - リリース OK になったら PR を承認してマージ
 
-**リリース前セットアップ検証**: nablarch/nabledge でのリリース作業を開始する前に、セットアップスクリプトが正常動作することを確認します。
+**リリース前セットアップ検証：** nablarch/nabledge でのリリース作業を開始する前に、セットアップスクリプトが正常動作することを確認します。
 
 ```bash
 bash tools/tests/test-setup.sh
