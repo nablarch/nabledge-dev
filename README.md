@@ -118,14 +118,14 @@ nabledge スキルの性能を改善した場合、`nabledge-test` スキルで�
 
 イシューを起票して `/hi <issue_number>` でフル開発ワークフローを開始します。
 
-スキルの改善によってナレッジファイルの再生成が必要な場合は RBKC を実行します：
+スキルの改善によってナレッジファイルの再生成が必要な場合は RBKC を実行します（`<v>` は `6`, `5`, `1.4`, `1.3`, `1.2` のいずれか）：
 
 ```bash
 bash tools/rbkc/rbkc.sh create <v>
 bash tools/rbkc/rbkc.sh verify <v>
 ```
 
-`<v>` は `6`, `5`, `1.4`, `1.3`, `1.2` のいずれか。RBKC の変更（create 側・verify 側）は **5 バージョン全て**に対して実行する必要があります。詳細は `.claude/rules/rbkc.md` を参照してください。
+RBKC コード自体を変更した場合は、**5 バージョン全て**に対して実行する必要があります。詳細は `.claude/rules/rbkc.md` を参照してください。
 
 ### Nablarch ソース更新
 
