@@ -73,8 +73,9 @@ flowchart LR
 
 **nablarch/nabledge リポジトリでの手順：**
 
-1. **差分確認用 PR を作成** - `develop` から `main` へ PR を作成し、変更内容をレビュー
-2. **PR をマージ** - リリース OK になったら PR を承認してマージ
+1. **リリースブランチを作成** - `develop` から `release/{version}` ブランチを作成
+2. **差分確認用 PR を作成** - `release/{version}` から `main` へ PR を作成し、変更内容をレビュー
+3. **PR をマージ** - リリース OK になったら PR を承認してマージ
 
 詳細なリリースワークフローは `.claude/rules/release.md` を参照してください。
 
