@@ -114,6 +114,33 @@ PR を承認してマージし、HEAD を main に切り替えてブランチを
 
 nabledge スキルの性能を改善した場合、`nabledge-test` スキルでベースラインと比較して改善効果を確認します。
 
+### スキルの改善・バグ修正
+
+イシューを起票して `/hi <issue_number>` でフル開発ワークフローを開始します。
+
+スキルの改善によってナレッジファイルの再生成が必要な場合は RBKC を実行します：
+
+```bash
+bash tools/rbkc/rbkc.sh create <v>
+bash tools/rbkc/rbkc.sh verify <v>
+```
+
+`<v>` は `6`, `5`, `1.4`, `1.3`, `1.2` のいずれか。RBKC の変更（create 側・verify 側）は **5 バージョン全て**に対して実行する必要があります。詳細は `.claude/rules/rbkc.md` を参照してください。
+
+### Nablarch ソース更新
+
+`.lw/nab-official/` に格納された Nablarch 公式ドキュメントを最新化するには `setup.sh` を実行します（Git リポジトリは `git pull`、SVN リポジトリは `svn update` で更新されます）：
+
+```bash
+SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup.sh
+```
+
+ソースを更新したら、RBKC を再実行してナレッジファイルを再生成してください（上記コマンドを参照）。
+
+### ベンチマーク
+
+スキルの回答精度・品質をシナリオベースで定量評価します。改善前後の比較（退行チェック）にも使用します。実行手順は [`tools/benchmark/HOW-TO-RUN.md`](tools/benchmark/HOW-TO-RUN.md) を参照してください。
+
 ## フィードバック
 
 ### 公開済みの nabledge スキルについて
