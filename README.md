@@ -115,7 +115,7 @@ SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup.s
 
 #### ベンチマーク
 
-スキルの回答精度・品質をシナリオベースで定量評価します。改善前後の比較（退行チェック）にも使用します。実行手順は [`tools/benchmark/HOW-TO-RUN.md`](tools/benchmark/HOW-TO-RUN.md) を参照してください。
+スキルの回答精度・品質をシナリオベースで定量評価します。改善前後の比較（退行チェック）にも使用します。実行手順は [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md) を参照してください。
 
 #### nabledge スキルのテスト
 
@@ -145,7 +145,7 @@ flowchart LR
 
 #### 開発バージョンのテスト
 
-nablarch/nabledge:develop での動作確認手順は [`tools/tests/README.md`](tools/tests/README.md) を参照してください。
+nablarch/nabledge:develop での動作確認手順は [test-setup.sh — セットアップテスト手順](tools/tests/README.md) を参照してください。
 
 #### リリース前セットアップ検証
 
@@ -155,7 +155,7 @@ nablarch/nabledge でのリリース作業を開始する前に、セットア�
 bash tools/tests/test-setup.sh
 ```
 
-全バージョン（v6 / v5 / v1.4 / v1.3 / v1.2）のセットアップを検証し、すべて PASS / WARN になることを確認してください。詳細な手順と結果の見方は [`tools/tests/README.md`](tools/tests/README.md) を参照してください。
+全バージョン（v6 / v5 / v1.4 / v1.3 / v1.2）のセットアップを検証し、すべて PASS / WARN になることを確認してください。詳細な手順と結果の見方は [test-setup.sh — セットアップテスト手順](tools/tests/README.md) を参照してください。
 
 #### nablarch/nabledge リポジトリでの手順
 
