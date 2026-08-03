@@ -36,14 +36,14 @@ Rn version: 0.8.0
 
 **Steps**:
 
-- [ ] nabledge-6 README から評価版ブロックを削除
-- [ ] nabledge-5 README から評価版ブロックを削除
-- [ ] nabledge-1.4 README から評価版ブロックを削除
-- [ ] nabledge-1.3 README から評価版ブロックを削除
-- [ ] nabledge-1.2 README から評価版ブロックを削除
-- [ ] `grep -r "評価版について" .claude/skills/` が0件であることを確認
-- [ ] self-check (OK/NG per completion criterion, record in checks/task-1.md)
-- [ ] commit and push
+- [x] nabledge-6 README から評価版ブロックを削除
+- [x] nabledge-5 README から評価版ブロックを削除
+- [x] nabledge-1.4 README から評価版ブロックを削除
+- [x] nabledge-1.3 README から評価版ブロックを削除
+- [x] nabledge-1.2 README から評価版ブロックを削除
+- [x] `grep -r "評価版について" .claude/skills/` が0件であることを確認
+- [x] self-check (OK/NG per completion criterion, record in checks/task-1.md)
+- [x] commit and push
 
 **Completion criteria**:
 
