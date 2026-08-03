@@ -1,8 +1,8 @@
-# Nabledge
+# Nablarch専用AIコーディングツール向けプラグイン
 
-Nabledgeは、NablarchによるAI支援開発スキルです。Claude CodeやGitHub Copilotといったコーディングエージェントに対して、Nablarchの知識とワークフローを提供します。
+Nablarch専用AIコーディングツール向けプラグインは、NablarchによるAI支援開発スキルです。Claude CodeやGitHub Copilotといったコーディングエージェントに対して、Nablarchの知識とワークフローを提供します。
 
-コーディングエージェントはNablarchのような企業フレームワークの知識を十分に持っていません。Nabledgeを導入することで、エージェントがNablarchのドキュメントやベストプラクティスを参照しながら開発を支援できるようになります。
+コーディングエージェントはNablarchのような企業フレームワークの知識を十分に持っていません。Nablarch専用AIコーディングツール向けプラグインを導入することで、エージェントがNablarchのドキュメントやベストプラクティスを参照しながら開発を支援できるようになります。
 
 ## プラグイン
 
