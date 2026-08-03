@@ -52,13 +52,15 @@ flowchart LR
     WB["nabledge-dev<br/>ワーキングブランチ"]
     GHA["GitHub Actions<br/>（自動同期）"]
     DEV["nablarch/nabledge<br/>develop"]
+    RB["nablarch/nabledge<br/>release/{version}"]
     RELEASE["nablarch/nabledge<br/>main（リリース）"]
 
     MAIN -->|"ブランチ作成"| WB
     WB -->|"PR マージ"| MAIN
     MAIN -->|"push"| GHA
     GHA -->|"自動同期"| DEV
-    DEV -->|"PR マージ"| RELEASE
+    DEV -->|"ブランチ作成"| RB
+    RB -->|"PR マージ"| RELEASE
 ```
 
 ### 開発バージョンのテスト
