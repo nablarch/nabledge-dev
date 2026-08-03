@@ -115,11 +115,7 @@ SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup.s
 
 #### ベンチマーク
 
-スキルの回答精度・品質をシナリオベースで定量評価します。改善前後の比較（退行チェック）にも使用します。実行手順は [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md) を参照してください。
-
-#### nabledge スキルのテスト
-
-nabledge スキルの性能を改善した場合、`nabledge-test` スキルでベースラインと比較して改善効果を確認します。
+スキルの回答精度・品質をシナリオベースで定量評価します。スキルの回答品質に影響する変更（プロンプト・ワークフロー・ナレッジファイル）を PR に含む場合に実行し、改善効果または退行がないことを確認します。実行手順は [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md) を参照してください。
 
 ## リリース
 
