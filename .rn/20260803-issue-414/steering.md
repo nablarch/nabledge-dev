@@ -86,8 +86,5 @@ README に開発ワークフロー全体（スキル改善・バグ修正・Nabl
 
 # State
 
-- **Status**: not suspended
-- **Date**: 2026-08-03
-- **Last completed**: (none)
-- **Next**: #1 README に開発ワークフローセクションを追加する
-- **Notes**: ブランチ `worktree-issue-414`。design.md なし（README コンテンツ追加のみ、構造決定なし）
+<!-- rn managed — do not edit -->
+
