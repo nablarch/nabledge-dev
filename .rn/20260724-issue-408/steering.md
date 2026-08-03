@@ -45,12 +45,12 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 **Steps**:
 
-- [ ] `git fetch origin main`
-- [ ] 前回リリースコミット SHA を特定（`git log --oneline origin/main | grep "release marketplace 0.11"`）
-- [ ] `git log --oneline {sha}..origin/main` でコミット一覧を取得
-- [ ] 各コミットについてデプロイ対象スコープ（release.md Step 1 の表）でユーザー影響を分類
-- [ ] 結果を `.work/00408/notes.md` に記録
-- [ ] ユーザーに提示して確認を取る
+- [x] `git fetch origin main`
+- [x] 前回リリースコミット SHA を特定（`git log --oneline origin/main | grep "release marketplace 0.11"`）
+- [x] `git log --oneline {sha}..origin/main` でコミット一覧を取得
+- [x] 各コミットについてデプロイ対象スコープ（release.md Step 1 の表）でユーザー影響を分類
+- [x] 結果を `.work/00408/notes.md` に記録
+- [x] ユーザーに提示して確認を取る
 
 **Completion criteria**:
 
@@ -65,20 +65,20 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 **Steps**:
 
-- [ ] 各プラグインの CHANGELOG の [Unreleased] セクションを確認（空であることを確認）
-- [ ] nabledge-6/plugin/plugin.json: `"version": "1.0"` に更新
-- [ ] nabledge-5/plugin/plugin.json: `"version": "1.0"` に更新
-- [ ] nabledge-1.4/plugin/plugin.json: `"version": "1.0"` に更新
-- [ ] nabledge-1.3/plugin/plugin.json: `"version": "1.0"` に更新
-- [ ] nabledge-1.2/plugin/plugin.json: `"version": "1.0"` に更新
-- [ ] marketplace.json: `"version": "1.0"` に更新
-- [ ] nabledge-6/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
-- [ ] nabledge-5/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
-- [ ] nabledge-1.4/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
-- [ ] nabledge-1.3/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
-- [ ] nabledge-1.2/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
-- [ ] marketplace/CHANGELOG.md: 対応表に `1.0` 行を追加
-- [ ] self-check (OK/NG per completion criterion, record in checks/task-2.md)
+- [x] 各プラグインの CHANGELOG の [Unreleased] セクションを確認（空であることを確認）
+- [x] nabledge-6/plugin/plugin.json: `"version": "1.0"` に更新
+- [x] nabledge-5/plugin/plugin.json: `"version": "1.0"` に更新
+- [x] nabledge-1.4/plugin/plugin.json: `"version": "1.0"` に更新
+- [x] nabledge-1.3/plugin/plugin.json: `"version": "1.0"` に更新
+- [x] nabledge-1.2/plugin/plugin.json: `"version": "1.0"` に更新
+- [x] marketplace.json: `"version": "1.0"` に更新
+- [x] nabledge-6/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
+- [x] nabledge-5/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
+- [x] nabledge-1.4/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
+- [x] nabledge-1.3/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
+- [x] nabledge-1.2/plugin/CHANGELOG.md: `## [1.0] - 2026-07-24` セクション追加 + タグリンク追加
+- [x] marketplace/CHANGELOG.md: 対応表に `1.0` 行を追加
+- [x] self-check (OK/NG per completion criterion, record in checks/task-2.md)
 
 **Completion criteria**:
 
@@ -97,9 +97,9 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 **Steps**:
 
-- [ ] 直前リリースPR の変更ファイルを `gh pr list` / `gh pr view` で確認
-- [ ] 今回の変更ファイルと比較してリリース必須ファイルの過不足を確認
-- [ ] 結果を `.work/00408/notes.md` に追記
+- [x] 直前リリースPR の変更ファイルを `gh pr list` / `gh pr view` で確認
+- [x] 今回の変更ファイルと比較してリリース必須ファイルの過不足を確認
+- [x] 結果を `.work/00408/notes.md` に追記
 
 **Completion criteria**:
 
@@ -113,9 +113,9 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 **Steps**:
 
-- [ ] git diff で変更内容を確認
-- [ ] 各ファイルを個別にステージして commit & push
-- [ ] `Skill(skill: "pr", args: "create")` で PR を作成
+- [x] git diff で変更内容を確認
+- [x] 各ファイルを個別にステージして commit & push
+- [x] `Skill(skill: "pr", args: "create")` で PR を作成
 
 **Completion criteria**:
 
@@ -130,8 +130,8 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 
 **Steps**:
 
-- [ ] Acceptance criteria の各項目をファイル内容で確認
-- [ ] 結果を提示してユーザーの承認を `/rn:ty` で受け取る
+- [x] Acceptance criteria の各項目をファイル内容で確認
+- [x] 結果を提示してユーザーの承認を `/rn:ty` で受け取る
 
 **Completion criteria**:
 
