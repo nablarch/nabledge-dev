@@ -37,13 +37,13 @@ README に開発ワークフロー全体（スキル改善・バグ修正・Nabl
 
 **Steps**:
 
-- [ ] 既存 README の「開発」セクションの構成を確認し、追加する場所を決める
-- [ ] 「スキルの改善・バグ修正」サブセクションを追加する（`/hi` 使い方、RBKC 再生成、5バージョンルール参照）
-- [ ] 「Nablarch ソース更新」サブセクションを追加する（`./setup.sh` で更新、RBKC 再実行）
-- [ ] 「ベンチマーク」サブセクションを追加する（目的の説明、`HOW-TO-RUN.md` への参照）
-- [ ] self-check (OK/NG per completion criterion, record in checks/01.md)
-- [ ] QA expert review (subagent)
-- [ ] Technical Writer expert review (subagent)
+- [x] 既存 README の「開発」セクションの構成を確認し、追加する場所を決める
+- [x] 「スキルの改善・バグ修正」サブセクションを追加する（`/hi` 使い方、RBKC 再生成、5バージョンルール参照）
+- [x] 「Nablarch ソース更新」サブセクションを追加する（`./setup.sh` で更新、RBKC 再実行）
+- [x] 「ベンチマーク」サブセクションを追加する（目的の説明、`HOW-TO-RUN.md` への参照）
+- [x] self-check (OK/NG per completion criterion, record in checks/01.md)
+- [x] QA expert review (subagent)
+- [x] Technical Writer expert review (subagent)
 
 **Completion criteria**:
 
@@ -58,11 +58,11 @@ README に開発ワークフロー全体（スキル改善・バグ修正・Nabl
 
 **Steps**:
 
-- [ ] 既存 README の「リリース手順」セクションの構成を確認し、追加する場所を決める
-- [ ] 「リリース前セットアップ検証」エントリを追加する（`bash tools/tests/test-setup.sh` の実行・参照先）
-- [ ] self-check (OK/NG per completion criterion, record in checks/02.md)
-- [ ] QA expert review (subagent)
-- [ ] Technical Writer expert review (subagent)
+- [x] 既存 README の「リリース手順」セクションの構成を確認し、追加する場所を決める
+- [x] 「リリース前セットアップ検証」エントリを追加する（`bash tools/tests/test-setup.sh` の実行・参照先）
+- [x] self-check (OK/NG per completion criterion, record in checks/02.md)
+- [x] QA expert review (subagent)
+- [x] Technical Writer expert review (subagent)
 
 **Completion criteria**:
 
@@ -86,5 +86,9 @@ README に開発ワークフロー全体（スキル改善・バグ修正・Nabl
 
 # State
 
-<!-- rn managed — do not edit -->
+- **Status**: paused
+- **Date**: 2026-08-03
+- **Last completed**: #2
+- **Next**: #3 Evaluation sign-off
+- **Notes**: README は大幅に改善・再構成済み（2リポジトリ説明・AI/手動区別・フロー整合）。#3 は評価 gate のみ — ユーザーが `/rn:ty` または `/rn:gm` で verdict を出すと完了。
 
