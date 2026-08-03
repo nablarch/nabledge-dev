@@ -21,6 +21,7 @@ Who benefits and how? Use "[who] can [what]" format.
 - [ ] Write each criterion as an observable outcome — something any stakeholder can verify without knowing the implementation
 - [ ] Quantify where possible (benchmark scores, pass rates, counts)
 - [ ] Do not include means, file paths, or implementation details
+- [ ] Focus on intent and goal state, not on specific artifacts to create or steps to take
 
 ## Bug-Specific Success Criteria
 
