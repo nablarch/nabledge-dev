@@ -42,7 +42,16 @@ claude
 
 ## 開発
 
-プルリクエスト経由で **main** ブランチに変更をマージします。変更は [nablarch/nabledge:develop](https://github.com/nablarch/nabledge/tree/develop) に自動同期されます。
+### リポジトリ構成
+
+このプロジェクトは 2 つのリポジトリで管理されています。
+
+| リポジトリ | 役割 |
+|---|---|
+| **nabledge-dev**（このリポジトリ） | スキルの開発・改善を行う作業場 |
+| **[nablarch/nabledge](https://github.com/nablarch/nabledge)** | ユーザーへの配布リポジトリ |
+
+nabledge-dev の `main` ブランチへのプッシュをトリガーに、GitHub Actions が nablarch/nabledge の `develop` ブランチへ変更を自動同期します。
 
 ### フロー
 
@@ -94,6 +103,8 @@ RBKC コード自体を変更した場合は 5 バージョン全てに対して
 
 ### フロー
 
+nablarch/nabledge の `develop` ブランチに自動同期された変更を、`main` ブランチへリリースします。
+
 ```mermaid
 flowchart LR
     DEV["nablarch/nabledge<br/>develop"]
@@ -108,10 +119,10 @@ flowchart LR
 
 ### 手順
 
-バージョンファイルと CHANGELOG の更新はこのリポジトリ（nabledge-dev）で行います（詳細: `.claude/rules/release.md`）。その後、[nablarch/nabledge](https://github.com/nablarch/nabledge) リポジトリで以下を実施します：
+まず nabledge-dev でバージョンファイルと CHANGELOG を更新します（詳細: `.claude/rules/release.md`）。その後、nablarch/nabledge リポジトリで以下を実施します：
 
 1. **セットアップ検証** — `bash tools/tests/test-setup.sh` を実行し、全バージョンが PASS / WARN になることを確認（詳細: [test-setup.sh — セットアップテスト手順](tools/tests/README.md)）
-2. **リリースブランチを作成** — `develop` から `release/{version}` ブランチを作成
+2. **リリースブランチを作成** — nablarch/nabledge の `develop` から `release/{version}` ブランチを作成
 3. **PR を作成・マージ** — `release/{version}` から `main` へ PR を作成し、承認後マージ
 
 ## フィードバック
