@@ -149,8 +149,9 @@ Use `/hi {issue_number}` or `/pr create` to create a PR to `main`.
 
 After merging to `main` in nabledge-dev, changes sync automatically to `nablarch/nabledge:develop`. The release itself is managed in that repository.
 
-1. **Create release PR** — From `develop` to `main`
-2. **Tag and release** — After merge, create Git tag and GitHub release
+1. **Create release branch** — Create `release/{version}` branch from `develop`
+2. **Create release PR** — From `release/{version}` to `main`
+3. **Tag and release** — After merge, create Git tag and GitHub release
 
 ### Multiple Skills
 
