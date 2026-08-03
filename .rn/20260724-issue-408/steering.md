@@ -122,7 +122,7 @@ nabledge 全プラグインとマーケットプレイスのバージョンを 1
 - PR が draft でない状態で開かれており、タイトルに `feat:` が含まれ issue #408 を参照している
 - PR body に `Closes #408` が含まれている
 
-### #5: Evaluation sign-off
+### #5: Evaluation sign-off — DONE
 
 **Purpose**: Acceptance criteria の全項目が満たされていることをユーザーに確認してもらい、セッションを完了する。
 
