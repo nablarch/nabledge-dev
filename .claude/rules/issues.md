@@ -21,6 +21,7 @@ Who benefits and how? Use "[who] can [what]" format.
 - [ ] Write each criterion as an observable outcome — something any stakeholder can verify without knowing the implementation
 - [ ] Quantify where possible (benchmark scores, pass rates, counts)
 - [ ] Do not include means, file paths, or implementation details
+- [ ] Focus on intent and goal state, not on specific artifacts to create or steps to take
 
 ## Bug-Specific Success Criteria
 
@@ -50,6 +51,17 @@ Apply labels to all Issues and PRs when creating them:
 **Default label for most feature work**: `enhancement`
 
 **Why labels matter**: `bug` label feeds into DORA Change Failure Rate and MTTR metrics. Mislabeled PRs will skew these metrics.
+
+## Updating Issues
+
+When revising an issue in response to feedback, **edit the existing issue** — do not close it and create a new one. Closing and recreating leaves stale issues in the tracker.
+
+```bash
+gh issue edit <number> --title "..." --body "$(cat <<'EOF'
+...body...
+EOF
+)"
+```
 
 ## Markdown in gh CLI Commands
 
