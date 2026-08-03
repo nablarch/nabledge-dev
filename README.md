@@ -72,7 +72,7 @@ flowchart LR
 
 ### 手順
 
-作業は `/hi <issue_number>` で開始します。ブランチ作成・実装・PR 作成まで一通り実行されます。
+開発作業は Claude への指示で進めます。以下のスラッシュコマンドを使います。
 
 | コマンド | 用途 |
 |---|---|
@@ -80,24 +80,11 @@ flowchart LR
 | `/fb <number>` | レビューフィードバックへの対応 |
 | `/bb <number>` | PR のマージとブランチ削除 |
 
-**ナレッジファイルの再生成（RBKC）**
+以下の作業も Claude に指示すると実行されます：
 
-スキルの改善によってナレッジファイルの再生成が必要な場合：
-
-```bash
-bash tools/rbkc/rbkc.sh create <v>   # v = 6 / 5 / 1.4 / 1.3 / 1.2
-bash tools/rbkc/rbkc.sh verify <v>
-```
-
-RBKC コード自体を変更した場合は 5 バージョン全てに対して実行します（詳細: `.claude/rules/rbkc.md`）。
-
-**Nablarch ソース更新**
-
-`.lw/nab-official/` の Nablarch 公式ドキュメントを最新化する場合は `./setup.sh` を再実行し、その後 RBKC を再実行します。
-
-**ベンチマーク**
-
-プロンプト・ワークフロー・ナレッジファイルに影響する変更は、PR 前にベンチマークを実行して改善効果または退行がないことを確認します（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)）。
+- **ナレッジファイルの再生成** — スキルの改善でナレッジファイルの更新が必要な場合。RBKC コード自体を変更した場合は 5 バージョン全てに対して実行します（詳細: `.claude/rules/rbkc.md`）。
+- **Nablarch ソース更新** — `.lw/nab-official/` の公式ドキュメントを最新化する場合。`./setup.sh` の再実行と RBKC 再生成を行います。
+- **ベンチマーク** — プロンプト・ワークフロー・ナレッジファイルに影響する変更は PR 前に実行し、改善効果または退行がないことを確認します（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)）。
 
 ## リリース
 
@@ -119,11 +106,15 @@ flowchart LR
 
 ### 手順
 
-まず nabledge-dev でバージョンファイルと CHANGELOG を更新します（詳細: `.claude/rules/release.md`）。その後、nablarch/nabledge リポジトリで以下を実施します：
+**Claude に指示する作業：**
 
-1. **セットアップ検証** — `bash tools/tests/test-setup.sh` を実行し、全バージョンが PASS / WARN になることを確認（詳細: [test-setup.sh — セットアップテスト手順](tools/tests/README.md)）
-2. **リリースブランチを作成** — nablarch/nabledge の `develop` から `release/{version}` ブランチを作成
-3. **PR を作成・マージ** — `release/{version}` から `main` へ PR を作成し、承認後マージ
+1. **バージョンファイル・CHANGELOG 更新** — nabledge-dev でバージョンを上げて CHANGELOG を整備します（詳細: `.claude/rules/release.md`）。
+2. **セットアップ検証** — `test-setup.sh` を実行し、全バージョンのセットアップが PASS / WARN になることを確認します（詳細: [test-setup.sh — セットアップテスト手順](tools/tests/README.md)）。
+
+**ユーザーが手動で行う作業（nablarch/nabledge リポジトリ）：**
+
+3. `develop` から `release/{version}` ブランチを作成
+4. `release/{version}` から `main` へ PR を作成・マージ
 
 ## フィードバック
 
