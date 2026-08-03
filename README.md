@@ -58,7 +58,7 @@ flowchart LR
     WB -->|"PR マージ"| MAIN
     MAIN -->|"push"| GHA
     GHA -->|"自動同期"| DEV
-    DEV -->|"main に追い付きマージ"| RELEASE
+    DEV -->|"PR マージ"| RELEASE
 ```
 
 ### 開発バージョンのテスト
@@ -73,8 +73,8 @@ flowchart LR
 
 **nablarch/nabledge リポジトリでの手順：**
 
-1. **差分確認用 PR を作成** - `main` から `develop` へ PR を作成し、変更内容をレビュー
-2. **develop に追い付きマージ** - リリース OK になったら `main` を `develop` に追い付かせるようにマージ（PR はコミットが作られるため PR 経由ではなく直接マージ）
+1. **差分確認用 PR を作成** - `develop` から `main` へ PR を作成し、変更内容をレビュー
+2. **PR をマージ** - リリース OK になったら PR を承認してマージ
 
 詳細なリリースワークフローは `.claude/rules/release.md` を参照してください。
 
