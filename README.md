@@ -49,19 +49,19 @@ claude
 | リポジトリ | 役割 |
 |---|---|
 | **nabledge-dev**（このリポジトリ） | スキルの開発・改善を行う作業場 |
-| **[nablarch/nabledge](https://github.com/nablarch/nabledge)** | ユーザーへの配布リポジトリ |
+| **[nabledge](https://github.com/nablarch/nabledge)** | ユーザーへの配布リポジトリ |
 
-nabledge-dev の `main` ブランチへのプッシュをトリガーに、GitHub Actions が nablarch/nabledge の `develop` ブランチへ変更を自動同期します。
+nabledge-dev/main へのプッシュをトリガーに、GitHub Actions が nabledge/develop へ変更を自動同期します。
 
 ### フロー
 
 ```mermaid
 flowchart LR
-    MAIN["nabledge-dev<br/>main"]
+    MAIN["nabledge-dev/main"]
     WB["nabledge-dev<br/>ワーキングブランチ"]
     BM["ベンチマーク<br/>（影響ある場合）"]
     GHA["GitHub Actions<br/>（自動同期）"]
-    DEV["nablarch/nabledge<br/>develop"]
+    DEV["nabledge/develop"]
 
     MAIN -->|"ブランチ作成"| WB
     WB -.->|"任意"| BM
@@ -90,14 +90,14 @@ flowchart LR
 
 ### フロー
 
-nablarch/nabledge の `develop` ブランチに自動同期された変更を、`main` ブランチへリリースします。
+nabledge/develop に自動同期された変更を、nabledge/main へリリースします。
 
 ```mermaid
 flowchart LR
-    DEV["nablarch/nabledge<br/>develop"]
+    DEV["nabledge/develop"]
     TEST["セットアップ検証"]
-    RB["nablarch/nabledge<br/>release/{version}"]
-    RELEASE["nablarch/nabledge<br/>main（リリース）"]
+    RB["nabledge/release/{version}"]
+    RELEASE["nabledge/main"]
 
     DEV --> TEST
     TEST -->|"ブランチ作成"| RB
@@ -111,12 +111,12 @@ flowchart LR
 1. **バージョンファイル・CHANGELOG 更新** — nabledge-dev でバージョンを上げて CHANGELOG を整備します（詳細: `.claude/rules/release.md`）。
 2. **セットアップ検証** — `test-setup.sh` を実行し、全バージョンのセットアップが PASS / WARN になることを確認します（詳細: [test-setup.sh — セットアップテスト手順](tools/tests/README.md)）。
 
-**ユーザーが手動で行う作業（nablarch/nabledge リポジトリ）：**
+**ユーザーが手動で行う作業（nabledge）：**
 
-3. `develop` から `release/{version}` ブランチを作成
-4. `release/{version}` から `main` へ PR を作成・マージ
+3. nabledge/develop から `release/{version}` ブランチを作成
+4. nabledge/release/{version} から nabledge/main へ PR を作成・マージ
 
 ## フィードバック
 
-- 公開済みのスキルについて: [nablarch/nabledge Issues](https://github.com/nablarch/nabledge/issues)
-- 開発中の作業について: [nablarch/nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues)
+- 公開済みのスキルについて: [nabledge Issues](https://github.com/nablarch/nabledge/issues)
+- 開発中の作業について: [nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues)
