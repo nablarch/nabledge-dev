@@ -86,8 +86,8 @@ flowchart LR
 
 1. `/hi` を実行（イシューがなければ作成から始まる）
    - **プロンプト・ワークフロー・ナレッジファイルに影響する変更**は、イシューのサクセスクライテリアに「前回ベンチマークから劣化していないこと」を含めることで、`/hi` の中でベンチマークまで実行される（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)・[コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)）
-   - **不具合対応**は、イシュー作成時に調査・水平展開・再発防止のサクセスクライテリアテンプレートを活用する（詳細: `.claude/rules/issues.md`）
-   - **ナレッジファイルを直接編集しない**。`.claude/skills/nabledge-*/` は RBKC が自動生成するため、変更は RBKC コードに入れる。変更した場合は 5 バージョン全件で `bash tools/rbkc/rbkc.sh create <v> && bash tools/rbkc/rbkc.sh verify <v>` を実行する（詳細: `.claude/rules/rbkc.md`）
+   - **不具合対応**は、イシュー作成時に調査・水平展開・再発防止のサクセスクライテリアテンプレートを活用する（詳細: [Issue Format](.claude/rules/issues.md)）
+   - **ナレッジファイルを直接編集しない**。`.claude/skills/nabledge-*/` は RBKC が自動生成するため、変更は RBKC コードに入れる。変更した場合は 5 バージョン全件で `bash tools/rbkc/rbkc.sh create <v> && bash tools/rbkc/rbkc.sh verify <v>` を実行する（詳細: [RBKC Development Rules](.claude/rules/rbkc.md)）
 2. PR をレビュー（ユーザー作業）
 3. フィードバックがあれば `/fb <number>` で対応
 4. `/bb <number>` で PR をマージ
@@ -123,7 +123,7 @@ flowchart LR
 
 ### 手順
 
-1. `/hi` でイシューを作成してバージョンファイル・CHANGELOG 更新・PR 作成まで実行（詳細: `.claude/rules/release.md`）
+1. `/hi` でイシューを作成してバージョンファイル・CHANGELOG 更新・PR 作成まで実行（詳細: [Release Process](.claude/rules/release.md)）
 3. PR をレビュー（ユーザー作業）
 4. フィードバックがあれば `/fb <number>` で対応
 5. `/bb <number>` で PR をマージ（nabledge/develop に自動同期される）
