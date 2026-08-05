@@ -1,6 +1,6 @@
 # nabledge-dev
 
-[Nabledge](https://github.com/nablarch/nabledge) の開発リポジトリ
+[Nabledge](https://github.com/nablarch/nabledge) スキルの開発リポジトリです。
 
 ## ドキュメント
 
@@ -40,84 +40,98 @@ source .env
 claude
 ```
 
-## ブランチ戦略
+## 開発
 
-このリポジトリはシングルブランチの開発ワークフローを採用しています。すべての開発作業はプルリクエスト経由で **main** ブランチにマージされ、変更は [nablarch/nabledge:develop](https://github.com/nablarch/nabledge/tree/develop) に自動同期されます。
+### リポジトリ構成
 
-### 開発フロー
+このプロジェクトは 2 つのリポジトリで管理されています。
+
+| リポジトリ | 役割 |
+|---|---|
+| nabledge-dev（このリポジトリ） | スキルの開発・改善を行う作業場 |
+| [nabledge](https://github.com/nablarch/nabledge) | ユーザーへの配布リポジトリ |
+
+nabledge-dev/main へのプッシュをトリガーに、GitHub Actions が nabledge/develop へ変更を自動同期します。
+
+### フロー
 
 ```mermaid
 flowchart LR
-    MAIN["nabledge-dev<br/>main"]
+    MAIN["nabledge-dev/main"]
     WB["nabledge-dev<br/>ワーキングブランチ"]
+    BM["ベンチマーク<br/>（影響ある場合）"]
     GHA["GitHub Actions<br/>（自動同期）"]
-    DEV["nablarch/nabledge<br/>develop"]
-    RELEASE["nablarch/nabledge<br/>main（リリース）"]
+    DEV["nabledge/develop"]
 
     MAIN -->|"ブランチ作成"| WB
+    WB -.->|"任意"| BM
     WB -->|"PR マージ"| MAIN
     MAIN -->|"push"| GHA
     GHA -->|"自動同期"| DEV
-    DEV -->|"PR マージ"| RELEASE
 ```
 
-### 開発バージョンのテスト
+### コマンド
 
-詳細は [`tools/tests/README.md`](tools/tests/README.md) を参照してください。
+| コマンド | 用途 |
+|---|---|
+| `/hi [issue#]` | イシューの作成から実装・PR 作成まで一貫実行。引数なしで起動するとイシュー作成から対話で始まる |
+| `/fb [PR#]` | PR レビューフィードバックへの対応 |
+| `/bb [PR#]` | PR のマージとブランチ削除 |
+| `/sv [PR#]` | セッション状態を保存して中断（`tasks.md` に進捗を記録） |
+| `/re [PR#]` | `/sv` で保存したセッションを再開 |
 
-### リリース手順
+### 手順
 
-バージョンファイルと CHANGELOG の更新はこのリポジトリ（nabledge-dev）で行います。その後、[nablarch/nabledge](https://github.com/nablarch/nabledge) リポジトリでリリース作業を行います。
+#### スキル改善・不具合対応
 
-> nablarch/nabledge:develop での動作確認手順は「[開発バージョンのテスト](#開発バージョンのテスト)」を参照してください。
+1. `/hi` を実行（イシューがなければ作成から始まる）
+   - プロンプト・ワークフロー・ナレッジファイルに影響する変更は、イシュー作成時に「前回ベンチマークから劣化していないことを確認して」と伝えるとベンチマークまで実行される（参考: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)・[コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)）
+   - 不具合対応は「調査・水平展開・再発防止まで含めてイシューを作成して」と伝えると対応するサクセスクライテリアを含めてくれる
+   - ナレッジファイル（`.claude/skills/nabledge-*/`）は直接編集せず「RBKC を修正して」と伝える。RBKC コードを変更した場合は「5 バージョン全件で create と verify を実行して」と伝えると対応する
+2. PR をレビュー（ユーザー作業）
+3. フィードバックがあれば `/fb <number>` で対応
+4. `/bb <number>` で PR をマージ
 
-**nablarch/nabledge リポジトリでの手順：**
+#### Nablarch ソース更新
 
-1. **リリースブランチを作成** - `develop` から `release/{version}` ブランチを作成
-2. **差分確認用 PR を作成** - `release/{version}` から `main` へ PR を作成し、変更内容をレビュー
-3. **PR をマージ** - リリース OK になったら PR を承認してマージ
+1. Nablarch ソースを更新（ユーザー作業）
+   - v5/v6（Git）: `./setup.sh`
+   - v1.x（SVN）: `SVN_BASE_URL=<url> SVN_USERNAME=<user> SVN_PASSWORD=<pass> ./setup.sh`
+2. `/hi` でイシューを作成してナレッジファイルの再生成・PR 作成まで実行
+4. PR をレビュー（ユーザー作業）
+5. フィードバックがあれば `/fb <number>` で対応
+6. `/bb <number>` で PR をマージ
 
-詳細なリリースワークフローは `.claude/rules/release.md` を参照してください。
+## リリース
 
-## 開発
+### フロー
 
-### カスタムスラッシュコマンド
+nabledge/develop に自動同期された変更を、nabledge/main へリリースします。
 
-このリポジトリには開発ワークフローを効率化するカスタムスラッシュコマンドが用意されています：
+```mermaid
+flowchart LR
+    DEV["nabledge/develop"]
+    TEST["セットアップ検証"]
+    RB["nabledge/release/{version}"]
+    RELEASE["nabledge/main"]
 
-#### /hi - フル開発ワークフロー
-イシュー起票から PR レビュー依頼まで一通りのワークフローを実行します：
+    DEV --> TEST
+    TEST -->|"ブランチ作成"| RB
+    RB -->|"PR マージ"| RELEASE
 ```
-/hi 123        # イシュー #123 の作業を開始
-/hi 456        # イシュー/PR #456 の作業を再開
-/hi            # インタラクティブ選択
-```
-ブランチの作成・変更の実装・テストの実行・PR の作成まで自動で行います。
 
-#### /fb - レビューフィードバック対応
-PR レビューのフィードバックに対応します：
-```
-/fb 456        # PR #456 のレビューに対応
-/fb            # 現在のブランチから自動検出
-```
-コメントを取得し、修正を実装してコミット後、レビュアーに返信します。
+### 手順
 
-#### /bb - マージとクリーンアップ
-PR の承認・マージとブランチの後片付けを行います：
-```
-/bb 456        # PR #456 をマージしてブランチを削除
-/bb            # 現在のブランチから自動検出
-```
-PR を承認してマージし、HEAD を main に切り替えてブランチを削除します。
-
-### nabledge スキルのテスト
-
-nabledge スキルの性能を改善した場合、`nabledge-test` スキルでベースラインと比較して改善効果を確認します。
+1. `/hi` を実行し「リリース準備をして」と伝えるとバージョンファイル・CHANGELOG 更新・PR 作成まで実行する
+3. PR をレビュー（ユーザー作業）
+4. フィードバックがあれば `/fb <number>` で対応
+5. `/bb <number>` で PR をマージ（nabledge/develop に自動同期される）
+6. nabledge-dev/main で「セットアップ検証を実行して」と伝えると全バージョンのセットアップが PASS / WARN になることを確認する（参考: [セットアップ検証](tools/tests/README.md)）
+7. nabledge/develop から `release/{version}` ブランチを作成（ユーザー作業）
+8. nabledge/release/{version} から nabledge/main へ PR を作成・マージ（ユーザー作業、このマージがリリース）
+9. リリースタグを追加（ユーザー作業）
 
 ## フィードバック
 
-### 公開済みの nabledge スキルについて
-[nablarch/nabledge Issues](https://github.com/nablarch/nabledge/issues) にイシューを登録するか、機能リクエストをお送りください。他のユーザーも検索・参照しやすくなります。
-
-### 未リリースの開発作業について
-[nablarch/nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues) にイシューを登録するか、変更内容について議論してください。
+- 公開済みのスキルについて: [nabledge Issues](https://github.com/nablarch/nabledge/issues)
+- 開発中の作業について: [nabledge-dev Issues](https://github.com/nablarch/nabledge-dev/issues)
