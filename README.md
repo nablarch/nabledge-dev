@@ -126,7 +126,7 @@ flowchart LR
 3. PR をレビュー（ユーザー作業）
 4. フィードバックがあれば `/fb <number>` で対応
 5. `/bb <number>` で PR をマージ（nabledge/develop に自動同期される）
-6. nabledge-dev/main で「セットアップ検証を実行して」と伝えると全バージョンのセットアップが PASS / WARN になることを確認する（参考: [セットアップテスト手順](tools/tests/README.md)）
+6. nabledge-dev/main で「セットアップ検証を実行して」と伝えると全バージョンのセットアップが PASS / WARN になることを確認する（参考: [セットアップ検証](tools/tests/README.md)）
 7. nabledge/develop から `release/{version}` ブランチを作成（ユーザー作業）
 8. nabledge/release/{version} から nabledge/main へ PR を作成・マージ（ユーザー作業、このマージがリリース）
 9. リリースタグを追加（ユーザー作業）
