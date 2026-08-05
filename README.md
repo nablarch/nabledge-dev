@@ -78,7 +78,9 @@ flowchart LR
 
 1. 作業内容を Claude Code に伝えて**イシューを作成**
 2. `/hi <number>` でスキル変更・PR 作成まで実行
-3. ベンチマークを Claude Code に指示して実行（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)）
+3. ベンチマークを Claude Code に指示して実行
+   - QA ベンチマーク: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)
+   - コード分析ベンチマーク: [コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)
    - 問題あり → 2 に戻る
    - 問題なし → 次へ
 4. PR をレビュー（**手動**）
