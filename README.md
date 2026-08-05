@@ -48,8 +48,8 @@ claude
 
 | リポジトリ | 役割 |
 |---|---|
-| **nabledge-dev**（このリポジトリ） | スキルの開発・改善を行う作業場 |
-| **[nabledge](https://github.com/nablarch/nabledge)** | ユーザーへの配布リポジトリ |
+| nabledge-dev（このリポジトリ） | スキルの開発・改善を行う作業場 |
+| [nabledge](https://github.com/nablarch/nabledge) | ユーザーへの配布リポジトリ |
 
 nabledge-dev/main へのプッシュをトリガーに、GitHub Actions が nabledge/develop へ変更を自動同期します。
 
@@ -72,27 +72,27 @@ flowchart LR
 
 ### 手順
 
-開発作業は Claude Code への指示で進めます。**手動**と記載した手順のみユーザーが実行します。
+開発作業は Claude Code への指示で進めます。
 
 #### スキル改善・不具合対応
 
-1. 作業内容を Claude Code に伝えて**イシューを作成**
+1. 作業内容を Claude Code に伝えてイシューを作成
 2. `/hi <number>` でスキル変更・PR 作成まで実行
 3. ベンチマークを Claude Code に指示して実行
    - QA ベンチマーク: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)
    - コード分析ベンチマーク: [コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)
    - 問題あり → 2 に戻る
    - 問題なし → 次へ
-4. PR をレビュー（**手動**）
+4. PR をレビュー（ユーザー作業）
 5. フィードバックがあれば `/fb <number>` で対応
 6. `/bb <number>` で PR をマージ
 
 #### Nablarch ソース更新
 
-1. 作業内容を Claude Code に伝えて**イシューを作成**
-2. `./setup.sh` を再実行して Nablarch ソースを更新（**手動**）
+1. 作業内容を Claude Code に伝えてイシューを作成
+2. `./setup.sh` を再実行して Nablarch ソースを更新（ユーザー作業）
 3. `/hi <number>` でナレッジファイルの再生成・PR 作成まで実行
-4. PR をレビュー（**手動**）
+4. PR をレビュー（ユーザー作業）
 5. フィードバックがあれば `/fb <number>` で対応
 6. `/bb <number>` で PR をマージ
 
@@ -116,17 +116,15 @@ flowchart LR
 
 ### 手順
 
-**手動**と記載した手順のみユーザーが実行します。
-
-1. 作業内容を Claude Code に伝えて**イシューを作成**
+1. 作業内容を Claude Code に伝えてイシューを作成
 2. `/hi <number>` でバージョンファイル・CHANGELOG 更新・PR 作成まで実行（詳細: `.claude/rules/release.md`）
-3. PR をレビュー（**手動**）
+3. PR をレビュー（ユーザー作業）
 4. フィードバックがあれば `/fb <number>` で対応
 5. `/bb <number>` で PR をマージ（nabledge/develop に自動同期される）
 6. Claude Code にセットアップ検証を指示して実行（詳細: [セットアップテスト手順](tools/tests/README.md)）
-7. nabledge/develop から `release/{version}` ブランチを作成（**手動**）
-8. nabledge/release/{version} から nabledge/main へ PR を作成・マージ（**手動**、このマージがリリース）
-9. リリースタグを追加（**手動**）
+7. nabledge/develop から `release/{version}` ブランチを作成（ユーザー作業）
+8. nabledge/release/{version} から nabledge/main へ PR を作成・マージ（ユーザー作業、このマージがリリース）
+9. リリースタグを追加（ユーザー作業）
 
 ## フィードバック
 
