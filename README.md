@@ -96,7 +96,9 @@ flowchart LR
 #### Nablarch ソース更新
 
 1. `/hi` でイシューを作成
-2. `./setup.sh` を再実行して Nablarch ソースを更新（ユーザー作業）
+2. Nablarch ソースを更新（ユーザー作業）
+   - Git リポジトリ（v5/v6）: `./setup.sh`
+   - SVN リポジトリ（v1.x）: `SVN_BASE_URL=<url> SVN_USERNAME=<user> SVN_PASSWORD=<pass> ./setup.sh`
 3. `/hi <number>` でナレッジファイルの再生成・PR 作成まで実行
 4. PR をレビュー（ユーザー作業）
 5. フィードバックがあれば `/fb <number>` で対応
