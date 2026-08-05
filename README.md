@@ -94,11 +94,10 @@ flowchart LR
 
 #### Nablarch ソース更新
 
-1. `/hi` でイシューを作成してセッションを終了（`/sv`）
-2. Nablarch ソースを更新（ユーザー作業）
+1. Nablarch ソースを更新（ユーザー作業）
    - v5/v6（Git）: `./setup.sh`
    - v1.x（SVN）: `SVN_BASE_URL=<url> SVN_USERNAME=<user> SVN_PASSWORD=<pass> ./setup.sh`
-3. `/hi <number>` でナレッジファイルの再生成・PR 作成まで実行
+2. `/hi` でイシューを作成してナレッジファイルの再生成・PR 作成まで実行
 4. PR をレビュー（ユーザー作業）
 5. フィードバックがあれば `/fb <number>` で対応
 6. `/bb <number>` で PR をマージ
