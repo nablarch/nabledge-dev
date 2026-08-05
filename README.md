@@ -90,12 +90,9 @@ flowchart LR
 1. 作業内容を Claude に伝えて**イシューを作成**
 2. `./setup.sh` を再実行して Nablarch ソースを更新（**手動**）
 3. `/hi <number>` でナレッジファイルの再生成・PR 作成まで実行
-4. ベンチマークを Claude に指示して実行（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)）
-   - 問題あり → 3 に戻る
-   - 問題なし → 次へ
-5. PR をレビュー（**手動**）
-6. フィードバックがあれば `/fb <number>` で対応
-7. `/bb <number>` で PR をマージ
+4. PR をレビュー（**手動**）
+5. フィードバックがあれば `/fb <number>` で対応
+6. `/bb <number>` で PR をマージ
 
 ## リリース
 
@@ -117,15 +114,17 @@ flowchart LR
 
 ### 手順
 
-**Claude に指示する作業：**
+**手動**と記載した手順のみユーザーが実行します。
 
-1. **バージョンファイル・CHANGELOG 更新** — nabledge-dev でバージョンを上げて CHANGELOG を整備します（詳細: `.claude/rules/release.md`）。
-2. **セットアップ検証** — `test-setup.sh` を実行し、全バージョンのセットアップが PASS / WARN になることを確認します（詳細: [test-setup.sh — セットアップテスト手順](tools/tests/README.md)）。
-
-**ユーザーが手動で行う作業（nabledge）：**
-
-3. nabledge/develop から `release/{version}` ブランチを作成
-4. nabledge/release/{version} から nabledge/main へ PR を作成・マージ
+1. 作業内容を Claude に伝えて**イシューを作成**
+2. `/hi <number>` でバージョンファイル・CHANGELOG 更新・PR 作成まで実行（詳細: `.claude/rules/release.md`）
+3. PR をレビュー（**手動**）
+4. フィードバックがあれば `/fb <number>` で対応
+5. `/bb <number>` で PR をマージ（nabledge/develop に自動同期される）
+6. Claude にセットアップ検証を指示して実行（詳細: [test-setup.sh — セットアップテスト手順](tools/tests/README.md)）
+7. nabledge/develop から `release/{version}` ブランチを作成（**手動**）
+8. nabledge/release/{version} から nabledge/main へ PR を作成・マージ（**手動**、= リリース）
+9. リリースタグを追加（**手動**）
 
 ## フィードバック
 
