@@ -125,7 +125,7 @@ flowchart LR
 5. `/bb <number>` で PR をマージ（nabledge/develop に自動同期される）
 6. Claude Code にセットアップ検証を指示して実行（詳細: [セットアップテスト手順](tools/tests/README.md)）
 7. nabledge/develop から `release/{version}` ブランチを作成（**手動**）
-8. nabledge/release/{version} から nabledge/main へ PR を作成・マージ（**手動**、= リリース）
+8. nabledge/release/{version} から nabledge/main へ PR を作成・マージ（**手動**、このマージがリリース）
 9. リリースタグを追加（**手動**）
 
 ## フィードバック
