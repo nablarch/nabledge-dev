@@ -86,9 +86,9 @@ README に開発ワークフロー全体（スキル改善・バグ修正・Nabl
 
 # State
 
-- **Status**: paused
-- **Date**: 2026-08-03
-- **Last completed**: #2
-- **Next**: #3 Evaluation sign-off
-- **Notes**: README は大幅に改善・再構成済み（2リポジトリ説明・AI/手動区別・フロー整合）。#3 は評価 gate のみ — ユーザーが `/rn:ty` または `/rn:gm` で verdict を出すと完了。
+<!--
+Status: active
+Last completed: #2
+Next: #3
+-->
 
