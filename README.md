@@ -85,9 +85,9 @@ flowchart LR
 #### スキル改善・不具合対応
 
 1. `/hi` を実行（イシューがなければ作成から始まる）
-   - イシューのサクセスクライテリアにベンチマークを含めると `/hi` の中で自動実行される（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)・[コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)）
-   - 不具合対応は調査・再発防止のサクセスクライテリアテンプレートを活用する（詳細: `.claude/rules/issues.md`）
-   - ナレッジファイル（`.claude/skills/nabledge-*/`）は RBKC が自動生成するため直接編集不可。RBKC コードを変更した場合は 5 バージョン全件で `bash tools/rbkc/rbkc.sh create <v> && bash tools/rbkc/rbkc.sh verify <v>` を実行する（詳細: `.claude/rules/rbkc.md`）
+   - **プロンプト・ワークフロー・ナレッジファイルに影響する変更**は、イシューのサクセスクライテリアに「前回ベンチマークから劣化していないこと」を含めることで、`/hi` の中でベンチマークまで実行される（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)・[コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)）
+   - **不具合対応**は、イシュー作成時に調査・水平展開・再発防止のサクセスクライテリアテンプレートを活用する（詳細: `.claude/rules/issues.md`）
+   - **ナレッジファイルを直接編集しない**。`.claude/skills/nabledge-*/` は RBKC が自動生成するため、変更は RBKC コードに入れる。変更した場合は 5 バージョン全件で `bash tools/rbkc/rbkc.sh create <v> && bash tools/rbkc/rbkc.sh verify <v>` を実行する（詳細: `.claude/rules/rbkc.md`）
 2. PR をレビュー（ユーザー作業）
 3. フィードバックがあれば `/fb <number>` で対応
 4. `/bb <number>` で PR をマージ
