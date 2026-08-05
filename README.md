@@ -70,24 +70,32 @@ flowchart LR
     GHA -->|"自動同期"| DEV
 ```
 
+### コマンド
+
+| コマンド | 用途 |
+|---|---|
+| `/hi [issue#]` | イシューの作成から実装・PR 作成まで一貫実行。引数なしで起動するとイシュー作成から対話で始まる |
+| `/fb [PR#]` | PR レビューフィードバックへの対応 |
+| `/bb [PR#]` | PR のマージとブランチ削除 |
+| `/sv [PR#]` | セッション状態を保存して中断（`tasks.md` に進捗を記録） |
+| `/re [PR#]` | `/sv` で保存したセッションを再開 |
+
 ### 手順
 
 #### スキル改善・不具合対応
 
-1. イシューを作成
-2. `/hi <number>` でスキル変更・PR 作成まで実行
-3. ベンチマークを実行
-   - QA ベンチマーク: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)
-   - コード分析ベンチマーク: [コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)
-   - 問題あり → 2 に戻る
-   - 問題なし → 次へ
-4. PR をレビュー（ユーザー作業）
-5. フィードバックがあれば `/fb <number>` で対応
-6. `/bb <number>` で PR をマージ
+`/hi` を起動するとイシュー作成から始まります。サクセスクライテリアにベンチマークを含めると `/hi` の中で自動実行されます（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)、[コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)）。不具合対応のイシューには調査・再発防止のサクセスクライテリアテンプレートがあります（詳細: `.claude/rules/issues.md`）。
+
+1. `/hi` でイシュー作成からスキル変更・PR 作成まで実行
+2. PR をレビュー（ユーザー作業）
+3. フィードバックがあれば `/fb <number>` で対応
+4. `/bb <number>` で PR をマージ
+
+> ナレッジファイル（`.claude/skills/nabledge-*/`）は RBKC が自動生成するため直接編集不可。RBKC を変更した場合は 5 バージョン全件に対して `bash tools/rbkc/rbkc.sh create <v> && bash tools/rbkc/rbkc.sh verify <v>` を実行します（詳細: `.claude/rules/rbkc.md`）。
 
 #### Nablarch ソース更新
 
-1. イシューを作成
+1. `/hi` でイシューを作成
 2. `./setup.sh` を再実行して Nablarch ソースを更新（ユーザー作業）
 3. `/hi <number>` でナレッジファイルの再生成・PR 作成まで実行
 4. PR をレビュー（ユーザー作業）
