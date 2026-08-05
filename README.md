@@ -84,21 +84,20 @@ flowchart LR
 
 #### スキル改善・不具合対応
 
-`/hi` を起動するとイシュー作成から始まります。サクセスクライテリアにベンチマークを含めると `/hi` の中で自動実行されます（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)、[コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)）。不具合対応のイシューには調査・再発防止のサクセスクライテリアテンプレートがあります（詳細: `.claude/rules/issues.md`）。
-
-1. `/hi` でイシュー作成からスキル変更・PR 作成まで実行
+1. `/hi` を実行（イシューがなければ作成から始まる）
+   - イシューのサクセスクライテリアにベンチマークを含めると `/hi` の中で自動実行される（詳細: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)・[コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)）
+   - 不具合対応は調査・再発防止のサクセスクライテリアテンプレートを活用する（詳細: `.claude/rules/issues.md`）
+   - ナレッジファイル（`.claude/skills/nabledge-*/`）は RBKC が自動生成するため直接編集不可。RBKC コードを変更した場合は 5 バージョン全件で `bash tools/rbkc/rbkc.sh create <v> && bash tools/rbkc/rbkc.sh verify <v>` を実行する（詳細: `.claude/rules/rbkc.md`）
 2. PR をレビュー（ユーザー作業）
 3. フィードバックがあれば `/fb <number>` で対応
 4. `/bb <number>` で PR をマージ
 
-> ナレッジファイル（`.claude/skills/nabledge-*/`）は RBKC が自動生成するため直接編集不可。RBKC を変更した場合は 5 バージョン全件に対して `bash tools/rbkc/rbkc.sh create <v> && bash tools/rbkc/rbkc.sh verify <v>` を実行します（詳細: `.claude/rules/rbkc.md`）。
-
 #### Nablarch ソース更新
 
-1. `/hi` でイシューを作成
+1. `/hi` でイシューを作成してセッションを終了（`/sv`）
 2. Nablarch ソースを更新（ユーザー作業）
-   - Git リポジトリ（v5/v6）: `./setup.sh`
-   - SVN リポジトリ（v1.x）: `SVN_BASE_URL=<url> SVN_USERNAME=<user> SVN_PASSWORD=<pass> ./setup.sh`
+   - v5/v6（Git）: `./setup.sh`
+   - v1.x（SVN）: `SVN_BASE_URL=<url> SVN_USERNAME=<user> SVN_PASSWORD=<pass> ./setup.sh`
 3. `/hi <number>` でナレッジファイルの再生成・PR 作成まで実行
 4. PR をレビュー（ユーザー作業）
 5. フィードバックがあれば `/fb <number>` で対応
@@ -124,8 +123,7 @@ flowchart LR
 
 ### 手順
 
-1. イシューを作成
-2. `/hi <number>` でバージョンファイル・CHANGELOG 更新・PR 作成まで実行（詳細: `.claude/rules/release.md`）
+1. `/hi` でイシューを作成してバージョンファイル・CHANGELOG 更新・PR 作成まで実行（詳細: `.claude/rules/release.md`）
 3. PR をレビュー（ユーザー作業）
 4. フィードバックがあれば `/fb <number>` で対応
 5. `/bb <number>` で PR をマージ（nabledge/develop に自動同期される）
