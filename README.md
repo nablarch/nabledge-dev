@@ -72,13 +72,11 @@ flowchart LR
 
 ### 手順
 
-開発作業は Claude Code への指示で進めます。
-
 #### スキル改善・不具合対応
 
-1. 作業内容を Claude Code に伝えてイシューを作成
+1. イシューを作成
 2. `/hi <number>` でスキル変更・PR 作成まで実行
-3. ベンチマークを Claude Code に指示して実行
+3. ベンチマークを実行
    - QA ベンチマーク: [E2Eベンチマーク実行手順](tools/benchmark/HOW-TO-RUN.md)
    - コード分析ベンチマーク: [コード分析ベンチマーク実行手順](tools/benchmark/HOW-TO-RUN-CODE-ANALYSIS.md)
    - 問題あり → 2 に戻る
@@ -89,7 +87,7 @@ flowchart LR
 
 #### Nablarch ソース更新
 
-1. 作業内容を Claude Code に伝えてイシューを作成
+1. イシューを作成
 2. `./setup.sh` を再実行して Nablarch ソースを更新（ユーザー作業）
 3. `/hi <number>` でナレッジファイルの再生成・PR 作成まで実行
 4. PR をレビュー（ユーザー作業）
@@ -116,12 +114,12 @@ flowchart LR
 
 ### 手順
 
-1. 作業内容を Claude Code に伝えてイシューを作成
+1. イシューを作成
 2. `/hi <number>` でバージョンファイル・CHANGELOG 更新・PR 作成まで実行（詳細: `.claude/rules/release.md`）
 3. PR をレビュー（ユーザー作業）
 4. フィードバックがあれば `/fb <number>` で対応
 5. `/bb <number>` で PR をマージ（nabledge/develop に自動同期される）
-6. Claude Code にセットアップ検証を指示して実行（詳細: [セットアップテスト手順](tools/tests/README.md)）
+6. セットアップ検証を実行（詳細: [セットアップテスト手順](tools/tests/README.md)）
 7. nabledge/develop から `release/{version}` ブランチを作成（ユーザー作業）
 8. nabledge/release/{version} から nabledge/main へ PR を作成・マージ（ユーザー作業、このマージがリリース）
 9. リリースタグを追加（ユーザー作業）
