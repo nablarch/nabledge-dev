@@ -16,7 +16,8 @@
 
 ## インストール
 
-プロジェクトルートで以下のコマンドを実行するだけでインストールできます（例: nabledge-6の場合）：
+プロジェクトルートで以下のコマンドを実行するだけでインストールできます。
+`-v` には上記表の `nabledge-` に続く値（`6` `5` `1.4` `1.3` `1.2`）を指定します。
 
 **Claude Code**:
 ```bash
@@ -27,6 +28,8 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-cc.sh |
 ```bash
 curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-ghc.sh | bash -s -- -v 6
 ```
+
+`-v 5,6` のようにカンマ区切りで複数、`-v all` で全バージョンをインストールできます。
 
 詳しい使い方は上記プラグインのリンクから各バージョンの利用ガイドを参照してください。
 
