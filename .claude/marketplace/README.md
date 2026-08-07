@@ -4,6 +4,16 @@
 
 コーディングエージェントはNablarchのような企業フレームワークの知識を十分に持っていません。本プラグインを導入することで、エージェントがNablarchのドキュメントやベストプラクティスを参照しながら開発を支援できるようになります。
 
+## インストール
+
+プロジェクトルートで以下のコマンドを実行するだけでインストールできます（例: nabledge-6の場合）：
+
+```bash
+curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-cc.sh | bash -s -- -v 6
+```
+
+詳しいインストール手順や他のプラグイン・AIツールへの対応については、各プラグインのREADMEを参照してください。
+
 ## プラグイン
 
 | プラグイン | 対応バージョン |
@@ -13,8 +23,6 @@
 | [nabledge-1.4](plugins/nabledge-1.4/README.md) | Nablarch 1.4.11 |
 | [nabledge-1.3](plugins/nabledge-1.3/README.md) | Nablarch 1.3.7 |
 | [nabledge-1.2](plugins/nabledge-1.2/README.md) | Nablarch 1.2.8 |
-
-インストール方法や使い方は各プラグインのREADMEを参照してください。
 
 ## 変更履歴
 
