@@ -28,7 +28,7 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-cc.sh |
 curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-ghc.sh | bash -s -- -v 6
 ```
 
-詳しい使い方は上記リンクから各バージョンの利用ガイドを参照してください。
+詳しい使い方は上記プラグインのリンクから各バージョンの利用ガイドを参照してください。
 
 ## 変更履歴
 
