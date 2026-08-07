@@ -10,21 +10,23 @@
 
 ## Findings
 
-None.
+None. All aspects of the added インストール section are technically accurate, structurally sound, and consistent with the codebase.
 
 ## Observations
 
-1. **"だけで" の表現について** — インストールセクションの冒頭文は "だけで" (trivial simplicity) を使用しているが、Linux/WSL 環境では jq がない場合に sudo プロンプトが出る可能性があり、"1コマンド" の約束が若干誇張に感じられるケースがある。ただし、Success criteria が「単一コマンドでインストールできることを伝える」であり、それは満たされているため、仕様・ルール・標準の違反ではない。
+1. **"プロジェクトルートで" instruction is slightly conservative but not wrong.** The setup scripts auto-detect the project root via `git rev-parse --show-toplevel`, so the command works from any directory within the git repo, not only from the root. Telling users to run from the project root is a safe simplification — it will never cause failure — but a user who happens to run it from a subdirectory will get identical results. Non-blocking.
 
-2. **"プロジェクトルートで" の重複** — コードブロック直前の文に "プロジェクトルートで" が含まれており、Success criteria「プロジェクトルートから1コマンドで実行できることを伝える」を満たしている。重複という観点では軽微であり、曖昧さもない。
+2. **No prerequisites note.** The scripts require `jq`. The review brief explicitly marks prerequisites as out-of-scope for this PR, so this is recorded only for awareness. If a future PR adds a prerequisites section, `jq` and `git` should both be listed.
 
-3. **削除された行の置き換えについて** — 変更前の "インストール方法や使い方は各プラグインのREADMEを参照してください。" は、インストールセクション内の "詳しいインストール手順や他のプラグイン・AIツールへの対応については、各プラグインのREADMEを参照してください。" に実質的に置き換えられており、コンテンツの退行なし。
+3. **Example version in code blocks defaults to `6`.** The commands show `-v 6` as the example value. This is a reasonable default (latest Nablarch version), but users of older versions must substitute manually. An inline comment could reduce friction. Non-blocking.
 
 ## Positive Aspects
 
-- 3つの Success Criteria をすべて満たしている。インストールセクションはプラグインテーブルの前に配置され（7–15行 vs 17–25行）、実際に動作する curl コマンドが記載されており、プロジェクトルートからの1コマンドインストールであることが明確に伝わる。
-- Non-Negotiable Constraints をすべて遵守。インストールセクションはプラグインテーブルの前、curl コマンドは実際のコマンド（GUIDE-CC.md と一致）、日本語で記述されている。
-- 見出し階層が正しく（`#` → `##`）、フォーマットは既存ファイルと一貫している。
+- **Accuracy**: All command URLs correctly resolve to where the sync manifest deploys the scripts (`nablarch/nabledge` repo root). The `-v` value list (`6 5 1.4 1.3 1.2`) exactly matches `ALL_VERSIONS` in both setup scripts.
+- **Completeness**: Both supported agent types (Claude Code and GitHub Copilot) have dedicated commands. Multi-version and all-version install syntax is documented.
+- **Clarity**: The explanation of `-v` values is anchored directly to the plugin table above ("上記表の `nabledge-` に続く値"), eliminating any guesswork about what values are valid.
+- **Navigation**: The closing sentence points readers to per-plugin guide links already present in the table, avoiding redundant content and keeping the section concise.
+- **Structure**: The new `## インストール` section fits logically between `## プラグイン` and `## 変更履歴`, matching the natural user journey: discover → install → track changes.
 
 ## Files Reviewed
 

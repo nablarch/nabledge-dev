@@ -16,3 +16,8 @@
 - [x] Create PR #419
 - [x] Revise per feedback: reorder sections (plugin table first), add GHC command, update footer text — committed `0950fa88`
 - [x] Clarify footer: "上記プラグインのリンク" — committed `b7f1083b`
+- [x] Clarify which -v value maps to each plugin in README install section — committed `acaa3d72`
+- [x] Fix setup script -h help text to list all available versions — committed `c8071b51`
+- [x] Update Issue #418 Success Criteria to remove means/layout specifications
+- [x] Re-run Expert Review (Technical Writer + DevOps Engineer) — both 0 Findings
+- [x] Update PR #419 body with corrected Success Criteria, tasks.md link, and Approach note
