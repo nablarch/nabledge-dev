@@ -1,0 +1,71 @@
+{
+  "scenario_id": "qa-10",
+  "description": "検索画面でユーザーの入力に応じて条件が変わるSQLを書きたい。名前が入力されたら名前で絞り、入力されなければ全件取得したい。",
+  "input": "ユーザーの入力内容によって検索条件が変わるSQLを書きたい。入力がある項目だけ条件に含める方法はあるか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "$if構文で可変条件を記述する。プロパティ値がnullや空文字列の場合に条件が除外される"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output clearly covers the key facts from the expected output: it explains that $if syntax is used for variable conditions, and explicitly states that when a property value is null or empty string (in the case of String), the condition is automatically excluded. Both core facts from the expected output checklist are covered in the actual output."
+    },
+    "answer_relevancy": {
+      "score": 0.8928571428571429,
+      "reason": "The score is 0.89 because the actual output largely addresses the question about writing conditional SQL based on user input and how to include only conditions for fields that have input. However, it loses some points for including best practice warnings about consolidating SQL statements, which, while potentially useful context, are not directly relevant to answering the core question of how to conditionally include WHERE clause conditions based on user input."
+    },
+    "faithfulness": {
+      "score": 0.9230769230769231,
+      "reason": "The score is 0.92 because the actual output overstates the requirement by framing the use of `$if` together with IN clause conditions as 'mandatory' in an absolute sense, whereas the retrieval context only specifies that a variable condition using `$if` is necessary when the property value may be null or size 0, not as a universal absolute requirement."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/libraries/libraries-database.json:s22",
+      "component/libraries/libraries-database.json:s21",
+      "component/libraries/libraries-database.json:s19",
+      "component/libraries/libraries-database.json:s15",
+      "component/libraries/libraries-universal-dao.json:s10",
+      "processing-pattern/web-application/web-application-getting-started-project-search.json:s1",
+      "development-tools/toolbox/toolbox-SqlExecutor.json:s26",
+      "component/libraries/libraries-database.json:s23",
+      "component/libraries/libraries-database.json:s6",
+      "development-tools/testing-framework/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest.json:s21"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 24599,
+    "duration_api_ms": 19147,
+    "num_turns": 1,
+    "total_cost_usd": 0.14900549999999999,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 867,
+      "cache_read_input_tokens": 19145,
+      "cache_creation_input_tokens": 31760
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 10976,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.011151,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 867,
+        "cacheReadInputTokens": 19145,
+        "cacheCreationInputTokens": 31760,
+        "webSearchRequests": 0,
+        "costUSD": 0.1378545,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

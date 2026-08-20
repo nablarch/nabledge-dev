@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 18468,
+  "duration_api_ms": 17411,
+  "ttft_ms": 18442,
+  "ttft_stream_ms": 3997,
+  "time_to_request_ms": 2477,
+  "num_turns": 1,
+  "result": "### Answer\n\nNablarch の RESTful ウェブサービスでは、**パスパラメータ**と**クエリーパラメータ**の2種類の方法でURLからデータを受け取れます。\n\n---\n\n## パスパラメータ（URLパスの一部を受け取る）\n\n### ルーティング設定\n\n`routes.xml` でパスパラメータに名前を付けます。数値のみ許容する場合は `requirements` で正規表現を指定します。\n\n```xml\n<routes>\n  <get path=\"users/:id\" to=\"UsersResource#find\">\n    <requirements>\n      <requirement name=\"id\" value=\"\\d+$\" />\n    </requirements>\n  </get>\n</routes>\n```\n\n### リソースクラスの実装\n\n`JaxRsHttpRequest` の引数を受け取り、`getPathParam(String name)` でルーティング設定のパラメータ名を指定して値を取得します。\n\n```java\n@Produces(MediaType.APPLICATION_JSON)\npublic User find(JaxRsHttpRequest req) {\n    Long id = Long.valueOf(req.getPathParam(\"id\"));  // \"id\" はルーティング設定の名前\n    return UniversalDao.findById(User.class, id);\n}\n```\n\n> **注意:** Jakarta RESTful Web Services の `@PathParam` アノテーションは使用できません。必ず `JaxRsHttpRequest#getPathParam()` を使ってください。\n\n### `@Path` アノテーションによるルーティング（別方式）\n\n`@Path` アノテーションを使う場合は Jakarta RESTful Web Services の記法で記述します。\n\n```java\n@GET\n@Path(\"/bar/{id : \\\\d+}\")\n@Produces(MediaType.APPLICATION_JSON)\npublic Person bar(JaxRsHttpRequest request) {\n    int id = Integer.parseInt(request.getPathParam(\"id\"));\n    // 省略\n}\n```\n\n---\n\n## クエリーパラメータ（URL末尾の `?key=value` を受け取る）\n\n例: `GET /users/search?name=Duke`\n\n### ルーティング設定\n\nクエリーパラメータ部分は除いたパスでマッピングします。\n\n```xml\n<routes>\n  <get path=\"users/search\" to=\"Users#search\"/>\n</routes>\n```\n\n### リソースクラスの実装\n\n`JaxRsHttpRequest#getParamMap()` でクエリーパラメータを取得し、`BeanUtil.createAndCopy()` で Form クラスにマッピングします。\n\n```java\npublic HttpResponse search(JaxRsHttpRequest req) {\n    // クエリーパラメータをFormに変換\n    UserSearchForm form = BeanUtil.createAndCopy(UserSearchForm.class, req.getParamMap());\n\n    // バリデーション実行\n    ValidatorUtil.validate(form);\n\n    // 業務ロジック（省略）\n}\n\npublic class UserSearchForm {\n    private String name;\n    // 省略\n}\n```\n\n> **注意:** Jakarta RESTful Web Services の `@QueryParam` アノテーションは使用できません。必ず `JaxRsHttpRequest` 経由で取得してください。\n\n---\n\n## まとめ\n\n| 種類 | ルーティング設定 | 取得方法 |\n|------|----------------|---------|\n| パスパラメータ | `users/:id`（+ `requirements` で正規表現） | `req.getPathParam(\"id\")` |\n| クエリーパラメータ | クエリー部分なしのパスでマッピング | `BeanUtil.createAndCopy(Form.class, req.getParamMap())` |",
+  "stop_reason": "end_turn",
+  "session_id": "a18c69fd-dd06-46f7-83c8-9628ca667f3c",
+  "total_cost_usd": 0.1517321,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 33684,
+    "cache_read_input_tokens": 12757,
+    "output_tokens": 994,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 33684
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 6484,
+      "outputTokens": 38,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.006674,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 994,
+      "cacheReadInputTokens": 12757,
+      "cacheCreationInputTokens": 33684,
+      "webSearchRequests": 0,
+      "costUSD": 0.1450581,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "872d324f-26f0-43c2-896b-93053252c125"
+}

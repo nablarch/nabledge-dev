@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 29678,
+  "duration_api_ms": 23952,
+  "ttft_ms": 29604,
+  "ttft_stream_ms": 9366,
+  "time_to_request_ms": 7123,
+  "num_turns": 1,
+  "result": "### Answer\n\nNablarchで日本語・英語のメッセージ/ラベルを切り替えるには、以下の3つの設定が必要です。\n\n---\n\n## 1. メッセージの多言語化\n\n### プロパティファイルの準備\n\n言語ごとにプロパティファイルを作成します。\n\n```\nsrc/main/resources/messages.properties       # デフォルト言語（例: ja）\n                  messages_en.properties     # 英語\n```\n\n### コンポーネント設定\n\n`PropertiesStringResourceLoader` にサポート言語とデフォルト言語を設定します。\n\n```xml\n<component class=\"nablarch.core.cache.BasicStaticDataCache\" name=\"messageCache\">\n  <property name=\"loader\">\n    <component class=\"nablarch.core.message.PropertiesStringResourceLoader\">\n      <!-- サポートする言語 -->\n      <property name=\"locales\">\n        <list>\n          <value>en</value>\n        </list>\n      </property>\n      <!-- デフォルト言語（必須：省略するとOS設定に依存して障害の原因になる） -->\n      <property name=\"defaultLocale\" value=\"ja\" />\n    </component>\n  </property>\n</component>\n```\n\n> **重要:** `defaultLocale` は必ず明示的に設定してください。省略すると `Locale.getDefault().getLanguage()` が使われ、実行環境によって値が変わり障害の原因になります。\n\n### JSPでの表示（messageタグ）\n\n```jsp\n<!-- ユーザの言語設定に応じて自動で切り替わる -->\n<n:message messageId=\"label.user.name\" />\n\n<!-- 特定の言語を強制指定したい場合 -->\n<n:message messageId=\"label.user.name\" language=\"ja\" />\n```\n\n> **注意:** `messageタグ` を使うと画面レイアウトが崩れる可能性があります。レイアウト崩れを許容できる場合のみ使用してください。レイアウトへの影響が懸念される場合は、後述の「言語ごとにリソースパスを切り替える」方式を検討してください。\n\n---\n\n## 2. コード名称（ラベル）の多言語化\n\nコードマスタテーブルに言語ごとのデータを登録します。\n\n| ID | VALUE | LANG | NAME | SHORT_NAME |\n|----|-------|------|------|------------|\n| GENDER | MALE | ja | 男性 | 男 |\n| GENDER | MALE | en | Male | M |\n\nJavaコードで言語を指定して取得します。\n\n```java\nCodeUtil.getName(\"GENDER\", \"MALE\", Locale.JAPANESE);  // -> 男性\nCodeUtil.getName(\"GENDER\", \"MALE\", Locale.ENGLISH);   // -> Male\n```\n\n> **注意:** JSP用カスタムタグライブラリでは言語指定による取得はできません。\n\n---\n\n## 3. ユーザによる言語切り替え（クッキー/セッション保持）\n\nユーザが画面で言語を選択できるようにするには、`LanguageAttributeInHttpCookie` と `LanguageAttributeInHttpUtil` を使います。\n\n### コンポーネント設定\n\n```xml\n<component name=\"languageAttribute\"\n           class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie\">\n  <property name=\"defaultLanguage\" value=\"ja\" />\n  <property name=\"supportedLanguages\" value=\"ja,en\" />\n</component>\n```\n\n### JSP（言語切り替えリンク）\n\n```jsp\n<n:submitLink uri=\"/action/menu/index\" name=\"switchToEnglish\">\n  英語\n  <n:param paramName=\"user.language\" value=\"en\" />\n</n:submitLink>\n<n:submitLink uri=\"/action/menu/index\" name=\"switchToJapanese\">\n  日本語\n  <n:param paramName=\"user.language\" value=\"ja\" />\n</n:submitLink>\n```\n\n### ハンドラ（言語をクッキーに保存）\n\n```java\npublic class I18nHandler implements HttpRequestHandler {\n    public HttpResponse handle(HttpRequest request, ExecutionContext context) {\n        String language = request.getParam(\"user.language\")[0];\n        if (StringUtil.hasValue(language)) {\n            // クッキーとスレッドコンテキストに言語を設定する\n            // サポート対象外の言語の場合は設定しない\n            LanguageAttributeInHttpUtil.keepLanguage(request, context, language);\n        }\n        return context.handleNext(request);\n    }\n}\n```\n\n---\n\n## まとめ\n\n| 対象 | 方法 |\n|------|------|\n| メッセージ文言 | `messages_en.properties` を追加し `PropertiesStringResourceLoader` に設定 |\n| コード名称/ラベル | コードマスタに言語別データを登録し `CodeUtil.getName()` で取得 |\n| 言語切り替えUI | `LanguageAttributeInHttpCookie` + `LanguageAttributeInHttpUtil.keepLanguage()` |\n| JSP表示 | `<n:message>` タグ（レイアウト崩れ注意）または言語別リソースパス切り替え |",
+  "stop_reason": "end_turn",
+  "session_id": "4b0d55ba-91e6-4af0-b5fd-a0024e177507",
+  "total_cost_usd": 0.13733075,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 27459,
+    "cache_read_input_tokens": 19145,
+    "output_tokens": 1450,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 27459
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 6675,
+      "outputTokens": 37,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.006860000000000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1450,
+      "cacheReadInputTokens": 19145,
+      "cacheCreationInputTokens": 27459,
+      "webSearchRequests": 0,
+      "costUSD": 0.13047075,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "8cd36626-fd89-4a69-b313-ad3c57964049"
+}

@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 22080,
+  "duration_api_ms": 21266,
+  "ttft_ms": 22060,
+  "ttft_stream_ms": 5049,
+  "time_to_request_ms": 2037,
+  "num_turns": 1,
+  "result": "### Answer\n\nNablarchにはOAuth2/OpenID Connect（OIDC）の認証機能は組み込まれていません。ただし、**ビジネスサンプル（biz-sample）** として実装例が提供されています。\n\n---\n\n**提供されているOIDCサンプルの概要**\n\nNablarchは `nablarch-biz-sample-all` リポジトリの [`nablarch-oidc`](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-oidc) として、OIDCによる認証サンプルを提供しています。\n\nパッケージ: `please.change.me.common.oidc.verification`\n\n**対応しているIDプロバイダ:**\n- **Amazon Cognito ユーザープール** (`...verification.cognito`)\n- **Azure Active Directory B2C** (`...verification.adb2c`)\n\n**想定アーキテクチャ:**\n- バックエンド: NablarchベースのRESTfulウェブサービス\n- フロントエンド（SPA・モバイルアプリ等）でIDトークンを取得し、バックエンドに送信\n- バックエンドでIDトークンを検証し、認証成功後にログインセッションを確立\n- 認証処理は業務アクションで実装する\n- 認証後はステートフルなセッション管理を行う\n\n※ IDトークンの取得（フロントエンド側）は本サンプルの対象外です。\n\n---\n\n**セキュリティ対策との関係（セキュリティチェックリストより）**\n\n| 脆弱性 | Nablarchの対応機能 | 状況 |\n|--------|-------------------|------|\n| アクセス制御・認可制御の欠落（No.11） | 認可チェック機能 / Nablarch Example | △（認証はExample参照、認可は〇） |\n| セッション管理の不備（No.4） | セッションストア | 〇（ログイン後の新セッション開始はExample参照） |\n| クリックジャッキング（No.9） | セキュアハンドラ（X-Frame-Options: SAMEORIGIN） | 〇 |\n\n**認証機能に関する重要な注意点:**\n- Nablarch本体は認証チェック機能を提供していません。OIDCサンプルを含む実装例（Nablarch Example）を参考にプロジェクトで実装する必要があります。\n- セッション管理の脆弱性対策（セッションID推測困難化・URLパラメータ禁止・secure属性等）はセッションストア機能で対応しています。ログイン成功後の新セッション開始はExampleを参考に実装してください。\n\n---\n\n**実装時の推奨アプローチ**\n\n1. `nablarch-oidc` サンプルを導入プロジェクトの要件に合わせてカスタマイズする\n2. ウェブアプリケーションのハンドラキューに **セッション変数保存ハンドラ**・**認可チェックハンドラ**・**セキュアハンドラ**・**CSRFトークン検証ハンドラ** を組み込む\n3. 2024年9月時点の仕様に基づくサンプルのため、利用するサービス（Cognito / ADB2C）の最新仕様を確認し適宜修正する",
+  "stop_reason": "end_turn",
+  "session_id": "6635a127-73c0-4d36-b99b-e99223d9d691",
+  "total_cost_usd": 0.14213119999999999,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 29932,
+    "cache_read_input_tokens": 19224,
+    "output_tokens": 986,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 29932
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 9148,
+      "outputTokens": 35,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.009323,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 986,
+      "cacheReadInputTokens": 19224,
+      "cacheCreationInputTokens": 29932,
+      "webSearchRequests": 0,
+      "costUSD": 0.1328082,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "0c37fadd-0fb5-448d-be27-95d118a11bdd"
+}

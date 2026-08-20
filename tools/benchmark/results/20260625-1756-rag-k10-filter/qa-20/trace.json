@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 23623,
+  "duration_api_ms": 24633,
+  "ttft_ms": 5180,
+  "ttft_stream_ms": 4400,
+  "time_to_request_ms": 2197,
+  "num_turns": 1,
+  "result": "### Answer\n\nRESTfulウェブサービスにおけるエラー処理とログ出力の仕組みは、主に以下の2つのハンドラが担っています。\n\n---\n\n## JaxRsResponseHandler（エラーログ出力）\n\nRESTfulウェブサービスでは、`JaxRsResponseHandler` がエラーログ出力を担当します。ログ出力は `errorLogWriter` プロパティに設定された `JaxRsErrorLogWriter` によって行われます。\n\n- 設定を省略した場合はデフォルト実装の `JaxRsErrorLogWriter` が使用されます\n- プロジェクト要件を満たせない場合はデフォルト実装を継承してカスタマイズします\n\n```xml\n<component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n  <property name=\"errorLogWriter\">\n    <component class=\"sample.SampleJaxRsErrorLogWriter\" />\n  </property>\n</component>\n```\n\n---\n\n## HttpErrorHandler（例外種別に応じたログとレスポンス）\n\n後続ハンドラで発生した例外の種別に応じて、以下のようにログ出力とHTTPステータスコードが決まります。\n\n| 例外クラス | ログレベル | ステータスコード | 備考 |\n|---|---|---|---|\n| `NoMoreHandlerException` | INFO | 404 | 処理すべきアクションが存在しなかったため証跡ログとして記録 |\n| `HttpErrorResponse` | 出力なし | `HttpErrorResponse#getResponse()` のステータス | 業務例外のため出力不要 |\n| `Result.Error` | 設定による（条件付きFATAL） | `Error#getStatusCode()` | `writeFailureLogPattern` の正規表現とステータスコードが一致した場合にFATAL出力 |\n| `StackOverflowError` | FATAL | 500 | データ/実装バグの可能性があるため障害扱い |\n| `ThreadDeath` / `VirtualMachineError`（StackOverflow以外） | — | — | このハンドラでは何もせず上位ハンドラに再送出 |\n| 上記以外の例外・エラー | FATAL | 500 | 予期しない例外のため障害扱い |\n\n`Result.Error` のログ出力は `writeFailureLogPattern` プロパティで制御します。このプロパティに正規表現を設定し、`Error#getStatusCode()` とマッチした場合にFATALログが出力されます。\n\n---\n\n## HTTPアクセスログ（JaxRsAccessLogHandler）\n\nリクエストの開始・終了はアクセスログとして記録されます。\n\n- **ログレベル**: INFO\n- **ロガー名**: `HTTP_ACCESS`\n- アクセスログハンドラは **スレッドコンテキスト変数管理ハンドラより後ろ**、かつ **HTTPエラー制御ハンドラより前** に配置する必要があります（完了時のログにエラーコードが必要なため）\n\nJSON形式の構造化ログとして出力したい場合は、`JaxRsAccessJsonLogFormatter` を使用することで、HTTPアクセスログの各項目をJSONの値として出力できます。\n\n---\n\n## 処理フローのまとめ\n\n```\nリクエスト\n  → JaxRsAccessLogHandler（アクセスログ開始）\n    → HttpErrorHandler（例外をキャッチしてログ・ステータスコード決定）\n      → JaxRsResponseHandler（errorLogWriterでエラーログ出力）\n        → アクションクラス\n  → JaxRsAccessLogHandler（アクセスログ終了・ステータスコード記録）\n```\n\nエラー画面（エラーレスポンス）の内容は `HttpErrorResponse` が保持するレスポンス内容か、予期しないエラーの場合はステータスコード500のレスポンスがクライアントに返されます。",
+  "stop_reason": "end_turn",
+  "session_id": "2f04b690-57d4-407b-8376-c71754a07b8a",
+  "total_cost_usd": 0.14203785000000002,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 29281,
+    "cache_read_input_tokens": 19187,
+    "output_tokens": 1185,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 29281
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 8497,
+      "outputTokens": 40,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.008697,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1185,
+      "cacheReadInputTokens": 19187,
+      "cacheCreationInputTokens": 29281,
+      "webSearchRequests": 0,
+      "costUSD": 0.13334085,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "720d8fbf-46dc-4c99-aac8-be17af61ecce"
+}

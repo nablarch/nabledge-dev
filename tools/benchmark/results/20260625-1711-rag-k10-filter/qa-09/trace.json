@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 23210,
+  "duration_api_ms": 22282,
+  "ttft_ms": 4167,
+  "ttft_stream_ms": 3450,
+  "time_to_request_ms": 1936,
+  "num_turns": 1,
+  "result": "### Answer\n\nはい、Nablarchには業務日付を管理・取得する専用機能があります。\n\n## 業務日付管理機能の設定\n\n`BasicBusinessDateProvider` をコンポーネント定義に追加します。業務日付はデータベースのテーブルで管理します。\n\n**テーブルレイアウト:**\n| 区分（PK） | 日付（yyyyMMdd形式） |\n|---|---|\n| 締め処理用区分（例: `\"closing\"`） | 業務上の基準日 |\n| デフォルト区分（例: `\"00\"`） | 通常業務日付 |\n\n**コンポーネント定義（component-configuration.xml）:**\n```xml\n<component name=\"businessDateProvider\" class=\"nablarch.core.date.BasicBusinessDateProvider\">\n  <property name=\"tableName\" value=\"BUSINESS_DATE\" />\n  <property name=\"segmentColumnName\" value=\"SEGMENT\"/>\n  <property name=\"dateColumnName\" value=\"BIZ_DATE\"/>\n  <property name=\"defaultSegment\" value=\"00\"/>\n  <property name=\"transactionManager\" ref=\"transactionManager\" />\n</component>\n\n<component name=\"initializer\"\n    class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"businessDateProvider\" />\n    </list>\n  </property>\n</component>\n```\n\n## 業務日付の取得方法\n\n`BusinessDateUtil` を使います。締め処理では区分を指定することで、通常業務とは独立した日付を管理できます。\n\n```java\n// デフォルト区分の業務日付を取得\nString bizDate = BusinessDateUtil.getDate();\n\n// 締め処理用区分を指定して取得（区分でシステム日時と業務日付を分離）\nString closingDate = BusinessDateUtil.getDate(\"closing\");\n```\n\n## 再実行時の業務日付上書き\n\nバッチ障害時の再実行で過去日付を使いたい場合、システムプロパティで特定プロセスのみ上書きできます。\n\n```\n-DBasicBusinessDateProvider.closing=20260601\n```\n\nこれにより、対象プロセスだけ業務日付を変更でき、他のプロセスへの影響を避けられます。\n\n## まとめ\n\n- **システム日時**（OS日時）: `SystemTimeUtil` で取得\n- **業務日付**: `BusinessDateUtil.getDate(segment)` で取得\n- 区分（segment）を使い分けることで、締め処理用・通常処理用など複数の業務日付を独立して管理できます\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_sections\": [\n      {\n        \"file\": \"component/libraries/libraries-date.json\",\n        \"section_id\": \"s2\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-date.json\",\n        \"section_id\": \"s9\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json\",\n        \"section_id\": \"s6\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"javadoc/javadoc-nablarch-core-date-BusinessDateProvider.json\",\n        \"section_id\": \"s2\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-date.json\",\n        \"section_id\": \"s8\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-date.json\",\n        \"section_id\": \"s7\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"javadoc/javadoc-nablarch-core-date-BusinessDateProvider.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json\",\n        \"section_id\": \"s7\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json\",\n        \"section_id\": \"s6\",\n        \"relevance\": \"low\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"releases/releases/releases-nablarch6u1-releasenote-6u1.json\",\n        \"section_id\": \"s2\",\n        \"relevance\": \"low\",\n        \"reason\": \"RAG top-k result\"\n      }\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-date.json:s2\",\n      \"component/libraries/libraries-date.json:s9\",\n      \"javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s6\",\n      \"javadoc/javadoc-nablarch-core-date-BusinessDateProvider.json:s2\",\n      \"component/libraries/libraries-date.json:s8\",\n      \"component/libraries/libraries-date.json:s7\",\n      \"javadoc/javadoc-nablarch-core-date-BusinessDateProvider.json:s3\",\n      \"javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s7\",\n      \"releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s6\",\n      \"releases/releases/releases-nablarch6u1-releasenote-6u1.json:s2\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        \"component/libraries/libraries-date.json:s7\",\n        \"component/libraries/libraries-date.json:s8\",\n        \"component/libraries/libraries-date.json:s9\",\n        \"javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s6\",\n        \"javadoc/javadoc-nablarch-core-date-BusinessDateUtil.json:s7\"\n      ],\n      \"unused\": [\n        \"component/libraries/libraries-date.json:s2\",\n        \"javadoc/javadoc-nablarch-core-date-BusinessDateProvider.json:s2\",\n        \"javadoc/javadoc-nablarch-core-date-BusinessDateProvider.json:s3\",\n        \"releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s6\",\n        \"releases/releases/releases-nablarch6u1-releasenote-6u1.json:s2\"\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "1a2bf950-9fbc-46b0-b7e9-f0b59f754c67",
+  "total_cost_usd": 0.13224344999999998,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 24583,
+    "cache_read_input_tokens": 19224,
+    "output_tokens": 2021,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 24583
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 3799,
+      "outputTokens": 34,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003969,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 2021,
+      "cacheReadInputTokens": 19224,
+      "cacheCreationInputTokens": 24583,
+      "webSearchRequests": 0,
+      "costUSD": 0.12827444999999998,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "3b1ff0f7-fefe-4528-add7-a0aa6b5ce3a5"
+}

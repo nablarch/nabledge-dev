@@ -1,0 +1,71 @@
+{
+  "scenario_id": "oos-impact-01",
+  "description": "既存システムをNablarch 6に移行するにあたり、OAuth2/OpenID Connect認証が必要かどうか影響調査している。NablarchにOAuth2/OIDCの仕組みが組み込まれているか確認したい。",
+  "input": "NablarchでOAuth2やOpenID Connectによる認証を実装したい。Nablarchにその仕組みは組み込まれているか？",
+  "purpose": "セキュリティ対応したい",
+  "expected_facts": [
+    "NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output clearly states that Nablarch does not have built-in OAuth2/OpenID Connect authentication functionality ('NablarchにはOAuth2/OpenID Connect（OIDC）の認証機能は標準では組み込まれていません'), which directly matches the single expected fact in the Expected Output. The coverage is complete."
+    },
+    "answer_relevancy": {
+      "score": 0.7272727272727273,
+      "reason": "The score is 0.73 because the response does address the core question about whether Nablarch supports OAuth2/OIDC authentication, which is relevant. However, the score is penalized due to several irrelevant statements included in the response, such as details about authorization check handlers, session management, clickjacking countermeasures, SQL injection countermeasures, and general handler queue configuration — none of which are directly related to the specific question about OAuth2/OIDC authentication support in Nablarch."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s11",
+      "guide/biz-samples/biz-samples-01.json:s2",
+      "check/security-check/security-check-2.チェックリスト.json:s1",
+      "check/security-check/security-check-2.チェックリスト.json:s4",
+      "processing-pattern/web-application/web-application-architecture.json:s3",
+      "guide/biz-samples/biz-samples-12.json:s3",
+      "check/security-check/security-check-2.チェックリスト.json:s2",
+      "guide/biz-samples/biz-samples-12.json:s2",
+      "guide/biz-samples/biz-samples-12.json:s1",
+      "check/security-check/security-check-2.チェックリスト.json:s9"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 21739,
+    "duration_api_ms": 21447,
+    "num_turns": 1,
+    "total_cost_usd": 0.1418401,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 967,
+      "cache_read_input_tokens": 19187,
+      "cache_creation_input_tokens": 29932
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 9148,
+        "outputTokens": 36,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.009328,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 967,
+        "cacheReadInputTokens": 19187,
+        "cacheCreationInputTokens": 29932,
+        "webSearchRequests": 0,
+        "costUSD": 0.1325121,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

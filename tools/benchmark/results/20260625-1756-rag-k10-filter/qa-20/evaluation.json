@@ -1,0 +1,72 @@
+{
+  "scenario_id": "qa-20",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
+    "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.5,
+      "reason": "The Expected Output contains two key facts: (1) JaxRsResponseHandler generates error responses according to exceptions, and (2) JaxRsErrorLogWriter performs log output according to exceptions. The Actual Output correctly mentions JaxRsErrorLogWriter handling error log output via the errorLogWriter property of JaxRsResponseHandler, covering fact 2. However, the Actual Output does not clearly state that JaxRsResponseHandler itself generates error responses according to exceptions — it focuses more on JaxRsResponseHandler as the container for errorLogWriter rather than as the error response generator. Fact 1 is only partially implied, not explicitly stated. This results in partial coverage of the expected facts."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.8095238095238095,
+      "reason": "The score is 0.81 because several contradictions exist in the actual output. It incorrectly describes NoMoreHandlerException as being recorded as a 'trace log' when the retrieval context states it outputs an INFO level log with a 404 response. The actual output conflates different handler behaviors for Result.Error, mixing up when FATAL logs are output and the role of writeFailureLogPattern. The description of ThreadDeath and VirtualMachineError handling is inaccurate, as the actual output claims 'HttpErrorHandler does nothing' when in fact logging occurs before rethrowing. Additionally, the actual output provides an unsupported reason ('because the error code is needed in the completion log') for handler placement order, which is not mentioned anywhere in the retrieval context."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-http-response-handler.json:s8",
+      "component/libraries/libraries-jaxrs-access-log.json:s1",
+      "component/handlers/handlers-http-messaging-error-handler.json:s5",
+      "component/libraries/libraries-jaxrs-access-log.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-http-messaging-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-jaxrs-access-log-handler.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 23623,
+    "duration_api_ms": 24633,
+    "num_turns": 1,
+    "total_cost_usd": 0.14203785000000002,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 1185,
+      "cache_read_input_tokens": 19187,
+      "cache_creation_input_tokens": 29281
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 8497,
+        "outputTokens": 40,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.008697,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 1185,
+        "cacheReadInputTokens": 19187,
+        "cacheCreationInputTokens": 29281,
+        "webSearchRequests": 0,
+        "costUSD": 0.13334085,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

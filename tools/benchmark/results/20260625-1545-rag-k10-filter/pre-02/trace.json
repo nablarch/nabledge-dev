@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 32115,
+  "duration_api_ms": 19430,
+  "ttft_ms": 32016,
+  "ttft_stream_ms": 15884,
+  "time_to_request_ms": 14089,
+  "num_turns": 1,
+  "result": "### Answer\n\nウェブアプリケーションでの入力チェック（バリデーション）の実装方法を説明します。\n\n## 基本的な実装方法\n\n### 1. InjectFormインターセプタを使う（推奨）\n\nウェブアプリケーションでは、**InjectFormインターセプタ**を使うのが標準的な方法です。\n\n**Bean Validationを使う場合**、コンポーネント設定ファイルに以下を定義します：\n\n```xml\n<component name=\"validationStrategy\" class=\"nablarch.common.web.validator.BeanValidationStrategy\" />\n```\n\n### 2. Formクラスの定義\n\nBeanクラスのプロパティは**必ずString型**で定義してください（外部入力値の型変換前にバリデーションが必要なため）。\n\n```java\npublic class SampleForm {\n\n  @Length(max = 10)\n  @SystemChar(charsetDef = \"全角文字\")\n  @Required\n  private String userName;\n\n  @Length(min = 8, max = 8)\n  @SystemChar(charsetDef = \"半角数字\")\n  private String birthday;\n\n  // getter、setterは省略\n}\n```\n\n個別アノテーションよりも**ドメインバリデーション**(`@Domain`)を使うことが推奨されています。\n\n### 3. 一括入力のバリデーション\n\n同一情報を複数入力する場合は、ネストしたBeanに`@Valid`を付けます：\n\n```java\npublic class SampleBulkForm {\n\n  @Valid\n  private List<SampleForm> sampleForm;\n\n  public SampleBulkForm() {\n    sampleForm = new ArrayList<>();\n  }\n}\n```\n\n---\n\n## バリデーションを明示的に実行したい場合\n\nInjectFormインターセプタが使えないケース（バリデーションエラーを独自ハンドリングしたい等）では、`ValidatorUtil#validate`を使います。\n\nウェブアプリケーション向けに、以下のようなユーティリティクラスを共通基盤として作成することが推奨されています：\n\n```java\npublic final class ProjectValidatorUtil {\n    public static <T> T validate(Class<T> beanClass, HttpRequest request) {\n        T bean = BeanUtil.createAndCopy(beanClass, request.getParamMap());\n        ValidatorUtil.validate(bean);\n        return bean;\n    }\n}\n```\n\n> **注意**: `HttpRequest#getParamMap`はアーキテクト向けAPIであり、Actionクラスで直接使うことは禁止されています。そのため上記のようなユーティリティクラスを介して使用してください。\n\n### バリデーションエラー時に任意処理を行う例\n\n```java\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/create.jsp\")\npublic HttpResponse create(HttpRequest request, ExecutionContext context) {\n\n    ProjectForm form;\n\n    try {\n        form = ProjectValidatorUtil.validate(ProjectForm.class, request);\n    } catch (ApplicationException e) {\n        // バリデーションエラー時の任意処理\n        throw e;  // @OnErrorで指定した画面へ遷移\n    }\n\n    // 以降の業務ロジック\n}\n```\n\nバリデーションエラーが発生した場合は`ApplicationException`が送出されます。\n\n---\n\n## まとめ\n\n| ケース | 方法 |\n|--------|------|\n| 通常のウェブアプリ入力チェック | InjectFormインターセプタ + BeanValidationStrategy |\n| エラーを独自ハンドリングしたい | `ValidatorUtil#validate`を使った明示的実行 |\n| 一括登録など複数Bean | ネストBeanに`@Valid`を付与 |",
+  "stop_reason": "end_turn",
+  "session_id": "77b6709d-e91f-4f7c-886d-aac425227c49",
+  "total_cost_usd": 0.15255484999999996,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 33641,
+    "cache_read_input_tokens": 12757,
+    "output_tokens": 1059,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 33641
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 6493,
+      "outputTokens": 38,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.006683,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1059,
+      "cacheReadInputTokens": 12757,
+      "cacheCreationInputTokens": 33641,
+      "webSearchRequests": 0,
+      "costUSD": 0.14587184999999997,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "e67ac3cf-34c9-42f2-a8d8-e46e3244c7dc"
+}

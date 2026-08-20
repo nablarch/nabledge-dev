@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 37841,
+  "duration_api_ms": 22929,
+  "ttft_ms": 37719,
+  "ttft_stream_ms": 18298,
+  "time_to_request_ms": 16321,
+  "num_turns": 1,
+  "result": "### Answer\n\nNablarchバッチアプリケーションは、`javaコマンド`からスタンドアロンのアプリケーションとして直接起動します。\n\n## 起動方法\n\nメインクラスとして `nablarch.fw.launcher.Main` を指定し、以下の3つのオプションを必ず指定します（いずれか欠けると終了コード127で異常終了します）。\n\n```bash\njava nablarch.fw.launcher.Main \\\n  -diConfig file:./batch-config.xml \\\n  -requestPath admin.DataUnloadBatchAction/BC0012 \\\n  -userId testUser\n```\n\n## -requestPath の書き方\n\n```\n-requestPath=アクションのクラス名/リクエストID\n```\n\n**指定例：**\n```\n-requestPath=com.sample.SampleBatchAction/BATCH0001\n```\n\n- **アクションのクラス名**：実行するアクションクラスの完全修飾クラス名\n- **リクエストID**：各バッチプロセスの識別子。同一の業務アクションクラスを複数プロセスで起動する場合などに識別子として使用します\n\n## Mavenを使った起動例（都度起動バッチ）\n\n```bash\nmvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main \\\n    -Dexec.args=\"'-diConfig' 'classpath:batch-boot.xml' '-requestPath' 'SampleBatch' '-userId' 'batch_user'\"\n```\n\n## 起動方式の選択\n\nNablarchバッチには2つの起動方式があります。\n\n| 方式 | 用途 |\n|------|------|\n| **都度起動バッチ** | 日次・月次など定期的にプロセスを起動して処理を実行する場合 |\n| **テーブルをキューとして使ったメッセージング** | プロセスを常駐させ、DBテーブルを監視して未処理レコードを順次処理する場合（オンライン処理からの非同期バッチに適する） |\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_sections\": [\n      {\n        \"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\",\n        \"section_id\": \"s2\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"setup/blank-project/blank-project-setup-NablarchBatch.json\",\n        \"section_id\": \"s13\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"setup/blank-project/blank-project-setup-NablarchBatch.json\",\n        \"section_id\": \"s9\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/handlers/handlers-main.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\",\n        \"section_id\": \"s8\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json\",\n        \"section_id\": \"s4\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      }\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2\",\n      \"guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1\",\n      \"setup/blank-project/blank-project-setup-NablarchBatch.json:s13\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s1\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3\",\n      \"setup/blank-project/blank-project-setup-NablarchBatch.json:s9\",\n      \"component/handlers/handlers-main.json:s3\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8\",\n      \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s4\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s1\",\n        \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s2\",\n        \"guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s1\",\n        \"setup/blank-project/blank-project-setup-NablarchBatch.json:s9\",\n        \"component/handlers/handlers-main.json:s3\"\n      ],\n      \"unused\": [\n        \"setup/blank-project/blank-project-setup-NablarchBatch.json:s13\",\n        \"processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s1\",\n        \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3\",\n        \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s8\",\n        \"processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s4\"\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "10ade853-26cc-4e61-9a12-5c8e4eaa3110",
+  "total_cost_usd": 0.20986000000000002,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 46620,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 1874,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 46620
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 6739,
+      "outputTokens": 36,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.006919,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1874,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 46620,
+      "webSearchRequests": 0,
+      "costUSD": 0.202941,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "cdecfd43-b5de-47b9-a4ca-0645d3de9375"
+}
