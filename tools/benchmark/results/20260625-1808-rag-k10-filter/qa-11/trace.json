@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 33194,
+  "duration_api_ms": 32649,
+  "ttft_ms": 7290,
+  "ttft_stream_ms": 6625,
+  "time_to_request_ms": 1972,
+  "num_turns": 1,
+  "result": "### Answer\n\nウェブアプリケーションにおけるエラー処理は、主に **HttpErrorHandler** と **HttpResponseHandler** の2つのハンドラが連携して動作します。\n\n---\n\n## エラーハンドリングの全体像\n\n### 1. HttpErrorHandler — 例外の種類に応じたログ出力とレスポンス決定\n\n後続ハンドラ（アクションクラスなど）で発生した例外を捕捉し、例外の種類に応じて以下を決定します。\n\n| 例外クラス | ログレベル | HTTPステータス | 備考 |\n|---|---|---|---|\n| `NoMoreHandlerException` | INFO | 404 | 処理すべきActionが存在しない → 証跡ログとして記録 |\n| `HttpErrorResponse` | なし | レスポンス内容による | バリデーション等の業務例外によるエラーレスポンス → ログ不要 |\n| `HttpErrorResponse`（原因が`ApplicationException`） | なし | — | `ApplicationException`のメッセージを`ErrorMessages`に変換してリクエストスコープ（デフォルトキー: `errors`）に設定し、Viewでエラーメッセージを表示できるようにする |\n| `Result.Error` | 設定による | `getStatusCode()`の値 | `writeFailureLogPattern`の正規表現がステータスコードにマッチした場合のみFATALログを出力 |\n| `StackOverflowError` | FATAL | 500 | データや実装バグに起因する可能性があるため障害扱い |\n| 上記以外の例外・エラー | FATAL | 500 | 予期しない例外として障害扱い |\n\n`Result.Error`のログ出力制御のポイント：`writeFailureLogPattern`プロパティに正規表現を設定し、`Error#getStatusCode()`がマッチした場合のみFATALログを出力します。これにより、例えば4xx系は障害ログに出さず5xx系のみFATALにする、といった制御が可能です。\n\n---\n\n### 2. HttpResponseHandler — エラー画面の表示\n\nHttpErrorHandlerが生成したエラーレスポンス（404ページ、エラー画面テンプレートなど）を実際にクライアントへ返す役割を担います。\n\nただし、**このハンドラ自身の処理中**（サーブレットフォワード時など）に以下が発生した場合は、正常な応答が返せないと判断し、ステータスコード500の固定HTMLを返します：\n\n- サーブレットフォワード時の`ServletException`\n- `RuntimeException`およびそのサブクラス\n- `Error`およびそのサブクラス\n\nこの固定HTMLは設定で変更できません。どんな状況でもこのレスポンスを出してはいけないシステムでは、このハンドラを参考に独自ハンドラを実装する必要があります。\n\n---\n\n### 3. フレームワークのログレベル方針\n\nログレベルの使い分けは以下の通りです：\n\n| レベル | 出力方針 |\n|---|---|\n| FATAL/ERROR | 障害監視対象。原則として1件の障害につき1件の障害ログを出力（単一ハンドラから出力） |\n| WARN | 障害発生時に連鎖して例外が発生した場合など、障害ログとして出せない例外（例：業務処理とトランザクション終了処理の両方で例外発生時、後者をWARNで出力） |\n| INFO | URLパラメータ改竄エラーや認可チェックエラーなど、アプリケーションの実行状況に関連するエラー |\n| DEBUG | アプリケーション開発時のデバッグ情報（SQLログ、性能ログ等） |\n| TRACE | フレームワーク開発時のデバッグ情報（アプリ開発では使用しない） |\n\n本番運用時はINFOレベルでの出力を想定しており、ログファイルの肥大化を防ぐためにプロジェクトごとに出力内容を規定することが推奨されています。\n\n---\n\n### まとめ：エラー処理のフロー\n\n```\nアクション/後続ハンドラ\n    ↓ 例外発生\nHttpErrorHandler\n    ├─ 例外の種類を判定\n    ├─ ログ出力（FATAL/INFO/なし）\n    ├─ ApplicationExceptionのメッセージをリクエストスコープに設定\n    └─ エラーレスポンス（404/500等）を生成\n          ↓\nHttpResponseHandler\n    └─ エラー画面（テンプレート）をクライアントに返却\n```",
+  "stop_reason": "end_turn",
+  "session_id": "7af97fe0-a243-4dcc-81ca-6eee0cc94402",
+  "total_cost_usd": 0.1478281,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 29712,
+    "cache_read_input_tokens": 19197,
+    "output_tokens": 1433,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 29712
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 8928,
+      "outputTokens": 44,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.009148,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1433,
+      "cacheReadInputTokens": 19197,
+      "cacheCreationInputTokens": 29712,
+      "webSearchRequests": 0,
+      "costUSD": 0.1386801,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "35890bd4-664a-4f03-8b82-b02178b812e1"
+}

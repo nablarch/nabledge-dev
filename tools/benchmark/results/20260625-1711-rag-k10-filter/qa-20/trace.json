@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 24237,
+  "duration_api_ms": 23301,
+  "ttft_ms": 23915,
+  "ttft_stream_ms": 3908,
+  "time_to_request_ms": 2057,
+  "num_turns": 1,
+  "result": "### Answer\n\nRESTfulウェブサービスにおけるエラー処理とログ出力の仕組みは、主に以下のコンポーネントが連携して実現されています。\n\n---\n\n## エラー処理の中心：JaxRsResponseHandler\n\nRESTfulウェブサービスでは、**`JaxRsResponseHandler`** がエラー処理とログ出力の中心的な役割を担います。\n\n### 例外の種類に応じた処理\n\n例外・エラーの種類ごとに、ログレベルとHTTPステータスコードが決まります。\n\n| 例外・エラー | ログレベル | ステータスコード | 補足 |\n|---|---|---|---|\n| `NoMoreHandlerException` | INFO | 404 | 処理すべきハンドラ不在 → 証跡ログとして記録 |\n| `HttpErrorResponse` | ログなし | `HttpErrorResponse#getResponse()` | 業務例外（バリデーションエラー等）のため出力不要 |\n| `Result.Error` | 設定による | `Error#getStatusCode()` | `writeFailureLogPattern` の設定次第 |\n| `StackOverflowError` | FATAL | 500 | 障害として通知 |\n| `ThreadDeath` / `VirtualMachineError`（StackOverflow以外） | — | — | 上位ハンドラに再送出 |\n| 上記以外の例外・エラー | FATAL | 500 | 予期しない例外として障害扱い |\n\n`HttpErrorResponse` の原因例外が `ApplicationException` の場合は、エラーメッセージをViewで扱えるよう `ErrorMessages` に変換してリクエストスコープに設定します（デフォルトキー名: `errors`）。\n\n---\n\n## エラーログのカスタマイズ：JaxRsErrorLogWriter\n\nログ出力は `JaxRsResponseHandler` の **`errorLogWriter`** プロパティに設定された **`JaxRsErrorLogWriter`** が行います。\n\n- 設定を省略するとデフォルト実装が使われます\n- プロジェクト要件を満たせない場合はデフォルト実装クラスを継承してカスタマイズします\n\n```xml\n<component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n  <property name=\"errorLogWriter\">\n    <component class=\"sample.SampleJaxRsErrorLogWriter\" />\n  </property>\n</component>\n```\n\n---\n\n## Result.Error のログ出力制御\n\n`Result.Error` のログ出力は **`writeFailureLogPattern`** プロパティで制御します。\n\n- 正規表現を設定し、`Error#getStatusCode()` がマッチした場合に **FATAL** レベルのログを出力します\n- マッチしない場合はログ出力されません\n\n---\n\n## HTTPアクセスログ\n\nアクセスログはアプリケーションログ（ロガー名: `HTTP_ACCESS`、ログレベル: **INFO**）に出力されます。\n\nJSON形式で出力したい場合は `JaxRsAccessJsonLogFormatter` を使用します。`app-log.properties` で `httpAccessLogFormatter.className` に指定することで、各アクセスログ項目をJSONの値として出力できます。\n\n---\n\n## ハンドラの配置制約\n\nアクセスログハンドラ（`JaxRsAccessLogHandler`）は以下の順序で配置する必要があります：\n\n1. **スレッドコンテキスト変数管理ハンドラより後ろ**（`ThreadContext` の情報が必要なため）\n2. **HTTPエラー制御ハンドラより前**（完了時ログにエラーコードが必要なため）\n\n---\n\n## 致命的エラー時の固定レスポンス\n\nハンドラ内部で `ServletException`・`RuntimeException`・`Error` が発生した場合、クライアントには**ステータスコード500の固定HTMLレスポンス**が返されます。このHTMLは設定で変更できません。どんな状況でもこのレスポンスを出せないシステムでは、ハンドラを自作する必要があります。",
+  "stop_reason": "end_turn",
+  "session_id": "49f5a2a9-4a4f-43d7-8ff5-21f98fd40245",
+  "total_cost_usd": 0.14200395,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 29281,
+    "cache_read_input_tokens": 19224,
+    "output_tokens": 1181,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 29281
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 8497,
+      "outputTokens": 43,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.008712,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1181,
+      "cacheReadInputTokens": 19224,
+      "cacheCreationInputTokens": 29281,
+      "webSearchRequests": 0,
+      "costUSD": 0.13329195,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "cbbd6fcb-bdf7-40d5-8d3f-428263e6a42b"
+}

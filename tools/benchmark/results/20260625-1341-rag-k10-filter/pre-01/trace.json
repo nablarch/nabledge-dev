@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 22501,
+  "duration_api_ms": 21100,
+  "ttft_ms": 8685,
+  "ttft_stream_ms": 3793,
+  "time_to_request_ms": 2332,
+  "num_turns": 1,
+  "result": "参照セクションのコンテンツが取得できなかったため、Nablarchの公式ドキュメントに基づく一般的な知識でお答えします。\n\n### Answer\n\nNablarchバッチアプリケーション（都度起動バッチ）の起動方法と `-requestPath` の書き方は以下の通りです。\n\n#### 起動コマンド\n\n```bash\njava -jar <jarファイル> \\\n  -requestPath=<アクションクラス名>/<リクエストID> \\\n  -diConfig=<DIコンフィグファイルパス> \\\n  -userId=<ユーザーID>\n```\n\n#### `-requestPath` の書き方\n\n```\n-requestPath=<完全修飾アクションクラス名>/<リクエストID>\n```\n\n**例:**\n\n```bash\n-requestPath=com.example.action.SampleBatchAction/SAMPLE_BATCH001\n```\n\n| 要素 | 説明 | 例 |\n|------|------|----|\n| アクションクラス名 | `BatchAction` を実装したクラスの完全修飾名 | `com.example.action.SampleBatchAction` |\n| リクエストID | スラッシュ区切りで指定する任意のID | `SAMPLE_BATCH001` |\n\n#### 起動例（全体）\n\n```bash\njava -jar app.jar \\\n  -requestPath=com.example.action.SampleBatchAction/SAMPLE_BATCH001 \\\n  -diConfig=classpath:batch-boot.xml \\\n  -userId=batchUser\n```\n\n#### ポイント\n\n- **`-requestPath`** は `アクションクラス/リクエストID` の形式で指定します。スラッシュ（`/`）で区切ります。\n- **`-diConfig`** にはハンドラキューを定義したコンポーネント設定ファイルを指定します（`classpath:` プレフィックスでクラスパス指定可）。\n- **`-userId`** は実行ユーザーIDとして使用されます。\n\n> **注意:** 参照セクション（`nablarch-batch-architecture.json` 等）のコンテンツが今回取得できなかったため、上記はNablarch公式ドキュメントの一般知識に基づく回答です。正確な情報はNablarch公式ドキュメントの「バッチアプリケーション」章をご確認ください。\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_sections\": [\n      {\n        \"file\": \"nablarch-batch-architecture.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-batch-architecture.json\",\n        \"section_id\": \"s2\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-patterns-Nablarchバッチ処理パターン.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"blank-project-setup-NablarchBatch.json\",\n        \"section_id\": \"s13\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-batch-feature-details.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-batch-architecture.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"blank-project-setup-NablarchBatch.json\",\n        \"section_id\": \"s9\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"handlers-main.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-batch-architecture.json\",\n        \"section_id\": \"s8\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"nablarch-batch-architecture.json\",\n        \"section_id\": \"s4\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      }\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"nablarch-batch-architecture.json:s1\",\n      \"nablarch-batch-architecture.json:s2\",\n      \"nablarch-patterns-Nablarchバッチ処理パターン.json:s1\",\n      \"blank-project-setup-NablarchBatch.json:s13\",\n      \"nablarch-batch-feature-details.json:s1\",\n      \"nablarch-batch-architecture.json:s3\",\n      \"blank-project-setup-NablarchBatch.json:s9\",\n      \"handlers-main.json:s3\",\n      \"nablarch-batch-architecture.json:s8\",\n      \"nablarch-batch-architecture.json:s4\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [],\n      \"unused\": [\n        \"nablarch-batch-architecture.json:s1\",\n        \"nablarch-batch-architecture.json:s2\",\n        \"nablarch-patterns-Nablarchバッチ処理パターン.json:s1\",\n        \"blank-project-setup-NablarchBatch.json:s13\",\n        \"nablarch-batch-feature-details.json:s1\",\n        \"nablarch-batch-architecture.json:s3\",\n        \"blank-project-setup-NablarchBatch.json:s9\",\n        \"handlers-main.json:s3\",\n        \"nablarch-batch-architecture.json:s8\",\n        \"nablarch-batch-architecture.json:s4\"\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "2ae86be6-2051-42f3-8405-8c5122c2d1f6",
+  "total_cost_usd": 0.18788799999999997,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 41772,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 1940,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 41772
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 1942,
+      "outputTokens": 39,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002137,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1940,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 41772,
+      "webSearchRequests": 0,
+      "costUSD": 0.18575099999999997,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "3cabfa49-518e-433c-a59a-5858836015cd"
+}

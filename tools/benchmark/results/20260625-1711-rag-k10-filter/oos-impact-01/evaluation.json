@@ -1,0 +1,71 @@
+{
+  "scenario_id": "oos-impact-01",
+  "description": "既存システムをNablarch 6に移行するにあたり、OAuth2/OpenID Connect認証が必要かどうか影響調査している。NablarchにOAuth2/OIDCの仕組みが組み込まれているか確認したい。",
+  "input": "NablarchでOAuth2やOpenID Connectによる認証を実装したい。Nablarchにその仕組みは組み込まれているか？",
+  "purpose": "セキュリティ対応したい",
+  "expected_facts": [
+    "NablarchにはOAuth2/OpenID Connect認証の組み込み機能がないと回答している"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The actual output explicitly states that Nablarch does not have built-in OAuth2/OpenID Connect (OIDC) authentication functionality ('NablarchにはOAuth2/OpenID Connect（OIDC）の認証機能は組み込まれていません'), which directly covers the single expected fact. The coverage is complete."
+    },
+    "answer_relevancy": {
+      "score": 0.8695652173913043,
+      "reason": "The score is 0.87 because the response mostly addresses the question about OAuth2/OIDC authentication implementation in Nablarch, but includes some irrelevant statements about access control/authorization, session management vulnerabilities, and clickjacking countermeasures, which are not directly related to the asked topic. These tangential security topics slightly diluted the focus of the response."
+    },
+    "faithfulness": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is perfectly faithful to the retrieval context with no contradictions found!"
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "check/security-check/security-check-2.チェックリスト.json:s11",
+      "guide/biz-samples/biz-samples-01.json:s2",
+      "check/security-check/security-check-2.チェックリスト.json:s1",
+      "check/security-check/security-check-2.チェックリスト.json:s4",
+      "processing-pattern/web-application/web-application-architecture.json:s3",
+      "guide/biz-samples/biz-samples-12.json:s3",
+      "check/security-check/security-check-2.チェックリスト.json:s2",
+      "guide/biz-samples/biz-samples-12.json:s2",
+      "guide/biz-samples/biz-samples-12.json:s1",
+      "check/security-check/security-check-2.チェックリスト.json:s9"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 22080,
+    "duration_api_ms": 21266,
+    "num_turns": 1,
+    "total_cost_usd": 0.14213119999999999,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 986,
+      "cache_read_input_tokens": 19224,
+      "cache_creation_input_tokens": 29932
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 9148,
+        "outputTokens": 35,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.009323,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 986,
+        "cacheReadInputTokens": 19224,
+        "cacheCreationInputTokens": 29932,
+        "webSearchRequests": 0,
+        "costUSD": 0.1328082,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "scenario_id": "review-06",
+  "description": "REST APIのリソースクラスでJaxRsHttpRequestからクエリーパラメータを取得する処理を書いている。URLパスの一部をパスパラメータとして使う箇所もある。",
+  "input": "REST APIでURLパスの一部を受け取ったり、検索条件をURL末尾のパラメータで渡す実装はどう書く？ルーティングの設定も含めて確認したい",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "パスパラメータはルーティング設定で名前を定義しリソースクラスで受け取る",
+    "クエリーパラメータはJaxRsHttpRequestから取得する"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both facts from the Expected Output checklist. It explicitly explains that path parameters are defined in routing configuration (routes.xml) with named parameters and retrieved in the resource class via JaxRsHttpRequest#getPathParam(). It also explicitly states that query parameters are obtained via JaxRsHttpRequest (specifically through getParamMap()). Both expected facts are clearly covered with detailed explanations and code examples."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is completely relevant to the input, which asks about REST API implementation for receiving URL path parameters and query parameters, along with routing configuration. No irrelevant statements were found — nice work!"
+    },
+    "faithfulness": {
+      "score": 0.9333333333333333,
+      "reason": "The score is 0.93 because the actual output incorrectly uses the 'users/:id' format (http-request-router notation) for path parameters, when the retrieval context explicitly states that path parameters should use the Jakarta RESTful Web Services specification notation with {parameter name} syntax, and that http-request-router notation is NOT used."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/adapters/adapters-router-adaptor.json:s9",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s3",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s6",
+      "processing-pattern/restful-web-service/restful-web-service-resource-signature.json:s2",
+      "javadoc/javadoc-nablarch-fw-jaxrs-JaxRsHttpRequest.json:s8",
+      "releases/releases/releases-nablarch6u1-releasenote-6u1.json:s9",
+      "processing-pattern/restful-web-service/restful-web-service-architecture.json:s2",
+      "processing-pattern/restful-web-service/restful-web-service-feature-details.json:s5",
+      "javadoc/javadoc-nablarch-test-core-http-HttpRequestTestSupport.json:s68",
+      "development-tools/testing-framework/testing-framework-RequestUnitTest-rest.json:s16"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 18468,
+    "duration_api_ms": 17411,
+    "num_turns": 1,
+    "total_cost_usd": 0.1517321,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 994,
+      "cache_read_input_tokens": 12757,
+      "cache_creation_input_tokens": 33684
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 6484,
+        "outputTokens": 38,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.006674,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 994,
+        "cacheReadInputTokens": 12757,
+        "cacheCreationInputTokens": 33684,
+        "webSearchRequests": 0,
+        "costUSD": 0.1450581,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

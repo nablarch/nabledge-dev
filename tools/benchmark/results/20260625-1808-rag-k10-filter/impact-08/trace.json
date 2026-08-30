@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 21424,
+  "duration_api_ms": 20558,
+  "ttft_ms": 21403,
+  "ttft_stream_ms": 4004,
+  "time_to_request_ms": 2117,
+  "num_turns": 1,
+  "result": "### Answer\n\nはい、Nablarchにはテスト時にシステム日時を任意の値に差し替える仕組みが用意されています。\n\n**仕組みの概要**\n\nNablarchのシステム日時は `SystemTimeProvider` インターフェースの実装クラスが提供します。コンポーネント定義でこの実装クラスを差し替えるだけで、本番とテストで異なる日時を使えます。\n\n**本番時の設定**\n\nコンポーネント定義に `BasicSystemTimeProvider` を指定します（OSの実際の日時を返します）。\n\n```xml\n<component name=\"systemTimeProvider\" class=\"nablarch.core.date.BasicSystemTimeProvider\" />\n```\n\n**テスト時の設定**\n\nテスト用コンポーネント定義で `FixedSystemTimeProvider` に差し替え、固定したい日時を指定します。\n\n```xml\n<component name=\"systemTimeProvider\"\n    class=\"nablarch.test.FixedSystemTimeProvider\">\n  <property name=\"fixedDate\" value=\"20100914123456\" />\n</component>\n```\n\n`fixedDate` には以下のフォーマットで指定できます。\n\n| フォーマット | 桁数 |\n|---|---|\n| `yyyyMMddHHmmss` | 14桁 |\n| `yyyyMMddHHmmssSSS` | 17桁 |\n\n**切り替えの仕組み**\n\n- コンポーネント名 `systemTimeProvider` に登録するクラスを変えるだけで切り替わります\n- 本番：`BasicSystemTimeProvider`（OS日時を返す）\n- テスト：`FixedSystemTimeProvider`（固定値を返す）\n- 独自の切り替えが必要な場合は、`SystemTimeProvider` を実装した独自クラスを作成して登録することも可能です\n\n**自分で実装する場合**\n\n`SystemTimeProvider` インターフェースを実装したクラスを作成し、上記と同様にコンポーネント定義へ登録するだけです。これにより、ランダムな日時や外部から注入する日時など、任意のロジックで日時を制御できます。\n\nなお、Nablarch 6u2以降では `SystemTimeUtil` で `LocalDateTime` 型でのシステム日時取得にも対応しています（従来の `Date` 型に加えて）。\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_sections\": [\n      {\n        \"file\": \"component/libraries/libraries-date.json\",\n        \"section_id\": \"s12\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-date.json\",\n        \"section_id\": \"s2\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"development-tools/testing-framework/testing-framework-03-Tips.json\",\n        \"section_id\": \"s11\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"development-tools/testing-framework/testing-framework-03-Tips.json\",\n        \"section_id\": \"s12\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-date.json\",\n        \"section_id\": \"s13\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-date.json\",\n        \"section_id\": \"s9\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"development-tools/testing-framework/testing-framework-01-Abstract.json\",\n        \"section_id\": \"s15\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-date.json\",\n        \"section_id\": \"s5\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"development-tools/testing-framework/testing-framework-01-Abstract.json\",\n        \"section_id\": \"s18\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json\",\n        \"section_id\": \"s6\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      }\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-date.json:s12\",\n      \"component/libraries/libraries-date.json:s2\",\n      \"development-tools/testing-framework/testing-framework-03-Tips.json:s11\",\n      \"development-tools/testing-framework/testing-framework-03-Tips.json:s12\",\n      \"component/libraries/libraries-date.json:s13\",\n      \"component/libraries/libraries-date.json:s9\",\n      \"development-tools/testing-framework/testing-framework-01-Abstract.json:s15\",\n      \"component/libraries/libraries-date.json:s5\",\n      \"development-tools/testing-framework/testing-framework-01-Abstract.json:s18\",\n      \"releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s6\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        \"component/libraries/libraries-date.json:s2\",\n        \"component/libraries/libraries-date.json:s5\",\n        \"component/libraries/libraries-date.json:s12\",\n        \"development-tools/testing-framework/testing-framework-03-Tips.json:s11\",\n        \"development-tools/testing-framework/testing-framework-03-Tips.json:s12\",\n        \"releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s6\"\n      ],\n      \"unused\": [\n        \"component/libraries/libraries-date.json:s13\",\n        \"component/libraries/libraries-date.json:s9\",\n        \"development-tools/testing-framework/testing-framework-01-Abstract.json:s15\",\n        \"development-tools/testing-framework/testing-framework-01-Abstract.json:s18\"\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "ed3fd24f-5f2f-42dc-8de3-881dde4e2e3e",
+  "total_cost_usd": 0.15522484999999997,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 31837,
+    "cache_read_input_tokens": 12757,
+    "output_tokens": 1814,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 31837
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 4613,
+      "outputTokens": 36,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0047929999999999995,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1814,
+      "cacheReadInputTokens": 12757,
+      "cacheCreationInputTokens": 31837,
+      "webSearchRequests": 0,
+      "costUSD": 0.15043184999999998,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "5b0926ee-03e9-45cb-b9a1-753d11944575"
+}

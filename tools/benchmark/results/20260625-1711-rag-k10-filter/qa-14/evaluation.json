@@ -1,0 +1,72 @@
+{
+  "scenario_id": "qa-14",
+  "description": "Nablarch 5から6にバージョンアップする際に、Jakarta EE 10対応でアプリケーションに影響がないか調べたい。パッケージ名の変更など後方互換に影響する変更点を知りたい。",
+  "input": "Nablarch 5からNablarch 6にバージョンアップするとき、Jakarta EE 10対応でアプリケーションに影響がある変更は何か？",
+  "purpose": "バージョンアップしたい",
+  "expected_facts": [
+    "Jakarta EE 10に対応しており、Jakarta EE 10対応のアプリケーションサーバで動作させる必要がある",
+    "Java EEの仕様名およびパッケージ名がJakarta EEのものに変更されている"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both key facts from the Expected Output. It explicitly states that Jakarta EE 10 compatible application servers are required (fact 1), and it clearly explains that package names changed from javax.* to jakarta.* (fact 2), which corresponds to Java EE specifications and package names being changed to Jakarta EE ones. Both expected facts are present and well-covered in the Actual Output."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the actual output is completely relevant to the question about changes affecting applications when upgrading from Nablarch 5 to Nablarch 6 with Jakarta EE 10 support. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9230769230769231,
+      "reason": "The score is 0.92 because the actual output claims the web.xml was changed from version 3.1 to version 6.0, but while the retrieval context confirms the target version should be web-app_6_0.xsd with version 6.0, it does not provide information about the previous version being 3.1, making that specific claim unverifiable."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "about/migration/migration-migration.json:s2",
+      "releases/releases/releases-nablarch6-releasenote-6.json:s2",
+      "releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s2",
+      "about/migration/migration-migration.json:s5",
+      "releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s50",
+      "releases/releases/releases-nablarch6u2-releasenote-6u2 (6u1からの変更点).json:s39",
+      "releases/releases/releases-nablarch6u2-releasenote-6u2（5u25からの変更点）.json:s3",
+      "releases/releases/releases-nablarch6u2-releasenote-6u2 (6u1からの変更点).json:s33",
+      "about/migration/migration-migration.json:s27",
+      "about/migration/migration-migration.json:s16"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 21178,
+    "duration_api_ms": 19834,
+    "num_turns": 1,
+    "total_cost_usd": 0.1380122,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 1997,
+      "cache_read_input_tokens": 19224,
+      "cache_creation_input_tokens": 25868
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 5084,
+        "outputTokens": 39,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.005279,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 1997,
+        "cacheReadInputTokens": 19224,
+        "cacheCreationInputTokens": 25868,
+        "webSearchRequests": 0,
+        "costUSD": 0.1327332,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

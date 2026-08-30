@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 33836,
+  "duration_api_ms": 24304,
+  "ttft_ms": 33708,
+  "ttft_stream_ms": 12909,
+  "time_to_request_ms": 10840,
+  "num_turns": 1,
+  "result": "### Answer\n\nはい、Nablarchのカスタムタグを使って入力画面と確認画面のJSPを共通化できます。\n\n## 概要\n\n入力画面向けに作成したJSPに、確認画面との差分（ボタンなど）のみを追加するだけで確認画面を作成できます。\n\n## 使用するカスタムタグ\n\n| タグ | 役割 |\n|------|------|\n| `<n:confirmationPage>` | 確認画面のJSPで入力画面JSPへのパスを指定する |\n| `<n:forInputPage>` | 入力画面でのみ表示したい部分を囲む |\n| `<n:forConfirmationPage>` | 確認画面でのみ表示したい部分を囲む |\n| `<n:ignoreConfirmation>` | 確認画面で確認画面向け表示を無効化したい部分に指定する（例：チェックボックスをそのまま表示したい場合） |\n\n## 実装例\n\n**入力画面 (input.jsp)**\n\n```jsp\n<n:form>\n  <!-- 入力欄は入力・確認画面で同じJSP記述を使用 -->\n  <div>\n    <label>名前</label>\n    <n:text name=\"form.name\" />\n  </div>\n  <div>\n    <label>メール</label>\n    <n:checkbox name=\"form.useMail\" label=\"使用する\" offLabel=\"使用しない\" />\n  </div>\n  <div>\n    <label>プラン</label>\n    <n:select name=\"form.plan\"\n              listName=\"plans\"\n              elementLabelProperty=\"planName\"\n              elementValueProperty=\"planId\" />\n  </div>\n  <!-- ボタンは画面ごとに異なるので切り替える -->\n  <div>\n    <n:forInputPage>\n      <n:submit type=\"submit\" uri=\"/action/sample/confirm\" value=\"確認\" />\n    </n:forInputPage>\n    <n:forConfirmationPage>\n      <n:submit type=\"submit\" uri=\"/action/sample/showNew\" value=\"戻る\" />\n      <n:submit type=\"submit\" uri=\"/action/sample/register\" value=\"登録\" />\n    </n:forConfirmationPage>\n  </div>\n</n:form>\n```\n\n**確認画面 (confirm.jsp)**\n\n```jsp\n<!-- 入力画面のJSPへのパスを指定するだけ -->\n<n:confirmationPage path=\"./input.jsp\" />\n```\n\n## 注意事項\n\n- `<n:plainHidden>` と `<n:hiddenStore>` は入力・確認画面の両方で出力されます（画面間のデータ受け渡し用途のため）\n- 入力・確認画面の表示制御は**入力系タグが対象**です\n\n## 画面間のデータ保持\n\n入力→確認→完了の画面遷移でデータを保持するにはセッションストアを使います。\n\n- **複数タブ不許容** → DBストアを使用\n- **複数タブ許容** → HIDDENストアを使用し、JSPに `<n:hiddenStore>` タグを追加\n\nセッションストアにはFormではなく**Entity**を格納することが推奨されています（業務ロジックの凝集性向上とセキュリティ上の理由から）。\n\n<<<WORKFLOW_DETAILS_JSON>>>\n```json\n{\n  \"step3\": {\n    \"selected_sections\": [\n      {\n        \"file\": \"component/libraries/libraries-tag.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-tag.json\",\n        \"section_id\": \"s23\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-create-example.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-create-example.json\",\n        \"section_id\": \"s2\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-session-store.json\",\n        \"section_id\": \"s9\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-update-example.json\",\n        \"section_id\": \"s2\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-update-example.json\",\n        \"section_id\": \"s3\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-bean-validation.json\",\n        \"section_id\": \"s16\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-update-example.json\",\n        \"section_id\": \"s1\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      },\n      {\n        \"file\": \"component/libraries/libraries-bean-validation.json\",\n        \"section_id\": \"s18\",\n        \"relevance\": \"high\",\n        \"reason\": \"RAG top-k result\"\n      }\n    ]\n  },\n  \"step4\": {\n    \"read_sections\": [\n      \"component/libraries/libraries-tag.json:s3\",\n      \"component/libraries/libraries-tag.json:s23\",\n      \"component/libraries/libraries-create-example.json:s3\",\n      \"component/libraries/libraries-create-example.json:s2\",\n      \"component/libraries/libraries-session-store.json:s9\",\n      \"component/libraries/libraries-update-example.json:s2\",\n      \"component/libraries/libraries-update-example.json:s3\",\n      \"component/libraries/libraries-bean-validation.json:s16\",\n      \"component/libraries/libraries-update-example.json:s1\",\n      \"component/libraries/libraries-bean-validation.json:s18\"\n    ]\n  },\n  \"step8\": {\n    \"answer_sections\": {\n      \"used\": [\n        \"component/libraries/libraries-tag.json:s3\",\n        \"component/libraries/libraries-tag.json:s23\",\n        \"component/libraries/libraries-session-store.json:s9\"\n      ],\n      \"unused\": [\n        \"component/libraries/libraries-create-example.json:s3\",\n        \"component/libraries/libraries-create-example.json:s2\",\n        \"component/libraries/libraries-update-example.json:s2\",\n        \"component/libraries/libraries-update-example.json:s3\",\n        \"component/libraries/libraries-bean-validation.json:s16\",\n        \"component/libraries/libraries-update-example.json:s1\",\n        \"component/libraries/libraries-bean-validation.json:s18\"\n      ]\n    }\n  }\n}\n```\n<<<END_WORKFLOW_DETAILS>>>",
+  "stop_reason": "end_turn",
+  "session_id": "94c4b559-f9e4-4b45-be97-a86b06626c84",
+  "total_cost_usd": 0.140921,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 26558,
+    "cache_read_input_tokens": 19145,
+    "output_tokens": 1975,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 26558
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 5774,
+      "outputTokens": 36,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.005953999999999999,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1975,
+      "cacheReadInputTokens": 19145,
+      "cacheCreationInputTokens": 26558,
+      "webSearchRequests": 0,
+      "costUSD": 0.134967,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "b4f9d302-ca1e-47b5-ae73-1877979388c4"
+}

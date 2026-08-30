@@ -1,0 +1,72 @@
+{
+  "scenario_id": "qa-01",
+  "description": "バッチで10万件のデータを読み込んで加工する処理を書いている。findAllBySqlFileで全件取得したらOutOfMemoryErrorが出た。",
+  "input": "大量データを検索するとメモリが足りなくなる。1件ずつ読み込む方法はないか？",
+  "purpose": "実装したい",
+  "expected_facts": [
+    "UniversalDao.deferメソッドで遅延ロードを使用する",
+    "DeferredEntityListのcloseメソッドを呼び出す必要がある"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 0.5,
+      "reason": "The Actual Output covers the first expected fact about using UniversalDao.defer() for deferred loading, mentioning it explicitly and providing a code example. However, the second expected fact — that DeferredEntityList's close method must be called — is only implicitly addressed through the try-with-resources pattern in the code example (which automatically calls close), but is never explicitly stated as a requirement. The evaluation requires accurate representation without just superficial mention, and the necessity of calling closeMethod is not directly articulated as a key point."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the input, directly addressing the issue of memory shortage when searching large datasets and providing a method to read data one record at a time. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.9444444444444444,
+      "reason": "The score is 0.94 because the actual output incorrectly claims that using NoInputDataBatchAction for loop processing expands all records into memory, whereas the retrieval context only states it is a typical mistake without mentioning memory expansion — it is large search results that cannot be expanded into memory due to insufficient memory, not records from NoInputDataBatchAction."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s4",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchアンチパターン.json:s10",
+      "component/handlers/handlers-data-read-handler.json:s4",
+      "component/libraries/libraries-universal-dao.json:s9",
+      "guide/nablarch-patterns/nablarch-patterns-Nablarchバッチ処理パターン.json:s6",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature-details.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s3",
+      "component/libraries/libraries-data-bind.json:s9",
+      "component/libraries/libraries-data-bind.json:s7",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json:s7"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 37534,
+    "duration_api_ms": 22286,
+    "num_turns": 1,
+    "total_cost_usd": 0.1304523,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 1056,
+      "cache_read_input_tokens": 19121,
+      "cache_creation_input_tokens": 27264
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 6480,
+        "outputTokens": 30,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.00663,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 1056,
+        "cacheReadInputTokens": 19121,
+        "cacheCreationInputTokens": 27264,
+        "webSearchRequests": 0,
+        "costUSD": 0.1238223,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

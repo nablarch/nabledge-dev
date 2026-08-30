@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 26494,
+  "duration_api_ms": 17869,
+  "ttft_ms": 26280,
+  "ttft_stream_ms": 11365,
+  "time_to_request_ms": 9959,
+  "num_turns": 1,
+  "result": "### Answer\n\nウェブアプリケーションでメールアドレスと確認用メールアドレスの相関バリデーションを実装する方法を説明します。\n\n---\n\n## Jakarta Bean Validation を使う場合\n\nFormクラスに `@AssertTrue` アノテーションを付けたメソッドを実装します。\n\n```java\npublic class SampleForm {\n  private String mailAddress;\n  private String confirmMailAddress;\n\n  @AssertTrue(message = \"{compareMailAddress}\")\n  public boolean isEqualsMailAddress() {\n    if (StringUtil.isNullOrEmpty(mailAddress) || StringUtil.isNullOrEmpty(confirmMailAddress)) {\n      // どちらかが未入力の場合は相関バリデーションを実施しない（OKとして返す）\n      return true;\n    }\n    return Objects.equals(mailAddress, confirmMailAddress);\n  }\n}\n```\n\n**重要な注意点：** Jakarta Bean Validationはバリデーションの実行順序を保証しません。項目単体のバリデーションより先に相関バリデーションが呼ばれる場合があるため、`mailAddress` や `confirmMailAddress` が未入力（null/空）のケースでも例外が発生しないようにガード処理を入れてください。\n\nウェブアプリケーションでBean Validationを使用するには、コンポーネント設定ファイルに以下を定義する必要があります（`InjectForm` インターセプタ経由で実行されます）。\n\n```xml\n<component name=\"validationStrategy\" class=\"nablarch.common.web.validator.BeanValidationStrategy\" />\n```\n\n---\n\n## Nablarch Validation を使う場合\n\nFormクラスに `@ValidateFor` アノテーションを付けたstaticメソッドで実装します。**項目単体のバリデーションを先に実行し、エラーがなければ相関バリデーションを実行する**流れになります。\n\n```java\npublic class SampleForm {\n\n  @Domain(SampleDomain.MAIL)\n  @Required\n  public void setMailAddress(String mailAddress) {\n    this.mailAddress = mailAddress;\n  }\n\n  @Domain(SampleDomain.MAIL)\n  @Required\n  public void setConfirmMailAddress(String confirmMailAddress) {\n    this.confirmMailAddress = confirmMailAddress;\n  }\n\n  @ValidateFor(\"validate\")\n  public static void validate(ValidationContext<SampleForm> context) {\n    // まず項目単体のバリデーションを実施\n    ValidationUtil.validate(context, new String[] {\"mailAddress\", \"confirmMailAddress\"});\n\n    // 項目単体でエラーがあれば相関バリデーションは実施しない\n    if (!context.isValid()) {\n      return;\n    }\n\n    // 相関バリデーション実施\n    SampleForm form = context.createObject();\n    if (!Objects.equals(form.mailAddress, form.confirmMailAddress)) {\n      context.addMessage(\"compareMailAddress\");\n    }\n  }\n}\n```\n\nNablarch Validationでは実行順序が明示的にコントロールできるため、「項目単体バリデーション → 相関バリデーション」の順序を確実に保証できます。\n\n---\n\n## DBとの相関バリデーション（補足）\n\n「メールアドレスがDB上で重複していないか」のようなデータベースを使った相関バリデーションは、Formクラスではなく**業務アクション側**で実装してください。Bean Validation実行中の値は安全性が保証されていないため、SQLインジェクション等の脆弱性防止のためにバリデーション済みの値でDBアクセスする必要があります。",
+  "stop_reason": "end_turn",
+  "session_id": "0d161f4d-9bd9-4375-b18c-0f06a890bf2e",
+  "total_cost_usd": 0.1251305,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 26280,
+    "cache_read_input_tokens": 19145,
+    "output_tokens": 1011,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 26280
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 5496,
+      "outputTokens": 34,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.005666,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1011,
+      "cacheReadInputTokens": 19145,
+      "cacheCreationInputTokens": 26280,
+      "webSearchRequests": 0,
+      "costUSD": 0.1194645,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "00d97eb7-0c84-4976-aa83-0b1d7880585d"
+}

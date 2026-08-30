@@ -1,0 +1,72 @@
+{
+  "scenario_id": "qa-20",
+  "description": "REST APIのエラーハンドリング。JaxRsResponseHandler で例外に応じたJSONレスポンスを返す仕組みを知りたい。",
+  "input": "エラーが発生したときにエラー画面を表示したり、ログを出力する仕組みはどうなっている？",
+  "purpose": "仕組み・動作を理解したい",
+  "expected_facts": [
+    "JaxRsResponseHandlerが例外に応じたエラーレスポンスを生成する",
+    "JaxRsErrorLogWriterが例外に応じたログ出力を行う"
+  ],
+  "scores": {
+    "answer_correctness": {
+      "score": 1.0,
+      "reason": "The Actual Output covers both expected facts. It explicitly mentions JaxRsResponseHandler as the central component for error handling, generating error responses based on exception types (with a detailed table showing status codes per exception type). It also explicitly mentions JaxRsErrorLogWriter as the component responsible for log output based on exception types, including how it is configured via the errorLogWriter property. Both facts from the Expected Output checklist are clearly covered."
+    },
+    "answer_relevancy": {
+      "score": 1.0,
+      "reason": "The score is 1.00 because the response is perfectly relevant to the question about error handling mechanisms, including error screen display and log output. No irrelevant statements were found!"
+    },
+    "faithfulness": {
+      "score": 0.8421052631578947,
+      "reason": "The score is 0.84 because there are a few contradictions in the actual output: (1) NoMoreHandlerException is incorrectly described as being recorded as a 'trace log', when the retrieval context only states it is logged at INFO level; (2) writeFailureLogPattern is incorrectly described as controlling Result.Error logging behavior, when in fact Result.Error (including subclasses) always outputs a FATAL level log regardless of writeFailureLogPattern; (3) the actual output incorrectly claims that non-matching writeFailureLogPattern results in 'no log output', which is unsupported and contradicts the rule that Result.Error always produces a FATAL level log."
+    }
+  },
+  "diagnostics": {
+    "search_sections": [
+      "component/handlers/handlers-jaxrs-response-handler.json:s5",
+      "component/handlers/handlers-HttpErrorHandler.json:s4",
+      "component/handlers/handlers-http-response-handler.json:s8",
+      "component/libraries/libraries-jaxrs-access-log.json:s1",
+      "component/handlers/handlers-http-messaging-error-handler.json:s5",
+      "component/libraries/libraries-jaxrs-access-log.json:s4",
+      "component/handlers/handlers-HttpErrorHandler.json:s5",
+      "component/handlers/handlers-http-messaging-error-handler.json:s4",
+      "component/handlers/handlers-global-error-handler.json:s4",
+      "component/handlers/handlers-jaxrs-access-log-handler.json:s3"
+    ]
+  },
+  "metrics": {
+    "duration_ms": 24237,
+    "duration_api_ms": 23301,
+    "num_turns": 1,
+    "total_cost_usd": 0.14200395,
+    "usage": {
+      "input_tokens": 2,
+      "output_tokens": 1181,
+      "cache_read_input_tokens": 19224,
+      "cache_creation_input_tokens": 29281
+    },
+    "model_usage": {
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+        "inputTokens": 8497,
+        "outputTokens": 43,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.008712,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      },
+      "jp.anthropic.claude-sonnet-4-6": {
+        "inputTokens": 2,
+        "outputTokens": 1181,
+        "cacheReadInputTokens": 19224,
+        "cacheCreationInputTokens": 29281,
+        "webSearchRequests": 0,
+        "costUSD": 0.13329195,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000
+      }
+    }
+  }
+}

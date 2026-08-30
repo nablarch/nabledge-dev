@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 24599,
+  "duration_api_ms": 19147,
+  "ttft_ms": 24551,
+  "ttft_stream_ms": 8342,
+  "time_to_request_ms": 6724,
+  "num_turns": 1,
+  "result": "### Answer\n\nはい、`$if` 構文を使って実現できます。\n\n**基本的な書き方**\n\nSQLファイルの WHERE 句で `$if(プロパティ名) {条件式}` と記述します。Bean のプロパティ値が null または空文字（String の場合）のとき、その条件は自動的に除外されます。\n\n```sql\nSELECT user_id, user_name, user_kbn\nFROM user\nWHERE\n  $if (userName) {user_name LIKE :userName%}\n  AND $if (userKbn) {user_kbn = :userKbn}\n  AND birthday = :birthday\n```\n\n**Java 側の実装**\n\n```java\n// 検索条件 Bean に値をセット（userKbn はセットしない → 条件から除外される）\nUserEntity entity = new UserEntity();\nentity.setUserName(\"なまえ\");\n\nAppDbConnection connection = DbConnectionContext.getConnection();\n\n// 2 番目の引数に Bean を渡す（$if の評価に使われる）\nParameterizedSqlPStatement statement = connection.prepareParameterizedSqlStatementBySqlId(\n    \"jp.co.tis.sample.action.SampleAction#searchUser\", entity);\n\nSqlResultSet result = statement.retrieve(entity);\n```\n\n**ウェブアプリケーションでの典型的な実装パターン**\n\nフォーム → Bean のコピーは `BeanUtil` を使い、バリデーション後にそのまま渡します。\n\n```java\n@InjectForm(form = ProjectSearchForm.class, prefix = \"searchForm\", name = \"searchForm\")\npublic HttpResponse list(HttpRequest request, ExecutionContext context) {\n    ProjectSearchForm searchForm = context.getRequestScopedVar(\"searchForm\");\n    ProjectSearchDto searchCondition =\n            BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);\n\n    List<Project> result = UniversalDao.findAllBySqlFile(\n            Project.class, \"SEARCH_PROJECT\", searchCondition);\n    // ...\n}\n```\n\n**IN 句を可変条件にする場合**\n\n複数選択条件は `$if` と `:プロパティ名[]` を組み合わせます。Bean のプロパティ型は配列か `java.util.Collection` にする必要があります。\n\n```sql\nAND $if (projectClass) {PROJECT_CLASS IN (:projectClass[])}\n```\n\n```java\ncondition.setProjectClass(Arrays.asList(\"1\", \"3\"));\n```\n\nプロパティ値が null やサイズ 0 の場合、`$if` により条件ごと除外されます（IN 句は空にできないため、`$if` との併用が必須です）。\n\n**注意点**\n\n`$if` は WHERE 句でのみ使用可能で、`$if` 内に `$if` をネストすることはできません。また、この機能は「条件が変わる複数の SQL を共通化する」ためではなく、「ユーザー入力によって条件が変わる検索画面」向けのものです。条件だけが異なる SQL を安易に共通化すると、変更時に思わぬ不具合を招くため、SQL は複数定義することが推奨されています。",
+  "stop_reason": "end_turn",
+  "session_id": "f2cc23df-25f2-4bc0-97d4-a2ce8bb836c6",
+  "total_cost_usd": 0.14900549999999999,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 31760,
+    "cache_read_input_tokens": 19145,
+    "output_tokens": 867,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 31760
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 10976,
+      "outputTokens": 35,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.011151,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 867,
+      "cacheReadInputTokens": 19145,
+      "cacheCreationInputTokens": 31760,
+      "webSearchRequests": 0,
+      "costUSD": 0.1378545,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "53413e1f-2f0c-4633-9a15-6c73cfda4c1f"
+}

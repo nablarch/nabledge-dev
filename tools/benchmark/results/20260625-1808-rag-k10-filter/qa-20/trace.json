@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "api_error_status": null,
+  "duration_ms": 36534,
+  "duration_api_ms": 35906,
+  "ttft_ms": 5969,
+  "ttft_stream_ms": 5104,
+  "time_to_request_ms": 2083,
+  "num_turns": 1,
+  "result": "### Answer\n\nRESTfulウェブサービスにおけるエラー処理とログ出力の仕組みは、主に以下のコンポーネントが連携して動作します。\n\n---\n\n## エラー処理の全体像\n\n### 1. JaxRsResponseHandler — エラーログ出力の中心\n\nRESTfulウェブサービスでは、`JaxRsResponseHandler` がエラー時のログ出力を担います。ログ出力は `errorLogWriter` プロパティに設定された `JaxRsErrorLogWriter` が行います。\n\n- 省略時はデフォルト実装の `JaxRsErrorLogWriter` が使用されます\n- プロジェクト要件を満たせない場合は、デフォルト実装を **継承して** カスタマイズします\n\n```xml\n<component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n  <property name=\"errorLogWriter\">\n    <component class=\"sample.SampleJaxRsErrorLogWriter\" />\n  </property>\n</component>\n```\n\n---\n\n### 2. 例外の種類ごとのログレベルとHTTPステータス\n\nRESTfulウェブサービスのエラーハンドラ（`handlers-http-messaging-error-handler`相当）は、例外の種類に応じて以下のように動作します：\n\n| 例外クラス | ログレベル | HTTPステータス | 理由 |\n|---|---|---|---|\n| `NoMoreHandlerException` | INFO | 404 | 処理すべきaction classが存在しなかった（証跡ログとして記録） |\n| `HttpErrorResponse` | 出力なし | `getResponse()`の値 | バリデーション等の業務例外であり、正常フローの一部 |\n| `Result.Error` | 設定による（FATALの場合あり） | `getStatusCode()`の値 | `writeFailureLogPattern`の正規表現に一致した場合にFATAL出力 |\n| `ApplicationException` + `MessagingException` | — | 400 | クライアントリクエストの不正 |\n| 上記以外すべて | FATAL | 500 | 予期しないエラーとして障害扱い |\n\n#### `Result.Error` のログ出力制御\n\n`writeFailureLogPattern` プロパティに **正規表現** を設定し、`Error#getStatusCode()` と一致した場合のみ FATAL ログを出力します。これにより「4xxはログしない、5xxのみログする」といった制御が可能です。\n\n---\n\n### 3. ハンドラ内部の致命的エラー（HttpResponseHandler）\n\n`HttpResponseHandler` 自体の内部で以下が発生した場合、**固定のHTML**（設定変更不可）をステータス500で返します：\n\n- サーブレットフォワード時の `ServletException`\n- `RuntimeException` およびそのサブクラス\n- `Error` およびそのサブクラス\n\n```html\n<html>\n  <head><title>A system error occurred.</title></head>\n  <body>\n    <p>We are sorry not to be able to proceed your request.<br/>\n    Please contact the system administrator of our system.</p>\n  </body>\n</html>\n```\n\n> このケースは非常にまれなシナリオです。このHTMLを絶対に出してはいけない要件の場合は、本ハンドラを参考に自作を検討してください。\n\n---\n\n### 4. グローバルエラーハンドラの動作\n\n`GlobalErrorHandler` はさらに上位でエラーを補足します：\n\n| エラー種別 | ログレベル | 処理 |\n|---|---|---|\n| `ServiceError`（サブクラス含む） | 実装クラスによる | `writeLog()`を呼び出し、`ServiceError`を返却 |\n| `Result.Error`（サブクラス含む） | FATAL | `Result.Error`を返却 |\n| `ThreadDeath` | INFO | エラーをリスロー |\n| `StackOverflowError` | FATAL | `InternalError`に包んで返却 |\n| `OutOfMemoryError` | FATAL | 標準エラーに出力後、`InternalError`に包んで返却 |\n| `VirtualMachineError`（上記以外） | FATAL | エラーをリスロー |\n| 上記以外 | FATAL | `InternalError`に包んで返却 |\n\n---\n\n### 5. HTTPアクセスログ（JaxRsAccessLogHandler）\n\nエラーとは別に、すべてのリクエスト/レスポンスのアクセスログが記録されます：\n\n- **ログレベル**: INFO\n- **ロガー名**: `HTTP_ACCESS`\n- 開始時（BEGIN）と終了時（END）の2回出力\n- 終了時のログにはステータスコードが含まれるため、エラー発生時の記録にもなります\n\n#### ハンドラ配置の制約\n\nアクセスログハンドラは以下の順序で配置する必要があります：\n\n```\nスレッドコンテキスト変数管理ハンドラ\n    ↓\nJaxRsAccessLogHandler  ← ここ（エラーハンドラより前）\n    ↓\nHTTPエラー制御ハンドラ\n```\n\nエラーコードを終了ログに含めるため、**HTTPエラー制御ハンドラより前**に配置します。\n\n---\n\n### まとめ\n\nRESTfulウェブサービスのエラー処理フローは次のように整理できます：\n\n1. **アクセスログ**（JaxRsAccessLogHandler）がリクエスト開始を記録\n2. 後続ハンドラでエラーが発生\n3. **JaxRsResponseHandler** が例外の種類に応じてJaxRsErrorLogWriterでログ出力\n4. エラーレスポンス（JSONなど）をクライアントに返却\n5. **アクセスログ**（終了時）にステータスコードを記録\n6. 取りこぼした例外は **GlobalErrorHandler** が最上位でFATALログを出力",
+  "stop_reason": "end_turn",
+  "session_id": "737caa7e-38f2-45fc-a774-7fbe5a8e1cbf",
+  "total_cost_usd": 0.15101085000000003,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 29281,
+    "cache_read_input_tokens": 19197,
+    "output_tokens": 1783,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 29281
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "jp.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "inputTokens": 8497,
+      "outputTokens": 40,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.008697,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "jp.anthropic.claude-sonnet-4-6": {
+      "inputTokens": 2,
+      "outputTokens": 1783,
+      "cacheReadInputTokens": 19197,
+      "cacheCreationInputTokens": 29281,
+      "webSearchRequests": 0,
+      "costUSD": 0.14231385000000002,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "uuid": "9e946727-9a61-47a0-836e-9eb4f6a98b54"
+}
