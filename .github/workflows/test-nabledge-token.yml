@@ -1,0 +1,24 @@
+name: Test NABLEDGE_TOKEN
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout nabledge repository
+        uses: actions/checkout@v4
+        with:
+          repository: nablarch/nabledge
+          ref: develop
+          token: ${{ secrets.NABLEDGE_TOKEN }}
+          path: nabledge-repo
+
+      - name: Verify write access (dry-run push)
+        working-directory: nabledge-repo
+        run: |
+          git config user.email "ci@example.com"
+          git config user.name "CI Test"
+          git push --dry-run origin develop
+          echo "Write access confirmed"
